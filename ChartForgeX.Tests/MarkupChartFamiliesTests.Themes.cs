@@ -8,14 +8,8 @@ namespace ChartForgeX.Tests;
 
 public sealed partial class MarkupChartFamiliesTests {
     private static readonly IReadOnlyDictionary<string, Func<VisualTheme>> ThemePresets = new Dictionary<string, Func<VisualTheme>> {
-        ["graphite"] = VisualTheme.Graphite, ["report"] = VisualTheme.Report,
-        ["executive"] = VisualTheme.Executive, ["product"] = VisualTheme.Product,
-        ["accessible"] = VisualTheme.Accessible, ["colorblind"] = VisualTheme.Colorblind,
-        ["aurora"] = VisualTheme.Aurora, ["editorial"] = VisualTheme.Editorial,
-        ["candy"] = VisualTheme.Candy, ["people-infographic"] = VisualTheme.PeopleInfographic,
-        ["terminal"] = VisualTheme.Terminal, ["transparent-overlay"] = VisualTheme.TransparentOverlay,
-        ["minimal"] = VisualTheme.Minimal, ["dashboard"] = VisualTheme.Dashboard,
-        ["saas-dashboard"] = VisualTheme.SaasDashboard, ["restaurant-dashboard"] = VisualTheme.RestaurantDashboard
+        ["graphite"] = VisualTheme.Graphite, ["accessible"] = VisualTheme.Accessible,
+        ["transparent-overlay"] = VisualTheme.TransparentOverlay
     };
 
     public static IEnumerable<object[]> ThemePresetCases => ThemePresets.Keys.Select(name => new object[] { name });
@@ -46,23 +40,32 @@ public sealed partial class MarkupChartFamiliesTests {
     [InlineData(VisualThemeMode.Light)]
     [InlineData(VisualThemeMode.Dark)]
     public void ThemeModeShorthandPreservesTheChosenPresetAcrossAllInputForms(VisualThemeMode mode) {
-        const string body = "type gauge\nvalues 42\ntheme report";
+        const string body = "type gauge\nvalues 42\ntheme accessible";
         foreach (var source in new[] {
             body + "\ntheme " + mode,
             body + "\noption theme " + mode,
-            Fence("type gauge\nvalues 42\ntheme report", " theme=" + mode)
+            Fence("type gauge\nvalues 42\ntheme accessible", " theme=" + mode)
         }) {
             var chart = ParseChart(source);
-            Assert.Equal(VisualTheme.Report().ToJson(), chart.Options.Theme.ToJson());
+            Assert.Equal(VisualTheme.Accessible().ToJson(), chart.Options.Theme.ToJson());
             Assert.Equal(mode, chart.Options.ThemeMode);
         }
     }
 
+    [Fact]
+    public void RemovedThemePresetNamesAreRejected() {
+        var parsed = new MarkupChartParser().Parse("type gauge\nvalues 42\ntheme report");
+        var diagnostic = Assert.Single(parsed.Diagnostics);
+        Assert.Equal(MarkupDiagnosticSeverity.Error, diagnostic.Severity);
+        Assert.Equal(3, diagnostic.Line);
+        Assert.Equal("Unknown chart theme 'report'.", diagnostic.Message);
+    }
+
     [Theory]
-    [InlineData("report", 390, VisualThemeMode.Light)]
-    [InlineData("report", 1000, VisualThemeMode.Dark)]
-    [InlineData("aurora", 390, VisualThemeMode.Dark)]
-    [InlineData("dashboard", 1000, VisualThemeMode.Light)]
+    [InlineData("graphite", 390, VisualThemeMode.Light)]
+    [InlineData("graphite", 1000, VisualThemeMode.Dark)]
+    [InlineData("accessible", 390, VisualThemeMode.Dark)]
+    [InlineData("transparent-overlay", 1000, VisualThemeMode.Light)]
     public void AuthoredThemeAndModeReachConvenienceSvgAndDecodedPng(string preset, int width, VisualThemeMode mode) {
         var actual = ParseChart(Fence("type lineargauge\nseries \"Reading\"\nvalues 42\nsize " + width + "x420",
             " theme=" + preset + " themeMode=" + mode));

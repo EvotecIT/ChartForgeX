@@ -10,7 +10,7 @@ public sealed partial class MermaidRequirementThemeColorTests {
     [Theory]
     [InlineData(false)] [InlineData(true)]
     public void ExplicitHostThemesKeepAuthoredRequirementRolePaints(bool dark) {
-        var options = Options(800, dark); options.Presentation!.Theme = VisualTheme.Report().WithFontFamily(BrowserProofFonts.Family);
+        var options = Options(800, dark); options.Presentation!.Theme = VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family);
         var plain = Assert.IsType<TopologyChart>(MermaidRenderer.Render(Body, options).Artifact!.Model);
         var result = MermaidRenderer.Render(ConfiguredSource, options); Assert.Empty(result.Diagnostics);
         var mapped = Assert.IsType<TopologyChart>(result.Artifact!.Model);
@@ -23,7 +23,7 @@ public sealed partial class MermaidRequirementThemeColorTests {
     [Theory]
     [InlineData(false)] [InlineData(true)]
     public void AuthoredObjectStylesRemainMoreSpecificThanSourceOrHostTheme(bool hostTheme) {
-        var options = Options(800, false); if (hostTheme) options.Presentation!.Theme = VisualTheme.Report();
+        var options = Options(800, false); if (hostTheme) options.Presentation!.Theme = VisualTheme.Graphite();
         var result = MermaidRenderer.Render(ConfiguredSource + "\nstyle R fill:#3A8D6B,stroke:#224466,color:#112233", options);
         Assert.Empty(result.Diagnostics); var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model);
         var node = chart.Nodes.Single(item => item.Id == "R");

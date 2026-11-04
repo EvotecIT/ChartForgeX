@@ -17,7 +17,7 @@ public sealed class ReadableDefaultsTests {
         svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == role).ToArray();
 
     internal static Chart Availability(int width) {
-        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(width, 420).WithTitle("Daily availability");
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(width, 420).WithTitle("Daily availability");
         for (var row = 0; row < 14; row++)
             chart.AddHeatmapRow($"DC{row + 1}.ad.evotec.pl", Enumerable.Range(0, 30).Select(day => new ChartPoint(day, 99 + (row + day) % 10 / 10d)));
         return chart;

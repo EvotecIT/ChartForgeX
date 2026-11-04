@@ -33,7 +33,7 @@ public sealed class MermaidLateTypographyClosureTests {
     [InlineData(64, false)]
     [InlineData(64, true)]
     public async Task DenseVennRegionsRetainEveryAcceptedTextNode(int count, bool graphite) {
-        var theme = VisualTheme.Report().WithFontFamily("Arial");
+        var theme = VisualTheme.Graphite().WithFontFamily("Arial");
         var block = VennDiagramBlock.Create().WithSize(800, 600).WithTheme(theme).WithCard(false)
             .AddSet("A", "A", 60).AddSet("B", "B", 55);
         var expected = Enumerable.Range(1, count).Select(index => "N" + index).ToArray();

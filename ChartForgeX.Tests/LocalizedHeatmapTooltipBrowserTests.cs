@@ -16,7 +16,7 @@ public sealed class LocalizedHeatmapTooltipBrowserTests {
     [InlineData(900, VisualThemeMode.Light)]
     public async Task ShippedRuntimeReadsTheAuthoredLevelCaptionAndCapturedValue(int width, VisualThemeMode mode) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(width, 320).WithTheme(VisualTheme.Report(), mode)
+        var chart = Chart.Create().WithSize(width, 320).WithTheme(VisualTheme.Graphite(), mode)
             .WithFontFamily(BrowserProofFonts.Family).WithLegend(false)
             .ConfigureLabels(labels => labels.Level = "Poziom")
             .AddHeatmapRow("Logons", new[] { 2d, 40d, 90d, 400d });

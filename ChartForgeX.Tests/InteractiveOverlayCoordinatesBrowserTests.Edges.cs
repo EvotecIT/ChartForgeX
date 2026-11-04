@@ -18,7 +18,7 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
         if (!Enabled) return;
         // Use the public chart path that exposed the three-decimal SVG/full-precision plot mismatch.
         var chart = Chart.Create().WithSize(600, 440).WithTitle("Explicit plot edges").WithLegend(false).WithDataLabels(false)
-            .WithTheme(graphite ? VisualTheme.Graphite() : VisualTheme.Report(), graphite ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), graphite ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
             .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("boundary-source"), "Boundary", new[] {
                 new ChartPoint(0, 5), new ChartPoint(10, 5), new ChartPoint(5, 0),

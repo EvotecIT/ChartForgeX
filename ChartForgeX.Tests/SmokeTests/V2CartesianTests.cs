@@ -17,7 +17,7 @@ public sealed class V2CartesianTests {
         Assert.DoesNotContain(defaults.Nodes, node => node.Role == "grid-x");
         Assert.Contains(defaults.Nodes, node => node.Role == "grid-y");
         chart.Options.GridLineStyle = new ChartGridLineStyle { ShowVerticalLines = true, StrokeWidth = 3, Dash = 2, Gap = 4 };
-        chart.WithTheme(VisualTheme.Report(), mode);
+        chart.WithTheme(VisualTheme.Graphite(), mode);
         var configured = Compile(chart).Nodes.OfType<VisualSceneLine>().Where(line => line.Role is "grid-x" or "grid-y").ToArray();
         Assert.Contains(configured, line => line.Role == "grid-x");
         Assert.All(configured, line => { Assert.Equal(3, line.StrokeWidth); Assert.Equal(new[] { 2d, 4d }, line.Dash); });

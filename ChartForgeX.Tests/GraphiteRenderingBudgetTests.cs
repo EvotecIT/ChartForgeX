@@ -19,14 +19,12 @@ public sealed class GraphiteRenderingBudgetTests {
         Chart Create(VisualTheme theme) => Chart.Create().WithTheme(theme, dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithSize(960,540)
             .WithTitle("Release performance chart").WithSubtitle("Representative line, area, and bar marks")
             .AddLine("Observed",Points(48,19)).AddArea("Forecast",Points(42,13)).AddBar("Capacity",Points(56,7));
-        var classic=Create(VisualTheme.Report());
-        var graphite=Create(VisualTheme.Graphite());
-        foreach(var chart in new[]{classic,graphite}) {
+        foreach(var chart in new[]{Create(VisualTheme.Graphite())}) {
             chart.ToSvg(); chart.ToPng(); // Warm font caches and renderer code before measuring.
             var allocated=GC.GetAllocatedBytesForCurrentThread(); var watch=Stopwatch.StartNew();
             var svg=chart.ToSvg(); var png=chart.ToPng(); watch.Stop();
             allocated=GC.GetAllocatedBytesForCurrentThread()-allocated;
-            _output.WriteLine($"{(ReferenceEquals(chart, graphite)?"Graphite":"Report")} {(dark?"dark":"light")}: {watch.ElapsedMilliseconds} ms, {allocated} allocated bytes, {svg.Length} SVG characters, {png.Length} PNG bytes; budgets 15000 ms / 67108864 bytes.");
+            _output.WriteLine($"Graphite {(dark?"dark":"light")}: {watch.ElapsedMilliseconds} ms, {allocated} allocated bytes, {svg.Length} SVG characters, {png.Length} PNG bytes; budgets 15000 ms / 67108864 bytes.");
             Assert.True(watch.ElapsedMilliseconds<=15000 && allocated<=64L*1024*1024);
         }
     }

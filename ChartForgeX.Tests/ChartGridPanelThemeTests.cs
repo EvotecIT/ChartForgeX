@@ -35,7 +35,7 @@ public sealed class ChartGridPanelThemeTests {
         Assert.Equal(VisualThemeMode.Dark, second.Options.ThemeMode);
 
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
-        first.WithTheme(VisualTheme.Candy(), VisualThemeMode.Dark);
+        first.WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark);
         second.WithFontFamily("serif");
         grid.WithPanelThemes(!usePanelThemes);
         Assert.Equal(svg, prepared.ToSvg());
@@ -51,7 +51,7 @@ public sealed class ChartGridPanelThemeTests {
         var expected = chart.Prepare(request.Context);
         var grid = ChartGrid.Create().WithColumns(1).WithPanelThemes().Add(chart);
         var prepared = grid.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 260), 0),
-            VisualTheme.Candy(), VisualThemeMode.Light, new VisualFrame(showLegend: false, transparentBackground: true),
+            VisualTheme.Graphite(), VisualThemeMode.Light, new VisualFrame(showLegend: false, transparentBackground: true),
             new FontSpec { Family = "monospace" }));
         Assert.Equal(expected.ToRgba().Pixels, prepared.ToRgba().Pixels);
         Assert.All(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => Assert.Equal("serif", node.Text.Style.Font.Family));

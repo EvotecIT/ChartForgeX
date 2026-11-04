@@ -25,7 +25,7 @@ public sealed class TopologyExplicitRichLabelCausalTests : IDisposable {
     }
     private static TextContent Content()=>TextContent.FromRuns(new[]{new TextContentRun("H"),new TextContentRun("H",TextInlineEmphasis.Italic)});
     private static TopologyChart Source(TopologyLabelVerticalAnchor anchor,bool structured,double themeSize) {
-        var chart=TopologyExplicitLabelMarkerTests.Source(anchor).WithTheme(VisualTheme.Report().WithTypography(new VisualTypography(Family,dataLabelSize:themeSize)));
+        var chart=TopologyExplicitLabelMarkerTests.Source(anchor).WithTheme(VisualTheme.Graphite().WithTypography(new VisualTypography(Family,dataLabelSize:themeSize)));
         chart.Edges[0].TextStyle=new TextStyleOverride{FontSize=18,FontWeight="400"};
         if(structured)chart.Edges[0].LabelContent=Content();else chart.Edges[0].Label="HH";
         return chart;

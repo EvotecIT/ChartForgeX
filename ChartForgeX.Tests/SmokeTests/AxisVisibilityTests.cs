@@ -33,7 +33,7 @@ internal static partial class SmokeTests {
         Assert(verticalSvg.Contains("data-cfx-role=\"axis-x-label\"", StringComparison.Ordinal), "Hiding the y-axis should keep x-axis labels visible.");
         Assert(vertical.ToPng().Length > 64, "Independent y-axis visibility should render PNG output.");
 
-        var theme = VisualTheme.Report();
+        var theme = VisualTheme.Graphite();
         theme = theme.Configure(builder => { builder.Light.Axis = builder.Dark.Axis = ChartColor.FromHex("#FF00FF"); });
         var independentRules = Chart.Create()
             .WithSize(360, 220)
@@ -65,7 +65,7 @@ internal static partial class SmokeTests {
         horizontalRules.Options.YAxis.ShowLine = false;
         Assert(!horizontalRulePng.AsSpan().SequenceEqual(horizontalRules.ToPng()), "The retained category-axis rule should paint native PNG pixels.");
 
-        var hiddenSecondaryTheme = VisualTheme.Report();
+        var hiddenSecondaryTheme = VisualTheme.Graphite();
         hiddenSecondaryTheme = hiddenSecondaryTheme.Configure(builder => { builder.Light.Axis = builder.Dark.Axis = ChartColor.FromHex("#FF00FF"); });
         hiddenSecondaryTheme = hiddenSecondaryTheme.Configure(builder => { builder.Light.Muted = builder.Dark.Muted = ChartColor.FromHex("#FF00FF"); });
         var hiddenSecondary = Chart.Create()

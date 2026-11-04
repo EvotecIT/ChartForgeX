@@ -184,7 +184,7 @@ public sealed class CartesianAnnotationPlacementTests {
         const string caption = "Review concentration";
         var values = new[] { 3d, 1, 3, 1, 0, 0, 0, 9, 10, 9, 7, 0, 0 };
         var chart = Chart.Create().WithSize(656, 360).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false)
-            .WithTheme(VisualTheme.Dashboard()).WithDashboardBarPanelStyle()
+            .WithTheme(VisualTheme.Graphite()).WithDashboardBarPanelStyle()
             .WithYAxisBounds(0, 10).WithDataLabels(dataLabels)
             .AddVerticalBand(7.5, 11.5, caption, opacity: .08)
             .AddBar("Reviews", Points(values));

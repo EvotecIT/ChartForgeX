@@ -20,7 +20,7 @@ public sealed class RemainingCaptionOrdinaryControls {
         PreparedVisual visual;
         double? sourcePadding = null;
         if (family == "native") {
-            var chart = TopologyChart.Create().WithViewport(width, 620).WithTheme(VisualTheme.Report().WithFontFamily(BrowserProofFonts.Family), mode)
+            var chart = TopologyChart.Create().WithViewport(width, 620).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), mode)
                 .AddAutoGroup("scope", "Review scope").AddAutoNode("a", "Review", groupId: "scope")
                 .AddAutoNode("b", "Ready", groupId: "scope").AddEdge("link", "a", "b", "Accept work");
             visual = chart.Prepare().Visual;
@@ -54,7 +54,7 @@ public sealed class RemainingCaptionOrdinaryControls {
             Assert.NotEqual(24, sourcePadding!.Value);
             TopologyViewportPaddingFixtureContract.RequireCapturedInsets(visual.SemanticInterchange, sourcePadding.Value);
         }
-        if (family == "native") Assert.Equal((double?)VisualTheme.Report().Typography.TitleSize,
+        if (family == "native") Assert.Equal((double?)VisualTheme.Graphite().Typography.TitleSize,
             visual.SemanticInterchange.Presentation!.Theme!.TitleSize);
         Assert.DoesNotContain("labelRuns", json, StringComparison.Ordinal);
     }

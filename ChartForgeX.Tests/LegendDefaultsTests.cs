@@ -30,7 +30,7 @@ public sealed class LegendDefaultsTests {
     [InlineData(70)]
     [InlineData(90)]
     public void GaugeLegendUsesTheDrawnValueColor(double value) {
-        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(480, 340).WithLegend(true).AddGauge("Score", value);
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(480, 340).WithLegend(true).AddGauge("Score", value);
         var svg = XDocument.Parse(chart.ToSvg());
         var arc = Assert.Single(svg.Descendants(), e => (string?)e.Attribute("data-cfx-role") == "gauge-value");
         var item = Assert.Single(svg.Descendants(), e => (string?)e.Attribute("data-cfx-role") == "legend-entry");

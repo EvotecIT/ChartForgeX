@@ -10,7 +10,7 @@ namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
     private static void TextStyleOverridesRenderAcrossRoles() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Report())
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(520, 340)
             .WithTitle("styled audience lift")
             .WithSubtitle("Color, cursive, italic, and underline controls")
@@ -45,34 +45,34 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-role=\"data-label\"", StringComparison.Ordinal) && svg.Contains("fill=\"#B45309\"", StringComparison.Ordinal), "SVG data labels should honor role-specific text colors.");
         Assert(!svg.Contains("> font-style=", StringComparison.Ordinal) && !svg.Contains("> text-decoration=", StringComparison.Ordinal) && !svg.Contains("> baseline-shift=", StringComparison.Ordinal), "Streamed SVG typography must serialize as attributes rather than visible text.");
         Assert(chart.ToPng().Length > 64, "Styled text should render PNG output.");
-        var regularTitle = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(360, 220).WithTitle("Raster Italic Title").AddLine("Values", Points(1, 3, 2)).ToPng();
-        var italicTitle = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(360, 220).WithTitle("Raster Italic Title").ConfigureTitleStyle(style => style.WithItalic()).AddLine("Values", Points(1, 3, 2)).ToPng();
+        var regularTitle = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(360, 220).WithTitle("Raster Italic Title").AddLine("Values", Points(1, 3, 2)).ToPng();
+        var italicTitle = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(360, 220).WithTitle("Raster Italic Title").ConfigureTitleStyle(style => style.WithItalic()).AddLine("Values", Points(1, 3, 2)).ToPng();
         Assert(!regularTitle.SequenceEqual(italicTitle), "PNG chart titles should render italic pixels instead of silently using regular text.");
-        var normalWeightTitle = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(360, 220).WithTitle("Raster Weight Title").ConfigureTitleStyle(style => style.WithWeight("normal")).AddLine("Values", Points(1, 3, 2)).ToPng();
-        var boldWeightTitle = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(360, 220).WithTitle("Raster Weight Title").ConfigureTitleStyle(style => style.WithWeight("bold")).AddLine("Values", Points(1, 3, 2)).ToPng();
+        var normalWeightTitle = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(360, 220).WithTitle("Raster Weight Title").ConfigureTitleStyle(style => style.WithWeight("normal")).AddLine("Values", Points(1, 3, 2)).ToPng();
+        var boldWeightTitle = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(360, 220).WithTitle("Raster Weight Title").ConfigureTitleStyle(style => style.WithWeight("bold")).AddLine("Values", Points(1, 3, 2)).ToPng();
         Assert(!normalWeightTitle.SequenceEqual(boldWeightTitle), "PNG text styles should honor explicit normal and bold font weights.");
-        var serifTitle = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(360, 220).WithTitle("MMMM Raster Family iii").ConfigureTitleStyle(style => style.WithFontFamily("serif")).AddLine("Values", Points(1, 3, 2)).ToPng();
-        var monospaceTitle = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(360, 220).WithTitle("MMMM Raster Family iii").ConfigureTitleStyle(style => style.WithFontFamily("monospace")).AddLine("Values", Points(1, 3, 2)).ToPng();
+        var serifTitle = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(360, 220).WithTitle("MMMM Raster Family iii").ConfigureTitleStyle(style => style.WithFontFamily("serif")).AddLine("Values", Points(1, 3, 2)).ToPng();
+        var monospaceTitle = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(360, 220).WithTitle("MMMM Raster Family iii").ConfigureTitleStyle(style => style.WithFontFamily("monospace")).AddLine("Values", Points(1, 3, 2)).ToPng();
         var serifFont = ChartForgeX.Raster.TrueTypeFont.TryLoadForFamily("serif", out _);
         var monospaceFont = ChartForgeX.Raster.TrueTypeFont.TryLoadForFamily("monospace", out _);
         if (serifFont != null && monospaceFont != null && !string.Equals(serifFont.DisplayName, monospaceFont.DisplayName, StringComparison.OrdinalIgnoreCase)) {
             Assert(!serifTitle.SequenceEqual(monospaceTitle), "PNG text styles should honor role-specific font families when distinct platform fonts are available.");
         }
-        var regularVerticalTitle = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(360, 240).WithYAxis("Engagement").AddLine("Values", Points(1, 3, 2)).ToPng();
-        var decoratedVerticalTitle = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(360, 240).WithYAxis("Engagement").ConfigureAxisTitleStyle(style => style.WithUnderline(TextDecorationStyle.Wavy).WithStrikethrough(TextDecorationStyle.Double).WithSuperscript().WithTextCase(TextCaseTransform.Uppercase)).AddLine("Values", Points(1, 3, 2)).ToPng();
+        var regularVerticalTitle = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(360, 240).WithYAxis("Engagement").AddLine("Values", Points(1, 3, 2)).ToPng();
+        var decoratedVerticalTitle = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(360, 240).WithYAxis("Engagement").ConfigureAxisTitleStyle(style => style.WithUnderline(TextDecorationStyle.Wavy).WithStrikethrough(TextDecorationStyle.Double).WithSuperscript().WithTextCase(TextCaseTransform.Uppercase)).AddLine("Values", Points(1, 3, 2)).ToPng();
         Assert(!regularVerticalTitle.SequenceEqual(decoratedVerticalTitle), "PNG rotated axis titles should preserve casing, baseline shifts, underline variants, and strikethrough during rotation.");
-        var bulletSvg = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(560, 260).WithDataLabels().ConfigureDataLabelStyle(style => style.WithFontSize(16).WithTextCase(TextCaseTransform.Uppercase).WithUnderline(TextDecorationStyle.Dashed).WithStrikethrough(TextDecorationStyle.Dashed).WithSubscript()).AddBullet("control posture", 82, 90).ToSvg();
+        var bulletSvg = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(560, 260).WithDataLabels().ConfigureDataLabelStyle(style => style.WithFontSize(16).WithTextCase(TextCaseTransform.Uppercase).WithUnderline(TextDecorationStyle.Dashed).WithStrikethrough(TextDecorationStyle.Dashed).WithSubscript()).AddBullet("control posture", 82, 90).ToSvg();
         Assert(bulletSvg.Contains("CONTROL POSTURE", StringComparison.Ordinal), "Specialized SVG chart paths should apply casing before fitting.");
         Assert(bulletSvg.Contains("font-size=\"10.4\"", StringComparison.Ordinal), "Specialized SVG chart paths should apply script scaling exactly once.");
         Assert(System.Xml.Linq.XDocument.Parse(bulletSvg).Descendants().Any(element => element.Attribute("stroke-dasharray") != null
             && (string?)element.Attribute("data-cfx-role") == "text-decoration"), "Specialized SVG chart paths should preserve native dashed decoration geometry.");
-        AssertThrows<ArgumentNullException>(() => Chart.Create().WithTheme(VisualTheme.Report()).ConfigureTitleStyle(null!), "Text style callbacks should reject null callbacks.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(VisualTheme.Report()).ConfigureTextStyle((ChartTextRole)999, _ => { }), "Text styles should reject unknown roles.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(VisualTheme.Report()).ConfigureTitleStyle(style => style.WithFontSize(0)), "Text styles should reject non-positive font sizes.");
+        AssertThrows<ArgumentNullException>(() => Chart.Create().WithTheme(VisualTheme.Graphite()).ConfigureTitleStyle(null!), "Text style callbacks should reject null callbacks.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(VisualTheme.Graphite()).ConfigureTextStyle((ChartTextRole)999, _ => { }), "Text styles should reject unknown roles.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(VisualTheme.Graphite()).ConfigureTitleStyle(style => style.WithFontSize(0)), "Text styles should reject non-positive font sizes.");
     }
 
     private static void DonutAndRadialCenterLabelsAreOptional() {
-        var donut = Chart.Create().WithTheme(VisualTheme.Report())
+        var donut = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(420, 280)
             .WithDonutCenterLabel(false)
             .WithXLabels("Male", "Female")
@@ -83,7 +83,7 @@ internal static partial class SmokeTests {
         Assert(!donutSvg.Contains("data-cfx-role=\"donut-title\"", StringComparison.Ordinal), "Donut center titles should be optional.");
         Assert(donut.ToPng().Length > 64, "Donut center label options should render PNG output.");
 
-        var customDonut = Chart.Create().WithTheme(VisualTheme.Report())
+        var customDonut = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(420, 280)
             .WithDonutCenterText("60.5%", "Male")
             .WithDonutInnerRadiusRatio(0.68)
@@ -95,9 +95,9 @@ internal static partial class SmokeTests {
         Assert(customDonutSvg.Contains(">60.5%</text>", StringComparison.Ordinal), "Donut charts should support custom primary center text.");
         Assert(customDonutSvg.Contains(">Male</text>", StringComparison.Ordinal), "Donut charts should support custom secondary center text.");
         Assert(customDonut.ToPng().Length > 64, "Custom donut center text should render PNG output.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(VisualTheme.Report()).WithDonutInnerRadiusRatio(0.2), "Donut inner radius ratio should reject tiny holes.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(VisualTheme.Graphite()).WithDonutInnerRadiusRatio(0.2), "Donut inner radius ratio should reject tiny holes.");
 
-        var regularCenter = Chart.Create().WithTheme(VisualTheme.Report())
+        var regularCenter = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(420, 280)
             .WithPngOutputScale(2)
             .WithLegend(false)
@@ -105,7 +105,7 @@ internal static partial class SmokeTests {
             .ConfigureDataLabelStyle(style => style.WithColor("#ff00ff").WithFontSize(32))
             .WithXLabels("Male", "Female")
             .AddDonut("Audience", Points(60.5, 39.5));
-        var scriptedCenter = Chart.Create().WithTheme(VisualTheme.Report())
+        var scriptedCenter = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(420, 280)
             .WithPngOutputScale(2)
             .WithLegend(false)
@@ -120,7 +120,7 @@ internal static partial class SmokeTests {
         Assert(!regularCenterBounds.IsEmpty && !scriptedCenterBounds.IsEmpty, "PNG center-label script proof should find both configured center labels.");
         Assert(scriptedCenterBounds.Height > regularCenterBounds.Height * 0.50 && scriptedCenterBounds.Height < regularCenterBounds.Height * 0.82, "PNG center labels should apply script scaling exactly once instead of shrinking to roughly forty-two percent. Regular height: " + regularCenterBounds.Height + "; scripted height: " + scriptedCenterBounds.Height + ".");
 
-        var calloutDonut = Chart.Create().WithTheme(VisualTheme.Report())
+        var calloutDonut = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(520, 320)
             .WithDataLabels()
             .WithDataLabelPlacement(ChartDataLabelPlacement.Outside)
@@ -142,7 +142,7 @@ internal static partial class SmokeTests {
         Assert(connectors.All(node => node.Commands.Any(command => command.Kind == ChartPathCommandKind.CubicTo)), "Data-label connectors should support curved leaders.");
         Assert(calloutDonutSvg.Contains(">Passed 75%</text>", StringComparison.Ordinal), "Pie and donut labels should support category plus percent callouts.");
         Assert(calloutDonut.ToPng().Length > 64, "Pie slice label content should render PNG output.");
-        var autoConnectorDonut = Chart.Create().WithTheme(VisualTheme.Report())
+        var autoConnectorDonut = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(520, 320)
             .WithPalette(ChartPalettes.FromHex("#E11D48", "#14B8A6"))
             .WithDataLabels()
@@ -158,11 +158,11 @@ internal static partial class SmokeTests {
             && automaticConnectors.Any(node => node.Stroke!.Value.R == 139 && node.Stroke.Value.G == 92 && node.Stroke.Value.B == 246), "Pie and donut slices and callout connectors should honor point-level colors.");
         Assert(automatic.Scene.Nodes.OfType<VisualSceneRectangle>().Any(node => node.Role == "legend-swatch" && node.Fill!.Value.ToHex() == "#8B5CF6"), "Pie and donut legends should use point-level slice colors.");
         Assert(autoConnectorDonut.ToPng().Length > 64, "Slice-colored pie and donut callout connectors should render PNG output.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(VisualTheme.Report()).WithPieSliceLabelContent((ChartPieSliceLabelContent)999), "Pie slice label content should reject unknown values.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(VisualTheme.Report()).WithDataLabelConnectorStyle((ChartDataLabelConnectorStyle)999), "Data-label connector style should reject unknown values.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(VisualTheme.Report()).WithDataLabelConnectorOpacity(1.5), "Data-label connector opacity should reject values above one.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(VisualTheme.Report()).WithDataLabelConnectorStrokeWidth(0), "Data-label connector stroke width should reject non-positive values.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(VisualTheme.Report()).WithPieOutsideLabelDistance(0.5), "Outside pie and donut label distance should reject tiny ratios.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(VisualTheme.Graphite()).WithPieSliceLabelContent((ChartPieSliceLabelContent)999), "Pie slice label content should reject unknown values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(VisualTheme.Graphite()).WithDataLabelConnectorStyle((ChartDataLabelConnectorStyle)999), "Data-label connector style should reject unknown values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(VisualTheme.Graphite()).WithDataLabelConnectorOpacity(1.5), "Data-label connector opacity should reject values above one.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(VisualTheme.Graphite()).WithDataLabelConnectorStrokeWidth(0), "Data-label connector stroke width should reject non-positive values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(VisualTheme.Graphite()).WithPieOutsideLabelDistance(0.5), "Outside pie and donut label distance should reject tiny ratios.");
 
         calloutDonut.WithPieSliceLabelFormatter(slice => slice.Label + ": " + slice.FormattedPercent);
         Assert(calloutDonut.ToSvg().Contains(">Passed: 75%</text>", StringComparison.Ordinal), "Pie and donut labels should support custom slice label formatters.");
@@ -181,7 +181,7 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => calloutDonut.Series[0].WithPointSliceOffset(99, 0.1), "Slice offsets should reject missing point indexes.");
         AssertThrows<ArgumentOutOfRangeException>(() => calloutDonut.Series[0].WithPointSliceOffset(1, 0.5), "Slice offsets should reject large ratios.");
 
-        var longCalloutDonut = Chart.Create().WithTheme(VisualTheme.Report())
+        var longCalloutDonut = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(380, 260)
             .WithDataLabels()
             .WithDataLabelPlacement(ChartDataLabelPlacement.Outside)
@@ -194,7 +194,7 @@ internal static partial class SmokeTests {
         Assert(!longCalloutSvg.Contains(">Extremely long returning audience segment with several words 64%</text>", StringComparison.Ordinal), "Outside pie and donut labels should not render untrimmed long callouts.");
         Assert(longCalloutDonut.ToPng().Length > 64, "Trimmed outside pie and donut labels should render PNG output.");
 
-        var radial = Chart.Create().WithTheme(VisualTheme.Report())
+        var radial = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(420, 280)
             .WithProgressRingCenterLabel(false)
             .WithRadialProgressRadiusScale(1.12)
@@ -202,7 +202,7 @@ internal static partial class SmokeTests {
             .AddProgressRing("Scores", Points(75, 60, 39));
         var radialSvg = radial.ToSvg();
         Assert(radialSvg.Contains("data-cfx-role=\"progress-ring-ring\"", StringComparison.Ordinal), "Radial-bar center labels should be optional without hiding rings.");
-        var radialDefault = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(420, 280).WithProgressRingCenterLabel(false).AddProgressRing("Scores", Points(75, 60, 39));
+        var radialDefault = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(420, 280).WithProgressRingCenterLabel(false).AddProgressRing("Scores", Points(75, 60, 39));
         var radialPrepared = PrepareForTypography(radial); var radialDefaultPrepared = PrepareForTypography(radialDefault);
         Assert(radialPrepared.Regions.First(region => region.Role == "progress-ring-ring").Bounds.Width > radialDefaultPrepared.Regions.First(region => region.Role == "progress-ring-ring").Bounds.Width,
             "Radial-bar radius scale should change the ring extent.");
@@ -212,10 +212,10 @@ internal static partial class SmokeTests {
             "Radial-bar stroke scale should change native stroke width.");
         Assert(!radialPrepared.Scene.Nodes.OfType<VisualSceneText>().Any(node => node.Role == "progress-ring-value" || node.Role == "progress-ring-title"), "Radial-bar center labels should be optional.");
         Assert(radial.ToPng().Length > 64, "Radial-bar center label options should render PNG output.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(VisualTheme.Report()).WithRadialProgressRadiusScale(0.5), "Radial-bar radius scale should reject tiny values.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(VisualTheme.Report()).WithRadialProgressStrokeScale(2.0), "Radial-bar stroke scale should reject huge values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(VisualTheme.Graphite()).WithRadialProgressRadiusScale(0.5), "Radial-bar radius scale should reject tiny values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(VisualTheme.Graphite()).WithRadialProgressStrokeScale(2.0), "Radial-bar stroke scale should reject huge values.");
 
-        var circle = Chart.Create().WithTheme(VisualTheme.Report())
+        var circle = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(420, 280)
             .WithCircleStatusLabel(false)
             .WithCircleRadiusScale(1.18)
@@ -228,7 +228,7 @@ internal static partial class SmokeTests {
         Assert(!circleSvg.Contains("data-cfx-role=\"circle-status-label\"", StringComparison.Ordinal), "Circle status text should be optional.");
         Assert(!circleSvg.Contains("data-cfx-role=\"circle-status-marker\"", StringComparison.Ordinal), "Circle status markers should be optional.");
         Assert(circle.ToPng().Length > 64, "Circle status label options should render PNG output.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(VisualTheme.Report()).WithCircleRadiusScale(0.5), "Circle radius scale should reject tiny values.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(VisualTheme.Report()).WithCircleStrokeScale(2.0), "Circle stroke scale should reject huge values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(VisualTheme.Graphite()).WithCircleRadiusScale(0.5), "Circle radius scale should reject tiny values.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(VisualTheme.Graphite()).WithCircleStrokeScale(2.0), "Circle stroke scale should reject huge values.");
     }
 }

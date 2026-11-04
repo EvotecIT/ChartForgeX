@@ -64,7 +64,7 @@ public sealed class GalleryPngSurfaceTests {
             Assert.Contains("var(--cfx-surface-card,", svg);
             Assert.Contains("var(--cfx-surface-line,", svg);
         } else if (surface == "shadow") {
-            chart.WithTheme(VisualTheme.Report().Configure(builder => { builder.CardShadowOpacity = .24; }), VisualThemeMode.Dark).WithPngOutputScale(scale);
+            chart.WithTheme(VisualTheme.Graphite().Configure(builder => { builder.CardShadowOpacity = .24; }), VisualThemeMode.Dark).WithPngOutputScale(scale);
             svg = chart.ToSvg(); png = chart.ToPng();
             Assert.Contains("frame-card-shadow", svg);
         } else {

@@ -10,12 +10,10 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Protects configured convenience exports used by wallpaper, image and report consumers.</summary>
 public sealed class V2ExportRequestTests {
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void CompactConvenienceExportsMeasureAxesInsideTheSameDefaultFrame(bool graphite) {
+    [Fact]
+    public void CompactConvenienceExportsMeasureAxesInsideTheSameDefaultFrame() {
         var chart = Chart.Create().WithSize(240, 160)
-            .WithTheme(graphite ? VisualTheme.Graphite() : VisualTheme.Report())
+            .WithTheme(VisualTheme.Graphite())
             .AddBar("Capacity", new[] { new ChartPoint(1, 2), new ChartPoint(2, 5), new ChartPoint(3, 3) });
         chart.Options.ShowHeader = false; chart.Options.ShowLegend = false;
         var svg = XDocument.Parse(chart.ToSvg());

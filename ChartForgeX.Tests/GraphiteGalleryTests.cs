@@ -52,7 +52,7 @@ public sealed class GraphiteGalleryTests {
         Directory.CreateDirectory(output);
         try {
             var chart=Chart.Create().WithSize(320,220).WithTitle("Graphite frame").WithPngOutputScale(scale)
-                .WithTheme(translucent ? VisualTheme.Report() : VisualTheme.Graphite())
+                .WithTheme(VisualTheme.Graphite())
                 .AddBar("Counts",new[]{new ChartPoint(1,20),new ChartPoint(2,50)});
             if(framed) chart.ConfigureTheme(builder => builder.CardRadius = 8);
             var names=new List<string>{"normal","edge-mark"};

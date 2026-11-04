@@ -8,7 +8,7 @@ namespace ChartForgeX.Tests;
 public sealed class NeutralHeatmapScaleTests {
     [Fact]
     public void SequentialHeatmap_CellsAndScaleCarryLevelsNotStatus() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(640, 320).AddHeatmapRow("Logons", new[] { 2d, 40d, 90d, 400d });
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(640, 320).AddHeatmapRow("Logons", new[] { 2d, 40d, 90d, 400d });
         var svg = XDocument.Parse(chart.ToSvg());
         var cells = ByRole(svg, "heatmap-cell");
         Assert.All(cells, cell => Assert.Null(cell.Attribute("data-cfx-status")));
@@ -22,7 +22,7 @@ public sealed class NeutralHeatmapScaleTests {
 
     [Fact]
     public void SemanticHeatmap_KeepsStatusForStatusData() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(640, 320).WithHeatmapScale(ChartHeatmapScale.Semantic).AddHeatmapRow("Pass rate", new[] { 20d, 70d, 95d });
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(640, 320).WithHeatmapScale(ChartHeatmapScale.Semantic).AddHeatmapRow("Pass rate", new[] { 20d, 70d, 95d });
         var cells = ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell");
         Assert.Equal(new[] { "negative", "warning", "positive" }, cells.Select(cell => (string)cell.Attribute("data-cfx-status")!).ToArray());
         Assert.All(cells, cell => Assert.Null(cell.Attribute("data-cfx-level")));
@@ -30,7 +30,7 @@ public sealed class NeutralHeatmapScaleTests {
 
     [Fact]
     public void RelativeScale_RejectsSemanticStatusColours() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithHeatmapScale(ChartHeatmapScale.Semantic).AddHeatmapRow("Failures", new[] { 3d, 9d });
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithHeatmapScale(ChartHeatmapScale.Semantic).AddHeatmapRow("Failures", new[] { 3d, 9d });
         chart.Options.HeatmapRelativeScale = true;
         Assert.Throws<InvalidOperationException>(() => chart.ToSvg());
         Assert.Throws<InvalidOperationException>(() => chart.ToPng());
@@ -38,7 +38,7 @@ public sealed class NeutralHeatmapScaleTests {
 
     [Fact]
     public void HexbinHeatmap_CellsCarryLevelsNotStatus() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(640, 320).AddHexbinHeatmapRow("Density", new[] { 1d, 50d, 100d });
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(640, 320).AddHexbinHeatmapRow("Density", new[] { 1d, 50d, 100d });
         var cells = ByRole(XDocument.Parse(chart.ToSvg()), "hexbin-cell");
         Assert.All(cells, cell => Assert.Null(cell.Attribute("data-cfx-status")));
         Assert.Equal("4", (string?)cells[cells.Length - 1].Attribute("data-cfx-level"));
@@ -47,7 +47,7 @@ public sealed class NeutralHeatmapScaleTests {
     [Fact]
     public void CalendarHeatmap_UsesNeutralRampAndNoStatusForValues() {
         var start = new DateTime(2026, 1, 5);
-        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(720, 260).AddCalendarHeatmap("Commits", Enumerable.Range(0, 20).Select(day => new ChartCalendarHeatmapItem(start.AddDays(day), day % 5)));
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(720, 260).AddCalendarHeatmap("Commits", Enumerable.Range(0, 20).Select(day => new ChartCalendarHeatmapItem(start.AddDays(day), day % 5)));
         var svg = XDocument.Parse(chart.ToSvg());
         var valued = ByRole(svg, "calendar-cell").Where(cell => (string?)cell.Attribute("data-cfx-empty") == "false").ToArray();
         var empty = ByRole(svg, "calendar-cell").Where(cell => (string?)cell.Attribute("data-cfx-empty") == "true").ToArray();
@@ -61,11 +61,11 @@ public sealed class NeutralHeatmapScaleTests {
 
     [Fact]
     public void LocalizedLevelLabel_IsEmittedInNativeHeatmapAndCalendarOutput() {
-        Chart Create() => Chart.Create().WithTheme(VisualTheme.Report()).WithSize(640, 320).AddHeatmapRow("Logons", new[] { 2d, 40d, 90d, 400d });
+        Chart Create() => Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(640, 320).AddHeatmapRow("Logons", new[] { 2d, 40d, 90d, 400d });
         Assert.Equal("Level", (string?)ByRole(XDocument.Parse(Create().ToSvg()), "heatmap").Single().Attribute("data-cfx-label-level"));
         var localized = Create().ConfigureLabels(labels => labels.Level = "Poziom");
         Assert.Equal("Poziom", (string?)ByRole(XDocument.Parse(localized.ToSvg()), "heatmap").Single().Attribute("data-cfx-label-level"));
-        var calendar = Chart.Create().WithTheme(VisualTheme.Report()).ConfigureLabels(labels => labels.Level = "Poziom").AddCalendarHeatmap("Days", new[] { new ChartCalendarHeatmapItem(new DateTime(2026, 9, 1), 3) });
+        var calendar = Chart.Create().WithTheme(VisualTheme.Graphite()).ConfigureLabels(labels => labels.Level = "Poziom").AddCalendarHeatmap("Days", new[] { new ChartCalendarHeatmapItem(new DateTime(2026, 9, 1), 3) });
         Assert.Equal("Poziom", (string?)ByRole(XDocument.Parse(calendar.ToSvg()), "calendar-heatmap").Single().Attribute("data-cfx-label-level"));
     }
 

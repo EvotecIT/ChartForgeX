@@ -94,7 +94,7 @@ public sealed class MetricCardCompactLayoutTests {
     [Fact]
     public void CompactMetricFitsAnExplicitlyLargerLabelAlongsideItsValue() {
         var card = Compact(75).WithMetric("Memory", 68, unit: "%")
-            .WithTheme(VisualTheme.Report().WithTypography(new VisualTypography(family: "Arial", subtitleSize: 28)));
+            .WithTheme(VisualTheme.Graphite().WithTypography(new VisualTypography(family: "Arial", subtitleSize: 28)));
         var text = Text(card);
         var label = Bounds(text["metric-label"]);
         var value = Bounds(text["metric-value"]);

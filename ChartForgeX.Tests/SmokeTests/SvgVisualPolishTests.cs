@@ -13,7 +13,7 @@ namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
     private static void SvgSurfaceAndGuideStrokesStayPremiumAtAnyScale() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Report())
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(420, 260)
             .WithPlotBackground()
             .WithTitle("Premium scale")
@@ -39,18 +39,18 @@ internal static partial class SmokeTests {
             && element.Attribute("font-size") != null && element.Attribute("font-weight") != null),
             "Native text should carry its resolved typography independently of the embedding page.");
 
-        var html = Chart.Create().WithTheme(VisualTheme.Report())
+        var html = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(420, 260)
             .WithTitle("Premium HTML")
             .AddSmoothLine("Values", Points(10, 30, 20), ChartColor.FromRgb(37, 99, 235))
             .ToHtmlPage();
-        AssertFlatHtmlBackground(html, VisualTheme.Report().Resolve(VisualThemeMode.Light).ElevatedSurface, "Standalone chart pages");
+        AssertFlatHtmlBackground(html, VisualTheme.Graphite().Resolve(VisualThemeMode.Light).ElevatedSurface, "Standalone chart pages");
         Assert(html.Contains("min-height:100svh", StringComparison.Ordinal), "Standalone HTML pages should use modern viewport sizing for browser previews.");
         Assert(html.Contains("@media print", StringComparison.Ordinal), "Standalone HTML pages should include print-friendly chart framing.");
     }
 
     private static void StaticHtmlShellsSharePremiumPreviewPolish() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Report())
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(360, 220)
             .WithTitle("Shell chart")
             .AddSmoothLine("Values", Points(12, 22, 18), ChartColor.FromRgb(37, 99, 235));
@@ -58,7 +58,7 @@ internal static partial class SmokeTests {
 
         var grid = ChartGrid.Create()
             .WithTitle("Shell grid")
-            .WithTheme(VisualTheme.Report())
+            .WithTheme(VisualTheme.Graphite())
             .WithColumns(2)
             .Add(chart)
             .Add(Chart.Create().WithSize(360, 220).WithTitle("Bars").AddBar("Values", Points(4, 7, 5)));
@@ -66,7 +66,7 @@ internal static partial class SmokeTests {
 
         var table = ChartTable.Create()
             .WithTitle("Shell visual block")
-            .WithTheme(VisualTheme.Report())
+            .WithTheme(VisualTheme.Graphite())
             .AddColumn("Name")
             .AddColumn("Value")
             .AddRow("Coverage", "98%");
@@ -74,7 +74,7 @@ internal static partial class SmokeTests {
 
         var visualGrid = VisualGrid.Create()
             .WithTitle("Shell visual grid")
-            .WithTheme(VisualTheme.Report(), VisualThemeMode.Dark)
+            .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)
             .WithColumns(2)
             .Add(chart)
             .Add(table);
@@ -84,7 +84,7 @@ internal static partial class SmokeTests {
     private static void SpecializedChartLayoutsKeepContentInsidePlotFrame() {
         var bulletChart = Chart.Create()
             .WithSize(920, 560)
-            .WithTheme(VisualTheme.Report(), VisualThemeMode.Dark)
+            .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)
             .AddBullet("DMARC enforcement", 88, 95, 0, 100, new[] { 60d, 80d }, ChartColor.FromRgb(52, 211, 153))
             .AddBullet("DNSSEC coverage", 74, 90, 0, 100, new[] { 55d, 78d }, ChartColor.FromRgb(96, 165, 250));
         var bulletPrepared = PreparedFamily(bulletChart);
@@ -106,7 +106,7 @@ internal static partial class SmokeTests {
         var treeChart = Chart.Create()
             .WithDataLabels()
             .WithSize(1040, 600)
-            .WithTheme(VisualTheme.Report())
+            .WithTheme(VisualTheme.Graphite())
             .AddTree("Control hierarchy", new[] { new ChartNode("Security posture", "Security posture"), new ChartNode("Mail authentication", "Mail authentication"), new ChartNode("Certificate lifecycle", "Certificate lifecycle"), new ChartNode("DNS hygiene", "DNS hygiene"), new ChartNode("SPF alignment", "SPF alignment"), new ChartNode("DKIM rotation", "DKIM rotation"), new ChartNode("Expiry monitoring", "Expiry monitoring"), new ChartNode("SAN inventory", "SAN inventory"), new ChartNode("DNSSEC rollout", "DNSSEC rollout"), new ChartNode("Stale record cleanup", "Stale record cleanup") }, new[] {
                 new ChartTreeLink("Security posture", "Mail authentication", 3),
                 new ChartTreeLink("Security posture", "Certificate lifecycle", 2),
@@ -163,7 +163,7 @@ internal static partial class SmokeTests {
         var metric = MetricCard.Create()
             .WithMetric("Monthly Recurring Revenue", "$120,400")
             .WithStatus(VisualStatus.Positive)
-            .WithTheme(VisualTheme.Report().Configure(builder => { builder.CardRadius = 26; builder.PlotRadius = builder.BarRadius = 12; }))
+            .WithTheme(VisualTheme.Graphite().Configure(builder => { builder.CardRadius = 26; builder.PlotRadius = builder.BarRadius = 12; }))
             .WithSize(420, 190);
         var svg = metric.ToSvg("rounded-status-bar");
 
@@ -190,7 +190,7 @@ internal static partial class SmokeTests {
             .WithMetric("Monthly Recurring Revenue", "$120,400")
             .WithStatus(VisualStatus.Positive)
             .WithTransparentBackground()
-            .WithTheme(VisualTheme.Report().Configure(builder => { builder.CardRadius = 26; builder.PlotRadius = builder.BarRadius = 12; }))
+            .WithTheme(VisualTheme.Graphite().Configure(builder => { builder.CardRadius = 26; builder.PlotRadius = builder.BarRadius = 12; }))
             .WithSize(420, 190);
         Assert(!transparentMetric.ToSvg("transparent-rounded-status-bar").Contains("data-cfx-role=\"visual-background\"", StringComparison.Ordinal), "Transparent visual blocks should not paint a square SVG page background behind rounded card corners.");
         var transparentPng = ReadPngRgba(transparentMetric.ToPng(), out var transparentPngWidth, out var transparentPngHeight);
@@ -200,7 +200,7 @@ internal static partial class SmokeTests {
             .WithMetric("Monthly Recurring Revenue", "$120,400")
             .WithStatus(VisualStatus.Positive)
             .WithCard(false)
-            .WithTheme(VisualTheme.Report().Configure(builder => { builder.CardRadius = 26; builder.PlotRadius = builder.BarRadius = 12; }))
+            .WithTheme(VisualTheme.Graphite().Configure(builder => { builder.CardRadius = 26; builder.PlotRadius = builder.BarRadius = 12; }))
             .WithSize(420, 190);
         var noCardSvg = noCard.ToSvg("no-card-status-bar");
         var barStart = noCardSvg.IndexOf("data-cfx-role=\"metric-status-bar\"", StringComparison.Ordinal);
@@ -220,7 +220,7 @@ internal static partial class SmokeTests {
         Assert(!overlayChart.ToSvg().Contains("data-cfx-role=\"plot-inner-highlight\"", StringComparison.Ordinal), "Transparent plot backgrounds should not receive a visible SVG inner highlight.");
         Assert(overlayChart.ToPng().Length > 64, "Transparent plot backgrounds should still render PNG output.");
 
-        var transparentCardTheme = VisualTheme.Report().Configure(builder => { builder.Light.Background = builder.Dark.Background = ChartColor.Transparent; builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.Transparent; builder.Light.Surface = builder.Dark.Surface = ChartColor.Transparent; builder.Light.Border = builder.Dark.Border = ChartColor.Transparent; builder.Light.PlotBorder = builder.Dark.PlotBorder = ChartColor.Transparent; });
+        var transparentCardTheme = VisualTheme.Graphite().Configure(builder => { builder.Light.Background = builder.Dark.Background = ChartColor.Transparent; builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.Transparent; builder.Light.Surface = builder.Dark.Surface = ChartColor.Transparent; builder.Light.Border = builder.Dark.Border = ChartColor.Transparent; builder.Light.PlotBorder = builder.Dark.PlotBorder = ChartColor.Transparent; });
         var transparentCardChart = Chart.Create()
             .WithSize(360, 220)
             .WithTheme(transparentCardTheme)
@@ -245,7 +245,7 @@ internal static partial class SmokeTests {
         var transparentGridPixels = ReadPngRgba(transparentGrid.ToPng(), out var transparentGridWidth, out _);
         Assert(AlphaAt(transparentGridPixels, transparentGridWidth, 1, 1) == 0, "Transparent visual-grid sections should preserve transparent corners for overlay usage.");
 
-        var translucentTheme = VisualTheme.Report().Configure(builder => { builder.CardShadowOpacity = 0; });
+        var translucentTheme = VisualTheme.Graphite().Configure(builder => { builder.CardShadowOpacity = 0; });
         translucentTheme = translucentTheme.Configure(builder => { builder.Light.Background = builder.Dark.Background = ChartColor.FromRgba(15, 23, 42, 96); });
         translucentTheme = translucentTheme.Configure(builder => { builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.Transparent; });
         var chartGrid = ChartGrid.Create()
@@ -260,7 +260,7 @@ internal static partial class SmokeTests {
             .WithTheme(translucentTheme)
             .WithColumns(1)
             .WithPadding(32)
-            .Add(ChartList.Create().WithTheme(VisualTheme.Report()).WithSize(160, 90).AddItem("Ready"));
+            .Add(ChartList.Create().WithTheme(VisualTheme.Graphite()).WithSize(160, 90).AddItem("Ready"));
         var visualGridPixels = ReadPngRgba(visualGrid.ToPng(), out var visualGridWidth, out _);
         Assert(AlphaAt(visualGridPixels, visualGridWidth, 16, 16) == 96, "PNG visual grids should not compound translucent background alpha when adding polish.");
     }
@@ -268,7 +268,7 @@ internal static partial class SmokeTests {
     private static void FunnelZeroStageAvoidsFakeDropoffGuide() {
         var chart = Chart.Create()
             .WithSize(920, 560)
-            .WithTheme(VisualTheme.Report())
+            .WithTheme(VisualTheme.Graphite())
             .WithXLabels("Opened", "Deferred", "Closed")
             .AddFunnel("Review flow", Points(100, 0, 18)).WithDataLabels();
         var svg = chart.ToSvg("zero-stage-funnel");

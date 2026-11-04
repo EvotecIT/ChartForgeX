@@ -19,7 +19,7 @@ public sealed class StandaloneHtmlSurfaceBrowserTests {
     public async Task ReportPagesPaintTheirResolvedSurfaceAtCompactAndWideWidths(string producer, bool dark) {
         Assert.True(Enabled);
         var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
-        var theme = VisualTheme.Report();
+        var theme = VisualTheme.Graphite();
         var colors = theme.Resolve(mode);
         Assert.Equal((byte)0, colors.Background.A);
         var html = Page(producer, theme, mode);

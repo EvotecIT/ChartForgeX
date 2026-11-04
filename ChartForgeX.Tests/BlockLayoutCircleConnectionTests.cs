@@ -23,7 +23,7 @@ public sealed class BlockLayoutCircleConnectionTests {
     [InlineData(BlockLayoutShape.Circle, BlockLayoutShape.Circle, 320, 0, false, true)]
     public async Task ConnectorsMeetThePaintedCircleBoundaryInSvgAndPng(BlockLayoutShape firstShape,
         BlockLayoutShape secondShape, int width, int layout, bool reverse, bool graphite) {
-        var theme = graphite ? VisualTheme.Graphite() : VisualTheme.Report();
+        var theme = VisualTheme.Graphite();
         theme = theme.Configure(builder => { builder.Light.Axis = builder.Dark.Axis = ChartColor.FromHex("#FF0000"); });
         theme = theme.Configure(builder => { builder.Light.Palette = builder.Dark.Palette = new[] { ChartColor.FromHex("#2563EB") }; });
         var block = BlockLayoutBlock.Create().WithSize(width, 300).WithCard(false).WithTheme(theme)

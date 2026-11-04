@@ -109,7 +109,7 @@ public sealed class V2MatrixTests {
         var chart = Chart.Create().WithStateCategories(state).WithMarkBackdrop(ChartMarkBackdrop.Background)
             .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always).AddHeatmapCategoryRow("Service", new ChartHeatmapCell("quiet", "Ready"));
         var context = Context(VisualThemeMode.Dark); var prepared = chart.Prepare(context);
-        var svg = prepared.ToSvg(); chart.Options.Theme = VisualTheme.Report();
+        var svg = prepared.ToSvg(); chart.Options.Theme = VisualTheme.Graphite();
         Assert.Equal(svg, prepared.ToSvg());
         var colors = context.Theme.Resolve(context.ThemeMode);
         var ink = ChartMarkText.OnStateMark(chart, colors, context.Frame, ChartStateMark.For(state, colors.Background));

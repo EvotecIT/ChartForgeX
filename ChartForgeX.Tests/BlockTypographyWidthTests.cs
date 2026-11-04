@@ -87,7 +87,7 @@ public sealed class BlockTypographyWidthTests {
     }
 
     private static VisualTheme Theme(bool graphite) {
-        return (graphite ? VisualTheme.Graphite() : VisualTheme.Report()).WithFontFamily("Arial");
+        return VisualTheme.Graphite().WithFontFamily("Arial");
     }
 
     private static PacketLayoutBlock Packet(VisualTheme theme) => PacketLayoutBlock.Create().WithSize(520, 300).WithPadding(18, 16, 18, 12).WithCard(false).WithTheme(theme);

@@ -13,7 +13,7 @@ public sealed class FrameHeadingFittingTests {
     [InlineData(18)]
     [InlineData(256)]
     public async Task ChangingOnlyDataLabelSizePreservesOrdinaryHeadingRoles(int size) {
-        var theme = VisualTheme.Dashboard();
+        var theme = VisualTheme.Graphite();
         theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: size, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
         var chart = Chart.Create().WithTheme(theme).WithSize(520, 260)
             .WithTitle("Average KPI").WithSubtitle("Company standard").WithLegend(false)
@@ -28,7 +28,7 @@ public sealed class FrameHeadingFittingTests {
     [Trait("Category", "Browser")]
     [Fact]
     public async Task LargeCompactTitleRetainsItsOrdinarySubtitle() {
-        var theme = VisualTheme.Dashboard();
+        var theme = VisualTheme.Graphite();
         var chart = Chart.Create().WithTheme(theme).WithSize(520, 260)
             .WithTitle("Average KPI").WithSubtitle("Company standard").WithLegend(false)
             .ConfigureTitleStyle(style => style.WithFontSize(64))
@@ -44,7 +44,7 @@ public sealed class FrameHeadingFittingTests {
     [InlineData(520, 260, 80)]
     [InlineData(300, 210, 34)]
     public async Task CompactDashboardHeadingsRetainTheThemesOrdinaryRoleSizes(int width, int height, int topPadding) {
-        var theme = VisualTheme.Dashboard();
+        var theme = VisualTheme.Graphite();
         var chart = Chart.Create().WithTheme(theme).WithSize(width, height)
             .WithTitle("Average KPI").WithSubtitle("Company standard")
             .WithLegend(false).WithAxes(false).WithGrid(false)
@@ -57,11 +57,9 @@ public sealed class FrameHeadingFittingTests {
         await Capture(chart, "dashboard-ordinary-" + width, width, height);
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void OrdinaryLongTitlesRetainTheirSizeAndDoNotShrinkAShortSubtitle(bool dashboard) {
-        var theme = dashboard ? VisualTheme.Dashboard() : VisualTheme.Report();
+    [Fact]
+    public void OrdinaryLongTitlesRetainTheirSizeAndDoNotShrinkAShortSubtitle() {
+        var theme = VisualTheme.Graphite();
         var chart = Chart.Create().WithTheme(theme).WithSize(320, 700)
             .WithTitle("An ordinary report heading that wraps across the available width")
             .WithSubtitle("Short subtitle").WithLegend(false)

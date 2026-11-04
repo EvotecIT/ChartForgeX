@@ -29,7 +29,7 @@ public sealed class TopologyRemainingCaptionMetricsTests : IDisposable {
         Assert.True(TextLayoutEngine.Measure(TextContent.FromRuns(new[] { new TextContentRun("H", emphasis) }), style).LineHeight
             > TextLayoutEngine.Measure(TextContent.FromRuns(new[] { new TextContentRun("H") }), style).LineHeight);
         var content = TextContent.FromRuns(new[] { new TextContentRun("H", tallFirst ? emphasis : TextInlineEmphasis.Normal), new TextContentRun("H", tallFirst ? TextInlineEmphasis.Normal : emphasis) });
-        var chart = MermaidRemainingCaptionRolesTests.Model().WithTheme(VisualTheme.Report().WithFontFamily(Family));
+        var chart = MermaidRemainingCaptionRolesTests.Model().WithTheme(VisualTheme.Graphite().WithFontFamily(Family));
         if (role == "group") { chart.Groups[0].LabelContent = content; chart.Groups[0].TextStyle = new TextStyleOverride { FontSize = 18 }; }
         else { chart.Edges[0].LabelContent = content; chart.Edges[0].TextStyle = new TextStyleOverride { FontSize = 18 }; }
         var prepared = chart.Prepare(); var svg = prepared.ToSvg(); var png = prepared.ToPng(); var json = prepared.ToInterchangeEnvelope().ToJson();

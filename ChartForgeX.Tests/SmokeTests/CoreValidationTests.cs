@@ -30,14 +30,14 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentNullException>(() => new ChartAxisLabel(1, null!), "Axis labels should reject null text.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartAxisLabel(double.NaN, "bad"), "Axis labels should reject non-finite values.");
         AssertThrows<ArgumentException>(() => Chart.Create().WithXLabels(new[] { default(ChartAxisLabel) }), "Explicit axis labels should reject default labels with null text.");
-        AssertThrows<ArgumentNullException>(() => VisualTheme.Report().Configure(builder => builder.Light.Palette = null!), "Themes should reject null palettes.");
-        AssertThrows<ArgumentException>(() => VisualTheme.Report().WithPalette(Array.Empty<ChartColor>()), "Themes should reject empty palettes.");
+        AssertThrows<ArgumentNullException>(() => VisualTheme.Graphite().Configure(builder => builder.Light.Palette = null!), "Themes should reject null palettes.");
+        AssertThrows<ArgumentException>(() => VisualTheme.Graphite().WithPalette(Array.Empty<ChartColor>()), "Themes should reject empty palettes.");
         AssertThrows<ArgumentException>(() => ChartColor.FromHex("#12"), "Hex colors should reject invalid lengths.");
         AssertThrows<ArgumentException>(() => ChartColor.FromHex("#ggg"), "Hex colors should reject invalid characters.");
         AssertThrows<ArgumentException>(() => ChartPalettes.FromHex(), "Hex palette helpers should reject empty palettes.");
         AssertThrows<ArgumentOutOfRangeException>(() => new VisualTypography(titleSize: 0), "Themes should reject non-positive font sizes.");
-        AssertThrows<ArgumentOutOfRangeException>(() => VisualTheme.Report().Configure(builder => builder.CardShadowOpacity = 2), "Themes should reject opacity values outside zero to one.");
-        AssertThrows<ArgumentException>(() => VisualTheme.Report().WithFontFamily(null!), "Themes should reject null font families.");
+        AssertThrows<ArgumentOutOfRangeException>(() => VisualTheme.Graphite().Configure(builder => builder.CardShadowOpacity = 2), "Themes should reject opacity values outside zero to one.");
+        AssertThrows<ArgumentException>(() => VisualTheme.Graphite().WithFontFamily(null!), "Themes should reject null font families.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddLine("Values", new[] { new ChartPoint(1, double.PositiveInfinity) }), "Series should reject non-finite point values.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartSeries(new ChartSeriesId("values"), "Values", (ChartSeriesKind)999, Points(1, 2, 3)), "Series should reject unknown series kinds.");
         AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().AddLine("Values", Points(1, 2, 3)).Series[0].StrokeWidth = 0, "Series stroke widths should reject non-positive values.");

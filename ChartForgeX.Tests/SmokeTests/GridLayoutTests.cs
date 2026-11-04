@@ -19,7 +19,7 @@ internal static partial class SmokeTests {
             .WithSize(300, 200)
             .AddBar("Values", Points(22, 31, 27));
         var grid = ChartGrid.Create()
-            .WithTheme(VisualTheme.Report())
+            .WithTheme(VisualTheme.Graphite())
             .WithColumns(3)
             .WithGap(10)
             .WithPadding(10)
@@ -88,7 +88,7 @@ internal static partial class SmokeTests {
             .ToPng();
         Assert(!regularRaster.SequenceEqual(italicRaster), "PNG grid headers should render italic pixels instead of silently using regular text.");
 
-        var themedFont = VisualTheme.Report();
+        var themedFont = VisualTheme.Graphite();
         themedFont = themedFont.WithFontFamily("Georgia, serif");
         var inheritedFontRaster = ChartGrid.Create()
             .WithTheme(themedFont)

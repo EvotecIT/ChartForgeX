@@ -12,7 +12,7 @@ internal static partial class SmokeTests {
         .Where(element => (string?)element.Attribute("data-cfx-role") == role).ToArray();
 
     private static void CalendarHeatmapRendersContributionGrid() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Report())
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite())
             .WithSize(760, 360).WithTitle("Consistency Journey")
             .AddCalendarHeatmap("Commits", new[] {
                 new ChartCalendarHeatmapItem(new DateTime(2026, 1, 5), 1),

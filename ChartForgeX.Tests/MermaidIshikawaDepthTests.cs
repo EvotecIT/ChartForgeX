@@ -70,7 +70,7 @@ public sealed class MermaidIshikawaDepthTests {
 
     [Fact]
     public void SafePaintIsFamilyScopedAndExplicitHostThemeRetainsPrecedence() {
-        var source = Fixture(); var host = VisualTheme.Report(); var options = Options(false, 900); options.Ishikawa!.Presentation!.Theme = host;
+        var source = Fixture(); var host = VisualTheme.Graphite(); var options = Options(false, 900); options.Ishikawa!.Presentation!.Theme = host;
         var rendered = MermaidRenderer.Render(source, options); Assert.Empty(rendered.Diagnostics); var block = Assert.IsType<FishboneDiagramBlock>(rendered.Artifact!.Model);
         Assert.Equal(host.Resolve(VisualThemeMode.Light).Axis, block.Options.Theme.Resolve(VisualThemeMode.Light).Axis);
         Assert.Equal(host.Resolve(VisualThemeMode.Light).Surface, block.Options.Theme.Resolve(VisualThemeMode.Light).Surface);
