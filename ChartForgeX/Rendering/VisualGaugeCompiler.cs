@@ -330,8 +330,8 @@ internal static partial class VisualGaugeCompiler {
         GaugeData data, IReadOnlyList<double> scaleValues, IReadOnlyList<string> targetCaptions) {
         var y = plot.Bottom - height;
         if (target != null) {
-            if (targetCaptions.Count == 1) Label(chart, context, builder, target, new ChartRect(plot.Left + plot.Width / 3, y, plot.Width / 3, height), "gauge-target-label", context.Theme.Typography.AxisSize);
-            else LinearTargetLabels(chart, context, builder, plot, data, targetCaptions, y, height);
+            // A lone target caption sits under its marker too; centring it read as a second scale tick.
+            LinearTargetLabels(chart, context, builder, plot, data, targetCaptions, y, height);
             y -= height;
         }
         if (scaleCaptions.Count == 0) return;

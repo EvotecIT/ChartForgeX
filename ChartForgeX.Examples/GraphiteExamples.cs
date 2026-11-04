@@ -54,12 +54,12 @@ internal static class GraphiteExamples {
             }
             var theme = VisualTheme.Graphite();
             var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
-            var metric=MetricCard.Create().WithSize(300,200).WithTheme(theme, mode).WithMetric("Coverage","98.4%").WithCaption("Assets reporting")
+            var metric=MetricCard.Create().WithSize(300,260).WithTheme(theme, mode).WithMetric("Coverage","98.4%").WithCaption("Assets reporting")
                 .WithMiniSparkline(new[]{92d,94,95,97,98.4},color:theme.Resolve(mode).Palette[0]);
-            var table=ChartTable.Create().WithSize(300,200).WithTheme(theme, mode).WithTitle("Controls").AddColumn("Control").AddColumn("Actual")
+            var table=ChartTable.Create().WithSize(300,260).WithTheme(theme, mode).WithTitle("Controls").AddColumn("Control").AddColumn("Actual")
                 .AddRow("TLS","92%").AddRow("DNSSEC","74%");
-            var dashboard=VisualGrid.Create().WithTheme(theme, mode).WithTitle("Control overview").WithColumns(2).WithPanelSize(300,220)
-                .WithPngOutputScale((int)scale).Add(metric).Add(table).Add(Create(dark)["bar"].WithSize(300,220)).Add(Create(dark)["line"].WithSize(300,220));
+            var dashboard=VisualGrid.Create().WithTheme(theme, mode).WithTitle("Control overview").WithColumns(2).WithPanelSize(300,260)
+                .WithPngOutputScale((int)scale).Add(metric).Add(table).Add(Create(dark)["bar"].WithSize(300,260)).Add(Create(dark)["line"].WithSize(300,260));
             var dashboardName="graphite-"+suffix+"-dashboard";
             dashboard.SaveSvg(Path.Combine(output,dashboardName+".svg")); dashboard.SavePng(Path.Combine(output,dashboardName+".png")); dashboard.SaveHtml(Path.Combine(output,dashboardName+".html"));
             gallery.Append("<h2>Dashboard and KPI</h2><div class='pair'><img alt='SVG dashboard' src='").Append(dashboardName).Append(".svg'><img alt='PNG dashboard' src='").Append(dashboardName).Append(".png'></div>");
@@ -92,8 +92,8 @@ internal static class GraphiteExamples {
             .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness", new ChartGaugeValue(74, targets: new[] { new ChartGaugeTarget(90) }))).ConfigureGauge(o=> { o.Form=ChartGaugeForm.Needle; o.Bands.Add(new(0,60,ChartSeriesState.Danger)); o.Bands.Add(new(60,80,ChartSeriesState.Warning)); o.Bands.Add(new(80,100,ChartSeriesState.Quiet)); });
         var linear=Frame("Linear readiness","Explicit target and bands",596,230)
             .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness", new ChartGaugeValue(87, targets: new[] { new ChartGaugeTarget(90) }))).ConfigureGauge(o=> { o.Form=ChartGaugeForm.Linear; o.Bands.Add(new(0,60,ChartSeriesState.Danger)); o.Bands.Add(new(60,80,ChartSeriesState.Warning)); o.Bands.Add(new(80,100,ChartSeriesState.Quiet)); });
-        var bullet=Frame("Control coverage","Actual values and targets",556,294).WithValueFormatter(value=>value.ToString("0",System.Globalization.CultureInfo.InvariantCulture)+" %").AddBullet("DMARC",88,95).AddBullet("DNSSEC",74,90).AddBullet("MTA-STS",63,85).AddBullet("TLS",92,80);
-        var funnel=Frame("Remediation stages","Percentage of the first stage",556,324).WithXLabels("Detected","Triaged","Assigned","Fixed","Verified").AddFunnel("Findings",Points(1284,1012,744,521,466));
+        var bullet=Frame("Control coverage","Actual values and targets",556,294).WithValueFormatter(value=>value.ToString("0",System.Globalization.CultureInfo.InvariantCulture)+"%").AddBullet("DMARC",88,95).AddBullet("DNSSEC",74,90).AddBullet("MTA-STS",63,85).AddBullet("TLS",92,80);
+        var funnel=Frame("Remediation stages","Percentage of the first stage",556,324).WithDataLabels().WithXLabels("Detected","Triaged","Assigned","Fixed","Verified").AddFunnel("Findings",Points(1284,1012,744,521,466));
         var sankey=Frame("Remediation flow","Source-coloured links",556,324).AddSankey("Flow", new[] { new ChartNode("Assessment", "Assessment"), new ChartNode("Remediated", "Remediated"), new ChartNode("In progress", "In progress"), new ChartNode("Overdue", "Overdue"), new ChartNode("Monitoring", "Monitoring"), new ChartNode("GPO", "GPO") }, new[] {
             new ChartFlowLink("flow-1", "Assessment","Remediated",360),new("flow-2", "Assessment","In progress",110),new("flow-3", "Assessment","Overdue",50),new("flow-4", "Monitoring","Remediated",170),new("flow-5", "Monitoring","In progress",90),new("flow-6", "Monitoring","Overdue",50),new("flow-7", "GPO","Remediated",80),new("flow-8", "GPO","In progress",50),new("flow-9", "GPO","Overdue",40)
         });

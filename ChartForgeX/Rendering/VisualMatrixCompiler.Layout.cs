@@ -206,14 +206,16 @@ internal static partial class VisualMatrixCompiler {
         if (nonZero.Length == 0) zeroWidth = Math.Max(0, bounds.Width - missingWidth);
         var steps = VisualColorScaleLegendScene.NumericTicks(floor, max);
         var captions = presentation.ScaleValues(steps);
-        var rampWidth = nonZero.Length > 0 ? Math.Max(0, bounds.Width - zeroWidth - missingWidth) : 0;
+        // Separate the zero key from the ramp as the missing key is, so "0" and the first step read as two keys.
+        var zeroGap = zero && nonZero.Length > 0 ? context.Theme.Spacing / 2 : 0;
+        var rampWidth = nonZero.Length > 0 ? Math.Max(0, bounds.Width - zeroWidth - zeroGap - missingWidth) : 0;
         // The key starts at the plot's left edge, under the first column, like its title.
         var scaleLeft = bounds.Left;
         using (builder.PushGroup("matrix-scale", "heatmap-scale", new Dictionary<string, string> {
             ["data-cfx-min-value"] = VisualStateSceneTools.Number(floor), ["data-cfx-max-value"] = VisualStateSceneTools.Number(max)
         })) {
             if (missing && missingWidth > 0) {
-                var missingLeft = scaleLeft + zeroWidth + rampWidth + context.Theme.Spacing / 2;
+                var missingLeft = scaleLeft + zeroWidth + zeroGap + rampWidth + context.Theme.Spacing / 2;
                 var box = new ChartRect(missingLeft + (missingWidth - context.Theme.Spacing / 2 - Math.Min(12, missingWidth)) / 2, bounds.Top, Math.Min(12, missingWidth), swatch);
                 using (VisualStateSceneTools.Mark(builder, "matrix-scale-missing", "heatmap-scale-missing", box, noData, new Dictionary<string, string> { ["data-cfx-empty"] = "true" }))
                     ChartMissingData.Paint(builder, box, 1, colors, "heatmap-scale-missing-swatch");
@@ -229,7 +231,7 @@ internal static partial class VisualMatrixCompiler {
                     style, "heatmap-scale-zero-label", "matrix-scale-zero-label", TextAlignment.Center);
             }
             if (nonZero.Length == 0) return;
-            var area = new ChartRect(scaleLeft + zeroWidth, bounds.Top, rampWidth, bounds.Height);
+            var area = new ChartRect(scaleLeft + zeroWidth + zeroGap, bounds.Top, rampWidth, bounds.Height);
             for (var index = 0; index < steps.Length; index++) {
                 var value = steps[index];
                 var blend = ChartHeatmapSurface.CellBlend(chart, colors, high, value, min, max, VisualChartPaint.SeriesRole(chart.Series[0]));
