@@ -8,8 +8,11 @@ namespace ChartForgeX.Rendering;
 /// <remarks>Captures transforms, reversal, sign policy and full/window domains without retaining mutable charts or formatter callbacks.</remarks>
 public sealed class ChartAxisProjection {
     private readonly ChartViewportAxisProjection _axis;
+    private readonly ChartRect? _nativeTrack;
+    private readonly double _translation;
     internal ChartAxisProjection(double fullMinimum, double fullMaximum, double minimum, double maximum,
-        ChartRect plotBounds, ChartAxis axis, ChartAxisDimension dimension, ChartAxisSide side = ChartAxisSide.Primary) {
+        ChartRect plotBounds, ChartAxis axis, ChartAxisDimension dimension, ChartAxisSide side = ChartAxisSide.Primary, ChartRect? nativeTrack = null, double translation = 0) {
+        _nativeTrack = nativeTrack; _translation = translation;
         PlotBounds = plotBounds; Dimension = dimension; Side = side;
         PreparedValueTickStep = axis.PreparedValueTickStep;
         _axis = new ChartViewportAxisProjection(fullMinimum, fullMaximum, minimum, maximum,
@@ -52,9 +55,22 @@ public sealed class ChartAxisProjection {
     internal double TransformedFullMinimum => _axis.TransformedFullMinimum;
     internal double TransformedFullMaximum => _axis.TransformedFullMaximum;
     /// <summary>Projects a finite source value, extrapolating beyond the current window.</summary>
-    public double Project(double source) => _axis.Project(source);
+    public double Project(double source) {
+        if (!_nativeTrack.HasValue) return _axis.Project(source);
+        ChartPrimitiveGuards.Finite(source, nameof(source));
+        var result = ChartMapper.ProjectX(ChartScaleTransform.Normalize(source, FullMinimum, FullMaximum, Reversed), _nativeTrack.Value) + _translation;
+        ChartPrimitiveGuards.Finite(result, nameof(source)); return result;
+    }
     /// <summary>Inverts a finite logical coordinate through the captured scale. Unit time selects the canonical lower calendar boundary.</summary>
-    public double Unproject(double logical) => _axis.Unproject(logical);
+    public double Unproject(double logical) {
+        if (!_nativeTrack.HasValue) return _axis.Unproject(logical);
+        ChartPrimitiveGuards.Finite(logical, nameof(logical));
+        if (logical == PlotBounds.Left) return Reversed ? Maximum : Minimum;
+        if (logical == PlotBounds.Right) return Reversed ? Minimum : Maximum;
+        var ratio = ChartMath.Normalize(logical, _nativeTrack.Value.Left + _translation, _nativeTrack.Value.Right + _translation);
+        var result = ChartMath.InterpolateOrExtrapolateRange(FullMinimum, FullMaximum, Reversed ? 1 - ratio : ratio);
+        ChartPrimitiveGuards.Finite(result, nameof(logical)); return result;
+    }
     /// <summary>Confines a logical gesture, shifting a narrower crossing span intact into the full domain.</summary>
     /// <returns>The confined source window, or null when it covers the full domain. Calendar gestures use an exclusive canonical upper edge.</returns>
     public ChartAxisWindow? ConstrainViewport(double firstLogical, double secondLogical) => _axis.ConstrainLogical(firstLogical, secondLogical);

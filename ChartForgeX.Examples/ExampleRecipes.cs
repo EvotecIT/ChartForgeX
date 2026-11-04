@@ -109,6 +109,7 @@ public static partial class ExampleRecipes {
         ["comparison"] = new(nameof(ComparisonRecipe), ComparisonRecipe.Create),
         ["supported-combinations"] = new(nameof(SupportedCombinationRecipe), SupportedCombinationRecipe.Create),
         ["findings"] = new(nameof(FindingsRecipe), FindingsRecipe.Create),
+        ["x-zoom"] = new(nameof(XZoomRecipe), XZoomRecipe.Create),
         ["line-viewport"] = new(nameof(LineViewportRecipe), LineViewportRecipe.Create),
         ["step-line-viewport"] = new(nameof(StepLineViewportRecipe), StepLineViewportRecipe.Create),
         ["keyed-point-changes"] = new(nameof(KeyedPointChangesRecipe), KeyedPointChangesRecipe.Create),

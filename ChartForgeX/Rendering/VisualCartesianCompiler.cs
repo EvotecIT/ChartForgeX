@@ -183,16 +183,7 @@ internal static partial class VisualCartesianCompiler {
                 var seriesMap = series.ValueAxis == ChartAxisSide.Secondary ? secondaryMap! : map;
                 var pointSeries = IsPointSeries(series.Kind);
                 using (clipMarks && (!pointSeries || sourceViewport != null) ? seriesBuilder.PushClip(plot) : null)
-                using (seriesBuilder.PushGroup(SeriesId(index), "series", new Dictionary<string, string> {
-                    ["data-cfx-coordinate-system"] = "cartesian",
-                    ["data-cfx-series"] = Number(index), ["data-cfx-series-key"] = series.InteractionIdentityKey,
-                    ["data-cfx-series-name"] = series.Name, ["data-cfx-state"] = series.StateRole.ToString().ToLowerInvariant(),
-                    ["data-cfx-pin-state-colors"] = chart.Options.PinStateColorsInForcedColors && series.StateRole != ChartSeriesState.None ? "true" : "false",
-                    ["data-cfx-kind"] = series.Kind.ToString(), ["data-cfx-semantic-role"] = series.SemanticRole ?? string.Empty,
-                    ["data-cfx-source-points"] = Number(series.SourcePointCount),
-                    ["data-cfx-rendered-points"] = Number(series.RenderedPointCount),
-                    ["data-cfx-decimation"] = series.DecimationMode?.ToString() ?? string.Empty, ["aria-label"] = series.Name
-                })) {
+                using (SeriesGroup(seriesBuilder, chart, index)) {
                     if (series.Kind == ChartSeriesKind.Bar) DrawBars(chart, context, seriesBuilder, plot, coordinates, seriesMap, stacks, index, colors, labels, obstacles);
                     else if (pointSeries)
                         DrawPoints(chart, context, seriesBuilder, plot, seriesMap, stacks, index, colors, labels, obstacles, colorScales[index], clipMarks,
@@ -296,6 +287,20 @@ internal static partial class VisualCartesianCompiler {
         if (stack.HasValue) ChartStackLayout.AddMetadata(metadata, stack.Value);
         if (series.HistogramBinLayout != null) AddHistogramMetadata(metadata, series, pointIndex, chartLabels);
         return builder.PushGroup(id, "point", metadata);
+    }
+
+    private static IDisposable SeriesGroup(VisualSceneBuilder builder, Chart chart, int index) {
+        var series = chart.Series[index];
+        return builder.PushGroup(SeriesId(index), "series", new Dictionary<string, string> {
+                    ["data-cfx-coordinate-system"] = "cartesian",
+                    ["data-cfx-series"] = Number(index), ["data-cfx-series-key"] = series.InteractionIdentityKey,
+                    ["data-cfx-series-name"] = series.Name, ["data-cfx-state"] = series.StateRole.ToString().ToLowerInvariant(),
+                    ["data-cfx-pin-state-colors"] = chart.Options.PinStateColorsInForcedColors && series.StateRole != ChartSeriesState.None ? "true" : "false",
+                    ["data-cfx-kind"] = series.Kind.ToString(), ["data-cfx-semantic-role"] = series.SemanticRole ?? string.Empty,
+                    ["data-cfx-source-points"] = Number(series.SourcePointCount),
+                    ["data-cfx-rendered-points"] = Number(series.RenderedPointCount),
+                    ["data-cfx-decimation"] = series.DecimationMode?.ToString() ?? string.Empty, ["aria-label"] = series.Name
+                });
     }
 
 }

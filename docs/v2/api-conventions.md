@@ -1071,6 +1071,18 @@ All available physical projections capture the selected [logarithmic policy](#lo
 
 `PreparedVisual.XProjection`, `YProjection`, `SecondaryXProjection` and `SecondaryYProjection` expose detached `ChartAxisProjection` snapshots where supported. Each records physical `Dimension`, `Side`, full/window domains, `MaximumInclusive`, plot bounds, scale and reversal. `Project` and `Unproject` map exact captured source coordinates. `ConstrainViewport` returns a `ChartAxisWindow`, or null for the complete domain, and shifts an edge-crossing transformed span intact instead of shortening it. Explicit authored requests remain strictly contained in the full resolved domain. The prepared `CartesianViewport` records the immutable request; it does not retain mutable axes or formatters.
 
+`Chart.PrepareXZoom(context, new ChartXZoomLevels(1, 2, 4))` prepares a detached bank for vertical Line and StepLine series with linear numeric X and linear or step interpolation. `bank.At(1, .173)` selects 2× magnification and pans 17.3% through the contained source range. Navigation uses captured native scenes without retaining the chart or calling its formatters. The plot, full-data Y domains, marker sizes and text sizes stay fixed; captions can be hidden when their source falls outside the window or their ink cannot fit.
+
+The bank uses the existing `ChartAxisWindow` and `ChartAxisProjection` types. `FullViewport` records its full X domain; each returned scene exposes its current X projection. Source-window and native-track precision checks reject magnifications that cannot retain the represented bounds or SVG coordinate precision. General Cartesian viewports remain the route for per-window axis reflow, horizontal series, nonlinear X, interior axis crossings and source-geometry annotations. Static banks add no browser interaction.
+
+```csharp
+var bank = chart.PrepareXZoom(context, new ChartXZoomLevels(1, 2, 4));
+var detail = bank.At(levelIndex: 1, panFraction: .173);
+File.WriteAllText("detail.svg", detail.ToSvg());
+File.WriteAllBytes("detail.png", detail.ToPng());
+```
+
+
 Alternate native drawings enclose every captured physical axis in one common full-domain envelope while preserving authored ends exactly. Windows reuse that envelope and clip paint to the plot. Native SVG and PNG consume the same detached scene; changing the model afterward cannot change projection, readout or export results. Complete source observations remain available even when their marks are outside the viewport. See [native viewport interaction](../interactivity.md#native-y-and-xy-windows) for the existing managed callback and lifetime.
 
 ## Explicit time spacing

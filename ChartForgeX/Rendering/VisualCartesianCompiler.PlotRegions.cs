@@ -61,10 +61,11 @@ internal static partial class VisualCartesianCompiler {
     private static SvgPaint PlotRegionPaint(ChartPlotRegion source, VisualThemeColors colors, ChartColor color, bool opaque = false) =>
         source.PaletteIndex.HasValue ? SvgPaint.Palette(color, source.PaletteIndex.Value % colors.Palette.Count, opaque) : SvgPaint.Literal(color);
 
-    private static void DrawPlotRegionFills(VisualRenderContext context, VisualSceneBuilder builder, IReadOnlyList<ResolvedPlotRegion> regions, VisualThemeColors colors) {
+    private static void DrawPlotRegionFills(VisualRenderContext context, VisualSceneBuilder builder, IReadOnlyList<ResolvedPlotRegion> regions, VisualThemeColors colors, bool sourceXAdmission = false) {
         foreach (var region in regions) {
             using (builder.PushGroup(region.Id, "plot-region", PlotRegionMetadata(region))) {
                 var source = region.Source;
+                using var sourcePaint = sourceXAdmission ? builder.PushSourceX(CartesianXSourceAdmission.Range(source.XMinimum, source.XMaximum)) : null;
                 var color = PlotRegionColor(source, colors);
                 var paint = PlotRegionPaint(source, colors, color);
                 if (region.Bounds.Width > 0 && region.Bounds.Height > 0)
@@ -77,7 +78,8 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static void DrawPlotRegionLabels(VisualRenderContext context, VisualSceneBuilder builder,
-        IReadOnlyList<ResolvedPlotRegion> regions, VisualThemeColors colors, List<LabelObstacle> obstacles) {
+        IReadOnlyList<ResolvedPlotRegion> regions, VisualThemeColors colors, List<LabelObstacle> obstacles, CartesianXZoomLayers? zoom = null,
+        CartesianXMotion motion = CartesianXMotion.Fixed, ChartRect? outputPlot = null) {
         foreach (var region in regions) {
             var source = region.Source; var bounds = region.Bounds;
             if (source.Border != null) {
@@ -100,14 +102,17 @@ internal static partial class VisualCartesianCompiler {
             var label = new LabelPlacementService().Place(new[] { request }, bounds, obstacles, 2, builder.MeasureText)[0];
             if (label.IsDropped || label.IsEllipsized)
                 builder.AddDiagnostic(new VisualDiagnostic("cartesian.plot-region-label-overflow", "A plot region caption was shortened or omitted to fit its visible region and avoid marks and other labels."));
-            if (label.IsDropped) continue;
-            obstacles.Add(new LabelObstacle(region.Id + "-label", label.Bounds));
-            using (builder.PushGroup(region.Id + "-caption", "plot-region-caption", PlotRegionMetadata(region))) {
-                builder.Rect(label.Bounds, surface.Color, radius: Math.Min(4, context.Theme.BarRadius),
-                    role: "plot-region-label-backplate", paint: VisualChartPaint.Fill(surface.Paint));
-                builder.Text(label.Text, label.Bounds.Left + request.Padding, label.Bounds.Top + request.Padding + builder.TextAscent(style),
-                    style, role: "plot-region-label", paint: ink.Paint);
+            if (!label.IsDropped) obstacles.Add(new LabelObstacle(region.Id + "-label", label.Bounds));
+            void Paint(VisualSceneBuilder target) {
+                using (target.PushGroup(region.Id + "-caption", "plot-region-caption", PlotRegionMetadata(region))) {
+                    target.Rect(label.Bounds, surface.Color, radius: Math.Min(4, context.Theme.BarRadius),
+                        role: "plot-region-label-backplate", paint: VisualChartPaint.Fill(surface.Paint));
+                    target.Text(label.Text, label.Bounds.Left + request.Padding, label.Bounds.Top + request.Padding + target.TextAscent(style),
+                        style, role: "plot-region-label", paint: ink.Paint);
+                }
             }
+            if (zoom != null) zoom.Caption(motion, outputPlot!.Value, region.Id + "-label", label, Paint, motion == CartesianXMotion.XTrack ? CartesianXSourceAdmission.Range(source.XMinimum, source.XMaximum) : null);
+            else if (!label.IsDropped) Paint(builder);
         }
     }
 }

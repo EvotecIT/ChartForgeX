@@ -30,6 +30,8 @@ public static partial class V2Examples {
     };
 
     private static string VariantLabel(string variant) => variant switch {
+        "x-zoom" => "Prepared X zoom", "compact-x-zoom" => "Compact X zoom",
+        "step-x-zoom" => "Reversed X zoom", "compact-step-x-zoom" => "Compact reversed X zoom",
         "wide" => "Standard", "expanded" => "Detailed", "compact" => "Compact", "compact-options" => "Compact options", "feasibility" => "Simple",
         "explicit-status" => "Status colors", "explicit-series" => "Series colors", "surface" => "Filled surface",
         "wrapped-legend" => "Long legend", "long-title" => "Long title", "missing" => "Missing observations",

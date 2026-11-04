@@ -13,6 +13,8 @@ ChartForgeX is a dependency-free rendering engine. Keep changes generic, testabl
 
 ## Change Expectations
 
+Before adding or changing tests, follow `skills/test-audit/SKILL.md#authoring-gate` and `skills/contract-focused-tests/SKILL.md` under `CODEX_HOME` (default `~/.codex`).
+
 - Add or update smoke tests for new renderer behavior.
 - Add or update generated examples when a change affects visible output.
 - Preserve SVG and PNG parity for visual polish.

@@ -9,6 +9,8 @@ ChartForgeX turns .NET data into charts, diagrams, and report visuals. Create a 
 
 Use it for generated reports, dashboards, documentation, email, static websites, desktop applications, and document exports. Optional packages add Mermaid input, interactive HTML, tables and metric cards, image composition, and animated visual stories.
 
+Native .NET hosts can prepare finite X zoom levels once and pan through detached Line/StepLine scenes with fixed axes and native text sizes. See the [prepared viewport and zoom APIs](docs/v2/api-conventions.md#cartesian-viewports).
+
 The [chartforgex.com](https://chartforgex.com) website has the full gallery, Mermaid support, a live playground, PowerShell examples and the .NET API reference.
 
 ## What you can build

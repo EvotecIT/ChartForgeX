@@ -72,6 +72,29 @@ internal sealed class LabelMarkShape {
         return _filled && (Inside(new ChartPoint(box.Left, box.Top)) || Inside(new ChartPoint(box.Right, box.Top))
             || Inside(new ChartPoint(box.Left, box.Bottom)) || Inside(new ChartPoint(box.Right, box.Bottom)));
     }
+
+    /// <summary>Translations at which this contour's ink meets a fixed rectangle; disconnected paths remain separate.</summary>
+    internal IEnumerable<CartesianXInterval> HorizontalTranslations(ChartRect box, string reason) {
+        var top = box.Top - _stroke / 2; var bottom = box.Bottom + _stroke / 2;
+        foreach (var contour in _contours) {
+            var filledLeft = double.PositiveInfinity; var filledRight = double.NegativeInfinity;
+            var count = contour.Count + (_filled && contour.Count > 2 ? 1 : 0);
+            for (var i = 1; i < count; i++) {
+                var a = contour[i - 1]; var b = contour[i % contour.Count];
+                var t0 = 0d; var t1 = 1d; var dx = b.X - a.X; var dy = b.Y - a.Y;
+                if (!Clip(-dy, a.Y - top, ref t0, ref t1) || !Clip(dy, bottom - a.Y, ref t0, ref t1)) continue;
+                if (_clip.HasValue && (!Clip(-dx, a.X - _clip.Value.Left + _stroke / 2, ref t0, ref t1)
+                    || !Clip(dx, _clip.Value.Right + _stroke / 2 - a.X, ref t0, ref t1)
+                    || !Clip(-dy, a.Y - _clip.Value.Top + _stroke / 2, ref t0, ref t1)
+                    || !Clip(dy, _clip.Value.Bottom + _stroke / 2 - a.Y, ref t0, ref t1))) continue;
+                var left = Math.Min(a.X + dx * t0, a.X + dx * t1); var right = Math.Max(a.X + dx * t0, a.X + dx * t1);
+                if (_filled) { filledLeft = Math.Min(filledLeft, left); filledRight = Math.Max(filledRight, right); }
+                else yield return new CartesianXInterval(box.Left - _stroke / 2 - right, box.Right + _stroke / 2 - left, reason);
+            }
+            if (_filled && filledLeft <= filledRight)
+                yield return new CartesianXInterval(box.Left - _stroke / 2 - filledRight, box.Right + _stroke / 2 - filledLeft, reason);
+        }
+    }
     private static ChartRect Intersection(ChartRect a, ChartRect b) => new(Math.Max(a.Left, b.Left), Math.Max(a.Top, b.Top),
         Math.Max(0, Math.Min(a.Right, b.Right) - Math.Max(a.Left, b.Left)), Math.Max(0, Math.Min(a.Bottom, b.Bottom) - Math.Max(a.Top, b.Top)));
     private bool Inside(ChartPoint point) {

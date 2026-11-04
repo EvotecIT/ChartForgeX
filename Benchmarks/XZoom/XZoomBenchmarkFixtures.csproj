@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DefaultItemExcludes>$(DefaultItemExcludes);obj/**;bin/**</DefaultItemExcludes>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="ChartForgeX"><HintPath>$(ProductDll)</HintPath><Private>true</Private></Reference>
+  </ItemGroup>
+  <Target Name="ValidateProductDll" BeforeTargets="PrepareForBuild">
+    <Error Condition="'$(ProductDll)' == '' or !Exists('$(ProductDll)')" Text="ProductDll must name the candidate ChartForgeX binary with the X zoom API." />
+  </Target>
+</Project>
