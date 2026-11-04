@@ -122,12 +122,14 @@
           if (!tooltipReadoutAvailable(node, event)) { clearHover(root, true, true); hideTip(root, tip, false); return; }
           setHover(root, node, true, true);
           showTip(root, tip, node, event);
+          showFocusCrosshair(root, crosshair, node);
         });
         listenChart(root, focusNode, 'blur', () => {
           pointerFocus = false;
           clearKeyboardFocusPaint(root);
           if (root._cfxKeyboardReadout === node) delete root._cfxKeyboardReadout;
           clearHover(root, true, true);
+          hideCrosshair(root, crosshair);
           hideTip(root, tip, false);
         });
       }

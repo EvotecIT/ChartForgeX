@@ -281,6 +281,14 @@
   };
 
 
+  // Keyboard focus guides to the focused Cartesian observation with the pointer's axis-edge values.
+  const showFocusCrosshair = (root, crosshair, node) => {
+    if (!hasFeature(root, 'Crosshair') || !node.hasAttribute('data-cfx-point') || !usesCartesianCoordinates(node)) {
+      hideCrosshair(root, crosshair); return;
+    }
+    const box = node.getBoundingClientRect(), x = box.left + box.width / 2, y = box.top + box.height / 2;
+    showCrosshair(root, crosshair, { node, x, y }, { clientX: x, clientY: y, target: node });
+  };
   const crosshairHoverMode = (event, node, nativeTarget = event && event.target) => {
     const hit = nativeTarget instanceof Element ? nativeTarget.closest('[data-cfx-series]') : null;
     return hit && (hit.dataset || {}).cfxSeries === (node.dataset || {}).cfxSeries ? 'series' : 'shared';

@@ -3,6 +3,7 @@ using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
+using HtmlTinkerX;
 using Microsoft.Playwright;
 using Xunit;
 using static ChartForgeX.Tests.InteractiveChartBrowser;
@@ -131,6 +132,92 @@ public sealed class InteractiveBundleTests {
         }
         Assert.Empty(requests);
         Assert.False(await browser.EvaluateAsync<bool>("() => !!window.ChartForgeXCharts"));
+        AssertNoConsoleErrors(session);
+    }
+
+    private static Task<HtmlBrowserSession> OpenCoreReaderAsync() {
+        var html = Chart.Create().WithSize(600, 360).WithXLabels("Mon", "Tue", "Wed")
+            .AddLine("Requests", ChartPoints.FromValues(2, 7, 4))
+            .AddLine("Previous", ChartPoints.FromValues(1, 3, 2))
+            .ToInteractiveHtmlPage(options => {
+                options.Runtime = HtmlChartRuntime.Standalone;
+                options.Interaction.Features = ChartInteractionFeatures.Tooltips | ChartInteractionFeatures.KeyboardNavigation | ChartInteractionFeatures.Crosshair;
+                options.TextPresentation = HtmlChartTextPresentation.Browser;
+            });
+        Assert.Contains(HtmlInteractiveAssetFiles.ChartScriptFor(HtmlChartRuntime.Standalone, ChartInteractionFeatures.Tooltips).Content, html);
+        return OpenAsync(html);
+    }
+
+    private static Task<bool> FocusedAsync(IPage page, string selector) =>
+        page.EvaluateAsync<bool>("selector => document.activeElement === document.querySelector(selector)", selector);
+
+    [BrowserFact]
+    public async Task SavedCoreReaderTraversesLegendThenPlotWithArrowKeysAndAnnouncesTheReadout() {
+        if (!Enabled) return;
+        await using var session = await OpenCoreReaderAsync();
+        var page = session.Page;
+        Assert.Equal("core", await page.EvaluateAsync<string>("() => document.querySelector('.cfx-interactive-chart')[Symbol.for('ChartForgeX.chartRuntime')].kind"));
+        Assert.Equal(1, await page.Locator(".cfx-stage svg [tabindex='0'][data-cfx-keyboard-component='data']").CountAsync());
+
+        await page.Keyboard.PressAsync("Tab");
+        Assert.True(await FocusedAsync(page, Legend(0)));
+        await page.Keyboard.PressAsync("ArrowRight");
+        Assert.True(await FocusedAsync(page, Legend(1)));
+        await page.Keyboard.PressAsync("Tab");
+        Assert.True(await FocusedAsync(page, Point(0, 0)));
+        var status = page.Locator(".cfx-tooltip[role='status'][aria-live='polite']");
+        Assert.True(await status.IsVisibleAsync());
+        Assert.Contains("Mon", await status.InnerTextAsync());
+
+        await page.Keyboard.PressAsync("ArrowRight");
+        Assert.True(await FocusedAsync(page, Point(0, 1)));
+        Assert.Matches("Tue[\\s\\S]*Requests[\\s\\S]*7", await status.InnerTextAsync());
+        await page.Keyboard.PressAsync("ArrowDown");
+        Assert.True(await FocusedAsync(page, Point(1, 1)));
+        Assert.Matches("Previous[\\s\\S]*3", await status.InnerTextAsync());
+        await page.Keyboard.PressAsync("End");
+        Assert.True(await FocusedAsync(page, Point(1, 2)));
+        await page.Keyboard.PressAsync("Home");
+        Assert.True(await FocusedAsync(page, Point(1, 0)));
+        Assert.Equal(1, await page.Locator(".cfx-stage svg [tabindex='0'][data-cfx-keyboard-component='data']").CountAsync());
+
+        await page.Keyboard.PressAsync("Escape");
+        await status.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Hidden });
+        await page.Keyboard.PressAsync("Shift+Tab");
+        Assert.True(await FocusedAsync(page, Legend(1)));
+        AssertNoConsoleErrors(session);
+    }
+
+    [BrowserFact]
+    public async Task SavedCoreReaderPutsTheFocusedValuesAtTheAxisEdges() {
+        if (!Enabled) return;
+        await using var session = await OpenCoreReaderAsync();
+        var page = session.Page;
+        await FocusWithKeyboardAsync(page, page.Locator(Point(0, 1)));
+        var crosshair = page.Locator(".cfx-crosshair");
+        Assert.True(await crosshair.IsVisibleAsync());
+        Assert.Equal("Tue", await page.Locator(".cfx-crosshair__axis-value[data-cfx-axis-value=x]").InnerTextAsync());
+        Assert.Equal("7", await page.Locator(".cfx-crosshair__axis-value[data-cfx-axis-value=y]").InnerTextAsync());
+        Assert.Matches("Tue[\\s\\S]*7", await TooltipTextAsync(page));
+        var edges = await page.EvaluateAsync<bool>("""
+            () => {
+              const plot = document.querySelector('.cfx-crosshair').getBoundingClientRect();
+              const x = document.querySelector('[data-cfx-axis-value=x]').getBoundingClientRect();
+              const y = document.querySelector('[data-cfx-axis-value=y]').getBoundingClientRect();
+              return x.top >= plot.bottom && y.right <= plot.left;
+            }
+            """);
+        Assert.True(edges, "The X value sits below the plot and the Y value left of it.");
+
+        await page.Keyboard.PressAsync("ArrowRight");
+        Assert.Equal("Wed", await page.Locator(".cfx-crosshair__axis-value[data-cfx-axis-value=x]").InnerTextAsync());
+        Assert.Equal("4", await page.Locator(".cfx-crosshair__axis-value[data-cfx-axis-value=y]").InnerTextAsync());
+        await page.Keyboard.PressAsync("Escape");
+        Assert.False(await crosshair.IsVisibleAsync());
+
+        await MoveToAsync(page, Point(1, 0));
+        Assert.Equal("Mon", await page.Locator(".cfx-crosshair__axis-value[data-cfx-axis-value=x]").InnerTextAsync());
+        Assert.Equal("1", await page.Locator(".cfx-crosshair__axis-value[data-cfx-axis-value=y]").InnerTextAsync());
         AssertNoConsoleErrors(session);
     }
 

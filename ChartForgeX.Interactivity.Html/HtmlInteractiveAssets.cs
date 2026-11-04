@@ -31,9 +31,13 @@ internal static class HtmlInteractiveAssets {
         if (runtime == HtmlChartRuntime.Full) return Script;
         if (runtime != HtmlChartRuntime.Standalone) throw new ArgumentOutOfRangeException(nameof(runtime));
         if (adaptive) return Script;
-        return (features & ~ChartForgeX.Interactivity.ChartInteractionFeatures.Tooltips) == 0
-            ? CoreScriptResource.Value : StandaloneScriptResource.Value;
+        return UsesCoreReader(features) ? CoreScriptResource.Value : StandaloneScriptResource.Value;
     }
+
+    // Read-only reader features: hover readouts, keyboard traversal and the crosshair guide.
+    private static bool UsesCoreReader(ChartForgeX.Interactivity.ChartInteractionFeatures features) =>
+        (features & ~(ChartForgeX.Interactivity.ChartInteractionFeatures.Tooltips | ChartForgeX.Interactivity.ChartInteractionFeatures.KeyboardNavigation
+            | ChartForgeX.Interactivity.ChartInteractionFeatures.Crosshair)) == 0;
 
     internal static readonly (HtmlChartFeatureBundles Bundle, string Name)[] FeatureBundles = {
         (HtmlChartFeatureBundles.Motion, "motion"), (HtmlChartFeatureBundles.Data, "data"), (HtmlChartFeatureBundles.Isolate, "isolate"),
@@ -45,7 +49,7 @@ internal static class HtmlInteractiveAssets {
     /// <summary>Selects the feature bundles a page needs. The core tooltip reader has no feature hooks.</summary>
     internal static HtmlChartFeatureBundles FeatureBundlesFor(HtmlChartRuntime runtime, ChartForgeX.Interactivity.ChartInteractionFeatures features,
         bool adaptive, bool motion, bool contextMenu, bool hierarchy = true) {
-        if (runtime == HtmlChartRuntime.Standalone && !adaptive && (features & ~ChartForgeX.Interactivity.ChartInteractionFeatures.Tooltips) == 0)
+        if (runtime == HtmlChartRuntime.Standalone && !adaptive && UsesCoreReader(features))
             return HtmlChartFeatureBundles.None;
         var bundles = HtmlChartFeatureBundles.None;
         if (motion) bundles |= HtmlChartFeatureBundles.Motion;

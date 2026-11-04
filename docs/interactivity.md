@@ -52,8 +52,8 @@ chart.SaveInteractiveHtml("readings.html", options => {
 });
 ```
 
-Tooltips alone select the core bundle. Adding selection, legend toggles,
-navigation or other features selects the standalone reader. Both are embedded
+Tooltips, keyboard navigation and the crosshair select the core bundle.
+Adding selection, legend toggles, zoom or other features selects the standalone reader. Both are embedded
 in the HTML and work with the network blocked; no module fetch is needed when
 opening a saved report. `HtmlChartRuntime.Full`, the default, includes
 `ChartForgeXCharts` for controller commands, updates and native connections.
@@ -65,7 +65,7 @@ bundle needs it. They exclude the drawing, font payloads and stylesheet:
 
 | Bundle | Raw budget | Gzip budget |
 | --- | ---: | ---: |
-| Core hover/tooltips | 96 KiB | 30 KiB |
+| Core reader (tooltips, keyboard, crosshair) | 96 KiB | 30 KiB |
 | Standalone reader | 280 KiB | 82 KiB |
 | Full controller/native host | 336 KiB | 100 KiB |
 
@@ -198,7 +198,9 @@ Line and Area readouts choose the nearest X category across the plot. Scatter
 and Bubble keep two-dimensional nearest-point selection. A pointer inside a
 painted Bar chooses that bar before a nearby line, and Radar reads the nearest
 spoke across its visible series. Crosshair values sit at the axis edges and use
-the same formatted values as the tooltip.
+the same formatted values as the tooltip. Keyboard focus on a Cartesian point shows
+the same guide and values, and the core reader supports both. Polar charts have no
+crosshair guide.
 
 Legends use buttons with `aria-pressed`. Their hit areas follow visible label
 ink, including native raster labels. Crowded or clipped legend labels move into
@@ -362,7 +364,7 @@ Migration: automatic HTML now carries bounded font bindings and native contour f
 
 ## Keyboard navigation
 
-When `ChartInteractionFeatures.KeyboardNavigation` is enabled, data marks and legend entries are separate roving components. Tab enters each component once and returns to its last active target; Left/Right and Home/End move within a series or legend. Up/Down switches data series at a matching coordinate or source observation, with an ordinal fallback for uneven series. Families without a series/point grid use their deterministic rendered-target order. Hidden targets and aggregate series wrappers do not become extra data stops.
+When `ChartInteractionFeatures.KeyboardNavigation` is enabled, data marks and legend entries are separate roving components. Tab enters each component once and returns to its last active target; Left/Right and Home/End move within a series or legend. Up/Down switches data series at a matching coordinate or source observation, with an ordinal fallback for uneven series. Horizontal charts swap the axes: Up/Down move along a series and Left/Right switch series. Families without a series/point grid use their deterministic rendered-target order. Hidden targets and aggregate series wrappers do not become extra data stops.
 
 Muted data leaves the data component, while its legend stays reachable for unmuting. Reset restores the data component after all series are muted. Charts initialized inside a host hidden with `hidden` or `display: none` acquire their Tab stops when the host regains layout; hiding and revealing the host preserves each component's active target.
 
