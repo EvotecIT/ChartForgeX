@@ -269,8 +269,7 @@ internal static partial class VisualCartesianCompiler {
                 shortenedCategories |= shortened;
                 return displayed;
             }
-            return string.Join("\n", ChartLabelWrapping.BalancedTwoLine(text, style.EffectiveFontSize, bounds.Width,
-                (value, _) => builder.MeasureText(value, style).Width));
+            return VisualAxisText.WrapAuthoredValue(builder, text, style, bounds.Width);
         }
         var visible = labels.PlannedCategoryTicks(axis) is { } planned ? new HashSet<double>(planned)
             : SelectAxisLabelStride(builder, axis, ticks, coordinate, horizontal, style, gap, fallback, labels, Display);
