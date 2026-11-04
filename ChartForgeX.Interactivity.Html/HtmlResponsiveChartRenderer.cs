@@ -76,7 +76,7 @@ public sealed class HtmlResponsiveChartRenderer {
                 : "<span hidden " + attribute + ">" + WebUtility.HtmlEncode(data) + "</span>";
             var runtime = HtmlRadialLayoutSpecification.Supports(chart) ? RadialScript.Value + Script.Value : Script.Value;
             return "<div data-cfx-responsive-chart style=\"min-width:" + minimumWidth + "px;max-width:" + maximumWidth + "px;margin-inline:auto\">" +
-                (assets ? "<style>" + ChartForgeX.Typography.ChartFontAssets.StyleSheet + Stylesheet + "</style>" : "") + fallback + payload + (assets ? "<script>" + runtime + "</script>" : "") + "</div>";
+                (assets ? "<style>" + Stylesheet + "</style>" : "") + fallback + payload + (assets ? "<script>" + runtime + "</script>" : "") + "</div>";
         } finally { chart.WithSize(size.Width, size.Height); chart.Options.XAxis = x; chart.Options.YAxis = y; chart.Options.HeatmapColumnWindow = window; }
     }
     private static string Compress(string text) {

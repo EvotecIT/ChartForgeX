@@ -63,9 +63,10 @@ public sealed partial class HtmlInteractiveChartRenderer {
         configure?.Invoke(options);
         var title = options.PageTitle ?? ChartTitle(chart, "ChartForgeX interactive chart");
         var writer = new HtmlMarkupWriter();
+        // A fragment leaves product fonts to its host page, which registers ChartFontAssets.StyleSheet once;
+        // embedding the data-URI faces here would break hosts that restrict font-src to their own origin.
         writer.StartElement("style")
             .Attribute("data-cfx-interactive-assets", "true")
-            .RawTrusted(options.TextPresentation == HtmlChartTextPresentation.NativeContours ? null : ChartForgeX.Typography.ChartFontAssets.StyleSheet)
             .RawTrusted(InteractiveFragmentStyle)
             .EndElement()
             .Line()

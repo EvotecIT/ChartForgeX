@@ -97,7 +97,6 @@ public sealed partial class TopologyHtmlRenderer {
         if (includeAssets) {
             writer.StartElement("style")
                 .Attribute("data-cfx-topology-assets", "true")
-                .RawTrusted(ChartForgeX.Typography.ChartFontAssets.StyleSheet)
                 .RawTrusted(StyleSheet(cssPrefix, CssFontFamily(theme.FontFamily), theme.Background, includePageShell: false))
                 .EndElement();
         }

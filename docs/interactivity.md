@@ -41,6 +41,10 @@ Raw trend-line and box-plot summaries omit both singular `sourcePoint` and contr
 
 Radar's default `Zero` missing-category policy fills missing categories with zero geometry. Those categories are `region` targets identified by the stable series ID and category, for example `target:category:2`. They report `sourcePoints: []`, with no `point` or `sourcePoint`; their browser readout says "No observation" and carries no measured value. An authored zero remains an ordinary source point with a value of zero. Category identities synchronize correctly when peers order their observations differently or include another category. `Gap` and `Connect` are explicit alternatives that preserve missing data without fabricating zero geometry; configure them through `ConfigureRadar`.
 
+## Product fonts in pages and fragments
+
+Self-contained pages (`ToInteractiveHtmlPage`, `SaveInteractiveHtml`, dashboards) carry the product fonts in their head. Embeddable fragments, like artifact SVG, leave fonts to the host: register `ChartFontAssets.StyleSheet` once on the page, inline or as a shared linked stylesheet. Fragments therefore work under a strict `font-src 'self'` policy; their owned chart text still loads from binary snapshots, and native glyph ink stays visible if the host supplies no fonts.
+
 ## Selecting an offline runtime
 
 Pages and fragments can include a runtime selected from their declared features:
