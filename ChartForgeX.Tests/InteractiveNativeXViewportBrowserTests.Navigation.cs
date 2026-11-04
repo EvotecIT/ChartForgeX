@@ -14,7 +14,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
     [InlineData(ChartSeriesKind.Candlestick, false, false, 900, false, true)]
     [InlineData(ChartSeriesKind.Ohlc, true, true, 390, false, false)]
     [InlineData(ChartSeriesKind.RangeBand, true, false, 900, false, false)]
-    [InlineData(ChartSeriesKind.RangeArea, false, true, 390, true, false)]
+    [InlineData(ChartSeriesKind.RangeArea, false, true, 390, true, true)]
     [InlineData(ChartSeriesKind.DifferenceArea, true, true, 900, false, false)]
     public async Task NativeRangeControlsCarryTheCompleteWorkflowAcrossTupleFamilies(ChartSeriesKind kind, bool time, bool reversed, int width, bool adaptive, bool standalone) {
         if (!Enabled) return;

@@ -9,6 +9,8 @@
       if (state.zoom === 1 && state.panX === 0 && state.panY === 0) resetStandaloneViewport(root);
       return;
     }
+    // A declined family never scales its drawing, including from bookmarks and peer charts.
+    if (syncStandaloneZoomDecline(root)) state = { zoom: 1, panX: 0, panY: 0 };
     state.zoom = clamp(state.zoom, 0.5, 6);
     state.panX = clamp(state.panX, -4000, 4000);
     state.panY = clamp(state.panY, -4000, 4000);
@@ -97,7 +99,7 @@
     });
   };
   const applyMode = (root, mode) => {
-    if (mode === 'pan' && !hasFeature(root, 'Pan') || mode === 'brush' && !hasFeature(root, 'Brush')) mode = '';
+    if (mode === 'pan' && (!hasFeature(root, 'Pan') || standaloneZoomDeclined(root)) || mode === 'brush' && !hasFeature(root, 'Brush')) mode = '';
     root.dataset.cfxMode = mode || '';
     root.querySelectorAll('[data-cfx-mode-button]').forEach((button) => {
       button.setAttribute('aria-pressed', button.dataset.cfxModeButton === root.dataset.cfxMode ? 'true' : 'false');
@@ -230,7 +232,7 @@
     if (sync !== false) emitSync(root, { action: 'state', state: { ...snapshot, selectedTargets: selectedTargets(root) } });
   };
   const zoomBy = (root, factor, logicalX, logicalY, animate = false) => {
-    if (!hasFeature(root, 'Zoom')) return;
+    if (!hasFeature(root, 'Zoom') || standaloneZoomDeclined(root)) return;
     if (zoomStandaloneViewport(root, factor, logicalX, logicalY, ['x'], animate)) return;
     if (connectedXViewport(root)) {
       requestXViewportZoom(root, factor, logicalX, logicalY);

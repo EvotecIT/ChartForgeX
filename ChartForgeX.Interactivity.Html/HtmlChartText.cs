@@ -614,4 +614,6 @@ public enum HtmlChartText {
     HierarchyExpand,
     /// <summary>UI text: Topology diagram</summary>
     TopologyDiagram,
+    /// <summary>Explains why a saved chart family without a data window disables its zoom and pan controls.</summary>
+    ZoomUnavailable,
 }

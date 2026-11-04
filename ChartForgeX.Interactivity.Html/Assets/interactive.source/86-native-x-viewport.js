@@ -22,7 +22,8 @@
   const syncXViewportControls = root => {
     const binding = nativePreparationBinding(root, 'viewport');
     const unsupported = !!binding && !polarGestureProjection(root) && (!chartXProjection(root) || !binding.legacy && binding.axes.some(name => !chartAxisProjection(root, name)));
-    root.querySelectorAll('[data-cfx-zoom],[data-cfx-mode-button="pan"]').forEach(button => { button.disabled = unsupported || nativePreparationBackpressureBusy(root); });
+    const declined = syncStandaloneZoomDecline(root);
+    root.querySelectorAll('[data-cfx-zoom],[data-cfx-mode-button="pan"]').forEach(button => { button.disabled = declined || unsupported || nativePreparationBackpressureBusy(root); });
     if (unsupported && root.dataset.cfxMode === 'pan') applyMode(root, '');
     syncXNavigation(root);
     syncResetControl(root);

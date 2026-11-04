@@ -12,11 +12,13 @@
     const svg = root.querySelector('.cfx-stage svg');
     if (root._cfxStandaloneViewport?.svg === svg) return root._cfxStandaloneViewport;
     const metadata = capturedCartesianMetadata(root);
-    if (!svg || !metadata.dataProjection?.x || !metadata.dataProjection?.y || metadata.orientation === 'horizontal'
-      || metadata.dataProjection.x.scale !== 'linear' || metadata.dataProjection.y.scale !== 'linear'
-      || metadata.secondaryXProjection || metadata.secondaryYProjection
-      || !metadata.series?.length || metadata.series.some(row => !['line', 'stepline', 'area', 'steparea', 'bar', 'scatter', 'candlestick', 'ohlc'].includes(row.kind))) return null;
-    const view = { svg, source: copyHostValue(metadata), windows: {}, geometry: [], labels: [], axes: [], points: [], frames: [] };
+    if (!svg || !standaloneReprojects(metadata)) return null;
+    const horizontal = metadata.orientation === 'horizontal';
+    // Horizontal charts keep categories on the vertical axis and values on X; physical paint maps stay x/y.
+    const view = { svg, source: copyHostValue(metadata), windows: {}, geometry: [], labels: [], axes: [], points: [], frames: [],
+      horizontal, categoryAxis: horizontal ? 'y' : 'x' };
+    const valueAxis = secondary => horizontal ? 'x' : secondary ? 'secondaryY' : 'y';
+    const seriesAxis = owner => valueAxis(owner?.querySelector('[data-cfx-point][data-cfx-axis]')?.dataset.cfxAxis === 'secondary');
     const plot = metadata.dataProjection.plotBounds;
     const ns = 'http://www.w3.org/2000/svg';
     const clip = document.createElementNS(ns, 'clipPath'), rect = document.createElementNS(ns, 'rect');
@@ -30,30 +32,34 @@
     series.forEach(owner => {
       // An outer clip remains in plot coordinates while individual marks reproject.
       view.frames.push({ owner, clip: owner.getAttribute('clip-path') });
+      // Series-level paths (lines, areas, bands) carry no axis; their observations name it.
+      const axis = horizontal ? 'y' : seriesAxis(owner);
       owner.querySelectorAll('path,line,rect,circle,ellipse,polygon,polyline,image').forEach(node => {
         if (node.closest('defs,[data-cfx-native-text-ink]') || node.closest('[data-cfx-caption]') || node.closest('g')?.querySelector('text') && node.closest('[data-cfx-role$="label"]')) return;
-        const point = node.closest('[data-cfx-point]');
-        const marker = !node.hasAttribute('data-cfx-browser-hit-area') && ((node.dataset.cfxRole || '').startsWith('marker')
+        const point = node.closest('[data-cfx-point]'), role = node.dataset.cfxRole || '';
+        // Markers and error-bar caps keep their drawn size; only their position follows the window.
+        const marker = !node.hasAttribute('data-cfx-browser-hit-area') && (role.startsWith('marker') || role === 'error-cap'
           || point && metadata.series[Number(point.dataset.cfxSeries)]?.kind === 'scatter');
         const box = marker ? node.getBBox() : null;
         view.geometry.push({ node, attrs: Object.fromEntries(Array.from(node.attributes).map(attr => [attr.name, attr.value])),
           visibility: standaloneStyle(node, 'visibility'),
-          marker: box ? { x: box.x + box.width / 2, y: box.y + box.height / 2 } : null,
-          axis: node.closest('[data-cfx-axis]')?.dataset.cfxAxis === 'secondary' ? 'secondaryY' : 'y' });
+          marker: box ? { x: box.x + box.width / 2, y: box.y + box.height / 2 } : null, axis });
       });
     });
     svg.querySelectorAll('[data-cfx-label-for]').forEach(node => {
-      const box = node.getBBox();
-      view.labels.push({ node, x: box.x + box.width / 2, y: box.y + box.height / 2, transform: node.getAttribute('transform'), visibility: standaloneStyle(node, 'visibility') });
+      const box = node.getBBox(), owner = node.closest('[data-cfx-role="series"]');
+      view.labels.push({ node, x: box.x + box.width / 2, y: box.y + box.height / 2, transform: node.getAttribute('transform'), visibility: standaloneStyle(node, 'visibility'),
+        axis: !horizontal && owner && seriesAxis(owner) === 'secondaryY' ? 'secondaryY' : 'y' });
       if (!node.closest('[data-cfx-role="series"]')) {
         view.frames.push({ owner: node, clip: node.getAttribute('clip-path') });
       }
     });
     svg.querySelectorAll('[data-cfx-point][data-cfx-x]').forEach(node => {
       if (node.closest('[data-cfx-role="legend-item"]')) return;
-      view.points.push({ node, region: node._cfxNativeRegion, interiors: node._cfxFillInteriors, x: Number(node.dataset.cfxX), y: Number(node.dataset.cfxY),
+      view.points.push({ node, region: node._cfxNativeRegion, paired: node._cfxPairedRegion, interiors: node._cfxFillInteriors,
+        midline: node.dataset.cfxMidlineY, x: Number(node.dataset.cfxX), y: Number(node.dataset.cfxY),
         visibility: standaloneStyle(node, 'visibility'),
-        series: Number(node.dataset.cfxSeries), axis: node.dataset.cfxAxis === 'secondary' ? 'secondaryY' : 'y',
+        series: Number(node.dataset.cfxSeries), axis: valueAxis(node.dataset.cfxAxis === 'secondary'),
         visible: node.getAttribute('data-cfx-visible') });
     });
     for (const name of ['x', 'y', 'secondaryY']) {
@@ -69,12 +75,13 @@
   const standaloneAxis = (root, name, logical = false) => {
     const view = standaloneViewport(root);
     if (!view) return null;
-    const captured = view.source[name + 'Projection'] || view.source.dataProjection[name];
-    const scene = view.source.dataProjection[name];
-    const source = captured && scene && { ...scene, ...captured,
-      fullMinimum: scene.minimum, fullMaximum: scene.maximum,
-      transformedFullMinimum: scene.transformedMinimum, transformedFullMaximum: scene.transformedMaximum };
-    if (!source) return null;
+    // A chart with two value axes emits no single scene Y; each captured axis then carries its own full domain.
+    const scene = view.source.dataProjection[name], captured = view.source[name + 'Projection'] || scene;
+    if (!captured) return null;
+    const full = scene || { minimum: captured.fullMinimum, maximum: captured.fullMaximum,
+      transformedMinimum: captured.transformedFullMinimum, transformedMaximum: captured.transformedFullMaximum };
+    const source = { ...scene, ...captured, fullMinimum: full.minimum, fullMaximum: full.maximum,
+      transformedFullMinimum: full.transformedMinimum, transformedFullMaximum: full.transformedMaximum };
     const window = logical && view.motionTarget ? view.motionTarget[name] : view.windows[name];
     return window ? { ...source, ...window, transformedMinimum: transformedAxisBound(source, window.minimum, false),
       transformedMaximum: transformedAxisBound(source, window.maximum, true, window.maximumInclusive !== false) } : source;
@@ -124,74 +131,6 @@
     for (const name of ['y', 'y1', 'y2', 'cy']) if (attrs[name] !== undefined) set(name, y.at(Number(attrs[name])));
     for (const [name, map] of [['width', x], ['height', y]]) if (attrs[name] !== undefined) set(name, Number(attrs[name]) * Math.abs(map.scale));
   };
-  // Mirrors ChartNiceNumbers.Step and ChartTicks.GenerateInside for a linear window. Whole-number
-  // axes (hours, counts, indexes) step by 1, 2 or 5 × 10ⁿ only, never below one.
-  const standaloneNiceStep = (value, whole) => {
-    if (whole) value = Math.max(1, value);
-    const power = Math.pow(10, Math.floor(Math.log10(value))), fraction = value / power, tolerance = fraction * 8 * 2.220446049250313e-16;
-    return (fraction <= 1 + tolerance ? 1 : fraction <= 2 + tolerance ? 2 : !whole && fraction <= 2.5 + tolerance ? 2.5 : fraction <= 5 + tolerance ? 5 : 10) * power;
-  };
-  const standaloneInsideTicks = (minimum, maximum, count, whole) => {
-    const step = standaloneNiceStep((maximum - minimum) / (count - 1), whole), start = Math.ceil(minimum / step) * step, values = [];
-    for (let index = 0; index < count && Number.isFinite(step) && step > 0; index++) {
-      let value = start + step * index;
-      if (value > maximum) {
-        if (value - maximum > Math.max(Math.abs(value), Math.abs(maximum)) * 8 * 2.220446049250313e-16) break;
-        value = maximum;
-      }
-      values.push(Math.abs(value) < step / 1e6 ? 0 : value);
-    }
-    // A whole-number window narrower than two steps keeps its whole values rather than fractional endpoints.
-    return { values: values.length >= 2 || whole && values.length ? values : [minimum, maximum], step };
-  };
-  // ChartValueFormat's invariant compact captions ("0.##", or "0.#" with k/M/B), with the
-  // native plain-significant fallback when a caption would not name its own tick.
-  const standaloneCompact = value => {
-    const fixed = (number, digits) => String(Number(number.toFixed(digits)) || 0), magnitude = Math.abs(value);
-    return magnitude >= 1e9 ? fixed(value / 1e9, 1) + 'B' : magnitude >= 1e6 ? fixed(value / 1e6, 1) + 'M'
-      : magnitude >= 1e3 ? fixed(value / 1e3, 1) + 'k' : fixed(value, 2);
-  };
-  const standaloneCompactValue = text => Number(text.replace(/[kMB]$/, '')) * ({ k: 1e3, M: 1e6, B: 1e9 }[text.slice(-1)] || 1);
-  const standaloneCaptions = (axis, values, step) => {
-    const captured = [...(axis.displayTicks || []), ...(axis.displayBounds || [])];
-    const exact = value => captured.find(tick => Math.abs(tick.value - value) <= Math.abs(value) * 1e-12)?.text;
-    if (axis.scale === 'time') return values.map(value => exact(value) ?? String(dataValue(value, value >= 0)));
-    let texts = values.map(value => standaloneCompact(value));
-    if (texts.some((text, index) => Math.abs(standaloneCompactValue(text) - values[index]) > step * .01))
-      texts = values.map(value => value === 0 ? '0' : String(Number(value.toPrecision(6))));
-    return values.map((value, index) => exact(value) ?? texts[index]);
-  };
-  // Picks the static tick policy's densest layout whose labels keep their own room,
-  // preferring at least three ticks wherever three fit along the axis.
-  const standaloneTicks = (axis, length, room, desired, categories, whole) => {
-    const position = value => (value - axis.minimum) / (axis.maximum - axis.minimum) * length;
-    const fits = ticks => ticks.every((tick, index) => !index
-      || Math.abs(position(tick.value) - position(ticks[index - 1].value)) >= (room(tick.text) + room(ticks[index - 1].text)) / 2);
-    if (categories) {
-      const values = categories.filter(tick => tick.value >= axis.minimum && tick.value <= axis.maximum);
-      for (let stride = 1; stride < values.length; stride++) {
-        const ticks = values.filter((_, index) => index % stride === 0);
-        if (fits(ticks)) return ticks;
-      }
-      return values.slice(0, 1);
-    }
-    const label = generated => standaloneCaptions(axis, generated.values, generated.step).map((text, index) => ({ value: generated.values[index], text }));
-    const target = Math.max(3, desired), candidates = [];
-    for (let count = 2; count <= Math.max(target * 2, 6) && count <= 40; count++) {
-      const ticks = label(standaloneInsideTicks(axis.minimum, axis.maximum, count, whole));
-      if (fits(ticks) && !candidates.some(item => item.length === ticks.length)) candidates.push(ticks);
-    }
-    candidates.sort((first, second) => first.length - second.length);
-    const readable = candidates.filter(ticks => ticks.length >= 3);
-    return readable.filter(ticks => ticks.length <= target).pop() || readable[0] || candidates.pop()
-      || label(standaloneInsideTicks(axis.minimum, axis.maximum, 2, whole));
-  };
-  // An axis is whole-numbered when the static policy said so, or when its full domain and every
-  // observation on it are whole numbers.
-  const standaloneWholeAxis = (view, name, axis) => (view.whole ||= {})[name] ??= !!axis.integerTicks || [axis.fullMinimum ?? axis.minimum, axis.fullMaximum ?? axis.maximum,
-    ...view.points.filter(point => name === 'x' || point.axis === name).flatMap(point => name === 'x' ? [point.x]
-      : [point.y, ...['cfxLow', 'cfxHigh', 'cfxOpen', 'cfxClose'].filter(key => point.node.dataset[key] !== undefined).map(key => Number(point.node.dataset[key]))])]
-    .every(value => Number.isFinite(value) && Number.isInteger(value));
   let standaloneMeasure = null;
   const standaloneTextWidth = (font, text) => {
     standaloneMeasure ||= document.createElement('canvas').getContext('2d');
@@ -229,7 +168,7 @@
       // The drawing's own label count is the static density target for this size.
       const ticks = standaloneTicks(projection, vertical ? plot.height : plot.width, room,
         axis.nodes.filter(node => node.dataset.cfxRole.endsWith('-label') && axis.display.get(node)?.value !== 'none').length || 5,
-        !vertical && view.source.categoryLabels?.length ? view.source.categoryLabels : null, standaloneWholeAxis(view, axis.name, projection));
+        axis.name === view.categoryAxis && view.source.categoryLabels?.length ? view.source.categoryLabels : null, standaloneWholeAxis(view, axis.name, projection));
       for (const tick of ticks) {
         const position = standaloneCoordinate(projection, tick.value, plot, vertical);
         const text = template ? template.cloneNode(false) : document.createElementNS(ns, 'text');
@@ -273,14 +212,19 @@
     }
     view.geometry.forEach(entry => paintStandaloneGeometry(entry, x, maps[entry.axis] || maps.y));
     view.labels.forEach(entry => {
-      entry.node.setAttribute('transform', 'translate(' + (x.at(entry.x) - entry.x) + ' ' + (maps.y.at(entry.y) - entry.y) + ') ' + (entry.transform || ''));
+      const y = maps[entry.axis] || maps.y;
+      entry.node.setAttribute('transform', 'translate(' + (x.at(entry.x) - entry.x) + ' ' + (y.at(entry.y) - entry.y) + ') ' + (entry.transform || ''));
       entry.node.style.visibility = entry.node.matches('.cfx-series-muted,.cfx-series-isolated-out') ? 'hidden' : '';
     });
+    const region = (box, y) => box && Object.freeze({ x: x.at(box.x), y: y.at(box.y), width: box.width * Math.abs(x.scale), height: box.height * Math.abs(y.scale) });
     for (const point of view.points) {
-      const axis = standaloneAxis(root, point.axis), y = maps[point.axis] || maps.y;
-      const px = standaloneCoordinate(standaloneAxis(root, 'x'), point.x, plot, false), py = standaloneCoordinate(axis, point.y, plot, true);
-      if (point.region) point.node._cfxNativeRegion = Object.freeze({ x: x.at(point.region.x), y: y.at(point.region.y),
-        width: point.region.width * Math.abs(x.scale), height: point.region.height * Math.abs(y.scale) });
+      // A horizontal observation's category runs down the plot and its value across it.
+      const y = view.horizontal ? maps.y : maps[point.axis] || maps.y;
+      const px = view.horizontal ? standaloneCoordinate(standaloneAxis(root, 'x'), point.y, plot, false) : standaloneCoordinate(standaloneAxis(root, 'x'), point.x, plot, false);
+      const py = view.horizontal ? standaloneCoordinate(standaloneAxis(root, 'y'), point.x, plot, true) : standaloneCoordinate(standaloneAxis(root, point.axis), point.y, plot, true);
+      if (point.region) point.node._cfxNativeRegion = region(point.region, y);
+      if (point.paired) point.node._cfxPairedRegion = region(point.paired, y);
+      if (point.midline !== undefined) point.node.dataset.cfxMidlineY = y.at(Number(point.midline));
       const bounds = point.node._cfxNativeRegion || { x: px, y: py, width: 0, height: 0 };
       point.node.dataset.cfxVisible = String(point.visible !== 'false' && bounds.x + bounds.width >= plot.x - .01 && bounds.x <= plot.x + plot.width + .01
         && bounds.y + bounds.height >= plot.y - .01 && bounds.y <= plot.y + plot.height + .01);
@@ -356,11 +300,17 @@
     if (sync) emitSync(root, { action: 'viewport', state: getState(root), viewport: nativeViewportWindows(root, true), xWindow: nativeXWindow(root), yWindow: nativeYWindow(root) });
     return true;
   };
+  // Gestures name directions: 'x' is the category direction and 'y' the value direction. Each value
+  // axis takes its own window from the same screen ratios, so two Y axes re-project independently.
+  const standaloneGestureAxes = (view, axes) => [...new Set(axes.flatMap(name => {
+    const physical = view.horizontal ? name === 'x' ? 'y' : 'x' : name;
+    return physical === 'y' && view.source.secondaryYProjection ? ['y', 'secondaryY'] : [physical];
+  }))];
   const zoomStandaloneViewport = (root, factor, logicalX, logicalY, axes = ['x'], animate = false) => {
     const view = standaloneViewport(root); if (!view || !Number.isFinite(factor) || factor <= 0) return false;
     // Zoom and pan start from the logical window, so a gesture during a transition continues from its target.
     const plot = view.source.dataProjection.plotBounds, windows = {};
-    for (const name of axes) {
+    for (const name of standaloneGestureAxes(view, axes)) {
       const axis = standaloneAxis(root, name, true); if (!axis) continue;
       const vertical = name !== 'x', value = vertical ? logicalY : logicalX;
       const first = vertical ? plot.y : plot.x, size = vertical ? plot.height : plot.width;
@@ -374,8 +324,9 @@
   const panStandaloneViewport = (root, deltaX, deltaY) => {
     const view = standaloneViewport(root); if (!view) return false;
     const plot = view.source.dataProjection.plotBounds, windows = {};
-    for (const [name, delta, size] of [['x', deltaX, plot.width], ['y', -deltaY, plot.height]]) {
-      const axis = standaloneAxis(root, name, true), shift = delta / size * (axis.reversed ? -1 : 1);
+    for (const [name, delta, size] of [['x', deltaX, plot.width], ['y', -deltaY, plot.height], ['secondaryY', -deltaY, plot.height]]) {
+      const axis = standaloneAxis(root, name, true); if (!axis) continue;
+      const shift = delta / size * (axis.reversed ? -1 : 1);
       const lo = transformedAxisBound(axis, axis.fullMinimum ?? axis.minimum, false), hi = transformedAxisBound(axis, axis.fullMaximum ?? axis.maximum, true);
       const span = axis.transformedMaximum - axis.transformedMinimum;
       const start = clamp(axis.transformedMinimum - shift * span, lo, hi - span);
@@ -404,6 +355,8 @@
     for (const point of view.points) {
       if (point.visible === null) point.node.removeAttribute('data-cfx-visible'); else point.node.setAttribute('data-cfx-visible', point.visible);
       point.node._cfxNativeRegion = point.region; point.node._cfxFillInteriors = point.interiors;
+      if (point.paired) point.node._cfxPairedRegion = point.paired;
+      if (point.midline !== undefined) point.node.dataset.cfxMidlineY = point.midline;
       restoreStandaloneStyle(point.node, 'visibility', point.visibility);
     }
     for (const axis of view.axes) {
@@ -431,13 +384,13 @@
     // Only hidden data counts; legend paint can keep a stale isolation class until its own sync.
     const hidden = view.points.some(point => point.node.closest('.cfx-series-muted,.cfx-series-isolated-out'));
     const previous = beginStandaloneChange(view);
-    for (const name of ['y', 'secondaryY']) {
-      const axis = view.source[name + 'Projection'] || view.source.dataProjection[name]; if (!axis) continue;
+    for (const name of view.horizontal ? ['x'] : ['y', 'secondaryY']) {
+      const axis = standaloneAxis(root, name); if (!axis) continue;
       if (!hidden) { delete view.windows[name]; continue; }
       const values = view.points.filter(point => point.axis === name && !point.node.closest('.cfx-series-muted,.cfx-series-isolated-out'))
-        .flatMap(point => [point.y, ...['cfxLow', 'cfxHigh'].filter(key => point.node.dataset[key] !== undefined).map(key => Number(point.node.dataset[key]))]).filter(Number.isFinite);
+        .flatMap(point => standalonePointValues(point, ['cfxLow', 'cfxHigh', 'cfxLower', 'cfxUpper', 'cfxYLower', 'cfxYUpper', 'cfxMinimum', 'cfxMaximum'])).filter(Number.isFinite);
       if (!values.length) continue;
-      if (view.source.series.some(row => ['area', 'steparea', 'bar'].includes(row.kind)) && axis.scale !== 'logarithmic') values.push(0);
+      if (view.source.series.some(row => ['area', 'steparea', 'bar', 'horizontalbar'].includes(row.kind)) && axis.scale !== 'logarithmic') values.push(0);
       let minimum = Infinity, maximum = -Infinity;
       for (const value of values) { minimum = Math.min(minimum, value); maximum = Math.max(maximum, value); }
       if (axis.scale === 'logarithmic') { minimum = Math.max(axis.fullMinimum, minimum); maximum = Math.min(axis.fullMaximum, maximum); }
@@ -454,8 +407,8 @@
     if (!view || !matrix || rect.width < 4 || rect.height < 4) return null;
     const corners = [new DOMPoint(rect.left, rect.top), new DOMPoint(rect.right, rect.bottom)].map(point => point.matrixTransform(matrix.inverse()));
     const plot = view.source.dataProjection.plotBounds, windows = {};
-    for (const name of root.dataset.cfxBrushAxis === 'x' ? ['x'] : ['x', 'y']) {
-      const vertical = name === 'y', axis = standaloneAxis(root, name);
+    for (const name of root.dataset.cfxBrushAxis === 'x' ? ['x'] : ['x', 'y', ...view.source.secondaryYProjection ? ['secondaryY'] : []]) {
+      const vertical = name !== 'x', axis = standaloneAxis(root, name);
       const values = corners.map(point => projectedAxisValue(axis, clamp(vertical ? 1 - (point.y - plot.y) / plot.height : (point.x - plot.x) / plot.width, 0, 1)));
       windows[name] = { minimum: Math.min(...values), maximum: Math.max(...values) };
     }

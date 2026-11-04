@@ -329,7 +329,7 @@
         if (!ownsTooltipPointer(root, event)) updateStageReadout(event);
       });
       listenChart(root, stage, 'wheel', (event) => {
-        if (!hasFeature(root, 'Zoom')) return;
+        if (!hasFeature(root, 'Zoom') || standaloneZoomDeclined(root)) return;
         const point = logicalChartPointer(root, event);
         if (standaloneViewport(root)) {
           const plot = root._cfxDataProjection.plotBounds;
