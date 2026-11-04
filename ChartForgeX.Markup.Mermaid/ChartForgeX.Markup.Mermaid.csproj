@@ -20,7 +20,7 @@
     <Version>$(ChartForgeXProductVersion)</Version>
     <Authors>Evotec</Authors>
     <Description>Mermaid fenced-block adapter for ChartForgeX markup visual artifact pipelines.</Description>
-    <PackageReleaseNotes>ChartForgeX 3.3.0 adds shared design roles, optional enhance hooks and linked views, server-rendered mark policies, SVG accessibility modes, and architecture scenarios with sequence, story and terminal output. Includes responsive chart and packaging fixes. Release notes: https://github.com/EvotecIT/ChartForgeX/releases/tag/ChartForgeX-v3.3.0</PackageReleaseNotes>
+    <PackageReleaseNotes>ChartForgeX 3.3.1 fixes compact terminal topology layout, labels, live values, group captions and connecting routes, and preserves placement when prepared diagrams are resized or restyled. Includes #425. Release notes: https://github.com/EvotecIT/ChartForgeX/releases/tag/ChartForgeX-v3.3.1</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>charts;markdown;markup;mermaid;diagrams;svg;png;html;topology;reports;dashboard;aot;nativeaot;trimming</PackageTags>
