@@ -4,6 +4,7 @@ using System.Xml.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -54,6 +55,25 @@ public sealed class ResponsiveChartGeometryTests {
             if (width == 361) Assert.InRange(Math.Abs(geometry[0] - previous!.Value), 0, .1);
             previous = geometry[0];
         }
+        InteractiveChartBrowser.AssertNoConsoleErrors(session);
+    }
+
+    [BrowserFact]
+    public async Task ResizedStackedColumnsKeepTheNativeBandWidth() {
+        if (!InteractiveChartBrowser.Enabled) return;
+        Chart Build(int width) => Chart.Create().WithSize(width, 280).WithHeader(false).WithLegend(false).WithDataLabels(false)
+            .WithBarStyle(ChartBarStyle.Flat).WithStackedBars()
+            .AddBar("Count", Enumerable.Range(0, 7).Select(i => new ChartPoint(i, 100 + i * 40)).ToArray());
+        var native = Build(1120);
+        var expected = native.Prepare(VisualExportRequest.ForChart(native).Context).Scene.Nodes.OfType<VisualSceneRectangle>().First(n => n.Role == "bar").Bounds.Width;
+        Assert.True(expected > 28, "The native drawing should exceed the horizontal-bar cap.");
+        var html = "<html><body style='margin:0'><div id='panel' style='width:320px'>" +
+            new HtmlResponsiveChartRenderer().RenderFragment(Build(760), 240, 1600) + "</div></body></html>";
+        await using var session = await InteractiveChartBrowser.OpenAsync(html, 1440, 600);
+        await session.Page.EvaluateAsync("()=>document.querySelector('#panel').style.width='1120px'");
+        await session.Page.WaitForFunctionAsync("()=>Number(document.querySelector('[data-cfx-responsive-chart]').dataset.cfxLayoutWidth)===1120");
+        var actual = await session.Page.EvaluateAsync<double>("()=>Number(document.querySelector('[data-cfx-role=bar]').getAttribute('width'))");
+        Assert.Equal(expected, actual, .5);
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
     }
 
