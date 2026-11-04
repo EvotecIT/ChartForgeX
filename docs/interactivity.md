@@ -99,8 +99,11 @@ isolation moved out of the runtimes. A host page that registers only
 
 ## Standalone report viewports
 
-A saved interactive HTML page can navigate numeric Cartesian Line, Bar, Area,
-Scatter and Candlestick charts without a server or a `connectNative` callback.
+A saved interactive HTML page can navigate numeric Cartesian Line, StepLine,
+Area, StepArea, Bar, HorizontalBar, Scatter, Bubble, Candlestick, OHLC,
+RangeBand, RangeArea, BoxPlot and ErrorBar charts without a server or a
+`connectNative` callback. Linear and logarithmic axes are supported, as is a
+secondary Y axis on vertical charts.
 The HTML adapter keeps the source coordinates and reprojects the captured data
 ink into the fixed plot rectangle. Window changes regenerate axis ticks and
 clip data at the plot boundary while keeping the chart frame, marker sizes,
@@ -131,13 +134,20 @@ controller.setViewport({
 console.log(controller.getViewport());
 ```
 
-Use windows within the captured full domain. Zoom buttons change the X window;
-the wheel zooms around the pointer, and Shift-wheel targets Y. A two-finger
-pinch zooms X and Y around the gesture center. Pan mode moves
-the window within the captured domain. With both Brush and Zoom enabled, a
-rectangular brush becomes an X/Y window. Reset restores the captured full
-domain. Legend toggles rescale the value axis to the remaining visible series;
+Use windows within the captured full domain. Zoom buttons change the category
+window (X, or Y on a horizontal bar chart); the wheel zooms around the pointer,
+and Shift-wheel targets the value axis. A two-finger pinch zooms both directions
+around the gesture center. Pan mode moves the window within the captured domain.
+With both Brush and Zoom enabled, a rectangular brush becomes an X/Y window.
+Reset restores the captured full domain. Legend toggles rescale the value axis
+to the remaining visible series, including range, box and error-bar extents;
 bar and area views retain zero in their value domain.
+
+A secondary Y axis keeps its own window. Vertical zoom, pan, pinch and brush
+give each value axis the window under the same screen span, and each axis
+repaints its own ticks; `setViewport` accepts `secondaryY` separately. Bubble
+radii, markers and error-bar caps keep their drawn size while their centers
+follow the window; bars, boxes and bands stretch with it.
 
 New windows tick with the static renderer's step policy (1, 2, 2.5 and 5 × 10ⁿ
 inside the window). An axis whose domain and observations are whole numbers, or
@@ -149,6 +159,11 @@ wherever three fit. New captions use the native default axis notation
 values the drawing already captioned keep their native text. An axis with an
 authored label formatter keeps its captured captions and uses the same compact
 notation for values it never captioned.
+
+Logarithmic windows follow the native logarithmic policy: ticks sit on whole
+powers of the base, thinned by an exponent stride. A window holding fewer than
+two powers adds 1-2-5 (then 1…9) multiples of base ten, and a window inside one
+such step falls back to the linear step policy.
 
 Toolbar zoom, brush zoom, both resets and legend rescaling ease from the
 displayed window to the new one (see [Motion](#motion)). Wheel, pinch, pan and
@@ -173,11 +188,20 @@ After a host disconnects, navigation stays inside the last prepared scene's
 domain. Printing temporarily restores that scene's complete native geometry,
 then restores the browser window when returning to the screen.
 
-The supported scope here is vertical Cartesian charts with numeric linear axes and the five families
-above. Other chart families, horizontal orientation, time-session formatting,
-logarithmic/secondary-axis parity and native annotation layout require their
-own validation or a connected native preparation path. Mixing an unsupported
-series family into a chart does not establish standalone viewport support.
+The supported scope is the families above on numeric linear or logarithmic
+axes. Time and symmetric-logarithmic axes, a secondary axis on a horizontal
+chart, stacked and other Cartesian families, and native annotation layout
+require a connected native preparation path; a saved page still scales their
+whole drawing. Mixing an unsupported series family into a chart does not
+establish standalone viewport support.
+
+Charts without a data window to narrow decline zoom in a saved page: Heatmap,
+hexbin and calendar heatmaps, maps, and every chart without a Cartesian data
+projection (Pie, Donut, gauges, Polar and Radar, hierarchy, flow and diagram
+scenes). Their Zoom and Pan buttons are disabled and described as "Zoom is not
+available for this chart type" (`HtmlChartText.ZoomUnavailable`), the wheel
+keeps scrolling the page, and bookmarks or synchronized peers cannot scale the
+drawing. A connected native Polar viewport is unaffected.
 
 A native connection remains the path for regenerating a prepared scene in C#,
 including native tick formatting and layout policies. It takes precedence over
@@ -1105,7 +1129,7 @@ In `Browser` mode, colour glyphs, embedded bitmap strikes, built-in tiny fallbac
 
 ## State Bookmarks
 
-Supported standalone Cartesian charts capture source-coordinate windows in bookmarks and restore them through the same projection path as the navigation controls. Other families retain the legacy whole-SVG CSS zoom and pan. Connected hosts can use native X or primary-Y/XY windows as described below. Static legend display uses `WithLegend` and per-series `WithLegendEntry`; browser legend actions mute or isolate marks while retaining their source facts.
+Supported standalone Cartesian charts capture source-coordinate windows in bookmarks and restore them through the same projection path as the navigation controls. Declined families ignore saved zoom; other unsupported Cartesian families retain the legacy whole-SVG CSS zoom and pan. Connected hosts can use native X or primary-Y/XY windows as described below. Static legend display uses `WithLegend` and per-series `WithLegendEntry`; browser legend actions mute or isolate marks while retaining their source facts.
 
 ## Translated controls and text direction
 
