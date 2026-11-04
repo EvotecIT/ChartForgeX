@@ -533,7 +533,7 @@ public sealed class MarkupTopologyParser {
     private static double NonNegativeNumber(Dictionary<string, string> row, string key, double fallback) => Number(row, key, fallback, allowZero: true);
     private static double Number(Dictionary<string, string> row, string key, double fallback, bool allowZero) {
         var number = row.TryGetValue(NormalizeKey(key), out var value) && !string.IsNullOrWhiteSpace(value)
-            ? double.Parse(value, CultureInfo.InvariantCulture)
+            ? VisualMarkupFenceOptions.ParseDouble(value, key)
             : fallback;
         if (double.IsNaN(number) || double.IsInfinity(number) || (allowZero ? number < 0 : number <= 0)) {
             throw new ArgumentException(key + (allowZero ? " must be a non-negative finite number." : " must be a positive finite number."));
