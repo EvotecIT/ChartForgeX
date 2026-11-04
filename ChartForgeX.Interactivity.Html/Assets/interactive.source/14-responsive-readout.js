@@ -6,7 +6,10 @@
     const visibility = new Map(headings.map(node => [node, node.style.visibility]));
     const title = svg.querySelector('title')?.textContent || headings[0]?.textContent || '';
     // Native headings can wrap into several sources; lines sharing the first font request belong to the title.
-    const caption = node => (Array.from(node.querySelectorAll('[data-cfx-caption]'), line => line.dataset.cfxCaption).join(' ') || node.textContent || '').trim();
+    // Wrapped lines are separate text runs; textContent alone would join "isolate" and "it" without a space.
+    const lines = node => Array.from(node.querySelectorAll('text,tspan')).filter(line => !line.querySelector('text,tspan'))
+      .map(line => line.textContent.trim()).filter(Boolean).join(' ');
+    const caption = node => (Array.from(node.querySelectorAll('[data-cfx-caption]'), line => line.dataset.cfxCaption).join(' ') || lines(node) || node.textContent || '').trim();
     const font = node => node.getAttribute('data-cfx-authored-font-request');
     const subtitleText = Array.from(new Set(headings.filter(node => node.dataset.cfxRole === 'frame-subtitle-source' || font(node) !== font(headings[0]))
       .map(caption).filter(Boolean))).join(' ');
