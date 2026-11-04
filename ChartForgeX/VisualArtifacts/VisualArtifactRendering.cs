@@ -138,16 +138,22 @@ public static partial class VisualArtifactRendering {
         return html.Substring(0, valueStart) + EscapeHtml(safeLanguage) + html.Substring(valueEnd);
     }
 
+    // Artifacts are handed to hosts (HTML pages, Office, report shells) that supply product fonts once, or cannot use CSS
+    // fonts at all; embedding the faces in every SVG repeats about 130 KB per visual and trips host import limits.
     private static string RenderSvg(VisualArtifact artifact, VisualArtifactRenderOptions? options, string? idScope = null) {
         var source = artifact.RenderSource ?? artifact.Model as IStaticVisualSource;
         if (source != null) return source.RenderSvg(idScope ?? Svg.SvgRenderedIdentity.CreateProvisionalId("artifact", artifact.Id));
         return artifact.Model switch {
             PreparedVisual prepared => RenderPreparedSvg(artifact, prepared, idScope),
-            Chart chart => idScope == null ? chart.ToSvg() : chart.ToSvg(idScope),
-            ChartGrid grid => idScope == null ? grid.ToSvg() : grid.ToSvg(idScope),
+            Chart chart => idScope == null ? chart.Prepare(VisualExportRequest.ForChart(chart).Context).ToSvgWithoutProductFonts()
+                : chart.Prepare(VisualExportRequest.ForChart(chart).Context).ToSvg(new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(idScope), chart.Options.SvgColorVariables).WithoutProductFonts()),
+            ChartGrid grid => idScope == null ? grid.Prepare(VisualExportRequest.ForGrid(grid).Context).ToSvgWithoutProductFonts()
+                : grid.Prepare(VisualExportRequest.ForGrid(grid).Context).ToSvg(new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(idScope), grid.SvgColorVariables).WithoutProductFonts()),
             TopologyChart topology => RenderTopologySvg(artifact, topology, options, idScope),
-            FlowArtifact flow => idScope == null ? flow.ToSvg() : flow.Prepare(VisualExportRequest.ForFlow(flow).Context).ToSvg(new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(idScope))),
-            SequenceArtifact sequence => idScope == null ? sequence.ToSvg() : SequencePreparedCompiler.PrepareDefault(sequence).ToSvg(new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(idScope))),
+            FlowArtifact flow => idScope == null ? flow.Prepare(VisualExportRequest.ForFlow(flow).Context).ToSvgWithoutProductFonts()
+                : flow.Prepare(VisualExportRequest.ForFlow(flow).Context).ToSvg(new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(idScope)).WithoutProductFonts()),
+            SequenceArtifact sequence => idScope == null ? SequencePreparedCompiler.PrepareDefault(sequence).ToSvgWithoutProductFonts()
+                : SequencePreparedCompiler.PrepareDefault(sequence).ToSvg(new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(idScope)).WithoutProductFonts()),
             IVisualBlock block => block.ToSvg(),
             _ => throw new InvalidOperationException("Artifact '" + artifact.Id + "' does not expose a supported SVG render model.")
         };
@@ -205,7 +211,7 @@ public static partial class VisualArtifactRendering {
         accessibility.Name ??= prepared.Visual.Accessibility.Name ?? (artifact.Title.Length == 0 ? artifact.Id : artifact.Title);
         accessibility.Description ??= prepared.Visual.Accessibility.Description;
         accessibility.Language ??= prepared.Visual.Accessibility.Language;
-        return prepared.ToSvg(accessibility, SvgCharacterCeiling(artifact));
+        return prepared.ToSvg(accessibility, SvgCharacterCeiling(artifact), productFonts: false);
     }
 
     internal static TopologyChart TopologyModel(VisualArtifact artifact, TopologyChart topology) {

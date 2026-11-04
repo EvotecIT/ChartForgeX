@@ -177,10 +177,11 @@ public sealed partial class PreparedVisual {
         _accessibility.Description, _accessibility.Language, _accessibility.IsDecorative, idPrefix, _defaultSvgOptions, _capturePngText);
     /// <summary>Exports an owning artifact's metadata without altering the prepared snapshot.</summary>
     internal string ToSvg(VisualAccessibility accessibility, string? idPrefix = null, int? maximumCharacters = null,
-        VisualSvgTextPresentation? textPresentation = null) {
+        VisualSvgTextPresentation? textPresentation = null, bool productFonts = true) {
         if (accessibility == null) throw new ArgumentNullException(nameof(accessibility));
         var options = textPresentation.HasValue
             ? (_defaultSvgOptions ?? new VisualSvgOptions()).WithTextPresentation(textPresentation.Value) : _defaultSvgOptions;
+        if (!productFonts) options = (options ?? new VisualSvgOptions()).WithoutProductFonts();
         return VisualSceneSvgRenderer.Render(_scene, accessibility.Name, accessibility.Description,
             accessibility.Language, accessibility.IsDecorative, idPrefix ?? options?.IdPrefix, options, _capturePngText, maximumCharacters);
     }

@@ -92,7 +92,8 @@ public sealed class PreparedTopology {
 
     /// <summary>Renders the prepared geometry without running layout again.</summary>
     public string ToSvg() => _visual.ToSvg();
-    internal string ToSvg(VisualAccessibility accessibility, int? maximumCharacters = null) => _visual.ToSvg(accessibility, maximumCharacters: maximumCharacters);
+    internal string ToSvg(VisualAccessibility accessibility, int? maximumCharacters = null, bool productFonts = true) =>
+        _visual.ToSvg(accessibility, maximumCharacters: maximumCharacters, productFonts: productFonts);
 
     /// <summary>Renders the same prepared geometry through the dependency-free raster renderer.</summary>
     public byte[] ToPng() => _visual.ToPng(_rasterOptions);
