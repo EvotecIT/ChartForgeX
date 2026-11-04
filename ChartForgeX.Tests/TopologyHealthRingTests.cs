@@ -40,9 +40,9 @@ public sealed class TopologyHealthRingTests {
         chart.Nodes[0].Badge = "LEAD";
         chart.Nodes[0].MaximumLabelCharacters = 3;
         XElement Node() => XDocument.Parse(chart.ToSvg()).Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-node");
-        Assert.Equal("Gateway service, Last update 42 seconds ago, LEAD, Warning", (string?)Node().Attribute("aria-label"));
+        Assert.Equal("Gateway service, Last update 42 seconds ago, LEAD, Warning", AccessibleName(Node()));
         chart.Nodes[0].AccessibleName = "Gateway — synchronization delayed";
-        Assert.Equal(chart.Nodes[0].AccessibleName, (string?)Node().Attribute("aria-label"));
+        Assert.Equal(chart.Nodes[0].AccessibleName, AccessibleName(Node()));
     }
 
     [Fact]
@@ -94,6 +94,9 @@ public sealed class TopologyHealthRingTests {
         Assert.Throws<ArgumentException>(() => envelope.ToJson());
         Assert.Throws<ArgumentException>(() => VisualArtifactInterchangeEnvelope.FromJson(json.Replace(name, name + "x", StringComparison.Ordinal)));
     }
+
+    // Static SVG keeps the name as host data; explorable output promotes it to aria-label.
+    internal static string? AccessibleName(XElement element) => (string?)(element.Attribute("aria-label") ?? element.Attribute("data-cfx-description"));
 
     private static TopologyChart Diagram(VisualThemeMode mode, TopologyHealthStatus status) {
         var chart = TopologyChart.Create().WithId("health-ring").WithViewport(240, 200)

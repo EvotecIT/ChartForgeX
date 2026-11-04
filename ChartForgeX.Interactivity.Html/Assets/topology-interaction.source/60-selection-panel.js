@@ -176,7 +176,7 @@
           id: attr(element, 'data-node-id'),
           label: attr(element, 'data-node-label'),
           subtitle: attr(element, 'data-node-subtitle'),
-          accessibleName: attr(element, 'aria-label'),
+          accessibleName: attr(element, 'aria-label') || attr(element, 'data-cfx-description'),
           healthRing: attr(element, 'data-node-health-ring') === 'true',
           nodeKind: attr(element, 'data-node-kind'),
           groupId: attr(element, 'data-group-id'),

@@ -19,7 +19,7 @@
         sourceGroupId:element.dataset.sourceGroupId, targetGroupId:element.dataset.targetGroupId,
         groupId:element.dataset.groupId, groupLabel:element.dataset.groupLabel,
         nodeKind:element.dataset.nodeKind, edgeKind:element.dataset.edgeKind, direction:element.dataset.direction,
-        accessibleName: element.getAttribute('aria-label') || '', healthRing: kind === 'node',
+        accessibleName: element.getAttribute('aria-label') || element.getAttribute('data-cfx-description') || '', healthRing: kind === 'node',
         status: element.dataset.cfxStatus || '', metadata:prefixed(element,'data-cfx-meta-'), metrics:prefixed(element,'data-cfx-metric-') };
     };
     const emit = (name, element) => wrapper.dispatchEvent(new CustomEvent(name, { bubbles:true, composed:true, detail:data(element) }));

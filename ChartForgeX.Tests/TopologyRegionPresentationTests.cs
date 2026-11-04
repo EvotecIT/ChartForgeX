@@ -41,8 +41,8 @@ public sealed class TopologyRegionPresentationTests {
         Assert.Equal("Third badge", restored.Nodes[0].Extensions["chartforgex.region.badge.2.meaning"]);
         var document = XDocument.Parse(prepared.ToSvg());
         var accessible = document.Descendants().Single(element => (string?)element.Attribute("data-node-id") == node.Id);
-        Assert.Contains(node.Subtitle, (string?)accessible.Attribute("aria-label"));
-        Assert.Contains("Third badge", (string?)accessible.Attribute("aria-label"));
+        Assert.Contains(node.Subtitle, TopologyHealthRingTests.AccessibleName(accessible));
+        Assert.Contains("Third badge", TopologyHealthRingTests.AccessibleName(accessible));
         var html = chart.ToHtmlFragment(new TopologyRenderOptions { IncludeRegionDetails = true });
         Assert.Contains("Protected &lt;key&gt;", html);
         Assert.DoesNotContain("Protected <key>", html);

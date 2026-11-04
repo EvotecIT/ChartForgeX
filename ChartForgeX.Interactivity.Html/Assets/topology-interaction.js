@@ -32,7 +32,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
         sourceGroupId:element.dataset.sourceGroupId, targetGroupId:element.dataset.targetGroupId,
         groupId:element.dataset.groupId, groupLabel:element.dataset.groupLabel,
         nodeKind:element.dataset.nodeKind, edgeKind:element.dataset.edgeKind, direction:element.dataset.direction,
-        accessibleName: element.getAttribute('aria-label') || '', healthRing: kind === 'node',
+        accessibleName: element.getAttribute('aria-label') || element.getAttribute('data-cfx-description') || '', healthRing: kind === 'node',
         status: element.dataset.cfxStatus || '', metadata:prefixed(element,'data-cfx-meta-'), metrics:prefixed(element,'data-cfx-metric-') };
     };
     const emit = (name, element) => wrapper.dispatchEvent(new CustomEvent(name, { bubbles:true, composed:true, detail:data(element) }));
@@ -1048,7 +1048,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
           id: attr(element, 'data-node-id'),
           label: attr(element, 'data-node-label'),
           subtitle: attr(element, 'data-node-subtitle'),
-          accessibleName: attr(element, 'aria-label'),
+          accessibleName: attr(element, 'aria-label') || attr(element, 'data-cfx-description'),
           healthRing: attr(element, 'data-node-health-ring') === 'true',
           nodeKind: attr(element, 'data-node-kind'),
           groupId: attr(element, 'data-group-id'),
