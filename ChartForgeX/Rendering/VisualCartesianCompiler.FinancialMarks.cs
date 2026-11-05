@@ -133,8 +133,10 @@ internal static partial class VisualCartesianCompiler {
                     FinancialDash(style.WickDash, scale), ChartStrokeDashes.NormalizeOffset(style.WickDash, style.WickDashOffset) * scale);
                 var x = slot.Left + slot.Width / 2; var y = slot.Top + slot.Height / 2;
                 var open = y + (up ? 8 : -8) * scale; var close = y - (up ? 8 : -8) * scale;
-                DrawFinancialMark(builder, candle, FinancialBody(x, 12 * scale, open, close), y - 18 * scale, y + 18 * scale,
-                    open, close, scaled, pattern, backdrop, legend: true, radiusScale: scale);
+                // The key names the direction its paired colour encodes, as the plotted marks do.
+                using (builder.PushGroup(null, null, new Dictionary<string, string> { ["data-cfx-direction"] = up ? "rising" : "falling" }))
+                    DrawFinancialMark(builder, candle, FinancialBody(x, 12 * scale, open, close), y - 18 * scale, y + 18 * scale,
+                        open, close, scaled, pattern, backdrop, legend: true, radiusScale: scale);
             }
             if (point >= 0) Glyph(bounds, first, rising);
             else {
