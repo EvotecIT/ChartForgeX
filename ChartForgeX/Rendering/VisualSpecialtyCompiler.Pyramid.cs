@@ -10,9 +10,12 @@ using ChartForgeX.Typography;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualSpecialtyCompiler {
+    /// <summary>Funnel and Pyramid stages have no legend or axis to name them, so their captions are on unless the series or chart turns them off.</summary>
+    internal static bool StageCaptionsShown(Chart chart, ChartSeries series) => series.ShowDataLabels ?? chart.Options.ShowDataLabels ?? true;
+
     private static void Pyramid(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
         var series = chart.Series[0]; var options = chart.Options.Pyramid; var colors = context.Theme.Resolve(context.ThemeMode);
-        var show = series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false);
+        var show = StageCaptionsShown(chart, series);
         var separate = show && chart.Options.Pyramid.LabelContent == ChartStageLabelContent.Separate
             ? new StageCaptions(chart, context, builder, plot, false) : null;
         var combined = show && separate == null;

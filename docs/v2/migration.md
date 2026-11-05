@@ -38,6 +38,8 @@ The unified authoring API uses the coordinated 3.0.0 package family. Upgrade the
 
 Treemaps display their group and leaf captions by default. An explicit `WithDataLabels(false)` on the chart or `ShowDataLabels = false` on its series still hides them. `ConfigureTreemap(options => options.ShowValues = false)` keeps the names while hiding their numeric values.
 
+Funnel and Pyramid charts now show their stage captions by default, because neither has a legend or axis to name its stages. This is a visible change: a chart that relied on the old opt-in default gains captions and gives its stages correspondingly less room. Call `WithDataLabels(false)` on the chart, or `WithDataLabels(false)` on the series, to keep the previous caption-free output.
+
 ## Unified authoring contracts
 
 ### Series paint and text callbacks
