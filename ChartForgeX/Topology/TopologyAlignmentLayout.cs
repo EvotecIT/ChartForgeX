@@ -63,7 +63,7 @@ internal sealed partial class TopologyAlignmentLayout {
         foreach (var alignment in chart.Alignments) {
             for (var i = 1; i < alignment.NodeIds.Count; i++) {
                 budget.Work(); var a = nodes[alignment.NodeIds[i - 1]]; var b = nodes[alignment.NodeIds[i]];
-                Separate(a, b, alignment.Kind == TopologyAlignmentKind.Row ? 0 : 2, alignment.Id);
+                Separate(a, b, alignment.Kind == TopologyAlignmentKind.Row ? 0 : 2, alignment.Id, ConnectorRoom(a, b, alignment.Kind));
             }
         }
         var sets = new Dictionary<string, List<Item>>(StringComparer.Ordinal);
@@ -124,11 +124,33 @@ internal sealed partial class TopologyAlignmentLayout {
         }
     }
 
-    private void Separate(Item first, Item second, int direction, string? declarationId = null) {
+    private void Separate(Item first, Item second, int direction, string? declarationId = null, double connectorRoom = 0) {
         if (direction == 1 || direction == 3) { var swap = first; first = second; second = swap; }
         var horizontal = direction < 2;
         (horizontal ? x : y).Add(first.High, second.Low,
-            (horizontal ? first.Right - second.Left : first.Bottom - second.Top) + TopologyLayoutNormalizer.NodeGap, declarationId);
+            (horizontal ? first.Right - second.Left : first.Bottom - second.Top) + Math.Max(TopologyLayoutNormalizer.NodeGap, connectorRoom), declarationId);
+    }
+
+    // Neighbours joined by an edge keep enough room for a visible connector and arrowhead, and a labelled edge
+    // keeps its label's extent, so the caption sits on its own segment instead of being displaced from a route
+    // shorter than the text.
+    private const double MinimumConnectorRoom = 40;
+
+    private double ConnectorRoom(Item a, Item b, TopologyAlignmentKind kind) {
+        var room = 0d; var scale = options.ResolvedEdgeLabelScale;
+        foreach (var edge in chart.Edges) {
+            budget.Work();
+            var joins = edge.SourceNodeId == a.Node!.Id && edge.TargetNodeId == b.Node!.Id || edge.SourceNodeId == b.Node!.Id && edge.TargetNodeId == a.Node!.Id;
+            if (!joins) continue;
+            room = Math.Max(room, MinimumConnectorRoom);
+            if (!options.IncludeEdgeLabels || string.IsNullOrWhiteSpace(edge.Label) && string.IsNullOrWhiteSpace(edge.SecondaryLabel) && string.IsNullOrWhiteSpace(edge.TertiaryLabel)) continue;
+            var lines = (string.IsNullOrWhiteSpace(edge.Label) ? 0 : 1) + (string.IsNullOrWhiteSpace(edge.SecondaryLabel) ? 0 : 1) + (string.IsNullOrWhiteSpace(edge.TertiaryLabel) ? 0 : 1);
+            var extent = kind == TopologyAlignmentKind.Row
+                ? EdgeLabelTextWidth(edge.Label, edge.SecondaryLabel, edge.TertiaryLabel, chart.TextMeasurement, scale) + 24
+                : (lines <= 1 ? 22 : lines == 2 ? 38 : 52) * scale + 24;
+            room = Math.Max(room, extent);
+        }
+        return room;
     }
 
     private static TopologyValidationException Conflict(string id) {

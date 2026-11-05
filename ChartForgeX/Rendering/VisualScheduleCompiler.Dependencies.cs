@@ -69,7 +69,7 @@ internal static partial class VisualScheduleCompiler {
 
     private static double DependencyClearance(VisualRenderContext context) => context.Theme.AxisStrokeWidth / 2 + Math.Max(2, context.Theme.Spacing / 4);
     private const double DependencyOpacity = .55;
-    private static double DependencyArrowExtent(double height) => Math.Min(3, height / 4);
+    private static double DependencyArrowExtent(double height) => Math.Min(4.5, height / 4);
     private static double DependencyStubLength(VisualRenderContext context, double arrow) => Math.Max(arrow, context.Theme.Spacing);
 
 }

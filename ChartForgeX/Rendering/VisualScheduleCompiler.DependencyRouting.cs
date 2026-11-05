@@ -15,7 +15,13 @@ internal static partial class VisualScheduleCompiler {
         var start = new ChartPoint(source.Right + terminal, source.Y + source.Height / 2);
         var targetInset = Math.Max(arrow, Math.Min(radius, Math.Min(target.Width, target.Height) / 2));
         var end = new ChartPoint(targetMilestone ? target.X + target.Width / 2
-            : Math.Min(target.Right - targetInset, Math.Max(start.X + arrow, target.Left + targetInset)), target.Top - terminal);
+            : Math.Min(target.Right - targetInset, Math.Max(start.X + arrow * 2, target.Left + targetInset)), target.Top - terminal);
+        // A successor that starts where the predecessor finishes takes a short elbow off the finish into its
+        // top, so the arrowhead lands clearly on the successor rather than in a step between the two bars.
+        if (end.X >= start.X + arrow) {
+            var elbow = new[] { ChartPathCommand.MoveTo(start.X, start.Y), ChartPathCommand.LineTo(end.X, start.Y), ChartPathCommand.LineTo(end.X, end.Y) };
+            if (DependencyPaintFits(elbow, surfaces, plot, halfStroke)) return (elbow, start, end);
+        }
         var sourceFinish = sourceMilestone ? source.X + source.Width / 2 : source.Right;
         var targetStart = targetMilestone ? target.X + target.Width / 2 : target.Left;
         if (Math.Abs(sourceFinish - targetStart) <= clearance * 2) {

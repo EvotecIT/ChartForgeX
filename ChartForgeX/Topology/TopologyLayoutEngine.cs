@@ -10,6 +10,15 @@ namespace ChartForgeX.Topology;
 
 internal static partial class TopologyLayoutEngine {
     public static TopologyChart Prepare(TopologyChart chart, TopologyView? view = null, TopologyRenderOptions? options = null, TextMeasurementContext? measurement = null, TopologyChart? hierarchySource = null, bool compactCompoundLayout = false) {
+        if (!chart.PlacesFacingPorts || !chart.Edges.Any(HasFacingPorts)) return Prepare(chart, view, options, measurement, hierarchySource, compactCompoundLayout, false);
+        try {
+            return Prepare(chart, view, options, measurement, hierarchySource, compactCompoundLayout, true);
+        } catch (Exception exception) when (exception is TopologyValidationException or TopologyAlignmentLimitException) {
+            return Prepare(chart, view, options, measurement, hierarchySource, compactCompoundLayout, false);
+        }
+    }
+
+    private static TopologyChart Prepare(TopologyChart chart, TopologyView? view, TopologyRenderOptions? options, TextMeasurementContext? measurement, TopologyChart? hierarchySource, bool compactCompoundLayout, bool placeFacingPorts) {
         var external = new TopologyChartValidator().ValidateExternalPresentationInputs(chart, options ?? new TopologyRenderOptions());
         if (!external.IsValid) throw new TopologyValidationException(external);
         var paints=new TopologyChartValidator().ValidateSurfacePaintInputs(chart);
@@ -45,6 +54,7 @@ internal static partial class TopologyLayoutEngine {
 
         if (view != null) ApplyView(copy, view);
         if (chart.Alignments.Count > 0) ProjectAlignments(copy);
+        if (placeFacingPorts) AddFacingPortAlignments(copy);
         if (options != null) copy.Legend = options.IncludeLegend ? TopologyLegend.Resolve(copy, options.LegendMode) : null;
         var constrained = copy.Alignments.Count > 0 && copy.LayoutMode == TopologyLayoutMode.Layered;
         var compoundLayout = false;
