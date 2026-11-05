@@ -448,14 +448,6 @@ public enum HtmlChartText {
     TopologyTimelineStep,
     /// <summary>UI text: {nodes} nodes / {edges} edges visible. Uses <c>{nodes}</c>, <c>{edges}</c>.</summary>
     TopologyVisibleSummary,
-    /// <summary>UI text naming a use case step that sends a request.</summary>
-    ScenarioRequest,
-    /// <summary>UI text naming a use case step that sends a one-way message.</summary>
-    ScenarioMessage,
-    /// <summary>UI text naming a use case step that answers a request.</summary>
-    ScenarioResponse,
-    /// <summary>UI text naming a use case step whose call fails.</summary>
-    ScenarioFailure,
     /// <summary>UI text: TOPOLOGY REPORT</summary>
     ReportEyebrow,
     /// <summary>UI text: {objects} objects · {pages} detail pages · {relationships} relationships. Uses <c>{objects}</c>, <c>{pages}</c>, <c>{relationships}</c>.</summary>
@@ -624,4 +616,13 @@ public enum HtmlChartText {
     TopologyDiagram,
     /// <summary>Explains why a saved chart family without a data window disables its zoom and pan controls.</summary>
     ZoomUnavailable,
+    // New entries go last: compiled consumers keep the numeric values of existing ones.
+    /// <summary>UI text naming a use case step that sends a request.</summary>
+    ScenarioRequest,
+    /// <summary>UI text naming a use case step that sends a one-way message.</summary>
+    ScenarioMessage,
+    /// <summary>UI text naming a use case step that answers a request.</summary>
+    ScenarioResponse,
+    /// <summary>UI text naming a use case step whose call fails.</summary>
+    ScenarioFailure,
 }
