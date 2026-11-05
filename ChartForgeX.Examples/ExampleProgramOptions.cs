@@ -11,6 +11,7 @@ internal static class ExampleProgramOptions {
         args.Any(arg => string.Equals(arg, name, StringComparison.OrdinalIgnoreCase));
 
     public static bool TryHandle(string[] args, string output, ChartPngOutputScale pngOutputScale) {
+        if (HasArg(args, "--browser-data-only")) { BrowserDataExamples.Write(output); return true; }
         if (HasArg(args, "--configurability-only")) { ConfigurabilityExamples.Write(output, pngOutputScale); GalleryWriter.Write(output); return true; }
         if (HasArg(args, "--embedding-only")) { ServerRenderedChartExamples.Write(output); return true; }
         if (HasArg(args, "--enhance-only")) { EnhanceExamples.Write(output); return true; }

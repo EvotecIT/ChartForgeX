@@ -15,7 +15,7 @@ internal static class ChartMarkSurface {
     public const double StackSeparator = 1;
 
     /// <summary>A stacked segment keeps at least this painted extent; a thinner one gives up no separator.</summary>
-    private const double MinimumSegmentExtent = 1;
+    internal const double MinimumSegmentExtent = 1;
 
     /// <summary>The surface seam between contiguous histogram bins; bins are intervals, not separate bars.</summary>
     public const double HistogramSeam = 1;
