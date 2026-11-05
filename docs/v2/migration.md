@@ -333,6 +333,10 @@ The key is off by default. Enabling it keeps categorical series entries and colo
 
 Graph image nodes stretch the complete source image to the configured image rectangle before circular clipping. Native SVG/PNG, accelerated SVG, browser PNG and patched nodes use the same scaling. Earlier SVG paths could letterbox or crop a non-square source while Canvas stretched it. Supply an image with the intended mark's aspect ratio when its original proportions must be preserved; exports no longer choose a different fit based on the backend.
 
+## Interactive topology opening view
+
+Interactive topology pages with `EnableHtmlViewportControls` no longer shrink a drawing until its node captions fall below 10 px. When the page width would do that, the viewport takes a bounded height and opens magnified at the drawing's top and reading-start edge; Fit gives the overview, and Reset now returns to this opening view rather than to zoom 1. The zoom ceiling grows with the opening zoom. Pages whose captions are already readable at their width open exactly as before. To keep a specific opening view, send `cfx-topology-set-viewport` after mount; a wrapper that already carries `data-cfx-topology-zoom` when the runtime mounts keeps that state. The viewport is now focusable with `+`, `-`, `0` and arrow-key shortcuts. Static SVG, PNG and non-interactive HTML are unchanged.
+
 ## HTML tooltip options
 
 Configure tooltip content through `HtmlChartInteractionOptions.Tooltip.Mode` and `HtmlInteractiveDashboardOptions.Tooltip.Mode`; these replace the flat `TooltipMode` property. The existing `HtmlChartTooltipMode.Single` and `.SharedX` values are unchanged. Getter-owned `Tooltip` options also expose `Range`: `Exact`, `Nearest`, or `HtmlChartTooltipRange.WithinDistance(cssPixels)`.

@@ -29,9 +29,7 @@ AG Charts lets a caller style any datum, format any label and theme every series
 
 ## 2. Standalone browser interactivity
 
-Static HTML from reports and email has to feel interactive without a .NET host. Feature bundles (context menu, data export, hierarchy drill, isolate, motion), re-projected standalone zoom with fresh ticks for every Cartesian family a saved page can redraw faithfully (zoned and culture calendars, symmetric-log axes and horizontal secondary axes included; the remaining declines are documented in docs/interactivity.md), brush zoom, legend rescale, entry and update motion, tooltip templates and renderers, CSV/JSON/clipboard export, custom context-menu items, pinch zoom, double-tap isolate and use case playback with direction-aware arrows and localized interaction labels have landed.
-
-- [ ] **Large graph navigation.** Large topology/graph scenes get zoom, filtering or hierarchy navigation rather than shrinking to fit. Done when a dense example stays readable.
+Static HTML from reports and email has to feel interactive without a .NET host. Feature bundles (context menu, data export, hierarchy drill, isolate, motion), re-projected standalone zoom with fresh ticks for every Cartesian family a saved page can redraw faithfully (zoned and culture calendars, symmetric-log axes and horizontal secondary axes included; the remaining declines are documented in docs/interactivity.md), brush zoom, legend rescale, entry and update motion, tooltip templates and renderers, CSV/JSON/clipboard export, custom context-menu items, pinch zoom, double-tap isolate, use case playback with direction-aware arrows and localized interaction labels, and dense topology navigation (a readable opening view, keyboard pan and zoom, and a find bar; see docs/topology.md) have landed.
 
 ## 3. Diagram appearance
 
