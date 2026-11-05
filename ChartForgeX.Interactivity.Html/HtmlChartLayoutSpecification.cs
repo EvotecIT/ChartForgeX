@@ -43,6 +43,7 @@ internal static class HtmlChartLayoutSpecification {
             .Append(",\"spacing\":").Append(N(chart.Options.Theme.Spacing))
             .Append(",\"legendPosition\":").Append(HtmlJsonString.Encode(chart.Options.LegendPosition.ToString()));
         if (HtmlRadialLayoutSpecification.Supports(chart)) HtmlRadialLayoutSpecification.Append(output, chart, context, prepared, authoredHeight, minimum);
+        else output.Append(CompactTypeSizes(context.Theme.Typography, minimum));
         // Source values and labels travel with the serialized native scene, including typed observations and category/time formatting.
         HtmlChartLayoutBars.Append(output, chart, prepared);
         var root = XElement.Parse(svg);
@@ -91,5 +92,20 @@ internal static class HtmlChartLayoutSpecification {
         return ",\"gutter\":[" + N(start) + "," + N(minimum) + "]";
     }
     private const double MinimumLaneGutter = 88;
+    // Below the breakpoint the static drawing paints its frame, legend, axis and data-label roles at the compact sizes.
+    // The source drawing is the wide one, so the runtime maps each painted role size to its compact size there.
+    // A wide size shared by roles with different compact sizes stays unchanged rather than guessing the role.
+    private static string CompactTypeSizes(ChartForgeX.Themes.VisualTypography wide, int minimum) {
+        var compact = wide.ForWidth(0);
+        if (ReferenceEquals(compact, wide) || minimum >= wide.CompactBreakpoint) return string.Empty;
+        var pairs = new[] {
+            (wide.TitleSize, compact.TitleSize), (wide.SubtitleSize, compact.SubtitleSize), (wide.LegendSize, compact.LegendSize),
+            (wide.AxisSize, compact.AxisSize), (wide.AxisTitleSize, compact.AxisTitleSize), (wide.DataLabelSize, compact.DataLabelSize)
+        }.Where(pair => pair.Item1 != pair.Item2).GroupBy(pair => pair.Item1)
+            .Where(group => group.Select(pair => pair.Item2).Distinct().Count() == 1).Select(group => group.First()).ToArray();
+        if (pairs.Length == 0) return string.Empty;
+        return ",\"compact\":{\"breakpoint\":" + N(wide.CompactBreakpoint) + ",\"sizes\":["
+            + string.Join(",", pairs.Select(pair => "[" + N(pair.Item1) + "," + N(pair.Item2) + "]")) + "]}";
+    }
     private static string N(double value) => value.ToString("R", CultureInfo.InvariantCulture);
 }
