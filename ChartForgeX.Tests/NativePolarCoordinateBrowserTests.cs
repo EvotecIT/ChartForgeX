@@ -30,7 +30,9 @@ public sealed class NativePolarCoordinateBrowserTests {
         await page.Mouse.MoveAsync((float)painted[0], (float)painted[1]);
         Assert.Equal(expected, await page.Locator(".cfx-hovered:is(" + observationSelector + ")").GetAttributeAsync("data-cfx-target-id"));
         Assert.NotEqual(string.Empty, await TooltipTextAsync(page));
-        Assert.True(await page.Locator(".cfx-crosshair").EvaluateAsync<bool>("node => node.hidden"));
+        // Radar and Polar observations show the polar guide; other polar families keep none.
+        Assert.Equal(kind is ChartSeriesKind.Radar or ChartSeriesKind.Polar ? "polar" : "hidden",
+            await page.Locator(".cfx-crosshair").EvaluateAsync<string>("node => node.hidden ? 'hidden' : node.dataset.cfxCrosshairShape"));
         var empty = await target.EvaluateAsync<double[]>("node => { const box=node.getBoundingClientRect(), svg=node.ownerSVGElement, view=svg.getBoundingClientRect(), cx=box.left+box.width/2, cy=box.top+box.height/2; for(let y=-110;y<=110;y+=10) for(let x=-110;x<=110;x+=10) { if(Math.hypot(x,y)>115) continue; const px=cx+x, py=cy+y; if(px<view.left || px>view.right || py<view.top || py>view.bottom) continue; const hit=document.elementFromPoint(px,py); if(hit && svg.contains(hit) && !hit.closest('[data-cfx-point],[data-cfx-target-kind=node],[data-cfx-role=legend-item]')) return [px,py]; } throw new Error('No nearby empty polar space'); }");
         await page.Mouse.MoveAsync((float)empty[0], (float)empty[1]);
         Assert.Equal(string.Empty, await TooltipTextAsync(page));

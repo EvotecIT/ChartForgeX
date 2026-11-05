@@ -97,6 +97,10 @@
 .cfx-crosshair { --cfx-crosshair-default-stroke: var(--cfx-crosshair-axis); }
 .cfx-crosshair__line--x { height: 0; border-top: 1px dashed var(--cfx-crosshair-axis); }
 .cfx-crosshair__line--y { width: 0; border-left: 1px solid var(--cfx-crosshair-axis); }
+/* Polar guides run along grid rings and spokes painted in the axis ink, so they take the muted text ink. */
+.cfx-crosshair { --cfx-crosshair-polar-stroke: var(--cfx-crosshair-stroke, var(--cfx-tooltip-muted, var(--cfx-crosshair-axis))); }
+.cfx-crosshair__ring { border: var(--cfx-crosshair-stroke-width, 1px) var(--cfx-crosshair-line-style, dashed) var(--cfx-crosshair-polar-stroke); }
+.cfx-crosshair__spoke { border-top: var(--cfx-crosshair-stroke-width, 1px) var(--cfx-crosshair-line-style, solid) var(--cfx-crosshair-polar-stroke); }
 .cfx-interactive-chart[data-cfx-crosshair-styled="true"] .cfx-crosshair__line--x {
   border-top: var(--cfx-crosshair-stroke-width, 1px) var(--cfx-crosshair-line-style, dashed) var(--cfx-crosshair-stroke, var(--cfx-crosshair-axis));
 }
