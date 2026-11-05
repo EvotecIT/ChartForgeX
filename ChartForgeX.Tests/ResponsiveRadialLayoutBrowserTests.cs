@@ -72,6 +72,9 @@ public sealed class ResponsiveRadialLayoutBrowserTests {
         Assert.Equal(expected[3] - expected[1], actual[3] - actual[1], 2);
         const string rows = "root=>new Set([...root.querySelectorAll('[data-cfx-role=legend-label]')].map(e=>Math.round(e.getBoundingClientRect().top))).size";
         Assert.Equal(await page.Locator("#reference").EvaluateAsync<int>(rows), await page.Locator("[data-cfx-responsive-chart]").EvaluateAsync<int>(rows));
+        // Wrapped value rows share columns in both drawings, so their value columns end at the same few positions.
+        const string valueColumns = "root=>new Set([...root.querySelectorAll('[data-cfx-role=legend-value]')].map(e=>Math.round(e.getBoundingClientRect().right-root.getBoundingClientRect().left))).size";
+        Assert.Equal(await page.Locator("#reference").EvaluateAsync<int>(valueColumns), await page.Locator("[data-cfx-responsive-chart]").EvaluateAsync<int>(valueColumns));
         const string centerSizes = "root=>[...root.querySelectorAll('[data-cfx-role=donut-center] text')].map(e=>parseFloat(getComputedStyle(e).fontSize)*Math.hypot(e.getScreenCTM().a,e.getScreenCTM().b))";
         var actualSizes = await page.Locator("[data-cfx-responsive-chart]").EvaluateAsync<double[]>(centerSizes);
         var expectedSizes = await page.Locator("#reference").EvaluateAsync<double[]>(centerSizes);

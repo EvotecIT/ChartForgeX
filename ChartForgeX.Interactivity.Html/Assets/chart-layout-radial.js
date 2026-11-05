@@ -76,11 +76,21 @@
       const natural=widths.map(([labelWidth,valueWidth,percentWidth])=>Math.min(legendWidth,28+labelWidth+(valueWidth?gap+valueWidth+(percentWidth?percentColumn+gap*2/3:0):0)));
       // A stacked list with values gives every entry its widest entry's width, so the value columns line up.
       const uniform=side&&widths.some(w=>w[1])?Math.max(...natural):0;
+      // Mirrors VisualFrameLayout: wrapped value rows above or below share content-sized columns, as many as fit.
+      let columns=null;
+      if(!side&&widths.some(w=>w[1])){
+        let wrapped=0,run=0;for(const w of natural){if(run&&run+gap+w>legendWidth){wrapped++;run=0;}run+=(run?gap:0)+w;}
+        for(let count=natural.length-1;wrapped&&count>=1;count--){
+          const candidate=Array(count).fill(0);natural.forEach((w,i)=>candidate[i%count]=Math.max(candidate[i%count],w));
+          if(count===1){columns=[Math.min(legendWidth,candidate[0])];break;}
+          if(candidate.reduce((sum,w)=>sum+w,0)+gap*(count-1)<=legendWidth){columns=candidate;break;}
+        }
+      }
       legend.forEach((entry,i)=>{
         const full=entry.data[1],[,valueWidth,percentWidth]=widths[i];entry.percentWidth=percentWidth?percentColumn:0;
         for(const [text,size] of entry.texts)text.setAttribute('font-size',size===r.legendSize?m.legendSize:size);
-        entry.width=uniform||natural[i];
-        if(row.length&&(side||used+gap+entry.width>legendWidth)){rows.push(row);row=[];used=0;}
+        entry.width=uniform||(columns?columns[i%columns.length]:natural[i]);
+        if(row.length&&(side||(columns?row.length===columns.length:used+gap+entry.width>legendWidth))){rows.push(row);row=[];used=0;}
         row.push(entry);used+=(used?gap:0)+entry.width;
         entry.label.textContent=fit(entry.label,full,Math.max(0,entry.width-22-(valueWidth?gap+valueWidth+(percentWidth?entry.percentWidth+gap*2/3:0):0)));
         let title=entry.node.querySelector(':scope > title');
@@ -101,7 +111,8 @@
       const height=Math.ceil(plotTop+plotHeight+bottomBand+pb-.001),cx=left+plotWidth/2,cy=plotTop+plotHeight/2;
       let legendTop=side||above?top:plotTop+plotHeight+gap;
       for(const entries of rows){
-        const occupied=entries.reduce((sum,e)=>sum+e.width,0)+Math.max(0,entries.length-1)*gap;
+        // Every grid row starts where the full grid does, so a shorter last row keeps the columns.
+        const occupied=columns?columns.reduce((sum,w)=>sum+w,0)+(columns.length-1)*gap:entries.reduce((sum,e)=>sum+e.width,0)+Math.max(0,entries.length-1)*gap;
         let x=position.endsWith('Right')?width-pr-occupied:['Top','Bottom'].includes(position)?pl+(contentWidth-occupied)/2:pl;
         if(side)x=position==='Right'?width-pr-legendWidth:pl;
         for(const entry of entries){
