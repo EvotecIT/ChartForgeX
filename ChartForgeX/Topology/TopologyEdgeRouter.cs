@@ -367,8 +367,10 @@ internal static partial class TopologyEdgeRouter {
             var points = edge.Routing == TopologyEdgeRouting.Curved
                 ? RenderedEdgeSamplePoints(chart, edge, nodes, EdgePoints(chart, edge, nodes))
                 : plan != null && plan.TryGetValue(edge, out var plannedPoints) && plannedPoints != null ? plannedPoints : BasicEdgePoints(nodes[edge.SourceNodeId], nodes[edge.TargetNodeId], edge);
-            var skipFirst = sharedTerminalsFanOut && SharesEndpoint(routedEdge, edge.SourceNodeId);
-            var skipLast = sharedTerminalsFanOut && SharesEndpoint(routedEdge, edge.TargetNodeId);
+            // Edges between the same two cards are parallel routes, not a fan, and still have to stay apart.
+            var fans = sharedTerminalsFanOut && !(SharesEndpoint(routedEdge, edge.SourceNodeId) && SharesEndpoint(routedEdge, edge.TargetNodeId));
+            var skipFirst = fans && SharesEndpoint(routedEdge, edge.SourceNodeId);
+            var skipLast = fans && SharesEndpoint(routedEdge, edge.TargetNodeId);
             for (var i = 0; i < points.Count - 1; i++) {
                 if (i == 0 && skipFirst || i == points.Count - 2 && skipLast) continue;
                 segments.Add(new RouteSegment(points[i], points[i + 1]));
