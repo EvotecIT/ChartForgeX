@@ -120,7 +120,8 @@ internal static partial class VisualMapCompiler {
         var gap = legendInset?.TileGap ?? TileGap(chart, context, builder, definition, plot, width);
         var size = legendInset?.TileSize ?? Math.Max(0, Math.Min((plot.Width - width - gap * (definition.ColumnCount - 1)) / definition.ColumnCount,
             (plot.Height - width - gap * (definition.RowCount - 1)) / definition.RowCount));
-        var gridWidth = size * definition.ColumnCount + gap * (definition.ColumnCount - 1);
+        var tileWidth = legendInset == null ? TileWidth(chart, context, builder, definition, plot, width, gap, size) : size;
+        var gridWidth = tileWidth * definition.ColumnCount + gap * (definition.ColumnCount - 1);
         var gridHeight = size * definition.RowCount + gap * (definition.RowCount - 1);
         var grid = legendInset?.Grid ?? new ChartRect(plot.Left + (plot.Width - gridWidth) / 2, plot.Top + (plot.Height - gridHeight) / 2, gridWidth, gridHeight);
         var metadata = new Dictionary<string, string> { ["data-cfx-map-id"] = definition.Id,
@@ -135,11 +136,12 @@ internal static partial class VisualMapCompiler {
         using (builder.PushGroup(data == null ? "tile-map" : data.Prefix + "-tile-map", "tile-map", metadata)) using (builder.PushClip(plot)) {
             Surface(chart, context, builder, grid, colors, "tile-map-surface");
             foreach (var region in definition.Regions) {
-                var x = grid.Left + region.Column * (size + gap);
+                var x = grid.Left + region.Column * (tileWidth + gap);
                 var y = grid.Top + region.Row * (size + gap);
-                var bounds = new ChartRect(x, y, size, size); var inset = size * TileHexInsetRatio;
-                var contour = new List<ChartPoint> { new ChartPoint(x + inset, y), new ChartPoint(x + size - inset, y),
-                    new ChartPoint(x + size, y + size / 2), new ChartPoint(x + size - inset, y + size), new ChartPoint(x + inset, y + size), new ChartPoint(x, y + size / 2) };
+                // The slant follows the tile height, so a widened tile keeps its hexagon angle.
+                var bounds = new ChartRect(x, y, tileWidth, size); var inset = size * TileHexInsetRatio;
+                var contour = new List<ChartPoint> { new ChartPoint(x + inset, y), new ChartPoint(x + tileWidth - inset, y),
+                    new ChartPoint(x + tileWidth, y + size / 2), new ChartPoint(x + tileWidth - inset, y + size), new ChartPoint(x + inset, y + size), new ChartPoint(x, y + size / 2) };
                 var geometry = Path(new[] { (IReadOnlyList<ChartPoint>)contour });
                 int? index = values.TryGetValue(region.Code, out var found) ? found : (int?)null;
                 var full = index.HasValue ? presentation.Value(series.RenderPoints[index.Value].Y) : presentation.NoData;

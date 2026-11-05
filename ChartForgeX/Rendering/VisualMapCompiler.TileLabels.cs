@@ -33,6 +33,28 @@ internal static partial class VisualMapCompiler {
         return Math.Max(0, Math.Min(gap, Math.Min(horizontal, vertical)));
     }
 
+    /// <summary>
+    /// Widens height-bound tiles into spare horizontal room, up to half again their height, so the widest
+    /// complete code keeps its preferred size or at least the readable floor instead of being omitted.
+    /// </summary>
+    private static double TileWidth(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
+        ChartTileMapDefinition definition, ChartRect plot, double strokeWidth, double gap, double size) {
+        if (!chart.Options.ShowMapLabels || size <= 0) return size;
+        var available = (plot.Width - strokeWidth - gap * (definition.ColumnCount - 1)) / definition.ColumnCount;
+        if (available <= size) return size;
+        var style = TickStyle(chart, context);
+        style.FontSize = style.EffectiveFontSize; style.Baseline = TextBaseline.Normal;
+        var floor = style.Clone(); floor.FontSize = Math.Min(VisualTextFitting.MinimumOrdinaryFontSize, style.FontSize);
+        var required = 0d;
+        foreach (var region in definition.Regions) {
+            // A code taller than the tile at the floor cannot be helped by extra width.
+            if (builder.MeasureText(region.Code, floor).Height + strokeWidth > size) return size;
+            var metrics = builder.MeasureText(region.Code, style);
+            required = Math.Max(required, metrics.Width + strokeWidth + 2 * TileHexInsetRatio * Math.Min(size, metrics.Height + strokeWidth) + .01);
+        }
+        return Math.Max(size, Math.Min(required, Math.Min(available, size * 1.5)));
+    }
+
     /// <summary>Fits complete tile captions above the readable minimum, preserving smaller authored requests.</summary>
     private static void TileLabel(VisualSceneBuilder builder, string code, ChartRect bounds, List<ChartPoint> contour,
         double clearance, TextStyle style, string id, SvgPaint paint) {
