@@ -27,6 +27,7 @@ internal static partial class VisualCartesianCompiler {
         var stride = ObservationStride(series.Kind);
         var count = series.RenderPoints.Count / stride;
         var quantitativeOutline = VisualMarkerScene.QuantitativeOutline(series, colors);
+        var overlapping = series.Kind == ChartSeriesKind.Bubble ? OverlappingBubbles(series, plot, map, bubbleScale!, count) : null;
         for (var item = 0; item < count; item++) {
             var raw = item * stride;
             var point = series.RenderPoints[raw];
@@ -51,6 +52,12 @@ internal static partial class VisualCartesianCompiler {
                 var insideSourceX = ViewportObservationVisible(xViewport, yViewport, point.X, point.Y, point.Y, map);
                 using (ObservationGroup(builder, series, index, item, raw, stride, bounds, label, colorSurface!, bubbleScale!.Presentation, insideSourceX, ("x", point.X), ("y", point.Y), ("size", size))) {
                     var outline = ChartColorMath.WithOpacity(color, ChartVisualPrimitives.BubbleStrokeOpacity);
+                    // A surface ring parts an overlapping bubble from the neighbours painted before it.
+                    if (insideSourceX && overlapping != null && overlapping[item]) {
+                        var surface = ChartStateMark.Backdrop(chart.Options, colors, context.Frame);
+                        builder.Ellipse(x, y, radius, radius, null, surface, VisualMarkerScene.FamilyStrokeWidth(series) + 2, "bubble-separator",
+                            paint: new VisualScenePaintBinding(null, SvgPaint.Of(surface, SvgColorRole.Surface)));
+                    }
                     if (insideSourceX) VisualMarkerScene.Draw(builder, series, item, x, y, radius, fill, fillPaint,
                         "bubble", outline, VisualMarkerScene.FamilyStrokeWidth(series), sourcePaint.WithOpacity(outline, ChartVisualPrimitives.BubbleStrokeOpacity),
                         ObservationPattern(series, item), ChartStateMark.Backdrop(chart.Options, colors, context.Frame), "bubble-pattern",
@@ -65,6 +72,27 @@ internal static partial class VisualCartesianCompiler {
                 DrawErrorBar(chart, context, builder, plot, map, series, index, item, color, sourcePaint, radius, colors, labels, obstacles, xViewport, yViewport);
             }
         }
+    }
+
+    /// <summary>Marks default circular bubbles whose painted discs intersect another bubble of the same series.</summary>
+    private static bool[]? OverlappingBubbles(ChartSeries series, ChartRect plot, ChartMapper map, ChartBubbleSizeScale scale, int count) {
+        if (count < 2 || count > 2000) return null;
+        var discs = new (double X, double Y, double R)[count];
+        for (var item = 0; item < count; item++) {
+            var markers = series.ResolvePointMarkers(item);
+            var point = series.RenderPoints[item * 2];
+            var circle = markers.CustomPath == null && markers.Shape == ChartMarkerShape.Circle && VisualMarkerScene.Enabled(series, markerOptions: markers);
+            discs[item] = circle ? (map.X(point.X), map.Y(point.Y), scale.Radius(series.RenderPoints[item * 2 + 1].Y, plot, markers)) : (0, 0, 0);
+        }
+        var result = new bool[count]; var any = false;
+        for (var first = 0; first < count; first++) for (var second = first + 1; second < count; second++) {
+            var a = discs[first]; var b = discs[second];
+            if (a.R <= 0 || b.R <= 0) continue;
+            var dx = a.X - b.X; var dy = a.Y - b.Y; var reach = a.R + b.R + 1;
+            if (dx * dx + dy * dy >= reach * reach) continue;
+            result[first] = result[second] = any = true;
+        }
+        return any ? result : null;
     }
 
     private static void DrawEndpointLine(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,

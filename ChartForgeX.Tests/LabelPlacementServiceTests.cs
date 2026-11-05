@@ -94,11 +94,12 @@ public sealed class LabelPlacementServiceTests {
         var builder = new VisualSceneBuilder(new VisualSize(120, 100), style.Font);
         var requests = new[] {
             new LabelPlacementRequest("WWWiii long vertical caption", new ChartPoint(0, 0), style, new[] { new LabelCandidate(0, 0) }) { RotationDegrees = 450, Bounds = new ChartRect(0, 0, 30, 50) },
-            new LabelPlacementRequest("WWWiii long diagonal caption", new ChartPoint(40, 0), style, new[] { new LabelCandidate(0, 0) }) { RotationDegrees = -30, Bounds = new ChartRect(40, 0, 65, 60) }
+            // The first words differ, so an end ellipsis still identifies each caption.
+            new LabelPlacementRequest("WWWiij long diagonal caption", new ChartPoint(40, 0), style, new[] { new LabelCandidate(0, 0) }) { RotationDegrees = -30, Bounds = new ChartRect(40, 0, 65, 60) }
         };
         foreach (var request in requests) request.MeasuredSize = builder.MeasureText(request.Text, request.Style);
         var placed = new LabelPlacementService().Place(requests, new ChartRect(0, 0, 120, 100), null, 0, builder.MeasureText);
-        Assert.All(placed, result => { Assert.False(result.IsDropped); Assert.True(result.IsEllipsized); Assert.StartsWith("wwwIII", result.Text); });
+        Assert.All(placed, result => { Assert.False(result.IsDropped); Assert.True(result.IsEllipsized); Assert.StartsWith("wwwII", result.Text); });
         for (var index = 0; index < placed.Count; index++) VisualAxisText.Draw(builder, placed[index], "axis-label", "label-" + index);
         var painted = NumericRadialAxisTextTests.Footprints(builder.Build());
         for (var index = 0; index < placed.Count; index++) {
@@ -108,6 +109,25 @@ public sealed class LabelPlacementServiceTests {
             Assert.Equal(placed[index].Bounds.Top, painted[index].Bounds.Top, 6);
             Assert.True(LabelPlacementService.Contains(requests[index].Bounds!.Value, painted[index].Bounds));
         }
+    }
+
+    [Fact]
+    public void SimilarNamesShortenTheirSharedHeadAndKeepTheWordsThatDiffer() {
+        var style = Style.Clone();
+        style.Font = FontSpec.FromFile(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
+        var builder = new VisualSceneBuilder(new VisualSize(400, 100), style.Font);
+        var names = new[] { "Payments gateway north", "Payments gateway west" };
+        var width = builder.MeasureText("Paymen… north", style).Width + 1;
+        var requests = names.Select((name, index) => new LabelPlacementRequest(name, new ChartPoint(index * 200, 0), style, new[] { new LabelCandidate(0, 0) }) {
+            Bounds = new ChartRect(index * 200, 0, width, 40) }).ToArray();
+        var placed = new LabelPlacementService().Place(requests, new ChartRect(0, 0, 400, 100), null, 0, builder.MeasureText);
+        Assert.All(placed, result => Assert.True(result.IsEllipsized));
+        Assert.EndsWith("… north", placed[0].Text); Assert.EndsWith("… west", placed[1].Text);
+        Assert.All(placed, result => Assert.StartsWith("Paym", result.Text));
+        // Without room for the differing word, a caption is omitted rather than shortened to the shared "Payments…".
+        var narrow = names.Select((name, index) => new LabelPlacementRequest(name, new ChartPoint(index * 200, 0), style, new[] { new LabelCandidate(0, 0) }) {
+            Bounds = new ChartRect(index * 200, 0, builder.MeasureText("Payments…", style).Width + 1, 40) }).ToArray();
+        Assert.All(new LabelPlacementService().Place(narrow, new ChartRect(0, 0, 400, 100), null, 0, builder.MeasureText), result => Assert.True(result.IsDropped));
     }
 
     [Fact]
