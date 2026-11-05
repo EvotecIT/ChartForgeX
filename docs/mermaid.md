@@ -224,7 +224,7 @@ Flowchart links preserve circle (`A ---o B`), cross (`A ---x B`) and bidirection
 
 The metadata shape names `fr-rect` and `framed-rectangle` select the native subprocess surface; `question` selects a decision diamond; `lean-right` and `lean-left` select the two input/output parallelograms. `manual` and `trapezoid-top` select the upper-base trapezoid, while `priority` and `trapezoid-bottom` select the lower-base trapezoid. `odd` selects the asymmetric surface. These names use the same geometry as their supported short names or bracket notation. Expanded shapes without a native owner retain a warning and rectangle fallback.
 
-Gantt duration calculations apply `excludes`, `includes`, and Friday/Saturday weekend definitions. Explicit end dates stay explicit. Milestones use the midpoint of their authored duration, and `active` does not invent a percentage complete.
+Gantt duration calculations apply `excludes`, `includes`, and Friday/Saturday weekend definitions. Explicit end dates stay explicit. Milestones use the midpoint of their authored duration, and `active` does not invent a percentage complete. Each `section` is named once in a column beside its band, and task rows show only their own titles.
 
 ## Flowcharts
 

@@ -37,7 +37,6 @@ Static HTML from reports and email has to feel interactive without a .NET host. 
 
 Charts already look professional; topology-laid-out diagrams don't yet. The defects below were seen on the published atlas renders.
 
-- [ ] **Gantt section names.** Row labels still repeat the section ("Engine / Layout pass") instead of naming the section once beside its band. Done when each section name appears once and the task rows show only their titles.
 - Done when the atlas renders for every family pass a side-by-side review against Mermaid and the visual baselines are refreshed deliberately.
 
 ## 4. One look across HtmlForgeX, ChartForgeX and CanopyX

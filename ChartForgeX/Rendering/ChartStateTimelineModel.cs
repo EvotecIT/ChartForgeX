@@ -18,6 +18,8 @@ internal sealed class ChartStateTimelineModel {
     public const double LegendSwatch = 10;
     public const double LegendItemGap = 18;
     public const double ColumnGap = 14;
+    /// <summary>The share of the chart width the row-label column may take.</summary>
+    public const double LabelColumnShare = .34;
     public const double ContentInset = 12;
     /// <summary>Room kept above the lanes for the summary header or the "Now" label, so the text sits inside the plot frame.</summary>
     public const double TopLabelGap = 9;
@@ -138,9 +140,9 @@ internal sealed class ChartStateTimelineModel {
         LanePlotArea(Chart, bounds, HasSummary, SummaryHeader, laneLabelWidth, summaryWidth, summaryHeaderHeight, legendHeight, 0, axisLabelReserve, axisTitleReserve);
 
     /// <summary>Shared lane-chart layout: label column, summary column, time axis, legend, and an optional top reserve.</summary>
-    public static ChartRect LanePlotArea(Chart chart, ChartRect bounds, bool hasSummary, string? summaryHeader, double laneLabelWidth, double summaryWidth, double summaryHeaderHeight, double legendHeight, double topLabelHeight, double axisLabelReserve = AxisReserve, double axisTitleReserve = AxisTitleReserve) {
+    public static ChartRect LanePlotArea(Chart chart, ChartRect bounds, bool hasSummary, string? summaryHeader, double laneLabelWidth, double summaryWidth, double summaryHeaderHeight, double legendHeight, double topLabelHeight, double axisLabelReserve = AxisReserve, double axisTitleReserve = AxisTitleReserve, double labelShare = LabelColumnShare) {
         var options = chart.Options;
-        var labelReserve = options.ShowAxes && options.ShowYAxis ? Math.Min(laneLabelWidth + ColumnGap, bounds.Width * 0.34) : 0;
+        var labelReserve = options.ShowAxes && options.ShowYAxis ? Math.Min(laneLabelWidth + ColumnGap, bounds.Width * labelShare) : 0;
         var summaryReserve = hasSummary ? SummaryColumnWidth(bounds, summaryWidth) + ColumnGap : 0;
         var axisReserve = options.ShowAxes && options.ShowXAxis ? axisLabelReserve + (string.IsNullOrWhiteSpace(ChartTimeScale.DecorateTitle(options.XAxis, chart.XAxisTitle)) ? 0 : axisTitleReserve) : 0;
         var topReserve = Math.Max(hasSummary && !string.IsNullOrWhiteSpace(summaryHeader) ? summaryHeaderHeight + TopLabelGap : 0, topLabelHeight);

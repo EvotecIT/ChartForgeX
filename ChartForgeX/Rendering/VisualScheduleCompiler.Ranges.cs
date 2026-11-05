@@ -78,9 +78,12 @@ internal static partial class VisualScheduleCompiler {
                 fixedTicks = ChartTimeScale.GenerateFixed(axis, min, max, chart.Options.GanttTickInterval);
             ticks = fixedTicks ?? ChartTicks.ForAxis(axis, min, max);
         }
+        var sectionWidth = gantt && frame == null ? RangeSectionWidth(chart, context, builder, items) : 0;
         var layout = frame?.Layout ?? LaneLayout(chart, context, builder, viewport, items.Where(item => !item.Marker).Select(item => chart.Series[item.Index].Name), Array.Empty<string>(), false,
-            now.HasValue && now.Value >= min && now.Value <= max, ticks, Format, hasFixedTicks: fixedTicks != null, units: row);
+            now.HasValue && now.Value >= min && now.Value <= max, ticks, Format, hasFixedTicks: fixedTicks != null, units: row, leadingWidth: sectionWidth);
         var plot = layout.Plot; var colors = context.Theme.Resolve(context.ThemeMode);
+        var sectionColumn = RangeSectionColumn(context, viewport, plot, sectionWidth, sectionWidth <= 0 ? 0
+            : items.Where(item => !item.Marker).Select(item => builder.MeasureText(chart.Series[item.Index].Name, layout.TickStyle).Width).DefaultIfEmpty(0).Max());
         var slot = frame?.Model.UnitHeight(plot) ?? plot.Height / Math.Max(1, row); var height = Math.Max(0, Math.Min(gantt ? 30 : 34, slot * .65));
         // Linked rows need a gutter at least as wide as the connector's painted stroke. Keep the ordinary
         // mark height when it fits, and retain marks when the declared stroke cannot fit even an empty row.
@@ -104,7 +107,7 @@ internal static partial class VisualScheduleCompiler {
         if (frame == null) builder.DataProjection = ChartDataProjection.TryCreate(projection, min, max, axis);
         double Project(double value) => ScheduleX(axis, value, min, max, projection);
         using (builder.PushGroup(gantt ? "gantt" : "timeline", gantt ? "gantt-chart" : "timeline", Window(min, max))) {
-            if (gantt) RangeSectionBands(chart, context, builder, viewport, plot, items, slot);
+            if (gantt) RangeSectionBands(chart, context, builder, viewport, plot, items, slot, sectionColumn);
             if (frame == null) ScheduleBands(chart, context, builder, plot, Project);
             var obstacles = new List<LabelObstacle>();
             if (frame == null) Axis(chart, context, builder, viewport, layout, ticks, Project, Format,
@@ -113,7 +116,7 @@ internal static partial class VisualScheduleCompiler {
             foreach (var item in items) {
                 if (item.Marker || frame != null) continue;
                 var center = ScheduleRowCenter(chart, plot, (item.Row + .5) * slot);
-                LaneText(chart, context, builder, viewport, layout, chart.Series[item.Index].Name, null, center - height / 2, height, item.Index, pitch: slot);
+                LaneText(chart, context, builder, viewport, layout, chart.Series[item.Index].Name, null, center - height / 2, height, item.Index, pitch: slot, leading: sectionColumn);
             }
             foreach (var item in items) {
                 if (item.Marker) continue;
