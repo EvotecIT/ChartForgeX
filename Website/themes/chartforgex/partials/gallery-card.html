@@ -10,7 +10,8 @@
     data-title="{{ item.title | html.escape }}" data-family="{{ item.familyLabel | html.escape }}"{{ if item.note }} data-note="{{ item.note | html.escape }}"{{ end }}
     data-image="{{ item.image }}" data-dark-image="{{ item.darkImage }}"
     data-full="{{ item.full }}" data-dark-full="{{ item.darkFull }}"
-    data-source="{{ item.source }}" data-dark-source="{{ item.darkSource }}"
+    data-source="{{ item.source }}" data-dark-source="{{ item.darkSource }}"{{ if item.snippet }}
+    data-snippet="{{ item.snippet }}" data-dark-snippet="{{ item.darkSnippet }}"{{ end }}
     data-page="{{ item.html }}" data-dark-page="{{ item.darkHtml }}"{{ if item.interactive }}
     data-interactive="{{ item.interactive }}" data-dark-interactive="{{ item.darkInteractive }}"{{ end }}{{ if item.page }}
     data-family-page="{{ item.page }}"{{ end }}{{ if item.tabs }}

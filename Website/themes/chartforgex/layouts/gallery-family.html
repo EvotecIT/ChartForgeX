@@ -65,9 +65,10 @@
   <section class="cfx-wide cfx-family__code" aria-labelledby="cfx-family-code">
     <div class="cfx-family__code-text">
       <h2 id="cfx-family-code" class="cfx-family__heading">Build it in C#</h2>
-      <p>The chart model comes first. Show setup adds the imports and the few lines that write SVG, PNG and HTML below it; the download is the complete console program, ready to run with the ChartForgeX package.</p>
+      <p>This is the code for the chart above. Show setup adds the imports before it and the few lines that write SVG, PNG and HTML after it, so it reads as one program; the download is the complete console program, ready to run with the ChartForgeX package.</p>
     </div>
-    <figure class="cfx-codeblock" data-lang="csharp" data-cfx-source data-light="{{ item.source }}" data-dark="{{ item.darkSource }}">
+    <figure class="cfx-codeblock" data-lang="csharp" data-cfx-source data-light="{{ item.snippet ?? item.source }}" data-dark="{{ item.darkSnippet ?? item.darkSource }}"
+      data-download-light="{{ item.source }}" data-download-dark="{{ item.darkSource }}">
       <figcaption class="cfx-codeblock__bar">
         <span class="cfx-codeblock__lang">C#</span>
         <span class="cfx-codeblock__file">Program.cs</span>

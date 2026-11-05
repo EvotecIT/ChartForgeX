@@ -396,30 +396,33 @@
       } catch (e) { /* a cross-origin page keeps its CSS height */ }
     });
   };
-  // The chart code leads; a Setup button in the code bar appends the imports and file output below it.
-  var SETUP = /^#region Setup\n([\s\S]*?)^#endregion[^\n]*\n+/m;
+  // The chart code leads. Generated sources keep imports in a Setup region and the lines that write files in an
+  // Output region; Show setup puts both back in place, so the code then reads (and copies) as the whole program.
+  var FOLDED = /^#region (?:Setup|Output)\n[\s\S]*?^#endregion[^\n]*\n*/gm;
   var showSetupCode = false;
   var setupBlocks = [];
   var renderSource = function (block) {
     var parts = block.cfxParts;
     var code = block.querySelector('pre > code');
     if (!parts || !code) return;
-    var text = parts.body;
-    // C# needs the imports and top-level statements first, so Copy takes the whole program while setup is shown.
-    if (parts.setup && showSetupCode) text = text.replace(/\n+$/, '') + '\n\n// Setup: these lines open Program.cs, before the code above\n' + parts.setup;
+    var text = parts.setup && showSetupCode ? parts.full : parts.body;
     var button = block.querySelector('[data-cfx-setup-toggle]');
     if (button) {
       button.hidden = !parts.setup;
       button.setAttribute('aria-pressed', showSetupCode ? 'true' : 'false');
       button.textContent = showSetupCode ? 'Hide setup' : 'Show setup';
     }
-    block.cfxSource = parts.setup && showSetupCode ? parts.full : text;
+    block.cfxSource = text;
     code.textContent = text;
     highlight(code);
   };
   var setSource = function (block, text) {
-    var match = SETUP.exec(text);
-    block.cfxParts = { body: match ? text.replace(SETUP, '') : text, setup: match ? match[1] : '', full: text };
+    var folded = text.replace(FOLDED, '');
+    block.cfxParts = {
+      body: folded.replace(/^\n+/, '').replace(/\n{3,}/g, '\n\n'),
+      setup: folded !== text,
+      full: text.replace(/^#(?:end)?region[^\n]*\n/gm, '').replace(/^\n+/, '')
+    };
     var actions = block.querySelector('.cfx-codeblock__actions');
     if (actions && !actions.querySelector('[data-cfx-setup-toggle]')) {
       var button = document.createElement('button');
@@ -447,7 +450,7 @@
       figure.setAttribute('data-loaded', url);
       var code = figure.querySelector('[data-cfx-source-code]');
       var link = figure.querySelector('[data-cfx-source-download]');
-      if (link) link.href = url;
+      if (link) link.href = figure.getAttribute(theme() === 'dark' ? 'data-download-dark' : 'data-download-light') || url;
       fetch(url).then(function (response) { return response.ok ? response.text() : Promise.reject(); }).then(function (text) {
         if (figure.getAttribute('data-loaded') !== url) return;
         setSource(figure, text);
@@ -506,7 +509,7 @@
       viewer.querySelector('[data-cfx-viewer-file]').textContent = fileName(source);
       block.cfxSource = '';
       code.textContent = 'Loading source…';
-      loadSource(source)
+      loadSource(pick(current.snippet, current.darkSnippet) || source)
         .then(function (text) {
           if (ticket !== request) return;
           if (range && range.from) text = text.split('\n').slice(range.from - 1, range.to).join('\n') + '\n';
@@ -599,7 +602,8 @@
         current = {
           title: d.title, family: d.family, note: d.note, alt: d.alt, image: d.image, darkImage: d.darkImage, full: d.full,
           darkFull: d.darkFull, source: d.source, darkSource: d.darkSource, page: d.page, darkPage: d.darkPage, tabs: tabs,
-          interactive: d.interactive, darkInteractive: d.darkInteractive, familyPage: d.familyPage
+          interactive: d.interactive, darkInteractive: d.darkInteractive, familyPage: d.familyPage,
+          snippet: d.snippet, darkSnippet: d.darkSnippet
         };
         opener = button;
         var card = button.closest('.cfx-card');

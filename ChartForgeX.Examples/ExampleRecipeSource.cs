@@ -111,6 +111,9 @@ public static partial class ExampleRecipeSource {
         });
     }
 
+    /// <summary>Gets the compiled source file of a recipe's factory.</summary>
+    internal static string RecipeSource(ExampleRecipe recipe) => ReadResource("ChartForgeX.Examples.Recipes." + recipe.Factory + ".cs").Replace("\r\n", "\n");
+
     private static string SetupFirst(string program) => "#region Setup\n" + program.Replace("#region Setup\n", string.Empty);
 
     private static string Package(ExampleRecipe recipe, string template, Dictionary<string, string> tokens) => Package(recipe.Factory, template, tokens);
