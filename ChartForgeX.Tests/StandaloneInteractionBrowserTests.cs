@@ -36,9 +36,9 @@ public sealed class StandaloneInteractionBrowserTests {
         else Assert.True(await page.Locator(".cfx-tooltip strong").CountAsync() == 1, "The page renderer supplies the tooltip content.");
 
         // Zoom eases from the displayed window: the API reports the target at once, the drawing follows within the duration.
-        await page.Locator("[data-cfx-zoom=in]").ClickAsync();
+        // The click and the read share one task, so a slow host cannot let the easing finish in between.
+        Assert.True(await page.EvaluateAsync<bool>("()=>{const root=document.querySelector('.cfx-interactive-chart');root.querySelector('[data-cfx-zoom=in]').click();return !!root._cfxStandaloneViewport.motionTarget;}"));
         var target = await page.EvaluateAsync<JsonElement>("()=>ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart')).getViewport().x");
-        Assert.True(await page.EvaluateAsync<bool>("()=>!!document.querySelector('.cfx-interactive-chart')._cfxStandaloneViewport.motionTarget"));
         await SettleAsync(page);
         var painted = await page.EvaluateAsync<JsonElement>("()=>document.querySelector('.cfx-interactive-chart')._cfxStandaloneViewport.windows.x");
         Assert.Equal(target.GetProperty("minimum").GetDouble(), painted.GetProperty("minimum").GetDouble(), 9);
