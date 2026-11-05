@@ -51,7 +51,8 @@ internal sealed class HtmlInteractiveDiagramRenderer {
             writer.Doctype().Line()
                 .StartElement("html").Attribute("lang", language).Attribute("dir", Localization.DirectionAttribute).EndStartElement().Line()
                 .StartElement("head").EndStartElement().Line();
-            HtmlChartRenderer.WriteDocumentHead(writer, name, HtmlDiagramAssets.Style
+            // A full page registers the product faces for its HTML heading, as chart pages do; fragments leave fonts to the host.
+            HtmlChartRenderer.WriteDocumentHead(writer, name, ChartForgeX.Typography.ChartFontAssets.StyleSheet + HtmlDiagramAssets.Style
                 + "body{margin:0;background:" + (transparent ? "transparent" : theme.Resolve(mode).Background.ToCss()) + ";" + HtmlSurfacePolish.BrowserTextPolishCss + "}");
             writer.EndElement().Line()
                 .StartElement("body").EndStartElement().Line()
