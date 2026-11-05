@@ -11,7 +11,8 @@ public sealed class NativeTransitionExportFactsTests {
         var section = NativeTransitionExportDefaultControls.Section(scope, width, dark, export);
         NativeTransitionExportDefaultControls.Save(section, "same-emission-" + width + "-" + dark + "-" + export, new { scope, width, dark, export });
         var wide = Assert.IsType<VisualSvgEmission>(section.WideEmission); var narrow = Assert.IsType<VisualSvgEmission>(section.NarrowEmission);
-        var embedded = Regex.Matches(section.Html, @"<svg[\s\S]*?</svg>").Select(match => match.Value).ToArray();
+        // Toolbar icons are decorative SVGs; only the chart drawings count.
+        var embedded = Regex.Matches(section.Html, @"<svg(?![^>]*focusable=""false"")[\s\S]*?</svg>").Select(match => match.Value).ToArray();
         Assert.Equal(2, embedded.Length); Assert.Equal(embedded[0], wide.Svg); Assert.Equal(embedded[1], narrow.Svg);
         Assert.Equal(VisualSvgOptions.NamespaceFromExternalId(scope), wide.Prefix);
         Assert.Equal(VisualSvgOptions.NamespaceFromExternalId(scope + "-narrow"), narrow.Prefix);
