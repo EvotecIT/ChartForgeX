@@ -127,8 +127,8 @@ public sealed class GallerySyncTests {
         var dark = manifest["artifacts"]!.AsArray().Single(item => item!["id"]!.GetValue<string>() == darkId)!;
         var assets = new List<string> { "manifest.json", "catalog.html", "fonts/Carlito-Regular.ttf" };
         foreach (var artifact in new[] { light, dark })
-            foreach (var field in new[] { "svg", "png", "html", "source", "thumbnail", "thumbnailPng" })
-                assets.Add(artifact[field]!.GetValue<string>());
+            foreach (var field in new[] { "svg", "png", "html", "source", "thumbnail", "thumbnailPng", "snippet" })
+                if (artifact[field] is { } value) assets.Add(value.GetValue<string>());
         foreach (var asset in assets.Where(asset => asset != "manifest.json")) {
             var target = Path.Combine(source, asset);
             Directory.CreateDirectory(Path.GetDirectoryName(target)!);

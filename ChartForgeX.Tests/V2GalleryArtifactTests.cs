@@ -76,7 +76,8 @@ public sealed class V2GalleryArtifactTests {
             Assert.Equal("family-line-wide-" + theme, line.GetProperty("id").GetString());
             var html = File.ReadAllText(Path.Combine(output, line.GetProperty("interactive").GetString()!));
             var declared = Assert.Single(Regex.Matches(html, "data-cfx-interaction-features=\"([^\"]*)\""));
-            Assert.Equal(ChartInteractionFeatures.ReportReview | ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush,
+            // The primary Line page also carries the chart menu's export, beside its range navigator.
+            Assert.Equal(ChartInteractionFeatures.ReportReview | ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export,
                 Enum.Parse<ChartInteractionFeatures>(WebUtility.HtmlDecode(declared.Groups[1].Value)));
             var projection = Assert.Single(Regex.Matches(html, "data-cfx-prepared-chart=\"([^\"]*)\""));
             using var metadata = JsonDocument.Parse(WebUtility.HtmlDecode(projection.Groups[1].Value));
