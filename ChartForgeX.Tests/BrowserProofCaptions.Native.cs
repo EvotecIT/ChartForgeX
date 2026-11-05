@@ -63,7 +63,8 @@ internal static partial class BrowserProofCaptions {
                 for (const root of (last ? roots(node).reverse() : roots(node))) {
                   const glyphs = root.localName === 'text' ? [root] : [...root.querySelectorAll('use,path,image[data-cfx-image-alpha-bounds]')];
                   if (last) glyphs.reverse();
-                  const tree = root.getRootNode(), hitAt = (x,y) => tree.elementFromPoint(x,y);
+                  // Firefox delivers mouse events at whole CSS pixels, so a candidate must hold ink at its rounded position.
+                  const tree = root.getRootNode(), hitAt = (x,y) => tree.elementFromPoint(Math.round(x),Math.round(y));
                   for (const glyph of glyphs) {
                     if (glyph.localName === 'image') {
                       const source=pixels.get(glyph),matrix=glyph.getScreenCTM();
@@ -74,7 +75,7 @@ internal static partial class BrowserProofCaptions {
                         const x=glyph.x.baseVal.value+glyph.width.baseVal.value*((index%source.width)+.5)/source.width;
                         const y=glyph.y.baseVal.value+glyph.height.baseVal.value*(Math.floor(index/source.width)+.5)/source.height;
                         const point=new DOMPoint(x,y).matrixTransform(matrix),hit=hitAt(point.x,point.y);
-                        if (hit&&(root.contains(hit)||node.contains(hit)&&hit.hasAttribute('data-cfx-browser-hit-area'))) return {x:point.x,y:point.y};
+                        if (hit&&(root.contains(hit)||node.contains(hit)&&hit.hasAttribute('data-cfx-browser-hit-area'))) return {x:Math.round(point.x),y:Math.round(point.y)};
                       }
                       continue;
                     }
@@ -84,7 +85,7 @@ internal static partial class BrowserProofCaptions {
                     for (const fy of fractions) for (const fx of fractions) {
                       const x = box.left + box.width * fx, y = box.top + box.height * fy;
                       const hit = hitAt(x,y);
-                      if (hit && (root.contains(hit)||node.contains(hit)&&hit.hasAttribute('data-cfx-browser-hit-area'))) return {x,y};
+                      if (hit && (root.contains(hit)||node.contains(hit)&&hit.hasAttribute('data-cfx-browser-hit-area'))) return {x:Math.round(x),y:Math.round(y)};
                     }
                   }
                 }

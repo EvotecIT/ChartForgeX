@@ -47,7 +47,7 @@ public sealed partial class MermaidC4ConfigurationDepthTests {
             Assert.True(observed.GetProperty("groups").GetInt32()>0);
             foreach(var word in new[]{"Service platform","Operations","coordinator","Publication","orchestration","service","External","delivery","validated","documents"})Assert.Contains(word,observed.GetProperty("text").GetString());
             var text=observed.GetProperty("fonts").EnumerateArray().Where(font=>font.GetProperty("role").GetString() is "topology-node-label" or "topology-node-subtitle" or "topology-group-label" or "topology-edge-label-text").ToArray();
-            Assert.NotEmpty(text);Assert.All(text,font=>Assert.Contains(BrowserProofFonts.Family,font.GetProperty("family").GetString()));
+            Assert.NotEmpty(text);Assert.All(text,font=>BrowserProofFonts.AssertComputedFamily(font.GetProperty("family").GetString()));
             InteractiveChartBrowser.AssertNoConsoleErrors(session);
         }
     }

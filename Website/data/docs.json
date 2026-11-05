@@ -197,6 +197,7 @@
     {"from": "migration.md", "to": "/docs/migration/"},
     {"from": "migration.md#gauge-readings-and-presentation", "to": "/docs/migration/#gauge-readings-and-presentation"},
     {"from": "migration.md#html-sunburst-branch-emphasis", "to": "/docs/migration/#html-sunburst-branch-emphasis"},
+    {"from": "migration.md#product-typography", "to": "/docs/migration/#product-typography"},
     {"from": "stories.md", "to": "/docs/stories/"},
     {"from": "v2/api-conventions.md", "to": "/docs/api-conventions/"},
     {"from": "v2/api-conventions.md#flow-paint-and-semantic-state", "to": "/docs/api-conventions/#flow-paint-and-semantic-state"},

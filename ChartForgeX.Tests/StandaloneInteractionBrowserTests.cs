@@ -217,7 +217,9 @@ public sealed class StandaloneInteractionBrowserTests {
         await page.Mouse.MoveAsync(point.X, point.Y, new() { Steps = 3 });
         await page.WaitForFunctionAsync("()=>!document.querySelector('.cfx-tooltip').hidden");
         var margin = await page.EvaluateAsync<double[]>("""
-            ()=>{const r=document.querySelector('.cfx-stage svg [data-cfx-role=frame-card]').getBoundingClientRect(),x=r.left+r.width/2,y=r.top-12;
+            ()=>{const svg=document.querySelector('.cfx-stage svg'),r=svg.querySelector('[data-cfx-role=frame-card]').getBoundingClientRect();
+              // The middle of the letterbox margin; browsers measure the card's edge a fraction of a pixel apart.
+              const x=r.left+r.width/2,y=(svg.getBoundingClientRect().top+r.top)/2;
               return [x,y,document.elementFromPoint(x,y).localName==='svg'?1:0];}
             """);
         Assert.Equal(1, margin[2]);

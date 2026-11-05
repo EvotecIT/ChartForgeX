@@ -1,6 +1,7 @@
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 using HtmlTinkerX;
+using Xunit;
 
 namespace ChartForgeX.Tests;
 
@@ -8,6 +9,10 @@ namespace ChartForgeX.Tests;
 internal static class BrowserProofFonts {
     internal const string Family = ChartFontStacks.ProductSans;
 
+    /// <summary>Checks a computed font-family against the proof stack; WebKit serializes family names without quotes.</summary>
+    internal static void AssertComputedFamily(string? computed) => Assert.Contains(Unquoted(Family), Unquoted(computed ?? string.Empty));
+
+    private static string Unquoted(string value) => value.Replace("\"", string.Empty).Replace("'", string.Empty);
     /// <summary>Names the Carlito fixture face for charts whose native metrics come from <see cref="CarlitoPath"/>.</summary>
     internal const string CarlitoFamily = "CFX Proof Carlito";
 

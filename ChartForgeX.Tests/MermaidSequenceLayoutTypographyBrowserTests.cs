@@ -62,7 +62,7 @@ public sealed class MermaidSequenceLayoutTypographyBrowserTests {
             void AssertRole(string role,string caption,double size,string weight) {
                 var actual=observed.GetProperty("text").EnumerateArray().First(item=>item.GetProperty("text").GetString()!.Contains(caption,StringComparison.Ordinal)
                     &&item.GetProperty("roles").EnumerateArray().Any(value=>value.GetString()==role));
-                Assert.Equal(size,actual.GetProperty("size").GetDouble());Assert.Equal(weight,actual.GetProperty("weight").GetString());Assert.Contains(BrowserProofFonts.Family,actual.GetProperty("family").GetString());
+                Assert.Equal(size,actual.GetProperty("size").GetDouble());Assert.Equal(weight,actual.GetProperty("weight").GetString());BrowserProofFonts.AssertComputedFamily(actual.GetProperty("family").GetString());
             }
         }
     }
