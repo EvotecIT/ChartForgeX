@@ -20,7 +20,7 @@
     <Version>$(ChartForgeXProductVersion)</Version>
     <Authors>Evotec</Authors>
     <Description>Markdown-friendly ChartForgeX markup parser and code emitter for charts and topology diagrams.</Description>
-    <PackageReleaseNotes>Responsive stacked columns retain native band width after resizing. Heatmap and radial labels fit their plot bounds, tooltip fields stay readable, and native Line/StepLine charts support prepared X zoom banks. https://github.com/EvotecIT/ChartForgeX/releases/tag/ChartForgeX-v3.3.2</PackageReleaseNotes>
+    <PackageReleaseNotes>Optional browser data charts with native layout policy, responsive updates, keyboard selection and deterministic disposal. Coordinated ChartForgeX 3.4.0 release.</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>charts;markdown;markup;svg;png;html;topology;reports;dashboard;zero-dependency;aot;nativeaot;trimming</PackageTags>

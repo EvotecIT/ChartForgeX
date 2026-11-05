@@ -22,7 +22,7 @@
     <Authors>Evotec</Authors>
     <Description>Dependency-free charts and diagrams with shared SVG, HTML, native raster rendering and GIF/APNG animation, typography, theme/frame contracts and semantic artifact handoff.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReleaseNotes>Responsive stacked columns retain native band width after resizing. Heatmap and radial labels fit their plot bounds, tooltip fields stay readable, and native Line/StepLine charts support prepared X zoom banks. https://github.com/EvotecIT/ChartForgeX/releases/tag/ChartForgeX-v3.3.2</PackageReleaseNotes>
+    <PackageReleaseNotes>Optional browser data charts with native layout policy, responsive updates, keyboard selection and deterministic disposal. Coordinated ChartForgeX 3.4.0 release.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>ChartForgeX.png</PackageIcon>
     <PackageIconUrl>https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/assets/ChartForgeX.png</PackageIconUrl>
