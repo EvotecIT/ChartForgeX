@@ -42,9 +42,9 @@ public sealed class ResponsiveChartLayoutContractsTests {
             .WithBarStyle(ChartBarStyle.Flat).WithMaximumBarWidth(220).WithXLabels("First", "Second")
             .AddBar("A", new[] { new ChartPoint(1, 1), new ChartPoint(2, 3) })
             .AddBar("B", new[] { new ChartPoint(equivalentCoordinates ? Math.BitIncrement(Math.BitIncrement(Math.BitIncrement(1))) : 1, 2) });
-        var html = "<html><body style='margin:0'><div id='panel' style='width:320px'>" +
-            new HtmlResponsiveChartRenderer().RenderFragment(chart, 240, 1600) + "</div></body></html>";
-        await using var session = await InteractiveChartBrowser.OpenAsync(html, 1440, 700);
+        // Fragments leave the product faces to the host, and the source caption centres rely on the measured face.
+        await using var session = await BrowserProofFonts.OpenAsync("<div id='panel' style='width:320px'>" +
+            new HtmlResponsiveChartRenderer().RenderFragment(chart, 240, 1600) + "</div>", 1440, 700);
         foreach (var width in new[] { 320, 779, 1120, 320 }) {
             await session.Page.EvaluateAsync("w=>document.querySelector('#panel').style.width=w+'px'", width);
             await session.Page.WaitForFunctionAsync("w=>Number(document.querySelector('[data-cfx-responsive-chart]').dataset.cfxLayoutWidth)===w", width);
