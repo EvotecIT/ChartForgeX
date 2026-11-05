@@ -42,6 +42,8 @@
     <ProjectReference Include="..\..\..\ChartForgeX.Markup\ChartForgeX.Markup.csproj" />
     <ProjectReference Include="..\..\..\ChartForgeX.Mermaid\ChartForgeX.Mermaid.csproj" />
     <ProjectReference Include="..\..\..\ChartForgeX.Markup.Mermaid\ChartForgeX.Markup.Mermaid.csproj" />
+    <!-- The annotation editor page uses the engine as the HTML runtime's native host. -->
+    <ProjectReference Include="..\..\..\ChartForgeX.Interactivity.Html\ChartForgeX.Interactivity.Html.csproj" />
   </ItemGroup>
 
   <!-- Carlito (SIL OFL 1.1) gives the browser, which has no installed fonts, real text metrics; see PlaygroundFonts.cs. -->

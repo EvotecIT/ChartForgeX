@@ -68,8 +68,15 @@ public sealed partial class SourceAnnotationBrowserTests {
         var after = await page.EvaluateAsync<JsonElement>("() => editor.getState().draft.drawing.end");
         Assert.NotEqual(before.GetRawText(), after.GetRawText());
         Assert.Equal(0, await page.Locator("[data-cfx-annotation-id=new-1]").CountAsync());
+        await page.EvaluateAsync("""
+            () => drawings.root.addEventListener('cfxannotationchange', () => { window.acceptedMotion = {
+                stage: drawings.root.querySelector('.cfx-stage').getAnimations().length,
+                drawing: document.querySelector('[data-cfx-annotation-id=new-1]').getAnimations().length }; }, { once: true })
+            """);
         await page.Locator("[data-cfx-annotation-control=commit]").ClickAsync(); await WaitForAnnotationChanges(page, 1);
         Assert.Equal("LineSegment", await page.Locator("[data-cfx-annotation-id=new-1]").GetAttributeAsync("data-cfx-kind"));
+        // An accepted edit reveals only the new drawing; the rest of the chart never dims as if disabled.
+        Assert.True(await page.EvaluateAsync<bool>("() => acceptedMotion.stage === 0 && acceptedMotion.drawing === 1"));
         await page.Locator("[data-cfx-annotation-control=ParallelChannel]").ClickAsync();
         await page.Locator("[data-cfx-editor-handle=offset]").FocusAsync(); await page.Keyboard.PressAsync("ArrowUp"); await page.Keyboard.PressAsync("Escape");
         Assert.Null((await page.EvaluateAsync<JsonElement>("() => editor.getState()")).GetProperty("draft").Deserialize<object>());

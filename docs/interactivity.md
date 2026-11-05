@@ -266,6 +266,13 @@ editor once a native annotation connection exists, because committing a change
 re-prepares the scene in C#. A saved page renders no editor controls; its context
 menu lists one disabled "Annotations need a connected host" item instead.
 
+The host can be any process that answers `connectNative` requests with a fresh
+section and a new basis, including .NET running in the same page as WebAssembly.
+The [annotation editor](https://chartforgex.com/playground/annotations/) on the
+site works that way: the playground engine exports a method that applies the
+request's `kind`, `annotationId` and `sourceDrawing` to the chart model and
+returns `PrepareSection` HTML for the callback to resolve.
+
 ## Saved-page readouts and controls
 
 Line and Area readouts choose the nearest X category across the plot. Scatter

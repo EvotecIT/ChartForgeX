@@ -110,6 +110,7 @@ var pngProofOutput = pngProofIndex >= 0 && pngProofIndex + 1 < args.Length
     ? args[pngProofIndex + 1] : null;
 PlaygroundPngContracts.Check(failures, pngProofOutput);
 PlaygroundPngContracts.CheckNativeFamilies(failures, pngProofOutput);
+PlaygroundAnnotationContracts.Check(failures);
 
 // Optional: every Mermaid fixture, to document which families or constructs the playground cannot render.
 var fixtureIndex = Array.IndexOf(args, "--fixtures");

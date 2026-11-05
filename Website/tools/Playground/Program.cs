@@ -31,4 +31,18 @@ public static partial class PlaygroundExports {
     /// <summary>Returns engine facts: <c>{ version, runtime, maxSourceLength, languages, themes }</c>.</summary>
     [JSExport]
     internal static string Info() => PlaygroundEngine.InfoJson();
+
+    /// <summary>Returns the HTML chart runtime matching the annotation host's sections: <c>{ ok, css, script }</c>.</summary>
+    [JSExport]
+    internal static string AnnotationRuntime() => PlaygroundAnnotations.RuntimeJson();
+
+    /// <summary>Prepares the annotation chart, or re-themes a held scene: <c>{ ok, html, basis }</c>.</summary>
+    [JSExport]
+    internal static string OpenAnnotations(string basis, string theme) => PlaygroundAnnotations.Open(basis, theme);
+
+    /// <summary>Applies one annotation edit request from the HTML runtime: <c>{ ok, html, basis }</c>.</summary>
+    [JSExport]
+    internal static string PrepareAnnotation(string basis, string theme, string operation, string id, string kind,
+        double startX, double startY, double endX, double endY, double yOffset, string label, string yAxis) =>
+        PlaygroundAnnotations.Prepare(basis, theme, operation, id, kind, startX, startY, endX, endY, yOffset, label, yAxis);
 }
