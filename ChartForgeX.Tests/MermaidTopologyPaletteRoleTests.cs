@@ -76,10 +76,11 @@ public sealed class MermaidTopologyPaletteRoleTests {
         Assert.Null(chart.Nodes[0].BorderColor); Assert.Null(chart.Nodes[0].BackgroundColor); Assert.Null(chart.Nodes[0].LabelColor);
         const string source = "flowchart LR\na[Plan] --> b[Done]"; var result = MermaidRenderer.Render(source, Options()); Capture("ordinary-source", source, result); Assert.Empty(result.Diagnostics);
         var mermaid = Assert.IsType<TopologyChart>(result.Artifact!.Model);
-        Assert.Equal(chart.Theme.Resolve(chart.ThemeMode).Background, mermaid.Theme.Resolve(mermaid.ThemeMode).Background);
+        // Source diagrams draw the same Graphite roles on the card surface that charts use.
+        Assert.Equal(chart.Theme.Resolve(chart.ThemeMode).ElevatedSurface, mermaid.Theme.Resolve(mermaid.ThemeMode).Background);
         Assert.Null(mermaid.Nodes[0].BackgroundColor);
         var explicitDefault = MermaidRenderer.Render("%%{init: {'theme':'default'}}%%\n" + source);
-        Assert.Equal(ChartColor.FromHex("#ECECFF"), ChartColor.Parse(Assert.IsType<TopologyChart>(explicitDefault.Artifact!.Model).Nodes[0].BackgroundColor!));
+        Assert.Null(Assert.IsType<TopologyChart>(explicitDefault.Artifact!.Model).Nodes[0].BackgroundColor);
     }
     internal static MermaidRenderOptions Options() => new() {
         Flowchart = new MermaidFlowchartRenderOptions { Width = 640, Height = 440 },

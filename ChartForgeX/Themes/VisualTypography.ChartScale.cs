@@ -27,5 +27,24 @@ public sealed partial class VisualTypography {
         var wide = WideScale ?? this;
         return width < wide.CompactBreakpoint ? wide.CompactScale ?? wide : wide;
     }
+    /// <summary>Maps the wide and compact role sizes while keeping weights, breakpoint and the selected scale.</summary>
+    internal VisualTypography MapSizes(Func<VisualTypography, VisualTypography> map) {
+        var wide = WideScale ?? this;
+        var copy = map(wide).CopyRoles(wide);
+        if (wide.CompactScale != null) {
+            copy.CompactScale = map(wide.CompactScale).CopyRoles(wide.CompactScale);
+            copy.CompactScale.WideScale = copy;
+        }
+        return WideScale != null ? copy.CompactScale! : copy;
+    }
+    private VisualTypography CopyRoles(VisualTypography source) {
+        MinimumTextSize = source.MinimumTextSize; CompactBreakpoint = source.CompactBreakpoint;
+        TitleWeight = source.TitleWeight; PanelTitleWeight = source.PanelTitleWeight; SubtitleWeight = source.SubtitleWeight;
+        AxisTitleWeight = source.AxisTitleWeight; TickWeight = source.TickWeight; LegendWeight = source.LegendWeight;
+        LegendValueWeight = source.LegendValueWeight; DataLabelWeight = source.DataLabelWeight; CenterValueWeight = source.CenterValueWeight;
+        CenterMinimumSize = source.CenterMinimumSize; CenterMaximumSize = source.CenterMaximumSize; CenterRadiusFactor = source.CenterRadiusFactor;
+        CenterCaptionSize = source.CenterCaptionSize; CenterCaptionGap = source.CenterCaptionGap;
+        return this;
+    }
     internal double CenterSize(double radius) => Math.Max(CenterMinimumSize, Math.Min(CenterMaximumSize, radius * CenterRadiusFactor));
 }

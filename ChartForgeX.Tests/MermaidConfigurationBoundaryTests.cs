@@ -86,7 +86,7 @@ public sealed class MermaidConfigurationBoundaryTests {
         Assert.Empty(rendered.Diagnostics);
         var topology = Assert.IsType<TopologyChart>(rendered.Artifact!.Model);
         Assert.Equal(mode, topology.ThemeMode);
-        Assert.Equal(VisualTheme.Graphite().Resolve(mode).Background, topology.Theme.Resolve(topology.ThemeMode).Background);
+        Assert.Equal(VisualTheme.Graphite().Resolve(mode).ElevatedSurface, topology.Theme.Resolve(topology.ThemeMode).Background);
     }
 
     [Theory]

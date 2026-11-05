@@ -21,11 +21,27 @@ internal static class DiagramTheme {
     internal static ChartColor SectionBandFill(VisualThemeColors colors, int section) =>
         ChartColorMath.Blend(colors.Background, colors.Foreground, section % 2 == 0 ? .035 : .07);
 
+    /// <summary>How far node surfaces step from the canvas toward the ink, so cards read as raised in both modes.</summary>
+    internal const double NodeSurfaceLift = .04;
+
+    /// <summary>The smallest node and edge caption size; diagram text is read, not scanned like tick labels.</summary>
+    internal const double MinimumCaptionSize = 13;
+
+    /// <summary>Diagrams sit on the theme's card surface, like charts, so every family shares one canvas.</summary>
+    /// <remarks>Titles keep the theme's chart heading scale, including its compact size on narrow canvases.</remarks>
     internal static VisualTheme Apply(VisualTheme theme) {
-        var source = theme.Typography;
-        if (theme.SeriesStrokeWidth > ConnectorStrokeWidth) theme = theme.Configure(builder => builder.SeriesStrokeWidth = ConnectorStrokeWidth);
-        return theme.WithTypography(new VisualTypography(source.Family, Math.Max(20, source.TitleSize), Math.Max(14, source.SubtitleSize),
-            source.AxisSize, source.LegendSize, Math.Max(13, source.DataLabelSize), source.ScalarValueSize,
-            source.CenterValueSize, source.AxisTitleSize, source.MonospaceFamily));
+        var typography = theme.Typography.MapSizes(source => new VisualTypography(source.Family, source.TitleSize, source.SubtitleSize,
+            source.AxisSize, source.LegendSize, Math.Max(MinimumCaptionSize, source.DataLabelSize), source.ScalarValueSize,
+            source.CenterValueSize, source.AxisTitleSize, source.MonospaceFamily, source.TileLabelSize, source.TileValueSize, source.TileDetailSize));
+        return theme.Configure(builder => {
+            Canvas(builder.Light);
+            Canvas(builder.Dark);
+            if (builder.SeriesStrokeWidth > ConnectorStrokeWidth) builder.SeriesStrokeWidth = ConnectorStrokeWidth;
+        }).WithTypography(typography);
+    }
+
+    private static void Canvas(VisualDesignTokens tokens) {
+        tokens.Background = tokens.ElevatedSurface;
+        tokens.Surface = ChartColorMath.Blend(tokens.ElevatedSurface, tokens.Foreground, NodeSurfaceLift);
     }
 }

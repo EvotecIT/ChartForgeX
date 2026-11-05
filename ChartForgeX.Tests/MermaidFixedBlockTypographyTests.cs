@@ -79,7 +79,9 @@ public sealed class MermaidFixedBlockTypographyTests {
     [InlineData(21)]
     [InlineData(256)]
     public void FittedFishboneCaptionRespectsTheNativeAdvanceAtBitmapScaleBoundaries(int size) {
-        var rendered = MermaidRenderer.Render("%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':" + size + "}}}%%\nishikawa-beta\nAPI\n  Management\n    Data");
+        // A fixed host frame keeps the fitted preview; without one the diagram uses its natural frame.
+        var rendered = MermaidRenderer.Render("%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':" + size + "}}}%%\nishikawa-beta\nAPI\n  Management\n    Data",
+            new MermaidRenderOptions { Ishikawa = new MermaidIshikawaRenderOptions { Width = 900, Height = 520 } });
         Assert.Empty(rendered.Diagnostics);
         var caption = XDocument.Parse(rendered.Artifact!.ToSvg()).Descendants()
             .Single(e => e.Name.LocalName == "text" && e.Value == "Management");

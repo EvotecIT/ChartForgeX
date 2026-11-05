@@ -16,7 +16,7 @@ public static class MermaidRailroadRendering {
         block.RuleComparison = document.Dialect == MermaidRailroadDialect.Abnf ? RailroadRuleComparison.OrdinalIgnoreCase : RailroadRuleComparison.Ordinal;
         foreach (var rule in document.Rules) block.AddRule(rule.Id, rule.Definition.Expression);
         MermaidPresentation.Apply(block, document, options.Presentation);
-        return block.WithNaturalSize(options.Width, options.Height);
+        return block.WithNaturalSize(options.Width ?? 0, options.Height ?? 0);
     }
     /// <summary>Wraps the measured native producer in the existing bounded Mermaid artifact policy.</summary>
     public static VisualArtifact ToVisualArtifact(this MermaidRailroadDocument document, MermaidRailroadRenderOptions? options = null) {
@@ -39,8 +39,8 @@ public static class MermaidRailroadRendering {
 
 /// <summary>Defines minimum natural canvas dimensions and shared presentation for railroad diagrams.</summary>
 public sealed class MermaidRailroadRenderOptions : MermaidDiagramRenderOptions {
-    /// <summary>Gets or sets the minimum natural width. Grammar geometry may require more space.</summary>
-    public int Width { get; set; } = 720;
-    /// <summary>Gets or sets the minimum natural height. Grammar geometry may require more space.</summary>
-    public int Height { get; set; } = 320;
+    /// <summary>Gets or sets the minimum natural width. Null fits the grammar exactly; geometry may require more space.</summary>
+    public int? Width { get; set; }
+    /// <summary>Gets or sets the minimum natural height. Null fits the grammar exactly; geometry may require more space.</summary>
+    public int? Height { get; set; }
 }

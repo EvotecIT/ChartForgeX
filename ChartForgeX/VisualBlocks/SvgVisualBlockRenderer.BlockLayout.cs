@@ -120,6 +120,27 @@ public sealed partial class SvgVisualBlockRenderer {
             .Line();
     }
 
+    // The frame height at which rows stop growing; null for nested layouts, which keep their frame.
+    internal static int? BlockLayoutContentHeight(BlockLayoutBlock block) {
+        if (VisualBlockRendering.ExtendedBlockLayout(block)) return null;
+        var placements = VisualBlockRendering.BlockLayoutPlacements(block);
+        if (placements.Count == 0) return null;
+        var options = block.Options;
+        var height = options.Size.Height;
+        for (var pass = 0; pass < 3; pass++) {
+            var content = new ChartRect(options.Padding.Left, options.Padding.Top, Math.Max(1, options.Size.Width - options.Padding.Left - options.Padding.Right),
+                Math.Max(1, height - options.Padding.Top - options.Padding.Bottom));
+            var headings = VisualBlockRendering.Headings(block.Title, block.Subtitle, options.ResolvedTheme, content);
+            var y = content.Y + (block.Title.Length > 0 ? headings.TitleAdvance : 0) + (block.Subtitle.Length > 0 ? headings.SubtitleAdvance : 0);
+            var geometry = CreateBlockLayoutGeometry(block, placements, content, y, options.Padding.Bottom, height);
+            var rows = 0;
+            foreach (var placement in placements) rows = Math.Max(rows, placement.Row + 1);
+            var bottom = y + rows * geometry.CellHeight + Math.Max(0, rows - 1) * geometry.RowGap + options.Padding.Bottom;
+            height = Math.Min(height, (int)Math.Ceiling(bottom));
+        }
+        return height;
+    }
+
     private static BlockLayoutGeometry CreateBlockLayoutGeometry(BlockLayoutBlock block, IReadOnlyList<VisualBlockRendering.BlockLayoutPlacement> placements, ChartRect content, double y, double bottomPadding, double totalHeight) {
         var rows = 0;
         for (var index = 0; index < placements.Count; index++) rows = Math.Max(rows, placements[index].Row + 1);

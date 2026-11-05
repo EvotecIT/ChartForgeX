@@ -24,7 +24,8 @@ internal static partial class VisualBlockRendering {
             if (placement.Radius <= 0) continue;
             // A lower set owns its outward lower region, not the pair-intersection lanes above it.
             var direction = placement.Y > centerY ? 1 : -1;
-            Add(new[] { placement.Set.Id }, placement.Set.Label, placement.X, placement.Y + direction * placement.Radius * .52, placement.Radius * 1.16, 13.5, 800, placement.Set.TextColor ?? theme.Text);
+            Add(new[] { placement.Set.Id }, placement.Set.Label, placement.X, placement.Y + direction * placement.Radius * .52, placement.Radius * 1.16, 13.5, 800, placement.Set.TextColor ?? theme.Text,
+                alternates: ExclusiveSide(placement));
         }
         foreach (var intersection in block.Intersections)
             AddRegion(intersection.SetIds, intersection.Label, 12.5, 700, intersection.TextColor ?? theme.Text);
@@ -54,18 +55,41 @@ internal static partial class VisualBlockRendering {
             Add(ids, text, center.X, center.Y + offset, width, defaultSize, weight, color, heightBudget);
         }
 
-        void Add(IReadOnlyList<string> ids, string text, double x, double baseline, double width, double defaultSize, int weight, ChartColor color, double? heightBudget = null) {
+        // Horizontal positions that slide a set caption away from the circles it overlaps, into its exclusive region.
+        IReadOnlyList<double>? ExclusiveSide(VennSetPlacement placement) {
+            var others = placements.Where(item => item.Index != placement.Index && item.Radius > 0
+                && Math.Abs(item.X - placement.X) + Math.Abs(item.Y - placement.Y) < item.Radius + placement.Radius).ToArray();
+            if (others.Length == 0) return null;
+            var dx = placement.X - others.Average(item => item.X);
+            if (Math.Abs(dx) < 1e-9) return null;
+            var step = Math.Sign(dx) * placement.Radius * .1;
+            return Enumerable.Range(1, 6).Select(index => placement.X + step * index).ToArray();
+        }
+
+        void Add(IReadOnlyList<string> ids, string text, double x, double baseline, double width, double defaultSize, int weight, ChartColor color, double? heightBudget = null,
+            IReadOnlyList<double>? alternates = null) {
             if (text.Length == 0) return;
             text = SingleLineText(text);
             var textBudget = heightBudget ?? lineBudget;
             var style = FitBodyTextStyle(theme, text, defaultSize, width, textBudget, weight);
             PlacedLabel? placed = null;
             var maximum = style.FontSize;
+            var anchors = new List<double> { x };
+            if (alternates != null) anchors.AddRange(alternates);
+            // Captions keep clear of the outlines of sets they do not belong to. When that would
+            // shrink the text noticeably, readable size wins and only member chords constrain it.
+            var clearOutlines = true;
             // Fit complete captions against both their circle chords and earlier labels.
             // A font that fills the lens can otherwise leave no collision-free lane.
             if (!Fits(maximum)) {
                 var fitted = Math.Max(.001, ChartTextFitting.FitFontSize(0, maximum, Fits));
-                if (!Fits(fitted)) return;
+                if (!Fits(fitted) || fitted < maximum * .8) {
+                    clearOutlines = false;
+                    if (!Fits(maximum)) {
+                        fitted = Math.Max(.001, ChartTextFitting.FitFontSize(0, maximum, Fits));
+                        if (!Fits(fitted)) return;
+                    }
+                }
             }
             // Omit a caption that only fits below one source pixel; retain deliberately smaller authored typography.
             if (style.FontSize < Math.Min(1, BodyFontSize(theme, defaultSize))) return;
@@ -77,35 +101,74 @@ internal static partial class VisualBlockRendering {
                 style.FontSize = size;
                 var metrics = TextLayoutEngine.Measure(text, style);
                 if (metrics.Width > width || metrics.Height > textBudget) return false;
+                // Prefer sliding along the intended line over moving to another lane.
+                foreach (var anchor in anchors) if (FitsAt(anchor, metrics, true)) return true;
+                foreach (var anchor in anchors) if (FitsAt(anchor, metrics, false)) return true;
+                return false;
+            }
+
+            bool FitsAt(double anchorX, TextMetrics metrics, bool baselineOnly) {
                 var top = body.Top; var bottom = body.Bottom;
                 foreach (var placement in placements) {
                     if (!ContainsId(ids, placement.Set.Id)) continue;
-                    var horizontalReach = Math.Abs(x - placement.X) + metrics.Width / 2;
+                    var horizontalReach = Math.Abs(anchorX - placement.X) + metrics.Width / 2;
                     if (horizontalReach > placement.Radius) return false;
                     var verticalReach = Math.Sqrt(Math.Max(0, placement.Radius * placement.Radius - horizontalReach * horizontalReach));
                     top = Math.Max(top, placement.Y - verticalReach); bottom = Math.Min(bottom, placement.Y + verticalReach);
                 }
                 if (text.Length == 0 || bottom - top < metrics.Height) return false;
                 var ascent = VisualBlockRendering.TextAscent(style);
-                var candidates = new List<LabelCandidate> { new(0, 0, .5) };
-                // Reserve the measured line box when moving between vertical lanes.
-                for (var lane = 1; lane <= Math.Max(8, captionCount * 2); lane++) {
-                    var distance = (metrics.Height + gap) * lane / 2;
-                    candidates.Add(new LabelCandidate(0, distance, .5));
-                    candidates.Add(new LabelCandidate(0, -distance, .5));
+                var origin = baseline - ascent;
+                var offsets = new List<double> { 0 };
+                if (!baselineOnly) {
+                    // Reserve the measured line box when moving between vertical lanes.
+                    for (var lane = 1; lane <= Math.Max(8, captionCount * 2); lane++) {
+                        var distance = (metrics.Height + gap) * lane / 2;
+                        offsets.Add(distance); offsets.Add(-distance);
+                    }
+                    // Include exact interval ends when a discrete lane would jump over it.
+                    offsets.Add(top - origin); offsets.Add(bottom - metrics.Height - origin);
                 }
-                // Include exact interval ends when a discrete lane would jump over it.
-                candidates.Add(new LabelCandidate(0, top - (baseline - ascent), .5));
-                candidates.Add(new LabelCandidate(0, bottom - metrics.Height - (baseline - ascent), .5));
+                var candidates = new List<LabelCandidate>();
+                foreach (var offset in offsets) {
+                    var box = new ChartRect(anchorX - metrics.Width / 2, origin + offset, metrics.Width, metrics.Height);
+                    // A cleared caption also keeps a gap inside its own outlines rather than touching a chord end.
+                    if (clearOutlines && (CrossesOtherSet(ids, box) || !InsideOwnSets(ids, box))) continue;
+                    candidates.Add(new LabelCandidate(0, offset, .5));
+                }
+                if (candidates.Count == 0) return false;
                 // Chords at the box's horizontal extremes keep all four corners inside
                 // every referenced set, including after vertical relocation.
-                var request = new LabelPlacementRequest(text, new ChartPoint(x, baseline - ascent), style, candidates) {
+                var request = new LabelPlacementRequest(text, new ChartPoint(anchorX, origin), style, candidates) {
                     Fallback = LabelFallbackRule.Drop,
-                    Bounds = new ChartRect(x - metrics.Width / 2, top, metrics.Width, bottom - top)
+                    Bounds = new ChartRect(anchorX - metrics.Width / 2, top, metrics.Width, bottom - top)
                 };
                 placed = VennTextPlacement.Place(new[] { request }, body, occupied, gap, TextLayoutEngine.Measure)[0];
                 return !placed.IsDropped;
             }
+        }
+
+        bool InsideOwnSets(IReadOnlyList<string> ids, ChartRect box) {
+            foreach (var placement in placements) {
+                if (!ContainsId(ids, placement.Set.Id)) continue;
+                var inner = Math.Max(0, placement.Radius - gap);
+                foreach (var x in new[] { box.Left, box.Right })
+                    foreach (var y in new[] { box.Top, box.Bottom })
+                        if ((x - placement.X) * (x - placement.X) + (y - placement.Y) * (y - placement.Y) > inner * inner) return false;
+            }
+            return true;
+        }
+
+        // A caption box that touches a set it does not belong to would sit on that set's outline or inside it.
+        bool CrossesOtherSet(IReadOnlyList<string> ids, ChartRect box) {
+            foreach (var placement in placements) {
+                if (placement.Radius <= 0 || ContainsId(ids, placement.Set.Id)) continue;
+                var nearestX = Math.Max(box.Left, Math.Min(placement.X, box.Right));
+                var nearestY = Math.Max(box.Top, Math.Min(placement.Y, box.Bottom));
+                var dx = placement.X - nearestX; var dy = placement.Y - nearestY;
+                if (dx * dx + dy * dy < (placement.Radius + gap) * (placement.Radius + gap)) return true;
+            }
+            return false;
         }
 
         bool ContainsId(IReadOnlyList<string> ids, string id) {

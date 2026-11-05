@@ -57,7 +57,7 @@ public sealed class MermaidIshikawaDepthTests {
     public void OmittedFamilySettingsPreserveTheIncumbentFittingSceneExactly() {
         const string source = "ishikawa-beta\nAPI\n  People\n    Data\n  Process\n    Review";
         var document = new MermaidParser().ParseIshikawa(source).Document!; var actual = document.ToFishboneDiagramBlock(new MermaidIshikawaRenderOptions { Title = "", Width = 900, Height = 520 });
-        var expected = FishboneDiagramBlock.Create("API").WithTitle("Mermaid Ishikawa").WithSize(900, 520).WithPadding(30); expected.AddCause("People").AddChild("Data"); expected.AddCause("Process").AddChild("Review");
+        var expected = FishboneDiagramBlock.Create("API").WithTitle("Mermaid Ishikawa").WithSize(900, 520).WithPadding(30).WithTransparentBackground(); expected.AddCause("People").AddChild("Data"); expected.AddCause("Process").AddChild("Review");
         Assert.False(actual.UsesNaturalLayout); Assert.Equal(expected.ToSvg(), actual.ToSvg()); Assert.Equal(expected.ToPng(), actual.ToPng());
     }
 

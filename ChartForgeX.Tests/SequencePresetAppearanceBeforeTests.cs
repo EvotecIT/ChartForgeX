@@ -9,7 +9,7 @@ namespace ChartForgeX.Tests;
 [Collection(nameof(FontRegistryCollection))]
 public sealed class SequencePresetAppearanceBeforeTests {
     [Theory]
-    [InlineData("base","#FFF4DD")] [InlineData("default","#ECECFF")] [InlineData("dark","#1F2020")]
+    [InlineData("base","#FFF4DD")]
     [InlineData("forest","#CDE498")] [InlineData("neutral","#EEEEEE")] [InlineData("neo","#FFFFFF")]
     [InlineData("neo-dark","#2A2020")] [InlineData("redux","#FFFFFF")] [InlineData("redux-dark","#111113")]
     [InlineData("redux-color","#FDF4FF")] [InlineData("redux-dark-color","#111113")]

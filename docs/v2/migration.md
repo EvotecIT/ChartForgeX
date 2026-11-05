@@ -6,6 +6,21 @@ description: "Upgrade to the current ChartForgeX packages: what changed in prepa
 
 Upgrading an existing project? Move every ChartForgeX package to the same version, build, and then work through the changes below. Each one names what changed and what to write instead. The newest changes come first.
 
+## One diagram theme
+
+Mermaid's `default` and `dark` themes now select the native Graphite theme in light or dark mode, the same as source without a theme. Flowcharts no longer turn lavender with yellow clusters, Sequence participants no longer pick up Mermaid's pastel and grey preset paints or drop shadows, and the dark preset's `#333` canvas is gone. The named alternatives `base`, `forest`, `neutral`, `neo`, `neo-dark` and the `redux` family remain explicit opt-ins and render as before. Authored `themeVariables`, `classDef`, `style` and host themes still take precedence over the defaults.
+
+Every diagram family draws on the theme's card surface, like a Graphite chart: white in light mode and the dark card in dark mode, instead of the page grey. Node surfaces step four percent from the card toward the ink, so cards read as raised in both modes. Diagram headings use the shared chart scale, 17 pixels wide and 15 compact, instead of a fixed 20-pixel minimum; node and edge captions keep their 13-pixel minimum.
+
+Content-sized families trim their canvas to what they draw plus the standard padding when the host does not set a size:
+
+- `MermaidTreeViewRenderOptions.Width` and `Height`, `MermaidRailroadRenderOptions.Width` and `Height`, and `MermaidIshikawaRenderOptions.Width` and `Height` are nullable and default to null. Tree views trim to their widest row and wrap no wider than 720 pixels; railroad grammars and Ishikawa cause lanes use their measured natural frame. Set a value to restore a minimum (railroad, tree view height) or a fixed frame (Ishikawa).
+- `MermaidBlockRenderOptions.Height` and `MermaidPacketRenderOptions.Height` are nullable. Null ends the frame where rows stop growing, up to the former 420 pixels. Set a height to keep a fixed frame.
+
+Venn set captions slide into their set's exclusive region and keep clear of the outlines of sets they do not belong to. A caption that would have to shrink noticeably to stay clear keeps its readable size inside its own sets instead.
+
+This is a visible change for any output that relied on the Mermaid presets or the fixed frames. Regenerate visual baselines deliberately after reviewing both modes.
+
 ## Product typography
 
 The shared product face is Archivo, replacing the Calibri/Carlito chart defaults and separate gallery proof alias. JetBrains Mono supplies technical text. Use `ChartFontStacks.ProductSans` and `ChartFontStacks.ProductMono` for the complete stacks. The core package bundles native TrueType and matching browser WOFF2 faces; consumers no longer need to register gallery Carlito files to reproduce the default typography. Custom font requests remain explicit.

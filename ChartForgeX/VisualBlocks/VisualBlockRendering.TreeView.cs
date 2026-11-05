@@ -44,6 +44,24 @@ internal static partial class VisualBlockRendering {
         return new ChartSize(width, Math.Max(1, (int)height));
     }
 
+    // The widest drawn row or heading at the maximum width, so a short tree does not carry an empty right margin.
+    internal static int TreeViewContentWidth(TreeViewBlock block, int maximumWidth) {
+        ValidateTreeView(block);
+        if (maximumWidth < 1 || maximumWidth > MaximumTreeViewExtent) throw new ArgumentOutOfRangeException(nameof(maximumWidth));
+        var padding = block.Options.Padding;
+        var theme = block.Options.ResolvedTheme;
+        double Heading(string text, double size, int weight) => text.Length == 0 ? 0 :
+            TextLayoutEngine.Measure(SingleLineText(text), new TextStyle { Font = new FontSpec { Family = theme.FontFamily, Weight = weight }, FontSize = size, LineHeight = 1 }).Width;
+        var extent = Math.Max(Heading(block.Title, theme.TitleFontSize, 700), Heading(block.Subtitle, theme.SubtitleFontSize, 400));
+        foreach (var row in TreeViewRows(block, maximumWidth - padding.Left - padding.Right)) {
+            var label = TextLayoutEngine.Measure(SingleLineText(row.Item.Label), row.Label).Width;
+            var description = row.Item.Description.Length == 0 ? 0 : TextLayoutEngine.Measure(SingleLineText(row.Item.Description), row.Description).Width;
+            var text = row.InlineDescription ? label + 16 + description : Math.Max(label, description);
+            extent = Math.Max(extent, row.X + Math.Min(row.Width, text) + 4);
+        }
+        return Math.Max(1, Math.Min(maximumWidth, (int)Math.Ceiling(padding.Left + extent + padding.Right)));
+    }
+
     // Layout is shared by SVG marks and the native label scene. Text is never reduced to make more rows fit.
     internal static IReadOnlyList<TreeViewRowPlan> TreeViewRows(TreeViewBlock block, double width) {
         var theme = block.Options.ResolvedTheme;

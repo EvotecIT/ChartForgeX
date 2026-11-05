@@ -9,8 +9,6 @@ internal sealed partial class MermaidThemePreset {
     private static void SeedTopologyRoles(string name, Dictionary<string, Precise> colors) {
         void Set(string key, string value) => colors[key] = Literal(value);
         switch (name) {
-            case "default": Set("labelBackground", "rgba(232,232,232,0.8)"); break;
-            case "dark": Set("border2", "rgba(255,255,255,0.25)"); Set("titleColor", "#F9FFFE"); Set("labelBackground", "#181818"); break;
             case "forest": Set("titleColor", "#333"); Set("edgeLabelBackground", "#e8e8e8"); break;
             case "neutral": Set("edgeLabelBackground", "white"); break;
             case "neo": Set("nodeBorder", "#000000"); break;
@@ -29,11 +27,9 @@ internal sealed partial class MermaidThemePreset {
         Precise Get(string key) => colors[key];
         void Copy(string target, string source) => colors[target] = Get(source);
         void Fallback(string target, Precise value) { if (!colors.ContainsKey(target)) colors.Add(target, value); }
-        if (name is "default" or "dark" or "forest" or "neutral") {
+        if (name is "forest" or "neutral") {
             Copy("nodeBorder", "border1"); Copy("clusterBkg", "secondBkg"); Copy("clusterBorder", "border2"); Copy("defaultLinkColor", "lineColor");
-            if (name == "default") { Copy("titleColor", "textColor"); Copy("edgeLabelBackground", "labelBackground"); }
-            else if (name == "dark") colors["edgeLabelBackground"] = Get("labelBackground").AdjustHsl(lightness: 25);
-            else if (name == "neutral") Copy("titleColor", "text");
+            if (name == "neutral") Copy("titleColor", "text");
             // Legacy CSS falls back to textColor when no nodeTextColor was authored.
             return;
         }

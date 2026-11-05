@@ -8,11 +8,11 @@ namespace ChartForgeX.Mermaid;
 internal static class MermaidSequenceSurfaceEffects {
     internal static void Apply(SequenceArtifact sequence, MermaidSourceConfiguration configuration,
         MermaidThemePreset? preset, MermaidPresentationOptions? host) {
-        // Unthemed source keeps the flat native diagram language. Mermaid's neo elevation
-        // applies when the source asks for that look or for one of Mermaid's own themes.
-        var neo = configuration.Look == "neo" || configuration.Look == null && configuration.Theme != null;
+        // Unthemed source and Mermaid's default/dark themes keep the flat native diagram language.
+        // Mermaid's neo elevation applies when the source asks for that look or for one of Mermaid's named presets.
+        var neo = configuration.Look == "neo" || configuration.Look == null && MermaidThemePreset.IsPreset(configuration.Theme);
         if (neo) {
-            var name = preset?.Name ?? configuration.Theme ??
+            var name = preset?.Name ?? (MermaidThemePreset.IsPreset(configuration.Theme) ? configuration.Theme : null) ??
                 (sequence.ThemeMode == ChartForgeX.Themes.VisualThemeMode.Dark ? "redux-dark-color" : "redux-color");
             var tint = name is "redux" or "redux-color"
                 ? ChartColor.FromRgb(0, 0, 0) : ChartColor.FromRgb(255, 255, 255);

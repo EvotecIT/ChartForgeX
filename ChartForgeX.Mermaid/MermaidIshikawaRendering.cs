@@ -19,13 +19,15 @@ public static class MermaidIshikawaRendering {
         var block = FishboneDiagramBlock.Create(document.Root.Text)
             .WithTitle(ResolveTitle(document, options))
             .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
-            .WithSize(options.Width, options.Height)
+            .WithSize(options.Width ?? MermaidIshikawaRenderOptions.PreviewWidth, options.Height ?? MermaidIshikawaRenderOptions.PreviewHeight)
             .WithPadding(document.Configuration.Ishikawa?.Padding ?? options.Padding);
 
         foreach (var child in document.Root.Children) CopyCause(child, block.AddCause(child.Text));
         MermaidPresentation.Apply(block, document, options.Presentation);
         document.Configuration.Ishikawa?.Apply(block, options.Presentation);
-        if (VisualBlockRendering.FishboneNeedsNaturalLayout(block)) block.WithNaturalSize(options.Width, options.Height);
+        // Without a host frame the diagram measures its cause lanes and trims to them.
+        var hostFrame = options.Width.HasValue || options.Height.HasValue;
+        if (!hostFrame || VisualBlockRendering.FishboneNeedsNaturalLayout(block)) block.WithNaturalSize(options.Width ?? 0, options.Height ?? 0);
         return block;
     }
 
@@ -83,11 +85,13 @@ public static class MermaidIshikawaRendering {
 /// Defines conversion and rendering defaults for Mermaid Ishikawa diagrams.
 /// </summary>
 public sealed class MermaidIshikawaRenderOptions : MermaidDiagramRenderOptions {
-    /// <summary>Gets or sets the fixed preview width, or minimum width when complete measured cause lanes are needed.</summary>
-    public int Width { get; set; } = 900;
+    internal const int PreviewWidth = 900, PreviewHeight = 520;
 
-    /// <summary>Gets or sets the fixed preview height, or minimum height when complete measured cause lanes are needed.</summary>
-    public int Height { get; set; } = 520;
+    /// <summary>Gets or sets a fixed preview width, or minimum width when complete measured cause lanes are needed. Null with a null height trims the frame to its measured cause lanes.</summary>
+    public int? Width { get; set; }
+
+    /// <summary>Gets or sets a fixed preview height, or minimum height when complete measured cause lanes are needed. Null with a null width trims the frame to its measured cause lanes.</summary>
+    public int? Height { get; set; }
 
     /// <summary>Gets or sets the inner preview padding.</summary>
     public double Padding { get; set; } = 30;

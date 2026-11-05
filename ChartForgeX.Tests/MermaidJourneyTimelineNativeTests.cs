@@ -168,10 +168,12 @@ public sealed class MermaidJourneyTimelineNativeTests {
         AssertBackground("opaque-source-transparent-host", "#112233", "#01020300", Options(transparentHost));
         AssertBackground("opaque-host-transparent-family", "#112233", "#04050600", Options(opaqueHost, transparentFamily));
         AssertBackground("transparent-host-opaque-family", "#11223300", "#040506", Options(transparentHost, opaqueFamily));
-        AssertBackground("source-preset", null, "#333333", null);
-        AssertBackground("host-replaces-preset", null, "#010203", Options(opaqueHost));
-        AssertBackground("family-replaces-preset", null, "#040506", Options(opaqueHost,opaqueFamily));
-        AssertBackground("transparent-host-replaces-preset", null, "#01020300", Options(transparentHost));
+        // Mermaid's dark theme is the native dark theme: without an authored canvas the card sits on a transparent canvas.
+        foreach (var options in new[] { null, Options(opaqueHost), Options(opaqueHost, opaqueFamily) }) {
+            var native = Assert.IsAssignableFrom<IVisualBlock>(MermaidRenderer.Render("%%{init: {\"theme\":\"dark\"}}%%\n" + (journey ? Journey : Timeline), options).Artifact!.Model);
+            Assert.True(native.Options.TransparentBackground);
+            Assert.Equal(VisualThemeMode.Dark, native.Options.ThemeMode);
+        }
         Assert.Equal(ChartColor.FromHex("#010203"), opaqueHost.Resolve(VisualThemeMode.Dark).Background);
         Assert.Equal(ChartColor.FromHex("#01020300"), transparentHost.Resolve(VisualThemeMode.Dark).Background);
         Assert.Equal(ChartColor.FromHex("#040506"), opaqueFamily.Resolve(VisualThemeMode.Dark).Background);
