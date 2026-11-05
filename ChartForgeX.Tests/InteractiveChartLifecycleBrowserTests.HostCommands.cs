@@ -119,8 +119,9 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     [BrowserFact]
     public async Task DeclinedWheelLeavesTheDrawingAndCanceledTouchBrushReleasesUncommittedPresentation() {
         if (!Enabled) return;
-        // A saved page cannot re-project a lollipop series, so zoom declines and a committed brush stays a selection.
-        var chart = Readings(dark: true).AddSeries(new ChartSeries(new ChartSeriesId("stems"), "Stems", ChartSeriesKind.Lollipop, new[] { new ChartPoint(0.5, 3) }));
+        // A saved page cannot re-project a difference-area series, so zoom declines and a committed brush stays a selection.
+        var chart = Readings(dark: true).AddSeries(ChartSeries.CreateDifferenceArea(new ChartSeriesId("gap"), "Gap",
+            new[] { new ChartDifferencePoint(0.4, 0, 1), new ChartDifferencePoint(0.6, 0, 1) }));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             Fit(options); options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Brush);
         }), 820, 680);

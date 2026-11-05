@@ -106,9 +106,10 @@ isolation moved out of the runtimes. A host page that registers only
 A saved interactive HTML page can navigate numeric Cartesian Line, StepLine,
 Area, StepArea, StackedArea, Bar, HorizontalBar (grouped, stacked or
 normalized), Scatter, Bubble, Candlestick, OHLC, RangeBand, RangeArea, BoxPlot,
-ErrorBar and Waterfall charts without a server or a `connectNative` callback.
-Linear and logarithmic axes are supported, as is a secondary Y axis on vertical
-charts.
+ErrorBar, Waterfall, Lollipop, Dumbbell and RangeBar charts without a server or
+a `connectNative` callback. Linear, logarithmic and symmetric-logarithmic axes
+are supported, as is a second value axis: on the right of vertical charts and
+along the top of horizontal ones.
 The HTML adapter keeps the source coordinates and reprojects the captured data
 ink into the fixed plot rectangle. Window changes regenerate axis ticks and
 clip data at the plot boundary while keeping the chart frame, marker sizes,
@@ -206,16 +207,41 @@ After a host disconnects, navigation stays inside the last prepared scene's
 domain. Printing temporarily restores that scene's complete native geometry,
 then restores the browser window when returning to the screen.
 
-The supported scope is the families above on numeric linear or logarithmic
-axes, and on a time X axis that uses the automatic UTC calendar: no time zone,
-culture, value format, label formatter, explicit labels or tick count, sessions
-or discrete spacing, automatic label density and unrotated captions. A zoomed
-window there repeats the native calendar fit, so its dates, clock times and
-regular bar cadence read as a native preparation of that window would read.
-Other time axes, symmetric-logarithmic axes, a secondary axis on a horizontal
-chart, stacked areas whose members have different X coordinates, Lollipop,
-Dumbbell, RangeBar, Timeline and other Cartesian families, and native
-annotation layout require a connected native preparation path. Mixing an unsupported series
+The supported scope is the families above on numeric linear, logarithmic or
+symmetric-logarithmic axes, and on a time X axis that uses the automatic
+calendar: no value format, label formatter, explicit labels or tick count,
+sessions or discrete spacing, automatic label density and unrotated captions.
+A display time zone and a culture are both supported. The page captures the
+zone's UTC offsets across the axis domain and a year either side, so calendar
+steps walk the zone's wall clock through daylight-saving changes as
+`TimeZoneInfo` resolves them; skipped and repeated hours behave as they do
+natively. A culture contributes its short date, month-day, short and long time
+patterns, separators, AM/PM designators and month and day names, including
+genitive month names. A zoomed window repeats the native calendar fit, so its
+dates, clock times and regular bar cadence read as a native preparation of that
+window would read.
+
+These stay declined, each for a stated reason:
+
+- **Session and discretely spaced time axes.** Their positions come from the
+  session closures or the ordinal/unit spacing of the source instants, and
+  their ticks are fitted inside that compressed domain; the page does not
+  repeat that fit.
+- **Culture calendars outside the Gregorian calendar, and culture patterns with
+  fractions, eras or zone designators.** The captured formatter does not name
+  them, so such an axis is not captured.
+- **Display zones whose domain spans more than two centuries.** The captured
+  offset table would be unbounded.
+- **Stacked areas whose members miss each other's X coordinates.** The native
+  stack builds each X from the members present there, so an area's edges
+  between observations depend on coordinates its own observations do not
+  carry; a legend toggle could not rebuild them from the saved drawing.
+- **Timeline and Gantt schedules.** Their axis is fitted by the schedule
+  compiler together with lane and item captions, which a window would have to
+  lay out again.
+- Other Cartesian families and native annotation layout.
+
+They require a connected native preparation path. Mixing an unsupported series
 family into a chart does not establish standalone viewport support.
 
 A saved page never scales a whole drawing, which would only enlarge its text.
@@ -1163,7 +1189,7 @@ Supported standalone Cartesian charts capture source-coordinate windows in bookm
 
 ## Translated controls and text direction
 
-`Localization` supplies HTML control labels, tooltips on controls, comparison text, scenario playback text, pinned-tooltip status, the default scalar `Value` caption and highlight announcements. A native dimension label takes precedence over that default caption. Unspecified messages use English. The page and chart inherit the native chart's accessibility language unless `Localization.Language` overrides it. A dashboard copies its configured bundle into every child chart.
+`Localization` supplies HTML control labels, tooltips on controls, comparison text, scenario playback text, pinned-tooltip status, the default scalar `Value` caption and highlight announcements. A native dimension label takes precedence over that default caption. Topology use case playback names each step's interaction with `HtmlChartText.ScenarioRequest`, `ScenarioMessage`, `ScenarioResponse` and `ScenarioFailure`. Unspecified messages use English. The page and chart inherit the native chart's accessibility language unless `Localization.Language` overrides it. A dashboard copies its configured bundle into every child chart.
 
 ```csharp
 chart.SaveInteractiveHtml("measurements.html", options => {

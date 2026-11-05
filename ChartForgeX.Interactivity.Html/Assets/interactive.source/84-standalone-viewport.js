@@ -17,8 +17,10 @@
     // Horizontal charts keep categories on the vertical axis and values on X; physical paint maps stay x/y.
     const view = { svg, source: copyHostValue(metadata), windows: {}, geometry: [], labels: [], axes: [], points: [], frames: [],
       horizontal, categoryAxis: horizontal ? 'y' : 'x' };
-    const valueAxis = secondary => horizontal ? 'x' : secondary ? 'secondaryY' : 'y';
+    const valueAxis = secondary => horizontal ? secondary ? 'secondaryX' : 'x' : secondary ? 'secondaryY' : 'y';
     const seriesAxis = owner => valueAxis(owner?.querySelector('[data-cfx-point][data-cfx-axis]')?.dataset.cfxAxis === 'secondary');
+    // Each painted node maps across by xAxis and down by axis.
+    const seriesAxes = owner => horizontal ? { axis: 'y', xAxis: seriesAxis(owner) } : { axis: seriesAxis(owner), xAxis: 'x' };
     const plot = metadata.dataProjection.plotBounds;
     const ns = 'http://www.w3.org/2000/svg';
     const clip = document.createElementNS(ns, 'clipPath'), rect = document.createElementNS(ns, 'rect');
@@ -33,7 +35,7 @@
       // An outer clip remains in plot coordinates while individual marks reproject.
       view.frames.push({ owner, clip: owner.getAttribute('clip-path') });
       // Series-level paths (lines, areas, bands) carry no axis; their observations name it.
-      const axis = horizontal ? 'y' : seriesAxis(owner);
+      const axes = seriesAxes(owner);
       owner.querySelectorAll('path,line,rect,circle,ellipse,polygon,polyline,image').forEach(node => {
         if (node.closest('defs,[data-cfx-native-text-ink]') || node.closest('[data-cfx-caption]') || node.closest('g')?.querySelector('text') && node.closest('[data-cfx-role$="label"]')) return;
         const point = node.closest('[data-cfx-point]'), role = node.dataset.cfxRole || '';
@@ -43,13 +45,13 @@
         const box = marker ? node.getBBox() : null;
         view.geometry.push({ node, attrs: Object.fromEntries(Array.from(node.attributes).map(attr => [attr.name, attr.value])),
           visibility: standaloneStyle(node, 'visibility'),
-          marker: box ? { x: box.x + box.width / 2, y: box.y + box.height / 2 } : null, axis });
+          marker: box ? { x: box.x + box.width / 2, y: box.y + box.height / 2 } : null, ...axes });
       });
     });
     svg.querySelectorAll('[data-cfx-label-for]').forEach(node => {
       const box = node.getBBox(), owner = node.closest('[data-cfx-role="series"]');
       view.labels.push({ node, x: box.x + box.width / 2, y: box.y + box.height / 2, transform: node.getAttribute('transform'), visibility: standaloneStyle(node, 'visibility'),
-        axis: !horizontal && owner && seriesAxis(owner) === 'secondaryY' ? 'secondaryY' : 'y' });
+        ...owner ? seriesAxes(owner) : { axis: 'y', xAxis: 'x' } });
       if (!node.closest('[data-cfx-role="series"]')) {
         view.frames.push({ owner: node, clip: node.getAttribute('clip-path') });
       }
@@ -62,8 +64,8 @@
         series: Number(node.dataset.cfxSeries), axis: valueAxis(node.dataset.cfxAxis === 'secondary'),
         visible: node.getAttribute('data-cfx-visible') });
     });
-    for (const name of ['x', 'y', 'secondaryY']) {
-      const role = name === 'secondaryY' ? 'secondary-y' : name;
+    for (const name of standaloneAxisNames) {
+      const role = name.replace('secondary', 'secondary-').toLowerCase();
       const nodes = Array.from(svg.querySelectorAll('[data-cfx-role="axis-' + role + '-label"],[data-cfx-role="grid-' + role + '"]'));
       view.axes.push({ name, nodes, display: new Map(nodes.map(node => [node, standaloneStyle(node, 'display')])), layer: null });
     }
@@ -160,7 +162,7 @@
       let plotLayer = view.svg.querySelector('[data-cfx-role="series"]');
       while (plotLayer?.parentNode && plotLayer.parentNode !== view.svg) plotLayer = plotLayer.parentNode;
       view.svg.insertBefore(grid, plotLayer || null);
-      const vertical = axis.name !== 'x', secondary = axis.name === 'secondaryY';
+      const vertical = standaloneVertical(axis.name), secondary = axis.name.startsWith('secondary');
       const template = axis.nodes.find(node => node.querySelector('text'))?.querySelector('text');
       const box = template?.getBBox(), style = template && getComputedStyle(template);
       const size = Math.max(Number(template?.getAttribute('font-size')) || 12, compact ? 12 / scale : 0);
@@ -169,7 +171,7 @@
       const room = vertical ? () => size * 2 : label => standaloneTextWidth(size + 'px ' + family, label) + 16 / scale;
       // Linear windows start at the native density for the axis length; others keep the drawing's own label count.
       const ticks = projection.captions === 'calendar' && !vertical && standaloneTimeTicks(projection, plot.width,
-        label => standaloneTextWidth(size + 'px ' + family, label), size, standaloneTimeObservations(view)) || standaloneTicks(projection, vertical ? plot.height : plot.width, room,
+        label => standaloneTextWidth(size + 'px ' + family, label), size, standaloneTimeObservations(view), view.calendar ||= standaloneCalendar(projection)) || standaloneTicks(projection, vertical ? plot.height : plot.width, room,
         projection.scale === 'linear' ? standaloneNativeTickCount(projection, vertical ? plot.height : plot.width, vertical, size)
           : axis.nodes.filter(node => node.dataset.cfxRole.endsWith('-label') && axis.display.get(node)?.value !== 'none').length || 5,
         axis.name === view.categoryAxis && view.source.categoryLabels?.length ? view.source.categoryLabels : null, standaloneWholeAxis(view, axis.name, projection));
@@ -180,7 +182,8 @@
         text.setAttribute('font-size', size); text.setAttribute('fill', style?.fill || 'currentColor');
         text.setAttribute('font-family', family || 'inherit');
         text.setAttribute('x', vertical ? secondary ? plot.x + plot.width + 8 : plot.x - 8 : position);
-        text.setAttribute('y', vertical ? position : plot.y + plot.height + 8 + (box?.height || size));
+        // A top axis keeps its drawn caption baseline.
+        text.setAttribute('y', vertical ? position : secondary ? template?.getAttribute('y') ?? plot.y - 8 : plot.y + plot.height + 8 + (box?.height || size));
         text.setAttribute('text-anchor', vertical ? secondary ? 'start' : 'end' : 'middle');
         text.setAttribute('dominant-baseline', vertical ? 'middle' : 'auto'); text.textContent = tick.text;
         text.dataset.cfxAxisValue = tick.value; layer.appendChild(text);
@@ -207,31 +210,29 @@
       return true;
     }
     setStandaloneClip(view, true);
-    const plot = view.source.dataProjection.plotBounds;
-    const x = standaloneMap(view.source.dataProjection.x, standaloneAxis(root, 'x'), plot, false);
-    const maps = {};
-    for (const name of ['y', 'secondaryY']) {
-      const source = view.source[name + 'Projection'] || view.source.dataProjection[name];
-      if (source) maps[name] = standaloneMap(source, standaloneAxis(root, name), plot, true);
+    const plot = view.source.dataProjection.plotBounds, maps = {};
+    for (const name of standaloneAxisNames) {
+      const source = standaloneSourceAxis(view, name);
+      if (source) maps[name] = standaloneMap(source, standaloneAxis(root, name), plot, standaloneVertical(name));
     }
-    view.geometry.forEach(entry => paintStandaloneGeometry(entry, x, maps[entry.axis] || maps.y));
+    view.geometry.forEach(entry => paintStandaloneGeometry(entry, maps[entry.xAxis] || maps.x, maps[entry.axis] || maps.y));
     view.labels.forEach(entry => {
-      const y = maps[entry.axis] || maps.y, at = entry.current || entry, px = x.at(at.x), py = y.at(at.y);
+      const x = maps[entry.xAxis] || maps.x, y = maps[entry.axis] || maps.y, at = entry.current || entry, px = x.at(at.x), py = y.at(at.y);
       entry.node.setAttribute('transform', 'translate(' + (px - entry.x) + ' ' + (py - entry.y) + ') ' + (entry.transform || ''));
       // The clip moves with a translated caption, so a caption whose anchor leaves the plot hides instead.
       // A restacked total keeps its captured caption, so it hides until its stack is whole again.
       const slack = entry.slack || .5, outside = px < plot.x - slack || px > plot.x + plot.width + slack || py < plot.y - slack || py > plot.y + plot.height + slack;
       entry.node.style.visibility = outside || entry.hiddenTotal || entry.node.matches('.cfx-series-muted,.cfx-series-isolated-out') ? 'hidden' : '';
     });
-    const region = (box, y) => box && Object.freeze({ x: x.at(box.x), y: y.at(box.y), width: box.width * Math.abs(x.scale), height: box.height * Math.abs(y.scale) });
+    const region = (box, x, y) => box && Object.freeze({ x: x.at(box.x), y: y.at(box.y), width: box.width * Math.abs(x.scale), height: box.height * Math.abs(y.scale) });
     for (const point of view.points) {
       // A horizontal observation's category runs down the plot and its value across it.
-      const y = view.horizontal ? maps.y : maps[point.axis] || maps.y;
+      const y = view.horizontal ? maps.y : maps[point.axis] || maps.y, x = view.horizontal ? maps[point.axis] || maps.x : maps.x;
       const level = point.stack ? (point.stack.now || point.stack).end : point.y;
-      const px = view.horizontal ? standaloneCoordinate(standaloneAxis(root, 'x'), level, plot, false) : standaloneCoordinate(standaloneAxis(root, 'x'), point.x, plot, false);
+      const px = view.horizontal ? standaloneCoordinate(standaloneAxis(root, point.axis), level, plot, false) : standaloneCoordinate(standaloneAxis(root, 'x'), point.x, plot, false);
       const py = view.horizontal ? standaloneCoordinate(standaloneAxis(root, 'y'), point.x, plot, true) : standaloneCoordinate(standaloneAxis(root, point.axis), level, plot, true);
-      if (point.region) point.node._cfxNativeRegion = region(point.stackRegion || point.region, y);
-      if (point.paired) point.node._cfxPairedRegion = region(point.paired, y);
+      if (point.region) point.node._cfxNativeRegion = region(point.stackRegion || point.region, x, y);
+      if (point.paired) point.node._cfxPairedRegion = region(point.paired, x, y);
       if (point.midline !== undefined) point.node.dataset.cfxMidlineY = y.at(Number(point.midline));
       const bounds = point.node._cfxNativeRegion || { x: px, y: py, width: 0, height: 0 };
       point.node.dataset.cfxVisible = String(point.visible !== 'false' && bounds.x + bounds.width >= plot.x - .01 && bounds.x <= plot.x + plot.width + .01
@@ -240,7 +241,7 @@
         Object.freeze([x.at(px), y.at(py), radius * Math.min(Math.abs(x.scale), Math.abs(y.scale))])));
     }
     const metadata = copyHostValue(view.source);
-    for (const name of ['x', 'y', 'secondaryY']) {
+    for (const name of standaloneAxisNames) {
       const axis = standaloneAxis(root, name); if (!axis) continue;
       metadata[name + 'Projection'] = axis;
       if (metadata.dataProjection[name]) metadata.dataProjection[name] = axis;
@@ -253,8 +254,12 @@
   // Discrete changes (toolbar zoom, brush zoom, reset and legend rescaling) ease from the
   // displayed windows to the new ones when the motion bundle is present. Gestures and API
   // windows repaint at once; the requested windows and events are final immediately.
-  const standaloneFullWindows = (view, windows) => Object.fromEntries(['x', 'y', 'secondaryY']
-    .map(name => [name, view.source[name + 'Projection'] || view.source.dataProjection[name]]).filter(([, axis]) => axis)
+  const standaloneVertical = name => name === 'y' || name === 'secondaryY';
+  // The drawing's own projection of one axis: the scene's X, otherwise each captured axis.
+  const standaloneSourceAxis = (view, name) => name === 'x' ? view.source.dataProjection.x || view.source.xProjection
+    : view.source[name + 'Projection'] || view.source.dataProjection[name];
+  const standaloneFullWindows = (view, windows) => Object.fromEntries(standaloneAxisNames
+    .map(name => [name, standaloneSourceAxis(view, name)]).filter(([, axis]) => axis)
     .map(([name, axis]) => [name, { minimum: windows[name]?.minimum ?? axis.minimum, maximum: windows[name]?.maximum ?? axis.maximum }]));
   // Stops a running transition and returns the displayed windows; view.windows becomes its logical target again.
   const beginStandaloneChange = view => {
@@ -289,7 +294,7 @@
     const view = standaloneViewport(root); if (!view || !windows || typeof windows !== 'object') return false;
     if (windows.valueDomain !== undefined && windows.valueDomain !== (view.source.valueDomain || 'fullData')) return false;
     const names = Object.keys(windows).filter(name => name !== 'valueDomain');
-    if (!names.length || names.some(name => !['x', 'y', 'secondaryY'].includes(name) || !validSourceAxisWindow(windows[name], standaloneAxis(root, name)))) return false;
+    if (!names.length || names.some(name => !standaloneAxisNames.includes(name) || !validSourceAxisWindow(windows[name], standaloneAxis(root, name)))) return false;
     for (const name of names) {
       const axis = standaloneAxis(root, name), requested = windows[name];
       const fullMin = axis.fullMinimum ?? axis.minimum, fullMax = axis.fullMaximum ?? axis.maximum;
@@ -300,7 +305,7 @@
     for (const name of names) {
       const axis = standaloneAxis(root, name), requested = windows[name];
       view.windows[name] = { minimum: Math.max(axis.fullMinimum ?? axis.minimum, requested.minimum), maximum: Math.min(axis.fullMaximum ?? axis.maximum, requested.maximum) };
-      const source = view.source[name + 'Projection'] || view.source.dataProjection[name];
+      const source = standaloneSourceAxis(view, name);
       if (view.windows[name].minimum === source.minimum && view.windows[name].maximum === source.maximum) delete view.windows[name];
     }
     presentStandaloneViewport(root, view, previous, animate); accepted?.();
@@ -312,7 +317,8 @@
   // axis takes its own window from the same screen ratios, so two Y axes re-project independently.
   const standaloneGestureAxes = (view, axes) => [...new Set(axes.flatMap(name => {
     const physical = view.horizontal ? name === 'x' ? 'y' : 'x' : name;
-    return physical === 'y' && view.source.secondaryYProjection ? ['y', 'secondaryY'] : [physical];
+    return physical === 'y' && view.source.secondaryYProjection ? ['y', 'secondaryY']
+      : physical === 'x' && view.horizontal && view.source.secondaryXProjection ? ['x', 'secondaryX'] : [physical];
   }))];
   const zoomStandaloneViewport = (root, factor, logicalX, logicalY, axes = ['x'], animate = false) => {
     const view = standaloneViewport(root); if (!view || !Number.isFinite(factor) || factor <= 0) return false;
@@ -320,7 +326,7 @@
     const plot = view.source.dataProjection.plotBounds, windows = {};
     for (const name of standaloneGestureAxes(view, axes)) {
       const axis = standaloneAxis(root, name, true); if (!axis) continue;
-      const vertical = name !== 'x', value = vertical ? logicalY : logicalX;
+      const vertical = standaloneVertical(name), value = vertical ? logicalY : logicalX;
       const first = vertical ? plot.y : plot.x, size = vertical ? plot.height : plot.width;
       const ratio = Number.isFinite(value) ? clamp((value - first) / size, 0, 1) : .5;
       const a = standaloneAxisValue(axis, vertical ? 1 - ratio - (1 - ratio) / factor : ratio - ratio / factor, false);
@@ -332,7 +338,7 @@
   const panStandaloneViewport = (root, deltaX, deltaY) => {
     const view = standaloneViewport(root); if (!view) return false;
     const plot = view.source.dataProjection.plotBounds, windows = {};
-    for (const [name, delta, size] of [['x', deltaX, plot.width], ['y', -deltaY, plot.height], ['secondaryY', -deltaY, plot.height]]) {
+    for (const [name, delta, size] of [['x', deltaX, plot.width], ['secondaryX', deltaX, plot.width], ['y', -deltaY, plot.height], ['secondaryY', -deltaY, plot.height]]) {
       const axis = standaloneAxis(root, name, true); if (!axis) continue;
       const shift = delta / size * (axis.reversed ? -1 : 1);
       const lo = transformedAxisBound(axis, axis.fullMinimum ?? axis.minimum, false), hi = transformedAxisBound(axis, axis.fullMaximum ?? axis.maximum, true);
@@ -396,15 +402,15 @@
     const hidden = view.points.some(point => point.node.closest('.cfx-series-muted,.cfx-series-isolated-out'));
     const previous = beginStandaloneChange(view);
     restackStandaloneView(view);
-    for (const name of view.horizontal ? ['x'] : ['y', 'secondaryY']) {
+    for (const name of view.horizontal ? ['x', 'secondaryX'] : ['y', 'secondaryY']) {
       const axis = standaloneAxis(root, name); if (!axis) continue;
       if (!hidden) { delete view.windows[name]; continue; }
       // Stacked observations span their restacked baseline and end.
       const values = view.points.filter(point => point.axis === name && !point.node.closest('.cfx-series-muted,.cfx-series-isolated-out'))
         .flatMap(point => point.stack ? [(point.stack.now || point.stack).base, (point.stack.now || point.stack).end]
-          : standalonePointValues(point, ['cfxLow', 'cfxHigh', 'cfxLower', 'cfxUpper', 'cfxYLower', 'cfxYUpper', 'cfxMinimum', 'cfxMaximum', 'cfxStart'])).filter(Number.isFinite);
+          : standalonePointValues(point)).filter(Number.isFinite);
       if (!values.length) continue;
-      if (view.source.series.some(row => ['area', 'steparea', 'stackedarea', 'bar', 'horizontalbar', 'waterfall'].includes(row.kind)) && axis.scale !== 'logarithmic') values.push(0);
+      if (view.source.series.some(row => ['area', 'steparea', 'stackedarea', 'bar', 'horizontalbar', 'waterfall', 'lollipop'].includes(row.kind)) && axis.scale !== 'logarithmic') values.push(0);
       let minimum = Infinity, maximum = -Infinity;
       for (const value of values) { minimum = Math.min(minimum, value); maximum = Math.max(maximum, value); }
       if (axis.scale === 'logarithmic') { minimum = Math.max(axis.fullMinimum, minimum); maximum = Math.min(axis.fullMaximum, maximum); }
@@ -421,8 +427,9 @@
     if (!view || !matrix || rect.width < 4 || rect.height < 4) return null;
     const corners = [new DOMPoint(rect.left, rect.top), new DOMPoint(rect.right, rect.bottom)].map(point => point.matrixTransform(matrix.inverse()));
     const plot = view.source.dataProjection.plotBounds, windows = {};
-    for (const name of root.dataset.cfxBrushAxis === 'x' ? ['x'] : ['x', 'y', ...view.source.secondaryYProjection ? ['secondaryY'] : []]) {
-      const vertical = name !== 'x', axis = standaloneAxis(root, name);
+    const across = ['x', ...view.horizontal && view.source.secondaryXProjection ? ['secondaryX'] : []];
+    for (const name of root.dataset.cfxBrushAxis === 'x' ? across : [...across, 'y', ...view.source.secondaryYProjection ? ['secondaryY'] : []]) {
+      const vertical = standaloneVertical(name), axis = standaloneAxis(root, name);
       const values = corners.map(point => projectedAxisValue(axis, clamp(vertical ? 1 - (point.y - plot.y) / plot.height : (point.x - plot.x) / plot.width, 0, 1)));
       windows[name] = { minimum: Math.min(...values), maximum: Math.max(...values) };
     }

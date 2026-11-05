@@ -45,14 +45,17 @@
       clip?.querySelectorAll('path,rect,polygon').forEach(shape => {
         if (view.geometry.some(entry => entry.node === shape)) return;
         view.geometry.push({ node: shape, attrs: Object.fromEntries(Array.from(shape.attributes).map(attr => [attr.name, attr.value])),
-          visibility: standaloneStyle(shape, 'visibility'), marker: null, axis: view.horizontal ? 'y' : member.axis, stack: { column: member.column, member } });
+          visibility: standaloneStyle(shape, 'visibility'), marker: null, axis: view.horizontal ? 'y' : member.axis, xAxis: view.horizontal ? member.axis : 'x',
+          stack: { column: member.column, member } });
       });
     });
     // Stack totals caption their stack's end; they follow the window like data labels.
     view.svg.querySelectorAll('[data-cfx-role="stack-total-label-source"]').forEach(node => {
       const box = node.getBBox(), total = view.svg.querySelector('[data-cfx-source-id="' + CSS.escape(node.dataset.cfxSourceId.replace(/-label-source$/, '')) + '"]');
+      const secondary = total?.dataset.cfxAxis === 'secondary';
       view.labels.push({ node, x: box.x + box.width / 2, y: box.y + box.height / 2, transform: node.getAttribute('transform'), visibility: standaloneStyle(node, 'visibility'),
-        axis: !view.horizontal && total?.dataset.cfxAxis === 'secondary' ? 'secondaryY' : 'y', totalOf: total, slack: (view.horizontal ? box.width : box.height) + 8 });
+        axis: !view.horizontal && secondary ? 'secondaryY' : 'y', xAxis: view.horizontal && secondary ? 'secondaryX' : 'x',
+        totalOf: total, slack: (view.horizontal ? box.width : box.height) + 8 });
       view.frames.push({ owner: node, clip: node.getAttribute('clip-path') });
     });
     for (const entry of view.labels) {
@@ -60,7 +63,8 @@
       const member = byNode.get(point) || null;
       if (member) entry.stack = { member, area: member.kind === 'stackedarea' ? series.get(member.series) : null };
       else if (point?.dataset.cfxRole === 'stack-total') entry.total = columns.get(['bar', 'horizontalbar'].map(kind =>
-        [kind, view.horizontal ? 'x' : point.dataset.cfxAxis === 'secondary' ? 'secondaryY' : 'y', point.dataset.cfxStackGroup, point.dataset.cfxX].join('|')).find(key => columns.has(key)));
+        [kind, (point.dataset.cfxAxis === 'secondary' ? view.horizontal ? 'secondaryX' : 'secondaryY' : view.horizontal ? 'x' : 'y'),
+          point.dataset.cfxStackGroup, point.dataset.cfxX].join('|')).find(key => columns.has(key)));
     }
     return stacks;
   };
@@ -94,7 +98,7 @@
   // Restacked ink stays in the captured drawing's coordinates, so zoom and pan project it like any other mark.
   const paintStandaloneStacks = view => {
     const plot = view.source.dataProjection.plotBounds, vertical = !view.horizontal, identity = { at: value => value, scale: 1 };
-    const axisOf = member => view.horizontal ? view.source.dataProjection.x : view.source[member.axis + 'Projection'] || view.source.dataProjection[member.axis];
+    const axisOf = member => standaloneSourceAxis(view, member.axis);
     const value = (member, position) => standaloneAxisValue(axisOf(member), vertical ? 1 - (position - plot.y) / plot.height : (position - plot.x) / plot.width);
     const position = (member, number) => standaloneCoordinate(axisOf(member), number, plot, vertical);
     const shift = (member, number) => {

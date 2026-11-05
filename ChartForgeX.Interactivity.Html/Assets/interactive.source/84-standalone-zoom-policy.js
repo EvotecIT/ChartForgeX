@@ -1,16 +1,19 @@
-  // Saved reports re-project these Cartesian families from the scene's data projection: linear or
-  // logarithmic axes, an automatic UTC calendar X axis, vertical charts with up to two value axes,
-  // and single-axis horizontal charts. Stacked bars and aligned stacked areas restack on legend toggles;
-  // waterfall steps carry their captured running totals.
+  // Saved reports re-project these Cartesian families from the scene's data projection: linear,
+  // logarithmic or symmetric-logarithmic axes, an automatic calendar X axis (UTC or a captured display
+  // zone, invariant or captured culture captions), and vertical or horizontal charts with up to two value axes.
+  // Stacked bars and aligned stacked areas restack on legend toggles; waterfall steps carry their captured running totals.
+  const standaloneAxisNames = ['x', 'y', 'secondaryX', 'secondaryY'];
   const standaloneReprojectedKinds = ['line', 'stepline', 'area', 'steparea', 'stackedarea', 'bar', 'horizontalbar', 'scatter', 'bubble',
-    'candlestick', 'ohlc', 'rangeband', 'rangearea', 'boxplot', 'errorbar', 'waterfall'];
+    'candlestick', 'ohlc', 'rangeband', 'rangearea', 'boxplot', 'errorbar', 'waterfall', 'lollipop', 'dumbbell', 'rangebar'];
   const standaloneReprojects = (metadata, svg) => {
     const projection = metadata.dataProjection, horizontal = metadata.orientation === 'horizontal';
-    const axes = ['x', 'y', 'secondaryY'].filter(name => metadata[name + 'Projection'] || projection?.[name]);
+    const axes = standaloneAxisNames.filter(name => metadata[name + 'Projection'] || projection?.[name]);
     const scale = name => (metadata[name + 'Projection'] || projection[name]).scale;
-    return !!projection?.x && !!(projection.y || metadata.yProjection) && !metadata.secondaryXProjection
-      && !(horizontal && metadata.secondaryYProjection) && axes.every(name => ['linear', 'logarithmic'].includes(scale(name))
-        || scale(name) === 'time' && name === 'x' && !horizontal && projection.x.captions === 'calendar')
+    // A horizontal chart's second value axis runs along the top (secondaryX); a vertical chart's along the right.
+    return !!projection && !!(projection.x || metadata.xProjection) && !!(projection.y || metadata.yProjection)
+      && !(horizontal ? metadata.secondaryYProjection : metadata.secondaryXProjection)
+      && axes.every(name => ['linear', 'logarithmic', 'symmetriclogarithmic'].includes(scale(name))
+        || scale(name) === 'time' && name === 'x' && !horizontal && standaloneTimeCaptured(projection.x))
       && !!metadata.series?.length && metadata.series.every(row => standaloneReprojectedKinds.includes(row.kind))
       && standaloneStacksAligned(metadata, svg);
   };

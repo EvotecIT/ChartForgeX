@@ -40,6 +40,12 @@
     for (let count = 2; count <= 10; count++) add(standaloneInsideTicks(low, high, count, false).values);
     return sets;
   };
+  // ChartTicks.GenerateTransformed: nice steps in the symmetric-log space, mapped back to data values.
+  const standaloneSymmetricTicks = (axis, limit) => {
+    const low = transformedAxisValue(axis, axis.minimum), high = transformedAxisValue(axis, axis.maximum), base = axis.logarithmBase ?? 10;
+    const inverse = value => value === 0 ? 0 : Math.sign(value) * axis.threshold * (Math.pow(base, Math.abs(value)) - 1);
+    return Array.from({ length: limit - 1 }, (_, index) => standaloneInsideTicks(low, high, index + 2, false).values.map(inverse));
+  };
   // ChartValueFormat's invariant compact captions ("0.##", or "0.#" with k/M/B), with the
   // native plain-significant fallback when a caption would not name its own tick.
   const standaloneCompact = value => {
@@ -76,6 +82,7 @@
       : Math.abs(values[0]) || 1).map((text, index) => ({ value: values[index], text }));
     const target = Math.max(3, desired), candidates = [];
     const generated = axis.scale === 'logarithmic' ? standaloneLogarithmicTicks(axis)
+      : axis.scale === 'symmetriclogarithmic' ? standaloneSymmetricTicks(axis, Math.min(40, Math.max(target * 2, 6)))
       : Array.from({ length: Math.min(40, Math.max(target * 2, 6)) - 1 }, (_, index) => standaloneInsideTicks(axis.minimum, axis.maximum, index + 2, whole).values);
     for (const values of generated) {
       const ticks = label(values);
@@ -96,7 +103,7 @@
     return vertical ? Math.max(count, Math.min(9, Math.round(length / 50) + 1)) : count <= 13 ? count : Math.min(count, Math.max(4, Math.floor(length / 80) + 1));
   };
   // Values an observation places on one of its value axes, including its range and summary extents.
-  const standaloneExtentKeys = ['cfxLow', 'cfxHigh', 'cfxOpen', 'cfxClose', 'cfxLower', 'cfxUpper', 'cfxYLower', 'cfxYUpper', 'cfxMinimum', 'cfxMaximum', 'cfxStart'];
+  const standaloneExtentKeys = ['cfxLow', 'cfxHigh', 'cfxOpen', 'cfxClose', 'cfxLower', 'cfxUpper', 'cfxYLower', 'cfxYUpper', 'cfxMinimum', 'cfxMaximum', 'cfxStart', 'cfxEnd'];
   const standalonePointValues = (point, keys = standaloneExtentKeys) => [point.y,
     ...keys.filter(key => point.node.dataset[key] !== undefined).map(key => Number(point.node.dataset[key]))];
   // An axis is whole-numbered when the static policy said so, or when its full domain and every

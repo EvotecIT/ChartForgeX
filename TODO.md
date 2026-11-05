@@ -29,11 +29,9 @@ AG Charts lets a caller style any datum, format any label and theme every series
 
 ## 2. Standalone browser interactivity
 
-Static HTML from reports and email has to feel interactive without a .NET host. Feature bundles (context menu, data export, hierarchy drill, isolate, motion), re-projected standalone zoom with fresh ticks, brush zoom, legend rescale, entry and update motion, tooltip templates and renderers, CSV/JSON/clipboard export, custom context-menu items, pinch zoom and double-tap isolate have landed.
+Static HTML from reports and email has to feel interactive without a .NET host. Feature bundles (context menu, data export, hierarchy drill, isolate, motion), re-projected standalone zoom with fresh ticks for every Cartesian family a saved page can redraw faithfully (zoned and culture calendars, symmetric-log axes and horizontal secondary axes included; the remaining declines are documented in docs/interactivity.md), brush zoom, legend rescale, entry and update motion, tooltip templates and renderers, CSV/JSON/clipboard export, custom context-menu items, pinch zoom, double-tap isolate and use case playback with direction-aware arrows and localized interaction labels have landed.
 
-- [ ] **Standalone zoom for the remaining Cartesian families.** Saved pages re-project automatic UTC calendar time X axes with native calendar ticks. Stacked, normalized and horizontal bars, aligned stacked areas and waterfalls now re-project, and legend toggles restack from the captured observations. Saved pages still decline zoom for zoned, culture-formatted, session and spaced time axes, symmetric-logarithmic axes, secondary axes on horizontal charts, stacked areas whose members miss each other's X coordinates, and lollipop, dumbbell, range-bar and timeline families. Done when each re-projects with native-consistent ticks or the decline is deliberate.
 - [ ] **Large graph navigation.** Large topology/graph scenes get zoom, filtering or hierarchy navigation rather than shrinking to fit. Done when a dense example stays readable.
-- [ ] **Use case playback.** Response steps reverse the active edge arrow in interactive HTML, and the request/message/response/failed-call labels are translated in the topology UI catalogs.
 
 ## 3. Diagram appearance
 

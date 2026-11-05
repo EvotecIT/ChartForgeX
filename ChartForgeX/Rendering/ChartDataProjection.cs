@@ -61,11 +61,23 @@ internal sealed class ChartDataAxisProjection {
         IntegerTicks = axis.IntegerTicks;
         // Browser re-ticking can reproduce only the default invariant compact captions.
         DefaultCaptions = axis.LabelFormatter == null && axis.Labels.Count == 0 && axis.Scale != ChartScaleKind.Time;
-        // ...and the automatic UTC calendar with invariant captions on an unrotated, automatically counted time axis.
-        CalendarCaptions = axis.Scale == ChartScaleKind.Time && axis.LabelFormatter == null && axis.Labels.Count == 0 && axis.ValueFormat == null
-            && axis.TimeZone == null && axis.Culture == null && axis.TimeSessions == null && axis.TimeSpacing == null && axis.PreparedTimeDomain == null
+        // ...and the automatic calendar on an unrotated, automatically counted time axis, in UTC or a display zone whose
+        // offsets are captured, with invariant captions or a culture whose patterns and names are captured.
+        var calendar = axis.Scale == ChartScaleKind.Time && axis.LabelFormatter == null && axis.Labels.Count == 0 && axis.ValueFormat == null
+            && axis.TimeSessions == null && axis.TimeSpacing == null && axis.PreparedTimeDomain == null
             && !axis.HasExplicitTickCount && axis.LabelDensity == ChartLabelDensity.Auto && axis.LabelAngle == 0;
+        if (calendar && axis.TimeZone != null && axis.TimeZone != System.TimeZoneInfo.Utc) {
+            TimeZone = ChartTimeZoneFacts.TryCapture(axis.TimeZone, minimum, maximum);
+            calendar = TimeZone != null;
+        }
+        if (calendar && axis.Culture != null) {
+            TimeCulture = ChartTimeCultureFacts.TryCapture(axis);
+            calendar = TimeCulture != null;
+        }
+        CalendarCaptions = calendar;
     }
+    internal ChartTimeZoneFacts? TimeZone { get; }
+    internal ChartTimeCultureFacts? TimeCulture { get; }
     internal bool IntegerTicks { get; }
     internal bool DefaultCaptions { get; }
     internal bool CalendarCaptions { get; }
