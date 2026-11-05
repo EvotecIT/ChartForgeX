@@ -170,17 +170,60 @@ internal static class VisualFrameLayout {
                 legendValueStyle = legendValueStyle.Clone(); legendValueStyle.FontSize = legendStyle.FontSize;
             }
             var columnWidth = 0d; var groupedValueList = false;
+            // A grid gives entry i the width of column i % count, so every row's names, values and percentages line up.
+            double[]? gridColumns = null; Dictionary<VisualLegendEntry, int>? gridIndex = null;
+            List<List<VisualLegendEntry>> rows;
             List<List<VisualLegendEntry>> PlanRows() {
                 var planned = new List<List<VisualLegendEntry>>(); var row = new List<VisualLegendEntry>(); var used = 0d;
                 foreach (var entry in entries) {
                     var width = EntryWidth(entry, false);
-                    if (row.Count > 0 && (side || used + gap + width > legendWidth)) { planned.Add(row); row = new(); used = 0; }
+                    var full = gridColumns != null ? row.Count == gridColumns.Length : side || used + gap + width > legendWidth;
+                    if (row.Count > 0 && full) { planned.Add(row); row = new(); used = 0; }
                     row.Add(entry); used += (row.Count > 1 ? gap : 0) + width;
                 }
                 if (row.Count > 0) planned.Add(row);
                 return planned;
             }
-            var rows = PlanRows();
+            // Columns take their width from their own content: the widest entry in each. When a required column
+            // count cannot fit, each column gives up width in proportion to its need; spare width can be shared out.
+            void UseGrid(int count, bool fill) {
+                var natural = entries.Select(entry => LegendWidth(entry, Overhead(entry), double.PositiveInfinity)).ToArray();
+                double[] Columns(int candidate) {
+                    var columns = new double[candidate];
+                    for (var index = 0; index < natural.Length; index++) columns[index % candidate] = Math.Max(columns[index % candidate], natural[index]);
+                    return columns;
+                }
+                var resolved = count > 0 ? Columns(count) : Array.Empty<double>();
+                if (count == 0) for (count = entries.Count - 1; count > 1; count--) {
+                    resolved = Columns(count);
+                    if (resolved.Sum() + gap * (count - 1) <= legendWidth) break;
+                }
+                if (count <= 1) resolved = new[] { Math.Min(legendWidth, natural.Max()) };
+                var room = Math.Max(0, legendWidth - gap * (resolved.Length - 1));
+                var total = resolved.Sum();
+                if (total > room) {
+                    // Only names give up width, and none below its readable shortened form: each column keeps its glyph,
+                    // value and percentage space, so values never disappear to make room.
+                    var fixedWidths = new double[resolved.Length]; var names = new double[resolved.Length];
+                    for (var index = 0; index < natural.Length; index++) {
+                        var label = OneLine(entries[index].Label); var labelWidth = builder.MeasureText(label, legendStyle).Width;
+                        var column = index % resolved.Length;
+                        fixedWidths[column] = Math.Max(fixedWidths[column], natural[index] - labelWidth);
+                        names[column] = Math.Max(names[column], Math.Min(labelWidth, builder.MeasureText(ShortenedMinimum(label), legendStyle).Width));
+                    }
+                    for (var index = 0; index < resolved.Length; index++) fixedWidths[index] += names[index];
+                    var shrinkable = total - fixedWidths.Sum();
+                    var scale = shrinkable > 0 ? Math.Max(0, room - fixedWidths.Sum()) / shrinkable : 0;
+                    for (var index = 0; index < resolved.Length; index++) resolved[index] = fixedWidths[index] + (resolved[index] - fixedWidths[index]) * scale;
+                }
+                else if (fill) for (var index = 0; index < resolved.Length; index++) resolved[index] += (room - total) / resolved.Length;
+                gridColumns = resolved;
+                gridIndex = new Dictionary<VisualLegendEntry, int>();
+                for (var index = 0; index < entries.Count; index++) gridIndex[entries[index]] = index;
+                numericWidths = null;
+                rows = PlanRows();
+            }
+            rows = PlanRows();
             // Legend v2: an automatic legend keeps at most two wrapped rows. A wide frame moves a longer legend, and a
             // part-to-whole value list beside a wide plot, to the right; a compact frame lists the entries in two columns.
             if (context.Frame.AutomaticLegendPlacement && !side && context.Frame.LegendMaximumRows == null && entries.Count > 1) {
@@ -198,10 +241,15 @@ internal static class VisualFrameLayout {
                     groupedValueList = partToWhole;
                     rows = PlanRows();
                 } else if (!wideFrame && (rows.Count > LegendMaximumAutomaticRows || partToWhole && rows.Count > 1)) {
-                    columnWidth = Math.Max(0, (legendWidth - gap) / 2);
-                    rows = PlanRows();
+                    // Each column is as wide as its own longest entry, so a long name takes room a shorter column
+                    // does not need before anything is shortened; leftover width is shared between both columns.
+                    UseGrid(2, fill: true);
                 }
             }
+            // Wrapped value rows, including a legend the author placed above or below, share content-sized columns
+            // so values and percentages line up from row to row. The grid keeps its natural width and alignment.
+            if (columnWidth == 0 && gridColumns == null && !side && rows.Count > 1 && entries.Any(entry => !string.IsNullOrEmpty(entry.Value)))
+                UseGrid(0, fill: false);
             // A list with values stacked beside the plot gives every entry one width, so its value and percentage
             // columns line up; automatic wrapped lists already share their columns above.
             if (columnWidth == 0 && side && rows.Count > 1 && entries.Any(entry => !string.IsNullOrEmpty(entry.Value))) {
@@ -261,6 +309,8 @@ internal static class VisualFrameLayout {
                     var rowWidth = 0d;
                     foreach (var entry in rows[r]) rowWidth += EntryWidth(entry, ReferenceEquals(entry, overflow)) + gap;
                     rowWidth = Math.Max(0, rowWidth - gap);
+                    // Every grid row starts where the full grid does, so a shorter last row keeps the columns.
+                    if (gridColumns != null) rowWidth = Math.Max(rowWidth, gridColumns.Sum() + gap * (gridColumns.Length - 1));
                     var alignRight = position is ChartLegendPosition.TopRight or ChartLegendPosition.BottomRight;
                     var alignCenter = position is ChartLegendPosition.Top or ChartLegendPosition.Bottom;
                     var cursor = x + (alignRight ? legendWidth - rowWidth : alignCenter ? (legendWidth - rowWidth) / 2 : 0);
@@ -336,9 +386,11 @@ internal static class VisualFrameLayout {
                 var length = ChartTextFitting.PrefixLength(label, availableWidth, text => builder.MeasureText(text, legendStyle).Width);
                 return length == label.Length ? Math.Min(bound, builder.MeasureText(label, legendStyle).Width + overhead + valueWidth) : bound;
             }
-            // A two-column list gives every entry the same column so names, values and percentages line up.
+            // A shared column width or grid column keeps names, values and percentages lined up.
             double EntryWidth(VisualLegendEntry entry, bool summary) =>
-                summary ? LegendWidth(entry, 0) : columnWidth > 0 ? columnWidth : LegendWidth(entry, Overhead(entry));
+                summary ? LegendWidth(entry, 0) : Column(entry) ?? LegendWidth(entry, Overhead(entry));
+            double? Column(VisualLegendEntry entry) => gridColumns != null && gridIndex!.TryGetValue(entry, out var index)
+                ? gridColumns[index % gridColumns.Length] : columnWidth > 0 ? columnWidth : null;
             double ValueWidth(VisualLegendEntry entry) {
                 if (string.IsNullOrEmpty(entry.Value)) return 0;
                 var widths = NumericWidths(entry);
@@ -355,7 +407,7 @@ internal static class VisualFrameLayout {
                     var numericGap = overflowValue ? Math.Max(gap * 2 / 3, legendStyle.EffectiveFontSize * 1.5) : gap * 2 / 3;
                     // Percentages are right-aligned in one column as wide as the widest, so values align beside them.
                     var percentageWidth = string.IsNullOrEmpty(entry.Percentage) ? 0 : PercentageColumn();
-                    var textWidth = Math.Max(0, (columnWidth > 0 ? columnWidth : legendWidth) - Overhead(entry) - gap - percentageWidth - (percentageWidth > 0 ? numericGap : 0));
+                    var textWidth = Math.Max(0, (Column(entry) ?? legendWidth) - Overhead(entry) - gap - percentageWidth - (percentageWidth > 0 ? numericGap : 0));
                     var labelWidth = builder.MeasureText(OneLine(entry.Label), legendStyle).Width;
                     // Reserve a readable label before fitting the value. A long authored numeric caption
                     // must not erase the category or paint through its separately allocated column.

@@ -70,8 +70,10 @@ public sealed class LegendNumericLayoutTests {
     [Theory]
     [InlineData(900, ChartLegendPosition.Right)]
     [InlineData(720, ChartLegendPosition.Left)]
-    public void ValueAndPercentageColumnsAlignInAStackedListOfDifferentWidths(int width, ChartLegendPosition position) {
-        // Short and long names, one- to three-digit values and percentages of different widths, stacked beside the ring.
+    [InlineData(800, ChartLegendPosition.Bottom)]
+    [InlineData(600, ChartLegendPosition.Top)]
+    public void ValueAndPercentageColumnsAlignAcrossLegendRowsOfDifferentWidths(int width, ChartLegendPosition position) {
+        // Short and long names, one- to three-digit values and percentages of different widths, beside, above or below the ring.
         var chart = Chart.Create().WithSize(width, 400).WithLegendPosition(position)
             .WithXLabels("Subscriptions and renewals", "Consulting", "Support", "Licenses", "Training", "Other")
             .AddDonut("Revenue", new[] { 612d, 241, 87, 33, 19, 8 }.Select((value, index) => new ChartPoint(index + 1, value)).ToArray());
@@ -86,12 +88,15 @@ public sealed class LegendNumericLayoutTests {
         var regions = prepared.Regions.Where(region => region.Role == "legend" && region.Bounds.Height > 0).ToArray();
         Assert.Equal(6, regions.Length);
         var rows = regions.Select(region => region.Bounds.Top).Distinct().Count();
-        Assert.True(rows > 1, "The fixture must stack its legend.");
+        Assert.True(rows > 1, "The fixture must wrap its legend.");
         foreach (var column in Enumerable.Range(0, 6).GroupBy(index => Math.Round(regions[index].Bounds.Left, 3))) {
             Assert.Single(column.Select(index => Math.Round(Right(values[index]), 3)).Distinct());
             Assert.Single(column.Select(index => Math.Round(Right(percentages[index]), 3)).Distinct());
         }
-        Assert.Single(regions.Select(region => Math.Round(region.Bounds.Width, 3)).Distinct());
+        var firstRow = regions.Count(region => region.Bounds.Top == regions[0].Bounds.Top);
+        // Wrapped rows above or below share their columns: every row starts its entries at the same x positions.
+        if (position is ChartLegendPosition.Top or ChartLegendPosition.Bottom) Assert.Equal(firstRow, regions.Select(region => Math.Round(region.Bounds.Left, 3)).Distinct().Count());
+        else Assert.Single(regions.Select(region => Math.Round(region.Bounds.Width, 3)).Distinct());
     }
     private static void AssertColumns(PreparedVisual prepared) {
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "legend-label").ToArray();

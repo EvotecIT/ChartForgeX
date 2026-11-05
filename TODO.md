@@ -56,9 +56,6 @@ Token contract v2 has landed: ChartForgeX reads its font stack, typography roles
 ## 5. Website showcase
 
 - [ ] **Interactive gallery.** Gallery cards open a live interactive chart, not a picture. Done when tooltips, zoom and legend work from every card.
-- [ ] **Realistic data.** Examples use multi-series, realistically sized data; no near-empty charts. Still thin: Bubble, Error Bar, Candlestick, OHLC, Trend Line, Histogram, Timeline and Bullet.
-- [ ] **Multi-ring callouts use the free side.** A compact multi-ring donut shortens its callouts to "Cons… 33.3%" while the space left of the rings stays empty. Done when callouts take the available side before shortening names.
-- [ ] **Align explicitly placed value legends.** A pie/donut legend placed above or below the plot by the author keeps natural entry widths, so its value and percentage columns do not line up across wrapped rows. Give those rows shared columns in the native drawing and the responsive layout together.
 - [ ] **Per-family pages.** Each family gets a page with variants, options and code, including Quadrant, Org chart, Cone funnel and Linear gauge, and the navigator, context menu and annotation editor appear in at least one example.
 - [ ] **Chart-first snippets.** Snippets lead with the chart code; setup plumbing moves out of the way.
 - [ ] **Public wording.** Published docs (README development section, visual effects, API conventions, migration, Mermaid matrix) describe what works in plain language, without internal qualification jargon, and the site stops linking to this file as product documentation.
