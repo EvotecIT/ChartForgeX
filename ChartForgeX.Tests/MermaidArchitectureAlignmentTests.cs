@@ -106,6 +106,12 @@ public sealed partial class MermaidArchitectureAlignmentTests {
         foreach (var group in saved.Groups) {
             foreach (var node in saved.Nodes.Where(node => node.GroupId == group.Id)) Contains(group, node.X!.Value, node.Y!.Value, node.Width!.Value, node.Height!.Value);
             foreach (var child in saved.Groups.Where(child => child.Topology!.ParentGroupId == group.Id)) Contains(group, child.X!.Value, child.Y!.Value, child.Width!.Value, child.Height!.Value);
+            // A shell hugs its children: the standard padding beside and below them, never a stretched band.
+            var members = saved.Nodes.Where(node => node.GroupId == group.Id).Select(node => (node.X!.Value, node.Y!.Value, node.Width!.Value, node.Height!.Value))
+                .Concat(saved.Groups.Where(child => child.Topology!.ParentGroupId == group.Id).Select(child => (child.X!.Value, child.Y!.Value, child.Width!.Value, child.Height!.Value))).ToArray();
+            Assert.Equal(members.Min(item => item.Item1) - 24, group.X!.Value, 3);
+            Assert.Equal(members.Max(item => item.Item1 + item.Item3) + 24, group.X!.Value + group.Width!.Value, 3);
+            Assert.Equal(members.Max(item => item.Item2 + item.Item4) + 24, group.Y!.Value + group.Height!.Value, 3);
         }
         static void Contains(VisualArtifactInterchangeGroup parent, double x, double y, double width, double height) {
             Assert.True(x >= parent.X!.Value && y >= parent.Y!.Value && x + width <= parent.X!.Value + parent.Width!.Value + .000001 && y + height <= parent.Y!.Value + parent.Height!.Value + .000001);

@@ -27,8 +27,13 @@ internal sealed partial class TopologyAlignmentLayout {
         internal bool Visible;
     }
 
-    internal static void Apply(TopologyChart chart, TopologyRenderOptions? options) =>
-        new TopologyAlignmentLayout(chart, options ?? new TopologyRenderOptions()).Solve();
+    internal static void Apply(TopologyChart chart, TopologyRenderOptions? options) {
+        options ??= new TopologyRenderOptions();
+        new TopologyAlignmentLayout(chart, options).Solve();
+        // The first pass sizes shells from the preparation's estimate and then tightens them to their
+        // children. Solving again from those tight sizes closes the gaps the larger estimates reserved.
+        if (chart.Groups.Count > 0) RepackTightened(chart, options);
+    }
 
     private TopologyAlignmentLayout(TopologyChart chart, TopologyRenderOptions options) {
         this.chart = chart; this.options = options;
