@@ -625,4 +625,10 @@ public enum HtmlChartText {
     ScenarioResponse,
     /// <summary>UI text naming a use case step whose call fails.</summary>
     ScenarioFailure,
+    /// <summary>UI text: All kinds</summary>
+    TopologyAllKinds,
+    /// <summary>UI text: {count} of {total} nodes match</summary>
+    TopologyFindSummary,
+    /// <summary>UI text: No matching nodes</summary>
+    TopologyFindNone,
 }

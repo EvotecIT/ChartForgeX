@@ -164,6 +164,10 @@ public sealed class TopologyRenderOptions {
     /// <summary>Gets or sets whether force-directed HTML pages should include graph exploration controls.</summary>
     public bool EnableHtmlForceGraphControls { get; set; }
 
+    /// <summary>Gets or sets whether interactive HTML pages render a find bar that highlights nodes by text, group or kind and moves the viewport to them.</summary>
+    /// <remarks>Force graph controls already carry their own search, so force-directed pages with those controls keep that panel instead.</remarks>
+    public bool EnableHtmlFindControls { get; set; }
+
     /// <summary>Gets or sets whether interactive HTML pages should synchronize selection and viewport state with wrappers in the same sync group.</summary>
     public bool EnableHtmlSynchronizedState { get; set; }
 

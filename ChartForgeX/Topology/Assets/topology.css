@@ -6,7 +6,9 @@
 :where(.cfx-topology-viewport>svg:not([direction])){direction:ltr}
 .cfx-topology-wrapper svg{max-width:100%;height:auto;display:block;overflow:visible}
 .cfx-topology-wrapper[data-cfx-viewport-controls='true'] .cfx-topology-viewport{overflow:hidden;touch-action:none}
-.cfx-topology-wrapper[data-cfx-viewport-controls='true'] .cfx-topology-viewport>svg{transform:translate(var(--cfx-topology-pan-x,0),var(--cfx-topology-pan-y,0)) scale(var(--cfx-topology-zoom,1));transform-origin:center center;transition:transform .12s ease;will-change:transform}
+.cfx-topology-wrapper[data-cfx-viewport-controls='true'] .cfx-topology-viewport>svg{transform:translate(var(--cfx-topology-pan-x,0),var(--cfx-topology-pan-y,0)) scale(var(--cfx-topology-zoom,1));transform-origin:center center;transition:transform .12s ease}
+/* A promoted layer keeps its first raster, so a magnified drawing would blur; promote only while dragging. */
+.cfx-topology-wrapper[data-cfx-topology-dragging='true'] .cfx-topology-viewport>svg{will-change:transform}
 .cfx-topology-controls{position:absolute;z-index:5;top:12px;left:12px;display:grid;gap:6px}
 .cfx-topology-wrapper[data-cfx-controls-placement='top-right'] .cfx-topology-controls{left:auto;right:12px}
 .cfx-topology-wrapper[data-cfx-controls-placement='bottom-left'] .cfx-topology-controls{top:auto;bottom:12px}
@@ -156,3 +158,14 @@
 .cfx-topology-wrapper[data-cfx-text-size='kept'] .cfx-topology-scenario-sequences figure{overflow-x:auto;overscroll-behavior-x:contain;direction:ltr}
 .cfx-topology-wrapper[data-cfx-text-size='kept'] .cfx-topology-scenario-sequences figure>svg{min-width:var(--cfx-sequence-min-width,0)}
 @media print{.cfx-topology-wrapper[data-cfx-text-size='kept'] .cfx-topology-scenario-sequences figure{overflow:visible!important}.cfx-topology-wrapper[data-cfx-text-size='kept'] .cfx-topology-scenario-sequences figure>svg{min-width:0!important}}
+
+/* Dense topologies: a bounded, readable viewport and a find bar that highlights rather than hides. */
+.cfx-topology-wrapper[data-cfx-readable-zoom] .cfx-topology-viewport{height:var(--cfx-topology-readable-height,480px);border-radius:8px;box-shadow:0 0 0 1px var(--cfx-topology-control-border);background:var(--cfx-topology-canvas,transparent)}
+.cfx-topology-wrapper[data-cfx-viewport-controls='true'] .cfx-topology-viewport:focus-visible{outline:2px solid var(--cfx-topology-accent,#2563eb);outline-offset:2px}
+.cfx-topology-find{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px}
+.cfx-topology-find input[type='search'],.cfx-topology-find select{min-width:0;height:34px;box-sizing:border-box;border:1px solid var(--cfx-topology-control-border);border-radius:6px;background:var(--cfx-topology-control-bg);color:var(--cfx-topology-control-text);padding:0 10px;font:600 13px/1 __CFX_FONT_FAMILY__}
+.cfx-topology-find input[type='search']{flex:1 1 220px}
+.cfx-topology-find select{flex:0 1 auto}
+.cfx-topology-find input:focus-visible,.cfx-topology-find select:focus-visible{outline:2px solid var(--cfx-topology-accent,#2563eb);outline-offset:1px}
+.cfx-topology-find output{flex:1 0 100%;min-height:16px;font:600 12px/1.35 __CFX_FONT_FAMILY__;color:var(--cfx-topology-control-muted);unicode-bidi:plaintext}
+@media print{.cfx-topology-find{display:none!important}.cfx-topology-wrapper[data-cfx-readable-zoom] .cfx-topology-viewport{height:auto!important;box-shadow:none!important}}

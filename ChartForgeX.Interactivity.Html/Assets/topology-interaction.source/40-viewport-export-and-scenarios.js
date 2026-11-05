@@ -17,12 +17,21 @@
         peer.dispatchEvent(new CustomEvent('cfx-topology-apply-sync', { detail }));
       });
     };
+    // A dense drawing opens magnified for readable text, so its zoom ceiling and pan range scale with that start.
+    const maximumZoom = () => Math.max(4, readableStart ? readableStart.zoom * 3 : 0);
+    const panLimit = zoom => {
+      const svg = topologySvg();
+      const size = svg ? Math.max(svg.clientWidth || 0, svg.clientHeight || 0) : 0;
+      return Math.max(4000, size * zoom * 1.5);
+    };
     const applyViewport = state => {
       if (!viewportControls) return;
+      const zoom = clamp(Number(state.zoom) || 1, 0.001, maximumZoom());
+      const limit = panLimit(zoom);
       const next = {
-        zoom: clamp(Number(state.zoom) || 1, 0.001, 4),
-        panX: clamp(Number(state.panX) || 0, -4000, 4000),
-        panY: clamp(Number(state.panY) || 0, -4000, 4000)
+        zoom,
+        panX: clamp(Number(state.panX) || 0, -limit, limit),
+        panY: clamp(Number(state.panY) || 0, -limit, limit)
       };
       wrapper.setAttribute('data-cfx-topology-zoom', next.zoom.toFixed(3));
       wrapper.setAttribute('data-cfx-topology-pan-x', next.panX.toFixed(1));
@@ -48,12 +57,13 @@
       return { rect, paddingTop, paddingLeft, width, availableHeight, svgWidth, svgHeight };
     };
     const emitViewport = () => {
+      viewportTouched = true;
       wrapper.dispatchEvent(new CustomEvent('cfx-topology-viewport', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id'), state: viewportState() } }));
       emitSync('viewport', { state: viewportState() });
     };
     const zoomBy = (factor, origin) => {
       const state = viewportState();
-      const nextZoom = clamp(state.zoom * factor, Math.min(0.5, state.zoom), 4);
+      const nextZoom = clamp(state.zoom * factor, Math.min(0.5, state.zoom), maximumZoom());
       const ratio = nextZoom / state.zoom;
       const metrics = viewportMetrics();
       const localX = origin && Number.isFinite(origin.clientX) ? origin.clientX - metrics.rect.left : metrics.rect.width / 2;
@@ -141,7 +151,8 @@
       }, 280);
     };
     const resetViewport = () => {
-      applyViewport({ zoom: 1, panX: 0, panY: 0 });
+      // Reset returns to the opening view: the readable start of a dense drawing, otherwise the whole drawing.
+      applyViewport(readableStart || { zoom: 1, panX: 0, panY: 0 });
       wrapper.removeAttribute('data-cfx-topology-dragging');
       wrapper.dispatchEvent(new CustomEvent('cfx-topology-reset', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id') } }));
       emitViewport();
