@@ -4,7 +4,7 @@
   function snapshot(svg,spec){
     const entries=[...svg.querySelectorAll('[data-cfx-role="legend-entry"]')].map(node=>{
       const caption=node.querySelector('[data-cfx-role="legend-label"]'),label=caption?.querySelector('text')||caption,columns=[...node.querySelectorAll('[data-cfx-role="legend-value"],[data-cfx-role="legend-percentage"]')].map(node=>({node,transform:node.getAttribute('transform')}));
-      return {node,box:node.getBBox(),label,full:label?.textContent||'',labelX:label?.getAttribute('x'),anchor:label?.getAttribute('text-anchor'),columns};
+      return {node,box:node.getBBox(),label,full:label?.textContent||'',labelX:label?.getAttribute('x'),anchor:label?.getAttribute('text-anchor'),labelLength:label?.getComputedTextLength?.()||0,columns};
     });
     // The original lane no longer bounds the reflowed rows. Each entry is fitted before it receives a slot.
     for(const entry of entries)for(let node=entry.node.parentElement;node && node!==svg;node=node.parentElement)node.removeAttribute('clip-path');
@@ -19,14 +19,16 @@
     node.removeAttribute('transform');node.style.display='';
     if(!label)return {...entry,size:entry.box.width};
     label.textContent=full;label.setAttribute('x',entry.labelX);if(entry.anchor)label.setAttribute('text-anchor',entry.anchor);else label.removeAttribute('text-anchor');
-    for(const column of columns){if(column.transform)column.node.setAttribute('transform',column.transform);else column.node.removeAttribute('transform');}
-    const original=label.getComputedTextLength(),room=Math.max(0,available-(entry.box.width-original));
+    // Value columns follow the label at the size it is painted now, which can differ from the source drawing's.
+    const original=label.getComputedTextLength(),shift=original-entry.labelLength;
+    for(const column of columns){if(shift)column.node.setAttribute('transform',`translate(${shift} 0) ${column.transform||''}`);else if(column.transform)column.node.setAttribute('transform',column.transform);else column.node.removeAttribute('transform');}
+    const room=Math.max(0,available-(node.getBBox().width-original));
     if(original>room){
       let low=0,high=full.length;
       while(low<high){const middle=Math.ceil((low+high)/2);label.textContent=full.slice(0,middle)+'\u2026';if(label.getComputedTextLength()<=room)low=middle;else high=middle-1;}
       label.textContent=low?full.slice(0,low)+'\u2026':'';
       label.setAttribute('text-anchor','start');label.setAttribute('x',entry.box.x+18);
-      for(const column of columns)column.node.setAttribute('transform',`translate(${label.getComputedTextLength()-original} 0) ${column.transform||''}`);
+      for(const column of columns)column.node.setAttribute('transform',`translate(${label.getComputedTextLength()-entry.labelLength} 0) ${column.transform||''}`);
       let title=node.querySelector(':scope > title');if(!title){title=document.createElementNS('http://www.w3.org/2000/svg','title');node.prepend(title);}title.textContent=full;
     }
     return {...entry,size:Math.min(available,node.getBBox().width)};
@@ -34,7 +36,8 @@
   function layout(state,spec,width,verticalShift=0){
     if(!state.entries.length)return 0;
     const gap=spec.spacing,padding=Math.min(24,width/10),available=width-2*padding;
-    const line=Math.max(...state.entries.map(e=>e.box.height))+8,maxRows=Math.max(1,Math.floor(spec.height*.35/line));
+    for(const entry of state.entries)entry.node.style.display='';
+    const line=Math.max(...state.entries.map(e=>e.node.getBBox().height))+8,maxRows=Math.max(1,Math.floor(spec.height*.35/line));
     const rows=[[]];let used=0,kept=0;
     for(const raw of state.entries){
       const entry=fit(raw,available);
