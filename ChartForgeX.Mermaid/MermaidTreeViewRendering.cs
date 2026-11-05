@@ -26,7 +26,8 @@ public static class MermaidTreeViewRendering {
                 node.IsDirectory ? TreeViewItemKind.Directory : TreeViewItemKind.Auto, icon, highlight, node.IconReference, node.Classes));
         }
         MermaidPresentation.Apply(block, document, options.Presentation);
-        return block.WithNaturalSize(options.Width, options.Height);
+        // Without a host width the frame trims to its widest row, wrapping no wider than the default.
+        return block.WithNaturalSize(options.Width ?? VisualBlockRendering.TreeViewContentWidth(block, MermaidTreeViewRenderOptions.MaximumNaturalWidth), options.Height ?? 0);
     }
     /// <summary>Wraps native rows in the existing bounded Mermaid export policy.</summary>
     public static VisualArtifact ToVisualArtifact(this MermaidTreeViewDocument document, MermaidTreeViewRenderOptions? options = null) {
@@ -49,12 +50,13 @@ public static class MermaidTreeViewRendering {
     public static byte[] ToPng(this MermaidTreeViewDocument document, MermaidTreeViewRenderOptions? options = null) => document.ToVisualArtifact(options).ToPng();
 }
 
-/// <summary>Defines the fixed native width and minimum natural height of a directory tree.</summary>
+/// <summary>Defines the native width and minimum natural height of a directory tree.</summary>
 public sealed class MermaidTreeViewRenderOptions : MermaidDiagramRenderOptions {
-    /// <summary>Gets or sets the width in logical pixels, from one through 8192.</summary>
-    public int Width { get; set; } = 720;
-    /// <summary>Gets or sets the minimum natural height, from zero through 8192. Readable rows can require more.</summary>
-    public int Height { get; set; } = 320;
+    internal const int MaximumNaturalWidth = 720;
+    /// <summary>Gets or sets a fixed width in logical pixels, from one through 8192. Null trims the frame to its rows, wrapping no wider than 720.</summary>
+    public int? Width { get; set; }
+    /// <summary>Gets or sets the minimum natural height, from zero through 8192. Null fits the rows exactly.</summary>
+    public int? Height { get; set; }
     /// <summary>Gets or sets the host override for automatic file/folder icons. Explicit per-row icons are independent.</summary>
     public bool? ShowIcons { get; set; }
 }

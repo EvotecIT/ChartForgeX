@@ -20,7 +20,7 @@ public static class MermaidPacketRendering {
         var block = PacketLayoutBlock.Create()
             .WithTitle(ResolveTitle(document, options))
             .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
-            .WithSize(options.Width, options.Height)
+            .WithSize(options.Width, options.Height ?? MermaidPacketRenderOptions.PreviewHeight)
             .WithPadding(options.Padding)
             .WithBitsPerRow(options.BitsPerRow ?? document.Configuration.Packet?.BitsPerRow ?? 32)
             .WithBitNumbers(options.ShowBitNumbers ?? document.Configuration.Packet?.ShowBits ?? true)
@@ -31,7 +31,10 @@ public static class MermaidPacketRendering {
             .WithRowGap(options.RowGap ?? document.Configuration.Packet?.PaddingY);
 
         foreach (var field in document.Fields) block.AddField(field.StartBit, field.EndBit, field.Label);
-        return MermaidPresentation.Apply(block, document, options.Presentation);
+        MermaidPresentation.Apply(block, document, options.Presentation);
+        // Without a host height the frame ends where its field rows stop growing.
+        if (!options.Height.HasValue && SvgVisualBlockRenderer.PacketContentHeight(block) is int content) block.WithSize(options.Width, content);
+        return block;
     }
 
     /// <summary>
@@ -79,8 +82,10 @@ public sealed class MermaidPacketRenderOptions : MermaidDiagramRenderOptions {
     /// <summary>Gets or sets the natural preview width.</summary>
     public int Width { get; set; } = 900;
 
-    /// <summary>Gets or sets the natural preview height.</summary>
-    public int Height { get; set; } = 420;
+    internal const int PreviewHeight = 420;
+
+    /// <summary>Gets or sets a fixed preview height. Null ends the frame where its field rows stop growing, up to 420.</summary>
+    public int? Height { get; set; }
 
     /// <summary>Gets or sets the inner preview padding.</summary>
     public double Padding { get; set; } = 30;
