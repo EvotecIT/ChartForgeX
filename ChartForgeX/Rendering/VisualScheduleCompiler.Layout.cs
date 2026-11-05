@@ -121,6 +121,14 @@ internal static partial class VisualScheduleCompiler {
             var labelStyle = ChartRowText.Style(builder, style, name, height, labelWidth);
             var wrapped = TextLayoutEngine.Layout(name, Math.Max(1, labelWidth), labelStyle);
             var captionHeight = pitch > 0 ? Math.Max(height, pitch) : height;
+            // A narrow gutter must not split a word across lines. Use the readable floor
+            // for the complete name first; otherwise the name shortens on one line.
+            if (wrapped.Lines.Count > 1 && !WrapsWholeWords(name, wrapped)) {
+                var floor = labelStyle.Clone(); floor.FontSize = Math.Min(labelStyle.EffectiveFontSize, ChartRowText.MinimumFontSize);
+                var refit = TextLayoutEngine.Layout(name, Math.Max(1, labelWidth), floor);
+                if (WrapsWholeWords(name, refit) && refit.Metrics.Height <= captionHeight) { labelStyle = floor; wrapped = refit; }
+                else wrapped = TextLayoutEngine.Layout(name, 1e6, labelStyle);
+            }
             if (wrapped.Lines.Count > 1 && wrapped.Metrics.Height <= captionHeight) {
                 var displayed = string.Join("\n", wrapped.Lines.Select(line => line.Text));
                 VisualStateSceneTools.Text(builder, name, new ChartRect(viewport.Left + inset, top + (height - captionHeight) / 2, labelWidth, captionHeight), labelStyle,
@@ -139,6 +147,9 @@ internal static partial class VisualScheduleCompiler {
                 ChartDomRoles.LaneSummary, "schedule-summary-" + index, TextAlignment.Right);
         }
     }
+
+    private static bool WrapsWholeWords(string text, TextLayout layout) =>
+        string.Join(" ", layout.Lines.Select(line => line.Text.Trim())) == string.Join(" ", text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
 
     private static void GroupHeader(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, string name, double left, double width, double top, double height,
         string role, string id) {

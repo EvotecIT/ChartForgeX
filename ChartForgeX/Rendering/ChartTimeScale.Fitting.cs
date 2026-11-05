@@ -138,7 +138,9 @@ internal static partial class ChartTimeScale {
         var longCaption = Math.Max(firstExtent, secondExtent) >= fontSize * 4;
         var uniformLong = Math.Min(firstExtent, secondExtent) >= fontSize * 4;
         if (longCaption) gap = Math.Max(compactDefault && length < 400 && uniformLong ? Math.Min(24, fontSize) : 24, gap);
-        else if (compactDefault && length < 400) ordinaryGap /= 2;
+        // Below 400 px short captions still keep one em of clear space; a halved
+        // collision gap left compact Gantt dates nearly touching.
+        else if (compactDefault && length < 400) ordinaryGap = Math.Max(ordinaryGap, fontSize);
         return Math.Max(ordinaryGap, gap);
     }
 

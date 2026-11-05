@@ -69,7 +69,6 @@ Token contract v2 has landed: ChartForgeX reads its font stack, typography roles
 - [ ] Deterministic output under parallel load. Four contracts differ only during full parallel test runs and pass alone: `MermaidClassErCaptionTests` and `TopologyNestedHeaderSurface` (captured glyph IDs renumbered), `ChartFillTests.NativeSourceKeyIncludesUnpaintedSeriesAndHiddenDatumFillFacts` (image-pixel source key) and `RasterAnimationEncoderTests.PreparedGifClockMatchesRawAndContainerSpecificFrameEncoderRoutes` (one GIF byte). Glyph de-duplication keys on the `TrueTypeFont` instance, so a second instance of the same face, for example after the 128-file/64 MB font cache evicts it mid-render, changes the output; the raster cases likely share a cache or static state the same way. Done when shared caches key on content identity and a concurrent-render test pins byte-identical SVG, PNG and GIF output.
 - [ ] Decide whether Funnel and Pyramid show stage captions by default. Data labels are opt-in for every family, but a funnel has no legend or axis, so a default funnel identifies none of its stages.
 - [ ] Dense point captions keep the distinguishing part of similar names instead of ending in an ellipsis that removes it; closely spaced Bubble marks stay distinguishable.
-- [ ] Charts narrower than 400 pixels, including compact Gantt, keep complete captions anchored to their ticks.
 
 ## Mermaid
 

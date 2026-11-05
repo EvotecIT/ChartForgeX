@@ -123,7 +123,7 @@
         const extent = measure(text), previous = measure(texts[index - 1]), mean = (extent + previous) / 2;
         let ordinary = axis.labelGap, gap = Math.min(mean, Math.min(80, span / 5) - mean);
         if (Math.max(extent, previous) >= fontSize * 4) gap = Math.max(span < 400 && Math.min(extent, previous) >= fontSize * 4 ? Math.min(24, fontSize) : 24, gap);
-        else if (span < 400) ordinary /= 2;
+        else if (span < 400) ordinary = Math.max(ordinary, fontSize);
         return Math.abs(position(ticks[index]) - position(ticks[index - 1])) + 1e-4 >= mean + Math.max(ordinary, gap);
       });
     };
