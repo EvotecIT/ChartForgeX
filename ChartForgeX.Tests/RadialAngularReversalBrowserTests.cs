@@ -50,7 +50,7 @@ public sealed class RadialAngularReversalBrowserTests {
         Assert.Equal(expectedValue, await target.GetAttributeAsync("data-cfx-value"));
         if (kind == ChartSeriesKind.Polar)
             Assert.Equal(chart.Series[series].Points[point].X.ToString("R", CultureInfo.InvariantCulture), await target.GetAttributeAsync("data-cfx-angle"));
-        Assert.True(await page.Locator(".cfx-crosshair").EvaluateAsync<bool>("node => node.hidden"));
+        Assert.Equal(kind is ChartSeriesKind.Radar or ChartSeriesKind.Polar ? "polar" : "hidden", await page.Locator(".cfx-crosshair").EvaluateAsync<string>("node => node.hidden ? 'hidden' : node.dataset.cfxCrosshairShape"));
         await page.Mouse.ClickAsync((float)painted[0], (float)painted[1]);
         Assert.Equal("true", await target.GetAttributeAsync("aria-selected"));
         Assert.Equal(chart.Series[series].Id.Value + ":" + point, await target.GetAttributeAsync("data-cfx-target-id"));

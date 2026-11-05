@@ -13,9 +13,10 @@ namespace ChartForgeX.Tests;
 [Trait("BrowserSuite", "Compatibility")]
 public sealed class InteractiveBundleTests {
     [Theory]
-    [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.Tooltips, 97 * 1024, 30 * 1024)]
+    // The core reader and full runtime each grew by about 2.5 KiB raw when polar charts gained crosshair values.
+    [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.Tooltips, 99 * 1024, 31 * 1024)]
     [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.ReportReview, 280 * 1024, 82 * 1024)]
-    [InlineData(HtmlChartRuntime.Full, ChartInteractionFeatures.ReportReview, 339 * 1024, 101 * 1024)]
+    [InlineData(HtmlChartRuntime.Full, ChartInteractionFeatures.ReportReview, 342 * 1024, 102 * 1024)]
     public void EmittedRuntimeFitsRawAndGzipBudgets(HtmlChartRuntime runtime, ChartInteractionFeatures features, int rawBudget, int gzipBudget) {
         var asset = HtmlInteractiveAssetFiles.ChartScriptFor(runtime, features);
         var bytes = Encoding.UTF8.GetBytes(asset.Content);

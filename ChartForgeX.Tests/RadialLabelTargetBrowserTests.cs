@@ -50,7 +50,9 @@ public sealed class RadialLabelTargetBrowserTests {
         Assert.False(string.IsNullOrEmpty(nativeIdentity));
         Assert.Contains(nativeIdentity!, hover!);
         Assert.False(string.IsNullOrEmpty(hover));
-        Assert.True(await page.Locator(".cfx-crosshair").EvaluateAsync<bool>("node=>node.hidden"));
+        // A caption may hand its observation to the polar guide; other radial families keep none.
+        Assert.True(await page.Locator(".cfx-crosshair").EvaluateAsync<bool>(kind is ChartSeriesKind.Radar or ChartSeriesKind.Polar
+            ? "node=>node.hidden||node.dataset.cfxCrosshairShape==='polar'" : "node=>node.hidden"));
 
         await MoveAwayAsync(page);
         var empty = await page.EvaluateAsync<double[]>("() => { const svg=document.querySelector('.cfx-stage svg'); const p=svg.createSVGPoint(); p.x=35; p.y=35; const screen=p.matrixTransform(svg.getScreenCTM()); return [screen.x,screen.y]; }");

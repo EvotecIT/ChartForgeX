@@ -12,7 +12,7 @@ The selected-target compare tray appears below the chart viewport, preserving ax
 
 The tray pages through every selected target, showing up to six inspection chips at a time. Previous and next buttons and a translated range caption keep larger selections reachable without changing the selection. The current page survives resizing and clamps to the available targets after an update. Activating a chip inspects its target without changing the selection. With `Tooltip.PinOnSelect` enabled, inspection switches the pinned readout; activating the same chip keeps it pinned. With pinning disabled, the inspection readout closes when pointer and keyboard focus leave the tray. When enough viewport space is available, the readout stays above the visible tray so its controls remain usable.
 
-Native painted marks retain their observation identity when pointed at. Cartesian producers declare `data-cfx-coordinate-system="cartesian"` on their series groups; inferred observations and crosshair guides require that scope. A producer declares polar geometry with `data-cfx-coordinate-system="polar"` on the SVG or a containing semantic group. Radar resolves a pointer inside its plot to the nearest spoke and reads the visible series together. Other polar and native-only families use SVG hit testing, leave empty stage space without an inferred target, and suppress the Cartesian crosshair. Nested observations inherit their containing series identity.
+Native painted marks retain their observation identity when pointed at. Cartesian producers declare `data-cfx-coordinate-system="cartesian"` on their series groups; inferred observations and crosshair guides require that scope. A producer declares polar geometry with `data-cfx-coordinate-system="polar"` on the SVG or a containing semantic group. Radar resolves a pointer inside its plot to the nearest spoke and reads the visible series together. Other polar and native-only families use SVG hit testing, leave empty stage space without an inferred target, and suppress the Cartesian crosshair; Radar and Polar observations show the polar guide instead. Nested observations inherit their containing series identity.
 
 Every rendered interaction surface is normalized to `data-cfx-target-kind` and `data-cfx-target-id` before bindings run. The semantic target kinds are `series`, `point`, `annotation`, `region`, `node`, `link`, and `legend`. The adapter also retains `element` as the fallback for an identified native surface without one of those semantic kinds. Hosts can therefore route one scenario across Cartesian marks, topology nodes and links, annotations, map regions, and legend entries without depending on renderer-specific markup. Use `AddRegionStep`, `AddNodeStep`, `AddLinkStep`, or `AddLegendStep` when building those routes.
 
@@ -69,9 +69,9 @@ bundle needs it. They exclude the drawing, font payloads and stylesheet:
 
 | Bundle | Raw budget | Gzip budget |
 | --- | ---: | ---: |
-| Core reader (tooltips, keyboard, crosshair) | 96 KiB | 30 KiB |
+| Core reader (tooltips, keyboard, crosshair) | 99 KiB | 31 KiB |
 | Standalone reader | 280 KiB | 82 KiB |
-| Full controller/native host | 336 KiB | 100 KiB |
+| Full controller/native host | 342 KiB | 102 KiB |
 
 Optional behaviour ships in separate feature bundles, so the runtimes above do
 not grow with it. A page carries only the bundles its options need, and the core
@@ -227,8 +227,12 @@ and Bubble keep two-dimensional nearest-point selection. A pointer inside a
 painted Bar chooses that bar before a nearby line, and Radar reads the nearest
 spoke across its visible series. Crosshair values sit at the axis edges and use
 the same formatted values as the tooltip. Keyboard focus on a Cartesian point shows
-the same guide and values, and the core reader supports both. Polar charts have no
-crosshair guide.
+the same guide and values, and the core reader supports both. On Radar and Polar
+observations the guide is a ring at the observation's radius and a spoke from the
+centre. The angle (category) value sits beyond the outer edge and the radius value
+sits on the ring, inside the card and clear of the observation, for pointer, touch
+and keyboard focus in every runtime. Pie, donut and other radial families keep no
+guide.
 
 Legends use buttons with `aria-pressed`. Their hit areas follow visible label
 ink, including native raster labels. Crowded or clipped legend labels move into

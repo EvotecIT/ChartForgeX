@@ -264,30 +264,34 @@
     const x = clamp(local.x - bounds.left, 0, bounds.width), y = clamp(local.y - bounds.top, 0, bounds.height);
     crosshair.style.setProperty('--cfx-crosshair-x', x + 'px');
     crosshair.style.setProperty('--cfx-crosshair-y', y + 'px');
+    delete crosshair.dataset.cfxCrosshairShape;
     crosshair.hidden = false;
     const label = crosshair.querySelector('[data-cfx-crosshair-label]');
     if (label) label.hidden = true;
     paintCrosshairAxisLabels(root, crosshair, point.node, x, y, bounds);
-    const target = targetIdentity(point.node);
-    const key = targetKey(target), mode = crosshairHoverMode(event, point.node, nativeTarget);
-
+    announceCrosshair(root, point.node, event, crosshairHoverMode(event, point.node, nativeTarget));
+  };
+  const announceCrosshair = (root, node, event, mode) => {
+    const target = targetIdentity(node), key = targetKey(target);
     const changed = root.dataset.cfxCrosshair !== key || root._cfxCrosshairMode !== mode;
     root.dataset.cfxCrosshair = key;
     root._cfxCrosshairMode = mode;
     if (changed) {
-      emitHostEvent(root, 'cfxcrosshair', { label: text(point.node), target, x: event.clientX, y: event.clientY });
-      emitSync(root, { action: 'crosshair', label: text(point.node), target, mode });
+      emitHostEvent(root, 'cfxcrosshair', { label: text(node), target, x: event.clientX, y: event.clientY });
+      emitSync(root, { action: 'crosshair', label: text(node), target, mode });
     }
   };
 
 
-  // Keyboard focus guides to the focused Cartesian observation with the pointer's axis-edge values.
+  // Keyboard focus guides to the focused observation with the pointer's axis-edge or polar values.
   const showFocusCrosshair = (root, crosshair, node) => {
-    if (!hasFeature(root, 'Crosshair') || !node.hasAttribute('data-cfx-point') || !usesCartesianCoordinates(node)) {
+    const polar = polarGuideTarget(node);
+    if (!hasFeature(root, 'Crosshair') || !polar && (!node.hasAttribute('data-cfx-point') || !usesCartesianCoordinates(node))) {
       hideCrosshair(root, crosshair); return;
     }
-    const box = node.getBoundingClientRect(), x = box.left + box.width / 2, y = box.top + box.height / 2;
-    showCrosshair(root, crosshair, { node, x, y }, { clientX: x, clientY: y, target: node });
+    const box = node.getBoundingClientRect(), x = box.left + box.width / 2, y = box.top + box.height / 2, event = { clientX: x, clientY: y, target: node };
+    if (polar) showPolarCrosshair(root, crosshair, node, event, node);
+    else showCrosshair(root, crosshair, { node, x, y }, event);
   };
   const crosshairHoverMode = (event, node, nativeTarget = event && event.target) => {
     const hit = nativeTarget instanceof Element ? nativeTarget.closest('[data-cfx-series]') : null;
@@ -321,19 +325,23 @@
     const tooltipPoint = acquiredTooltipPoint(root, candidates);
     const guidePoint = guideEnabled && observation && usesCartesianCoordinates(observation.node)
       && (observation.exact || (observation.category ? observation.rank : observation.distance) <= 120) ? observation : null;
-    if (!tooltipPoint && !guidePoint) {
+    // Polar observations guide only from the readout's own point or an exact hit, never an inferred neighbour.
+    const polarCandidate = tooltipPoint || [observation, candidates?.native].find(candidate => candidate?.exact);
+    const polarPoint = guideEnabled && !guidePoint && polarGuideTarget(polarCandidate?.node) ? polarCandidate : null;
+    if (!tooltipPoint && !guidePoint && !polarPoint) {
       hideCrosshair(root, crosshair);
       clearHover(root, true, true);
       hideTip(root, tip, false);
       return;
     }
-    const point = tooltipPoint || guidePoint;
+    const point = tooltipPoint || guidePoint || polarPoint;
     const key = targetKey(targetIdentity(point.node));
     const mode = hoverModeForTarget(root, point.node, point.node.hasAttribute('data-cfx-point') && usesCartesianCoordinates(point.node)
       ? crosshairHoverMode(event, point.node, nativeTarget) : 'series');
     const changed = root.dataset.cfxHoverKey !== key || root.dataset.cfxHoverMode !== mode;
     if (changed) setHover(root, point.node, true, true, mode);
     if (guidePoint) showCrosshair(root, crosshair, guidePoint, event, nativeTarget);
+    else if (polarPoint) showPolarCrosshair(root, crosshair, polarPoint.node, event, nativeTarget);
     else hideCrosshair(root, crosshair);
 
     if (tooltipPoint) showTip(root, tip, tooltipPoint.node, event);

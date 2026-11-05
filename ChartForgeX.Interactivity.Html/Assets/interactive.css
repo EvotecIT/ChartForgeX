@@ -525,6 +525,28 @@ body {
   transform: translateX(-50%);
 }
 
+/* Polar guides: a ring at the observation's radius and a spoke from the centre to it. */
+.cfx-crosshair__ring,
+.cfx-crosshair__spoke {
+  position: absolute;
+  box-sizing: border-box;
+  opacity: .6;
+}
+
+.cfx-crosshair__ring {
+  border-radius: 50%;
+}
+
+.cfx-crosshair__spoke {
+  height: 0;
+  transform-origin: 0 0;
+}
+
+.cfx-crosshair:not([data-cfx-crosshair-shape="polar"]) :is(.cfx-crosshair__ring, .cfx-crosshair__spoke, [data-cfx-axis-value="angle"], [data-cfx-axis-value="radius"]),
+.cfx-crosshair[data-cfx-crosshair-shape="polar"] :is(.cfx-crosshair__line, [data-cfx-axis-value="x"], [data-cfx-axis-value="y"]) {
+  display: none;
+}
+
 .cfx-crosshair__label {
   position: absolute;
   box-sizing: border-box;
