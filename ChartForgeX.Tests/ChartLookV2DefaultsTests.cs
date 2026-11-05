@@ -145,6 +145,7 @@ public sealed class ChartLookV2DefaultsTests {
     [InlineData(800, 440, VisualThemeMode.Dark)]
     [InlineData(360, 360, VisualThemeMode.Light)]
     [InlineData(360, 360, VisualThemeMode.Dark)]
+    [InlineData(390, 420, VisualThemeMode.Light)]
     public void PartToWholeLegendListsBesideAWidePlotOrInTwoCompactColumns(int width, int height, VisualThemeMode mode) {
         var prepared = Prepare(PieRecipe.Create(width < 480 ? "compact" : "wide", mode), width, height, mode);
         var entries = prepared.Regions.Where(region => region.Role == "legend").Select(region => region.Bounds).ToArray();
@@ -160,6 +161,9 @@ public sealed class ChartLookV2DefaultsTests {
         } else {
             Assert.Equal(2, entries.Select(entry => Math.Round(entry.Left, 3)).Distinct().Count());
             Assert.All(entries, entry => Assert.True(entry.Bottom <= slice.Cy - slice.Outer + .001, "The compact grid stays above the pie."));
+            // Columns are sized from their own entries, so a 390 px frame keeps every name whole rather than halving the row.
+            if (width >= 390) Assert.DoesNotContain(prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "legend-label"),
+                node => Assert.Single(node.Text.Lines).Text.EndsWith("…", StringComparison.Ordinal));
         }
         var authored = PieRecipe.Create(width < 480 ? "compact" : "wide", mode);
         authored.Options.LegendPosition = ChartLegendPosition.TopLeft;

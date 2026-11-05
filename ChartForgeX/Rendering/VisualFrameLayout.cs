@@ -227,8 +227,9 @@ internal static class VisualFrameLayout {
                     groupedValueList = partToWhole;
                     rows = PlanRows();
                 } else if (!wideFrame && (rows.Count > LegendMaximumAutomaticRows || partToWhole && rows.Count > 1)) {
-                    columnWidth = Math.Max(0, (legendWidth - gap) / 2);
-                    rows = PlanRows();
+                    // Each column is as wide as its own longest entry, so a long name takes room a shorter column
+                    // does not need before anything is shortened; leftover width is shared between both columns.
+                    UseGrid(2, fill: true);
                 }
             }
             // Wrapped value rows, including a legend the author placed above or below, share content-sized columns
@@ -371,7 +372,7 @@ internal static class VisualFrameLayout {
                 var length = ChartTextFitting.PrefixLength(label, availableWidth, text => builder.MeasureText(text, legendStyle).Width);
                 return length == label.Length ? Math.Min(bound, builder.MeasureText(label, legendStyle).Width + overhead + valueWidth) : bound;
             }
-            // A two-column list gives every entry the same column so names, values and percentages line up.
+            // A shared column width or grid column keeps names, values and percentages lined up.
             double EntryWidth(VisualLegendEntry entry, bool summary) =>
                 summary ? LegendWidth(entry, 0) : Column(entry) ?? LegendWidth(entry, Overhead(entry));
             double? Column(VisualLegendEntry entry) => gridColumns != null && gridIndex!.TryGetValue(entry, out var index)
