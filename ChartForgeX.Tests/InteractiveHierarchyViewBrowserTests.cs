@@ -145,7 +145,14 @@ public sealed class InteractiveHierarchyViewBrowserTests {
     public async Task SunburstSectorGapsHaveNoPointerTargetAndExportsKeepCommittedInsets() {
         if (!Enabled) return;
         var host = new Host(ChartSeriesKind.Sunburst, true, spaced: true);
-        await using var session = await OpenAsync(host.Page(), 390, 760); var page = session.Page;
+        var input = host.Page();
+        var captureDirectory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
+        if (!string.IsNullOrWhiteSpace(captureDirectory)) {
+            if (!Path.IsPathRooted(captureDirectory)) throw new InvalidOperationException("The capture directory must be absolute.");
+            Directory.CreateDirectory(captureDirectory);
+            File.WriteAllText(Path.Combine(captureDirectory, "sunburst-gap-input.html"), input);
+        }
+        await using var session = await OpenAsync(input, 390, 760); var page = session.Page;
         await page.EvaluateAsync("""
             ()=>{
                 window.hierarchyController=ChartForgeXCharts.mount(document.querySelector('.cfx-interactive-chart'));
@@ -154,6 +161,7 @@ public sealed class InteractiveHierarchyViewBrowserTests {
                 hierarchyController.root.addEventListener('cfxhierarchychange',e=>hierarchyChanges.push(e.detail));
             }
             """);
+        await page.WaitForFunctionAsync("()=>hierarchyController.root.dataset.cfxAdaptiveDrawing==='narrow'");
         var services = page.Locator("[data-cfx-node=services]");
         await services.ScrollIntoViewIfNeededAsync();
         var positions = await page.EvaluateAsync<double[]>("""
@@ -171,8 +179,27 @@ public sealed class InteractiveHierarchyViewBrowserTests {
         Assert.Equal("services", await page.EvaluateAsync<string>("p=>document.elementFromPoint(p[0],p[1]).closest('[data-cfx-node]')?.dataset.cfxNode", positions));
         var servicesMark = services.Locator("[data-cfx-role=sunburst-segment-mark]").First;
         var nativeHit = await NativeInteriorPointAsync(page, "[data-cfx-node=services]", "[data-cfx-role=sunburst-segment-mark]");
+        await page.EvaluateAsync("""
+            ()=>{window.hierarchyPointerTrace=[];window.hierarchyErrors=[];
+                window.addEventListener('error',event=>hierarchyErrors.push({message:event.message,stack:event.error?.stack}));
+                window.addEventListener('unhandledrejection',event=>hierarchyErrors.push({message:String(event.reason),stack:event.reason?.stack}));
+                for(const kind of ['pointermove','pointerdown','pointerup','pointercancel','mousedown','mouseup','click','focusin']){
+                document.addEventListener(kind,event=>{const root=hierarchyController.root,target=event.target;
+                    hierarchyPointerTrace.push({kind,time:event.timeStamp,now:performance.now(),x:event.clientX,y:event.clientY,
+                        node:target.closest?.('[data-cfx-node]')?.dataset.cfxNode,role:target.dataset?.cfxRole,
+                        suppress:root._cfxSuppressPlotActivation,prevented:event.defaultPrevented,scroll:[scrollX,scrollY],
+                        drawing:root.dataset.cfxAdaptiveDrawing,scene:hierarchyController.sceneRevision});},true);}}
+            """);
         await ClickNativePointAsync(servicesMark, nativeHit);
-        await page.WaitForFunctionAsync("()=>!!document.querySelector('svg[data-cfx-standalone-hierarchy=services]')");
+        try { await page.WaitForFunctionAsync("()=>!!document.querySelector('svg[data-cfx-standalone-hierarchy=services]')"); }
+        catch (System.TimeoutException) {
+            Console.WriteLine(await page.EvaluateAsync<string>("""
+                ()=>JSON.stringify({trace:hierarchyPointerTrace,errors:hierarchyErrors,selection:hierarchyController.getSelection(),selectedEvents:hierarchySelections,
+                    root:{...hierarchyController.root.dataset},standalone:hierarchyController.root._cfxStandaloneHierarchy?.rootId,
+                    nodes:[...hierarchyController.root.querySelectorAll('.cfx-stage svg [data-cfx-node]')].map(node=>({data:{...node.dataset},classes:node.getAttribute('class')}))})
+                """));
+            throw;
+        }
         Assert.Equal(0, await page.EvaluateAsync<int>("()=>hierarchySelections.length"));
         await page.Locator(".cfx-hierarchy-breadcrumb").GetByRole(AriaRole.Button, new() { Name = "All", Exact = true }).ClickAsync();
         await page.Locator("[data-cfx-node=services]").FocusAsync();
