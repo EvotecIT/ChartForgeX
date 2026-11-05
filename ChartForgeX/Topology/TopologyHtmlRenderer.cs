@@ -352,8 +352,8 @@ public sealed partial class TopologyHtmlRenderer {
         writer.StartElement("input")
             .Attribute("type", "search")
             .Attribute("data-cfx-topology-find", "true")
-            .Attribute("placeholder", messages["TopologyFindPlaceholder"])
-            .Attribute("aria-label", messages["TopologyFind"])
+            .Attribute("placeholder", messages["TopologyFindNodesPlaceholder"])
+            .Attribute("aria-label", messages["TopologyFindNodes"])
             .EndVoidElement();
         var groups = chart.Groups.Where(group => !string.IsNullOrWhiteSpace(group.Id)).ToList();
         if (groups.Count > 1) {
@@ -370,7 +370,10 @@ public sealed partial class TopologyHtmlRenderer {
         if (kinds.Count > 1) {
             writer.StartElement("select").Attribute("data-cfx-topology-find-kind", "true").Attribute("aria-label", messages["ExplorerKind"]).EndStartElement();
             writer.StartElement("option").Attribute("value", string.Empty).EndStartElement().Text(messages["TopologyAllKinds"]).EndElement();
-            foreach (var kind in kinds) writer.StartElement("option").Attribute("value", kind).EndStartElement().Text(kind).EndElement();
+            // Kinds read as the legend names them; an unnamed kind keeps its stable value.
+            var named = (chart.Legend?.Items ?? new List<TopologyLegendItem>()).Where(item => item.NodeKind != null && !string.IsNullOrWhiteSpace(item.Label))
+                .GroupBy(item => item.NodeKind!.Value.ToString(), StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.First().Label, StringComparer.Ordinal);
+            foreach (var kind in kinds) writer.StartElement("option").Attribute("value", kind).EndStartElement().Text(named.TryGetValue(kind, out var label) ? label : kind).EndElement();
             writer.EndElement();
         }
 
@@ -429,6 +432,8 @@ public sealed partial class TopologyHtmlRenderer {
             .Replace(".cfx-topology-selection-panel", "." + cssPrefix + "-selection-panel")
             .Replace(".cfx-topology-force-controls", "." + cssPrefix + "-force-controls")
             .Replace(".cfx-topology-find", "." + cssPrefix + "-find")
+            .Replace(".cfx-topology-card", "." + cssPrefix + "-card")
+            .Replace(".cfx-topology-heading", "." + cssPrefix + "-heading")
             .Replace(".cfx-topology__edge--premium-layer", "[data-cfx-role^='topology-edge-line-']")
             .Replace(".cfx-topology__edge", "[data-cfx-role='topology-edge-line']")
             .Replace(".cfx-topology__node-card", "[data-cfx-role='topology-node-surface']")

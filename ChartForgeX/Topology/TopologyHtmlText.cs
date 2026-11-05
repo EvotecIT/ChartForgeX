@@ -57,6 +57,8 @@ internal sealed class TopologyHtmlText {
         ["TopologyAllKinds"] = "All kinds",
         ["TopologyFindSummary"] = "{count} of {total} nodes match",
         ["TopologyFindNone"] = "No matching nodes",
+        ["TopologyFindNodesPlaceholder"] = "Find a node",
+        ["TopologyFindNodes"] = "Find nodes by name, kind or group",
         ["TopologyScenarios"] = "Topology scenarios",
         ["TopologyShowAll"] = "Show all",
         ["TopologyAllRoutesVisible"] = "All topology routes visible",

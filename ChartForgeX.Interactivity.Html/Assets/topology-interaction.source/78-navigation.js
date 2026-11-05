@@ -29,6 +29,84 @@
       // Rounded up to the zoom attribute's precision so the stored zoom never lands a hair below the readable size.
       return caption > 0 && caption < readableTextPixels - 0.01 ? Math.ceil(readableTextPixels / caption * 1000) / 1000 : 1;
     };
+    const findPanel = wrapper.querySelector('[data-cfx-topology-find-panel]');
+    const cssPrefix = ((viewport.className || '').match(/(?:^|\s)(\S+)-viewport(?:\s|$)/) || [])[1] || 'cfx-topology';
+    // The find row, any lifted heading and the plot share one card, so the controls read as part of the diagram.
+    const ensureCard = () => {
+      if (viewport === wrapper) return null;
+      if (viewport.parentElement?.hasAttribute('data-cfx-topology-card')) return viewport.parentElement;
+      const card = document.createElement('div');
+      card.className = cssPrefix + '-card';
+      card.setAttribute('data-cfx-topology-card', 'true');
+      (findPanel && findPanel.parentElement === viewport.parentElement ? findPanel : viewport).before(card);
+      if (findPanel) card.append(findPanel);
+      card.append(viewport);
+      return card;
+    };
+    const inkText = element => {
+      if (!element) return '';
+      const lines = Array.from(element.querySelectorAll('[data-cfx-ink-line]')).map(line => line.getAttribute('data-cfx-ink-line') || '');
+      return (lines.length ? lines : Array.from(element.querySelectorAll('text')).map(text => text.textContent || '')).join(' ').replace(/\s+/g, ' ').trim();
+    };
+    const unionBounds = elements => elements.map(elementBounds).filter(box => box).reduce((all, box) => all
+      ? { x: Math.min(all.x, box.x), y: Math.min(all.y, box.y), right: Math.max(all.right, box.x + box.width), bottom: Math.max(all.bottom, box.y + box.height) }
+      : { x: box.x, y: box.y, right: box.x + box.width, bottom: box.y + box.height }, null);
+    // A magnified plot would carry the heading and legend out of view, so they are lifted into HTML at their normal size.
+    const liftHeading = () => {
+      const svg = topologySvg();
+      if (!svg || wrapper.querySelector('[data-cfx-topology-heading]')) return;
+      const headings = Array.from(svg.querySelectorAll('[data-cfx-role="frame-heading"]'));
+      const entries = Array.from(svg.querySelectorAll('[data-cfx-role="legend-entry"]'));
+      if (!headings.length && !entries.length) return;
+      const heading = document.createElement('div');
+      heading.className = cssPrefix + '-heading';
+      heading.setAttribute('data-cfx-topology-heading', 'true');
+      heading.setAttribute('aria-hidden', 'true');
+      const line = (name, text) => {
+        if (!text) return;
+        const element = document.createElement('div');
+        element.className = cssPrefix + '-heading__' + name;
+        element.textContent = text;
+        heading.append(element);
+      };
+      line('title', inkText(headings[0]));
+      line('subtitle', inkText(headings[1]));
+      if (entries.length) {
+        const legend = document.createElement('div');
+        legend.className = cssPrefix + '-heading__legend';
+        const title = inkText(svg.querySelector('[data-cfx-role="legend-title"]'));
+        if (title) {
+          const caption = document.createElement('span');
+          caption.className = cssPrefix + '-heading__legend-title';
+          caption.textContent = title;
+          legend.append(caption);
+        }
+        entries.forEach(entry => {
+          const label = entry.querySelector('[data-cfx-role="legend-label"]');
+          const marks = Array.from(entry.children).filter(child => child !== label && !child.contains(label));
+          const item = document.createElement('span');
+          item.className = cssPrefix + '-heading__item';
+          const bounds = unionBounds(marks);
+          if (bounds) {
+            // The swatch is the legend's own artwork, so any status, node or edge mark carries over unchanged.
+            const swatch = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            swatch.setAttribute('viewBox', [bounds.x - 1, bounds.y - 1, bounds.right - bounds.x + 2, bounds.bottom - bounds.y + 2].map(value => value.toFixed(2)).join(' '));
+            swatch.setAttribute('aria-hidden', 'true');
+            marks.forEach(mark => swatch.append(mark.cloneNode(true)));
+            item.append(swatch);
+          }
+          item.append(document.createTextNode(inkText(label)));
+          legend.append(item);
+        });
+        heading.append(legend);
+      }
+      (ensureCard() || wrapper).prepend(heading);
+      wrapper.setAttribute('data-cfx-html-heading', 'true');
+    };
+    const dropHeading = () => {
+      wrapper.querySelector('[data-cfx-topology-heading]')?.remove();
+      wrapper.removeAttribute('data-cfx-html-heading');
+    };
     const applyReadableStart = () => {
       const zoom = readableZoom();
       if (zoom <= 1.001) {
@@ -37,8 +115,11 @@
         readableStart = null;
         wrapper.removeAttribute('data-cfx-readable-zoom');
         wrapper.style.removeProperty('--cfx-topology-readable-height');
+        dropHeading();
         return false;
       }
+      ensureCard();
+      liftHeading();
       const before = viewportMetrics();
       const height = Math.round(Math.min(before.svgHeight * zoom, Math.max(320, Math.min((window.innerHeight || 800) * 0.72, 760))));
       wrapper.setAttribute('data-cfx-readable-zoom', zoom.toFixed(3));
@@ -46,15 +127,22 @@
       // Taking the frame height can add or remove a page scrollbar and narrow the drawing, so measure again inside it.
       const framed = Math.max(zoom, readableZoom());
       wrapper.setAttribute('data-cfx-readable-zoom', framed.toFixed(3));
-      // Start where reading starts: the drawing's top edge and its inline-start edge.
+      // Start where reading starts: the top of the diagram below its lifted heading, at the inline-start edge.
       const metrics = viewportMetrics();
+      const unit = drawingUnit(metrics);
       const originX = metrics.svgWidth / 2;
       const originY = metrics.svgHeight / 2;
       const rtl = window.getComputedStyle(wrapper).direction === 'rtl';
+      const viewBox = topologySvg()?.viewBox?.baseVal;
+      const content = wrapper.hasAttribute('data-cfx-html-heading') ? elementBounds(wrapper.querySelector('[data-cfx-role="topology"]')) : null;
+      const margin = 12;
+      const top = content ? Math.max(0, content.y - margin) : 0;
+      const left = content ? Math.max(0, content.x - margin) : 0;
+      const right = content && viewBox ? Math.min(viewBox.width, content.x + content.width + margin) : (viewBox ? viewBox.width : metrics.svgWidth / (unit || 1));
       readableStart = {
         zoom: framed,
-        panX: rtl ? metrics.width - originX * (1 + framed) : originX * (framed - 1),
-        panY: originY * (framed - 1)
+        panX: rtl ? metrics.width - originX - framed * (right * unit - originX) : framed * (originX - left * unit) - originX,
+        panY: framed * (originY - top * unit) - originY
       };
       // The opening view is placed, not animated: settle the transform before transitions resume.
       wrapper.setAttribute('data-cfx-topology-settling', 'true');
@@ -64,8 +152,7 @@
       wrapper.removeAttribute('data-cfx-topology-settling');
       wrapper.dispatchEvent(new CustomEvent('cfx-topology-readable-start', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id'), state: viewportState() } }));
       return true;
-    };
-    // Moves the viewport to elements without dropping below the readable zoom: everything when it fits, otherwise the first one.
+    };    // Moves the viewport to elements without dropping below the readable zoom: everything when it fits, otherwise the first one.
     const revealElements = elements => {
       const items = Array.from(elements || []).filter(isViewportVisible);
       if (!items.length || !viewportControls) return false;
@@ -95,7 +182,6 @@
       emitViewport();
       return true;
     };
-    const findPanel = wrapper.querySelector('[data-cfx-topology-find-panel]');
     const findState = () => ({
       query: String(findPanel?.querySelector('[data-cfx-topology-find]')?.value || '').trim(),
       group: findPanel?.querySelector('[data-cfx-topology-find-group]')?.value || '',
@@ -170,6 +256,7 @@
     };
     const bindFindControls = () => {
       if (!findPanel) return;
+      ensureCard();
       const search = findPanel.querySelector('[data-cfx-topology-find]');
       findPanel.querySelectorAll('select').forEach(control => listen(control, 'change', () => applyFind(true)));
       if (search) {

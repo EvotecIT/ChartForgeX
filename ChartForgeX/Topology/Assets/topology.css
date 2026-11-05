@@ -160,13 +160,28 @@
 .cfx-topology-wrapper[data-cfx-text-size='kept'] .cfx-topology-scenario-sequences figure>svg{min-width:var(--cfx-sequence-min-width,0)}
 @media print{.cfx-topology-wrapper[data-cfx-text-size='kept'] .cfx-topology-scenario-sequences figure{overflow:visible!important}.cfx-topology-wrapper[data-cfx-text-size='kept'] .cfx-topology-scenario-sequences figure>svg{min-width:0!important}}
 
-/* Dense topologies: a bounded, readable viewport and a find bar that highlights rather than hides. */
-.cfx-topology-wrapper[data-cfx-readable-zoom] .cfx-topology-viewport{height:var(--cfx-topology-readable-height,480px);border-radius:8px;box-shadow:0 0 0 1px var(--cfx-topology-control-border);background:var(--cfx-topology-canvas,transparent)}
-.cfx-topology-wrapper[data-cfx-viewport-controls='true'] .cfx-topology-viewport:focus-visible{outline:2px solid var(--cfx-topology-accent,#2563eb);outline-offset:2px}
-.cfx-topology-find{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px}
-.cfx-topology-find input[type='search'],.cfx-topology-find select{min-width:0;height:34px;box-sizing:border-box;border:1px solid var(--cfx-topology-control-border);border-radius:6px;background:var(--cfx-topology-control-bg);color:var(--cfx-topology-control-text);padding:0 10px;font:600 13px/1 __CFX_FONT_FAMILY__}
+/* Dense topologies: the find row, a lifted heading and the plot share one card; only the plot zooms. */
+.cfx-topology-card{position:relative;border-radius:8px;box-shadow:0 0 0 1px var(--cfx-topology-control-border);background:var(--cfx-topology-canvas,transparent);overflow:hidden}
+.cfx-topology-wrapper[data-cfx-readable-zoom] .cfx-topology-viewport{height:var(--cfx-topology-readable-height,480px)}
+.cfx-topology-wrapper[data-cfx-viewport-controls='true'] .cfx-topology-viewport:focus-visible{outline:2px solid var(--cfx-topology-accent,#2563eb);outline-offset:-2px}
+.cfx-topology-wrapper[data-cfx-html-heading] .cfx-topology-viewport>svg :is([data-cfx-role='frame-heading'],[data-cfx-role='legend-title'],[data-cfx-role='legend-entry']){visibility:hidden}
+.cfx-topology-heading{padding:14px 16px 2px;color:var(--cfx-topology-ink);font-family:__CFX_FONT_FAMILY__;overflow-wrap:anywhere}
+.cfx-topology-heading__title{font-size:17px;font-weight:600;line-height:1.3}
+.cfx-topology-heading__subtitle{margin-top:2px;font-size:13px;line-height:1.4;color:var(--cfx-topology-muted-ink)}
+.cfx-topology-heading__legend{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;margin-top:8px;font-size:12.5px;line-height:1.4}
+.cfx-topology-heading__legend-title{font-weight:600}
+.cfx-topology-heading__item{display:inline-flex;align-items:center;gap:6px}
+.cfx-topology-heading__item svg{display:block;width:auto;height:12px;overflow:visible}
+.cfx-topology-find{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 10px;font-family:var(--cfx-tooltip-font,__CFX_FONT_FAMILY__)}
+.cfx-topology-card>.cfx-topology-find{margin:0;padding:12px 12px 0}
+.cfx-topology-find :is(input,select){appearance:none;-webkit-appearance:none;min-width:0;min-height:32px;box-sizing:border-box;margin:0;padding:0 10px;border:1px solid var(--cfx-tooltip-line,var(--cfx-topology-control-border));border-radius:var(--cfx-control-radius,var(--hfx-radius-control,6px));background-color:var(--cfx-tooltip-surface,var(--cfx-topology-control-bg));color:var(--cfx-tooltip-text,var(--cfx-topology-control-text));font:400 13px/1.3 var(--cfx-tooltip-font,__CFX_FONT_FAMILY__);transition:border-color .14s ease,box-shadow .14s ease}
 .cfx-topology-find input[type='search']{flex:1 1 220px}
-.cfx-topology-find select{flex:0 1 auto}
-.cfx-topology-find input:focus-visible,.cfx-topology-find select:focus-visible{outline:2px solid var(--cfx-topology-accent,#2563eb);outline-offset:1px}
-.cfx-topology-find output{flex:1 0 100%;min-height:16px;font:600 12px/1.35 __CFX_FONT_FAMILY__;color:var(--cfx-topology-control-muted);unicode-bidi:plaintext}
-@media print{.cfx-topology-find{display:none!important}.cfx-topology-wrapper[data-cfx-readable-zoom] .cfx-topology-viewport{height:auto!important;box-shadow:none!important}}
+.cfx-topology-find input::placeholder{color:var(--cfx-tooltip-muted,var(--cfx-topology-control-muted));opacity:1}
+.cfx-topology-find select{flex:0 1 auto;max-width:100%;padding-right:28px;cursor:pointer;background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);background-position:calc(100% - 15px) 50%,calc(100% - 10px) 50%;background-size:5px 5px;background-repeat:no-repeat}
+.cfx-topology-find :is(input,select):hover{border-color:var(--cfx-topology-control-border-hover)}
+.cfx-topology-find :is(input,select):focus-visible{outline:none;border-color:var(--cfx-topology-control-border-hover);box-shadow:var(--cfx-topology-control-focus)}
+.cfx-topology-find output{flex:1 0 100%;font:400 12px/1.35 var(--cfx-tooltip-font,__CFX_FONT_FAMILY__);color:var(--cfx-tooltip-muted,var(--cfx-topology-control-muted));unicode-bidi:plaintext}
+.cfx-topology-find output:empty{display:none}
+@media (pointer:coarse){.cfx-topology-find :is(input,select){min-height:44px}}
+@media (max-width:480px){.cfx-topology-find select{flex:1 1 calc(50% - 4px)}}
+@media print{.cfx-topology-find{display:none!important}.cfx-topology-wrapper[data-cfx-readable-zoom] .cfx-topology-viewport{height:auto!important}.cfx-topology-card{box-shadow:none!important}}

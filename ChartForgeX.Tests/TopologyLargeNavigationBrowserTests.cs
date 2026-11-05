@@ -38,6 +38,16 @@ public sealed class TopologyLargeNavigationBrowserTests {
         Assert.True(opening.GetProperty("count").GetInt32() > 0, opening.GetRawText());
         Assert.True(opening.GetProperty("smallest").GetDouble() >= 9.95, opening.GetRawText());
         Assert.True(opening.GetProperty("height").GetDouble() <= 820, opening.GetRawText());
+        // Only the plot zooms: the heading is lifted into HTML at its normal size and fits the page.
+        var heading = await page.EvaluateAsync<JsonElement>(@"() => {
+            const heading = document.querySelector('[data-cfx-topology-heading]'), box = heading.getBoundingClientRect();
+            const drawn = document.querySelector('.cfx-topology-viewport > svg [data-cfx-role=""frame-heading""]');
+            return { title: heading.querySelector('[class$=""heading__title""]').textContent, inside: box.left >= 0 && box.right <= innerWidth,
+                titleSize: parseFloat(getComputedStyle(heading.querySelector('[class$=""heading__title""]')).fontSize), drawnHidden: getComputedStyle(drawn).visibility === 'hidden' };
+        }");
+        Assert.Equal("Service estate", heading.GetProperty("title").GetString());
+        Assert.True(heading.GetProperty("inside").GetBoolean() && heading.GetProperty("drawnHidden").GetBoolean(), heading.GetRawText());
+        Assert.InRange(heading.GetProperty("titleSize").GetDouble(), 12, 24);
         var readableZoom = double.Parse((await wrapper.GetAttributeAsync("data-cfx-topology-zoom"))!, CultureInfo.InvariantCulture);
         Assert.True(readableZoom > 1, readableZoom.ToString(CultureInfo.InvariantCulture));
 

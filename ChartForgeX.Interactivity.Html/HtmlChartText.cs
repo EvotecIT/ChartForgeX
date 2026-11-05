@@ -645,4 +645,8 @@ public enum HtmlChartText {
     TopologyFindSummary,
     /// <summary>UI text: No matching nodes</summary>
     TopologyFindNone,
+    /// <summary>UI text: Find a node</summary>
+    TopologyFindNodesPlaceholder,
+    /// <summary>UI text: Find nodes by name, kind or group</summary>
+    TopologyFindNodes,
 }
