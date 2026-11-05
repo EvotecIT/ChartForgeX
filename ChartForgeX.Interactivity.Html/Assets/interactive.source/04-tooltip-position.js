@@ -259,16 +259,18 @@
     });
     const fits = candidate => candidate.x >= bounds.left + 8 && candidate.y >= bounds.top + 8
       && candidate.x + unit.width <= bounds.right - 8 && candidate.y + unit.height <= bounds.bottom - 8;
-    // A pinned readout stays open, so among fitting placements prefer the one that covers the least of the other targets.
+    // A pinned readout stays open, so among fitting placements that leave the chart's own controls clear it takes the one
+    // covering the least of the other targets. Otherwise the established first fitting placement applies.
     const pinnedCover = root.dataset.cfxTooltipPinned === 'true' && (() => {
-      const rects = interactiveTargets(root).filter(node => !node.contains(state.node) && !state.node.contains(node))
-        .map(node => node.getBoundingClientRect()).filter(rect => rect.width > 0 || rect.height > 0);
-      return candidate => rects.reduce((sum, rect) => sum
-        + Math.max(0, Math.min(candidate.x + unit.width, rect.right) - Math.max(candidate.x, rect.left))
-        * Math.max(0, Math.min(candidate.y + unit.height, rect.bottom) - Math.max(candidate.y, rect.top)), 0);
+      const area = (candidate, rect) => Math.max(0, Math.min(candidate.x + unit.width, rect.right) - Math.max(candidate.x, rect.left))
+        * Math.max(0, Math.min(candidate.y + unit.height, rect.bottom) - Math.max(candidate.y, rect.top));
+      const boxes = nodes => nodes.map(node => node.getBoundingClientRect()).filter(rect => rect.width > 0 && rect.height > 0);
+      const controls = boxes([...root.querySelectorAll('button,input,select,a[href]')].filter(node => !tip.contains(node)));
+      const targets = boxes(interactiveTargets(root).filter(node => !node.contains(state.node) && !state.node.contains(node)));
+      return candidate => controls.some(rect => area(candidate, rect) > 0) ? null : targets.reduce((sum, rect) => sum + area(candidate, rect), 0);
     })();
     const fitting = candidates.filter(fits);
-    const position = (pinnedCover && fitting.map(candidate => ({ candidate, cover: pinnedCover(candidate) }))
+    const position = (pinnedCover && fitting.map(candidate => ({ candidate, cover: pinnedCover(candidate) })).filter(item => item.cover !== null)
       .reduce((best, item) => !best || item.cover < best.cover ? item : best, null)?.candidate) || fitting[0]
       || (root.dataset.cfxTooltipPlacements || 'auto') === 'auto' && candidates.map(constrain).find(candidate =>
         candidate.x >= anchor.right + gap || candidate.x + unit.width <= anchor.left - gap
