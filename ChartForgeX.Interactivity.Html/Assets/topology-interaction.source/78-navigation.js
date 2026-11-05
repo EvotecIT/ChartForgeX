@@ -56,7 +56,12 @@
         panX: rtl ? metrics.width - originX * (1 + framed) : originX * (framed - 1),
         panY: originY * (framed - 1)
       };
+      // The opening view is placed, not animated: settle the transform before transitions resume.
+      wrapper.setAttribute('data-cfx-topology-settling', 'true');
       applyViewport(readableStart);
+      const settled = topologySvg();
+      if (settled) window.getComputedStyle(settled).transform;
+      wrapper.removeAttribute('data-cfx-topology-settling');
       wrapper.dispatchEvent(new CustomEvent('cfx-topology-readable-start', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id'), state: viewportState() } }));
       return true;
     };
