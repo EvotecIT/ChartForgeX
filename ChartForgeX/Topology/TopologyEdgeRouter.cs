@@ -289,10 +289,27 @@ internal static partial class TopologyEdgeRouter {
             foreach (var header in TopologyGroupHeader.LayoutParts(chart, group, chart.RenderOptions ?? new TopologyRenderOptions()))
                 if (header.Width > 0 && header.Height > 0) obstacles.Add(new RouteBox(header.Left, header.Top, header.Right, header.Bottom).Expand(groupPadding));
         }
+        // A route keeps out of a region that holds neither of its ends, rather than cutting through its shell.
+        // An end drawn over a region it does not belong to (authored geometry) still has to reach inside it.
+        var ends = chart.Nodes.Where(node => node.Id == sourceNodeId || node.Id == targetNodeId).ToArray();
+        foreach (var group in chart.Groups) {
+            if (group.Width <= 0 || group.Height <= 0 || InsideGroup(chart, sourceNodeId, group.Id) || InsideGroup(chart, targetNodeId, group.Id)
+                || ends.Any(node => node.X < group.X + group.Width && node.X + node.Width > group.X && node.Y < group.Y + group.Height && node.Y + node.Height > group.Y)) continue;
+            obstacles.Add(new RouteBox(group.X, group.Y, group.X + group.Width, group.Y + group.Height));
+        }
 
         if (!includeLabels) return obstacles;
         foreach (var box in EstimatedLabelBoxes(chart, routedEdge)) obstacles.Add(box.Expand(4 * routingUnits));
         return obstacles;
+    }
+
+    private static bool InsideGroup(TopologyChart chart, string endpointId, string groupId) {
+        var current = chart.Nodes.FirstOrDefault(node => node.Id == endpointId) is { } node ? node.GroupId : endpointId;
+        for (var depth = 0; current != null && depth <= chart.Groups.Count; depth++) {
+            if (current == groupId) return true;
+            current = chart.Groups.FirstOrDefault(group => group.Id == current)?.ParentGroupId;
+        }
+        return false;
     }
 
     internal static bool SpreadingIntroducesObstacle(TopologyChart chart, TopologyEdge edge, TopologyNode source,

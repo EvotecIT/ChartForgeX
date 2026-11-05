@@ -7,7 +7,7 @@ using static ChartForgeX.Topology.TopologyRenderPrimitives;
 namespace ChartForgeX.Topology;
 
 internal static partial class TopologyLayoutEngine {
-    private static void ApplyLayered(TopologyChart chart, TopologyRenderOptions? options, bool inferRoutes = true, bool ranksPrepared = false, LayeredResponsibilityBands? responsibilityBands = null) {
+    private static void ApplyLayered(TopologyChart chart, TopologyRenderOptions? options, bool inferRoutes = true, bool ranksPrepared = false, LayeredResponsibilityBands? responsibilityBands = null, ISet<string>? regionItems = null) {
         // Fully automatic grouped diagrams follow their dependency graph before shells are packed;
         // otherwise unrelated kind defaults can put a database before the service that calls it.
         var automaticLayout = chart.Groups.All(group => group.X == 0 && group.Y == 0 && group.Width <= 0 && group.Height <= 0)
@@ -19,16 +19,16 @@ internal static partial class TopologyLayoutEngine {
         var pad = Math.Max(24, chart.Viewport.Padding);
         var top = pad + (string.IsNullOrWhiteSpace(chart.Title) ? 0 : 72);
         if (chart.LayoutDirection is TopologyLayoutDirection.LeftToRight or TopologyLayoutDirection.RightToLeft) {
-            ApplyLayeredLeftToRight(chart, layers, pad, top, options, inferRoutes, responsibilityBands);
+            ApplyLayeredLeftToRight(chart, layers, pad, top, options, inferRoutes, responsibilityBands, regionItems);
             if (chart.LayoutDirection == TopologyLayoutDirection.RightToLeft) MirrorLayoutHorizontally(chart, pad, chart.Viewport.Width - pad);
             return;
         }
 
-        ApplyLayeredTopToBottom(chart, layers, pad, top, options, inferRoutes, responsibilityBands);
+        ApplyLayeredTopToBottom(chart, layers, pad, top, options, inferRoutes, responsibilityBands, regionItems);
         if (chart.LayoutDirection == TopologyLayoutDirection.BottomToTop) MirrorLayoutVertically(chart, top, chart.Viewport.Height - pad - LegendReservedHeight(chart.Legend, chart.Viewport));
     }
 
-    private static void ApplyLayeredTopToBottom(TopologyChart chart, IReadOnlyList<LayerNodeGroup> layers, double pad, double top, TopologyRenderOptions? options, bool inferRoutes, LayeredResponsibilityBands? responsibilityBands) {
+    private static void ApplyLayeredTopToBottom(TopologyChart chart, IReadOnlyList<LayerNodeGroup> layers, double pad, double top, TopologyRenderOptions? options, bool inferRoutes, LayeredResponsibilityBands? responsibilityBands, ISet<string>? regionItems) {
         var nodeSpacing = options?.LayeredNodeSpacing ?? 28;
         var captionPitch = LayeredCaptionPitch(chart, options, horizontal: false);
         var rankSpacing = LayeredRankGap(chart, options, horizontal: false);
@@ -37,7 +37,7 @@ internal static partial class TopologyLayoutEngine {
         var prepared = layers.Select(group => {
             var maxWidth = group.Nodes.Select(node => LayeredNodeWidth(chart, node)).DefaultIfEmpty(120).Max();
             var maxHeight = group.Nodes.Select(node => LayeredNodeHeight(chart, node)).DefaultIfEmpty(60).Max();
-            var columns = responsibilityBands == null ? LayerColumns(group.Nodes.Count, availableW, maxWidth, nodeSpacing) : group.Nodes.Count;
+            var columns = responsibilityBands != null ? group.Nodes.Count : HoldsRegions(group, regionItems) ? 1 : LayerColumns(group.Nodes.Count, availableW, maxWidth, nodeSpacing);
             var rows = (int)Math.Ceiling(group.Nodes.Count / (double)columns);
             var height = rows * maxHeight + Math.Max(0, rows - 1) * (nodeSpacing + 6);
             return new LayerPlacement(group.Index, group.Layer, group.Nodes, columns, rows, maxWidth, maxHeight, height);
@@ -86,7 +86,7 @@ internal static partial class TopologyLayoutEngine {
         if (inferRoutes) { lanes.ApplyRoutes(nodesById, false); ApplyHierarchyEdgeRoutesTopToBottom(chart); }
     }
 
-    private static void ApplyLayeredLeftToRight(TopologyChart chart, IReadOnlyList<LayerNodeGroup> layers, double pad, double top, TopologyRenderOptions? options, bool inferRoutes, LayeredResponsibilityBands? responsibilityBands) {
+    private static void ApplyLayeredLeftToRight(TopologyChart chart, IReadOnlyList<LayerNodeGroup> layers, double pad, double top, TopologyRenderOptions? options, bool inferRoutes, LayeredResponsibilityBands? responsibilityBands, ISet<string>? regionItems) {
         var nodeSpacing = options?.LayeredNodeSpacing ?? 24;
         var captionPitch = LayeredCaptionPitch(chart, options, horizontal: true);
         var rankSpacing = LayeredRankGap(chart, options, horizontal: true);
@@ -95,7 +95,7 @@ internal static partial class TopologyLayoutEngine {
         var prepared = layers.Select(group => {
             var maxWidth = group.Nodes.Select(node => LayeredNodeWidth(chart, node)).DefaultIfEmpty(120).Max();
             var maxHeight = group.Nodes.Select(node => LayeredNodeHeight(chart, node)).DefaultIfEmpty(60).Max();
-            var rows = responsibilityBands == null ? LayerColumns(group.Nodes.Count, availableH, maxHeight, nodeSpacing) : group.Nodes.Count;
+            var rows = responsibilityBands != null ? group.Nodes.Count : HoldsRegions(group, regionItems) ? 1 : LayerColumns(group.Nodes.Count, availableH, maxHeight, nodeSpacing);
             var columns = (int)Math.Ceiling(group.Nodes.Count / (double)rows);
             var width = columns * maxWidth + Math.Max(0, columns - 1) * (nodeSpacing + 18);
             return new LayerPlacement(group.Index, group.Layer, group.Nodes, columns, rows, maxWidth, maxHeight, width);
@@ -161,6 +161,11 @@ internal static partial class TopologyLayoutEngine {
         var rankDelta = preserveRankDistance ? Math.Max(1, layers[index + 1].Layer - layers[index].Layer) : 1;
         return baseGap + Math.Max(0, rankDelta - 1) * rankSpacing;
     }
+
+    // Sibling regions sharing a rank (a cycle between them) stay in flow order, side by side along the flow. Wrapping
+    // them across it whenever the packed shells happen to fit would move a region to the far side of its neighbour.
+    private static bool HoldsRegions(LayerNodeGroup group, ISet<string>? regionItems) =>
+        regionItems != null && group.Nodes.Count(node => regionItems.Contains(node.Id)) > 1;
 
     private static int LayerColumns(int count, double available, double itemSize, double gap) {
         if (count <= 0) return 1;
