@@ -58,8 +58,8 @@ Token contract v2 has landed: ChartForgeX reads its font stack, typography roles
 ## 5. Website showcase
 
 - [ ] **Interactive gallery.** Gallery cards open a live interactive chart, not a picture. Done when tooltips, zoom and legend work from every card.
-- [ ] **Realistic data.** Examples use multi-series, realistically sized data; no near-empty charts.
-- [ ] **Fix visible defects.** Combination chart draws lines over bars with a line legend key; placeholder subtitles go; donut percentages use one precision; heatmap missing cells match their key (same faint hatch or plain outlines in both) and the scale labels its middle; treemap and word cloud captions look intentional; Sankey nodes are coloured. Pie/donut legend value and percentage columns align across wrapped and long rows. The availability chart's top band reads `100%` rather than `Complete ≥ 100%`, without an availability-specific formatter rule.
+- [ ] **Realistic data.** Examples use multi-series, realistically sized data; no near-empty charts. Still thin: Bubble, Error Bar, Candlestick, OHLC, Trend Line, Histogram, Timeline and Bullet.
+- [ ] **Align explicitly placed value legends.** A pie/donut legend placed above or below the plot by the author keeps natural entry widths, so its value and percentage columns do not line up across wrapped rows. Give those rows shared columns in the native drawing and the responsive layout together.
 - [ ] **Per-family pages.** Each family gets a page with variants, options and code, including Quadrant, Org chart, Cone funnel and Linear gauge, and the navigator, context menu and annotation editor appear in at least one example.
 - [ ] **Chart-first snippets.** Snippets lead with the chart code; setup plumbing moves out of the way.
 - [ ] **Public wording.** Published docs (README development section, visual effects, API conventions, migration, Mermaid matrix) describe what works in plain language, without internal qualification jargon, and the site stops linking to this file as product documentation.
