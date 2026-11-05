@@ -67,6 +67,7 @@ public sealed partial class TopologyHtmlRenderer {
         var enableScenarioInteractions = options.EnableHtmlInteractions && chart.Scenarios.Count > 0;
         var isGraphExplorationLayout = chart.LayoutMode == TopologyLayoutMode.ForceDirected || chart.LayoutMode == TopologyLayoutMode.RelationshipRadial;
         var enableForceGraphControls = options.EnableHtmlInteractions && options.EnableHtmlForceGraphControls && isGraphExplorationLayout;
+        var enableFindControls = options.EnableHtmlInteractions && options.EnableHtmlFindControls && !enableForceGraphControls;
         var renderScenarioControls = enableScenarioInteractions && options.EnableHtmlScenarioControls;
         var enableScenarioPanel = enableScenarioInteractions && options.EnableHtmlScenarioPanel;
         var enableSelectionPanel = options.EnableHtmlInteractions && options.EnableHtmlSelectionPanel;
@@ -133,10 +134,14 @@ public sealed partial class TopologyHtmlRenderer {
         if (renderScenarioControls) WriteScenarioControls(writer, scenariosClass, chart, activeScenarioId, options.HtmlScenarioControlMode, messages);
         if (enableScenarioPanel) WriteScenarioPanel(writer, scenarioPanelClass, chart, activeScenarioId, enableScenarioUrlState, messages);
         if (enableForceGraphControls) WriteForceGraphControls(writer, forceControlsClass, forceControlsChart, options, messages);
+        if (enableFindControls) WriteFindControls(writer, cssPrefix + "-find", chart, messages);
+        // A zoomable viewport is a keyboard target of its own: +/- zoom, 0 fits, arrows pan.
+        var focusableViewport = keepTextSize || enableViewportControls;
         writer.StartElement("div").Attribute("class", viewportClass)
-            .Attribute("tabindex", keepTextSize ? "0" : null)
-            .Attribute("role", keepTextSize ? "region" : null)
-            .Attribute("aria-label", keepTextSize ? (string.IsNullOrWhiteSpace(chart.Title) ? messages["TopologyDiagram"] : chart.Title) : null)
+            .Attribute("tabindex", focusableViewport ? "0" : null)
+            .Attribute("role", focusableViewport ? "region" : null)
+            .Attribute("aria-label", focusableViewport ? (string.IsNullOrWhiteSpace(chart.Title) ? messages["TopologyDiagram"] : chart.Title) : null)
+            .Attribute("aria-keyshortcuts", enableViewportControls ? "+ - 0 ArrowUp ArrowDown ArrowLeft ArrowRight" : null)
             .EndStartElement();
         if (enableViewportControls || enableExportControls || enableFullscreenControl) {
             writer.StartElement("div").Attribute("class", controlsClass).Attribute("aria-label", messages["TopologyControls"]).EndStartElement();
@@ -338,6 +343,44 @@ public sealed partial class TopologyHtmlRenderer {
         writer.EndElement();
     }
 
+    private static void WriteFindControls(HtmlMarkupWriter writer, string className, TopologyChart chart, TopologyHtmlText messages) {
+        writer.StartElement("div")
+            .Attribute("class", className)
+            .Attribute("role", "search")
+            .Attribute("data-cfx-topology-find-panel", "true")
+            .EndStartElement();
+        writer.StartElement("input")
+            .Attribute("type", "search")
+            .Attribute("data-cfx-topology-find", "true")
+            .Attribute("placeholder", messages["TopologyFindNodesPlaceholder"])
+            .Attribute("aria-label", messages["TopologyFindNodes"])
+            .EndVoidElement();
+        var groups = chart.Groups.Where(group => !string.IsNullOrWhiteSpace(group.Id)).ToList();
+        if (groups.Count > 1) {
+            writer.StartElement("select").Attribute("data-cfx-topology-find-group", "true").Attribute("aria-label", messages["ExplorerGroup"]).EndStartElement();
+            writer.StartElement("option").Attribute("value", string.Empty).EndStartElement().Text(messages["TopologyAllGroups"]).EndElement();
+            foreach (var group in groups.OrderBy(group => group.Label, StringComparer.OrdinalIgnoreCase)) {
+                writer.StartElement("option").Attribute("value", group.Id).EndStartElement().Text(string.IsNullOrWhiteSpace(group.Label) ? group.Id : group.Label).EndElement();
+            }
+
+            writer.EndElement();
+        }
+
+        var kinds = chart.Nodes.Select(node => node.Kind.ToString()).Distinct(StringComparer.Ordinal).OrderBy(kind => kind, StringComparer.Ordinal).ToList();
+        if (kinds.Count > 1) {
+            writer.StartElement("select").Attribute("data-cfx-topology-find-kind", "true").Attribute("aria-label", messages["ExplorerKind"]).EndStartElement();
+            writer.StartElement("option").Attribute("value", string.Empty).EndStartElement().Text(messages["TopologyAllKinds"]).EndElement();
+            // Kinds read as the legend names them; an unnamed kind keeps its stable value.
+            var named = (chart.Legend?.Items ?? new List<TopologyLegendItem>()).Where(item => item.NodeKind != null && !string.IsNullOrWhiteSpace(item.Label))
+                .GroupBy(item => item.NodeKind!.Value.ToString(), StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.First().Label, StringComparer.Ordinal);
+            foreach (var kind in kinds) writer.StartElement("option").Attribute("value", kind).EndStartElement().Text(named.TryGetValue(kind, out var label) ? label : kind).EndElement();
+            writer.EndElement();
+        }
+
+        writer.StartElement("output").Attribute("data-cfx-topology-find-summary", "true").Attribute("aria-live", "polite").EndStartElement().EndElement();
+        writer.EndElement();
+    }
+
     private static void WriteForceSelect(HtmlMarkupWriter writer, string dataAttribute, string ariaLabel, string[] values, TopologyHtmlText messages) {
         writer.StartElement("select").Attribute(dataAttribute, "true").Attribute("aria-label", ariaLabel).EndStartElement();
         foreach (var value in values) {
@@ -388,6 +431,9 @@ public sealed partial class TopologyHtmlRenderer {
             .Replace(".cfx-topology-scenario-sequences", "." + cssPrefix + "-scenario-sequences")
             .Replace(".cfx-topology-selection-panel", "." + cssPrefix + "-selection-panel")
             .Replace(".cfx-topology-force-controls", "." + cssPrefix + "-force-controls")
+            .Replace(".cfx-topology-find", "." + cssPrefix + "-find")
+            .Replace(".cfx-topology-card", "." + cssPrefix + "-card")
+            .Replace(".cfx-topology-heading", "." + cssPrefix + "-heading")
             .Replace(".cfx-topology__edge--premium-layer", "[data-cfx-role^='topology-edge-line-']")
             .Replace(".cfx-topology__edge", "[data-cfx-role='topology-edge-line']")
             .Replace(".cfx-topology__node-card", "[data-cfx-role='topology-node-surface']")

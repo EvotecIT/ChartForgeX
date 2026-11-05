@@ -101,11 +101,15 @@ public sealed class InteractiveTopologyPresentationTests {
         Assert.Equal("true", await node.GetAttributeAsync("aria-selected"));
         Assert.Equal("source", await page.EvaluateAsync<string>("() => window.cfxSelection.id"));
         Assert.False(await page.Locator("[data-cfx-topology-selection-panel]").EvaluateAsync<bool>("panel => panel.hidden"));
+        // A phone-width page opens magnified so captions stay readable; zoom and reset work relative to that opening view.
+        var opening = double.Parse((await wrapper.GetAttributeAsync("data-cfx-topology-zoom"))!, CultureInfo.InvariantCulture);
+        Assert.Equal(width < 480, opening > 1);
         await page.Locator("[data-cfx-topology-zoom='in']").ClickAsync();
-        Assert.Equal("1.200", await wrapper.GetAttributeAsync("data-cfx-topology-zoom"));
-        await page.WaitForFunctionAsync("() => new DOMMatrixReadOnly(getComputedStyle(document.querySelector('.cfx-topology-viewport > svg')).transform).a > 1.15");
+        Assert.Equal((opening * 1.2).ToString("0.000", CultureInfo.InvariantCulture), await wrapper.GetAttributeAsync("data-cfx-topology-zoom"));
+        await page.WaitForFunctionAsync("opening => new DOMMatrixReadOnly(getComputedStyle(document.querySelector('.cfx-topology-viewport > svg')).transform).a > opening * 1.15", opening);
         await page.Locator("[data-cfx-topology-reset]").ClickAsync();
-        await page.WaitForFunctionAsync("() => Math.abs(new DOMMatrixReadOnly(getComputedStyle(document.querySelector('.cfx-topology-viewport > svg')).transform).a - 1) < 0.01");
+        await page.WaitForFunctionAsync("opening => Math.abs(new DOMMatrixReadOnly(getComputedStyle(document.querySelector('.cfx-topology-viewport > svg')).transform).a - opening) < 0.01", opening);
+        var resetPan = double.Parse((await wrapper.GetAttributeAsync("data-cfx-topology-pan-x"))!, CultureInfo.InvariantCulture);
         // On a compact page the detail panel covers the node; Escape returns to the topology before panning.
         await page.Keyboard.PressAsync("Escape");
         Assert.True(await page.Locator("[data-cfx-topology-selection-panel]").EvaluateAsync<bool>("panel => panel.hidden"));
@@ -117,7 +121,7 @@ public sealed class InteractiveTopologyPresentationTests {
         await page.Mouse.MoveAsync((float)(bounds.X + bounds.Width / 2 + 24), (float)(bounds.Y + bounds.Height / 2 + 18),
             new Microsoft.Playwright.MouseMoveOptions { Steps = 4 });
         await page.Mouse.UpAsync();
-        Assert.Equal("24.0", await wrapper.GetAttributeAsync("data-cfx-topology-pan-x"));
+        Assert.Equal((resetPan + 24).ToString("0.0", CultureInfo.InvariantCulture), await wrapper.GetAttributeAsync("data-cfx-topology-pan-x"));
         Assert.Null(await wrapper.GetAttributeAsync("data-cfx-topology-dragging"));
         await page.Locator("[data-cfx-topology-reset]").ClickAsync();
         await page.Locator("[data-cfx-topology-scenario='delivery']").ClickAsync();

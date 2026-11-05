@@ -226,7 +226,9 @@
         event.preventDefault();
         event.stopPropagation();
       }, true);
+      bindViewportNavigation();
     }
+    bindFindControls();
     if (exportControls) {
       wrapper.querySelectorAll('[data-cfx-topology-export]').forEach(button => {
         listen(button, 'click', () => {

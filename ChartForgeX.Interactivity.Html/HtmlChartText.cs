@@ -639,4 +639,14 @@ public enum HtmlChartText {
     DiagramMessage,
     /// <summary>Counts the messages a sequence participant sends and receives. Template: {sent}, {received}.</summary>
     DiagramParticipantMessages,
+    /// <summary>UI text: All kinds</summary>
+    TopologyAllKinds,
+    /// <summary>UI text: {count} of {total} nodes match</summary>
+    TopologyFindSummary,
+    /// <summary>UI text: No matching nodes</summary>
+    TopologyFindNone,
+    /// <summary>UI text: Find a node</summary>
+    TopologyFindNodesPlaceholder,
+    /// <summary>UI text: Find nodes by name, kind or group</summary>
+    TopologyFindNodes,
 }

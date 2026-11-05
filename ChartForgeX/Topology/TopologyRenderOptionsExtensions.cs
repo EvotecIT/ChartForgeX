@@ -534,6 +534,24 @@ public static class TopologyRenderOptionsExtensions {
     }
 
     /// <summary>
+    /// Enables or disables the interactive HTML find bar for dense topologies.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <param name="enabled">Whether interactive HTML should render a find bar with text, group and kind filters.</param>
+    /// <returns>The current render options.</returns>
+    /// <remarks>Matches are highlighted rather than hidden, and the viewport moves to them at a readable scale.</remarks>
+    public static TopologyRenderOptions WithHtmlFindControls(this TopologyRenderOptions options, bool enabled = true) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        options.EnableHtmlFindControls = enabled;
+        if (enabled) {
+            options.EnableHtmlInteractions = true;
+            options.EnableHtmlViewportControls = true;
+        }
+
+        return options;
+    }
+
+    /// <summary>
     /// Marks a topology group as selected without filtering or dimming the chart.
     /// </summary>
     /// <param name="options">The render options.</param>
