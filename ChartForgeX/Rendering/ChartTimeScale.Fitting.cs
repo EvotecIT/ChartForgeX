@@ -9,10 +9,14 @@ internal static partial class ChartTimeScale {
     /// <summary>Walks actual calendar intervals, measuring complete captions before choosing a coarser scale.</summary>
     internal static IReadOnlyList<double>? GenerateFitting(ChartAxis axis, double min, double max,
         Func<IReadOnlyList<double>, bool> fits, bool allowCompactDates, IReadOnlyList<double>? regularObservations = null, double minimumStepDays = 0,
-        int automaticTickCount = 8, double? calendarAnchor = null, Func<IReadOnlyList<double>, IReadOnlyList<double>>? selectTicks = null) {
+        int automaticTickCount = 8, double? calendarAnchor = null, Func<IReadOnlyList<double>, IReadOnlyList<double>>? selectTicks = null,
+        bool retainFinalDay = false) {
         if (axis.PreparedTimeDomain is { } domain) return domain.FitTicks(min, max, axis.HasExplicitTickCount ? axis.TickCount : automaticTickCount, fits, ChartScaleTransform.MaximumInclusive(axis, max));
         if (min < 0 || !IsRepresentable(max) || max - min < DaysPerSecond) return null;
         var limit = axis.HasExplicitTickCount ? axis.TickCount : automaticTickCount;
+        if (retainFinalDay && !axis.HasExplicitTickCount && regularObservations == null && calendarAnchor == null && selectTicks == null)
+            return WithFinalDay(axis, min, max, limit, fits,
+                GenerateFitting(axis, min, max, fits, allowCompactDates, minimumStepDays: minimumStepDays, automaticTickCount: automaticTickCount));
         var interval = FittingStartInterval(axis, min, max, limit, minimumStepDays);
         IReadOnlyList<double>? sparse = null;
         IReadOnlyList<double>? compactFit = null;
@@ -54,7 +58,7 @@ internal static partial class ChartTimeScale {
                 // after its last useful interval becomes too crowded. Preserve a
                 // measured regular stride of real boundaries before accepting one caption.
                 if (cadenceFit == null && intervalTicks.Count > 2)
-                    cadenceFit = FitCalendarStride(intervalTicks, limit, fits, selectTicks);
+                    cadenceFit = FitCalendarStride(intervalTicks, interval, limit, fits, selectTicks);
                 // A coarse authored formatter may not distinguish this interval.
                 // Preserve a real accepted caption, never the rejected sequence.
                 if (sparse == null) {
@@ -75,9 +79,12 @@ internal static partial class ChartTimeScale {
     }
 
     /// <summary>Retains a measured stride of real calendar boundaries when all ordinary coarser choices lose caption precision.</summary>
-    private static IReadOnlyList<double>? FitCalendarStride(IReadOnlyList<double> ticks, int limit,
+    private static IReadOnlyList<double>? FitCalendarStride(IReadOnlyList<double> ticks, TimeInterval interval, int limit,
         Func<IReadOnlyList<double>, bool> fits, Func<IReadOnlyList<double>, IReadOnlyList<double>>? selectTicks) {
         for (var stride = 2; stride < ticks.Count; stride++) {
+            // Day strides read as calendar steps only up to five days or in whole weeks;
+            // 6-, 8- and 10-day rhythms drift against the week a reader counts in.
+            if (interval.Unit == TimeUnit.Day && !IsCalendarDayStep(interval.Step * stride)) continue;
             var values = new List<double>();
             for (var index = 0; index < ticks.Count; index += stride) values.Add(ticks[index]);
             var retained = PreserveFormatting(ticks, values);
@@ -85,6 +92,29 @@ internal static partial class ChartTimeScale {
             if (selected.Count > 1 && selected.Count <= limit && fits(selected)) return selected;
         }
         return null;
+    }
+
+    private static bool IsCalendarDayStep(int days) => days <= 5 || days % 7 == 0;
+
+    /// <summary>Adds the final day of a daily or weekly date window when its complete caption fits after the regular ticks.</summary>
+    private static IReadOnlyList<double>? WithFinalDay(ChartAxis axis, double min, double max, int limit,
+        Func<IReadOnlyList<double>, bool> fits, IReadOnlyList<double>? ticks) {
+        if (ticks == null || ticks.Count < 2 || ticks.Count >= limit) return ticks;
+        for (var index = 0; index < ticks.Count; index++) {
+            if (ToDisplayTime(axis, ticks[index]) is not { } local || local.TimeOfDay != TimeSpan.Zero) return ticks;
+            if (index > 0 && ticks[index] - ticks[index - 1] > 14.5) return ticks;
+        }
+        var zone = axis.TimeZone ?? TimeZoneInfo.Utc;
+        var instants = new List<DateTime>(2);
+        var day = new TimeInterval(TimeUnit.Day, 1);
+        try { ResolveInstants(Floor(ToLocal(max, zone), day), zone, day, instants); }
+        catch (Exception exception) when (exception is ArgumentException || exception is OverflowException) { return ticks; }
+        if (instants.Count == 0) return ticks;
+        var final = instants[0].ToOADate();
+        if (final < min || final > max || final <= ticks[ticks.Count - 1]) return ticks;
+        var extended = new List<double>(ticks) { final };
+        var candidate = PreserveFormatting(ticks, extended);
+        return fits(candidate) ? candidate : ticks;
     }
 
     /// <summary>Retains the broad calendar rhythm ceiling while measured spacing chooses the compact pitch.</summary>

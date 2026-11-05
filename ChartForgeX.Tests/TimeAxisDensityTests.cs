@@ -52,6 +52,26 @@ public sealed class TimeAxisDensityTests {
         }
     }
 
+    [Theory]
+    [InlineData(480, 45, true)]
+    [InlineData(640, 45, false)]
+    [InlineData(800, 30, true)]
+    public void NarrowDateWindowUsesCalendarDayStepsAndCaptionsTheFinalDayWhenItFits(int width, int days, bool finalDayFits) {
+        // A Thursday start puts the final data day off the weekly phase.
+        var first = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var chart = Create(width).AddLine("Readings", Enumerable.Range(0, days + 1).Select(day => new ChartPoint(first.AddDays(day), 40 + day % 5)));
+        var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
+        AssertDateLabels(prepared);
+        AssertAnchoredAndPainted(prepared);
+        var dates = Captions(prepared).Select(caption => DateTime.ParseExact(caption.Text.Lines.Single().Text, "yyyy-MM-dd", CultureInfo.InvariantCulture)).ToArray();
+        Assert.Equal(finalDayFits, first.AddDays(days).Date == dates[dates.Length - 1]);
+        // Regular ticks step by up to five days or whole weeks; only the appended final day may close a shorter gap.
+        for (var index = 1; index < dates.Length - (finalDayFits ? 1 : 0); index++) {
+            var step = (dates[index] - dates[index - 1]).Days;
+            Assert.True(step <= 5 || step % 7 == 0, $"A {step}-day stride is not a calendar step.");
+        }
+    }
+
     [Fact]
     public void AuthoredTimeTickCountRemainsAnUpperBoundAndSurvivesDetachedConfiguration() {
         var chart = Create(640)

@@ -70,7 +70,6 @@ Token contract v2 has landed: ChartForgeX reads its font stack, typography roles
 - [ ] Decide whether Funnel and Pyramid show stage captions by default. Data labels are opt-in for every family, but a funnel has no legend or axis, so a default funnel identifies none of its stages.
 - [ ] Dense point captions keep the distinguishing part of similar names instead of ending in an ellipsis that removes it; closely spaced Bubble marks stay distinguishable.
 - [ ] Charts narrower than 400 pixels, including compact Gantt, keep complete captions anchored to their ticks.
-- [ ] Narrow date windows stop picking 6-, 8- or 10-day strides and keep the final day's caption when it fits, preserving authored intervals.
 - [ ] TileMap shows codes at the 10-pixel floor in compact and dense layouts instead of omitting all 51 (compact) or 48 (wide).
 
 ## Mermaid
