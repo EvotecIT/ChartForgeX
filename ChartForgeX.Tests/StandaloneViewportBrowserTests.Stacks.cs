@@ -191,7 +191,9 @@ public sealed partial class StandaloneViewportBrowserTests {
                     const owner=node.closest('[data-cfx-point]'),box=node.getBBox();
                     // How much of the segment its stack silhouette cuts away, in drawing units.
                     const clipNode=node.closest('[clip-path]'),id=clipNode?.getAttribute('clip-path').match(/#([^)]+)/)?.[1];
-                    const clip=owner&&id&&svg.getElementById(id)?.querySelector('path,rect')?.getBBox();
+                    // Firefox measures an unrendered clip definition as empty, so measure a rendered copy of it.
+                    const shape=owner&&id&&svg.getElementById(id)?.querySelector('path,rect'),copy=shape?.cloneNode(true);if(copy){copy.removeAttribute('id');svg.appendChild(copy);}
+                    const clip=copy?.getBBox();copy?.remove();
                     const clipped=clip?Math.max(0,clip.x-box.x,clip.y-box.y,box.x+box.width-clip.x-clip.width,box.y+box.height-clip.y-clip.height):0;
                     return {key:node.closest('[data-cfx-series-key]').dataset.cfxSeriesKey,index:owner?.dataset.cfxPoint??null,d:node.getAttribute('d'),
                         box:{x:box.x,y:box.y,width:box.width,height:box.height},clipped};
