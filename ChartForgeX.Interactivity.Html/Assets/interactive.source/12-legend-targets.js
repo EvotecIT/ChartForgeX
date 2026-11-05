@@ -10,7 +10,9 @@
       const reference = shape.localName === 'use' && shape.getAttribute('href')?.startsWith('#')
         ? node.ownerSVGElement.getElementById(shape.getAttribute('href').slice(1)) : shape;
       if (!reference) continue;
-      let box = reference.getBBox?.();
+      let box = reference.getBBox?.(), offset = shape.localName === 'use';
+      // Firefox measures an unrendered definition as empty; the placed <use> already includes its x/y.
+      if (offset && !(box?.width > 0 || box?.height > 0)) { box = shape.getBBox?.(); offset = false; }
       if (!box) continue;
       if (reference.localName === 'image') {
         const alpha = (reference.dataset.cfxImageAlphaBounds || '').trim().split(/\s+/).map(Number);
@@ -22,8 +24,8 @@
       const screen = shape.getScreenCTM?.();
       if (!screen || !(box.width > 0 || box.height > 0)) continue;
       const matrix = inverse.multiply(screen);
-      const x = shape.localName === 'use' ? shape.x.baseVal.value : 0;
-      const y = shape.localName === 'use' ? shape.y.baseVal.value : 0;
+      const x = offset ? shape.x.baseVal.value : 0;
+      const y = offset ? shape.y.baseVal.value : 0;
       for (const [px, py] of [[box.x, box.y], [box.x + box.width, box.y], [box.x, box.y + box.height], [box.x + box.width, box.y + box.height]]) {
         const p = new DOMPoint(px + x, py + y).matrixTransform(matrix);
         if (![p.x, p.y].every(Number.isFinite)) continue;
@@ -169,9 +171,11 @@
         // Only clipped label ink forces the flowing legend; the enlarged hit box may exceed a tight legend band.
         const ink = matrix && [[entry.bounds.x, entry.bounds.y], [entry.bounds.x + entry.bounds.width, entry.bounds.y + entry.bounds.height]]
           .map(([x, y]) => new DOMPoint(x, y).matrixTransform(matrix));
+        // Ink that merely touches the band's edge, such as a swatch drawn at the clip origin, is not cut off;
+        // half a unit absorbs the browsers' differing matrix rounding.
         const clipped = !clips || ink && clips.some(clip => ink.some(point => {
           const local = point.matrixTransform(clip.matrix.inverse()), r = clip.rect;
-          return local.x < r.x || local.x > r.x + r.width || local.y < r.y || local.y > r.y + r.height;
+          return local.x < r.x - .5 || local.x > r.x + r.width + .5 || local.y < r.y - .5 || local.y > r.y + r.height + .5;
         }));
         const x = corners?.map(point => point.x), y = corners?.map(point => point.y);
         return { box: corners ? { x: Math.min(...x), y: Math.min(...y), width: Math.max(...x) - Math.min(...x), height: Math.max(...y) - Math.min(...y) } : box, scaleY, clipped };
