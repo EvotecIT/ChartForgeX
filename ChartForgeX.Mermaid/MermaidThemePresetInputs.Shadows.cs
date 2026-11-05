@@ -41,7 +41,7 @@ internal sealed partial class MermaidThemePresetInputs {
         // URL presets have no local target in the pinned standalone Sequence output
         // (actual164); preserve their no-paint result rather than invent a glyph-filter alias.
         return name switch {
-            "base" or "default" or "dark" or "neutral" =>
+            "base" or "neutral" =>
                 new VisualDropShadow(ChartColor.FromRgb(185, 185, 185), 1, 2, 2),
             "forest" => new VisualDropShadow(ChartColor.FromRgb(185, 185, 185), 1, 2, 2, opacity: .5),
             "neo-dark" => new VisualDropShadow(ChartColor.FromRgb(185, 185, 185), 1, 2, 2, opacity: .2),

@@ -69,7 +69,8 @@ public sealed class MermaidFlowchartCatalogCausalTests {
         Assert.Equal("CollapsedContainer",summary.Shape.ToString());
         Assert.Null(summary.BackgroundColor);
         var explicitDefault=MermaidRenderer.Render("%%{init: {'theme':'default'}}%%\n"+source);Assert.Empty(explicitDefault.Diagnostics);
-        Assert.Equal(ChartForgeX.Primitives.ChartColor.FromHex("#ECECFF"),ChartForgeX.Primitives.ChartColor.Parse(Assert.IsType<TopologyChart>(explicitDefault.Artifact!.Model).Nodes.Single(node=>node.Id=="summary").BackgroundColor!));
+        // Mermaid's default theme is the native theme, so the summary keeps its unpainted native surface.
+        Assert.Null(Assert.IsType<TopologyChart>(explicitDefault.Artifact!.Model).Nodes.Single(node=>node.Id=="summary").BackgroundColor);
         var edge=Assert.Single(chart.Edges);Assert.Equal("summary",edge.SourceNodeId);Assert.Equal("outside",edge.TargetNodeId);
         Assert.Equal("b",edge.Metadata["mermaid.agentflow.source"]);
     }

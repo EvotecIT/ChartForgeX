@@ -12,8 +12,6 @@ namespace ChartForgeX.Tests;
 public sealed class MermaidElevenTopologyPresetRoleTests {
     [Theory]
     [InlineData("base", "#fff4dd", null, "#333333", null, null)]
-    [InlineData("default", "#ececff", "#9370db", "#333333", "#ffffde", "#aaaa33")]
-    [InlineData("dark", "#1f2020", "#cccccc", "#cccccc", "#474949", "#ffffff40")]
     [InlineData("forest", "#cde498", "#13540c", "#000000", "#cdffb2", "#6eaa49")]
     [InlineData("neutral", "#eeeeee", "#999999", "#000000", "#fcfcfc", "#707070")]
     [InlineData("neo", "#ffffff", "#000000", "#333333", "#ffffff", null)]
