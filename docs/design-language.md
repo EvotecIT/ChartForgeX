@@ -154,6 +154,6 @@ One chart definition, rendered for where it goes. The profile picks behaviour; t
 
 Print and forced-colors turn on texture (one 45°/135° directional fill) so identity never depends on hue.
 
-## 7. Acceptance
+## 7. Checking a chart
 
-A chart change is accepted when it is checked running, at 1200px and 390px, light and dark, with keyboard only, and with a linked CanopyX grid where the family supports linking: the states in §3 look as specified, nothing clips or overlaps, the palette validator passes for any new categorical set, and the static SVG still works with script off.
+I check every chart change running, at 1200px and 390px, light and dark, with keyboard only, and with a linked CanopyX grid where the family supports linking: the states in §3 look as specified, nothing clips or overlaps, the palette validator passes for any new categorical set, and the static SVG still works with script off.

@@ -393,7 +393,7 @@ dotnet run --project .\ChartForgeX.Examples\ChartForgeX.Examples.csproj -c Relea
 
 The latter writes `graph-scale-1000.html`, `graph-scale-5000.html`, and `graph-scale-10000.html`, each with two edges per node and fixed positions for repeatable startup and interaction review.
 
-The July 13, 2026 local Chrome release-gate run on the maintainer workstation produced the following observations. These are evidence for that environment, not universal performance guarantees:
+Here is what those pages measured in desktop Chrome on my development machine. Your numbers will depend on the browser and hardware:
 
 | Fixture | Live DOM elements | Full load | Fit call | Active renderer |
 | --- | ---: | ---: | ---: | --- |
