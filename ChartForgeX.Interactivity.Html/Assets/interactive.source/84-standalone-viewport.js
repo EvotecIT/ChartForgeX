@@ -166,7 +166,9 @@
       const template = axis.nodes.find(node => node.querySelector('text'))?.querySelector('text');
       const box = template?.getBBox(), style = template && getComputedStyle(template);
       const size = Math.max(Number(template?.getAttribute('font-size')) || 12, compact ? 12 / scale : 0);
-      const family = getComputedStyle(root).getPropertyValue('--cfx-tooltip-font') || style?.fontFamily || 'sans-serif';
+      // Measure with the face the axis captions actually paint (the delivered product font), so caption fitting
+      // matches native on hosts without an installed copy; the chrome font stack is only the fallback.
+      const family = style?.fontFamily || getComputedStyle(root).getPropertyValue('--cfx-tooltip-font') || 'sans-serif';
       // Room is in drawing units: a label's own width plus a 12 CSS pixel gap, or about two lines vertically.
       const room = vertical ? () => size * 2 : label => standaloneTextWidth(size + 'px ' + family, label) + 16 / scale;
       // Linear windows start at the native density for the axis length; others keep the drawing's own label count.
