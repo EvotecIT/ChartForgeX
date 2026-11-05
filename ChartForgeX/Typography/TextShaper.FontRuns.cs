@@ -63,6 +63,9 @@ internal static partial class TextShaper {
             }
             foreach (var cp in cluster.Output) {
                 var glyph = new LayoutGlyph(cluster.Face!.MapGlyph(cp), cp, cluster.Start);
+                if (glyph.Glyph == 0 && SpaceAdvance(cluster.Face, cp) is { } spaceAdvance) {
+                    glyph.Glyph = cluster.Face.MapGlyph(0x20); glyph.SpaceAdvance = spaceAdvance;
+                }
                 if (forms != null && script == "arab") {
                     glyph.Features &= ~15u;
                     glyph.Features |= 1u << (int)forms[cluster.Start];
@@ -92,7 +95,8 @@ internal static partial class TextShaper {
         }
         if (face.TabularNumerals) layout.Apply(glyphs, tag, TabularSubstitution, budget: budget);
         glyphs.RemoveAll(glyph => glyph.Ignorable);
-        foreach (var glyph in glyphs) glyph.XAdvance = complex && (run.Script == "mymr" || run.Script == "sinh") && layout.IsMarkGlyph(glyph) ? 0 : face.AdvanceWidth(glyph.Glyph);
+        foreach (var glyph in glyphs) glyph.XAdvance = glyph.SpaceAdvance
+            ?? (complex && (run.Script == "mymr" || run.Script == "sinh") && layout.IsMarkGlyph(glyph) ? 0 : face.AdvanceWidth(glyph.Glyph));
         if (positioned) {
             if (!layout.HasFeature(positioningTag, "kern", positioning: true)) {
                 for (var i = 1; i < glyphs.Count; i++) glyphs[i - 1].XAdvance += face.Kerning(glyphs[i - 1].Glyph, glyphs[i].Glyph);
@@ -105,7 +109,7 @@ internal static partial class TextShaper {
         var advanceY = 0.0; var outputIndex = 0;
         foreach (var glyph in glyphs) {
             output.Add(new ShapedGlyph(face, glyph.Glyph, glyph.Cluster,
-                positioned ? glyph.XAdvance : null, glyph.XOffset, glyph.YOffset + advanceY, tracking == null ? -1 : tracking[outputIndex++]));
+                positioned || glyph.SpaceAdvance.HasValue ? glyph.XAdvance : null, glyph.XOffset, glyph.YOffset + advanceY, tracking == null ? -1 : tracking[outputIndex++]));
             advanceY += glyph.YAdvance;
         }
     }

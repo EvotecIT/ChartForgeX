@@ -183,7 +183,7 @@ internal static partial class TextShaper {
         }
         if (visible.Count == 1) {
             cluster.Output.Add(visible[0]);
-            if (emoji || !primary.HasGlyph(visible[0])) {
+            if (emoji || !Covers(primary, visible)) {
                 cluster.FallbackAttempted = true;
                 if (capturedClusters != null && (capturedClusters.IsReplay || capturedClusters.HasCaptured(codePoints, cluster.Start, cluster.Count))) { cluster.Output.Clear(); ApplyCapturedCluster(capturedClusters, codePoints, cluster); return; }
                 var fallback = (chain ??= FontFallbackChain.For(primary)).FaceFor(visible[0], emoji);
@@ -237,7 +237,7 @@ internal static partial class TextShaper {
     }
 
     private static bool Covers(TrueTypeFont face, IReadOnlyList<int> codePoints) {
-        foreach (var cp in codePoints) if (!face.HasGlyph(cp)) return false;
+        foreach (var cp in codePoints) if (!face.HasGlyph(cp) && !DrawsAsSpace(face, cp)) return false;
         return true;
     }
 

@@ -20,6 +20,8 @@ internal sealed class LayoutGlyph {
     internal byte ScriptPosition;
     internal uint Features = uint.MaxValue;
     internal double XAdvance, YAdvance, XOffset, YOffset;
+    /// <summary>A Unicode space the face lacks, drawn with its U+0020 glyph at this font-unit advance.</summary>
+    internal double? SpaceAdvance;
     internal LayoutGlyph? Ligature;
     internal int Component;
     internal int[]? ComponentClusters;
@@ -27,7 +29,7 @@ internal sealed class LayoutGlyph {
     internal double AnchorX, AnchorY, AttachmentAdjustmentX, AttachmentAdjustmentY;
     internal bool CursiveAttachment;
     internal LayoutGlyph Copy(ushort glyph) => new(glyph, CodePoint, Cluster) {
-        Ignorable = Ignorable, SkipForSubstitution = SkipForSubstitution, ScriptPosition = ScriptPosition, Features = Features, Ligature = Ligature, Component = Component
+        Ignorable = Ignorable, SkipForSubstitution = SkipForSubstitution, ScriptPosition = ScriptPosition, Features = Features, Ligature = Ligature, Component = Component, SpaceAdvance = SpaceAdvance
     };
     internal static uint FeatureMask(string feature) => feature switch {
         "isol" => 1u, "fina" => 2u, "init" => 4u, "medi" => 8u,
