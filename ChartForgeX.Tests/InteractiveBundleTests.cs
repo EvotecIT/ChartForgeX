@@ -72,6 +72,17 @@ public sealed class InteractiveBundleTests {
         Assert.Contains(asset.Content, declared);
     }
 
+    // Flow and sequence pages inline the shared adapter lifetime and owned-font helpers with their small exploration runtime.
+    [Fact]
+    public void DiagramRuntimeFitsRawAndGzipBudgetsAndShipsOnlyWithDiagramPages() {
+        var bytes = Encoding.UTF8.GetBytes(HtmlDiagramAssets.Script);
+        using var output = new MemoryStream();
+        using (var gzip = new GZipStream(output, CompressionLevel.Optimal, leaveOpen: true)) gzip.Write(bytes);
+        Assert.True(bytes.Length <= 40 * 1024, $"diagram: {bytes.Length} raw bytes exceeds the budget.");
+        Assert.True(output.Length <= 12 * 1024, $"diagram: {output.Length} gzip bytes exceeds the budget.");
+        Assert.Contains(HtmlDiagramAssets.Script, FlowRecipe.Create().ToInteractiveHtmlPage());
+        Assert.DoesNotContain("ChartForgeX.diagramInteraction", Chart.Create().AddLine("Requests", ChartPoints.FromValues(2, 7, 4)).ToInteractiveHtmlPage());
+    }
     [Fact]
     public void ExternalPagesNameFeatureBundlesForLazyLoadingInsteadOfEmbeddingThem() {
         var page = Chart.Create().AddLine("Requests", ChartPoints.FromValues(2, 7, 4)).ToInteractiveHtmlPage(options => {

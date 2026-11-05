@@ -18,6 +18,11 @@ internal static partial class SmokeTests {
 
         AssertGeneratedAssetMatchesSource(
             root,
+            Path.Combine("ChartForgeX.Interactivity.Html", "Assets", "diagram-interaction.source"),
+            Path.Combine("ChartForgeX.Interactivity.Html", "Assets", "diagram-interaction.js"));
+
+        AssertGeneratedAssetMatchesSource(
+            root,
             Path.Combine("ChartForgeX.Interactivity.Html", "Assets", "interactive.source"),
             Path.Combine("ChartForgeX.Interactivity.Html", "Assets", "interactive.js"),
             optimizeJavaScript: true);

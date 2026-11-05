@@ -1110,6 +1110,22 @@ The adapter prepares a detached topology once and passes it to the SVG producer.
 
 `RenderPresentationFragment` includes the topology CSS and interaction runtime. `RenderPresentationFragmentWithoutAssets` lets the embedding host register them once. `RenderPresentationPage` also accepts `HtmlAssetReferences` for a shared external runtime. Motion keeps its configured route while scenario controls change the visible highlight; choosing another scenario does not retarget the animation.
 
+## Flow and sequence pages
+
+`ToInteractiveHtmlPage` and `ToInteractiveHtmlFragment` on `FlowArtifact` and `SequenceArtifact` embed the same script-free SVG as the static export and add exploration:
+
+```csharp
+using ChartForgeX.Interactivity.Html;
+
+var flowPage = flow.ToInteractiveHtmlPage(context);
+var sequencePage = sequence.ToInteractiveHtmlPage(context, ui => ui.Language = "pl");
+```
+
+Hovering or focusing a flow step highlights its connectors and the steps at their other ends; a connector highlights both of its steps. A sequence message highlights its sender and receiver, and a participant highlights the messages it sends and receives. Everything else recedes. A tooltip and a polite status readout show the item's text: the lane, incoming and outgoing steps with connector labels, or the message's position and route.
+
+The diagram is one tab stop. Arrow keys move through it in authored order (each flow step followed by the connectors that leave it; sequence participants, then messages), Home and End jump to the ends, and Escape clears the highlight. Sequence pages add Prev, Play and Next controls that step through the messages in order, matching use case playback on topology pages.
+
+`context` is optional; omitted, the flow uses its own export request and the sequence its natural size and theme. The runtime reads only the identities and text captured from the same native preparation, so it never recomputes layout. Control messages use the `Diagram*` and scenario step entries of `HtmlChartLocalization`. Narrow hosts keep the diagram at least 560 pixels wide and scroll it sideways instead of shrinking its text.
 ## Scenario Timelines
 
 Scenarios are ordered, host-neutral timelines. Configure pacing and visual intent on the scenario model; adapters consume the same contract. Retain the `pressure` and `success` series handles from chart construction and use their IDs in the route:

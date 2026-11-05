@@ -15,10 +15,13 @@ public sealed partial class HtmlInteractiveChartRenderer {
             chart.Options.Theme.Resolve(chart.Options.ThemeMode).Chrome);
     }
 
-    internal static string PreparedInteractionTokens(VisualRenderContext context) {
-        var colors = context.Theme.Resolve(context.ThemeMode);
+    internal static string PreparedInteractionTokens(VisualRenderContext context) =>
+        ThemeInteractionTokens(context.Theme, context.ThemeMode, context.Frame.TransparentBackground);
+
+    internal static string ThemeInteractionTokens(VisualTheme theme, VisualThemeMode mode, bool transparent) {
+        var colors = theme.Resolve(mode);
         return InteractionTokens(colors.Background, colors.Axis, colors.Palette[0],
-            context.Theme.Typography.Family, context.Frame.TransparentBackground, colors.Chrome);
+            theme.Typography.Family, transparent, colors.Chrome);
     }
 
     private static string InteractionTokens(ChartColor background, ChartColor axis, ChartColor accent,
