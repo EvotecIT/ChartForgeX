@@ -61,6 +61,10 @@ internal sealed class TopologyHtmlText {
         ["TopologyCopyRouteLink"] = "Copy route link",
         ["TopologyTimelineStep"] = "Topology route timeline step",
         ["TopologyVisibleSummary"] = "{nodes} nodes / {edges} edges visible",
+        ["ScenarioRequest"] = "request",
+        ["ScenarioMessage"] = "message",
+        ["ScenarioResponse"] = "response",
+        ["ScenarioFailure"] = "failed call",
     };
 
     private readonly IReadOnlyDictionary<string, string> _messages;

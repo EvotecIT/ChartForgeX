@@ -168,7 +168,42 @@
         if (attr(button, 'data-cfx-scenario-step-control') === 'play') button.setAttribute('aria-pressed', playing ? 'true' : 'false');
       });
     };
+    // The active edge's arrow points the way its step travels. A step sent from the edge's target (a response, or a
+    // request flowing back) mirrors the drawn arrowhead onto the route's source end; edges drawn with arrows at both
+    // ends, or none, already read either way.
+    const routeEnd = (edge, last) => {
+      const tokens = edge.querySelector('[data-cfx-role="topology-edge-line"]')?.getAttribute('d')?.match(/[a-zA-Z]|[-+]?(?:\d*\.\d+|\d+\.?\d*)(?:[eE][-+]?\d+)?/g) || [];
+      const arity = { M: 2, L: 2, Q: 4, C: 6, A: 7, H: 1, V: 1, Z: 0 }, points = [];
+      for (let index = 0, command = ''; index < tokens.length;) {
+        if (/^[a-zA-Z]$/.test(tokens[index])) { command = tokens[index++].toUpperCase(); if (command === 'Z') continue; }
+        const size = arity[command], values = tokens.slice(index, index + size).map(Number), at = points[points.length - 1] || [0, 0];
+        if (!size || values.length < size) break;
+        index += size;
+        if (command === 'H') points.push([values[0], at[1]]); else if (command === 'V') points.push([at[0], values[0]]);
+        else for (let offset = command === 'A' ? 5 : 0; offset < size; offset += 2) points.push([values[offset], values[offset + 1]]);
+      }
+      const ordered = last ? points.reverse() : points, tip = ordered[0], toward = ordered.find(point => point[0] !== tip?.[0] || point[1] !== tip?.[1]);
+      return tip && toward ? { tip, angle: Math.atan2(tip[1] - toward[1], tip[0] - toward[0]) * 180 / Math.PI } : null;
+    };
+    const pointScenarioArrow = (edge, backward) => {
+      edge.querySelectorAll('[data-cfx-scenario-arrow]').forEach(node => node.remove());
+      edge.querySelectorAll('[data-cfx-scenario-arrow-source]').forEach(node => { node.removeAttribute('data-cfx-scenario-arrow-source'); node.style.removeProperty('visibility'); });
+      edge.removeAttribute('data-cfx-scenario-arrow-reversed');
+      const toTarget = attr(edge, 'data-target-marker') !== 'None', toSource = attr(edge, 'data-source-marker') !== 'None';
+      if (!backward || toTarget === toSource) return;
+      const from = routeEnd(edge, toTarget), to = routeEnd(edge, !toTarget);
+      if (!from || !to) return;
+      edge.querySelectorAll('[data-cfx-role="topology-marker"]').forEach(marker => {
+        const arrow = marker.cloneNode(true);
+        arrow.removeAttribute('data-cfx-role'); arrow.setAttribute('data-cfx-scenario-arrow', 'true');
+        arrow.setAttribute('transform', 'translate(' + to.tip.join(' ') + ') rotate(' + (to.angle - from.angle) + ') translate(' + -from.tip[0] + ' ' + -from.tip[1] + ')');
+        marker.after(arrow);
+        marker.setAttribute('data-cfx-scenario-arrow-source', 'true'); marker.style.visibility = 'hidden';
+      });
+      edge.setAttribute('data-cfx-scenario-arrow-reversed', 'true');
+    };
     const clearScenarioStep = () => {
+      wrapper.querySelectorAll('[data-cfx-scenario-arrow-reversed]').forEach(edge => pointScenarioArrow(edge, false));
       wrapper.removeAttribute('data-cfx-active-scenario-step');
       wrapper.querySelectorAll('.cfx-topology-html-scenario-step-active,.cfx-topology-html-scenario-step-muted').forEach(item => item.classList.remove('cfx-topology-html-scenario-step-active', 'cfx-topology-html-scenario-step-muted'));
       if (scenarioPanel) scenarioPanel.querySelectorAll('[data-cfx-scenario-step-id]').forEach(item => item.removeAttribute('aria-current'));
@@ -203,6 +238,8 @@
         const current = routeMember && scenarioStepIndices(item, route.scenarioId).includes(String(index));
         item.classList.toggle('cfx-topology-html-scenario-step-active', current);
         item.classList.toggle('cfx-topology-html-scenario-step-muted', routeMember && !current && route.focusMode === 'spotlight');
+        const step = route.steps[index];
+        if (attr(item, 'data-cfx-role') === 'topology-edge') pointScenarioArrow(item, current && !!step && (step.backward === true || step.reverse === true));
       });
       if (scenarioPanel) scenarioPanel.querySelectorAll('[data-cfx-scenario-step-id]').forEach(item => {
         if (attr(item, 'data-cfx-scenario-step-index') === String(index + 1)) item.setAttribute('aria-current', 'step');

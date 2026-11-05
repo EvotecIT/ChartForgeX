@@ -167,6 +167,11 @@ On the `ToInteractiveHtmlPage` page with `WithHtmlScenarioSequence()`, the topol
 Scenarios built in code use the same model: `AddMessageStep(edgeId, TopologyScenarioInteraction.Response, "201", reverse: true)`
 and `WithPayload(json, TopologyScenarioPayloadFormat.Json)` on a step.
 
+While a step plays on the interactive page, its edge's arrow points the way the step travels: a response, or any step
+sent from the edge's target, shows the arrowhead at the caller's end, and the next step or a reset restores the drawn
+arrow. Edges drawn with arrows at both ends, or none, are left as drawn. The payload route and step titles name the
+interaction (request, message, response, failed call) with the page's localized `HtmlChartText.Scenario*` messages.
+
 ## Interactive keys
 
 When the scenario panel has focus: `n` or Right for the next step, `b` or Left for the previous one, `p` to play or pause,
