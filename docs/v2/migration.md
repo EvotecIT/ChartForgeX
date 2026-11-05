@@ -38,6 +38,8 @@ The unified authoring API uses the coordinated 3.0.0 package family. Upgrade the
 
 Treemaps display their group and leaf captions by default. An explicit `WithDataLabels(false)` on the chart or `ShowDataLabels = false` on its series still hides them. `ConfigureTreemap(options => options.ShowValues = false)` keeps the names while hiding their numeric values.
 
+Word cloud terms are horizontal by default; the previous default tilted some terms by 12°. Call `WithWordCloudAngles(-12, 0, 0, 12, 0)` to keep the old placement, or pass your own pattern such as `0, 90`.
+
 ## Unified authoring contracts
 
 ### Series paint and text callbacks
