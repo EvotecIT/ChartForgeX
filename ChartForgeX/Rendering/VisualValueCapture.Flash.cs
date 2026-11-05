@@ -27,6 +27,8 @@ internal sealed partial class VisualValueCapture {
     };
     private static readonly HashSet<string> RadialFlashRoles = new(StringComparer.Ordinal) { "pie-slice", "donut-slice", "radial-slice-outline", "radial-fill-pattern" };
     private static readonly HashSet<string> HierarchyFlashRoles = new(StringComparer.Ordinal) { "treemap-group-mark", "treemap-tile-mark", "treemap-pattern", "sunburst-segment-mark", "sunburst-pattern" };
+    // A group whose total moved only through a descendant takes this share of the peak, so the changed leaf stands out.
+    private const double DerivedNodeFlashShare = .3;
 
     /// <summary>Repaints actual captured value ink; shared Line/Range ink is series-owned and point markers remain observation-owned.</summary>
     private static PreparedVisual Flash(PreparedVisual source, FlashSelection changed, ChartColor peak, double amount) {
@@ -46,22 +48,24 @@ internal sealed partial class VisualValueCapture {
                 if (group.Role == "point") current.Point = true;
                 if (group.Role == "radial-point") current.Other = group.Metadata.TryGetValue("data-cfx-point", out var point) && point == "-1";
             } else if (node is VisualSceneEndGroup) current = scopes.Pop();
+            else if (current.Series != null && node.Role != null && current.Node != null && changed.DerivedNodes.Contains((current.Series, current.Node)) && HierarchyFlashRoles.Contains(node.Role))
+                nodes[index] = Paint(node, amount * DerivedNodeFlashShare);
             else if (current.Series != null && node.Role != null &&
                 (current.Observation != null && changed.Readings.Contains((current.Series, current.Observation)) && (changed.CartesianPointInk && current.Point && (node is VisualSceneMark or VisualSceneGradient) && !node.Role.EndsWith(VisualMarkerScene.RingSuffix, StringComparison.Ordinal) || FlashRoles.Contains(node.Role) || CartesianPointFlashRoles.Contains(node.Role) || RadialFlashRoles.Contains(node.Role))
                 || changed.Series.Contains(current.Series) && !current.Point && (SharedLineFlashRoles.Contains(node.Role) || SharedAreaFlashRoles.Contains(node.Role) || changed.RangeEnvelopeInk && SharedRangeFlashRoles.Contains(node.Role))
                 || current.Node != null && changed.Nodes.Contains((current.Series, current.Node)) && HierarchyFlashRoles.Contains(node.Role)
-                || current.Other && changed.OtherSeries.Contains(current.Series) && RadialFlashRoles.Contains(node.Role))) {
-                nodes[index] = node is VisualSceneGradient gradient
-                    ? gradient.WithPaint(Clone(gradient.Shape), gradient.Stops.Select(stop => new VisualGradientStop(stop.Offset,
-                        Blend(stop.Color)!.Value, Binding(stop.Color, stop.Paint))).ToArray())
-                    : node is VisualSceneMark mark ? Clone(mark) : throw new NotSupportedException("Native flash ink requires a supported completed native mark or gradient.");
-            }
+                || current.Other && changed.OtherSeries.Contains(current.Series) && RadialFlashRoles.Contains(node.Role)))
+                nodes[index] = Paint(node, amount);
         }
         return source.WithNativeFrame(new VisualScene(scene.Size, nodes, scene.Diagnostics, scene.Regions, scene.DataProjection));
 
-        VisualSceneMark Clone(VisualSceneMark mark) {
-            var fill = Blend(mark.Fill); var stroke = Blend(mark.Stroke);
-            var paint = new VisualScenePaintBinding(Binding(mark.Fill, mark.Paint?.Fill), Binding(mark.Stroke, mark.Paint?.Stroke));
+        VisualSceneNode Paint(VisualSceneNode node, double share) => node is VisualSceneGradient gradient
+            ? gradient.WithPaint(Clone(gradient.Shape, share), gradient.Stops.Select(stop => new VisualGradientStop(stop.Offset,
+                Blend(stop.Color, share)!.Value, Binding(stop.Color, stop.Paint, share))).ToArray())
+            : node is VisualSceneMark mark ? Clone(mark, share) : throw new NotSupportedException("Native flash ink requires a supported completed native mark or gradient.");
+        VisualSceneMark Clone(VisualSceneMark mark, double share) {
+            var fill = Blend(mark.Fill, share); var stroke = Blend(mark.Stroke, share);
+            var paint = new VisualScenePaintBinding(Binding(mark.Fill, mark.Paint?.Fill, share), Binding(mark.Stroke, mark.Paint?.Stroke, share));
             return mark switch {
                 VisualSceneRectangle rect => new VisualSceneRectangle(rect.Bounds, rect.Radius, fill, stroke, rect.StrokeWidth, rect.Role, rect.Id, paint, rect.Opacity, rect.Corners),
                 VisualSceneEllipse ellipse => new VisualSceneEllipse(ellipse.Cx, ellipse.Cy, ellipse.Rx, ellipse.Ry, fill, stroke, ellipse.StrokeWidth, ellipse.Role, ellipse.Id, paint, ellipse.Opacity),
@@ -71,8 +75,8 @@ internal sealed partial class VisualValueCapture {
                 _ => throw new NotSupportedException("The native flash value painter requested an unsupported mark.")
             };
         }
-        ChartColor? Blend(ChartColor? color) => color.HasValue ? ChartColorMath.BlendPremultiplied(color.Value, peak, amount) : null;
-        SvgPaint? Binding(ChartColor? color, SvgPaint? paint) => color.HasValue
-            ? SvgPaint.Mix(Blend(color)!.Value, paint ?? SvgPaint.Literal(color.Value), SvgPaint.Literal(peak), amount) : null;
+        ChartColor? Blend(ChartColor? color, double share) => color.HasValue ? ChartColorMath.BlendPremultiplied(color.Value, peak, share) : null;
+        SvgPaint? Binding(ChartColor? color, SvgPaint? paint, double share) => color.HasValue
+            ? SvgPaint.Mix(Blend(color, share)!.Value, paint ?? SvgPaint.Literal(color.Value), SvgPaint.Literal(peak), share) : null;
     }
 }

@@ -12,6 +12,8 @@ internal sealed partial class VisualValueCapture {
         internal bool RangeEnvelopeInk { get; }
         internal readonly HashSet<(string Series, string Id)> Readings = new();
         internal readonly HashSet<(string Series, string Id)> Nodes = new();
+        // Groups whose totals moved only because a descendant changed; they flash quieter so the changed leaf reads as the change.
+        internal readonly HashSet<(string Series, string Id)> DerivedNodes = new();
         internal readonly HashSet<string> Series = new(StringComparer.Ordinal);
         internal readonly HashSet<string> OtherSeries = new(StringComparer.Ordinal);
         internal FlashSelection(IVisualValuePlan first, IVisualValuePlan last, PreparedVisual from, PreparedVisual to) {
@@ -26,7 +28,8 @@ internal sealed partial class VisualValueCapture {
                 if (!indices.TryGetValue(key, out var changed)) { changed = new HashSet<int>(); indices.Add(key, changed); } changed.Add(ordinal);
             }
             if (first.Kind == "hierarchy-value") {
-                var old = NodeValues(from); foreach (var pair in NodeValues(to)) if (!old.TryGetValue(pair.Key, out var value) || value != pair.Value) Nodes.Add(pair.Key);
+                var old = NodeValues(from);
+                foreach (var pair in NodeValues(to)) if ((!old.TryGetValue(pair.Key, out var value) || value != pair.Value) && !Nodes.Contains(pair.Key)) DerivedNodes.Add(pair.Key);
             }
             if (first.Kind is "radial-value" or "radial-raw-value") {
                 var old = OtherGroups(from);
