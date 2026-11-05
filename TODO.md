@@ -55,10 +55,10 @@ Token contract v2 has landed: ChartForgeX reads its font stack, typography roles
 
 ## 5. Website showcase
 
-- [ ] **Interactive gallery.** Gallery cards open a live interactive chart, not a picture. Done when tooltips, zoom and legend work from every card.
-- [ ] **Per-family pages.** Each family gets a page with variants, options and code, including Quadrant, Org chart, Cone funnel and Linear gauge, and the navigator, context menu and annotation editor appear in at least one example.
-- [ ] **Chart-first snippets.** Snippets lead with the chart code; setup plumbing moves out of the way.
-- [ ] **Public wording.** Published docs (README development section, visual effects, API conventions, migration, Mermaid matrix) describe what works in plain language, without internal qualification jargon, and the site stops linking to this file as product documentation.
+Gallery cards open their live page (chart grids as an interactive dashboard, topology as a pan-and-zoom page), every chart family has its own page with variants, options and chart-first code, and the primary Line page carries the range navigator and chart menu.
+
+- [ ] **Live Flow and Sequence cards.** Flow and Sequence diagrams have no browser adapter yet, so their cards still open the static SVG. Done when both open an interactive page from the gallery.
+- [ ] **Annotation editor on the site.** The editor needs a connected native host, so a saved gallery page cannot show it. Done when one site example demonstrates it, for example through the playground engine.
 
 ## Mermaid
 
@@ -71,7 +71,7 @@ Grammar coverage is broad; the remaining work is fidelity and honest results. Th
 
 ## Visual effects
 
-The [visual effects reference](docs/visual-effects.md) describes the implemented finite effects and the proposed wider design.
+The [visual effects reference](docs/visual-effects.md) describes the effects available today and what comes next.
 
 - [ ] Measure blur cost at 2560×1440 on net472 and net10, and SVG parity for blur, shadow and blend in browsers, Office, Safari and resvg; settle the design's open decisions and per-render budgets.
 - [ ] Ship reusable effect presets through `VisualThemeEffects`, then the remaining backdrop effects (frosted glass, tapered strokes, grain, vignette and the rest of the proposal).
