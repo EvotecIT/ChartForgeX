@@ -9,6 +9,10 @@ An absolute task-owned directory for results and rendered evidence.
 Uses a previously built Release test assembly.
 .PARAMETER Filter
 Selects a focused set of browser contracts. The default runs the complete compatibility suite.
+.PARAMETER ShardIndex
+One-based shard to run when the selected contracts are split across parallel jobs.
+.PARAMETER ShardCount
+Number of parallel shards. Whole test classes are balanced across shards by their number of contracts.
 #>
 [CmdletBinding()]
 param(
@@ -22,7 +26,13 @@ param(
     [switch] $SkipBuild,
 
     [ValidateNotNullOrEmpty()]
-    [string] $Filter = 'Category=Browser&BrowserSuite=Compatibility'
+    [string] $Filter = 'Category=Browser&BrowserSuite=Compatibility',
+
+    [ValidateRange(1, 16)]
+    [int] $ShardIndex = 1,
+
+    [ValidateRange(1, 16)]
+    [int] $ShardCount = 1
 )
 
 # Product-specific compatibility contracts; HtmlTinkerX owns browser installation and lifetime.
@@ -43,6 +53,28 @@ if (-not $SkipBuild) {
     }
 }
 
+if ($ShardIndex -gt $ShardCount) { throw 'ShardIndex must not exceed ShardCount.' }
+if ($ShardCount -gt 1) {
+    # Whole classes keep their shared fixtures together; the largest classes are placed first on the lightest shard.
+    $listed = dotnet test $project -c Release --no-build --no-restore --list-tests --filter $Filter
+    if ($LASTEXITCODE) { throw 'Compatibility contract discovery failed.' }
+    $classes = @($listed | Where-Object { $_ -match '^\s{4}(\S+)\.[^.\s(]+(\(.*)?$' } | ForEach-Object { $Matches[1] } |
+        Group-Object | Sort-Object @{ Expression = 'Count'; Descending = $true }, Name)
+    $loads = [int[]]::new($ShardCount); $assigned = @{}
+    foreach ($class in $classes) {
+        $lightest = 0; for ($index = 1; $index -lt $ShardCount; $index++) { if ($loads[$index] -lt $loads[$lightest]) { $lightest = $index } }
+        $loads[$lightest] += $class.Count; $assigned[$class.Name] = $lightest + 1
+    }
+    $mine = @($assigned.Keys | Where-Object { $assigned[$_] -eq $ShardIndex } | Sort-Object)
+    if ($mine.Count -eq 0) {
+        New-Item -ItemType Directory -Path $results, $captures -Force | Out-Null
+        [IO.File]::WriteAllText((Join-Path $results 'shard-empty.txt'), "Shard $ShardIndex of $ShardCount had no contracts for: $Filter")
+        Write-Host "Shard $ShardIndex of $ShardCount has no $Browser compatibility contracts for this selection."
+        return
+    }
+    $Filter = '(' + $Filter + ')&(' + (($mine | ForEach-Object { 'FullyQualifiedName~' + $_ + '.' }) -join '|') + ')'
+    Write-Host "Shard $ShardIndex of $ShardCount runs $($mine.Count) classes with $($loads[$ShardIndex - 1]) contracts."
+}
 # Most fixtures install their own HTML; embedding contracts navigate the maintained example pages.
 $origin = Join-Path $output 'origin'
 New-Item -ItemType Directory -Path $origin -Force | Out-Null

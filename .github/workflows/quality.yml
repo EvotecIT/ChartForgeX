@@ -352,21 +352,24 @@ jobs:
           retention-days: 7
 
   browser-compatibility:
-    name: Browser compatibility (macOS ${{ matrix.name }})
+    name: Browser compatibility (macOS ${{ matrix.name }} ${{ matrix.shard }}/3)
     needs: changes
     if: needs.changes.outputs.build == 'true' && (github.event_name != 'pull_request' || needs.changes.outputs.standalone == 'true')
     runs-on: macos-latest
-    # Includes setup, all 950 serial Compatibility rows and artifact retention.
-    # Firefox was still producing captures when the previous 90-minute envelope expired.
-    timeout-minutes: 120
+    # The serial compatibility rows run in three parallel shards of whole test classes, so each shard
+    # (setup, about a third of the rows, evidence) stays well inside the envelope; a single serial job
+    # had grown past two hours on Firefox.
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
+        browser: [firefox, webkit]
+        shard: [1, 2, 3]
         include:
-          - name: Firefox
-            browser: firefox
-          - name: WebKit
-            browser: webkit
+          - browser: firefox
+            name: Firefox
+          - browser: webkit
+            name: WebKit
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: "1"
       DOTNET_NOLOGO: "1"
@@ -389,6 +392,8 @@ jobs:
           $options = @{
               Browser = '${{ matrix.browser }}'
               OutputRoot = Join-Path $env:RUNNER_TEMP 'chartforgex-${{ matrix.browser }}'
+              ShardIndex = ${{ matrix.shard }}
+              ShardCount = 3
           }
           if ($env:FOCUSED_STANDALONE -eq 'true') {
               if (-not $env:CHANGED_BROWSER_FILTER) { throw 'Changed-browser coverage filter is missing.' }
@@ -399,7 +404,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: chartforgex-browser-compatibility-${{ matrix.browser }}
+          name: chartforgex-browser-compatibility-${{ matrix.browser }}-${{ matrix.shard }}
           path: |
             ${{ runner.temp }}/chartforgex-${{ matrix.browser }}/results
             ${{ runner.temp }}/chartforgex-${{ matrix.browser }}/captures
