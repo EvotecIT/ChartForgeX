@@ -1081,7 +1081,7 @@ interaction.AddScenario("recovery", "Recovery route", scenario => scenario
 
 Graphite timeline panels use the chart surface and text colours. Route accents identify controls and steps, while a progress strip stays below the label. Forced-colour progress uses the system surface and text colours.
 
-A single interactive chart uses `HtmlChartResponsiveLayout.Readable` by default. In narrow hosts it keeps the fixed-design SVG legible inside a contained horizontal viewport. Set `ResponsiveLayout = HtmlChartResponsiveLayout.Fit` when seeing the entire chart at once is more important than minimum label size. Interactive dashboards default to `Fit`, so every chart fits its column; set the dashboard's `ResponsiveLayout` to `Readable` to keep full-size drawings that scroll inside their columns.
+A single interactive chart uses `HtmlChartResponsiveLayout.Readable` by default. In narrow hosts it keeps the fixed-design SVG legible inside a contained horizontal viewport. Set `ResponsiveLayout = HtmlChartResponsiveLayout.Fit` when seeing the entire chart at once is more important than minimum label size. Interactive dashboards default to `Fit`, so every chart fits its column. A fitted column never narrows below five sixths of the widest chart's design width, which keeps 12px chart text at the 10px floor; a narrower page uses fewer columns instead. Set the dashboard's `ResponsiveLayout` to `Readable` to keep full-size drawings that scroll inside their columns.
 
 ## Scenario Events
 

@@ -28,8 +28,11 @@ body {
 .cfx-dashboard {
   width: min(100%, 1440px);
   display: grid;
-  grid-template-columns: repeat(var(--cfx-dashboard-columns, 2), minmax(0, 1fr));
-  gap: 18px;
+  --cfx-dashboard-gap: 18px;
+  /* At most the configured column count; a column never narrows below the fitted chart's readable minimum, so fewer columns are used instead. */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, max(var(--cfx-dashboard-column-min, 0px),
+    calc((100% - (var(--cfx-dashboard-columns, 2) - 1) * var(--cfx-dashboard-gap)) / var(--cfx-dashboard-columns, 2)))), 1fr));
+  gap: var(--cfx-dashboard-gap);
 }
 
 .cfx-interactive-chart {

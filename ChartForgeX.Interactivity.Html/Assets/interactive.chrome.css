@@ -92,7 +92,7 @@
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-page:focus-visible,
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-clear:hover,
 .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-clear:focus-visible { border-color: var(--cfx-host-accent, var(--cfx-default-host-accent)); }
-.cfx-dashboard { gap: 16px; }
+.cfx-dashboard { --cfx-dashboard-gap: 16px; }
 /* Crosshair class names describe the painted line: --x is horizontal (the y value). */
 .cfx-crosshair { --cfx-crosshair-default-stroke: var(--cfx-crosshair-axis); }
 .cfx-crosshair__line--x { height: 0; border-top: 1px dashed var(--cfx-crosshair-axis); }
