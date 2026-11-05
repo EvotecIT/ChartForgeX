@@ -169,7 +169,9 @@ public sealed class InteractiveHierarchyViewBrowserTests {
             }
             """);
         Assert.Equal("services", await page.EvaluateAsync<string>("p=>document.elementFromPoint(p[0],p[1]).closest('[data-cfx-node]')?.dataset.cfxNode", positions));
-        await ClickNativePointAsync(services, positions);
+        var servicesMark = services.Locator("[data-cfx-role=sunburst-segment-mark]").First;
+        var nativeHit = await NativeInteriorPointAsync(page, "[data-cfx-node=services]", "[data-cfx-role=sunburst-segment-mark]");
+        await ClickNativePointAsync(servicesMark, nativeHit);
         await page.WaitForFunctionAsync("()=>!!document.querySelector('svg[data-cfx-standalone-hierarchy=services]')");
         Assert.Equal(0, await page.EvaluateAsync<int>("()=>hierarchySelections.length"));
         await page.Locator(".cfx-hierarchy-breadcrumb").GetByRole(AriaRole.Button, new() { Name = "All", Exact = true }).ClickAsync();
