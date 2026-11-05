@@ -53,15 +53,14 @@ public sealed partial class SvgVisualBlockRenderer {
             if (!layout.PlacementsById.TryGetValue(commit.ParentIds[index], out var parent)) continue;
             var branch = commit.Type == GitGraphCommitType.Merge && index > 0 ? parent.Commit.BranchName : commit.BranchName;
             var color = VisualBlockRendering.PaletteAt(theme, BranchIndex(layout, branch));
-            writer.StartElement("line")
+            writer.StartElement("path")
                 .Attribute("data-cfx-role", "git-commit-edge")
                 .Attribute("data-parent-id", parent.Commit.Id)
                 .Attribute("data-commit-id", commit.Id)
-                .Attribute("x1", F(parent.X))
-                .Attribute("y1", F(parent.Y))
-                .Attribute("x2", F(placement.X))
-                .Attribute("y2", F(placement.Y))
+                .Attribute("d", VisualBlockRendering.GitConnectorPath(layout, parent, placement, index > 0))
+                .Attribute("fill", "none")
                 .Attribute("stroke", color.ToCss())
+                .Attribute("stroke-dasharray", index > 0 && commit.Type == GitGraphCommitType.CherryPick ? "4 3" : null)
                 .Attribute("stroke-width", index == 0 ? 1.8 : 1.4)
                 .Attribute("stroke-linecap", "round")
                 .EndEmptyElement()
@@ -101,6 +100,7 @@ public sealed partial class SvgVisualBlockRenderer {
             var width = layout.Vertical ? System.Math.Max(1, System.Math.Min(64 * layout.FontScale, layout.LaneSpacing / 2 - radius - 5 * layout.FontScale)) : 76;
             var font = VisualBlockRendering.GitFontSize(layout, theme, label, 10.5, width);
             if (graph.RotateCommitLabels) writer.StartElement("g").Attribute("transform", "rotate(-45 " + F(placement.X) + " " + F(placement.Y) + ")").EndStartElement();
+            else WriteGitCommitLabelBackplate(writer, graph, layout, placement, label, font, width, radius);
             if (layout.Vertical) WriteText(writer, label, placement.X + radius + 5 * layout.FontScale, placement.Y + font * .35, width, TextAlignment.Left, theme.Text, theme.FontFamily, font, "650", "git-commit-label");
             else WriteText(writer, label, placement.X - 38, placement.Y + radius + font * 14 / 10.5, 76, TextAlignment.Center, theme.Text, theme.FontFamily, font, "650");
             if (graph.RotateCommitLabels) writer.EndElement().Line();
@@ -114,6 +114,22 @@ public sealed partial class SvgVisualBlockRenderer {
             }
             WriteGitGraphTag(writer, tag, commit.Tag, theme);
         }
+    }
+
+    // A fork connector leaves its parent across the commit caption. The caption keeps a canvas-toned plate so the
+    // connector passes behind it instead of striking through the text.
+    private static void WriteGitCommitLabelBackplate(SvgMarkupWriter writer, GitGraphBlock graph, VisualBlockRendering.GitGraphLayout layout, VisualBlockRendering.GitGraphCommitPlacement placement, string label, double font, double width, double radius) {
+        var background = VisualBlockRendering.SurfaceBackground(graph.Options);
+        if (background.A == 0) return;
+        var theme = graph.Options.ResolvedTheme;
+        var fitted = VisualBlockRendering.FitMeasuredText(label, font, System.Math.Max(1, width), theme.FontFamily, 650);
+        var textWidth = System.Math.Min(width, VisualBlockRendering.MeasureTextWidth(fitted, font, theme.FontFamily, 650));
+        var pad = 2 * System.Math.Max(.6, layout.FontScale);
+        var baseline = layout.Vertical ? placement.Y + font * .35 : placement.Y + radius + font * 14 / 10.5;
+        var left = layout.Vertical ? placement.X + radius + 5 * layout.FontScale : placement.X - textWidth / 2;
+        writer.StartElement("rect").Attribute("data-cfx-role", "git-commit-label-surface")
+            .Attribute("x", F(left - pad)).Attribute("y", F(baseline - font * .95)).Attribute("width", F(textWidth + pad * 2)).Attribute("height", F(font * 1.25))
+            .Attribute("rx", F(pad)).Attribute("fill", background.ToCss()).EndEmptyElement().Line();
     }
 
     private static void WriteGitGraphTag(SvgMarkupWriter writer, VisualBlockRendering.GitTagMetrics tagLayout, string tag, ChartForgeX.Themes.ResolvedVisualTheme theme) {
