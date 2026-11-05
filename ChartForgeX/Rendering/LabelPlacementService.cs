@@ -121,6 +121,7 @@ public sealed partial class LabelPlacementService {
         var occupied = new LabelSpatialIndex(gap);
         if (obstacles != null) foreach (var obstacle in obstacles) { ValidateBounds(obstacle.Bounds); occupied.Add(obstacle.Bounds, obstacle.Id, obstacle.Shape); }
         var placed = new PlacedLabel[requests.Count];
+        string[]? displayedTexts = null;
         foreach (var index in order) {
             var request = requests[index];
             var text = TextCaseTransformer.Apply(request.Text, request.Style.TextCase, CultureInfo.InvariantCulture);
@@ -139,7 +140,20 @@ public sealed partial class LabelPlacementService {
             if (result == null && request.Fallback == LabelFallbackRule.EllipsisThenDrop) {
                 // Text elements retain surrogate pairs and combining marks during shortening.
                 var elements = StringInfo.ParseCombiningCharacters(text);
+                // Similar names share their leading words; shorten that shared head and keep the words that differ.
+                var tailStart = ChartTextFitting.DistinguishingTailStart(text, displayedTexts ??= DisplayedTexts(requests));
+                if (tailStart > 0) {
+                    var tail = text.Substring(tailStart);
+                    for (var count = elements.Length - 1; count >= MinimumSharedHeadElements && result == null; count--) {
+                        if (elements[count] >= tailStart - 1) continue;
+                        var head = text.Substring(0, elements[count]).TrimEnd();
+                        if (head.Length == 0 || head.Length + tail.Length + 2 >= text.Length) continue;
+                        result = TryPlace(request, head + "… " + tail, bounds, occupied, measureText, displayedStyle, avoidLeaderLabels, ellipsized: true);
+                    }
+                }
+                // An end ellipsis inside the shared head would name a sibling equally well; such a caption is omitted.
                 for (var count = elements.Length - 1; count >= ChartTextFitting.MinimumEllipsizedTextElements && result == null; count--) {
+                    if (tailStart > 0 && elements[count] <= tailStart) break;
                     var prefix = text.Substring(0, elements[count]);
                     if (!ChartTextFitting.KeepsShortenedMinimum(prefix)) continue;
                     var shorter = prefix.TrimEnd() + "…";
@@ -154,6 +168,15 @@ public sealed partial class LabelPlacementService {
             }
         }
         return Array.AsReadOnly(placed);
+    }
+
+    // A shortened shared head keeps a recognisable word stem, such as "Paym… west".
+    private const int MinimumSharedHeadElements = 4;
+
+    private static string[] DisplayedTexts(IReadOnlyList<LabelPlacementRequest> requests) {
+        var texts = new string[requests.Count];
+        for (var i = 0; i < requests.Count; i++) texts[i] = TextCaseTransformer.Apply(requests[i].Text, requests[i].Style.TextCase, CultureInfo.InvariantCulture);
+        return texts;
     }
 
     /// <summary>Steps complete text down in half-pixel sizes to the request's readable floor, keeping its candidates and checks.</summary>

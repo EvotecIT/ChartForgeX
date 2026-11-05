@@ -28,7 +28,7 @@ internal static partial class VisualSpecialtyCompiler {
     private static void Funnel(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
         var series = chart.Series[0]; var colors = context.Theme.Resolve(context.ThemeMode);
         var percentages = FunnelPercentageFormat(chart);
-        var show = series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false);
+        var show = StageCaptionsShown(chart, series);
         var form = chart.Options.Funnel.Form;
         var separate = show && chart.Options.Funnel.LabelContent == ChartStageLabelContent.Separate
             ? new StageCaptions(chart, context, builder, plot, true) : null;

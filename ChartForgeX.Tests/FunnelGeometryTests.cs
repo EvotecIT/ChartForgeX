@@ -44,6 +44,21 @@ public sealed class FunnelGeometryTests {
         }
         Assert.NotEmpty(prepared.ToPng());
     }
+    [Theory]
+    [InlineData(ChartSeriesKind.Funnel, "funnel-label")]
+    [InlineData(ChartSeriesKind.Pyramid, "pyramid-label")]
+    public void StageCaptionsAreShownByDefaultAndRemainAnOptOut(ChartSeriesKind kind, string role) {
+        // A funnel or pyramid has no legend or axis, so its captions are what name the stages.
+        Chart Create() => Chart.Create().WithSize(640, 400).WithXLabels("Visited", "Signed up", "Activated")
+            .AddSeries(new ChartSeries(new ChartSeriesId("stages"), "Stages", kind, new[] { new ChartPoint(1, 900), new ChartPoint(2, 400), new ChartPoint(3, 120) }));
+        int Captions(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes
+            .OfType<VisualSceneText>().Count(node => node.Role == role);
+        Assert.Equal(3, Captions(Create()));
+        Assert.Equal(0, Captions(Create().WithDataLabels(false)));
+        var series = Create(); series.Series[0].WithDataLabels(false);
+        Assert.Equal(0, Captions(series));
+    }
+
     [Fact]
     public void OptionsDefaultToVerticalStageBarsAndRejectUnknownSelectors() {
         var chart = Chart.Create();
@@ -320,7 +335,8 @@ public sealed class FunnelGeometryTests {
     }
 
     private static Chart Funnel(double[] values, ChartFunnelForm form, ChartOrientation orientation) {
-        var chart = Chart.Create().WithXLabels(values.Select((_, index) => "Stage " + index).ToArray())
+        // Geometry is measured without the default stage captions, which take plot space.
+        var chart = Chart.Create().WithDataLabels(false).WithXLabels(values.Select((_, index) => "Stage " + index).ToArray())
             .ConfigureFunnel(options => { options.Form = form; options.Orientation = orientation; })
             .AddFunnel("Stages", values.Select((value, index) => new ChartPoint(index + 1, value)), ChartColor.FromHex("#2468AC"));
         return chart;

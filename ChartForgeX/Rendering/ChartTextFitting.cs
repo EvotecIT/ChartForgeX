@@ -50,6 +50,25 @@ internal static class ChartTextFitting {
         return minimumElements <= 0 || KeepsShortenedMinimum(prefix, minimumElements) ? prefix + suffix : string.Empty;
     }
 
+    /// <summary>
+    /// Returns where the distinguishing words of <paramref name="value"/> start when a sibling shares at least one of
+    /// its leading words, or -1. An end ellipsis would keep only that shared head, so callers keep this tail instead.
+    /// </summary>
+    internal static int DistinguishingTailStart(string value, System.Collections.Generic.IEnumerable<string> siblings) {
+        var shared = 0;
+        foreach (var sibling in siblings) {
+            if (ReferenceEquals(sibling, value) || string.Equals(sibling, value, StringComparison.Ordinal)) continue;
+            var length = 0;
+            while (length < value.Length && length < sibling.Length && value[length] == sibling[length]) length++;
+            shared = Math.Max(shared, length);
+        }
+        if (shared == 0 || shared >= value.Length) return -1;
+        var wordStart = value.LastIndexOf(' ', Math.Max(0, shared - 1));
+        // The shared head must include a whole word; otherwise ordinary end fitting already differs.
+        if (wordStart <= 0) return -1;
+        return wordStart + 1 < value.Length ? wordStart + 1 : -1;
+    }
+
     /// <summary>Returns a whole-text-element prefix using bounded exponential then binary measurement.</summary>
     internal static int PrefixLength(string value, double maxWidth, Func<string, double> measure) {
         return PrefixLength(value, text => measure(text) <= maxWidth);

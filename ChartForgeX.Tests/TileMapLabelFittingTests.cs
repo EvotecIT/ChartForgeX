@@ -24,7 +24,7 @@ public sealed class TileMapLabelFittingTests : IDisposable {
     [InlineData(800, 440, VisualThemeMode.Dark)]
     [InlineData(360, 360, VisualThemeMode.Light)]
     [InlineData(360, 360, VisualThemeMode.Dark)]
-    public void CatalogCodesFitTheirHexagonsAtReadableSizesAndNeverBecomePrefixes(int width, int height, VisualThemeMode mode) {
+    public void CatalogCodesAllFitTheirHexagonsAtReadableSizesAndNeverBecomePrefixes(int width, int height, VisualThemeMode mode) {
         var variant = width == 360 ? "compact-color-dimension" : "color-dimension";
         var chart = V2GalleryModels.Create(ChartSeriesKind.TileMap, variant, mode);
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, height)), VisualTheme.Graphite(), mode,
@@ -33,9 +33,8 @@ public sealed class TileMapLabelFittingTests : IDisposable {
         var sources = scene.Nodes.OfType<VisualSceneGroup>().Where(node => node.Role == "tile-map-region-source").ToArray();
         var labels = scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "tile-map-label").ToDictionary(node => node.Id!);
         Assert.Equal(51, sources.Length);
-        Assert.NotEmpty(labels);
-        var minimumStyle = new TextStyle { Font = context.Font, FontSize = 10 };
-        var measure = new VisualSceneBuilder(new VisualSize(width, height), context.Font);
+        // Height-bound compact tiles widen into spare room rather than omitting codes below the readable floor.
+        Assert.Equal(51, labels.Count);
         foreach (var source in sources) {
             var code = source.Metadata["data-cfx-region"];
             var tile = scene.Regions.Single(region => region.Id == source.Id && region.Role == "tile-map-region").Bounds;
@@ -43,10 +42,7 @@ public sealed class TileMapLabelFittingTests : IDisposable {
             Assert.Equal(code, scene.Regions.Single(region => region.Id == labelId).Label);
             var description = scene.Nodes.OfType<VisualSceneGroup>().Single(node => node.Id == labelId + "-source");
             Assert.Equal(code, description.Metadata["aria-label"]);
-            if (!labels.TryGetValue(labelId, out var label)) {
-                Assert.False(FitsHex(tile, measure.MeasureText(code, minimumStyle), chart.Options.MapRegionStrokeWidth));
-                continue;
-            }
+            var label = labels[labelId];
             Assert.Equal(code, string.Join("\n", label.Text.Lines.Select(line => line.Text)));
             Assert.InRange(label.Text.Size, 10, context.Theme.Typography.AxisSize);
             Assert.True(FitsHex(tile, label.Text.Metrics, chart.Options.MapRegionStrokeWidth), code + " must clear every slanted edge and its stroke.");

@@ -59,6 +59,17 @@
     }
     return compactFit || single;
   };
+  const standaloneTimeDayStep = days => days <= 5 || days % 7 === 0;
+  // Mirrors ChartTimeScale.WithFinalDay: a daily or weekly window adds its final day when that caption fits after the regular ticks.
+  const standaloneTimeFinalDay = (minimum, maximum, fits, ticks, limit = 8) => {
+    if (!ticks || ticks.length < 2 || ticks.length >= limit) return ticks;
+    const midnight = value => (Math.round(standaloneTimeMs(value) / 1e3) * 1e3) % 864e5 === 0;
+    if (ticks.some((value, index) => !midnight(value) || (index && value - ticks[index - 1] > 14.5))) return ticks;
+    const final = standaloneTimeOa(Math.floor(standaloneTimeMs(maximum) / 864e5) * 864e5);
+    if (final < minimum || final > maximum || final <= ticks[ticks.length - 1]) return ticks;
+    const extended = standaloneTimeKeep(ticks, [...ticks, final]);
+    return fits(extended) ? extended : ticks;
+  };
   const standaloneTimeFitting = (minimum, maximum, fits, observations, limit = 8) => {
     if (minimum < 0 || !(maximum <= 2958465) || maximum - minimum < 1 / 86400) return null;
     const ideal = standaloneTimeChoose((maximum - minimum) / (limit - 1));
@@ -87,6 +98,8 @@
         }
         if (!compactFit && counted && ticks.length > 1 && standaloneTimeRank(interval) >= 3 && fits(standaloneTimeKeep(compact, [...ticks]))) compactFit = standaloneTimeKeep(compact, [...ticks]);
         if (!cadenceFit && ticks.length > 2) for (let stride = 2; stride < ticks.length && !cadenceFit; stride++) {
+          // Day strides stay calendar steps: up to five days or whole weeks, never 6, 8 or 10 days.
+          if (interval[0] === 'd' && !standaloneTimeDayStep(interval[1] * stride)) continue;
           const retained = ticks.filter((_, index) => index % stride === 0);
           if (retained.length > 1 && retained.length <= limit && fits(retained)) cadenceFit = retained;
         }
@@ -110,11 +123,12 @@
         const extent = measure(text), previous = measure(texts[index - 1]), mean = (extent + previous) / 2;
         let ordinary = axis.labelGap, gap = Math.min(mean, Math.min(80, span / 5) - mean);
         if (Math.max(extent, previous) >= fontSize * 4) gap = Math.max(span < 400 && Math.min(extent, previous) >= fontSize * 4 ? Math.min(24, fontSize) : 24, gap);
-        else if (span < 400) ordinary /= 2;
+        else if (span < 400) ordinary = Math.max(ordinary, fontSize);
         return Math.abs(position(ticks[index]) - position(ticks[index - 1])) + 1e-4 >= mean + Math.max(ordinary, gap);
       });
     };
-    const ticks = standaloneTimeFitting(axis.minimum, axis.maximum, fits, observations);
+    const fitted = standaloneTimeFitting(axis.minimum, axis.maximum, fits, observations);
+    const ticks = observations ? fitted : standaloneTimeFinalDay(axis.minimum, axis.maximum, fits, fitted);
     return ticks && ticks.map(value => ({ value, text: standaloneTimeCaption(value, ticks) }));
   };
   // Native time bars use their source cadence when every series is a bar on one regular step.

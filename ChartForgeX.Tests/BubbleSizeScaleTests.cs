@@ -12,6 +12,23 @@ namespace ChartForgeX.Tests;
 /// </summary>
 public sealed class BubbleSizeScaleTests {
     [Fact]
+    public void OverlappingBubblesArePartedBySurfaceRingsWhileSeparateBubblesAreNot() {
+        var chart = Bare().AddBubble("Samples", new[] { new ChartBubble(1, 30, 40), new ChartBubble(1.05, 31, 12), new ChartBubble(9, 60, 20) });
+        var prepared = Prepare(chart);
+        var rings = prepared.Scene.Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role == "bubble-separator").ToArray();
+        var marks = Marks(prepared);
+        // Only the two overlapping bubbles gain a ring, centred on their own disc and in the plot surface colour.
+        Assert.Equal(2, rings.Length);
+        Assert.All(rings, ring => Assert.Contains(marks.Take(2), mark => mark.Cx == ring.Cx && mark.Cy == ring.Cy && mark.Rx == ring.Rx));
+        Assert.All(rings, ring => Assert.True(ring.StrokeWidth > marks[0].StrokeWidth && ring.Fill == null));
+        Assert.Equal(2, System.Xml.Linq.XDocument.Parse(prepared.ToSvg()).Descendants().Count(node => (string?)node.Attribute("data-cfx-role") == "bubble-separator"));
+        var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
+        var without = VisualSceneRasterRenderer.Render(new VisualScene(prepared.Scene.Size, prepared.Scene.Nodes.Where(node => node.Role != "bubble-separator").ToArray(),
+            prepared.Scene.Diagnostics, prepared.Scene.Regions), supersampling: 1);
+        Assert.NotEqual(without.Pixels, image.Pixels);
+    }
+
+    [Fact]
     public void EqualRawSizesUseTheSameRadiusAcrossDifferentSeriesDomains() {
         var chart = Bare().AddBubble("First", new[] { new ChartBubble(1, 20, 1), new ChartBubble(3, 30, 100) })
             .AddBubble("Second", new[] { new ChartBubble(5, 40, 1), new ChartBubble(7, 50, 100), new ChartBubble(9, 60, 400) });

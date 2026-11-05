@@ -40,6 +40,8 @@ Treemaps display their group and leaf captions by default. An explicit `WithData
 
 Word cloud terms are horizontal by default; the previous default tilted some terms by 12°. Call `WithWordCloudAngles(-12, 0, 0, 12, 0)` to keep the old placement, or pass your own pattern such as `0, 90`.
 
+Funnel and Pyramid charts now show their stage captions by default, because neither has a legend or axis to name its stages. This is a visible change: a chart that relied on the old opt-in default gains captions and gives its stages correspondingly less room. Call `WithDataLabels(false)` on the chart, or `WithDataLabels(false)` on the series, to keep the previous caption-free output.
+
 ## Unified authoring contracts
 
 ### Series paint and text callbacks

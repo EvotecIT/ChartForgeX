@@ -6,7 +6,7 @@ This is the active product roadmap, refreshed on 1 November 2026. The [README](R
 
 The chart catalogue is at parity with AG Charts or ahead of it: 54 native series kinds, plus Gantt, Timeline, Lollipop, Dumbbell, Slope, WordCloud, TileMap, CalendarHeatmap and topology, which AG Charts doesn't have. Every Mermaid 11/12 family parses and renders natively. Rendering is dependency-free and produces the same scene in SVG and native PNG.
 
-What holds us back is depth, not breadth: charts are less configurable than AG Charts, standalone HTML interactivity is thin, diagrams still look like engineering output, the three Evotec libraries have drifted apart visually, and the website undersells all of it. The six workstreams below close those gaps. Each item states the outcome and when it counts as done.
+What holds us back is depth, not breadth: charts are less configurable than AG Charts, standalone HTML interactivity is thin, diagrams still look like engineering output, the three Evotec libraries have drifted apart visually, and the website undersells all of it. The five workstreams below close those gaps. Each item states the outcome and when it counts as done.
 
 ## Delivery order
 
@@ -63,15 +63,6 @@ Token contract v2 has landed: ChartForgeX reads its font stack, typography roles
 - [ ] **Per-family pages.** Each family gets a page with variants, options and code, including Quadrant, Org chart, Cone funnel and Linear gauge, and the navigator, context menu and annotation editor appear in at least one example.
 - [ ] **Chart-first snippets.** Snippets lead with the chart code; setup plumbing moves out of the way.
 - [ ] **Public wording.** Published docs (README development section, visual effects, API conventions, migration, Mermaid matrix) describe what works in plain language, without internal qualification jargon, and the site stops linking to this file as product documentation.
-
-## 6. Chart readability
-
-- [ ] Deterministic output under parallel load. Four contracts differ only during full parallel test runs and pass alone: `MermaidClassErCaptionTests` and `TopologyNestedHeaderSurface` (captured glyph IDs renumbered), `ChartFillTests.NativeSourceKeyIncludesUnpaintedSeriesAndHiddenDatumFillFacts` (image-pixel source key) and `RasterAnimationEncoderTests.PreparedGifClockMatchesRawAndContainerSpecificFrameEncoderRoutes` (one GIF byte). Glyph de-duplication keys on the `TrueTypeFont` instance, so a second instance of the same face, for example after the 128-file/64 MB font cache evicts it mid-render, changes the output; the raster cases likely share a cache or static state the same way. Done when shared caches key on content identity and a concurrent-render test pins byte-identical SVG, PNG and GIF output.
-- [ ] Decide whether Funnel and Pyramid show stage captions by default. Data labels are opt-in for every family, but a funnel has no legend or axis, so a default funnel identifies none of its stages.
-- [ ] Dense point captions keep the distinguishing part of similar names instead of ending in an ellipsis that removes it; closely spaced Bubble marks stay distinguishable.
-- [ ] Charts narrower than 400 pixels, including compact Gantt, keep complete captions anchored to their ticks.
-- [ ] Narrow date windows stop picking 6-, 8- or 10-day strides and keep the final day's caption when it fits, preserving authored intervals.
-- [ ] TileMap shows codes at the 10-pixel floor in compact and dense layouts instead of omitting all 51 (compact) or 48 (wide).
 
 ## Mermaid
 
