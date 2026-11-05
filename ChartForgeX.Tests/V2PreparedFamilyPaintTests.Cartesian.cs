@@ -51,6 +51,8 @@ public sealed partial class V2PreparedFamilyPaintTests {
     [Fact]
     public void BubblePointAlphaAndNativePixelsRemainIndependentOfSvgPolicy() {
         var chart = V2GalleryModels.Create(ChartSeriesKind.Bubble); chart.Series[0].StateRole = ChartSeriesState.Danger;
+        // One stateful series: its first point carries the authored alpha and every other point keeps the status paint.
+        foreach (var other in chart.Series.Skip(1).ToArray()) chart.RemoveSeries(other);
         chart.Series[0].WithPointColor(0, Shared.WithAlpha(128));
         var prepared = chart.Prepare(Context()); var variables = Variables();
         var marks = prepared.Scene.Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role == "bubble").ToArray();

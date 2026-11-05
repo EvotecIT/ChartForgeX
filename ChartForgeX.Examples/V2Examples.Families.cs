@@ -88,6 +88,7 @@ public static partial class V2Examples {
                         : kind == ChartSeriesKind.Heatmap ? "Signed measurements share a fixed color domain"
                         : kind == ChartSeriesKind.HexbinHeatmap ? "Named numeric intervals keep their exact boundaries" : "Every observed value shares one scale; missing days stay distinct"
                     : variant is "options" or "compact-options" && ExampleRecipes.HasGeometryOptions(kind) ? GeometrySubtitle(kind)
+                    : variant is "wide" or "compact" && DataSubtitle(kind) is { } data ? data
                     : variant == "sparse" ? "Missing observations remain visible as gaps" : string.Empty;
                 // Product scenarios describe their own data; the title already names what the chart shows.
                 if (Scenario(kind, variant) is { } scenario) { title = scenario.Title; subtitle = scenario.Subtitle; }
@@ -140,6 +141,16 @@ public static partial class V2Examples {
         _ => null
     };
 
+    // The default examples describe their data: what was measured, when and how to read the encoding.
+    private static string? DataSubtitle(ChartSeriesKind kind) => kind switch {
+        ChartSeriesKind.Bubble => "Bubble area shows requests handled in one week, by service tier",
+        ChartSeriesKind.ErrorBar => "Median hours with the 10th–90th percentile range; same day is domestic only",
+        ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc => "October 2026 trading sessions with a five-session average close",
+        ChartSeriesKind.TrendLine => "Weekly service desk requests, August to October 2026",
+        ChartSeriesKind.Timeline => "Seven overlapping activities from kick-off to rollout",
+        ChartSeriesKind.Bullet => "Cases reviewed within two working days in October; bands mark poor and acceptable",
+        _ => null
+    };
     private static string GeometrySubtitle(ChartSeriesKind kind) => kind switch {
         ChartSeriesKind.Line => "Step transitions and three configured marker shapes",
         ChartSeriesKind.Bar or ChartSeriesKind.HorizontalBar => "Two independent stacks; each reaches 100%; source values remain counts",
