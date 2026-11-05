@@ -90,7 +90,7 @@ jobs:
   quality-gates:
     # Keep the PR platform/browser contexts for an explicitly selected docs-only skip.
     name: ${{ matrix.check }}
-    needs: [changes, build-test-pack, browser-quality, browser-compatibility]
+    needs: [changes, build-test-pack, browser-quality, browser-compatibility, browser-shards]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -111,6 +111,7 @@ jobs:
           BUILD_REQUIRED: ${{ needs.changes.outputs.build }}
           WORK_RESULT: ${{ needs[matrix.job].result }}
           COMPATIBILITY_RESULT: ${{ needs.browser-compatibility.result }}
+          SHARDS_RESULT: ${{ needs.browser-shards.result }}
           STANDALONE_REQUIRED: ${{ needs.changes.outputs.standalone }}
         shell: bash
         run: |
@@ -122,21 +123,24 @@ jobs:
             echo 'Coverage selection did not return a valid decision.'; exit 1
           else
             test "$WORK_RESULT" = success || { echo "Selected coverage failed: $WORK_RESULT"; exit 1; }
+            test "$SHARDS_RESULT" = success || { echo "Chromium shards did not cover the suite exactly once: $SHARDS_RESULT"; exit 1; }
             if [ "$GITHUB_EVENT_NAME" != pull_request ] || [ "$STANDALONE_REQUIRED" = true ]; then
               test "$COMPATIBILITY_RESULT" = success || { echo 'macOS browser coverage failed.'; exit 1; }
             fi
           fi
 
   build-test-pack:
-    name: Quality work (${{ matrix.name }})
+    name: Quality work (${{ matrix.name }}, ${{ matrix.lane }})
     needs: changes
     if: needs.changes.outputs.build == 'true'
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 75
     strategy:
       fail-fast: false
-      # main pushes and manual runs keep every platform; PRs use Linux/Windows.
-      matrix: ${{ fromJSON(github.event_name == 'pull_request' && '{"include":[{"name":"Linux","runner":"ubuntu-latest"},{"name":"Windows","runner":"windows-latest"}]}' || '{"include":[{"name":"Linux","runner":"ubuntu-latest"},{"name":"Windows","runner":"windows-latest"},{"name":"macOS","runner":"macos-latest"}]}') }}
+      # Linux and Windows run the test lane (conformance, unit and raster-stress contracts) beside the
+      # package lane (Native AOT, examples, gallery contracts, packing). main pushes and manual runs
+      # add one complete macOS job, keeping scarce macOS runners to a single Quality job.
+      matrix: ${{ fromJSON(github.event_name == 'pull_request' && '{"include":[{"name":"Linux","runner":"ubuntu-latest","lane":"tests"},{"name":"Linux","runner":"ubuntu-latest","lane":"package"},{"name":"Windows","runner":"windows-latest","lane":"tests"},{"name":"Windows","runner":"windows-latest","lane":"package"}]}' || '{"include":[{"name":"Linux","runner":"ubuntu-latest","lane":"tests"},{"name":"Linux","runner":"ubuntu-latest","lane":"package"},{"name":"Windows","runner":"windows-latest","lane":"tests"},{"name":"Windows","runner":"windows-latest","lane":"package"},{"name":"macOS","runner":"macos-latest","lane":"complete"}]}') }}
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: "1"
       DOTNET_NOLOGO: "1"
@@ -144,6 +148,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+
+      - name: Keep NuGet folders on the Windows work disk
+        if: runner.os == 'Windows'
+        uses: ./.github/actions/windows-nuget-folders
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
@@ -157,7 +165,7 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Install packed-consumer qualification tooling
-        if: runner.os == 'Windows'
+        if: runner.os == 'Windows' && matrix.lane != 'tests'
         shell: pwsh
         run: |
           Install-Module -Name PSPublishModule -RequiredVersion 3.0.168 -Repository PSGallery -Scope CurrentUser -Force -ErrorAction Stop
@@ -171,7 +179,7 @@ jobs:
           node-version: 24.x
 
       - name: Install Native AOT prerequisites
-        if: runner.os == 'Linux'
+        if: runner.os == 'Linux' && matrix.lane != 'tests'
         shell: bash
         run: |
           install_with_sudo() {
@@ -270,24 +278,38 @@ jobs:
 
       - name: Run quality loop
         shell: pwsh
-        run: ./Build.ps1 -Configuration Release -DotNetCommandTimeoutSeconds 1800 -QualifyPackages:($env:RUNNER_OS -eq 'Windows') -TestDiagnosticsDirectory (Join-Path $env:RUNNER_TEMP 'chartforgex-native-results')
+        env:
+          LANE: ${{ matrix.lane }}
+        run: |
+          $options = @{
+              Configuration = 'Release'
+              DotNetCommandTimeoutSeconds = 1800
+              TestDiagnosticsDirectory = Join-Path $env:RUNNER_TEMP 'chartforgex-native-results'
+          }
+          switch ($env:LANE) {
+              'tests' { $options.SkipAot = $true; $options.SkipExamples = $true; $options.SkipPack = $true }
+              'package' { $options.SkipTests = $true; $options.QualifyPackages = $env:RUNNER_OS -eq 'Windows' }
+              'complete' { $options.QualifyPackages = $env:RUNNER_OS -eq 'Windows' }
+              default { throw "Unknown Quality lane: $env:LANE" }
+          }
+          ./Build.ps1 @options
 
       - name: Retain native test diagnostics
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: chartforgex-native-results-${{ matrix.name }}
+          name: chartforgex-native-results-${{ matrix.name }}-${{ matrix.lane }}
           path: ${{ runner.temp }}/chartforgex-native-results
           if-no-files-found: warn
           retention-days: 7
 
       - name: Export Website API documentation bundle
-        if: runner.os == 'Linux'
+        if: runner.os == 'Linux' && matrix.lane != 'tests'
         shell: pwsh
         run: ./Build/Export-WebsiteApiDocs.ps1 -SkipBuild
 
       - name: Retain packed-consumer qualification reports
-        if: always() && runner.os == 'Windows'
+        if: always() && runner.os == 'Windows' && matrix.lane != 'tests'
         uses: actions/upload-artifact@v7
         with:
           name: chartforgex-package-qualification-Windows
@@ -298,6 +320,7 @@ jobs:
           retention-days: 7
 
       - name: Upload packages
+        if: matrix.lane != 'tests'
         uses: actions/upload-artifact@v7
         with:
           name: chartforgex-packages-${{ matrix.runner }}
@@ -307,6 +330,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload example gallery
+        if: matrix.lane != 'tests'
         uses: actions/upload-artifact@v7
         with:
           name: chartforgex-example-gallery-${{ matrix.runner }}
@@ -314,12 +338,16 @@ jobs:
           if-no-files-found: error
 
   browser-quality:
-    name: Browser contract work (Windows Chromium)
+    name: Browser contract work (Windows Chromium ${{ matrix.shard }}/4)
     needs: changes
     if: needs.changes.outputs.build == 'true'
     runs-on: windows-latest
-    # The complete maintained suite measured 54 minutes before setup/artifact retention.
-    timeout-minutes: 75
+    # The unsharded suite measured 43 minutes of tests plus about 5 minutes of setup.
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: "1"
       DOTNET_NOLOGO: "1"
@@ -327,6 +355,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+
+      - name: Keep NuGet folders on the Windows work disk
+        uses: ./.github/actions/windows-nuget-folders
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
@@ -337,13 +368,22 @@ jobs:
 
       - name: Generate gallery and execute required browser proof
         shell: pwsh
-        run: ./Build/Test-BrowserQuality.ps1 -OutputRoot (Join-Path $env:RUNNER_TEMP 'chartforgex-browser-quality')
+        run: ./Build/Test-BrowserQuality.ps1 -OutputRoot (Join-Path $env:RUNNER_TEMP 'chartforgex-browser-quality') -ShardIndex ${{ matrix.shard }} -ShardCount 4
+
+      - name: Retain shard manifest
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: chartforgex-browser-shard-chromium-${{ matrix.shard }}
+          path: ${{ runner.temp }}/chartforgex-browser-quality/results/shard.json
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Retain browser results and rendered evidence
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: chartforgex-browser-quality
+          name: chartforgex-browser-quality-${{ matrix.shard }}
           path: |
             ${{ runner.temp }}/chartforgex-browser-quality/results
             ${{ runner.temp }}/chartforgex-browser-quality/captures
@@ -410,3 +450,24 @@ jobs:
             ${{ runner.temp }}/chartforgex-${{ matrix.browser }}/captures
           if-no-files-found: error
           retention-days: 7
+
+  browser-shards:
+    name: Browser shard coverage
+    needs: [changes, browser-quality]
+    if: always() && needs.changes.outputs.build == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          sparse-checkout: Build
+          persist-credentials: false
+      - name: Download shard manifests
+        uses: actions/download-artifact@v8
+        with:
+          pattern: chartforgex-browser-shard-*
+          path: ${{ runner.temp }}/browser-shards
+      - name: Require every listed class exactly once
+        shell: pwsh
+        run: ./Build/Test-BrowserShardCoverage.ps1 -ManifestRoot (Join-Path $env:RUNNER_TEMP 'browser-shards') -Suite chromium-required

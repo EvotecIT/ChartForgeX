@@ -20,7 +20,7 @@ dotnet test .\ChartForgeX.sln -c Release
 
 Use a supported Node.js runtime for the Mermaid reference checks. CI selects Node 24, starting at 24.15.0; the npm restore enforces dependency engine requirements.
 
-For slow native test runs, add `-TestDiagnosticsDirectory <output-directory>`. This records named test timings, warnings identifying tests still running after 30 seconds, a final TRX report, and incremental VSTest logs that remain available if the process times out. It preserves the existing 900-second command limit and test scheduling. CI retains these files in the `chartforgex-native-results-<OS>` artifacts, including after a failed run.
+For slow native test runs, add `-TestDiagnosticsDirectory <output-directory>`. This records named test timings, warnings identifying tests still running after 30 seconds, a final TRX report, and incremental VSTest logs that remain available if the process times out. It preserves the existing 900-second command limit and test scheduling. CI retains these files in the `chartforgex-native-results-<OS>-<lane>` artifacts, including after a failed run.
 
 ## Package Consumers
 
@@ -41,7 +41,9 @@ The downstream lane loads public OfficeIMO.ChartForgeX and HtmlForgeX.ChartForge
 
 ## Browser Quality
 
-The quality workflow runs the build/test/example/package loop on Windows, Linux, and macOS. A separate Windows Chromium job requires rendered browser and interaction checks to execute.
+The quality workflow runs the build/test/example/package loop on Windows, Linux, and macOS. Linux and Windows split it into a test lane (`-SkipAot -SkipExamples -SkipPack`) and a package lane (`-SkipTests`); macOS runs it complete on main and manual runs. Separate Windows Chromium jobs require rendered browser and interaction checks to execute.
+
+CI splits the browser suites into shards of whole test classes with `-ShardIndex <n> -ShardCount <count>`: four Windows Chromium shards and three macOS shards per engine. Classes are balanced by their number of listed cases, largest first onto the lightest shard. Each Chromium shard proves that its TRX executed exactly the listed cases of its classes, and `Build/Test-BrowserShardCoverage.ps1` checks that the shards covered every listed class once.
 
 Run that browser lane locally with a task-owned absolute output directory:
 
