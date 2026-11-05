@@ -432,7 +432,8 @@ body {
 
 .cfx-tooltip__meta {
   display: grid;
-  grid-template-columns: fit-content(50%) minmax(0, 1fr);
+  /* Names get half the width, or 9em in a narrow readout, so a short name such as "Warnings" never splits. */
+  grid-template-columns: fit-content(max(50%, 9em)) minmax(0, 1fr);
   align-items: center;
   gap: 2px 16px;
   margin: 0;
