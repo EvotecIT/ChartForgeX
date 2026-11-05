@@ -94,12 +94,12 @@ internal static partial class VisualColorScaleLegendScene {
 
     /// <summary>Draws shared canonical stops or bands, retaining full captions and domains independently of viewport fit.</summary>
     internal static void Draw(VisualSceneBuilder builder, ChartColorScale scale, ChartLabels labels, TextStyle style, double gap,
-        ChartRect bounds, double min, double max, string prefix, bool missing, ChartColorBlend missingBlend,
+        ChartRect bounds, double min, double max, string prefix, bool missing, ChartMissingLook missingLook,
         Func<IReadOnlyList<double>, string[]> formatValues, string diagnosticCode = "matrix.scale-overflow", bool hasDomain = true,
         bool compact = false, ChartRect? missingBounds = null, string? heading = null, string? valueName = null,
         ChartColorLegendStyle legendStyle = ChartColorLegendStyle.Auto, string? unit = null, bool showStepLabels = false, bool numericIntervals = false) {
         if (scale.Captions.Count > 0) {
-            DrawCaptioned(builder, scale, labels, style, gap, bounds, min, max, prefix, missing, missingBlend, formatValues,
+            DrawCaptioned(builder, scale, labels, style, gap, bounds, min, max, prefix, missing, missingLook, formatValues,
                 diagnosticCode, hasDomain, missingBounds, heading, valueName, legendStyle);
             return;
         }
@@ -245,13 +245,11 @@ internal static partial class VisualColorScaleLegendScene {
         }
 
         void Missing(double top, ChartRect? target = null) {
-            var blend = missingBlend;
             var lane = target ?? bounds;
             var box = new ChartRect(lane.Left, top + row * .15, row * .7, row * .7);
             using (VisualStateSceneTools.Mark(builder, prefix + "-empty", prefix + "-empty", box, labels.NoData,
                 new Dictionary<string, string> { ["data-cfx-empty"] = "true" })) {
-                // A pale fill alone disappears on both themes, so the no-data key also gets an outline and a hatch.
-                VisualMissingDataScene.Swatch(builder, box, blend, style.Color, prefix, scale.NoDataColor == null);
+                VisualMissingDataScene.Swatch(builder, box, missingLook, prefix, style.Color);
             }
             Caption(labels.NoData, new ChartRect(lane.Left + row, top, Math.Max(0, lane.Width - row), row), "missing", TextAlignment.Left);
         }

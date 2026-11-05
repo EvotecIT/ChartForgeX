@@ -96,7 +96,7 @@ internal static partial class VisualMatrixCompiler {
             if (ScaleVisible(context, presentation)) {
                 var scaleBounds = new ChartRect(area.Left, viewport.Bottom - scaleHeight + scaleGap, area.Width, Math.Max(0, scaleHeight - scaleGap));
                 if (scale != null) ColorScale(chart, context, builder, scaleBounds, model.Min, model.Max, "calendar-scale", presentation, model.EmptyDays > 0,
-                    CalendarMissingBlend(chart, colors));
+                    ChartMissingData.Look(chart.Options.HeatmapColorScale, colors));
                 else CalendarScale(chart, context, builder, model, scaleBounds, presentation);
             }
         }

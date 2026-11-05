@@ -276,6 +276,27 @@ public sealed class HeatmapColorScaleLegendTests {
         Assert.Equal(png, chart.ToPng());
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void NoDataKeyPaintsLikeTheMissingCellsItExplains(bool authored, bool dark) {
+        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        var scale = ChartColorScale.Discrete(new[] { new ChartColorBand(95, High, "Outage"), new ChartColorBand(null, Low, "Complete") });
+        var chart = Chart.Create().WithSize(640, 320).WithTheme(VisualTheme.Graphite(), mode).WithXLabels("Mon", "Tue", "Wed")
+            .AddHeatmapRow("dc1", new double?[] { 100, 99, 100 }).AddHeatmapRow("dc2", new double?[] { null, 90, 100 })
+            .WithHeatmapColorScale(authored ? scale.WithNoDataColor(Middle) : scale);
+        var nodes = chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes;
+        var cell = Assert.Single(nodes.OfType<VisualSceneRectangle>(), node => node.Role == "heatmap-missing-cell");
+        var key = Assert.Single(nodes.OfType<VisualSceneRectangle>(), node => node.Role == "heatmap-scale-missing-swatch");
+        Assert.Equal(cell.Fill, key.Fill);
+        Assert.Equal(cell.Stroke, key.Stroke);
+        Assert.Equal(cell.StrokeWidth, key.StrokeWidth);
+        // An authored no-data colour is plain in both; otherwise both carry the same faint hatch.
+        Assert.Equal(!authored, nodes.Any(node => node.Role == "heatmap-missing-cell-hatch"));
+        Assert.Equal(!authored, nodes.Any(node => node.Role == "heatmap-scale-missing-hatch"));
+    }
     private static XElement[] Role(XDocument document, string role) => document.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == role).ToArray();
     private static bool Paints(RgbaImage image, ChartRect bounds, ChartColor color) {
         for (var y = (int)Math.Ceiling(bounds.Top) + 1; y < (int)Math.Floor(bounds.Bottom) - 1; y++)

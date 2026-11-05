@@ -33,7 +33,7 @@ internal static partial class VisualMapCompiler {
         MapLayout layout, VisualThemeColors colors, double min, double max, ChartColorPresentation presentation) {
         var scale = chart.Options.MapColorScale!;
         VisualColorScaleLegendScene.DrawCaptioned(builder, scale, presentation.Labels, TickStyle(chart, context), context.Theme.Spacing / 2,
-            layout.Scale, min, max, "map-scale", HasMissingMapValues(chart), ChartColorScaleSurface.NoData(scale, colors),
+            layout.Scale, min, max, "map-scale", HasMissingMapValues(chart), ChartMissingData.KeyLook(scale, colors),
             presentation.ScaleValues, "map.scale-overflow", MapHasDomain(chart, scale, min, max), null,
             presentation.HasName ? presentation.Name : layout.Right ? chart.Series[0].Name : null,
             presentation.HasOverrides ? presentation.Name : null, CaptionedMapLegendStyle(chart, presentation), vertical: layout.Right);

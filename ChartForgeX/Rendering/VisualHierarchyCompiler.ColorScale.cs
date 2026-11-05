@@ -42,7 +42,7 @@ internal static partial class VisualHierarchyCompiler {
         var captionScale = surface.Scale!;
         if (captionScale.Captions.Count > 0) {
             VisualColorScaleLegendScene.Draw(builder, captionScale, surface.Presentation.Labels, HierarchyScaleStyle(context), context.Theme.Spacing / 2,
-                area, surface.Minimum, surface.Maximum, surface.RolePrefix + "-color-scale", surface.HasMissing, ChartColorScaleSurface.NoData(captionScale, colors),
+                area, surface.Minimum, surface.Maximum, surface.RolePrefix + "-color-scale", surface.HasMissing, ChartMissingData.KeyLook(captionScale, colors),
                 surface.Presentation.ScaleValues, "hierarchy.scale-overflow", surface.HasDomain, heading: surface.Title,
                 valueName: surface.Presentation.HasOverrides ? surface.Title : null, legendStyle: surface.Presentation.LegendStyle);
             return;

@@ -31,7 +31,7 @@ internal static partial class VisualMapCompiler {
         var heading = presentation.HasName ? presentation.Name : layout.Right ? chart.Series[0].Name : null;
         using (builder.PushClip(layout.Scale)) VisualColorScaleLegendScene.Draw(builder, scale, presentation.Labels,
             TickStyle(chart, context), context.Theme.Spacing / 2, layout.Scale, 0, 0, "map-scale", true,
-            ChartColorScaleSurface.NoData(scale, colors), presentation.ScaleValues, hasDomain: false,
+            ChartMissingData.KeyLook(scale, colors), presentation.ScaleValues, hasDomain: false,
             heading: heading, legendStyle: presentation.LegendStyle);
     }
 }

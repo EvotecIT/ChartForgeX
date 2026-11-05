@@ -117,7 +117,7 @@ internal static partial class VisualCartesianCompiler {
             VisualStateSceneTools.Text(builder, title, heading, titleStyle, "color-scale-title", prefix + "-title");
             VisualColorScaleLegendScene.Draw(builder, scale, surface.Presentation.Labels, keyStyle, gap,
                 new ChartRect(area.Left, area.Top + titleHeight, area.Width, Math.Max(0, area.Height - titleHeight - gap)),
-                surface.Minimum, surface.Maximum, prefix, surface.Missing, ChartColorScaleSurface.NoData(scale, context.Theme.Resolve(context.ThemeMode)),
+                surface.Minimum, surface.Maximum, prefix, surface.Missing, ChartMissingData.KeyLook(scale, context.Theme.Resolve(context.ThemeMode)),
                 surface.Presentation.ScaleValues, "cartesian.color-scale-overflow", surface.HasDomain, compact,
                 missingWidth > 0 ? new ChartRect(area.Right - missingWidth, area.Top, missingWidth, titleHeight) : null,
                 valueName: surface.Presentation.HasOverrides ? surface.Presentation.Name : null, legendStyle: surface.Presentation.LegendStyle);
