@@ -71,7 +71,7 @@ public sealed class HeatmapColorScaleLegendTests {
         var steps = Role(document, prefix + "-step");
         Assert.Equal(mode, Role(document, prefix).Single().Attribute("data-cfx-scale-mode")?.Value);
         if (mode == "discrete") {
-            Assert.Equal(new[] { "Niski < 10", "Średni 10–20", "Wysoki ≥ 20" }, steps.Select(step => (string?)step.Attribute("data-cfx-label")));
+            Assert.Equal(new[] { "Niski < 10", "Średni 10–20", "Wysoki 20" }, steps.Select(step => (string?)step.Attribute("data-cfx-label")));
             Assert.Equal(new[] { "", "10", "20" }, steps.Select(step => (string?)step.Attribute("data-cfx-lower-bound")));
             Assert.Equal(new[] { "10", "20", "" }, steps.Select(step => (string?)step.Attribute("data-cfx-upper-bound")));
             Assert.All(steps, step => Assert.Equal("true", (string?)step.Attribute("data-cfx-upper-exclusive")));

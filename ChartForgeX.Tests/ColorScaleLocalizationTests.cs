@@ -122,7 +122,7 @@ public sealed class ColorScaleLocalizationTests {
         var bands = document.Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == sourceRole).ToArray();
         var captions = bands.Select(node => (string?)node.Attribute("data-cfx-label")).ToArray();
         Assert.Equal(oneBand ? new[] { "Zakres · Wszystkie wartości" }
-            : new[] { "Niski < 10", "Średni 10–20", "Wysoki ≥ 20" }, captions);
+            : new[] { "Niski < 10", "Średni 10–20", "Wysoki 20" }, captions);
         Assert.Equal(oneBand ? new[] { "" } : new[] { "", "10", "20" }, bands.Select(node => (string?)node.Attribute("data-cfx-lower-bound")));
         Assert.Equal(oneBand ? new[] { "" } : new[] { "10", "20", "" }, bands.Select(node => (string?)node.Attribute("data-cfx-upper-bound")));
         chart.ConfigureLabels(labels => { labels.AllValues = "Changed"; labels.Value = "changed"; });

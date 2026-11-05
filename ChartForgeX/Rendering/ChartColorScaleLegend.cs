@@ -44,14 +44,18 @@ internal static partial class ChartColorScaleLegend {
 
     /// <summary>Short key captions such as "Outage &lt; 95%", "Short loss 95–100%" and "Complete ≥ 100%".</summary>
     /// <remarks>Each band includes its lower bound and excludes its upper bound; the neighbouring captions and the
-    /// band metadata keep that exact. The unit follows the last number of each interval.</remarks>
-    internal static string[] BandCaptions(ChartLabels labels, ChartColorScale scale, Func<IReadOnlyList<double>, string[]> formatValues, string? unit = null) {
+    /// band metadata keep that exact. The unit follows the last number of each interval. When the observed
+    /// <paramref name="maximum"/> is the top band's lower bound, every value in that band is that bound, so the
+    /// caption names the value ("Complete 100%") instead of an open interval.</remarks>
+    internal static string[] BandCaptions(ChartLabels labels, ChartColorScale scale, Func<IReadOnlyList<double>, string[]> formatValues,
+        string? unit = null, double? maximum = null) {
         var bands = scale.Bands;
         var bounds = formatValues(bands.Take(bands.Count - 1).Select(band => band.UpperBound!.Value).ToArray());
         var captions = new string[bands.Count];
+        var topIsEndpoint = bands.Count > 1 && maximum is double observed && observed == bands[bands.Count - 2].UpperBound!.Value;
         for (var index = 0; index < bands.Count; index++) {
             var interval = bands.Count == 1 ? labels.AllValues : index == 0 ? "< " + ChartOptions.AppendUnit(bounds[0], unit)
-                : index == bands.Count - 1 ? "≥ " + ChartOptions.AppendUnit(bounds[index - 1], unit)
+                : index == bands.Count - 1 ? (topIsEndpoint ? "" : "≥ ") + ChartOptions.AppendUnit(bounds[index - 1], unit)
                 : bounds[index - 1] + "–" + ChartOptions.AppendUnit(bounds[index], unit);
             // A lone band reads "Range · All values"; an interval follows its name directly ("Outage < 95%").
             captions[index] = bands[index].Label == null ? interval : bands[index].Label + (bands.Count == 1 ? " · " : " ") + interval;

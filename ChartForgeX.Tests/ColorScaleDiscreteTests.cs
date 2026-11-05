@@ -72,7 +72,7 @@ public sealed class ColorScaleDiscreteTests {
         Assert.Equal(new[] { "10", "20", "" }, bands.Select(element => (string?)element.Attribute("data-cfx-upper-bound")));
         Assert.Contains("Low < 10", Role(document, "map-scale-band-label").Select(element => element.Value));
         Assert.Contains("Middle 10–20", Role(document, "map-scale-band-label").Select(element => element.Value));
-        Assert.Contains("High ≥ 20", Role(document, "map-scale-band-label").Select(element => element.Value));
+        Assert.Contains("High 20", Role(document, "map-scale-band-label").Select(element => element.Value));
         foreach (var (region, index) in new[] { ("CA", 0), ("NY", 1), ("TX", 2) }) {
             var source = Role(document, family + "-region-source").Single(element => (string?)element.Attribute("data-cfx-region") == region);
             Assert.Equal(index.ToString(), (string?)source.Attribute("data-cfx-band"));

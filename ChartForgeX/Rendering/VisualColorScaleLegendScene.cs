@@ -81,7 +81,7 @@ internal static partial class VisualColorScaleLegendScene {
         var headingHeight = Math.Max(0, Math.Min(maximum, HeadingHeight(builder, style, gap, heading)));
         maximum = Math.Max(0, maximum - headingHeight);
         if (!hasDomain) return headingHeight + (inlineMissing ? 0 : Math.Max(0, Math.Min(maximum, row + gap)));
-        var captions = scale.Mode == ChartColorScaleMode.Discrete ? ChartColorScaleLegend.BandCaptions(labels, scale, formatValues, unit) : null;
+        var captions = scale.Mode == ChartColorScaleMode.Discrete ? ChartColorScaleLegend.BandCaptions(labels, scale, formatValues, unit, hasDomain ? max : null) : null;
         if (captions != null) {
             var flowMissing = missing && !inlineMissing && !BandMissingInHeading(builder, captions, labels, style, gap, width, headingHeight, heading, maximum);
             return headingHeight + Math.Max(0, Math.Min(maximum, BandFlowHeight(BandFlow(BandItems(builder, captions, labels, style, gap, flowMissing), gap, width), row, gap)));
@@ -107,7 +107,7 @@ internal static partial class VisualColorScaleLegendScene {
         var fullBounds = bounds;
         var headingHeight = Math.Max(0, Math.Min(bounds.Height, HeadingHeight(builder, style, gap, heading)));
         if (heading != null) bounds = new ChartRect(bounds.Left, bounds.Top + headingHeight, bounds.Width, Math.Max(0, bounds.Height - headingHeight));
-        var captions = scale.Mode == ChartColorScaleMode.Discrete ? ChartColorScaleLegend.BandCaptions(labels, scale, formatValues, unit) : null;
+        var captions = scale.Mode == ChartColorScaleMode.Discrete ? ChartColorScaleLegend.BandCaptions(labels, scale, formatValues, unit, hasDomain ? max : null) : null;
         var inlineMidpoint = hasDomain && compact && InlineMidpoint(builder, scale, labels, style, gap, bounds.Width, min, max, formatValues, legendStyle);
         var plan = PlanLegacyLayout(builder, labels, style, gap, bounds.Width, headingHeight, bounds.Height, captions,
             scale.MidpointLabel != null && !inlineMidpoint, hasDomain && missing && !missingBounds.HasValue, heading);

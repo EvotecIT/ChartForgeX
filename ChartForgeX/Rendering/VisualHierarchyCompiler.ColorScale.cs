@@ -68,7 +68,8 @@ internal static partial class VisualHierarchyCompiler {
             var swatchHeight = numeric ? Math.Min(row * .7, Math.Max(0, area.Bottom - swatchY - row)) : 0;
             var labelY = swatchY + swatchHeight + 3;
             if (scale.Mode == ChartColorScaleMode.Discrete) {
-                var captions = ChartColorScaleLegend.BandCaptions(surface.Presentation.Labels, scale, surface.Presentation.ScaleValues);
+                var captions = ChartColorScaleLegend.BandCaptions(surface.Presentation.Labels, scale, surface.Presentation.ScaleValues,
+                    maximum: surface.HasDomain ? surface.Maximum : null);
                 for (var i = 0; i < scale.Bands.Count; i++) {
                     var band = scale.Bands[i]; var width = area.Width / scale.Bands.Count;
                     var source = new Dictionary<string, string> {
