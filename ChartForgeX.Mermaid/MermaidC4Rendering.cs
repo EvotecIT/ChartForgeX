@@ -75,6 +75,8 @@ public static partial class MermaidC4Rendering {
             ApplyPortHints(edge, relationship.Kind);
         }
         if (document.Direction == null) OrientBoundaries(chart, document, MermaidTopologyRendering.PreferredDirection(options));
+        // Rel_U/D/L/R say where the target sits, so the layout places it on that side when it can.
+        chart.PlacesFacingPorts = true;
 
         var sourceSettings = document.Configuration.C4;
         if (sourceSettings?.HasSettings == true) {

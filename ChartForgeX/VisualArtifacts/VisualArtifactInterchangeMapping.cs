@@ -120,6 +120,7 @@ public static partial class VisualArtifactInterchangeMapping {
             CrossingPaint = prepared.CrossingPaint
         };
         foreach (var alignment in prepared.Alignments) {
+            if (alignment.IsLayoutDerived) continue;
             var mapped = new VisualArtifactInterchangeTopologyAlignment { Id = ids.AddAlignment(alignment.Id), Kind = alignment.Kind };
             foreach (var id in alignment.NodeIds) mapped.NodeIds.Add(ids.Node(id));
             Copy(alignment.Metadata, mapped.Extensions); envelope.Topology.Alignments.Add(mapped);

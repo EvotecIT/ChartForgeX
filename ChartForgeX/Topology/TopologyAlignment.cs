@@ -43,9 +43,11 @@ public sealed class TopologyAlignment {
     public List<string> NodeIds { get; } = new();
     /// <summary>Gets inert source and host facts retained through cloning and portable interchange.</summary>
     public Dictionary<string, string> Metadata { get; } = new(StringComparer.Ordinal);
+    /// <summary>Gets whether layout derived this placement from facing ports; it is never exported as a declaration.</summary>
+    internal bool IsLayoutDerived { get; set; }
 
     internal TopologyAlignment Clone() {
-        var copy = new TopologyAlignment(Id, Kind, NodeIds);
+        var copy = new TopologyAlignment(Id, Kind, NodeIds) { IsLayoutDerived = IsLayoutDerived };
         foreach (var item in Metadata) copy.Metadata.Add(item.Key, item.Value);
         return copy;
     }

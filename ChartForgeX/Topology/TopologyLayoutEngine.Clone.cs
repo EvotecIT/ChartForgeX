@@ -12,6 +12,7 @@ internal static partial class TopologyLayoutEngine {
             LayoutDirection = chart.LayoutDirection,
             GridLayout = chart.GridLayout,
             HierarchyPreparation = chart.HierarchyPreparation,
+            PlacesFacingPorts = chart.PlacesFacingPorts,
             UsesPreparedSceneCoordinates = chart.UsesPreparedSceneCoordinates,
             PreparedFramePadding = TopologyPreparedFramePadding.ForRequest(chart),
             PreparedFrame = chart.PreparedFrame?.RequestValues(retainOwnedFonts: true),
