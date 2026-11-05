@@ -171,6 +171,9 @@ public sealed partial class HtmlInteractiveChartRenderer {
         if (!axis.MaximumInclusive) json.Append(",\"maximumInclusive\":false");
         if (axis.IntegerTicks) json.Append(",\"integerTicks\":true");
         if (axis.DefaultCaptions) json.Append(",\"captions\":\"compact\"");
+        // Saved pages repeat the automatic calendar fit only with the fitter's own caption gap.
+        if (axis.CalendarCaptions && axis.LabelGap is double gap)
+            json.Append(",\"captions\":\"calendar\",\"labelGap\":").Append(gap.ToString("R", CultureInfo.InvariantCulture));
         AppendLogarithmicPolicy(json, axis.LogarithmBase, axis.LogarithmicDomain);
         AppendTimeSessions(json, axis.TimeSessions);
         AppendTimeSpacing(json, axis.TimeDomain);

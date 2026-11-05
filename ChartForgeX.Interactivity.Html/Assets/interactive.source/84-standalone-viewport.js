@@ -166,7 +166,8 @@
       // Room is in drawing units: a label's own width plus a 12 CSS pixel gap, or about two lines vertically.
       const room = vertical ? () => size * 2 : label => standaloneTextWidth(size + 'px ' + family, label) + 16 / scale;
       // The drawing's own label count is the static density target for this size.
-      const ticks = standaloneTicks(projection, vertical ? plot.height : plot.width, room,
+      const ticks = projection.captions === 'calendar' && !vertical && standaloneTimeTicks(projection, plot.width,
+        label => standaloneTextWidth(size + 'px ' + family, label), size, standaloneTimeObservations(view)) || standaloneTicks(projection, vertical ? plot.height : plot.width, room,
         axis.nodes.filter(node => node.dataset.cfxRole.endsWith('-label') && axis.display.get(node)?.value !== 'none').length || 5,
         axis.name === view.categoryAxis && view.source.categoryLabels?.length ? view.source.categoryLabels : null, standaloneWholeAxis(view, axis.name, projection));
       for (const tick of ticks) {

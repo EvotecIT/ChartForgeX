@@ -6,7 +6,7 @@ namespace ChartForgeX.Rendering;
 
 internal static partial class VisualCartesianCompiler {
     private static void CaptureReadouts(Chart chart, VisualSceneBuilder builder, ChartRange range,
-        ChartRange? secondaryRange, AxisLabelCache cache, bool horizontal, bool secondaryOnly) {
+        ChartRange? secondaryRange, AxisLabelCache cache, bool horizontal, bool secondaryOnly, double spacing) {
         var x = horizontal ? HorizontalAxes(chart, cache).Value : chart.Options.XAxis;
         var y = horizontal ? HorizontalAxes(chart, cache).Category : chart.Options.YAxis;
         var secondary = ChartCartesianOrientation.ValueAxis(chart, ChartAxisSide.Secondary);
@@ -32,7 +32,7 @@ internal static partial class VisualCartesianCompiler {
                 displayYTicks.Select(number => new ChartAxisLabel(number, cache.FormatDisplay(displayY, number, displayYTicks))).ToArray(),
                 formatX: categoryLabels != null && !horizontal ? null : number => cache.FormatDisplay(displayX, number, displayXTicks),
                 formatY: categoryLabels != null && horizontal ? null : number => cache.FormatDisplay(displayY, number, displayYTicks),
-                categoryLabels: categoryLabels);
+                categoryLabels: categoryLabels, xLabelGap: AxisLabelGap(displayX, spacing), yLabelGap: AxisLabelGap(displayY, spacing));
         }
         builder.CaptureChartReadouts(chart, (_, number) => horizontal ? Y(number) : X(number),
             (series, number, caption) => series.ValueAxis == ChartAxisSide.Secondary ? Secondary(number, caption)
