@@ -28,6 +28,10 @@ public readonly struct VisualSize {
 
 /// <summary>The resolved viewport and outer padding used by every prepared visual.</summary>
 public sealed class VisualLayoutOptions {
+    /// <summary>Creates a fixed viewport with uniform outer padding.</summary>
+    public VisualLayoutOptions(VisualSize size, double padding) : this(size, padding, false) { }
+    /// <summary>Creates a fixed viewport with independently configured outer edge insets.</summary>
+    public VisualLayoutOptions(VisualSize size, ChartPadding padding) : this(size, padding, false) { }
     /// <summary>Creates a viewport. Hosts implement fit sizing by supplying their measured viewport, or let row charts trim unused height.</summary>
     public VisualLayoutOptions(VisualSize size, double padding = 24, bool fitHeightToContent = false) : this(size, ChartPadding.All(padding), fitHeightToContent) { }
     /// <summary>Creates a fixed viewport with independently configured outer edge insets.</summary>
