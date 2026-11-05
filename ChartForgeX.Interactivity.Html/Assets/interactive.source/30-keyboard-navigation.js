@@ -108,9 +108,11 @@
     if (state.legends.length && !state.legends.includes(state.activeLegend)) state.activeLegend = state.legends[0];
     if (state.data.includes(focused)) state.activeData = focused;
     if (state.legends.includes(focused)) state.activeLegend = focused;
-    if (!state.legendOrderPrepared && state.data.length && state.legends.length) {
+    // A legend that switches between the drawn and flowing presentation brings new entries; each set is placed once.
+    const placed = state.placedLegends ||= new WeakSet();
+    if (state.data.length && state.legends.some((node) => !placed.has(node))) {
       placeKeyboardLegendBeforeData(root, state.data, state.legends);
-      state.legendOrderPrepared = true;
+      state.legends.forEach((node) => placed.add(node));
     }
     state.owned.forEach((node) => node.setAttribute('tabindex', '-1'));
     targets.forEach((node) => {
@@ -133,7 +135,10 @@
     const targets = state.targets;
     if (activeOwned && !targets.some((node) => targetFocusNode(node) === activeElement)) {
 
-      const replacement = state.data.length ? state.activeData : state.legends.length ? state.activeLegend : null;
+      // Focus stays in the component the reader was in, e.g. when the legend switches between drawn and flowing.
+      const fromLegend = activeElement.getAttribute('data-cfx-keyboard-component') === 'legend';
+      const replacement = fromLegend && state.legends.length ? state.activeLegend
+        : state.data.length ? state.activeData : state.legends.length ? state.activeLegend : null;
       if (replacement) {
 
 
