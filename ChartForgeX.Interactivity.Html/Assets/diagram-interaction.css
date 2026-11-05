@@ -1,18 +1,23 @@
 .cfx-diagram-shell { min-height: 100vh; box-sizing: border-box; display: grid; place-items: center; padding: 24px; }
+/* The Graphite card: the same surface, line and radius as the chart pages, hugging the drawn content. */
 .cfx-diagram {
-  position: relative; box-sizing: border-box; width: 100%; max-width: var(--cfx-diagram-width, 100%); margin-inline: auto;
-  display: grid; gap: 10px; min-width: 0; background: var(--cfx-host-background, transparent); color: var(--cfx-tooltip-text);
-  font-family: var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
+  --cfx-diagram-pad: clamp(14px, 3vw, 28px);
+  position: relative; box-sizing: border-box; width: 100%; max-width: calc(var(--cfx-diagram-width, 100%) + 2 * var(--cfx-diagram-pad) + 2px);
+  margin-inline: auto; display: grid; gap: 12px; min-width: 0; padding: var(--cfx-diagram-pad);
+  background: var(--cfx-tooltip-surface); border: 1px solid var(--cfx-tooltip-line); border-radius: var(--cfx-tooltip-radius, 10px);
+  color: var(--cfx-tooltip-text);
+  font-family: var(--cfx-diagram-font, var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif)));
 }
+.cfx-diagram-heading { display: grid; gap: 4px; min-width: 0; }
+.cfx-diagram-title { margin: 0; font: 600 var(--cfx-diagram-title-size, 20px)/1.25 var(--cfx-diagram-font, inherit); color: var(--cfx-tooltip-text); overflow-wrap: anywhere; }
+.cfx-diagram-subtitle { margin: 0; font: 400 var(--cfx-diagram-subtitle-size, 15px)/1.4 var(--cfx-diagram-font, inherit); color: var(--cfx-tooltip-muted); overflow-wrap: anywhere; }
 /* Narrow hosts keep diagram text readable: the stage scrolls sideways instead of shrinking the diagram below 560px. */
 .cfx-diagram-stage { position: relative; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; }
 .cfx-diagram-stage > svg { display: block; width: 100%; min-width: min(var(--cfx-diagram-width, 100%), 560px); max-width: none !important; height: auto; }
-.cfx-diagram-toolbar, .cfx-diagram-readout { padding-inline: var(--cfx-diagram-inset, 0); }
 .cfx-diagram [data-cfx-diagram-item] { cursor: pointer; outline: none; transition: opacity .14s ease; }
 .cfx-diagram[data-cfx-diagram-active] [data-cfx-diagram-item]:not([data-cfx-diagram-state]) { opacity: .26; }
-.cfx-diagram [data-cfx-diagram-state="active"]:is([data-cfx-role="topology-edge"],[data-cfx-role="topology-edge-label"],[data-cfx-role="sequence-message"]) {
-  filter: drop-shadow(0 0 1.5px var(--cfx-focus-ring)) drop-shadow(0 0 1.5px var(--cfx-focus-ring));
-}
+/* Active lines gain stroke weight only; text keeps its native ink so it stays sharp. */
+.cfx-diagram [data-cfx-diagram-state="active"] path[data-cfx-role$="-line"] { stroke-width: 3.5px; }
 .cfx-diagram [data-cfx-diagram-ring] {
   fill: none; stroke: var(--cfx-focus-ring); stroke-width: 2; vector-effect: non-scaling-stroke; pointer-events: none;
 }
@@ -42,7 +47,7 @@
 .cfx-diagram-tooltip__eyebrow { color: var(--cfx-tooltip-muted); font-weight: 600; }
 .cfx-diagram-tooltip__title { font-weight: 600; font-size: 13px; }
 .cfx-diagram-tooltip__line { color: var(--cfx-tooltip-muted); }
-@media (max-width: 600px) { .cfx-diagram-shell { padding: 12px; } }
+@media (max-width: 600px) { .cfx-diagram-shell { padding: 12px; } .cfx-diagram { gap: 10px; } }
 @media (prefers-reduced-motion: reduce) { .cfx-diagram [data-cfx-diagram-item] { transition: none; } }
 @media (forced-colors: active) {
   .cfx-diagram [data-cfx-diagram-ring] { stroke: Highlight; }

@@ -19,32 +19,40 @@ internal sealed class HtmlInteractiveDiagramRenderer {
     internal string Render(FlowArtifact flow, VisualRenderContext? context, bool page) {
         if (flow == null) throw new ArgumentNullException(nameof(flow));
         context ??= VisualExportRequest.ForFlow(flow).Context;
-        var prepared = flow.Prepare(context);
+        var prepared = flow.Prepare(CardContext(context));
         var envelope = prepared.ToArtifact(flow.Id, VisualArtifactKind.Flow).ToInterchangeEnvelope();
-        return Render(prepared, "flow", FlowModel(envelope, prepared), Title(flow.Title, flow.Id), context.Theme, context.ThemeMode,
-            context.Frame.TransparentBackground, context.Layout.PaddingEdges.Left, page);
+        return Render(prepared, "flow", FlowModel(envelope, prepared), flow.Id, context.Frame.Title ?? flow.Title,
+            context.Frame.Subtitle ?? flow.Subtitle, context, page);
     }
 
     internal string Render(SequenceArtifact sequence, VisualRenderContext? context, bool page) {
         if (sequence == null) throw new ArgumentNullException(nameof(sequence));
-        var prepared = context == null ? SequencePreparedCompiler.PrepareDefault(sequence) : sequence.Prepare(context);
+        context ??= new VisualRenderContext(new VisualLayoutOptions(new VisualSize(sequence.Width, sequence.Height), sequence.Padding, fitHeightToContent: true),
+            sequence.Theme, sequence.ThemeMode);
+        var prepared = sequence.Prepare(CardContext(context));
         var envelope = prepared.ToArtifact(sequence.Id, VisualArtifactKind.Sequence).ToInterchangeEnvelope();
-        return Render(prepared, "sequence", SequenceModel(envelope, prepared), Title(sequence.Title, sequence.Id),
-            context?.Theme ?? sequence.Theme, context?.ThemeMode ?? sequence.ThemeMode, context?.Frame.TransparentBackground == true,
-            context?.Layout.PaddingEdges.Left ?? sequence.Padding, page);
+        return Render(prepared, "sequence", SequenceModel(envelope, prepared), sequence.Id, context.Frame.Title ?? sequence.Title,
+            context.Frame.Subtitle ?? sequence.Subtitle, context, page);
     }
 
-    private string Render(PreparedVisual prepared, string family, string model, string title, VisualTheme theme, VisualThemeMode mode,
-        bool transparent, double inset, bool page) {
+    // The page owns the Graphite card and its title band, so the drawing is prepared without its own heading or background.
+    private static VisualRenderContext CardContext(VisualRenderContext context) => new(context.Layout, context.Theme, context.ThemeMode,
+        new VisualFrame(string.Empty, string.Empty, showLegend: false, transparentBackground: true), context.Font);
+
+    private string Render(PreparedVisual prepared, string family, string model, string id, string? title, string? subtitle,
+        VisualRenderContext context, bool page) {
         var language = Localization.ResolveLanguage(prepared.Accessibility.Language);
-        var colors = theme.Resolve(mode);
+        var theme = context.Theme; var mode = context.ThemeMode; var transparent = context.Frame.TransparentBackground;
+        var name = string.IsNullOrWhiteSpace(title) ? id : title!;
+        var fontFamily = string.IsNullOrWhiteSpace(context.Font.Family) ? theme.Typography.Family : context.Font.Family;
+        var svg = CropToContent(prepared, out var width);
         var writer = new HtmlMarkupWriter();
         if (page) {
             writer.Doctype().Line()
                 .StartElement("html").Attribute("lang", language).Attribute("dir", Localization.DirectionAttribute).EndStartElement().Line()
                 .StartElement("head").EndStartElement().Line();
-            HtmlChartRenderer.WriteDocumentHead(writer, title, HtmlDiagramAssets.Style
-                + "body{margin:0;background:" + (transparent ? "transparent" : colors.Background.ToCss()) + ";" + HtmlSurfacePolish.BrowserTextPolishCss + "}");
+            HtmlChartRenderer.WriteDocumentHead(writer, name, HtmlDiagramAssets.Style
+                + "body{margin:0;background:" + (transparent ? "transparent" : theme.Resolve(mode).Background.ToCss()) + ";" + HtmlSurfacePolish.BrowserTextPolishCss + "}");
             writer.EndElement().Line()
                 .StartElement("body").EndStartElement().Line()
                 .StartElement("main").Attribute("class", "cfx-diagram-shell").EndStartElement().Line();
@@ -52,20 +60,25 @@ internal sealed class HtmlInteractiveDiagramRenderer {
             writer.StartElement("style").EndStartElement().RawTrusted(HtmlDiagramAssets.Style).EndElement().Line();
         }
 
-        var steps = family == "sequence";
         writer.StartElement("section").Attribute("class", "cfx-diagram").Attribute("data-cfx-look", "graphite")
-            .Attribute("data-cfx-diagram", family).Attribute("role", "group").Attribute("aria-label", title)
+            .Attribute("data-cfx-diagram", family).Attribute("role", "group").Attribute("aria-label", name)
             .Attribute("lang", page ? null : language).Attribute("dir", page ? null : Localization.DirectionAttribute)
             .Attribute("data-cfx-ui", Localization.ToDiagramJson()).Attribute("data-cfx-diagram-model", model)
-            .Attribute("style", "--cfx-diagram-width:" + Number(prepared.Size.Width) + "px;--cfx-diagram-inset:"
-                + Number(Math.Max(0, Math.Min(inset, prepared.Size.Width / 4)) * 100 / prepared.Size.Width) + "%;color-scheme:" + (mode == VisualThemeMode.Dark ? "dark" : "light")
+            .Attribute("style", "--cfx-diagram-width:" + Number(width) + "px;--cfx-diagram-font:" + HtmlChartRenderer.CssFontFamily(fontFamily)
+                + ";--cfx-diagram-title-size:" + Number(theme.Typography.TitleSize * 1.2) + "px;--cfx-diagram-subtitle-size:" + Number(theme.Typography.SubtitleSize * 1.15)
+                + "px;color-scheme:" + (mode == VisualThemeMode.Dark ? "dark" : "light")
                 + HtmlInteractiveChartRenderer.ThemeInteractionTokens(theme, mode, transparent))
             .EndStartElement().Line();
-        var emission = prepared.ExportSvgEmission(VisualSvgTextPresentation.Automatic);
+        if (!string.IsNullOrWhiteSpace(title) || !string.IsNullOrWhiteSpace(subtitle)) {
+            writer.StartElement("header").Attribute("class", "cfx-diagram-heading").EndStartElement();
+            if (!string.IsNullOrWhiteSpace(title)) writer.StartElement("h2").Attribute("class", "cfx-diagram-title").EndStartElement().Text(title!).EndElement();
+            if (!string.IsNullOrWhiteSpace(subtitle)) writer.StartElement("p").Attribute("class", "cfx-diagram-subtitle").EndStartElement().Text(subtitle!).EndElement();
+            writer.EndElement().Line();
+        }
         writer.StartElement("div").Attribute("class", "cfx-diagram-stage").Attribute("data-cfx-diagram-stage", "true").EndStartElement()
-            .RawTrusted(emission.Svg).EndElement().Line();
-        HtmlCapturedFontAssets.Write(writer, emission.Fonts);
-        if (steps) WritePlayback(writer);
+            .RawTrusted(svg.Svg).EndElement().Line();
+        HtmlCapturedFontAssets.Write(writer, svg.Fonts);
+        if (family == "sequence") WritePlayback(writer);
         // Without the runtime the static SVG stays a complete image; the hint appears once exploration is available.
         writer.StartElement("p").Attribute("class", "cfx-diagram-readout").Attribute("data-cfx-diagram-readout", "true")
             .Attribute("role", "status").Attribute("aria-live", "polite").BooleanAttribute("hidden", true).EndStartElement()
@@ -76,6 +89,29 @@ internal sealed class HtmlInteractiveDiagramRenderer {
         return writer.Build();
     }
 
+    // Layout fills the requested viewport; the card shows only the drawn content so no empty bands sit above or below it.
+    // Only the root viewBox changes: native geometry and identities are untouched.
+    private static (string Svg, VisualSvgFontResources? Fonts) CropToContent(PreparedVisual prepared, out double width) {
+        var emission = prepared.ExportSvgEmission(VisualSvgTextPresentation.Automatic);
+        var size = prepared.Size; width = size.Width;
+        if (prepared.Regions.Count == 0) return (emission.Svg, emission.Fonts);
+        const double margin = 12;
+        var left = Math.Max(0, prepared.Regions.Min(region => region.Bounds.X) - margin);
+        var top = Math.Max(0, prepared.Regions.Min(region => region.Bounds.Y) - margin);
+        var right = Math.Min(size.Width, prepared.Regions.Max(region => region.Bounds.X + region.Bounds.Width) + margin);
+        var bottom = Math.Min(size.Height, prepared.Regions.Max(region => region.Bounds.Y + region.Bounds.Height) + margin);
+        if (right <= left || bottom <= top) return (emission.Svg, emission.Fonts);
+        var svg = emission.Svg; var end = svg.IndexOf('>');
+        if (!svg.StartsWith("<svg", StringComparison.Ordinal) || end < 0) return (svg, emission.Fonts);
+        var root = svg.Substring(0, end);
+        root = Replace(root, "width", Number(right - left));
+        root = Replace(root, "height", Number(bottom - top));
+        root = Replace(root, "viewBox", Number(left) + " " + Number(top) + " " + Number(right - left) + " " + Number(bottom - top));
+        width = right - left;
+        return (root + svg.Substring(end), emission.Fonts);
+        static string Replace(string tag, string name, string value) =>
+            System.Text.RegularExpressions.Regex.Replace(tag, "\\s" + name + "=\"[^\"]*\"", " " + name + "=\"" + value + "\"");
+    }
     private void WritePlayback(HtmlMarkupWriter writer) {
         writer.StartElement("div").Attribute("class", "cfx-diagram-toolbar").Attribute("role", "toolbar")
             .Attribute("aria-label", Localization[HtmlChartText.DiagramPlayback]).BooleanAttribute("hidden", true).EndStartElement();
@@ -143,6 +179,5 @@ internal sealed class HtmlInteractiveDiagramRenderer {
         return json.Append('}').ToString();
     }
 
-    private static string Title(string title, string id) => string.IsNullOrWhiteSpace(title) ? id : title;
     private static string Number(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
 }

@@ -17,7 +17,7 @@ public sealed class InteractiveDiagramBrowserTests {
     [InlineData(VisualThemeMode.Dark)]
     public async Task FlowStepsAndConnectorsAreExploredByKeyboardAndPointer(VisualThemeMode mode) {
         if (!Enabled) return;
-        var html = FlowRecipe.Create("expanded").ToInteractiveHtmlPage(Context(mode, "Assessment workflow", 900, 600));
+        var html = FlowRecipe.Create("expanded").ToInteractiveHtmlPage(Context(mode, "Assessment workflow", "Typed lanes, decisions and branched routes", 900, 600));
         await using var session = await OpenDiagramAsync(html);
         var page = session.Page; var root = page.Locator(".cfx-diagram");
 
@@ -47,7 +47,7 @@ public sealed class InteractiveDiagramBrowserTests {
     [InlineData(VisualThemeMode.Dark)]
     public async Task SequenceMessagesHighlightTheirParticipantsAndPlayInOrder(VisualThemeMode mode) {
         if (!Enabled) return;
-        var html = SequenceRecipe.Create("expanded").ToInteractiveHtmlPage(Context(mode, "Request processing sequence", 960, 760));
+        var html = SequenceRecipe.Create("expanded").ToInteractiveHtmlPage(Context(mode, "Request processing sequence", "Participant notation, self calls, fragments and activation", 960, 760));
         await using var session = await OpenDiagramAsync(html);
         var page = session.Page; var root = page.Locator(".cfx-diagram");
         var progress = root.Locator("[data-cfx-diagram-progress]");
@@ -86,9 +86,9 @@ public sealed class InteractiveDiagramBrowserTests {
         AssertNoErrors(session);
     }
 
-    private static VisualRenderContext Context(VisualThemeMode mode, string title, int width, int height) =>
+    private static VisualRenderContext Context(VisualThemeMode mode, string title, string subtitle, int width, int height) =>
         new(new VisualLayoutOptions(new VisualSize(width, height), fitHeightToContent: true), VisualTheme.Graphite(), mode,
-            new VisualFrame(title, "Live page", showLegend: false));
+            new VisualFrame(title, subtitle, showLegend: false));
 
     private static async Task<HtmlTinkerX.HtmlBrowserSession> OpenDiagramAsync(string html) {
         var session = await OpenAsync(html, 1280, 900);
@@ -98,11 +98,16 @@ public sealed class InteractiveDiagramBrowserTests {
         var facts = await session.Page.EvaluateAsync<JsonElement>("""
             () => ({ svgRole: document.querySelector('.cfx-diagram svg').getAttribute('role'),
               unnamed: [...document.querySelectorAll('.cfx-diagram [role="button"][data-cfx-diagram-item]')].filter(node => !node.getAttribute('aria-label')).length,
-              readout: !document.querySelector('[data-cfx-diagram-readout]').hidden })
+              readout: !document.querySelector('[data-cfx-diagram-readout]').hidden,
+              heading: document.querySelector('.cfx-diagram-title')?.textContent ?? null,
+              nativeHeading: !!document.querySelector('.cfx-diagram svg [data-cfx-role="frame-heading"]') })
             """);
         Assert.Equal("group", facts.GetProperty("svgRole").GetString());
         Assert.Equal(0, facts.GetProperty("unnamed").GetInt32());
         Assert.True(facts.GetProperty("readout").GetBoolean());
+        // The card carries the frame title once, as HTML; the drawing does not repeat it.
+        Assert.False(string.IsNullOrEmpty(facts.GetProperty("heading").GetString()));
+        Assert.False(facts.GetProperty("nativeHeading").GetBoolean());
         return session;
     }
 
