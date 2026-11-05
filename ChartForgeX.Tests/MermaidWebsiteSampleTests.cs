@@ -159,8 +159,9 @@ public sealed class MermaidWebsiteSampleTests {
         }
 
         var light = MermaidRenderer.Render(source.Substring(directive.Length)).Artifact!;
-        var nativeLight = VisualTheme.Graphite().Resolve(VisualThemeMode.Light).Background;
-        var expected = directive.Length > 0 ? ChartColor.FromHex("#333333") : nativeLight;
+        // Diagrams draw on the Graphite card; Mermaid's dark theme selects the dark card.
+        var nativeLight = VisualTheme.Graphite().Resolve(VisualThemeMode.Light).ElevatedSurface;
+        var expected = directive.Length > 0 ? VisualTheme.Graphite().Resolve(VisualThemeMode.Dark).ElevatedSurface : nativeLight;
         Assert.Equal(directive.Length > 0 ? VisualThemeMode.Dark : VisualThemeMode.Light, chart.ThemeMode);
         Assert.Equal(expected, ChartColor.Parse(Background(svg)));
         Assert.Equal(expected, CornerColor(result.Artifact.ToPng()));
@@ -240,9 +241,9 @@ public sealed class MermaidWebsiteSampleTests {
         var darkSvg = dark.ToSvg();
         var lightSvg = light.ToSvg();
         Assert.NotEqual(darkSvg, lightSvg);
-        // The finite dark preset is exactly #333333 (luminance .2), rather than the native Graphite dark canvas.
-        var expectedLight = VisualTheme.Graphite().Resolve(VisualThemeMode.Light).Background;
-        var expectedDark = ChartColor.FromHex("#333333");
+        // Mermaid's dark theme selects the Graphite dark card that every diagram draws on.
+        var expectedLight = VisualTheme.Graphite().Resolve(VisualThemeMode.Light).ElevatedSurface;
+        var expectedDark = VisualTheme.Graphite().Resolve(VisualThemeMode.Dark).ElevatedSurface;
         Assert.Equal(expectedLight, ChartColor.Parse(Background(XDocument.Parse(lightSvg))));
         Assert.Equal(expectedDark, ChartColor.Parse(Background(XDocument.Parse(darkSvg))));
         var lightPng = light.ToPng(); var darkPng = dark.ToPng();

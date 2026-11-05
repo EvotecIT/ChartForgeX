@@ -78,10 +78,11 @@ internal static class MermaidPresentation {
                 block.Options.ShowCard = false;
                 block.Options.TransparentBackground = false;
             }
-            // An explicit source preset or canvas requests paint; an unstyled diagram keeps its transparent adapter canvas.
-            if (block is JourneyDiagramBlock || block is TimelineDiagramBlock) {
+            // An explicit source preset or canvas requests paint; otherwise the card sits on a transparent
+            // canvas, like a chart, so no page tone shows around its rounded corners.
+            else {
                 var canvasRequested = document.Configuration.ThemeColors?.HasBackground == true
-                    || MermaidThemePreset.IsKnown(document.Configuration.Theme);
+                    || MermaidThemePreset.IsPreset(document.Configuration.Theme);
                 block.Options.TransparentBackground = !canvasRequested
                     || block.Options.Theme.Resolve(block.Options.ThemeMode).Background.A == 0;
             }

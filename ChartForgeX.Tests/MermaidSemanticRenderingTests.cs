@@ -35,8 +35,8 @@ public sealed class MermaidSemanticRenderingTests {
         var svg = XDocument.Parse(artifact.ToSvg());
         Assert.Contains(svg.Descendants(), element => element.Name.LocalName == "title" && element.Value == "Accessible API");
         var topology = Assert.IsType<TopologyChart>(artifact.Model);
-        // The source selects the pinned native dark preset, whose canvas literal is #333333.
-        var expected = ChartForgeX.Primitives.ChartColor.FromHex("#333333");
+        // Mermaid's dark theme selects Graphite dark; diagrams draw on its card surface.
+        var expected = VisualTheme.Graphite().Resolve(VisualThemeMode.Dark).ElevatedSurface;
         Assert.Equal(VisualThemeMode.Dark, topology.ThemeMode);
         Assert.Contains(expected.ToHex(), svg.ToString());
         Assert.Equal(expected, topology.Theme.Resolve(topology.ThemeMode).Background);
