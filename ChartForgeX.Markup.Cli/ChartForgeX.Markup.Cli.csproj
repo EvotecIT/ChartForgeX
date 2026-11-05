@@ -15,7 +15,7 @@
     <Authors>Evotec</Authors>
     <Description>Command-line renderer and code generator for ChartForgeX markup.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReleaseNotes>ChartForgeX 3.3.1 fixes compact terminal topology layout, labels, live values, group captions and connecting routes, and preserves placement when prepared diagrams are resized or restyled. Includes #425. Release notes: https://github.com/EvotecIT/ChartForgeX/releases/tag/ChartForgeX-v3.3.1</PackageReleaseNotes>
+    <PackageReleaseNotes>Optional browser data charts with native layout policy, responsive updates, keyboard selection and deterministic disposal. Coordinated ChartForgeX 3.4.0 release.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageProjectUrl>https://github.com/EvotecIT/ChartForgeX</PackageProjectUrl>
     <RepositoryUrl>https://github.com/EvotecIT/ChartForgeX</RepositoryUrl>

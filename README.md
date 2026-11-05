@@ -186,6 +186,8 @@ var chart = Chart.Create()
 chart.SavePng("cpu.png");
 ```
 
+For raw browser data, the optional [browser data renderer](docs/browser-data-renderer.md) draws selections and pivots on demand with stable mark IDs and native surface rules.
+
 The [API guide](docs/v2/api-conventions.md) covers category and time axes, missing observations, series options, color scales, statistical helpers, and small multiples. Stable hierarchy, flow, and interaction IDs keep selection tied to the data when labels or presentation change.
 
 Use [chart paint and formatters](docs/chart-styling.md) for typed per-observation styling, series gradients and embedded image fills, dashed lines, and per-series label and tooltip text. SVG and native PNG share the captured paint.

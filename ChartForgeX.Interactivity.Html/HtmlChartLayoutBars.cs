@@ -43,9 +43,8 @@ internal static class HtmlChartLayoutBars {
         var pitch = ChartCategorySlotLayout.Create(categoryAnchors, projection.Plot.Width, chart.Options.Theme.Spacing,
             1, 0, requireMinimumFootprint: false, sampleSlots: chart.Options.IsSparkline ? chart.Options.SparklineSampleCount : 0,
             maximumPitch: maximumPitch).Pitch;
-        // The native slot contract: the design band fill and, for stacks, the stacked thickness cap.
-        var stacked = participants.Any(stacks.IsStacked);
-        var maximum = chart.Options.MaximumBarWidth ?? ChartMarkSurface.MaximumThickness(chart.Options.Theme.MaximumBarWidth, stacked);
+        // The native slot contract: the design band fill and the column cap, stacked or grouped alike.
+        var maximum = chart.Options.MaximumBarWidth ?? ChartMarkSurface.MaximumThickness(chart.Options.Theme.MaximumBarWidth, horizontal: false);
         json.Append(']').Append(",\"barPitch\":").Append(pitch.ToString("R", CultureInfo.InvariantCulture))
             .Append(",\"barFill\":").Append(ChartCategorySlotLayout.BandShare(chart.Options.IsSparkline ? chart.Options.SparklineSampleCount : 0).ToString("R", CultureInfo.InvariantCulture))
             .Append(",\"maximumBarWidth\":").Append(maximum.ToString("R", CultureInfo.InvariantCulture))
