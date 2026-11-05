@@ -201,7 +201,21 @@ internal static class VisualFrameLayout {
                 if (count <= 1) resolved = new[] { Math.Min(legendWidth, natural.Max()) };
                 var room = Math.Max(0, legendWidth - gap * (resolved.Length - 1));
                 var total = resolved.Sum();
-                if (total > room) for (var index = 0; index < resolved.Length; index++) resolved[index] *= room / total;
+                if (total > room) {
+                    // Only names give up width, and none below its readable shortened form: each column keeps its glyph,
+                    // value and percentage space, so values never disappear to make room.
+                    var fixedWidths = new double[resolved.Length]; var names = new double[resolved.Length];
+                    for (var index = 0; index < natural.Length; index++) {
+                        var label = OneLine(entries[index].Label); var labelWidth = builder.MeasureText(label, legendStyle).Width;
+                        var column = index % resolved.Length;
+                        fixedWidths[column] = Math.Max(fixedWidths[column], natural[index] - labelWidth);
+                        names[column] = Math.Max(names[column], Math.Min(labelWidth, builder.MeasureText(ShortenedMinimum(label), legendStyle).Width));
+                    }
+                    for (var index = 0; index < resolved.Length; index++) fixedWidths[index] += names[index];
+                    var shrinkable = total - fixedWidths.Sum();
+                    var scale = shrinkable > 0 ? Math.Max(0, room - fixedWidths.Sum()) / shrinkable : 0;
+                    for (var index = 0; index < resolved.Length; index++) resolved[index] = fixedWidths[index] + (resolved[index] - fixedWidths[index]) * scale;
+                }
                 else if (fill) for (var index = 0; index < resolved.Length; index++) resolved[index] += (room - total) / resolved.Length;
                 gridColumns = resolved;
                 gridIndex = new Dictionary<VisualLegendEntry, int>();

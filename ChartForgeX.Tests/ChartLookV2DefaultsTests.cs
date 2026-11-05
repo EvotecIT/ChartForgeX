@@ -173,6 +173,17 @@ public sealed class ChartLookV2DefaultsTests {
             Assert.True(region.Bounds.Bottom <= keptSlice.Cy - keptSlice.Outer + .001, "An authored position keeps the wrapped legend above the plot."));
     }
 
+    [Theory]
+    [InlineData(VisualThemeMode.Light)]
+    [InlineData(VisualThemeMode.Dark)]
+    public void CompactColumnsThatCannotFitShortenNamesButKeepEveryValue(VisualThemeMode mode) {
+        // Three-digit revenue and long service names cannot fit two columns in 292 px, so names give up the width.
+        var prepared = Prepare(DonutRecipe.Create("compact", mode), 320, 360, mode);
+        Assert.Contains(Texts(prepared, "legend-label"), node => Assert.Single(node.Text.Lines).Text.EndsWith("…", StringComparison.Ordinal));
+        Assert.Equal(new[] { "312", "241", "187", "133", "79", "48" }, Texts(prepared, "legend-value").Select(node => Assert.Single(node.Text.Lines).Text));
+        Assert.Equal(6, Texts(prepared, "legend-percentage").Count(node => Assert.Single(node.Text.Lines).Text.EndsWith("%", StringComparison.Ordinal)));
+    }
+
     [Fact]
     public void WideRadialPlotLimitsItsDiameterToSixTenthsOfTheWidth() {
         // 572 x 372 is wider than 1.4:1 but not so wide that the height alone already limits the pie.
