@@ -86,8 +86,17 @@
     return readable.filter(ticks => ticks.length <= target).pop() || readable[0] || candidates.pop()
       || label(standaloneInsideTicks(axis.minimum, axis.maximum, 2, whole).values);
   };
+  // The native automatic search start (VisualCartesianCompiler.NumericFittingCount) for a linear window:
+  // whole units on short domains across, then about one tick per 80 px across or 50 px down an axis of at
+  // least 160 px. The densest fitting layout at or below it is what a native preparation of the window paints.
+  const standaloneNativeTickCount = (axis, length, vertical, size) => {
+    const unit = Math.max(6, Math.ceil(axis.maximum - axis.minimum) + 1);
+    const count = vertical || !Number.isFinite(unit) ? 6 : unit <= 100 ? unit : Math.min(100, Math.max(7, Math.floor(length / (size * 5)) + 2));
+    if (axis.integerTicks || length < 160) return count;
+    return vertical ? Math.max(count, Math.min(9, Math.round(length / 50) + 1)) : count <= 13 ? count : Math.min(count, Math.max(4, Math.floor(length / 80) + 1));
+  };
   // Values an observation places on one of its value axes, including its range and summary extents.
-  const standaloneExtentKeys = ['cfxLow', 'cfxHigh', 'cfxOpen', 'cfxClose', 'cfxLower', 'cfxUpper', 'cfxYLower', 'cfxYUpper', 'cfxMinimum', 'cfxMaximum'];
+  const standaloneExtentKeys = ['cfxLow', 'cfxHigh', 'cfxOpen', 'cfxClose', 'cfxLower', 'cfxUpper', 'cfxYLower', 'cfxYUpper', 'cfxMinimum', 'cfxMaximum', 'cfxStart'];
   const standalonePointValues = (point, keys = standaloneExtentKeys) => [point.y,
     ...keys.filter(key => point.node.dataset[key] !== undefined).map(key => Number(point.node.dataset[key]))];
   // An axis is whole-numbered when the static policy said so, or when its full domain and every

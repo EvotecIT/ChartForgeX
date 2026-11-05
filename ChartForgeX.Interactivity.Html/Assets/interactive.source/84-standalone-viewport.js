@@ -12,7 +12,7 @@
     const svg = root.querySelector('.cfx-stage svg');
     if (root._cfxStandaloneViewport?.svg === svg) return root._cfxStandaloneViewport;
     const metadata = capturedCartesianMetadata(root);
-    if (!svg || !standaloneReprojects(metadata)) return null;
+    if (!svg || !standaloneReprojects(metadata, svg)) return null;
     const horizontal = metadata.orientation === 'horizontal';
     // Horizontal charts keep categories on the vertical axis and values on X; physical paint maps stay x/y.
     const view = { svg, source: copyHostValue(metadata), windows: {}, geometry: [], labels: [], axes: [], points: [], frames: [],
@@ -57,7 +57,7 @@
     svg.querySelectorAll('[data-cfx-point][data-cfx-x]').forEach(node => {
       if (node.closest('[data-cfx-role="legend-item"]')) return;
       view.points.push({ node, region: node._cfxNativeRegion, paired: node._cfxPairedRegion, interiors: node._cfxFillInteriors,
-        midline: node.dataset.cfxMidlineY, x: Number(node.dataset.cfxX), y: Number(node.dataset.cfxY),
+        midline: node.dataset.cfxMidlineY, x: Number(node.dataset.cfxX), y: Number(node.dataset.cfxY ?? node.dataset.cfxEnd),
         visibility: standaloneStyle(node, 'visibility'),
         series: Number(node.dataset.cfxSeries), axis: valueAxis(node.dataset.cfxAxis === 'secondary'),
         visible: node.getAttribute('data-cfx-visible') });
@@ -67,6 +67,7 @@
       const nodes = Array.from(svg.querySelectorAll('[data-cfx-role="axis-' + role + '-label"],[data-cfx-role="grid-' + role + '"]'));
       view.axes.push({ name, nodes, display: new Map(nodes.map(node => [node, standaloneStyle(node, 'display')])), layer: null });
     }
+    view.stacks = captureStandaloneStacks(view);
     root._cfxStandaloneViewport = view;
     root.dataset.cfxStandaloneProjection = 'true';
     return view;
@@ -96,9 +97,10 @@
     const map = value => standaloneCoordinate(target, standaloneAxisValue(source, vertical ? 1 - (value - first) / length : (value - first) / length), plot, vertical);
     return { at: map, scale: (map(first + length) - map(first)) / length };
   };
-  const standalonePath = (path, x, y) => {
+  const standalonePath = (path, x, y, pair) => {
     // The native SVG writer emits absolute M/L/Q/C/A/Z commands. Preserve curve
     // control points and arc flags instead of flattening curves into polylines.
+    // A pair mapper moves each vertex from both of its coordinates (restacked areas).
     const tokens = path.match(/[a-zA-Z]|[-+]?(?:\d*\.\d+|\d+\.?\d*)(?:[eE][-+]?\d+)?/g) || [];
     const arity = { M: 2, L: 2, Q: 4, C: 6, A: 7, H: 1, V: 1, Z: 0 };
     let command = '', position = 0, output = [];
@@ -107,29 +109,29 @@
       const size = arity[command];
       if (!size || position + size > tokens.length) return path;
       const values = tokens.slice(position, position + size).map(Number); position += size;
-      if (command === 'A') { values[0] *= Math.abs(x.scale); values[1] *= Math.abs(y.scale); values[5] = x.at(values[5]); values[6] = y.at(values[6]); }
+      if (command === 'A') { values[0] *= Math.abs(x.scale); values[1] *= Math.abs(y.scale); [values[5], values[6]] = pair ? pair(values[5], values[6]) : [x.at(values[5]), y.at(values[6])]; }
       else if (command === 'H') values[0] = x.at(values[0]);
       else if (command === 'V') values[0] = y.at(values[0]);
-      else for (let i = 0; i < values.length; i++) values[i] = (i % 2 ? y : x).at(values[i]);
+      else for (let i = 0; i < values.length; i += 2) [values[i], values[i + 1]] = pair ? pair(values[i], values[i + 1]) : [x.at(values[i]), y.at(values[i + 1])];
       output.push(values.map(value => Number(value.toFixed(4))).join(' '));
     }
     return output.join(' ');
   };
+  const projectStandaloneAttrs = (attrs, x, y, pair) => {
+    const out = {}, round = value => Number(value.toFixed(4));
+    if (attrs.d) out.d = standalonePath(attrs.d, x, y, pair);
+    if (attrs.points) out.points = attrs.points.trim().split(/[\s,]+/).map(Number).map((value, index) => (index % 2 ? y : x).at(value)).join(' ');
+    for (const name of ['x', 'x1', 'x2', 'cx']) if (attrs[name] !== undefined) out[name] = round(x.at(Number(attrs[name])));
+    for (const name of ['y', 'y1', 'y2', 'cy']) if (attrs[name] !== undefined) out[name] = round(y.at(Number(attrs[name])));
+    for (const [name, map] of [['width', x], ['height', y]]) if (attrs[name] !== undefined) out[name] = round(Number(attrs[name]) * Math.abs(map.scale));
+    return out;
+  };
   const paintStandaloneGeometry = (entry, x, y) => {
-    const { node, attrs } = entry;
     if (entry.marker) {
-      const dx = x.at(entry.marker.x) - entry.marker.x, dy = y.at(entry.marker.y) - entry.marker.y;
+      const at = entry.currentMarker || entry.marker, dx = x.at(at.x) - entry.marker.x, dy = y.at(at.y) - entry.marker.y;
       x = { at: value => value + dx, scale: 1 }; y = { at: value => value + dy, scale: 1 };
     }
-    const set = (name, value) => node.setAttribute(name, Number(value.toFixed(4)));
-    if (attrs.d) node.setAttribute('d', standalonePath(attrs.d, x, y));
-    if (attrs.points) {
-      const points = attrs.points.trim().split(/[\s,]+/).map(Number);
-      node.setAttribute('points', points.map((value, index) => (index % 2 ? y : x).at(value)).join(' '));
-    }
-    for (const name of ['x', 'x1', 'x2', 'cx']) if (attrs[name] !== undefined) set(name, x.at(Number(attrs[name])));
-    for (const name of ['y', 'y1', 'y2', 'cy']) if (attrs[name] !== undefined) set(name, y.at(Number(attrs[name])));
-    for (const [name, map] of [['width', x], ['height', y]]) if (attrs[name] !== undefined) set(name, Number(attrs[name]) * Math.abs(map.scale));
+    for (const [name, value] of Object.entries(projectStandaloneAttrs(entry.current || entry.attrs, x, y))) entry.node.setAttribute(name, value);
   };
   let standaloneMeasure = null;
   const standaloneTextWidth = (font, text) => {
@@ -165,10 +167,11 @@
       const family = getComputedStyle(root).getPropertyValue('--cfx-tooltip-font') || style?.fontFamily || 'sans-serif';
       // Room is in drawing units: a label's own width plus a 12 CSS pixel gap, or about two lines vertically.
       const room = vertical ? () => size * 2 : label => standaloneTextWidth(size + 'px ' + family, label) + 16 / scale;
-      // The drawing's own label count is the static density target for this size.
+      // Linear windows start at the native density for the axis length; others keep the drawing's own label count.
       const ticks = projection.captions === 'calendar' && !vertical && standaloneTimeTicks(projection, plot.width,
         label => standaloneTextWidth(size + 'px ' + family, label), size, standaloneTimeObservations(view)) || standaloneTicks(projection, vertical ? plot.height : plot.width, room,
-        axis.nodes.filter(node => node.dataset.cfxRole.endsWith('-label') && axis.display.get(node)?.value !== 'none').length || 5,
+        projection.scale === 'linear' ? standaloneNativeTickCount(projection, vertical ? plot.height : plot.width, vertical, size)
+          : axis.nodes.filter(node => node.dataset.cfxRole.endsWith('-label') && axis.display.get(node)?.value !== 'none').length || 5,
         axis.name === view.categoryAxis && view.source.categoryLabels?.length ? view.source.categoryLabels : null, standaloneWholeAxis(view, axis.name, projection));
       for (const tick of ticks) {
         const position = standaloneCoordinate(projection, tick.value, plot, vertical);
@@ -195,7 +198,7 @@
   const paintStandaloneViewport = root => {
     const view = standaloneViewport(root); if (!view) return false;
     if (view.printing) return true;
-    if (!Object.keys(view.windows).length) {
+    if (!Object.keys(view.windows).length && !view.stacks?.active) {
       restoreStandaloneGeometry(view);
       setStandaloneClip(view, false);
       root.dataset.cfxPreparedChart = JSON.stringify(view.source); root._cfxDataProjection = view.source.dataProjection;
@@ -213,23 +216,27 @@
     }
     view.geometry.forEach(entry => paintStandaloneGeometry(entry, x, maps[entry.axis] || maps.y));
     view.labels.forEach(entry => {
-      const y = maps[entry.axis] || maps.y;
-      entry.node.setAttribute('transform', 'translate(' + (x.at(entry.x) - entry.x) + ' ' + (y.at(entry.y) - entry.y) + ') ' + (entry.transform || ''));
-      entry.node.style.visibility = entry.node.matches('.cfx-series-muted,.cfx-series-isolated-out') ? 'hidden' : '';
+      const y = maps[entry.axis] || maps.y, at = entry.current || entry, px = x.at(at.x), py = y.at(at.y);
+      entry.node.setAttribute('transform', 'translate(' + (px - entry.x) + ' ' + (py - entry.y) + ') ' + (entry.transform || ''));
+      // The clip moves with a translated caption, so a caption whose anchor leaves the plot hides instead.
+      // A restacked total keeps its captured caption, so it hides until its stack is whole again.
+      const slack = entry.slack || .5, outside = px < plot.x - slack || px > plot.x + plot.width + slack || py < plot.y - slack || py > plot.y + plot.height + slack;
+      entry.node.style.visibility = outside || entry.hiddenTotal || entry.node.matches('.cfx-series-muted,.cfx-series-isolated-out') ? 'hidden' : '';
     });
     const region = (box, y) => box && Object.freeze({ x: x.at(box.x), y: y.at(box.y), width: box.width * Math.abs(x.scale), height: box.height * Math.abs(y.scale) });
     for (const point of view.points) {
       // A horizontal observation's category runs down the plot and its value across it.
       const y = view.horizontal ? maps.y : maps[point.axis] || maps.y;
-      const px = view.horizontal ? standaloneCoordinate(standaloneAxis(root, 'x'), point.y, plot, false) : standaloneCoordinate(standaloneAxis(root, 'x'), point.x, plot, false);
-      const py = view.horizontal ? standaloneCoordinate(standaloneAxis(root, 'y'), point.x, plot, true) : standaloneCoordinate(standaloneAxis(root, point.axis), point.y, plot, true);
-      if (point.region) point.node._cfxNativeRegion = region(point.region, y);
+      const level = point.stack ? (point.stack.now || point.stack).end : point.y;
+      const px = view.horizontal ? standaloneCoordinate(standaloneAxis(root, 'x'), level, plot, false) : standaloneCoordinate(standaloneAxis(root, 'x'), point.x, plot, false);
+      const py = view.horizontal ? standaloneCoordinate(standaloneAxis(root, 'y'), point.x, plot, true) : standaloneCoordinate(standaloneAxis(root, point.axis), level, plot, true);
+      if (point.region) point.node._cfxNativeRegion = region(point.stackRegion || point.region, y);
       if (point.paired) point.node._cfxPairedRegion = region(point.paired, y);
       if (point.midline !== undefined) point.node.dataset.cfxMidlineY = y.at(Number(point.midline));
       const bounds = point.node._cfxNativeRegion || { x: px, y: py, width: 0, height: 0 };
       point.node.dataset.cfxVisible = String(point.visible !== 'false' && bounds.x + bounds.width >= plot.x - .01 && bounds.x <= plot.x + plot.width + .01
         && bounds.y + bounds.height >= plot.y - .01 && bounds.y <= plot.y + plot.height + .01);
-      if (point.interiors) point.node._cfxFillInteriors = Object.freeze(point.interiors.map(([px, py, radius]) =>
+      if (point.interiors) point.node._cfxFillInteriors = Object.freeze((point.stackInteriors || point.interiors).map(([px, py, radius]) =>
         Object.freeze([x.at(px), y.at(py), radius * Math.min(Math.abs(x.scale), Math.abs(y.scale))])));
     }
     const metadata = copyHostValue(view.source);
@@ -373,6 +380,9 @@
   };
   const releaseStandaloneViewport = root => {
     const view = root._cfxStandaloneViewport; if (!view) return;
+    view.stacks?.members.forEach(member => standaloneStackFacts.forEach((key, index) => {
+      if (member.facts[index] === undefined) delete member.node.dataset[key]; else member.node.dataset[key] = member.facts[index];
+    }));
     restoreStandaloneGeometry(view);
     setStandaloneClip(view, false); view.clip.remove();
     if (view.defs && !view.defs.hasChildNodes()) view.defs.remove();
@@ -385,13 +395,16 @@
     // Only hidden data counts; legend paint can keep a stale isolation class until its own sync.
     const hidden = view.points.some(point => point.node.closest('.cfx-series-muted,.cfx-series-isolated-out'));
     const previous = beginStandaloneChange(view);
+    restackStandaloneView(view);
     for (const name of view.horizontal ? ['x'] : ['y', 'secondaryY']) {
       const axis = standaloneAxis(root, name); if (!axis) continue;
       if (!hidden) { delete view.windows[name]; continue; }
+      // Stacked observations span their restacked baseline and end.
       const values = view.points.filter(point => point.axis === name && !point.node.closest('.cfx-series-muted,.cfx-series-isolated-out'))
-        .flatMap(point => standalonePointValues(point, ['cfxLow', 'cfxHigh', 'cfxLower', 'cfxUpper', 'cfxYLower', 'cfxYUpper', 'cfxMinimum', 'cfxMaximum'])).filter(Number.isFinite);
+        .flatMap(point => point.stack ? [(point.stack.now || point.stack).base, (point.stack.now || point.stack).end]
+          : standalonePointValues(point, ['cfxLow', 'cfxHigh', 'cfxLower', 'cfxUpper', 'cfxYLower', 'cfxYUpper', 'cfxMinimum', 'cfxMaximum', 'cfxStart'])).filter(Number.isFinite);
       if (!values.length) continue;
-      if (view.source.series.some(row => ['area', 'steparea', 'bar', 'horizontalbar'].includes(row.kind)) && axis.scale !== 'logarithmic') values.push(0);
+      if (view.source.series.some(row => ['area', 'steparea', 'stackedarea', 'bar', 'horizontalbar', 'waterfall'].includes(row.kind)) && axis.scale !== 'logarithmic') values.push(0);
       let minimum = Infinity, maximum = -Infinity;
       for (const value of values) { minimum = Math.min(minimum, value); maximum = Math.max(maximum, value); }
       if (axis.scale === 'logarithmic') { minimum = Math.max(axis.fullMinimum, minimum); maximum = Math.min(axis.fullMaximum, maximum); }
