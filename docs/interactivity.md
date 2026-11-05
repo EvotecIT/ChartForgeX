@@ -104,14 +104,28 @@ isolation moved out of the runtimes. A host page that registers only
 ## Standalone report viewports
 
 A saved interactive HTML page can navigate numeric Cartesian Line, StepLine,
-Area, StepArea, Bar, HorizontalBar, Scatter, Bubble, Candlestick, OHLC,
-RangeBand, RangeArea, BoxPlot and ErrorBar charts without a server or a
-`connectNative` callback. Linear and logarithmic axes are supported, as is a
-secondary Y axis on vertical charts.
+Area, StepArea, StackedArea, Bar, HorizontalBar (grouped, stacked or
+normalized), Scatter, Bubble, Candlestick, OHLC, RangeBand, RangeArea, BoxPlot,
+ErrorBar and Waterfall charts without a server or a `connectNative` callback.
+Linear and logarithmic axes are supported, as is a secondary Y axis on vertical
+charts.
 The HTML adapter keeps the source coordinates and reprojects the captured data
 ink into the fixed plot rectangle. Window changes regenerate axis ticks and
 clip data at the plot boundary while keeping the chart frame, marker sizes,
-stroke widths and axis text at their drawing size.
+stroke widths and axis text at their drawing size. A linear window starts its
+tick search at the native density for the axis length, so its captions read as
+a native preparation of that window would.
+
+Hiding a stacked series from the legend restacks the remaining series from
+their captured observations: the page repeats the native stack order, keeps
+positive and negative sides apart, recomputes 100% shares from the visible
+source values, moves each segment, its rounded stack outline, data labels and
+hover regions onto the new baselines, and re-fits the value axis to the visible
+stack ends. Tooltips read the restacked baseline, end and total. A stack total
+caption hides while its stack is incomplete, because its text was formatted
+natively. A stacked area restacks only when every member of the stack shares
+the same X coordinates; otherwise the chart declines zoom. Waterfall windows
+and legend re-fits use each step's captured running totals.
 
 Enable the controls when generating the page:
 
@@ -199,8 +213,9 @@ or discrete spacing, automatic label density and unrotated captions. A zoomed
 window there repeats the native calendar fit, so its dates, clock times and
 regular bar cadence read as a native preparation of that window would read.
 Other time axes, symmetric-logarithmic axes, a secondary axis on a horizontal
-chart, stacked and other Cartesian families, and native annotation layout
-require a connected native preparation path. Mixing an unsupported series
+chart, stacked areas whose members have different X coordinates, Lollipop,
+Dumbbell, RangeBar, Timeline and other Cartesian families, and native
+annotation layout require a connected native preparation path. Mixing an unsupported series
 family into a chart does not establish standalone viewport support.
 
 A saved page never scales a whole drawing, which would only enlarge its text.

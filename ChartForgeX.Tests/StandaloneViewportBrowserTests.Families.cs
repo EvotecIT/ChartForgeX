@@ -42,6 +42,10 @@ public sealed partial class StandaloneViewportBrowserTests {
                 "[data-cfx-series-key=samples][data-cfx-point='2'] [data-cfx-role=boxplot-body]", 2, 22, "{x:{minimum:0.5,maximum:3.5},y:{minimum:0,maximum:40}}", "x"),
             "error-bar" => new(name, Base().AddSeries(ChartSeries.CreateErrorBar(id, "Samples", points.Select(point => new ChartErrorBar(point.X, point.Y, null, new ChartErrorBounds(point.Y - 4, point.Y + 4))))),
                 Observation + "[data-cfx-role=error-marker]", 4, 34, "{x:{minimum:2,maximum:8},y:{minimum:20,maximum:80}}", "x"),
+            // A delta step spans its captured running totals (50 to 70).
+            "waterfall" => new(name, Base().AddSeries(ChartSeries.CreateWaterfall(id, "Samples", new[] { ChartWaterfallItem.OpeningBalance(0, 50),
+                    ChartWaterfallItem.Delta(1, 20), ChartWaterfallItem.Delta(2, -35), ChartWaterfallItem.Subtotal(3), ChartWaterfallItem.Delta(4, 10), ChartWaterfallItem.Total(5) })),
+                "[data-cfx-series-key=samples][data-cfx-point='1'] [data-cfx-role=waterfall-bar]", 1, 60, "{x:{minimum:0.5,maximum:3.5},y:{minimum:20,maximum:80}}", "x"),
             _ => throw new ArgumentOutOfRangeException(nameof(name))
         };
     }
@@ -60,6 +64,7 @@ public sealed partial class StandaloneViewportBrowserTests {
     [InlineData("range-band")]
     [InlineData("box-plot")]
     [InlineData("error-bar")]
+    [InlineData("waterfall")]
     public async Task SavedFamilyWindowRepaintsReadableTicksAlignsMarksAndResetRestoresTheDrawing(string name) {
         if (!Enabled) return;
         var family = Family(name);
@@ -79,7 +84,7 @@ public sealed partial class StandaloneViewportBrowserTests {
         Assert.InRange(scene.GetProperty("y").GetDouble(), expected.Y - .05, expected.Y + .05);
         // Only data ink moves: there is no whole-drawing scale and marker radii keep their drawn size.
         Assert.Equal("", scene.GetProperty("zoom").GetString());
-        if (!family.Vertex && name != "horizontal-bar" && name != "box-plot")
+        if (!family.Vertex && name is not ("horizontal-bar" or "box-plot" or "waterfall"))
             Assert.Equal(initial.GetProperty("width").GetDouble(), scene.GetProperty("width").GetDouble(), 1);
         foreach (var axis in new[] { "x", "y", "secondaryY" }.Where(axis => viewport.TryGetProperty(axis, out _) && family.Windows.Contains(axis + ":", StringComparison.Ordinal)))
             AssertAlignedTicks(scene, viewport, plot, axis, family);
