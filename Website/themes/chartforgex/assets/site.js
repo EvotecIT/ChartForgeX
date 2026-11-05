@@ -359,7 +359,46 @@
       } catch (e) { /* a cross-origin page keeps its CSS height */ }
     });
   };
-  var stripSetup = function (text) { return text.replace(/^#region Setup\n[\s\S]*?^#endregion[^\n]*\n+/m, ''); };
+  // The chart code leads; a Setup button in the code bar appends the imports and file output below it.
+  var SETUP = /^#region Setup\n([\s\S]*?)^#endregion[^\n]*\n+/m;
+  var showSetupCode = false;
+  var setupBlocks = [];
+  var renderSource = function (block) {
+    var parts = block.cfxParts;
+    var code = block.querySelector('pre > code');
+    if (!parts || !code) return;
+    var text = parts.body;
+    // C# needs the imports and top-level statements first, so Copy takes the whole program while setup is shown.
+    if (parts.setup && showSetupCode) text = text.replace(/\n+$/, '') + '\n\n// Setup: these lines open Program.cs, before the code above\n' + parts.setup;
+    var button = block.querySelector('[data-cfx-setup-toggle]');
+    if (button) {
+      button.hidden = !parts.setup;
+      button.setAttribute('aria-pressed', showSetupCode ? 'true' : 'false');
+      button.textContent = showSetupCode ? 'Hide setup' : 'Show setup';
+    }
+    block.cfxSource = parts.setup && showSetupCode ? parts.full : text;
+    code.textContent = text;
+    highlight(code);
+  };
+  var setSource = function (block, text) {
+    var match = SETUP.exec(text);
+    block.cfxParts = { body: match ? text.replace(SETUP, '') : text, setup: match ? match[1] : '', full: text };
+    var actions = block.querySelector('.cfx-codeblock__actions');
+    if (actions && !actions.querySelector('[data-cfx-setup-toggle]')) {
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'cfx-codeblock__btn';
+      button.setAttribute('data-cfx-setup-toggle', '');
+      button.title = 'Imports and the lines that write SVG, PNG and HTML';
+      button.addEventListener('click', function () {
+        showSetupCode = !showSetupCode;
+        setupBlocks.forEach(renderSource);
+      });
+      actions.insertBefore(button, actions.firstChild);
+      setupBlocks.push(block);
+    }
+    renderSource(block);
+  };
   var themedFamily = function () {
     document.querySelectorAll('[data-cfx-live-frame]').forEach(function (live) {
       var url = live.getAttribute(theme() === 'dark' ? 'data-dark' : 'data-light');
@@ -374,10 +413,7 @@
       if (link) link.href = url;
       fetch(url).then(function (response) { return response.ok ? response.text() : Promise.reject(); }).then(function (text) {
         if (figure.getAttribute('data-loaded') !== url) return;
-        text = stripSetup(text);
-        figure.cfxSource = text;
-        code.textContent = text;
-        highlight(code);
+        setSource(figure, text);
       }).catch(function () { code.textContent = 'The source file could not be loaded. Use the download link instead.'; });
     });
   };
@@ -411,8 +447,8 @@
     var frame = viewer.querySelector('[data-cfx-viewer-frame]');
     fitFrame(frame);
     var familyLink = viewer.querySelector('[data-cfx-viewer-family-page]');
-    // Static or interactive output; the choice carries over to the next card that has a live page.
-    var viewMode = 'static';
+    // A card with a live page opens it; Static shows the rendered SVG. The choice carries over to the next card.
+    var viewMode = 'interactive';
     var pick = function (light, darkValue) { return theme() === 'dark' && darkValue ? darkValue : light; };
     var fileName = function (url) { return url.split('/').pop().replace(/\.csharp\.txt$/, '.cs').replace(/\.txt$/, ''); };
 
@@ -438,10 +474,7 @@
           if (ticket !== request) return;
           if (range && range.from) text = text.split('\n').slice(range.from - 1, range.to).join('\n') + '\n';
           // Generated programs keep imports and output plumbing in a Setup region; the download keeps the whole file.
-          text = stripSetup(text);
-          block.cfxSource = text;
-          code.textContent = text;
-          highlight(code);
+          setSource(block, text);
         })
         .catch(function () {
           if (ticket !== request) return;

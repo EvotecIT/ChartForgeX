@@ -46,7 +46,7 @@ Reference rendering tools can be useful in tests and compatibility checks, but t
 
 The current semantic reference is Mermaid.js 12.2.0. The test harness also qualifies its recorded examples against pinned 10.9.8 and 11.17.2 references. Older spellings such as `graph`, `stateDiagram`/`stateDiagram-v2`, and `xychart`/`xychart-beta` are accepted where implemented. These fixture results do not establish complete compatibility with every Mermaid 10, 11 or 12 release.
 
-The [Mermaid roadmap](../TODO.md#mermaid) plans newer-syntax adoption and regression coverage for supported older syntax. The [support matrix](mermaid-support-matrix.md) separates native render paths, retained-only features, approximate mappings and missing families. CFX uses its own deterministic scene and appearance; syntax compatibility does not imply the same layout or pixels as Mermaid's browser renderer.
+The [support matrix](mermaid-support-matrix.md) lists what each family renders natively, what is read from the source but not drawn yet, where the drawing is an approximation, and which families are still missing. CFX uses its own deterministic scene and appearance; syntax compatibility does not imply the same layout or pixels as Mermaid's browser renderer.
 
 ## Current Scope
 
@@ -2085,7 +2085,7 @@ Fence attributes currently understood by the bridge are `id`, `title`, `subtitle
 
 ## Growth Path
 
-The [Mermaid roadmap](../TODO.md#mermaid) tracks language depth, version coverage and missing families. New families follow the same pattern:
+The [support matrix](mermaid-support-matrix.md) shows language depth, version coverage and missing families. New families follow the same pattern:
 
 1. Detect the diagram family and preserve source spans.
 2. Add typed AST nodes for the real Mermaid grammar used by that family.

@@ -14,7 +14,7 @@
       {"slug": "markup-v1-reference", "title": "Markup v1 reference", "summary": "The supported fence grammar, models and static preview contract.", "source": "markup-v1-reference.md"},
       {"slug": "architecture-diagrams", "title": "Architecture diagrams and playback", "summary": "Components, routes and use cases rendered as diagrams, sequence views and terminal text.", "source": "architecture-diagrams.md"},
       {"slug": "visual-artifacts", "title": "Visual artifacts", "summary": "Typed models, metadata and reusable export capabilities.", "source": "visual-artifacts.md"},
-      {"slug": "mermaid-support-matrix", "title": "Mermaid support matrix", "summary": "Native families, safe styles, bounded grammar, diagnostics and pinned reference limits.", "source": "mermaid-support-matrix.md"}
+      {"slug": "mermaid-support-matrix", "title": "Mermaid support matrix", "summary": "What each Mermaid family renders, what it keeps without drawing, and what is not supported yet.", "source": "mermaid-support-matrix.md"}
     ] },
     { "title": "Compose output", "summary": "Choose a composition surface for exact facts or deliberately placed artwork.", "guides": [
       {"slug": "embedding", "title": "Server-rendered pages", "summary": "Native mark links, page themes, readable fluid SVG and shared-domain HTML-labelled strips.", "source": "embedding.md"},
@@ -38,7 +38,7 @@
       {"slug": "typography", "source": "v2/typography.md", "title": "Product typography", "summary": "Bundled Archivo and JetBrains Mono with matching browser and native metrics, licensed sources and script fallbacks."}
     ] },
     { "title": "Design notes", "summary": "Proposals are kept separate from the implemented API guides.", "guides": [
-      {"slug": "visual-effects", "title": "Visual effects design", "summary": "A proposed shared effects system. It is not an implemented capability.", "source": "visual-effects.md"}
+      {"slug": "visual-effects", "title": "Visual effects", "summary": "Shadows, glow, blur, masks and blend modes that render the same in SVG and PNG.", "source": "visual-effects.md"}
     ] }
   ],
   "nativeExamples": [

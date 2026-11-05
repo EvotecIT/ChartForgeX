@@ -376,7 +376,7 @@ For rendered browser and interaction checks, run the same required lane used by 
 
 It generates and serves a fresh gallery, opens Chromium through HtmlTinkerX, and retains test results, screenshots, and console evidence in the chosen output directory. Required browser checks fail if setup is missing or tests are skipped; the ordinary test loop reports optional browser checks as skipped when they are disabled. Numerical visual-health baselines and browser contracts cover different failure modes, so inspect the charts as well.
 
-Inspect the generated gallery before intentionally changing visual baselines. [Contributing](https://github.com/EvotecIT/ChartForgeX/blob/main/CONTRIBUTING.md) describes the development workflow; [TODO.md](https://github.com/EvotecIT/ChartForgeX/blob/main/TODO.md) records active priorities and completion criteria.
+Inspect the generated gallery before intentionally changing visual baselines. [Contributing](https://github.com/EvotecIT/ChartForgeX/blob/main/CONTRIBUTING.md) describes the development workflow.
 
 ## Reference and support
 
@@ -388,6 +388,6 @@ Inspect the generated gallery before intentionally changing visual baselines. [C
 - [Mermaid language support](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/mermaid.md) and [support matrix](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/mermaid-support-matrix.md)
 - [Visual artifacts](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/visual-artifacts.md), [visual blocks](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/visual-blocks.md), [canvases](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/visual-canvas.md), and [stories](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/stories.md)
 - [Interaction adapters](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/interactivity.md) and [graph explorer](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/graph-explorer.md)
-- [Architecture](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/v2/architecture.md), [migration](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/v2/migration.md), and [active roadmap](https://github.com/EvotecIT/ChartForgeX/blob/main/TODO.md)
+- [Architecture](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/v2/architecture.md) and [migration](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/v2/migration.md)
 
 ChartForgeX is maintained by [EvotecIT](https://github.com/EvotecIT). Ask questions in [Discord](https://evo.yt/discord) or report reproducible problems in [GitHub Issues](https://github.com/EvotecIT/ChartForgeX/issues). If the library helps your work, you can support its development through [GitHub Sponsors](https://github.com/sponsors/PrzemyslawKlys).

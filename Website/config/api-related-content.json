@@ -23,6 +23,6 @@
     {"title": "Public API conventions", "url": "/docs/api-conventions/", "kind": "guide", "summary": "Preparation, transactions, presentation and identity across chart families.", "targets": ["ChartForgeX.Core.Chart", "ChartForgeX.Core.ChartSeries"]},
     {"title": "Chart combinations and axes", "url": "/docs/chart-combinations/", "kind": "guide", "summary": "Supported family mixtures, orientation, shared axes and native limits.", "targets": ["ChartForgeX.Core.Chart"]},
     {"title": "Consumer migration", "url": "/docs/migration/", "kind": "guide", "summary": "Move applications and adapters to the current public contracts.", "targets": ["ChartForgeX.Core.Chart", "ChartForgeX.VisualArtifacts.VisualArtifact"]},
-    {"title": "Mermaid support matrix", "url": "/docs/mermaid-support-matrix/", "kind": "guide", "summary": "Rendered subsets, retained syntax, diagnostics and pinned reference evidence.", "targets": ["ChartForgeX.Mermaid.MermaidRenderer"]}
+    {"title": "Mermaid support matrix", "url": "/docs/mermaid-support-matrix/", "kind": "guide", "summary": "What each Mermaid family renders, what it keeps without drawing, and what is not supported yet.", "targets": ["ChartForgeX.Mermaid.MermaidRenderer"]}
   ]
 }

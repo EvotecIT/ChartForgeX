@@ -6,7 +6,7 @@ description: "Learn how ChartForgeX names its methods and where options, data, t
 
 Every ChartForgeX model uses the same verbs: `With*` sets an option, `Add*` adds data, `Configure*` edits a group of options through a callback, `Prepare` lays the visual out for a size and theme, `To*` returns SVG, PNG or HTML, and `Save*` writes a file. Learn them on one chart and they apply to every chart family, chart grid and diagram. The rest of this page gives the detailed rules, for when you need to know exactly what a call keeps or replaces.
 
-These rules govern the shared prepared-rendering contracts and their model entry points. All chart families and chart grids compile through the native scene, alongside topology, flow and sequence diagrams. Model convenience exports resolve a request and use the same preparation route. Static composition belongs to `ChartForgeX.Visuals`; animation belongs to `ChartForgeX.Stories`. The [API ledger](api-ledger.md) records naming and ownership changes; this document does not claim that every existing public member conforms already.
+These rules govern the shared prepared-rendering contracts and their model entry points. All chart families and chart grids compile through the native scene, alongside topology, flow and sequence diagrams. Model convenience exports resolve a request and use the same preparation route. Static composition belongs to `ChartForgeX.Visuals`; animation belongs to `ChartForgeX.Stories`. Some older public members don't follow every rule yet; the [API inventory](api-ledger.md) records the naming and ownership changes.
 
 ## Operation names
 
@@ -18,7 +18,7 @@ These rules govern the shared prepared-rendering contracts and their model entry
 | `Apply*Changes` | Commit a bounded keyed observation transaction while retaining surviving observations' presentation. | `series.ApplyPointChanges(changes, maximumObservations: 500)` |
 | `Prepare` | Validate and compile a model with an explicit render context; return a detached prepared result. | `chart.Prepare(context)` |
 | `To*` | Return an in-memory representation without writing a file or changing the model. | `prepared.ToSvg()`, `prepared.ToPng()`, `prepared.ToRgba()` |
-| `Save*` | Write to an explicitly supplied path or stream. Keep file ownership and format options visible. | File-saving helpers are outside the Phase 1 prepared contract. |
+| `Save*` | Write to an explicitly supplied path or stream. Keep file ownership and format options visible. | File-saving helpers are not part of the prepared contract. |
 | Constructors and named factories | Create immutable requests, snapshots or presets. They are deliberate exceptions to builder prefixes. | `new VisualFrame(...)`, `VisualTheme.Graphite()`, `VisualTheme.FromJson(json)` |
 | `Resolve` | Select a validated immutable view of an existing value. | `theme.Resolve(VisualThemeMode.Dark)` |
 
@@ -365,7 +365,7 @@ Rule crossing deliberately leaves tick captions and titles in their measured edg
 
 Complete crossing preserves the existing measured plot reservation and data/mark projection. Primary X captions follow below the rule and secondary X above; primary Y captions follow left and secondary Y right. X titles follow those bands. Y titles retain their horizontal treatment at the moved track's top endpoint, aligned left for primary and right for secondary. Text placement runs after the actual marks, using existing measured tick/title/category-band and collision owners. Prior axis text, actual marks and source guides can cause shortening or omission; complete semantic tick/title/group facts remain. This does not promise that every caption fits every compact/dense pose. Crossing outside a resolved/windowed domain omits **all** opted-in anatomy with `cartesian.axis-crossing-outside-domain` and retains its raw crossing and full semantic captions; it never leaves an edge axis pretending to be the requested interior axis. Existing visibility/ShowLine flags remain independent.
 
-Mermaid options can use `ShowPivotAxes` for complete normalized-pivot axes; it rejects combination with `ShowPivotRules`. The compiled `interior-quadrants` / `compact-interior-quadrants` recipe selects this full anatomy through ordinary public APIs. Source declarations alone do not qualify its integrated native/browser appearance. Existing region constructors keep their signatures, and default `Auto`/no-border/null-rule exports retain their existing commands. The added fluent region methods return new definitions: retain that returned value or pass it to `AddPlotRegion`.
+Mermaid options can use `ShowPivotAxes` for complete normalized-pivot axes; it rejects combination with `ShowPivotRules`. The compiled `interior-quadrants` / `compact-interior-quadrants` recipe selects this full anatomy through ordinary public APIs. Existing region constructors keep their signatures, and default `Auto`/no-border/null-rule exports retain their existing commands. The added fluent region methods return new definitions: retain that returned value or pass it to `AddPlotRegion`.
 
 Mermaid `MermaidQuadrantRenderOptions` offers `RegionBorder`, `RegionLabelPosition` and opt-in `ShowPivotRules` (normalized 0.5). These map into the same native model. Quadrant source `classDef` and `:::class` annotations use the existing solid-color style parser and native Scatter markers. The four exact style names are `radius`, `color`, `stroke-color` and `stroke-width`; direct declarations override the referenced class, and a repeated class definition replaces its earlier declarations. Numeric style radii and pixel stroke widths are whole values from 0 through 1024; colors use three- or six-digit hexadecimal spelling. Source order and normalized point coordinates remain unchanged.
 
@@ -682,7 +682,7 @@ chart.WithDataLabels().ConfigureBoxPlot(options => {
 
 `StatisticLabelFormatter` receives a captured `ChartBoxPlotStatisticLabelContext` in Minimum, Q1, Median, Q3, Maximum order, once per summary and member even when data labels or an individual caption are hidden. It includes the complete category caption, summary/group index, rendered `Summary`, selected `Statistic`, raw `Value` and chart-numeric `FormattedValue`. Minimum and Maximum mean the rendered whiskers under IQR policy, not the separate raw source extrema. Null or whitespace output suppresses only that caption. Exceptions propagate from preparation; detached SVG/PNG and browser exports never invoke the formatter again.
 
-The existing measured placement owner rejects collisions and out-of-frame captions. Inside/Center uses each statistic's interval between adjacent projected midpoints; equal or tightly packed values may leave no usable lane. Numeric captions remain complete or omit whole with the existing overflow diagnostic; custom prose may shorten. Full raw facts and custom captions remain in metadata even when ink is omitted. Every painted statistic caption points to the same summary identity for browser readout, selection and muting. Broader density, font and mixed-family qualification remains separate from this supported label policy.
+The existing measured placement owner rejects collisions and out-of-frame captions. Inside/Center uses each statistic's interval between adjacent projected midpoints; equal or tightly packed values may leave no usable lane. Numeric captions remain complete or omit whole with the existing overflow diagnostic; custom prose may shorten. Full raw facts and custom captions remain in metadata even when ink is omitted. Every painted statistic caption points to the same summary identity for browser readout, selection and muting. Very dense charts, unusual fonts and mixed families may still crowd these captions.
 
 ## Sankey layout
 
@@ -1124,7 +1124,7 @@ The nearer projected boundary remains at its transformed full-domain distance as
 
 `HtmlInteractiveChartRenderer.PreparePolarSection` returns matching native and HTML observations, including both responsive drawings. An existing host bridge can connect `controller.connectNative(callback, { basis, coordinateSystem: 'polar', axes: ['angle', 'radius', 'secondaryRadius'] })`, request `controller.setPolarViewport({ angle: { minimum: 5.5, maximum: 6.8 }, radius: { minimum: 20, maximum: 80 } })`, and read `getPolarViewport()`. Managed replies use the same scene revision, opaque basis, cancellation and atomic responsive acceptance owner as other native preparations. `connectPolarViewport` is the corresponding unmanaged HTML-string callback surface. Reset, bookmarks, exports, legends and source readouts retain that committed native scene. Each returned radius window also reports its derived `innerRadius` and `outerRadius` in logical units; these are native facts, not caller-supplied geometry controls. Automatic gestures remain off unless the connection explicitly sets `gestures: true`; see [native Polar gestures](https://github.com/EvotecIT/ChartForgeX/blob/main/docs/interactivity.md#native-polar-gestures).
 
-The complete [Polar viewport recipe](../../ChartForgeX.Examples/Recipes/PolarViewportRecipe.cs) exports the shared native view in compact/wide and light/dark poses with `--polar-viewport-only`. Source, native and browser regression fixtures are declared for this increment; execution and physical qualification remain pending until the final candidate is built and observed.
+The complete [Polar viewport recipe](../../ChartForgeX.Examples/Recipes/PolarViewportRecipe.cs) exports the shared native view in compact/wide and light/dark poses with `--polar-viewport-only`.
 
 `ChartPolarProjection.Zoom(factor, logicalAnchor, axes)`, `Zoom(factor, axes)` and `Pan(clockwiseAngleDelta, outwardRadiusDelta, axes)` return the next immutable `ChartPolarViewport`, or null for a complete view. `ChartPolarNavigationAxes` selects Angle, Radius and/or SecondaryRadius; None, unknown bits and unavailable axes fail explicitly. These methods use detached captured policy and retain every unselected source window. They do not alter the source chart, accepted drawing or a host session.
 
@@ -1159,7 +1159,7 @@ Callbacks are rejected without invocation. Local font paths/face selection, cust
 
 Portable data is bounded to 50,000 authored items, 10,000 labels per physical axis, 32 parent captions per label and the existing JSON byte, depth, ID and value limits. Validation also accounts for native contributor-index references within the remaining 600,000-value aggregate budget before allocating checkpoint contributor arrays. Native authoring outside interchange keeps its established unrestricted contributor policy; many cumulative total checkpoints can still require quadratic contributor storage.
 
-The source-owned Waterfall `portable`, `compact-portable`, `portable-horizontal` and `compact-portable-horizontal` recipes execute the save/load/edit path. Their native/browser fixture sources define qualification; source support does not by itself establish runtime, gallery, package or consumer acceptance.
+The source-owned Waterfall `portable`, `compact-portable`, `portable-horizontal` and `compact-portable-horizontal` recipes execute the save/load/edit path.
 
 
 ### Map callouts, grid badges and route clearance
@@ -1190,7 +1190,7 @@ Every seam-aware imported `ChartMapRegion` retains immutable `Feature` metadata 
 
 This planar contract requires explicitly closed rings with at least four positions, finite geographic coordinates and an unwrapped span smaller than one full turn. A closed ring with nonzero globe winding rejects clearly; polar caps/global winding need a separate spherical interior policy. Existing WebMercator latitude clamping remains in force. It is not a geodesic or arbitrary projection engine. The existing JSON input/value/depth bounds apply before parsing; `MaximumObservations` bounds emitted vertices including periodic copies, and `MaximumExpandedFeatureCharacters` bounds geometry plus feature snapshots before output expansion. Coordinate-filtered features consume neither output budget.
 
-The complete `seam-polygon-map` source recipe provides compact/wide light/dark variants in both supported projections, with a seam-crossing hole, disconnected islands, raw outside feature, point peer and route. Runtime fixtures supply the observed export/interaction proof; source authoring alone does not establish browser or physical acceptance.
+The complete `seam-polygon-map` source recipe provides compact/wide light/dark variants in both supported projections, with a seam-crossing hole, disconnected islands, raw outside feature, point peer and route.
 
 ## Ordered stage presentation
 
@@ -1380,7 +1380,7 @@ Each participant can author `Border`, `ActivationFill` and `ActivationBorder` in
 
 The source adapter resolves supported named preset color expressions once through the common source-theme owner. Sequence's omitted Light preset is redux-color; Dark host mode selects its paired redux-dark-color preset. An explicit source preset name remains literal. A host `Theme` replaces preset-derived defaults and palette arrays; explicit source role colors and arrays still apply. A font-only host override retains the preset. Palette arrays use original participant order, including hidden participants, and each array wraps by its own length. Empty actor backgrounds use the shared actor fill; empty activation backgrounds use the preset main background when present. Arrays are active only for the two color presets.
 
-A preset background used to derive roles does not itself request opaque chart-canvas paint: explicit background presence remains separate. Native `Prepare` context remains authoritative. Native and parsed-source examples are separate consumers; Core-only snippets do not reference the Mermaid adapter. Full font availability, HTML/math rendering and pixel identity are separate qualification boundaries.
+A preset background used to derive roles does not itself request opaque chart-canvas paint: explicit background presence remains separate. Native `Prepare` context remains authoritative. Native and parsed-source examples are separate consumers; Core-only snippets do not reference the Mermaid adapter. Font availability, HTML and math rendering, and exact pixels can still differ from Mermaid.js.
 
 
 ## Explicit captured alpha shadows
