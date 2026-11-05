@@ -18,6 +18,8 @@ public static class ErrorBarRecipe {
             new ChartErrorBar(2.14, 33, yBounds: new ChartErrorBounds(24, 46)), new ChartErrorBar(3.14, 54, yBounds: new ChartErrorBounds(40, 74)),
             new ChartErrorBar(4.14, 118, yBounds: new ChartErrorBounds(86, 160)), new ChartErrorBar(5.14, 132, yBounds: new ChartErrorBounds(96, 180)),
             new ChartErrorBar(6.14, 160, yBounds: new ChartErrorBounds(120, 214)) });
+        // Delivery takes no negative time, so the scale starts at zero rather than below the shortest range.
+        chart.Options.YAxis.Minimum = 0;
         return chart.AddSeries(domestic).AddSeries(international);
     }
 }
