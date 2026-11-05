@@ -165,6 +165,8 @@ internal static class VisualFrameLayout {
                 legendStyle.FontSize *= Math.Min(1, fittedLineHeight / requestedLineHeight);
                 var widthScale = LegendWidthScale(legendStyle);
                 legendStyle.FontSize = Math.Max(Math.Min(12, legendStyle.FontSize), legendStyle.FontSize * widthScale);
+                // Values share the fitted label size; only their weight differs.
+                legendValueStyle = legendValueStyle.Clone(); legendValueStyle.FontSize = legendStyle.FontSize;
             }
             var columnWidth = 0d; var groupedValueList = false;
             List<List<VisualLegendEntry>> PlanRows() {
