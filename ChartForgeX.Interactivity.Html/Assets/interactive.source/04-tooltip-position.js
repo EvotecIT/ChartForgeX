@@ -257,21 +257,13 @@
       x: clamp(candidate.x, bounds.left + 8, Math.max(bounds.left + 8, bounds.right - unit.width - 8)),
       y: clamp(candidate.y, bounds.top + 8, Math.max(bounds.top + 8, bounds.bottom - unit.height - 8))
     });
-    const fits = candidate => candidate.x >= bounds.left + 8 && candidate.y >= bounds.top + 8
-      && candidate.x + unit.width <= bounds.right - 8 && candidate.y + unit.height <= bounds.bottom - 8;
-    // A pinned readout stays open, so among fitting placements that leave the chart's own controls clear it takes the one
-    // covering the least of the other targets. Otherwise the established first fitting placement applies.
-    const pinnedCover = root.dataset.cfxTooltipPinned === 'true' && (() => {
-      const area = (candidate, rect) => Math.max(0, Math.min(candidate.x + unit.width, rect.right) - Math.max(candidate.x, rect.left))
-        * Math.max(0, Math.min(candidate.y + unit.height, rect.bottom) - Math.max(candidate.y, rect.top));
-      const boxes = nodes => nodes.map(node => node.getBoundingClientRect()).filter(rect => rect.width > 0 && rect.height > 0);
-      const controls = boxes([...root.querySelectorAll('button,input,select,a[href]')].filter(node => !tip.contains(node)));
-      const targets = boxes(interactiveTargets(root).filter(node => !node.contains(state.node) && !state.node.contains(node)));
-      return candidate => controls.some(rect => area(candidate, rect) > 0) ? null : targets.reduce((sum, rect) => sum + area(candidate, rect), 0);
-    })();
-    const fitting = candidates.filter(fits);
-    const position = (pinnedCover && fitting.map(candidate => ({ candidate, cover: pinnedCover(candidate) })).filter(item => item.cover !== null)
-      .reduce((best, item) => !best || item.cover < best.cover ? item : best, null)?.candidate) || fitting[0]
+    // A pinned readout stays open: among fitting placements take the one covering least of the chart's controls,
+    // then of its other targets.
+    const cover = root.dataset.cfxTooltipPinned === 'true' && [...root.querySelectorAll('button,input,select,a[href]')].filter(node => !tip.contains(node)).map(node => [node, 1e6])
+      .concat(interactiveTargets(root).filter(node => !node.contains(state.node) && !state.node.contains(node)).map(node => [node, 1])).map(([node, weight]) => [node.getBoundingClientRect(), weight]);
+    const covered = c => cover.reduce((sum, [r, weight]) => sum + weight * Math.max(0, Math.min(c.x + unit.width, r.right) - Math.max(c.x, r.left)) * Math.max(0, Math.min(c.y + unit.height, r.bottom) - Math.max(c.y, r.top)), 0);
+    const fitting = candidates.filter(c => c.x >= bounds.left + 8 && c.y >= bounds.top + 8 && c.x + unit.width <= bounds.right - 8 && c.y + unit.height <= bounds.bottom - 8);
+    const position = (cover ? fitting.reduce((best, c) => !best || covered(c) < covered(best) ? c : best, null) : fitting[0])
       || (root.dataset.cfxTooltipPlacements || 'auto') === 'auto' && candidates.map(constrain).find(candidate =>
         candidate.x >= anchor.right + gap || candidate.x + unit.width <= anchor.left - gap
         || candidate.y >= anchor.bottom + gap || candidate.y + unit.height <= anchor.top - gap) || candidates[0];
