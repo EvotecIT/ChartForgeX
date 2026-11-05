@@ -14,8 +14,8 @@ namespace ChartForgeX.Tests;
 public sealed class InteractiveBundleTests {
     [Theory]
     [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.Tooltips, 97 * 1024, 30 * 1024)]
-    [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.ReportReview, 280 * 1024, 82 * 1024)]
-    [InlineData(HtmlChartRuntime.Full, ChartInteractionFeatures.ReportReview, 339 * 1024, 101 * 1024)]
+    [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.ReportReview, 280 * 1024, 83 * 1024)]
+    [InlineData(HtmlChartRuntime.Full, ChartInteractionFeatures.ReportReview, 343 * 1024, 102 * 1024)]
     public void EmittedRuntimeFitsRawAndGzipBudgets(HtmlChartRuntime runtime, ChartInteractionFeatures features, int rawBudget, int gzipBudget) {
         var asset = HtmlInteractiveAssetFiles.ChartScriptFor(runtime, features);
         var bytes = Encoding.UTF8.GetBytes(asset.Content);

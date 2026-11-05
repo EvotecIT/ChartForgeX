@@ -193,11 +193,16 @@ domain. Printing temporarily restores that scene's complete native geometry,
 then restores the browser window when returning to the screen.
 
 The supported scope is the families above on numeric linear or logarithmic
-axes. Time and symmetric-logarithmic axes, a secondary axis on a horizontal
+axes, and on a time X axis that uses the automatic UTC calendar: no time zone,
+culture, value format, label formatter, explicit labels or tick count, sessions
+or discrete spacing, automatic label density and unrotated captions. A zoomed
+window there repeats the native calendar fit, so its dates, clock times and
+regular bar cadence read as a native preparation of that window would read.
+Other time axes, symmetric-logarithmic axes, a secondary axis on a horizontal
 chart, stacked and other Cartesian families, and native annotation layout
-require a connected native preparation path; a saved page still scales their
-whole drawing. Mixing an unsupported series family into a chart does not
-establish standalone viewport support.
+require a connected native preparation path; a saved page declines zoom and pan
+for them. Mixing an unsupported series family into a chart does not establish
+standalone viewport support.
 
 Charts without a data window to narrow decline zoom in a saved page: Heatmap,
 hexbin and calendar heatmaps, maps, and every chart without a Cartesian data

@@ -216,7 +216,7 @@ internal static partial class VisualCartesianCompiler {
         using (sourceViewport != null ? builder.PushClip(plot) : null)
             DrawDataLabels(context, builder, labelBounds, labels, obstacles);
         if (sourceViewport != null) builder.CaptureViewportVisibility(plot);
-        CaptureReadouts(chart, builder, range, secondaryRange, axisLabels, horizontal, secondaryOnly);
+        CaptureReadouts(chart, builder, range, secondaryRange, axisLabels, horizontal, secondaryOnly, context.Theme.Spacing);
         return hasProjection ? CaptureAxisProjections(chart, plot, fullRange, range, fullSecondaryRange, secondaryRange) : null;
     }
 
