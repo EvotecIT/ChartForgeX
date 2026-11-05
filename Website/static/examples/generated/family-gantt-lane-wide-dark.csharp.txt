@@ -17,7 +17,7 @@ var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = GanttLaneRecipe.Create("wide", mode);
 var context = new VisualRenderContext(
-    new VisualLayoutOptions(new VisualSize(800, 320)), theme, mode,
+    new VisualLayoutOptions(new VisualSize(800, 316)), theme, mode,
     new VisualFrame("Incidents and recovery in parallel", "", showLegend: null, showSurface: false));
 var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());

@@ -17,7 +17,7 @@ var mode = VisualThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = PictorialArtworkRecipe.Create("top", mode);
 var context = new VisualRenderContext(
-    new VisualLayoutOptions(new VisualSize(900, 194)), theme, mode,
+    new VisualLayoutOptions(new VisualSize(900, 195)), theme, mode,
     new VisualFrame("Completed assessments by team", "Captured self-contained artwork and explicit fractional clipping retain the complete source counts", showLegend: null, showSurface: false));
 var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());

@@ -17,7 +17,7 @@ var mode = VisualThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = IndependentBulletRecipe.Create("wide", mode);
 var context = new VisualRenderContext(
-    new VisualLayoutOptions(new VisualSize(760, 208)), theme, mode,
+    new VisualLayoutOptions(new VisualSize(760, 207)), theme, mode,
     new VisualFrame("Independent operating measurements", "Separate domains and source units share horizontal or vertical tracks", showLegend: null, showSurface: false));
 var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());

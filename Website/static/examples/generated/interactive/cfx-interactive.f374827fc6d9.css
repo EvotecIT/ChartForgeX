@@ -1,0 +1,1389 @@
+:root {
+  color-scheme: light dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--cfx-host-background, var(--hfx-color-surface-page));
+  color: var(--cfx-tooltip-text, var(--hfx-color-text));
+  font-family: var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
+}
+
+.cfx-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.cfx-shell > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.cfx-dashboard {
+  width: min(100%, 1440px);
+  display: grid;
+  --cfx-dashboard-gap: 18px;
+  /* At most the configured column count; a column never narrows below the fitted chart's readable minimum, so fewer columns are used instead. */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, max(var(--cfx-dashboard-column-min, 0px),
+    calc((100% - (var(--cfx-dashboard-columns, 2) - 1) * var(--cfx-dashboard-gap)) / var(--cfx-dashboard-columns, 2)))), 1fr));
+  gap: var(--cfx-dashboard-gap);
+}
+
+.cfx-interactive-chart {
+  /* Chrome roles: remap control geometry onto host tokens here, in one place. */
+  --cfx-tooltip-radius: var(--hfx-radius-overlay, 10px);
+  --cfx-control-radius: var(--hfx-radius-control, 6px);
+  --cfx-chip-radius: var(--hfx-radius-pill, 999px);
+  --cfx-swatch-radius: var(--hfx-radius-2xs, 2px);
+  --cfx-axis-label-radius: var(--hfx-radius-sm, 4px);
+  --cfx-toolbar-control-size: 28px;
+  --cfx-toolbar-control-size-coarse: 36px;
+  --cfx-toolbar-icon-size: 16px;
+  --cfx-toolbar-inset: 8px;
+  --cfx-focus-ring: var(--cfx-host-accent, var(--hfx-color-focus-ring, var(--cfx-default-host-accent)));
+  container: cfx-chart / inline-size;
+  contain-intrinsic-inline-size: var(--cfx-intrinsic-width, 640px);
+  position: relative;
+  width: min(100%, 1200px);
+  min-width: 0;
+  max-width: 100%;
+}
+
+.cfx-dashboard .cfx-interactive-chart {
+  width: 100%;
+}
+
+.cfx-stage {
+  position: relative;
+  background: var(--cfx-tooltip-surface);
+  border: 1px solid var(--cfx-tooltip-line);
+  border-radius: var(--cfx-tooltip-radius, var(--hfx-radius-overlay, 10px));
+  padding: 12px;
+  overflow: hidden;
+  touch-action: auto;
+}
+
+.cfx-stage svg {
+  margin: auto;
+  transform: translate(var(--cfx-pan-x, 0), var(--cfx-pan-y, 0)) scale(var(--cfx-zoom, 1));
+  transform-origin: center center;
+  transition: transform .12s ease;
+  will-change: transform;
+}
+.cfx-interactive-chart[data-cfx-standalone-projection="true"] .cfx-stage svg {
+  transform: none;
+  transition: none;
+  will-change: auto;
+}
+
+.cfx-interactive-chart[data-cfx-responsive-layout="fit"] .cfx-stage svg,
+.cfx-interactive-chart[data-cfx-responsive-layout="adaptive"] .cfx-stage svg {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Readable sizing follows the chart's host, including narrow columns in a wide window. */
+.cfx-interactive-chart[data-cfx-responsive-layout="readable"] .cfx-stage {
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-inline: contain;
+  touch-action: auto;
+}
+
+.cfx-interactive-chart[data-cfx-mode="pan"] .cfx-stage,
+.cfx-interactive-chart[data-cfx-mode="brush"] .cfx-stage {
+  touch-action: none;
+}
+
+.cfx-interactive-chart[data-cfx-responsive-layout="readable"] .cfx-stage svg {
+  width: 100%;
+  min-width: min(var(--cfx-native-width, 640px), 38rem);
+  max-width: none;
+}
+
+.cfx-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+.cfx-interactive-chart .cfx-toolbar {
+  position: absolute;
+  inset: var(--cfx-toolbar-inset) auto auto;
+  inset-inline-end: var(--cfx-toolbar-inset);
+  z-index: 15;
+  gap: 2px;
+  max-width: calc(100% - 16px);
+  margin: 0;
+  padding: 2px;
+  border: 1px solid var(--cfx-tooltip-line);
+  border-radius: var(--cfx-tooltip-radius, var(--hfx-radius-overlay, 10px));
+  background: var(--cfx-tooltip-surface);
+  box-shadow: var(--cfx-tooltip-shadow, var(--hfx-elevation-2, none));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease-out;
+}
+
+.cfx-interactive-chart[data-cfx-toolbar="compact"]:not([data-cfx-responsive-layout="fit"]):not([data-cfx-responsive-layout="adaptive"]) {
+  width: min(100%, var(--cfx-native-width, var(--cfx-intrinsic-width)));
+}
+
+.cfx-interactive-chart[data-cfx-toolbar="band"] .cfx-toolbar {
+  position: static; inset: auto; width: 100%; max-width: 100%;
+  gap: 8px; margin: 8px auto 0; padding: 0; border: 0; box-shadow: none;
+  opacity: 1; pointer-events: auto;
+}
+.cfx-interactive-chart[data-cfx-toolbar="band"]:not([data-cfx-responsive-layout="fit"]) .cfx-toolbar {
+  max-width: var(--cfx-native-width);
+}
+
+.cfx-interactive-chart[data-cfx-toolbar="compact"] .cfx-toolbar {
+  gap: 2px;
+}
+
+.cfx-interactive-chart[data-cfx-toolbar="compact"] .cfx-toolbar .cfx-tool {
+  flex: 0 0 auto;
+  border-color: transparent;
+  color: var(--cfx-tooltip-muted);
+}
+
+.cfx-frame {
+  position: relative;
+  min-width: 0;
+}
+
+.cfx-interactive-chart[tabindex="-1"]:focus {
+  outline: none;
+}
+
+/* Reserved control rows keep the plot still when selection and reset appear. */
+.cfx-reset {
+  z-index: 15;
+  display: flex;
+  width: max-content;
+  margin: 8px 8px 0 auto;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--cfx-tooltip-line);
+  border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px));
+  background: var(--cfx-tooltip-surface);
+  color: var(--cfx-tooltip-text);
+  cursor: pointer;
+  font: 600 var(--hfx-type-caption-size, 12px)/1 var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
+  white-space: nowrap;
+  transition: opacity 120ms ease-out;
+}
+
+.cfx-reset[hidden] {
+  display: flex;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cfx-reset:hover,
+.cfx-reset:focus-visible {
+  border-color: var(--cfx-default-host-accent);
+  color: var(--cfx-default-host-accent);
+}
+
+.cfx-scenarios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+.cfx-tool,
+.cfx-scenario {
+  border: 1px solid var(--cfx-tooltip-line);
+  border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px));
+  background: var(--cfx-tooltip-surface);
+  color: var(--cfx-tooltip-text);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--hfx-type-caption-size, 12px);
+  font-weight: 600;
+  padding: 6px 9px;
+}
+
+.cfx-scenario {
+  border-color: color-mix(in srgb, var(--cfx-scenario-color, var(--cfx-tooltip-muted)) 45%, var(--cfx-tooltip-line));
+}
+
+.cfx-scenario::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 7px;
+  border-radius: var(--cfx-chip-radius, var(--hfx-radius-pill));
+  background: var(--cfx-scenario-color, var(--cfx-tooltip-muted));
+}
+
+.cfx-tool:hover,
+.cfx-tool:focus-visible,
+.cfx-tool[aria-pressed="true"],
+.cfx-scenario:hover,
+.cfx-scenario:focus-visible,
+.cfx-scenario[aria-pressed="true"] {
+  border-color: var(--cfx-default-host-accent);
+  color: var(--cfx-default-host-accent);
+}
+
+.cfx-scenario-panel {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--cfx-tooltip-line);
+  border-radius: var(--cfx-tooltip-radius, var(--hfx-radius-overlay, 10px));
+  background: var(--cfx-tooltip-surface);
+  color: var(--cfx-tooltip-text);
+}
+
+.cfx-scenario-panel__summary {
+  display: grid;
+  gap: 2px;
+}
+
+.cfx-scenario-panel__title {
+  color: var(--cfx-scenario-color, var(--cfx-tooltip-text));
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.cfx-scenario-panel__meta {
+  color: var(--cfx-tooltip-muted);
+  font-size: var(--hfx-type-caption-size, 12px);
+}
+
+.cfx-scenario-panel__controls,
+.cfx-scenario-panel__steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+}
+
+.cfx-scenario-panel__steps {
+  list-style: none;
+}
+
+.cfx-scenario-panel__steps li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  padding: 3px 8px;
+  border: 1px solid var(--cfx-tooltip-line);
+  border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px));
+  background: var(--cfx-tooltip-surface);
+  color: var(--cfx-tooltip-text);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.cfx-scenario-panel__steps li::before {
+  content: attr(data-cfx-scenario-step-index);
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--cfx-chip-radius, var(--hfx-radius-pill));
+  background: var(--cfx-scenario-color, var(--cfx-default-host-accent));
+  color: var(--cfx-tooltip-surface);
+  font-size: 10px;
+}
+
+.cfx-scenario-panel__steps li[aria-current="step"] {
+  border-color: var(--cfx-scenario-color, var(--cfx-default-host-accent));
+  color: var(--cfx-tooltip-text);
+}
+
+.cfx-interactive-chart[data-cfx-scenario-playback="playing"] [data-cfx-scenario-step-control="play"] {
+  border-color: var(--cfx-scenario-color, var(--cfx-default-host-accent));
+  background: color-mix(in srgb, var(--cfx-scenario-color, var(--cfx-default-host-accent)) 30%, var(--cfx-tooltip-surface));
+  color: var(--cfx-tooltip-surface);
+}
+
+.cfx-scenario-progress {
+  position: relative;
+  min-height: 24px;
+  overflow: hidden;
+  border: 1px solid var(--cfx-tooltip-line);
+  border-radius: var(--cfx-chip-radius, var(--hfx-radius-pill));
+  background: var(--cfx-tooltip-surface);
+  color: var(--cfx-tooltip-text);
+}
+
+.cfx-scenario-progress[hidden] {
+  display: none;
+}
+
+.cfx-scenario-progress__bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--cfx-scenario-progress, 0%);
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--cfx-scenario-color, var(--cfx-default-host-accent)) 46%, var(--cfx-default-host-accent));
+  transition: width .18s ease;
+}
+
+.cfx-scenario-progress__text {
+  position: relative;
+  z-index: 1;
+  display: block;
+  overflow: hidden;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cfx-scenario-scrubber {
+  width: 100%;
+  min-height: 24px;
+  margin: 0;
+  accent-color: var(--cfx-scenario-color, var(--cfx-default-host-accent));
+  cursor: pointer;
+}
+
+.cfx-scenario-scrubber:disabled {
+  cursor: default;
+  opacity: .45;
+}
+
+.cfx-tooltip {
+  position: fixed;
+  z-index: 20;
+  box-sizing: border-box;
+  min-width: min(160px, calc(100vw - 16px));
+  max-width: min(320px, calc(100vw - 16px));
+  border: 1px solid var(--cfx-tooltip-line);
+  border-radius: var(--cfx-tooltip-radius, var(--hfx-radius-overlay, 10px));
+  background: var(--cfx-tooltip-surface);
+  box-shadow: var(--cfx-tooltip-shadow, var(--hfx-elevation-2, none));
+  color: var(--cfx-tooltip-text);
+  font: 400 var(--hfx-type-small-size, 13px)/var(--hfx-type-small-line-height, 1.4) var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
+  padding: 10px 12px;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+  opacity: 1;
+  translate: 0 0;
+  transition: opacity 120ms ease-out, translate 120ms ease-out, display 80ms allow-discrete;
+}
+
+.cfx-tooltip--pinned {
+  border-inline-start: 2px solid var(--cfx-host-accent, var(--cfx-default-host-accent));
+  padding-inline-end: 28px;
+  pointer-events: auto;
+}
+
+.cfx-tooltip--pinned::before {
+  content: none;
+}
+
+.cfx-tooltip__title {
+  margin: 0 0 6px;
+  color: var(--cfx-tooltip-muted);
+  font-size: var(--hfx-type-caption-size, 12px);
+  font-weight: 600;
+  line-height: 16px;
+  overflow-wrap: anywhere;
+}
+
+.cfx-tooltip__secondary {
+  margin-top: 6px;
+  color: var(--cfx-tooltip-muted);
+  font-size: 11px;
+  line-height: 16px;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.cfx-tooltip__title--series {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cfx-tooltip__swatch {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
+  border-radius: var(--cfx-swatch-radius, var(--hfx-radius-2xs));
+  background: var(--cfx-series-color, currentColor);
+}
+
+.cfx-tooltip__meta {
+  display: grid;
+  /* Names get half the width, or 9em in a narrow readout, so a short name such as "Warnings" never splits. */
+  grid-template-columns: fit-content(max(50%, 9em)) minmax(0, 1fr);
+  align-items: center;
+  gap: 2px 16px;
+  margin: 0;
+  color: var(--cfx-tooltip-text);
+}
+
+.cfx-tooltip__meta dt,
+.cfx-tooltip__meta dd {
+  min-width: 0;
+  margin: 0;
+  text-align: end;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.cfx-tooltip__meta dt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: inherit;
+  font-weight: 400;
+}
+
+.cfx-tooltip__meta dd {
+  overflow-wrap: anywhere;
+}
+
+.cfx-tooltip[hidden] {
+  display: none;
+  opacity: 0;
+  translate: 0 2px;
+  transition-duration: 80ms;
+  transition-delay: 60ms;
+}
+
+@starting-style {
+  .cfx-tooltip:not([hidden]) { opacity: 0; translate: 0 2px; }
+}
+
+.cfx-brush-box {
+  position: absolute;
+  z-index: 10;
+  border: 1px solid var(--cfx-default-host-accent);
+  background: var(--cfx-default-host-accent);
+  pointer-events: none;
+}
+
+.cfx-brush-box[hidden] {
+  display: none;
+}
+
+.cfx-crosshair {
+  position: absolute;
+  overflow: visible;
+  z-index: 9;
+  pointer-events: none;
+}
+
+.cfx-crosshair[hidden] {
+  display: none;
+}
+
+.cfx-crosshair__line {
+  position: absolute;
+  box-sizing: border-box;
+  background: none;
+  box-shadow: none;
+  opacity: .5;
+}
+
+/* Crosshair lines end at the plot; value labels remain outside those edges. */
+.cfx-crosshair__line--x {
+  left: 0;
+  right: 0;
+  top: var(--cfx-crosshair-y, 0);
+  height: 1px;
+  transform: translateY(-50%);
+}
+
+.cfx-crosshair__line--y {
+  top: 0;
+  bottom: 0;
+  left: var(--cfx-crosshair-x, 0);
+  width: 1px;
+  transform: translateX(-50%);
+}
+
+.cfx-crosshair__label {
+  position: absolute;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: min(210px, calc(100vw - 16px));
+  overflow: hidden;
+  border: 1px solid var(--cfx-tooltip-line);
+  border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px));
+  background: var(--cfx-crosshair-label-surface, var(--cfx-tooltip-text));
+  color: var(--cfx-crosshair-label-text, var(--cfx-tooltip-surface));
+  font: 600 11px/16px var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
+  padding: 2px 6px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cfx-reveal-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 12;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.cfx-reveal-layer[hidden] {
+  display: none;
+}
+
+.cfx-reveal-label {
+  position: absolute;
+  max-width: min(220px, calc(100% - 16px));
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--cfx-scenario-color, var(--cfx-default-host-accent)) 42%, var(--cfx-tooltip-surface));
+  border-radius: var(--cfx-chip-radius, var(--hfx-radius-pill));
+  background: color-mix(in srgb, var(--cfx-scenario-color, var(--cfx-default-host-accent)) 18%, var(--cfx-tooltip-surface));
+  box-shadow: var(--cfx-tooltip-shadow, var(--hfx-elevation-2, none));
+  color: var(--cfx-tooltip-text);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.15;
+  padding: 5px 8px;
+  text-overflow: ellipsis;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.cfx-reveal-label::before {
+  content: attr(data-cfx-reveal-index);
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin-right: 5px;
+  border-radius: var(--cfx-chip-radius, var(--hfx-radius-pill));
+  background: color-mix(in srgb, var(--cfx-tooltip-text) 6%, transparent);
+  color: var(--cfx-tooltip-text);
+  font-size: 10px;
+}
+
+.cfx-compare-tray {
+  position: relative;
+  z-index: 14;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 8px;
+  min-height: 46px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  contain: inline-size;
+  border: 1px solid var(--cfx-tooltip-line);
+  border-radius: var(--cfx-tooltip-radius, var(--hfx-radius-overlay, 10px));
+  background: var(--cfx-tooltip-surface);
+  box-shadow: var(--cfx-tooltip-shadow, var(--hfx-elevation-2, none));
+  color: var(--cfx-tooltip-text);
+  padding: 6px;
+  pointer-events: auto;
+}
+
+.cfx-compare-tray[hidden] {
+  display: flex;
+  visibility: hidden;
+}
+
+.cfx-compare-tray__summary,
+.cfx-compare-tray__range {
+  flex: 0 0 auto;
+  color: var(--cfx-default-host-accent);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 0 5px;
+  white-space: nowrap;
+}
+
+.cfx-compare-chip,
+.cfx-compare-page,
+.cfx-compare-clear {
+  min-width: 0;
+  border: 1px solid var(--cfx-tooltip-line);
+  border-radius: var(--cfx-chip-radius, var(--hfx-radius-pill));
+  background: var(--cfx-tooltip-surface);
+  color: var(--cfx-tooltip-text);
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 6px 8px;
+}
+
+.cfx-compare-chip {
+  flex: 0 0 auto;
+  max-width: min(220px, 75%);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cfx-compare-chip:hover,
+.cfx-compare-chip:focus-visible,
+.cfx-compare-page:hover:not(:disabled),
+.cfx-compare-page:focus-visible {
+  border-color: var(--cfx-default-host-accent);
+  color: var(--cfx-tooltip-text);
+}
+
+.cfx-compare-page { flex: 0 0 auto; white-space: nowrap; }
+.cfx-compare-page:disabled { cursor: default; opacity: .5; }
+
+.cfx-compare-clear {
+  flex: 0 0 auto;
+  margin-left: auto;
+  border-color: var(--cfx-default-host-accent);
+  color: var(--cfx-tooltip-text);
+}
+
+.cfx-interactive-chart[data-cfx-mode="pan"] .cfx-stage {
+  cursor: grab;
+}
+
+.cfx-interactive-chart[data-cfx-mode="pan"] .cfx-stage:active {
+  cursor: grabbing;
+}
+
+.cfx-interactive-chart[data-cfx-mode="brush"] .cfx-stage {
+  cursor: crosshair;
+}
+
+.cfx-interactive-chart [data-cfx-label],
+.cfx-interactive-chart [data-cfx-point],
+.cfx-interactive-chart [data-cfx-series],
+.cfx-interactive-chart [data-cfx-role="legend-item"],
+.cfx-interactive-chart .cfx-interactive-region {
+  cursor: pointer;
+}
+.cfx-interactive-chart .cfx-selected:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-selected[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
+  filter: none;
+  opacity: 1;
+  stroke-width: var(--cfx-interactive-focus-stroke-width, 2.4) !important;
+}
+
+.cfx-interactive-chart .cfx-hovered:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]):not(:where([data-cfx-hover-mode="root-branch"])) .cfx-hovered[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
+  opacity: 1;
+  filter: none;
+  stroke-width: var(--cfx-interactive-hover-stroke-width, 1.5) !important;
+}
+
+.cfx-interactive-chart:not([data-cfx-look="graphite"]) .cfx-hover-related:not(:where([data-cfx-highlight-managed],.cfx-selected,.cfx-highlighted)),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]):not(:where([data-cfx-hover-mode="root-branch"])):not([data-cfx-look="graphite"]) .cfx-hover-related:not(:where(.cfx-selected,.cfx-highlighted))[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
+  opacity: .82 !important;
+  filter: none;
+}
+
+.cfx-interactive-chart:not([data-cfx-hover-continuous]):not([data-cfx-look="graphite"]):not(:where([data-cfx-hover-mode="root-branch"]))[data-cfx-hovering="true"] [data-cfx-series]:not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-selected):not(:where([data-cfx-highlight-managed],.cfx-highlighted)),
+.cfx-interactive-chart:not([data-cfx-hover-continuous]):not([data-cfx-highlight-probe]):not(:where([data-cfx-hover-mode="root-branch"])):not([data-cfx-look="graphite"])[data-cfx-hovering="true"] [data-cfx-series]:not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-selected):not(:where(.cfx-highlighted))[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
+  opacity: .4;
+}
+
+.cfx-interactive-chart .cfx-trail:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-trail[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
+  opacity: 1;
+  filter: none;
+}
+
+.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="1"]:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-trail[data-cfx-trail-index="1"][data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
+  filter: none;
+  stroke-width: var(--cfx-interactive-trail-stroke-width, 2.6) !important;
+}
+
+.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="2"]:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-trail[data-cfx-trail-index="2"][data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
+  opacity: .86 !important;
+}
+
+.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="3"]:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-trail[data-cfx-trail-index="3"][data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
+  opacity: .72 !important;
+}
+
+.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="4"]:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart .cfx-trail[data-cfx-trail-index="5"]:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-trail[data-cfx-trail-index="4"][data-cfx-highlight-managed] > [data-cfx-highlight-paint],
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-trail[data-cfx-trail-index="5"][data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
+  opacity: .58 !important;
+}
+
+.cfx-interactive-chart .cfx-series-muted:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-series-muted[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
+  opacity: .18 !important;
+}
+
+.cfx-interactive-chart .cfx-series-isolated-in:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-series-isolated-in[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
+  opacity: 1;
+  filter: none;
+}
+
+.cfx-interactive-chart .cfx-series-isolated-out:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-series-isolated-out[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
+  opacity: .10 !important;
+  filter: none;
+}
+
+.cfx-interactive-chart [data-cfx-role="legend-item"][data-cfx-isolated="true"] {
+  filter: none;
+}
+
+.cfx-interactive-chart .cfx-scenario-muted:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-scenario-muted[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
+  opacity: .46 !important;
+  filter: saturate(.72);
+}
+
+.cfx-interactive-chart .cfx-scenario-active:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-scenario-active[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
+  opacity: 1;
+  filter: none;
+}
+
+.cfx-interactive-chart .cfx-scenario-step-active:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-scenario-step-active[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
+  opacity: 1;
+  filter: none;
+}
+
+.cfx-interactive-chart .cfx-scenario-step-muted:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-scenario-step-muted[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
+  opacity: .56 !important;
+  filter: saturate(.8);
+}
+
+@media (max-width: 900px) {
+  .cfx-shell {
+    padding: 14px;
+  }
+
+  .cfx-dashboard {
+    grid-template-columns: 1fr !important;
+  }
+
+  .cfx-stage {
+    padding: 8px;
+  }
+
+  .cfx-scenario-panel__steps {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .cfx-scenario-panel__steps li {
+    min-height: 34px;
+  }
+}
+
+@container cfx-chart (max-width: 900px) {
+  .cfx-scenario-panel__controls { justify-content: stretch; }
+  .cfx-scenario-panel__controls .cfx-tool { flex: 1 1 auto; min-height: 36px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cfx-stage svg,
+  .cfx-scenario-progress__bar,
+  .cfx-interactive-chart [data-cfx-label],
+  .cfx-interactive-chart [data-cfx-point],
+  .cfx-interactive-chart [data-cfx-series] {
+    transition: none !important;
+  }
+}
+
+.cfx-interactive-chart[data-cfx-progress-connected="true"] [data-cfx-role="progress-handle"] { cursor: ew-resize; touch-action: none; }
+
+/* A marker's surface ring (design rule 5) is backdrop: the pointer reaches the marker or whatever lies beneath it. */
+.cfx-interactive-chart :is([data-cfx-role="marker-ring"], [data-cfx-role$="-marker-ring"]) { pointer-events: none; }
+
+/* Graphite keeps host controls separate from the chart's single frame. */
+.cfx-chart-context-menu {
+  position: fixed; z-index: 1000; box-sizing: border-box;
+  width: 220px; max-width: calc(100vw - 16px); max-height: calc(100vh - 16px); overflow: auto;
+  padding: 6px; border: 1px solid var(--cfx-tooltip-line); border-radius: var(--cfx-tooltip-radius, var(--hfx-radius-overlay, 10px));
+  background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text);
+  font: var(--hfx-type-body-size, 14px)/var(--hfx-type-body-line-height, 1.5) var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
+  box-shadow: var(--cfx-tooltip-shadow, var(--hfx-elevation-2, none));
+}
+.cfx-chart-context-menu button {
+  display: block; box-sizing: border-box; width: 100%; padding: 8px 10px;
+  border: 0; border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px)); background: transparent; color: inherit;
+  font: inherit; text-align: start; cursor: pointer;
+}
+.cfx-chart-context-menu button:focus-visible {
+  outline: 2px solid var(--cfx-focus-ring, var(--hfx-color-focus-ring, currentColor)); outline-offset: -2px;
+}
+.cfx-chart-context-menu button:disabled { opacity: .5; cursor: default; }
+.cfx-chart-context-menu hr { height: 0; margin: 4px 6px; border: 0; border-block-start: 1px solid var(--cfx-tooltip-line); }
+
+.cfx-interactive-chart[data-cfx-look="graphite"] {
+  background: var(--cfx-host-background, transparent); color: var(--cfx-tooltip-text);
+  font-family: var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
+}
+.cfx-interactive-chart .cfx-toolbar {
+  background: var(--cfx-tooltip-surface); border-color: var(--cfx-tooltip-line);
+}
+.cfx-interactive-chart .cfx-tool,
+.cfx-interactive-chart .cfx-scenario {
+  background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text); border-color: var(--cfx-tooltip-line);
+}
+.cfx-interactive-chart .cfx-tool:hover,
+.cfx-interactive-chart .cfx-tool:focus-visible,
+.cfx-interactive-chart .cfx-tool[aria-pressed="true"],
+.cfx-interactive-chart .cfx-scenario:hover,
+.cfx-interactive-chart .cfx-scenario:focus-visible,
+.cfx-interactive-chart .cfx-scenario[aria-pressed="true"] {
+  border-color: var(--cfx-host-accent, var(--cfx-default-host-accent)); color: var(--cfx-tooltip-text);
+}
+/* Scenario captions use the same readable surface roles as other host controls. */
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-scenario-panel,
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-scenario-panel__steps li,
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-scenario-progress {
+  border-color: var(--cfx-tooltip-line); background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text);
+}
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-scenario-panel__title,
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-scenario-panel__steps li[aria-current="step"] { color: var(--cfx-tooltip-text); }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-scenario-panel__meta { color: var(--cfx-tooltip-muted); }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-scenario-panel__steps li::before {
+  background: var(--cfx-tooltip-line); color: var(--cfx-tooltip-text); border: 1px solid var(--cfx-scenario-color, var(--cfx-host-accent, var(--cfx-default-host-accent)));
+}
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-scenario-panel__steps li[aria-current="step"] { border-color: var(--cfx-scenario-color, var(--cfx-host-accent, var(--cfx-default-host-accent))); }
+.cfx-interactive-chart[data-cfx-look="graphite"][data-cfx-scenario-playback="playing"] [data-cfx-scenario-step-control="play"] {
+  background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text); border-color: var(--cfx-scenario-color, var(--cfx-host-accent, var(--cfx-default-host-accent)));
+}
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-scenario-progress__bar {
+  inset: auto auto 0 0; height: 3px; background: var(--cfx-tooltip-muted);
+  box-shadow: inset -2px 0 0 var(--cfx-scenario-color, var(--cfx-host-accent, var(--cfx-default-host-accent)));
+}
+@media (forced-colors: active) {
+  .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-scenario-progress {
+    background: Canvas; color: CanvasText; border-color: CanvasText; forced-color-adjust: none;
+  }
+  .cfx-interactive-chart[data-cfx-look="graphite"] .cfx-scenario-progress__bar {
+    background: CanvasText; box-shadow: none; forced-color-adjust: none;
+  }
+}
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-stage { background: transparent; border: 0; padding: 0; }
+/* The frame hugs the chart card and aligns its contextual control with the card edge. */
+.cfx-interactive-chart[data-cfx-look="graphite"]:not([data-cfx-responsive-layout="fit"]) .cfx-frame { width: fit-content; max-width: 100%; margin-inline: auto; }
+.cfx-interactive-chart[data-cfx-responsive-layout="adaptive"] .cfx-frame { width: 100%; max-width: var(--cfx-native-width); }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-reset {
+  border-color: var(--cfx-tooltip-line); background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-muted);
+  font: 600 var(--hfx-type-caption-size, 12px)/1 var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
+}
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-reset:hover { border-color: var(--cfx-crosshair-axis); color: var(--cfx-tooltip-text); }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-tray {
+  border-color: var(--cfx-tooltip-line); background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text);
+  box-shadow: var(--cfx-tooltip-shadow, var(--hfx-elevation-2, none)); font: 600 var(--hfx-type-caption-size, 12px)/18px var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
+}
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-tray__summary,
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-tray__range { color: var(--cfx-tooltip-muted); }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-chip,
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-page,
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-clear {
+  border-color: var(--cfx-tooltip-line); background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text);
+}
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-chip:hover,
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-chip:focus-visible,
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-page:hover:not(:disabled),
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-page:focus-visible,
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-clear:hover,
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-compare-clear:focus-visible { border-color: var(--cfx-host-accent, var(--cfx-default-host-accent)); }
+.cfx-dashboard { --cfx-dashboard-gap: 16px; }
+/* Crosshair class names describe the painted line: --x is horizontal (the y value). */
+.cfx-crosshair { --cfx-crosshair-default-stroke: var(--cfx-crosshair-axis); }
+.cfx-crosshair__line--x { height: 0; border-top: 1px dashed var(--cfx-crosshair-axis); }
+.cfx-crosshair__line--y { width: 0; border-left: 1px solid var(--cfx-crosshair-axis); }
+.cfx-interactive-chart[data-cfx-crosshair-styled="true"] .cfx-crosshair__line--x {
+  border-top: var(--cfx-crosshair-stroke-width, 1px) var(--cfx-crosshair-line-style, dashed) var(--cfx-crosshair-stroke, var(--cfx-crosshair-axis));
+}
+.cfx-interactive-chart[data-cfx-crosshair-styled="true"] .cfx-crosshair__line--y {
+  border-left: var(--cfx-crosshair-stroke-width, 1px) var(--cfx-crosshair-line-style, solid) var(--cfx-crosshair-stroke, var(--cfx-crosshair-axis));
+}
+.cfx-crosshair__axis-value {
+  position: absolute; box-sizing: border-box; width: max-content;
+  max-width: min(210px, 100%, calc(100vw - 16px)); overflow: hidden;
+  padding: 2px 6px; border: 1px solid var(--cfx-tooltip-line); border-radius: var(--cfx-axis-label-radius, var(--hfx-radius-sm));
+  background: var(--cfx-crosshair-label-surface, var(--cfx-tooltip-text));
+  color: var(--cfx-crosshair-label-text, var(--cfx-tooltip-surface));
+  font: 600 11px/16px var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif)); font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis; white-space: nowrap;
+}
+/* Browser ticks replace raster native labels without a text template; keep the axis label colour role. */
+.cfx-interactive-chart [data-cfx-browser-axis] text[fill="currentColor"] { fill: var(--cfx-tooltip-muted); }
+.cfx-crosshair__axis-value[hidden],
+.cfx-interactive-chart[data-cfx-crosshair-label="false"] :is(.cfx-crosshair__label, .cfx-crosshair__axis-value) { display: none; }
+.cfx-tooltip__quiet { color: var(--cfx-tooltip-muted) !important; }
+
+/* Print the complete native scene independently of the reader's screen viewport. */
+@media print {
+  .cfx-tooltip, .cfx-reset, .cfx-toolbar { transition: none !important; animation: none !important; }
+  .cfx-toolbar,
+  .cfx-scenarios,
+  .cfx-scenario-panel,
+  .cfx-reset,
+  .cfx-tooltip,
+  .cfx-compare-tray,
+  .cfx-legend-overflow,
+  .cfx-brush-box,
+  [data-cfx-keyboard-focus-outline],
+  .cfx-crosshair,
+  .cfx-reveal-layer {
+    display: none !important;
+  }
+
+  .cfx-interactive-chart,
+  .cfx-interactive-chart .cfx-frame {
+    width: 100% !important;
+    max-width: 100%;
+    break-inside: avoid;
+    padding-block-start: 0 !important;
+  }
+
+  .cfx-interactive-chart .cfx-stage {
+    height: auto !important;
+    max-height: none !important;
+    padding: 0;
+    border: 0;
+    overflow: hidden !important;
+    scrollbar-gutter: auto !important;
+    background: transparent;
+  }
+
+  .cfx-interactive-chart .cfx-stage > svg {
+    display: block;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    height: auto !important;
+    transform: none !important;
+    transition: none !important;
+    will-change: auto;
+  }
+
+  .cfx-interactive-chart .cfx-stage > svg :focus {
+    outline: none !important;
+  }
+}
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-point-interaction-target:not(.cfx-hovered):not(.cfx-hover-column):not(.cfx-selected):not(.cfx-highlighted) { opacity: 0 !important; }
+.cfx-interactive-chart[data-cfx-look="graphite"] .cfx-series-muted:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe])[data-cfx-look="graphite"] .cfx-series-muted[data-cfx-highlight-managed] > [data-cfx-highlight-paint] { opacity: .3 !important; }
+.cfx-interactive-chart[data-cfx-prepared-chart] .cfx-series-isolated-in:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe])[data-cfx-prepared-chart] .cfx-series-isolated-in[data-cfx-highlight-managed] > [data-cfx-highlight-paint] { opacity: 1; }
+.cfx-interactive-chart[data-cfx-look="graphite"] [data-cfx-role="legend-label"] { opacity: 1; }
+.cfx-interactive-chart :focus:not(:focus-visible) { outline: none; }
+.cfx-interactive-chart :focus-visible { outline: 2px solid var(--cfx-focus-ring, var(--hfx-color-focus-ring, currentColor)); outline-offset: 2px; }
+.cfx-interactive-chart[data-cfx-keyboard-focus] .cfx-stage svg :focus-visible { outline: none; }
+.cfx-interactive-chart [data-cfx-keyboard-focus-outline] { pointer-events: none; }
+.cfx-interactive-chart [data-cfx-focus-halo] { stroke: var(--cfx-tooltip-surface); stroke-width: 5px; }
+.cfx-interactive-chart [data-cfx-focus-ink] { stroke: var(--cfx-focus-ring, var(--hfx-color-focus-ring, currentColor)); stroke-width: 2px; }
+/* Prepared source groups nest observations inside series. Dim a unit once, rather than multiplying opacity. */
+.cfx-interactive-chart:not([data-cfx-hover-continuous])[data-cfx-prepared-chart][data-cfx-hovering="true"]:not([data-cfx-hover-unit="point"]) [data-cfx-role="series"] [data-cfx-series]:not(:where([data-cfx-highlight-managed],.cfx-linked-dim,.cfx-selection-dim)),
+.cfx-interactive-chart:not([data-cfx-hover-continuous])[data-cfx-prepared-chart][data-cfx-hovering="true"][data-cfx-hover-unit="point"] [data-cfx-role="series"] [data-cfx-point] [data-cfx-series]:not(:where([data-cfx-highlight-managed],.cfx-linked-dim,.cfx-selection-dim)) { opacity: 1; }
+.cfx-interactive-chart[data-cfx-prepared-chart] .cfx-series-muted .cfx-series-muted:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart[data-cfx-prepared-chart] .cfx-series-isolated-out .cfx-series-isolated-out:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe])[data-cfx-prepared-chart] .cfx-series-muted .cfx-series-muted[data-cfx-highlight-managed] > [data-cfx-highlight-paint],
+.cfx-interactive-chart:not([data-cfx-highlight-probe])[data-cfx-prepared-chart] .cfx-series-isolated-out .cfx-series-isolated-out[data-cfx-highlight-managed] > [data-cfx-highlight-paint] { opacity: 1; }
+.cfx-interactive-chart .cfx-prepared-point-marker { opacity: 0; }
+.cfx-interactive-chart [data-cfx-point].cfx-hovered > .cfx-prepared-point-marker,
+.cfx-interactive-chart [data-cfx-point].cfx-hover-column > .cfx-prepared-point-marker,
+.cfx-interactive-chart [data-cfx-point].cfx-selected > .cfx-prepared-point-marker,
+.cfx-interactive-chart [data-cfx-point].cfx-highlighted > .cfx-prepared-point-marker {
+  opacity: 1; stroke: var(--cfx-tooltip-surface); stroke-width: 2px;
+}
+
+/* Zero-specificity exclusions above preserve the default cascade. Opt-in paint leaves native ink and authored opacity intact. */
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) [data-cfx-highlight-paint] {
+  opacity: var(--cfx-highlight-opacity, 1);
+}
+.cfx-interactive-chart [data-cfx-highlight-outline] {
+  fill: none; stroke: var(--cfx-highlight-stroke, none); stroke-width: var(--cfx-highlight-stroke-width, 0);
+  pointer-events: none;
+}
+.cfx-interactive-chart[data-cfx-highlight-probe] [data-cfx-highlight-outline] { display: none; }
+.cfx-interactive-chart [data-cfx-highlight-unavailable] [data-cfx-highlight-outline] { display: none; }
+
+/* Host highlights and selection dim data marks once, without changing authored ink or nested series opacity. */
+.cfx-interactive-chart .cfx-linked-dim:not(:where([data-cfx-highlight-managed],.cfx-series-isolated-in)),
+.cfx-interactive-chart .cfx-selection-dim:not(:where([data-cfx-highlight-managed],.cfx-series-isolated-in)),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-linked-dim:not(.cfx-series-isolated-in)[data-cfx-highlight-managed] > [data-cfx-highlight-paint],
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-selection-dim:not(.cfx-series-isolated-in)[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
+  opacity: .3 !important;
+}
+.cfx-interactive-chart .cfx-highlighted:not(:where([data-cfx-highlight-managed])),
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-highlighted[data-cfx-highlight-managed] > [data-cfx-highlight-paint] {
+  filter: none;
+}
+/* A connected line/fill has one owner. Dim its observations once, and retain the
+   selected or host-highlighted series while the pointer explores a different mark. */
+.cfx-interactive-chart[data-cfx-prepared-chart] [data-cfx-role="series"].cfx-linked-series-dim:not(.cfx-series-muted):not(.cfx-series-isolated-out):not(.cfx-series-isolated-in) { opacity: .3 !important; }
+.cfx-interactive-chart[data-cfx-prepared-chart] [data-cfx-role="series"].cfx-linked-series-dim [data-cfx-point]:where(.cfx-linked-dim,.cfx-selection-dim) { opacity: 1; }
+.cfx-interactive-chart[data-cfx-prepared-chart] [data-cfx-role="series"].cfx-linked-series-active:not(.cfx-series-muted):not(.cfx-series-isolated-out) { opacity: 1; }
+.cfx-interactive-chart[data-cfx-prepared-chart] [data-cfx-role="series"].cfx-linked-series-active:not(.cfx-series-muted):not(.cfx-series-isolated-out) [data-cfx-role="line"] {
+  filter: none;
+}
+.cfx-interactive-chart[data-cfx-prepared-chart] [data-cfx-role="legend-item"].cfx-linked-series-dim:not([data-cfx-muted="true"]):not(.cfx-series-isolated-out) { opacity: .3 !important; }
+.cfx-interactive-chart[data-cfx-prepared-chart] [data-cfx-role="legend-item"].cfx-linked-series-active:not([data-cfx-muted="true"]):not(.cfx-series-isolated-out) { opacity: 1; }
+.cfx-interactive-chart [data-cfx-live] {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+.cfx-interactive-chart:not([data-cfx-highlight-probe])[data-cfx-hover-mode="root-branch"] [data-cfx-highlight-managed].cfx-hovered:not(.cfx-selected) > [data-cfx-highlight-paint] {
+  filter: none;
+}
+.cfx-interactive-chart:not([data-cfx-highlight-probe]):not([data-cfx-look="graphite"])[data-cfx-hover-mode="root-branch"] [data-cfx-highlight-managed].cfx-hover-related:not(.cfx-selected) > [data-cfx-highlight-paint] {
+  filter: none;
+}
+.cfx-interactive-chart[data-cfx-look="graphite"][data-cfx-hover-mode="root-branch"] [data-cfx-highlight-managed]:not(.cfx-selected) > [data-cfx-highlight-paint] { filter: none; }
+
+/* Native axes retain their prepared direction; adapter controls follow the host's language. */
+.cfx-interactive-chart .cfx-stage { direction: ltr; }
+.cfx-interactive-chart[dir="rtl"] .cfx-toolbar,
+.cfx-interactive-chart[dir="rtl"] .cfx-scenarios,
+.cfx-interactive-chart[dir="rtl"] .cfx-compare-tray { text-align: start; }
+.cfx-interactive-chart[dir="rtl"] .cfx-tooltip__meta dt { text-align: start; }
+
+/* Retained native legend facts stay readable without changing the chart's measured frame. */
+.cfx-legend-overflow {
+  margin-block: 10px;
+  padding: 10px;
+  border: 1px solid var(--cfx-tooltip-line);
+  border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px));
+  background: var(--cfx-tooltip-surface);
+  color: var(--cfx-tooltip-text);
+  font-size: var(--hfx-type-caption-size, 12px);
+  overflow-wrap: anywhere;
+}
+.cfx-legend-overflow summary { cursor: pointer; font-weight: 600; }
+.cfx-legend-overflow summary:focus-visible { outline: 2px solid var(--cfx-focus-ring, var(--hfx-color-focus-ring, currentColor)); outline-offset: 3px; }
+.cfx-legend-overflow__navigation { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-block: 10px; }
+.cfx-legend-overflow__range { margin-inline-end: auto; color: var(--cfx-tooltip-muted); }
+.cfx-legend-overflow__entries { display: grid; gap: 6px; }
+.cfx-legend-overflow__entry { display: flex; align-items: start; gap: 8px; min-width: 0; }
+.cfx-legend-overflow__entry > .cfx-tool { flex: 0 0 auto; }
+.cfx-legend-overflow__entry > .cfx-legend-overflow__toggle { flex: 1 1 auto; min-width: 0; white-space: normal; text-align: start; }
+.cfx-legend-overflow__toggle[aria-pressed="true"] > span { text-decoration: line-through; }
+
+/* Native range controls live outside the plot and use the same Graphite surface roles. */
+.cfx-x-navigation {
+  display: grid; gap: 10px; width: 100%; max-width: var(--cfx-native-width); margin: 10px auto 0;
+  padding: 12px; border: 1px solid var(--cfx-tooltip-line); border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px));
+  background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text); box-sizing: border-box;
+  font: var(--hfx-type-small-size, 13px)/var(--hfx-type-small-line-height, 1.4) var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
+}
+.cfx-x-navigation[hidden] { display: none !important; }
+.cfx-interactive-chart[data-cfx-responsive-layout="fit"] .cfx-x-navigation { max-width: none; }
+.cfx-x-navigation__header, .cfx-x-navigation__presets { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.cfx-x-navigation__header { justify-content: space-between; }
+.cfx-x-navigation__header strong { font-size: var(--hfx-type-small-size, 13px); font-weight: 600; }
+.cfx-x-navigation__presets .cfx-tool { min-height: 30px; padding: 5px 10px; font-size: var(--hfx-type-caption-size, 12px); }
+.cfx-x-navigation__overview {
+  position: relative; overflow: hidden; height: 64px; border: 1px solid var(--cfx-tooltip-line); border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px));
+  touch-action: none; cursor: crosshair;
+}
+.cfx-x-navigation__overview > svg { display: block; width: 100%; height: 100%; opacity: .72; pointer-events: none; }
+.cfx-x-navigation__window {
+  position: absolute; inset-block: 0; box-sizing: border-box; pointer-events: none;
+  border: 2px solid var(--cfx-host-accent, var(--cfx-default-host-accent));
+  background: color-mix(in srgb, var(--cfx-host-accent, var(--cfx-default-host-accent)) 12%, transparent);
+}
+.cfx-x-navigation__limits { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.cfx-x-navigation__range { display: grid; gap: 5px; min-width: 0; }
+.cfx-x-navigation__range > span { display: flex; justify-content: space-between; gap: 8px; color: var(--cfx-tooltip-muted); }
+.cfx-x-navigation__range output { min-width: 0; color: var(--cfx-tooltip-text); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; text-align: end; }
+.cfx-x-navigation__range input {
+  width: 100%; height: 20px; min-width: 0; margin: 0; cursor: ew-resize;
+  accent-color: var(--cfx-host-accent, var(--cfx-default-host-accent));
+}
+.cfx-x-navigation__range input:focus-visible { outline: 2px solid var(--cfx-focus-ring, var(--hfx-color-focus-ring, currentColor)); outline-offset: 3px; }
+.cfx-x-navigation__range input:disabled { cursor: default; opacity: .45; }
+.cfx-x-navigation__status { min-height: 1.4em; color: var(--cfx-tooltip-muted); }
+@media (max-width: 430px) {
+  .cfx-x-navigation__limits { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .cfx-x-navigation__header { align-items: flex-start; }
+}
+@media (forced-colors: active) {
+  .cfx-x-navigation__window { border-color: Highlight; background: transparent; }
+  .cfx-x-navigation__range input { accent-color: Highlight; }
+}
+@media print { .cfx-x-navigation { display: none !important; } }
+.cfx-legend-overflow [data-cfx-legend-page]:disabled { cursor: default; opacity: .5; }
+
+/* Persistent selection and host highlights keep a native SVG cue when filters do not paint. */
+.cfx-interactive-chart [data-cfx-state-outline] { pointer-events: none; }
+.cfx-interactive-chart [data-cfx-state-halo] { stroke: var(--cfx-tooltip-surface); stroke-width: var(--cfx-state-halo-width); }
+.cfx-interactive-chart [data-cfx-state-ink] { stroke: var(--cfx-state-color); stroke-width: var(--cfx-state-ink-width); }
+.cfx-interactive-chart:not([data-cfx-highlight-probe]) .cfx-highlighted[data-cfx-highlight-managed] > [data-cfx-highlight-paint] { opacity: 1; }
+
+.cfx-hierarchy-navigation { display:flex; align-items:center; gap:8px; flex-wrap:wrap; max-width:100%; margin:8px 0; background:var(--cfx-tooltip-surface); color:var(--cfx-tooltip-text); }
+.cfx-hierarchy-navigation__path { flex:1 1 160px; min-width:0; overflow-wrap:anywhere; }
+.cfx-hierarchy-navigation [data-cfx-hierarchy-status] { flex-basis:100%; font-size:.85em; color:var(--cfx-tooltip-muted); }
+.cfx-hierarchy-navigation button:disabled { opacity:.5; cursor:default; }
+
+@media print { .cfx-hierarchy-navigation { display:none !important; } }
+
+/* Opacity belongs to the series or paint owner once; hover never restores a muted mark. */
+.cfx-interactive-chart[data-cfx-export-probe] svg,
+.cfx-interactive-chart[data-cfx-export-probe] svg * { transition: none !important; }
+.cfx-interactive-chart :is(.cfx-prepared-point-marker, .cfx-responsive-legend__label) { transition: opacity 250ms ease-out; }
+.cfx-interactive-chart[data-cfx-hovering="true"] :is(.cfx-prepared-point-marker, .cfx-responsive-legend__label) { transition-duration: 150ms; }
+.cfx-interactive-chart:not([data-cfx-hover-continuous])[data-cfx-hover-mode="series"] :is([data-cfx-role="series"],[data-cfx-role="legend-item"]):not(.cfx-hover-series):not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-linked-series-active):not(.cfx-series-isolated-in):not(.cfx-selected):not(.cfx-highlighted) { opacity: .4; }
+.cfx-interactive-chart:not([data-cfx-hover-continuous])[data-cfx-hover-mode="series"][data-cfx-hover-unit="point"] [data-cfx-point]:not(.cfx-hover-series):not(.cfx-linked-series-active):not(.cfx-series-isolated-in):not(.cfx-selected):not(.cfx-highlighted) { opacity: .4; }
+.cfx-interactive-chart [data-cfx-role="legend-item"] { border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px)); }
+.cfx-interactive-chart [data-cfx-role="legend-item"]:hover { transition-duration: 100ms; }
+.cfx-interactive-chart :is(button, summary, [role="button"]):focus-visible,
+.cfx-chart-context-menu button:focus-visible { outline: 2px solid var(--cfx-focus-ring, var(--hfx-color-focus-ring, currentColor)); outline-offset: 2px; }
+.cfx-interactive-chart .cfx-tooltip__close:hover,
+.cfx-chart-context-menu button:hover:not(:disabled) { background: color-mix(in srgb, var(--cfx-tooltip-text) 6%, var(--cfx-tooltip-surface)); }
+/* Continuous colour encodes the measurement, so exploration preserves every other cell. */
+.cfx-interactive-chart :is([data-cfx-kind="heatmap" i], [data-cfx-kind="regionmap" i], [data-cfx-kind="map" i], [data-cfx-kind="treemap" i]) .cfx-hovered :is(path, rect, polygon):not([data-cfx-hit]):not([data-cfx-state-halo]) {
+  stroke: var(--cfx-focus-ring, var(--hfx-color-focus-ring, currentColor)); stroke-width: 2px; vector-effect: non-scaling-stroke; paint-order: stroke fill;
+}
+.cfx-interactive-chart:not([data-cfx-flow-hover="true"]) .cfx-hovered:not(.cfx-point-interaction-target):not(:where([data-cfx-kind="heatmap" i], [data-cfx-kind="regionmap" i], [data-cfx-kind="map" i], [data-cfx-kind="treemap" i])) > :is(path, rect, polygon):not([data-cfx-hit]):not([data-cfx-state-halo]) {
+  stroke: color-mix(in srgb, var(--cfx-series-color, var(--cfx-default-host-accent)) 60%, var(--cfx-tooltip-surface));
+  stroke-width: 1.5px; vector-effect: non-scaling-stroke; paint-order: stroke fill;
+}
+.cfx-interactive-chart circle:is(.cfx-hovered, .cfx-hover-column):is([data-cfx-role="marker"], .cfx-prepared-point-marker),
+.cfx-interactive-chart :is(.cfx-hovered, .cfx-hover-column) > circle:is([data-cfx-role="marker"], .cfx-prepared-point-marker) {
+  stroke: var(--cfx-tooltip-surface); stroke-width: 2px; vector-effect: non-scaling-stroke;
+}
+.cfx-interactive-chart :is(.cfx-hovered, .cfx-hover-column) > .cfx-prepared-point-marker { r: var(--cfx-hover-marker-radius, 4.5px); }
+.cfx-interactive-chart [data-cfx-role="legend-item"][data-cfx-muted="true"] { opacity: 1; filter: none; }
+.cfx-interactive-chart [data-cfx-role="legend-item"][data-cfx-muted="true"] [data-cfx-role="legend-label"]:not(.cfx-responsive-legend__label) { opacity: .45 !important; text-decoration: none; }
+.cfx-interactive-chart [data-cfx-role="legend-item"][data-cfx-muted="true"] :is([data-cfx-role="legend-swatch"], [data-cfx-role="legend-symbol"], [data-cfx-role="legend-marker"]) {
+  fill: none; stroke: var(--cfx-series-color, var(--cfx-tooltip-muted)); stroke-width: 1.5px; vector-effect: non-scaling-stroke;
+}
+.cfx-interactive-chart .cfx-legend-overflow__toggle { min-height: 32px; border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px)); }
+.cfx-chart-context-menu button { min-height: 32px; font-weight: 400; }
+@media (pointer: coarse) {
+  .cfx-chart-context-menu button, .cfx-legend-overflow summary,
+  .cfx-interactive-chart .cfx-legend-overflow__toggle,
+  .cfx-interactive-chart .cfx-x-navigation__presets .cfx-tool,
+  .cfx-interactive-chart .cfx-hierarchy-navigation button { min-height: 44px; }
+  .cfx-x-navigation__range input { min-height: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cfx-interactive-chart :is([data-cfx-series], [data-cfx-point], [data-cfx-highlight-paint]) { transition: none !important; }
+}
+@media (forced-colors: active) {
+  .cfx-interactive-chart :is(button, summary, [role="button"]):focus-visible,
+  .cfx-chart-context-menu button:focus-visible { outline-color: Highlight; }
+  .cfx-interactive-chart .cfx-toolbar { border-color: CanvasText; box-shadow: none; }
+  .cfx-interactive-chart .cfx-toolbar .cfx-tool[aria-pressed="true"] { border-color: Highlight; color: Highlight; }
+  .cfx-interactive-chart [data-cfx-focus-ink], .cfx-interactive-chart [data-cfx-state-ink] { stroke: Highlight; }
+  .cfx-tooltip, .cfx-crosshair__axis-value, .cfx-chart-context-menu {
+    --cfx-tooltip-surface: Canvas;
+    --cfx-tooltip-text: CanvasText;
+    --cfx-tooltip-muted: CanvasText;
+    --cfx-tooltip-line: CanvasText;
+    --cfx-tooltip-shadow: none;
+    border-color: CanvasText; background: Canvas; color: CanvasText; box-shadow: none;
+  }
+}
+
+/* The axis readouts replace the old pointer pill. */
+.cfx-crosshair__label { display: none; }
+.cfx-interactive-chart:not([data-cfx-hover-continuous]):not([data-cfx-prepared-chart])[data-cfx-hover-mode="series"] [data-cfx-series]:not(.cfx-hover-series):not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-point-interaction-target):not(.cfx-selected):not(.cfx-highlighted) { opacity: .4; }
+
+/* HTML chrome above the plot moves below the floating toolbar so the two never overlap. */
+.cfx-interactive-chart[data-cfx-toolbar="compact"] .cfx-frame:has(> .cfx-toolbar):not(:has(> .cfx-responsive-heading[style*="display: block"])):has(> :is(.cfx-hierarchy-breadcrumb, .cfx-responsive-legend[style*="display: flex"])) { padding-block-start: calc(var(--cfx-toolbar-height, 34px) + var(--cfx-toolbar-inset)); }
+.cfx-interactive-chart :is([data-cfx-role="map-series"], [data-cfx-role="heatmap"], [data-cfx-kind="treemap" i]) .cfx-hovered :is(path, rect, polygon):not([data-cfx-hit]):not([data-cfx-state-halo]) {
+  stroke: var(--cfx-focus-ring, var(--hfx-color-focus-ring, currentColor)); stroke-width: 2px; vector-effect: non-scaling-stroke;
+}
+
+/* Flow exploration retains its connected neighbourhood and suppresses other ribbons. */
+.cfx-interactive-chart[data-cfx-flow-hover="true"][data-cfx-hover-mode="flow"] [data-cfx-role="sankey-link"]:not(.cfx-series-muted):not(.cfx-series-isolated-out) { opacity: .15 !important; filter: none; }
+.cfx-interactive-chart[data-cfx-flow-hover="true"][data-cfx-hover-mode="flow"] [data-cfx-role="sankey-link"]:not(.cfx-series-muted):not(.cfx-series-isolated-out):is(.cfx-hovered, .cfx-hover-related) { opacity: .9 !important; }
+.cfx-interactive-chart[data-cfx-flow-hover="true"][data-cfx-hover-mode="flow"] [data-cfx-role="sankey-node"]:not(.cfx-series-muted):not(.cfx-series-isolated-out) { opacity: 1; filter: none; }
+.cfx-interactive-chart[data-cfx-flow-hover="true"][data-cfx-hover-mode="flow"] :is(.cfx-hovered, .cfx-hover-related) { filter: none; }
+/* Root-branch hierarchies share the categorical dim value; continuous treemaps stay undimmed above. */
+.cfx-interactive-chart:not([data-cfx-highlight-probe]):not([data-cfx-highlight-other-branch-opacity])[data-cfx-hover-mode="root-branch"] [data-cfx-kind="sunburst" i][data-cfx-highlight-state="other-branch"] > [data-cfx-highlight-paint] { opacity: .4; }
+
+.cfx-responsive-legend { margin-block: 4px 8px; font-family: var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif)); }
+.cfx-responsive-legend__item { border-color: transparent; border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px)); }
+.cfx-responsive-legend__item > span { min-width: 0; overflow-wrap: anywhere; }
+.cfx-responsive-legend__value { margin-inline-start: auto; color: var(--cfx-tooltip-muted); font-variant-numeric: tabular-nums; }
+/* Every entry shares one unboxed style; a hidden series dims its label and hollows its marker. */
+.cfx-interactive-chart .cfx-responsive-legend__item:is([aria-pressed], :not([aria-pressed])) { border-color: transparent; background: transparent; color: var(--cfx-tooltip-text); }
+.cfx-interactive-chart .cfx-responsive-legend__item:is(.cfx-series-muted, .cfx-series-isolated-out) { opacity: 1; }
+.cfx-responsive-legend__item:is([data-cfx-muted="true"], [aria-pressed="false"]) > span { opacity: 1; color: var(--cfx-tooltip-muted); }
+.cfx-responsive-legend__item:is([data-cfx-muted="true"], [aria-pressed="false"]) [data-cfx-role="legend-swatch"] { fill-opacity: 0; stroke-opacity: .6; }
+.cfx-interactive-chart .cfx-responsive-legend__item:hover { background: color-mix(in srgb, var(--cfx-tooltip-text) 6%, transparent); }
+
+.cfx-interactive-chart [data-cfx-role="legend-item"]:hover > [data-cfx-browser-hit-area] {
+  fill: color-mix(in srgb, var(--cfx-tooltip-text) 6%, transparent); rx: var(--cfx-control-radius, var(--hfx-radius-control, 6px));
+}
+.cfx-interactive-chart:has([data-cfx-role="legend-item"]:hover) :is(.cfx-prepared-point-marker, .cfx-responsive-legend__label) { transition-duration: 100ms; }
+
+/* Narrow readers move the heading into HTML so it can wrap beside the toolbar inside the card. */
+.cfx-responsive-heading {
+  box-sizing: border-box; min-width: 0; max-width: 100%; padding: 10px 12px 6px; overflow-wrap: anywhere;
+  color: var(--cfx-tooltip-text); font: 600 14px/20px var(--cfx-tooltip-font);
+}
+.cfx-frame:has(> .cfx-toolbar) > .cfx-responsive-heading { min-height: calc(var(--cfx-toolbar-height, 34px) + var(--cfx-toolbar-inset) * 2); }
+/* The drawing overlaps the band above it by one pixel so no seam shows between the surfaces. */
+.cfx-frame[data-cfx-heading-crop] > .cfx-stage > svg {
+  margin-top: calc(1px - var(--cfx-heading-crop)); clip-path: inset(max(0px, calc(var(--cfx-heading-crop) - 1px)) 0 0 0);
+}
+/* The frame paints the drawing's own card behind its HTML heading, legend, plot, toolbar and reset control,
+   so no chrome sits on the page; the drawing's card edges above and below the plot are clipped away. */
+.cfx-frame[data-cfx-card-head] { isolation: isolate; }
+.cfx-frame[data-cfx-card-head] > .cfx-reset { margin-block-end: 8px; }
+.cfx-frame[data-cfx-card-head]::before {
+  content: ""; position: absolute; z-index: -1; top: var(--cfx-card-top); bottom: var(--cfx-card-bottom); left: var(--cfx-card-inset);
+  box-sizing: border-box; width: var(--cfx-card-width); max-width: calc(100% - var(--cfx-card-inset)); border: var(--cfx-card-stroke-width) solid var(--cfx-card-stroke);
+  border-radius: var(--cfx-card-radius); background: var(--cfx-card-fill);
+}
+.cfx-frame[data-cfx-card-head] > .cfx-stage > svg {
+  margin-block: calc(1px - var(--cfx-heading-crop, 1px)) calc(0px - var(--cfx-card-foot));
+  clip-path: inset(max(0px, calc(var(--cfx-heading-crop, 0px) - 1px)) 0 var(--cfx-card-foot) 0);
+}
+.cfx-frame[data-cfx-card-head] > :is(.cfx-responsive-heading, .cfx-responsive-legend) {
+  box-sizing: border-box; width: var(--cfx-card-width); max-width: calc(100% - var(--cfx-card-inset)); margin-left: var(--cfx-card-inset);
+}
+.cfx-frame[data-cfx-card-head] > .cfx-responsive-heading { padding: var(--cfx-card-pad-top) var(--cfx-card-pad-x) 6px; }
+.cfx-frame[data-cfx-card-head] > .cfx-responsive-legend {
+  margin-block: 0; padding: 0 calc(var(--cfx-card-pad-x) - 6px) 4px; box-shadow: none;
+}
+.cfx-frame[data-cfx-card-head] > .cfx-stage { border-radius: 0; box-shadow: none; }
+/* Inside the card the toolbar is a plain control row, not a second rounded surface. */
+.cfx-frame[data-cfx-card-head] > .cfx-toolbar { border-color: transparent; background: var(--cfx-card-fill); box-shadow: none; }
+.cfx-responsive-heading__subtitle { display: block; margin-block-start: 2px; color: var(--cfx-tooltip-muted); font: 400 12px/18px var(--cfx-tooltip-font); }
+
+/* Shared chrome layout, responsive controls and motion. */
+
+/* The toolbar stays visible while it reports state: an active mode or a zoomed window. */
+.cfx-interactive-chart:hover .cfx-toolbar,
+.cfx-interactive-chart:focus-within .cfx-toolbar,
+.cfx-interactive-chart:is([data-cfx-mode="pan"], [data-cfx-mode="brush"]) .cfx-toolbar,
+.cfx-interactive-chart .cfx-toolbar:has(> [data-cfx-zoom-reset]:not([hidden])) { opacity: 1; pointer-events: auto; }
+.cfx-interactive-chart .cfx-toolbar .cfx-tool {
+  display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+  flex: 0 0 auto; min-width: var(--cfx-toolbar-control-size); min-height: var(--cfx-toolbar-control-size); padding: 4px 6px; border-color: transparent;
+  border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px)); font-weight: 600; line-height: 18px;
+}
+.cfx-interactive-chart .cfx-toolbar .cfx-tool--icon { width: var(--cfx-toolbar-control-size); padding: 0; }
+.cfx-interactive-chart .cfx-toolbar .cfx-tool[hidden] { display: none; }
+.cfx-interactive-chart .cfx-toolbar [data-cfx-zoom-reset] { transition: opacity 120ms ease-out; }
+.cfx-toolbar .cfx-tool > svg { width: var(--cfx-toolbar-icon-size); height: var(--cfx-toolbar-icon-size); flex: 0 0 var(--cfx-toolbar-icon-size); pointer-events: none; }
+.cfx-interactive-chart[data-cfx-toolbar="band"] .cfx-toolbar .cfx-tool {
+  flex: 1 1 auto; min-height: 34px; padding: 6px 10px; border-color: var(--cfx-tooltip-line);
+}
+@container cfx-chart (max-width: 900px) {
+  .cfx-interactive-chart[data-cfx-toolbar="band"] .cfx-toolbar .cfx-tool { min-height: 36px; }
+}
+.cfx-interactive-chart .cfx-tool:hover,
+.cfx-interactive-chart .cfx-scenario:hover,
+.cfx-interactive-chart .cfx-compare-chip:hover,
+.cfx-interactive-chart .cfx-compare-clear:hover,
+.cfx-interactive-chart .cfx-compare-page:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--cfx-tooltip-text) 6%, var(--cfx-tooltip-surface));
+}
+.cfx-interactive-chart .cfx-tool[aria-pressed="true"]:not(.cfx-responsive-legend__item) {
+  background: color-mix(in srgb, var(--cfx-host-accent, var(--cfx-default-host-accent)) 12%, var(--cfx-tooltip-surface));
+  color: var(--cfx-tooltip-text);
+}.cfx-interactive-chart .cfx-toolbar .cfx-tool:hover:not([aria-pressed="true"]) { color: var(--cfx-tooltip-text); }
+.cfx-interactive-chart .cfx-toolbar .cfx-tool--icon[aria-pressed="true"] { color: var(--cfx-host-accent, var(--cfx-default-host-accent)); }
+
+.cfx-tooltip__close {
+  position: absolute; inset: 4px 4px auto auto; display: grid; place-items: center;
+  width: 20px; height: 20px; padding: 0; border: 0; border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px));
+  background: transparent; color: var(--cfx-tooltip-muted); cursor: pointer; font: inherit;
+}
+.cfx-tooltip__meta :is(dt, dd)[data-cfx-active="true"] {
+  font-weight: 600; background: color-mix(in srgb, var(--cfx-series-color, var(--cfx-default-host-accent)) 4%, transparent);
+}
+.cfx-tooltip__meta :is(dt, dd)[data-cfx-total] {
+  margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--cfx-tooltip-line); font-weight: 600;
+}
+.cfx-tooltip__swatch--line { width: 12px; height: 2px; flex-basis: 12px; }
+.cfx-compare-chip, .cfx-compare-page, .cfx-compare-clear {
+  min-height: 32px; font-size: var(--hfx-type-caption-size, 12px); font-weight: 600;
+}
+.cfx-compare-tray__summary, .cfx-compare-tray__range { font-size: var(--hfx-type-caption-size, 12px); font-weight: 600; }
+@starting-style {
+  .cfx-tooltip:not([hidden]) { opacity: 0; translate: 0 2px; }
+  .cfx-reset:not([hidden]) { opacity: 0; }
+  .cfx-toolbar [data-cfx-zoom-reset]:not([hidden]) { opacity: 0; }
+}
+@media (pointer: coarse) {
+  .cfx-interactive-chart .cfx-toolbar { opacity: 1; pointer-events: auto; }
+  .cfx-interactive-chart .cfx-toolbar .cfx-tool { min-width: var(--cfx-toolbar-control-size-coarse); min-height: var(--cfx-toolbar-control-size-coarse); }
+  .cfx-interactive-chart .cfx-toolbar .cfx-tool--icon { width: var(--cfx-toolbar-control-size-coarse); }
+  .cfx-interactive-chart :is(.cfx-reset, .cfx-compare-chip, .cfx-compare-page, .cfx-compare-clear, .cfx-scenario, .cfx-legend-overflow__toggle) { min-height: 44px; }
+  .cfx-compare-tray { min-height: 58px; }
+}
+@media (max-width: 600px) {
+  .cfx-shell { align-items: start; align-content: start; padding: 8px; }
+  .cfx-tooltip { max-width: min(320px, calc(100vw - 16px)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cfx-tooltip, .cfx-reset, .cfx-toolbar { transition: none !important; translate: none; }
+}
+
+.cfx-hierarchy-breadcrumb {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 4px; max-width: 100%;
+  margin-block: 6px; color: var(--cfx-tooltip-muted); font: 400 var(--hfx-type-caption-size, 12px)/18px var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif));
+}
+.cfx-hierarchy-breadcrumb .cfx-tool {
+  min-height: 32px; max-width: 100%; white-space: normal; overflow-wrap: anywhere;
+  border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px)); font-weight: 600;
+}
+svg[data-cfx-standalone-hierarchy] { display: block; max-width: 100%; }
+@media (pointer: coarse) { .cfx-hierarchy-breadcrumb .cfx-tool { min-height: 44px; } }
+@media (prefers-reduced-motion: no-preference) {
+  /* The motion feature bundle replaces this plain fade with per-series entry animation. */
+  .cfx-interactive-chart[data-cfx-runtime-bound="true"]:not([data-cfx-motion]):not([data-cfx-motion-duration="0"]) .cfx-stage { animation: cfx-series-enter 300ms cubic-bezier(0.25, 1, 0.5, 1); }
+}
+@keyframes cfx-series-enter { from { opacity: .35; } }
+.cfx-annotation-editor {
+  display: flex; flex-wrap: wrap; align-items: end; gap: 8px; padding: 12px 16px;
+  background: var(--cfx-tooltip-surface, #0f172a); border-block: 1px solid var(--cfx-tooltip-line, #64748b); color: var(--cfx-tooltip-text, #e5e7eb);
+}
+.cfx-annotation-editor[hidden] { display: none; }
+.cfx-annotation-editor label { display: flex; flex-direction: column; gap: 4px; min-width: 0; font-size: 12px; }
+.cfx-annotation-editor select, .cfx-annotation-editor input { min-width: 0; max-width: min(100%, 24rem); }
+.cfx-annotation-editor button, .cfx-annotation-editor select, .cfx-annotation-editor input {
+  border: 1px solid currentColor; border-radius: 5px; color: inherit; background: transparent; padding: 6px 9px; font: inherit;
+}
+.cfx-annotation-editor button { cursor: pointer; }
+.cfx-annotation-editor :disabled { opacity: .5; cursor: default; }
+.cfx-annotation-editor :focus-visible { outline: 3px solid currentColor; outline-offset: 3px; }
+.cfx-annotation-editor__status { flex-basis: 100%; min-height: 1.4em; font-size: 12px; }
+.cfx-annotation-preview { color: var(--cfx-tooltip-text, #e5e7eb); pointer-events: none; }
+.cfx-annotation-preview__line { stroke: currentColor; stroke-width: 2; stroke-dasharray: 5 3; vector-effect: non-scaling-stroke; }
+.cfx-annotation-preview__channel { fill: currentColor; fill-opacity: .12; }
+.cfx-annotation-preview__handle { pointer-events: all; fill: var(--cfx-tooltip-surface, #0f172a); stroke: currentColor; stroke-width: 2; cursor: move; vector-effect: non-scaling-stroke; }
+.cfx-annotation-preview__handle:focus-visible { stroke-width: 4; }
+@media (prefers-reduced-motion: reduce) { .cfx-annotation-editor *, .cfx-annotation-preview * { transition: none; animation: none; } }
+@media (forced-colors: active) { .cfx-annotation-preview { color: CanvasText; } .cfx-annotation-preview__handle { fill: Canvas; } }

@@ -34,7 +34,7 @@ public static class SequenceRecipe {
         if (variant is not ("wide" or "expanded"))
             throw new ArgumentOutOfRangeException(nameof(variant), variant, "Use wide or expanded.");
 
-        var model = SequenceArtifact.Create("request-sequence").WithSize(960, 760)
+        var model = SequenceArtifact.Create("request-sequence").WithSize(800, 633)
             .AddParticipant("client", "Client", SequenceArtifactParticipantKind.Actor)
             .AddParticipant("service", "Service", SequenceArtifactParticipantKind.Control)
             .AddParticipant("store", "Store", SequenceArtifactParticipantKind.Database)
