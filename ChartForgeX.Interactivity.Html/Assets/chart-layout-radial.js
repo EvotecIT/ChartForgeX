@@ -70,13 +70,19 @@
       const position=spec.legendPosition,side=position==='Left'||position==='Right',above=position.startsWith('Top');
       const contentWidth=Math.max(1,width-pl-pr),legendWidth=side?Math.min(contentWidth*.32,180):contentWidth;
       const rows=[];let row=[],used=0;
+      const widths=legend.map((entry,i)=>c?c.entries[i]:[2,4,6].map(k=>entry.data[k]));
+      // Percentages share the widest one's column, so the values beside them align.
+      const percentColumn=Math.max(0,...widths.map(w=>w[2]||0));
+      const natural=widths.map(([labelWidth,valueWidth,percentWidth])=>Math.min(legendWidth,28+labelWidth+(valueWidth?gap+valueWidth+(percentWidth?percentColumn+gap*2/3:0):0)));
+      // A stacked list with values gives every entry its widest entry's width, so the value columns line up.
+      const uniform=side&&widths.some(w=>w[1])?Math.max(...natural):0;
       legend.forEach((entry,i)=>{
-        const full=entry.data[1],[labelWidth,valueWidth,percentWidth]=c?c.entries[i]:[2,4,6].map(k=>entry.data[k]);entry.percentWidth=percentWidth;
+        const full=entry.data[1],[,valueWidth,percentWidth]=widths[i];entry.percentWidth=percentWidth?percentColumn:0;
         for(const [text,size] of entry.texts)text.setAttribute('font-size',size===r.legendSize?m.legendSize:size);
-        entry.width=Math.min(legendWidth,28+labelWidth+(valueWidth?gap+valueWidth+(percentWidth?percentWidth+gap*2/3:0):0));
+        entry.width=uniform||natural[i];
         if(row.length&&(side||used+gap+entry.width>legendWidth)){rows.push(row);row=[];used=0;}
         row.push(entry);used+=(used?gap:0)+entry.width;
-        entry.label.textContent=fit(entry.label,full,Math.max(0,entry.width-22-(valueWidth?gap+valueWidth+(percentWidth?percentWidth+gap*2/3:0):0)));
+        entry.label.textContent=fit(entry.label,full,Math.max(0,entry.width-22-(valueWidth?gap+valueWidth+(percentWidth?entry.percentWidth+gap*2/3:0):0)));
         let title=entry.node.querySelector(':scope > title');
         if(entry.label.textContent!==full){if(!title){title=document.createElementNS(ns,'title');entry.node.prepend(title);}title.textContent=full;}
         if(entry.value)entry.value.textContent=entry.data[3];if(entry.percentage)entry.percentage.textContent=entry.data[5];

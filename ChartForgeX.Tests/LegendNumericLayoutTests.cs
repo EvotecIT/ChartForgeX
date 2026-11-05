@@ -67,6 +67,32 @@ public sealed class LegendNumericLayoutTests {
         Assert.DoesNotContain(prepared.Scene.Diagnostics, diagnostic => diagnostic.Code is "frame.legend-value-compacted" or "frame.text-truncated");
     }
 
+    [Theory]
+    [InlineData(900, ChartLegendPosition.Right)]
+    [InlineData(720, ChartLegendPosition.Left)]
+    public void ValueAndPercentageColumnsAlignInAStackedListOfDifferentWidths(int width, ChartLegendPosition position) {
+        // Short and long names, one- to three-digit values and percentages of different widths, stacked beside the ring.
+        var chart = Chart.Create().WithSize(width, 400).WithLegendPosition(position)
+            .WithXLabels("Subscriptions and renewals", "Consulting", "Support", "Licenses", "Training", "Other")
+            .AddDonut("Revenue", new[] { 612d, 241, 87, 33, 19, 8 }.Select((value, index) => new ChartPoint(index + 1, value)).ToArray());
+        var prepared = Prepare(chart);
+        var texts = prepared.Scene.Nodes.OfType<VisualSceneText>().ToArray();
+        var values = texts.Where(node => node.Role == "legend-value").ToArray();
+        var percentages = texts.Where(node => node.Role == "legend-percentage").ToArray();
+        Assert.Equal(6, values.Length); Assert.Equal(6, percentages.Length);
+        Assert.All(values, value => Assert.NotEmpty(Assert.Single(value.Text.Lines).Text));
+        Assert.Contains(percentages, node => Assert.Single(node.Text.Lines).Text.Length != Assert.Single(percentages[0].Text.Lines).Text.Length);
+        // Entries in one column start at the same x; their values and percentages end at the same x.
+        var regions = prepared.Regions.Where(region => region.Role == "legend" && region.Bounds.Height > 0).ToArray();
+        Assert.Equal(6, regions.Length);
+        var rows = regions.Select(region => region.Bounds.Top).Distinct().Count();
+        Assert.True(rows > 1, "The fixture must stack its legend.");
+        foreach (var column in Enumerable.Range(0, 6).GroupBy(index => Math.Round(regions[index].Bounds.Left, 3))) {
+            Assert.Single(column.Select(index => Math.Round(Right(values[index]), 3)).Distinct());
+            Assert.Single(column.Select(index => Math.Round(Right(percentages[index]), 3)).Distinct());
+        }
+        Assert.Single(regions.Select(region => Math.Round(region.Bounds.Width, 3)).Distinct());
+    }
     private static void AssertColumns(PreparedVisual prepared) {
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "legend-label").ToArray();
         var values = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "legend-value").ToArray();
