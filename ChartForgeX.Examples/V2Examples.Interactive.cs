@@ -53,6 +53,16 @@ public static partial class V2Examples {
         ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".interactive.html"), chart.ToInteractiveHtmlPage(chart.DefaultRenderOptions));
     }
 
+    /// <summary>Writes a flow or sequence live page: the gallery's own preparation with hover, keyboard steps and, for sequences, message playback.</summary>
+    private static void WriteInteractiveDiagram(string output, ChartForgeX.Rendering.IVisualRenderable model, string id, ChartForgeX.Rendering.VisualRenderContext context) {
+        var html = model switch {
+            ChartForgeX.VisualArtifacts.FlowArtifact flow => flow.ToInteractiveHtmlPage(context),
+            ChartForgeX.VisualArtifacts.SequenceArtifact sequence => sequence.ToInteractiveHtmlPage(context),
+            _ => throw new ArgumentException("Only flow and sequence diagrams have a diagram live page.", nameof(model))
+        };
+        ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".interactive.html"), html);
+    }
+
     private static IEnumerable<string> WriteInteractiveAssets(string output) {
         HtmlInteractiveAssetFiles.WriteTo(Path.Combine(output, InteractiveAssetFolder), InteractiveAssets);
         return InteractiveAssets.Select(file => InteractiveAssetFolder + "/" + file.FileName);

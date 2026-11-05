@@ -1,0 +1,56 @@
+.cfx-diagram-shell { min-height: 100vh; box-sizing: border-box; display: grid; place-items: center; padding: 24px; }
+/* The Graphite card: the same surface, line and radius as the chart pages, hugging the drawn content. */
+.cfx-diagram {
+  --cfx-diagram-pad: clamp(14px, 3vw, 28px);
+  position: relative; box-sizing: border-box; width: 100%; max-width: calc(var(--cfx-diagram-width, 100%) + 2 * var(--cfx-diagram-pad) + 2px);
+  margin-inline: auto; display: grid; gap: 12px; min-width: 0; padding: var(--cfx-diagram-pad);
+  background: var(--cfx-tooltip-surface); border: 1px solid var(--cfx-tooltip-line); border-radius: var(--cfx-tooltip-radius, 10px);
+  color: var(--cfx-tooltip-text);
+  font-family: var(--cfx-diagram-font, var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif)));
+}
+.cfx-diagram-heading { display: grid; gap: 4px; min-width: 0; }
+.cfx-diagram-title { margin: 0; font: 600 var(--cfx-diagram-title-size, 20px)/1.25 var(--cfx-diagram-font, inherit); color: var(--cfx-tooltip-text); overflow-wrap: anywhere; }
+.cfx-diagram-subtitle { margin: 0; font: 400 var(--cfx-diagram-subtitle-size, 15px)/1.4 var(--cfx-diagram-font, inherit); color: var(--cfx-tooltip-muted); overflow-wrap: anywhere; }
+/* Narrow hosts keep diagram text readable: the stage scrolls sideways instead of shrinking the diagram below 560px. */
+.cfx-diagram-stage { position: relative; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; }
+.cfx-diagram-stage > svg { display: block; width: 100%; min-width: min(var(--cfx-diagram-width, 100%), 560px); max-width: none !important; height: auto; }
+.cfx-diagram [data-cfx-diagram-item] { cursor: pointer; outline: none; transition: opacity .14s ease; }
+.cfx-diagram[data-cfx-diagram-active] [data-cfx-diagram-item]:not([data-cfx-diagram-state]) { opacity: .26; }
+/* Active lines gain stroke weight only; text keeps its native ink so it stays sharp. */
+.cfx-diagram [data-cfx-diagram-state="active"] path[data-cfx-role$="-line"] { stroke-width: 3.5px; }
+.cfx-diagram [data-cfx-diagram-ring] {
+  fill: none; stroke: var(--cfx-focus-ring); stroke-width: 2; vector-effect: non-scaling-stroke; pointer-events: none;
+}
+.cfx-diagram-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.cfx-diagram-toolbar button {
+  min-height: 30px; padding: 0 12px; border: 1px solid var(--cfx-tooltip-line); border-radius: var(--cfx-control-radius, 6px);
+  background: var(--cfx-tooltip-surface); color: var(--cfx-tooltip-text); cursor: pointer;
+  font: 600 var(--hfx-type-caption-size, 12px)/1 var(--cfx-tooltip-font, inherit);
+}
+.cfx-diagram-toolbar button:hover { border-color: var(--cfx-crosshair-axis); }
+.cfx-diagram-toolbar button[aria-pressed="true"] { border-color: var(--cfx-host-accent, var(--cfx-default-host-accent)); }
+.cfx-diagram-toolbar button:disabled { opacity: .45; cursor: default; }
+.cfx-diagram-toolbar :focus-visible, .cfx-diagram-readout:focus-visible { outline: 2px solid var(--cfx-focus-ring); outline-offset: 2px; }
+.cfx-diagram-progress { margin-inline-start: 4px; color: var(--cfx-tooltip-muted); font: 600 var(--hfx-type-caption-size, 12px)/1 var(--cfx-tooltip-font, inherit); font-variant-numeric: tabular-nums; }
+.cfx-diagram-readout {
+  margin: 0; min-height: 1.45em; color: var(--cfx-tooltip-muted);
+  font: 400 var(--hfx-type-caption-size, 13px)/1.45 var(--cfx-tooltip-font, inherit); overflow-wrap: anywhere;
+}
+.cfx-diagram-readout strong { color: var(--cfx-tooltip-text); font-weight: 600; }
+.cfx-diagram-tooltip {
+  position: absolute; z-index: 2; box-sizing: border-box; max-width: 280px; padding: 8px 10px;
+  border: 1px solid var(--cfx-tooltip-line); border-radius: var(--cfx-tooltip-radius, 8px); background: var(--cfx-tooltip-surface);
+  box-shadow: var(--cfx-tooltip-shadow, none); color: var(--cfx-tooltip-text); pointer-events: none;
+  font: 400 12px/1.4 var(--cfx-tooltip-font, inherit); overflow-wrap: anywhere;
+}
+.cfx-diagram-tooltip[hidden] { display: none; }
+.cfx-diagram-tooltip__eyebrow { color: var(--cfx-tooltip-muted); font-weight: 600; }
+.cfx-diagram-tooltip__title { font-weight: 600; font-size: 13px; }
+.cfx-diagram-tooltip__line { color: var(--cfx-tooltip-muted); }
+@media (max-width: 600px) { .cfx-diagram-shell { padding: 12px; } .cfx-diagram { gap: 10px; } }
+@media (prefers-reduced-motion: reduce) { .cfx-diagram [data-cfx-diagram-item] { transition: none; } }
+@media (forced-colors: active) {
+  .cfx-diagram [data-cfx-diagram-ring] { stroke: Highlight; }
+  .cfx-diagram-tooltip, .cfx-diagram-toolbar button { forced-color-adjust: none; background: Canvas; color: CanvasText; border-color: CanvasText; }
+}
+@media print { .cfx-diagram-toolbar, .cfx-diagram-readout, .cfx-diagram-tooltip, .cfx-diagram [data-cfx-diagram-ring] { display: none !important; } }

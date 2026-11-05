@@ -9,6 +9,8 @@ Install `ChartForgeX.Interactivity.Html` when a chart or topology needs browser 
 
 {{< cfx-figure frame="/site/examples/interactive-topology.html" title="Interactive topology explorer" caption="The interactive topology example's output, running in the page: search, select a region to drill in, or switch its theme." >}}
 
+Flow and sequence diagrams get a live page too: hover or tab through steps, connectors, participants and messages to highlight their connections and read their text, and play a sequence message by message.
+
 The adapter is opt in. The same underlying models can still produce script-free SVG, PNG, and static HTML for email, documentation, reports, and release artifacts.
 
 For graph explorers, use stable node ids and explicit host callbacks for validated changes. Search, navigation, persisted interaction state, and graph manipulation remain adapter or host concerns; application data and authorization remain with the application.
