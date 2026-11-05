@@ -83,13 +83,14 @@ public sealed partial class HtmlOwnedFontDeliveryTests {
         var chart = Model().WithTitle("11118888");
         foreach (var html in new[] {
             renderer.RenderPage(chart, value => value.TextPresentation = HtmlChartTextPresentation.Browser),
-            renderer.RenderFragment(chart, value => value.TextPresentation = HtmlChartTextPresentation.Browser),
             ChartFontAssets.StyleSheet,
             HtmlGraphExplorerRenderer.BuildFragmentStyle()
         }) {
             Assert.DoesNotContain("@font-face{font-family:'Archivo'", html, StringComparison.Ordinal);
             Assert.Contains("@font-face{font-family:'JetBrains Mono'", html, StringComparison.Ordinal);
         }
+        // An embeddable fragment leaves every product face to its host page.
+        Assert.DoesNotContain("@font-face", renderer.RenderFragment(chart, value => value.TextPresentation = HtmlChartTextPresentation.Browser), StringComparison.Ordinal);
     }
 
     [Fact]

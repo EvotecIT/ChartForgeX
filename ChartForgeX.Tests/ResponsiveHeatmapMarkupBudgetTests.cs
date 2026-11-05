@@ -36,7 +36,8 @@ public sealed partial class ResponsiveHeatmapMarkupBudgetTests {
         var fragment = new HtmlResponsiveChartRenderer().RenderFragment(Fixture(12), 240, 1600);
         var fontCss = ChartForgeX.Typography.ChartFontAssets.StyleSheet;
         Assert.NotEmpty(fontCss);
-        Assert.Equal(1, fragment.Split(new[] { fontCss }, StringSplitOptions.None).Length - 1);
+        // The fragment leaves product fonts to its host page.
+        Assert.Equal(0, fragment.Split(new[] { fontCss }, StringSplitOptions.None).Length - 1);
         Assert.InRange(Encoding.UTF8.GetByteCount(fontCss), 1, 230_000);
         var bytes = Encoding.UTF8.GetByteCount(fragment.Replace(fontCss, string.Empty, StringComparison.Ordinal));
         Assert.True(bytes <= 256 * 1024, $"Serialized markup is {bytes} bytes.");
