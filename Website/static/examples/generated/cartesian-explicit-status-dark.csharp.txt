@@ -51,7 +51,7 @@ public static class ComparisonRecipe {
         for (var index = 0; index < count; index++) {
             if (variant == "missing" && (index == 2 || index == 3)) continue;
             // Capacity grows in steps, the forecast follows it and observed checks swing around the forecast.
-            var value = variant == "zero" ? 0 : series switch {
+            var value = variant == "zero" ? 0.0 : series switch {
                 2 => 64 + index / 3 * 5 + index % 3,
                 1 => 46 + index * 1.6,
                 _ => 44 + index * 1.7 + Math.Round(Math.Sin(index * 1.3) * 7)
