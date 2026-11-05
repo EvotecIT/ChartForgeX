@@ -52,8 +52,8 @@
         frameNode.dataset.cfxHeadingCrop = 'true'; frameNode.style.setProperty('--cfx-heading-crop', Math.round(crop * scale) + 'px');
         // The title wraps beside the toolbar, or sits below it when the remaining line would be too short.
         if (toolbar) {
-          // Reserve room for Reset zoom too, so the toolbar never grows over the title.
-          const reset = toolbar.querySelector('[data-cfx-zoom-reset][hidden]') && toolbar.querySelector('.cfx-tool--icon:not([hidden])');
+          // Reserve room for the hidden Reset control too, so the toolbar never grows over the title.
+          const reset = toolbar.querySelector(':is([data-cfx-zoom-reset],[data-cfx-reset])[hidden]') && toolbar.querySelector('.cfx-tool--icon:not([hidden])');
           const width = toolbar.offsetWidth + (reset ? reset.offsetWidth + 2 : 0);
           if (frameNode.clientWidth - width - 32 >= 140) heading.style.paddingInlineEnd = width + 16 + 'px';
           else heading.style.paddingBlockStart = toolbar.offsetHeight + 16 + 'px';

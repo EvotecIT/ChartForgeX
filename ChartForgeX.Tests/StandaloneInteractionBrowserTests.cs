@@ -43,7 +43,7 @@ public sealed class StandaloneInteractionBrowserTests {
         var painted = await page.EvaluateAsync<JsonElement>("()=>document.querySelector('.cfx-interactive-chart')._cfxStandaloneViewport.windows.x");
         Assert.Equal(target.GetProperty("minimum").GetDouble(), painted.GetProperty("minimum").GetDouble(), 9);
         Assert.Equal(target.GetProperty("maximum").GetDouble(), painted.GetProperty("maximum").GetDouble(), 9);
-        await page.Locator("[data-cfx-zoom-reset]").ClickAsync();
+        await page.Locator(".cfx-toolbar [data-cfx-reset]").ClickAsync();
         await SettleAsync(page);
         await AssertNativeAsync(page, settled, "Reset zoom");
 
@@ -196,7 +196,9 @@ public sealed class StandaloneInteractionBrowserTests {
                 toolbarShadow:toolbar.boxShadow,toolbarBorder:toolbar.borderTopColor};}
             """);
         Assert.True(layout.GetProperty("card").GetBoolean(), "The frame paints the chart card.");
-        Assert.Contains("cfx-reset", layout.GetProperty("parts").EnumerateArray().Select(part => part.GetString()));
+        // Reset view joins the controls row inside the card rather than reserving a row beneath the plot.
+        Assert.Contains("cfx-toolbar", layout.GetProperty("parts").EnumerateArray().Select(part => part.GetString()));
+        Assert.True(await page.Locator(".cfx-toolbar > [data-cfx-reset]").IsVisibleAsync(), "Muting a series shows Reset view in the toolbar.");
         Assert.Empty(layout.GetProperty("outside").EnumerateArray());
         // Inside the card the toolbar is a control row, not a second rounded surface.
         Assert.Equal("none", layout.GetProperty("toolbarShadow").GetString());

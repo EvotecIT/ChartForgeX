@@ -77,7 +77,7 @@ public sealed partial class StandaloneViewportBrowserTests {
         Assert.Equal(28, toolbar[2], 1);
         Assert.Equal(toolbar[2], toolbar[3], 1);
         Assert.Equal(5, toolbar[4]);
-        var zoomReset = page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Reset zoom", Exact = true });
+        var zoomReset = page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Reset view", Exact = true });
         Assert.False(await zoomReset.IsVisibleAsync());
         await page.Locator(".cfx-stage").HoverAsync();
         await page.Locator("[data-cfx-zoom=in]").ClickAsync();

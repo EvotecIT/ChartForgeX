@@ -425,9 +425,21 @@ public sealed partial class HtmlInteractiveChartRenderer {
     private const string BrushIcon = "<rect x=\"2.25\" y=\"3.25\" width=\"11.5\" height=\"9.5\" rx=\"1\" stroke-dasharray=\"2.5 2\"/>";
     private const string ResetZoomIcon = "<path d=\"M3.1 6.1A5.25 5.25 0 1 1 2.75 8\"/><path d=\"M2.75 3v3.25H6\"/>";
 
+    /// <summary>A chart with a controls row carries its Reset view there; one without keeps the reset row below the plot.</summary>
+    private static bool ToolbarResetsView(HtmlChartInteractionOptions options) => options.IncludeResetButton
+        && (options.Interaction.Features & (ChartForgeX.Interactivity.ChartInteractionFeatures.Zoom | ChartForgeX.Interactivity.ChartInteractionFeatures.Pan
+            | ChartForgeX.Interactivity.ChartInteractionFeatures.Brush | ChartForgeX.Interactivity.ChartInteractionFeatures.Export)) != 0;
+
     private static string BuildToolbar(HtmlChartInteractionOptions options) {
         var writer = new HtmlMarkupWriter();
         var text = options.Localization;
+        if (ToolbarResetsView(options)) {
+            // One contextual Reset view leads the controls row: no empty row is reserved beneath the plot, and the other
+            // controls never move under the pointer when it appears.
+            // The runtime reveals it only while zoom, selection, visibility or drill state differs from the initial view.
+            AppendToolbarIcon(writer, text[HtmlChartText.ResetView], ResetZoomIcon, ("data-cfx-reset", "true"), ("hidden", "hidden"));
+        }
+
         if (options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Zoom)) {
             AppendToolbarIcon(writer, text[HtmlChartText.ZoomIn], ZoomInIcon, ("data-cfx-zoom", "in"));
             AppendToolbarIcon(writer, text[HtmlChartText.ZoomOut], ZoomOutIcon, ("data-cfx-zoom", "out"));
@@ -441,7 +453,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
             AppendToolbarIcon(writer, text[HtmlChartText.BrushRegion], BrushIcon, ("data-cfx-mode-button", "brush"), ("aria-pressed", "false"));
         }
 
-        if (options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Zoom)) {
+        if (!ToolbarResetsView(options) && options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Zoom)) {
             // The runtime reveals this only while the data viewport differs from its initial window.
             AppendToolbarIcon(writer, text[HtmlChartText.ResetZoom], ResetZoomIcon, ("data-cfx-zoom-reset", "true"), ("hidden", "hidden"));
         }
@@ -474,7 +486,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
     /// differs from its initial state, so the chart carries no permanent control chrome.
     /// </summary>
     private static string BuildResetControl(HtmlChartInteractionOptions options) {
-        if (!options.IncludeResetButton) return string.Empty;
+        if (!options.IncludeResetButton || ToolbarResetsView(options)) return string.Empty;
         var writer = new HtmlMarkupWriter();
         writer.StartElement("button")
             .Attribute("class", "cfx-reset")

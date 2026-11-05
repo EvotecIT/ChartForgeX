@@ -82,7 +82,7 @@ public sealed class InteractiveResetControlBrowserTests {
         var initialPoint = await BoxAsync(page, Point(1, 2) + " .cfx-prepared-point-marker");
 
         await page.Locator(Legend(1)).ClickAsync();
-        await AssertResetBelowCardAsync(page);
+        await AssertResetInToolbarAsync(page, initialFrame);
         await ResetAsync(page);
         Assert.Equal(0, await page.Locator(".cfx-series-muted").CountAsync());
         Assert.Equal("cfx-interactive-chart", await page.EvaluateAsync<string>("() => document.activeElement.className"));
@@ -200,6 +200,28 @@ public sealed class InteractiveResetControlBrowserTests {
         await page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(directory, name), FullPage = true });
     }
 
+    // A chart with a controls row carries Reset view there: no row is reserved beneath the plot, the plot never moves
+    // when it appears, and it stays clear of the title inside the card.
+    private static async Task AssertResetInToolbarAsync(IPage page, LocatorBoundingBoxResult initialFrame) {
+        var named = page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Reset view", Exact = true });
+        Assert.Equal(1, await named.CountAsync());
+        Assert.True(await named.IsVisibleAsync());
+        Assert.Equal(0, await page.Locator("[data-cfx-zoom-reset], .cfx-frame > .cfx-reset").CountAsync());
+        Assert.True(await page.Locator(".cfx-toolbar > [data-cfx-reset]").IsVisibleAsync(), "Reset view belongs to the controls row.");
+        var frame = await BoxAsync(page, ".cfx-stage > svg");
+        Assert.Equal((initialFrame.X, initialFrame.Y, initialFrame.Width, initialFrame.Height), (frame.X, frame.Y, frame.Width, frame.Height));
+        var layout = await page.EvaluateAsync<double[]>("""
+            () => { const b = document.querySelector('[data-cfx-reset]').getBoundingClientRect(), s = document.querySelector('.cfx-stage').getBoundingClientRect(),
+              f = document.querySelector('.cfx-frame').getBoundingClientRect();
+              const title = [...document.querySelectorAll('.cfx-stage svg [data-cfx-role="frame-heading-source"], .cfx-responsive-heading')]
+                .filter(node => getComputedStyle(node).display !== 'none' && getComputedStyle(node).visibility !== 'hidden')
+                .map(node => node.getBoundingClientRect()).filter(r => r.width && r.height);
+              const covers = title.some(r => b.left < r.right && b.right > r.left && b.top < r.bottom && b.bottom > r.top) ? 1 : 0;
+              return [b.left - f.left, f.right - b.right, b.top - s.top, covers]; }
+            """);
+        Assert.True(layout[0] >= 0 && layout[1] >= 0 && layout[2] >= 0, "Reset view stays inside the chart card.");
+        Assert.Equal(0, layout[3]);
+    }
     private static async Task AssertResetBelowCardAsync(IPage page) {
         var named = page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Reset view", Exact = true });
         Assert.Equal(1, await named.CountAsync());
