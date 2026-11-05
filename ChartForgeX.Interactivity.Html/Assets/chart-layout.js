@@ -98,7 +98,7 @@
       }
       // Thin captions at a regular stride, keeping matrix endpoints clear.
       const labels=source.labels.map(label=>{
-        const size=label.text.getComputedTextLength(),projected=projection.x(label.center);
+        const size=label.text.getComputedTextLength(),projected=projection.x(label.center(size));
         const center=spec.matrix ? Math.max(gutterLeft+size/2,Math.min(width-size/2,projected)) : projected;
         return {...label,center,width:size};
       });

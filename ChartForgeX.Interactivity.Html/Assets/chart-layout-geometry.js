@@ -74,8 +74,9 @@
     }
     const labels=[...svg.querySelectorAll('[data-cfx-role="axis-x-label"],[data-cfx-role="heatmap-column-label"],[data-cfx-role="schedule-tick-label"]')]
       .filter(group=>!group.matches('[data-cfx-role="heatmap-column-label"]') || !group.closest('[transform*="rotate("]')).map(group=>{
-      const text=group.querySelector('text')||group, box=text.getBBox();
-      return {group,text,center:box.x+box.width/2,sourceWidth:box.width};
+      const text=group.querySelector('text')||group, box=text.getBBox(), x=text.hasAttribute('x')?Number(text.getAttribute('x')):NaN, anchor=getComputedStyle(text).textAnchor;
+      // Centre on the native anchor with the face measured at layout time; the host's face can load after this snapshot.
+      return {group,text,center:size=>!Number.isFinite(x)?box.x+box.width/2:anchor==='middle'?x:anchor==='end'?x-size/2:x+size/2};
     });
     const centers=[...new Set(spec.bars.map(slot=>slot.categoryAnchor))].sort((a,b)=>a-b);
     const pitch=Math.min(spec.barPitch ?? plot[2],centers.slice(1).reduce((p,c,i)=>Math.min(p,c-centers[i]),plot[2]));

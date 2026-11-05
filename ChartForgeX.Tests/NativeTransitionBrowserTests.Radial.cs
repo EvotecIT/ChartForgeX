@@ -24,7 +24,8 @@ public sealed partial class NativeTransitionBrowserTests {
         var from = Section(60); var to = Section(80); var payload = renderer.PrepareNativeTransitionJson(from, to,
             new HtmlNativeTransitionOptions(initial ? HtmlNativeTransitionEffect.InitialValues : HtmlNativeTransitionEffect.Values, 5));
         var name = "radial-browser-" + donut + "-" + labels + "-" + width + "-" + initial;
-        await using var session = await BrowserProofFonts.OpenAsync(Page(initial ? to : from), width + 24, 680); var page = session.Page; await ReadyAndPauseAsync(page);
+        // A full-page capture taller than the viewport resizes the window, which deliberately releases motion; the viewport holds the 390px reader.
+        await using var session = await BrowserProofFonts.OpenAsync(Page(initial ? to : from), width + 24, 760); var page = session.Page; await ReadyAndPauseAsync(page);
         await page.EmulateMediaAsync(new PageEmulateMediaOptions { ReducedMotion = ReducedMotion.NoPreference });
         await page.EvaluateAsync("()=>{window.radial=ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'));window.radialBefore=radial.sceneRevision;window.radialEvents=[];radial.root.addEventListener('cfxupdated',event=>radialEvents.push(event.detail));}");
         if (initial) await page.EvaluateAsync("payload=>radial.presentInitial(payload,{sceneRevision:radial.sceneRevision,motion:{duration:1000}})", payload);

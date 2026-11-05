@@ -42,7 +42,7 @@ internal static class HtmlChartLayoutSpecification {
             .Append(matrixNode == null ? string.Empty : MatrixSettings(chart, matrixNode, prepared.Regions, plot, matrixWindow))
             .Append(",\"spacing\":").Append(N(chart.Options.Theme.Spacing))
             .Append(",\"legendPosition\":").Append(HtmlJsonString.Encode(chart.Options.LegendPosition.ToString()));
-        if (HtmlRadialLayoutSpecification.Supports(chart)) HtmlRadialLayoutSpecification.Append(output, chart, context, prepared, authoredHeight);
+        if (HtmlRadialLayoutSpecification.Supports(chart)) HtmlRadialLayoutSpecification.Append(output, chart, context, prepared, authoredHeight, minimum);
         // Source values and labels travel with the serialized native scene, including typed observations and category/time formatting.
         HtmlChartLayoutBars.Append(output, chart, prepared);
         var root = XElement.Parse(svg);
