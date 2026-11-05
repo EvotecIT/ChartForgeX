@@ -11,7 +11,7 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualColorScaleLegendScene {
     /// <summary>Draws a bounded continuous key and its complete passive caption catalog from one measured plan.</summary>
     internal static void DrawCaptioned(VisualSceneBuilder builder, ChartColorScale scale, ChartLabels labels, TextStyle style,
-        double gap, ChartRect bounds, double min, double max, string prefix, bool missing, ChartColorBlend missingBlend,
+        double gap, ChartRect bounds, double min, double max, string prefix, bool missing, ChartMissingLook missingLook,
         Func<IReadOnlyList<double>, string[]> formatValues, string diagnosticCode, bool hasDomain, ChartRect? missingBounds,
         string? heading, string? valueName, ChartColorLegendStyle legendStyle, bool vertical = false) {
         var row = builder.MeasureText("Mg", style).Height;
@@ -50,10 +50,10 @@ internal static partial class VisualColorScaleLegendScene {
                 }
                 PaintCaptionPlan(builder, plan, captionArea, strip, prefix, gap, vertical);
                 if (missingHeight > 0) CaptionedMissing(builder, labels, style,
-                    new ChartRect(body.Left, body.Bottom - Math.Min(row, missingHeight), body.Width, Math.Min(row, missingHeight)), prefix, missingBlend, scale.NoDataColor == null);
+                    new ChartRect(body.Left, body.Bottom - Math.Min(row, missingHeight), body.Width, Math.Min(row, missingHeight)), prefix, missingLook);
             }
             if (missing && missingBounds.HasValue) using (builder.PushClip(missingBounds.Value))
-                CaptionedMissing(builder, labels, style, missingBounds.Value, prefix, missingBlend, scale.NoDataColor == null);
+                CaptionedMissing(builder, labels, style, missingBounds.Value, prefix, missingLook);
         }
         if (plan.Omitted) builder.AddDiagnostic(new VisualDiagnostic("color-scale.caption-overflow",
             "Some numeric color captions do not fit at their value positions; complete captions remain in descriptive regions."));
@@ -110,13 +110,13 @@ internal static partial class VisualColorScaleLegendScene {
     }
 
     private static void CaptionedMissing(VisualSceneBuilder builder, ChartLabels labels, TextStyle style, ChartRect area,
-        string prefix, ChartColorBlend blend, bool hatch) {
+        string prefix, ChartMissingLook look) {
         var row = builder.MeasureText("Mg", style).Height;
         var size = Math.Min(row * .7, Math.Min(area.Width, area.Height));
         var box = new ChartRect(area.Left, area.Top + Math.Max(0, (area.Height - size) / 2), size, size);
         using (VisualStateSceneTools.Mark(builder, prefix + "-empty", prefix + "-empty", box, labels.NoData,
             new Dictionary<string, string> { ["data-cfx-empty"] = "true" }))
-            VisualMissingDataScene.Swatch(builder, box, blend, style.Color, prefix, hatch);
+            VisualMissingDataScene.Swatch(builder, box, look, prefix, style.Color);
         VisualStateSceneTools.Text(builder, labels.NoData, new ChartRect(area.Left + row, area.Top, Math.Max(0, area.Width - row), area.Height),
             style, prefix + "-label", prefix + "-label-missing");
     }

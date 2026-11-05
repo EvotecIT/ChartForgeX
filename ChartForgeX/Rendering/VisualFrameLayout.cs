@@ -137,6 +137,7 @@ internal static class VisualFrameLayout {
         }
         if (context.Frame.ShowLegend && entries.Count > 0) {
             Dictionary<VisualLegendEntry, (string Text, double Value, double Percentage, double Gap)>? numericWidths = null;
+            double? percentageColumn = null;
             var position = context.Frame.LegendPosition;
             var side = position == ChartLegendPosition.Left || position == ChartLegendPosition.Right;
             var above = position is ChartLegendPosition.Top or ChartLegendPosition.TopLeft or ChartLegendPosition.TopRight;
@@ -200,6 +201,13 @@ internal static class VisualFrameLayout {
                     columnWidth = Math.Max(0, (legendWidth - gap) / 2);
                     rows = PlanRows();
                 }
+            }
+            // A list with values stacked beside the plot gives every entry one width, so its value and percentage
+            // columns line up; automatic wrapped lists already share their columns above.
+            if (columnWidth == 0 && side && rows.Count > 1 && entries.Any(entry => !string.IsNullOrEmpty(entry.Value))) {
+                columnWidth = entries.Max(entry => LegendWidth(entry, Overhead(entry)));
+                numericWidths = null;
+                rows = PlanRows();
             }
             var lineHeight = Math.Max(legendStyle.EffectiveFontSize * 1.5, builder.MeasureText("Mg", legendStyle).Height);
             var legendGap = Math.Min(gap, Math.Max(0, available - lineHeight));
@@ -345,7 +353,8 @@ internal static class VisualFrameLayout {
                     // An overflow bound is longer than an ordinary value. Its browser-selected fallback
                     // face can consume a small advance-only gap, so keep a full line of clearance.
                     var numericGap = overflowValue ? Math.Max(gap * 2 / 3, legendStyle.EffectiveFontSize * 1.5) : gap * 2 / 3;
-                    var percentageWidth = string.IsNullOrEmpty(entry.Percentage) ? 0 : builder.MeasureText(entry.Percentage!, legendStyle).Width;
+                    // Percentages are right-aligned in one column as wide as the widest, so values align beside them.
+                    var percentageWidth = string.IsNullOrEmpty(entry.Percentage) ? 0 : PercentageColumn();
                     var textWidth = Math.Max(0, (columnWidth > 0 ? columnWidth : legendWidth) - Overhead(entry) - gap - percentageWidth - (percentageWidth > 0 ? numericGap : 0));
                     var labelWidth = builder.MeasureText(OneLine(entry.Label), legendStyle).Width;
                     // Reserve a readable label before fitting the value. A long authored numeric caption
@@ -353,7 +362,8 @@ internal static class VisualFrameLayout {
                     var labelReserve = Math.Min(labelWidth, Math.Max(builder.MeasureText(ShortenedMinimum(OneLine(entry.Label)), legendStyle).Width, textWidth / 3));
                     var valueMaximum = Math.Max(0, textWidth - labelReserve);
                     var value = entry.Value!;
-                    if (builder.MeasureText(value, legendValueStyle).Width > valueMaximum) {
+                    // The widest row defines the column, so its value fits exactly; allow for rounding in that sum.
+                    if (builder.MeasureText(value, legendValueStyle).Width > valueMaximum + .01) {
                         if (overflowValue) {
                             value = string.Empty;
                             foreach (var candidate in new[] { "> 1.79E308", ">1E308" })
@@ -367,6 +377,8 @@ internal static class VisualFrameLayout {
                 }
                 return widths;
             }
+            double PercentageColumn() => percentageColumn ??= entries.Where(entry => !string.IsNullOrEmpty(entry.Percentage))
+                .Select(entry => builder.MeasureText(entry.Percentage!, legendStyle).Width).DefaultIfEmpty(0).Max();
         }
         if (bottom <= top || right <= left) {
             builder.AddDiagnostic(new VisualDiagnostic("frame.insufficient-space", "The frame leaves no content viewport."));

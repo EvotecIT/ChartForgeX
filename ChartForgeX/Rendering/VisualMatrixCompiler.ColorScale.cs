@@ -27,11 +27,11 @@ internal static partial class VisualMatrixCompiler {
             heading: presentation.Name, legendStyle: presentation.LegendStyle, unit: KeyUnit(chart, presentation));
 
     private static void ColorScale(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect bounds,
-        double min, double max, string prefix, ChartColorPresentation presentation, bool missing = false, ChartColorBlend? missingBlend = null, bool hasDomain = true) {
+        double min, double max, string prefix, ChartColorPresentation presentation, bool missing = false, ChartMissingLook? missingLook = null, bool hasDomain = true) {
         if (bounds.Width <= 0 || bounds.Height <= 0) return;
         var scale = chart.Options.HeatmapColorScale!;
         VisualColorScaleLegendScene.Draw(builder, scale, presentation.Labels, ColorScaleStyle(chart, context), context.Theme.Spacing / 2,
-            bounds, min, max, prefix, missing, missingBlend ?? ChartColorScaleSurface.NoData(scale, context.Theme.Resolve(context.ThemeMode)),
+            bounds, min, max, prefix, missing, missingLook ?? ChartMissingData.Look(scale, context.Theme.Resolve(context.ThemeMode)),
             presentation.ScaleValues, hasDomain: hasDomain, heading: presentation.Name, valueName: presentation.HasOverrides ? presentation.Name : null, legendStyle: presentation.LegendStyle, unit: KeyUnit(chart, presentation), showStepLabels: chart.Options.ShowHeatmapScaleStepLabels, numericIntervals: true);
     }
 }

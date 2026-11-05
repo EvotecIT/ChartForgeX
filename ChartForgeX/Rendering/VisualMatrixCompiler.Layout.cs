@@ -218,7 +218,7 @@ internal static partial class VisualMatrixCompiler {
                 var missingLeft = scaleLeft + zeroWidth + zeroGap + rampWidth + context.Theme.Spacing / 2;
                 var box = new ChartRect(missingLeft + (missingWidth - context.Theme.Spacing / 2 - Math.Min(12, missingWidth)) / 2, bounds.Top, Math.Min(12, missingWidth), swatch);
                 using (VisualStateSceneTools.Mark(builder, "matrix-scale-missing", "heatmap-scale-missing", box, noData, new Dictionary<string, string> { ["data-cfx-empty"] = "true" }))
-                    ChartMissingData.Paint(builder, box, 1, colors, "heatmap-scale-missing-swatch");
+                    ChartMissingData.Paint(builder, box, 1, ChartMissingData.Look(chart.Options.HeatmapColorScale, colors), "heatmap-scale-missing-swatch", "heatmap-scale-missing-swatch");
                 VisualStateSceneTools.Text(builder, noData, new ChartRect(missingLeft, bounds.Top + swatch, Math.Max(0, missingWidth - context.Theme.Spacing / 2), textHeight),
                     style, "heatmap-scale-missing-label", "matrix-scale-missing-label", TextAlignment.Center);
             }

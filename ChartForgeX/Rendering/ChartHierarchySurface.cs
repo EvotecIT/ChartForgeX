@@ -45,7 +45,10 @@ internal sealed class ChartHierarchySurface {
         Minimum = observations.Length > 0 ? observations.Min() : 0;
         Maximum = observations.Length > 0 ? observations.Max() : 0;
         HasDomain = ChartColorScaleSurface.HasDomain(Scale, observations.Length > 0 ? Minimum : null, observations.Length > 0 ? Maximum : null);
-        HasMissing = _series.HierarchyItems.Any(item => !item.ColorValue.HasValue);
+        // Treemap groups are containers behind their tiles, so only a leaf without a colour value is missing data;
+        // every Sunburst sector is a mark of its own.
+        var parents = new System.Collections.Generic.HashSet<int>(_parents.Where(parent => parent >= 0));
+        HasMissing = _series.HierarchyItems.Where((item, index) => sunburst || !parents.Contains(index)).Any(item => !item.ColorValue.HasValue);
     }
 
     internal ChartColorBlend Blend(int index, int? paletteIndex = null) {

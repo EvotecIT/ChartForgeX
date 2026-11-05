@@ -32,7 +32,7 @@ public sealed partial class ChartOptions {
     private double _progressTrackOpacity = 0.24;
     private double _wordCloudMinFontSize = 12;
     private double _wordCloudMaxFontSize = 46;
-    private double[] _wordCloudAngles = { -12, 0, 0, 12, 0 };
+    private double[] _wordCloudAngles = { 0 };
     private int? _wordCloudMaximumTerms;
     private double _wordCloudDensity = 1.0;
     private string? _pngFontPath;
@@ -575,7 +575,8 @@ public sealed partial class ChartOptions {
     }
 
     /// <summary>
-    /// Gets or sets the deterministic rotation angles used by word cloud terms.
+    /// Gets or sets the deterministic rotation angles used by word cloud terms. Terms are horizontal by default;
+    /// supply a pattern such as <c>0, 90</c> for a deliberate mix of orientations.
     /// </summary>
     public double[] WordCloudAngles {
         get => (double[])_wordCloudAngles.Clone();
