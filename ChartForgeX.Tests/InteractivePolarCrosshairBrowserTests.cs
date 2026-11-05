@@ -92,7 +92,10 @@ public sealed class InteractivePolarCrosshairBrowserTests {
                 ringRadius: Math.abs(ring.width / 2 - Math.hypot(x - centre.x, y - centre.y)),
                 inside: labels.every(box => box.left >= card.left && box.right <= card.right && box.top >= card.top && box.bottom <= card.bottom),
                 clear: labels.every(box => box.right <= mark.left || box.left >= mark.right || box.bottom <= mark.top || box.top >= mark.bottom),
-                readable: labels.every(label => label.height >= 14)
+                readable: labels.every(label => label.height >= 14),
+                tip: !root.querySelector('.cfx-tooltip').hidden,
+                tipClear: (tip => labels.every(box => box.right <= tip.left || box.left >= tip.right || box.bottom <= tip.top || box.top >= tip.bottom))
+                  (root.querySelector('.cfx-tooltip').getBoundingClientRect())
               };
             }
             """, selector);
@@ -101,6 +104,8 @@ public sealed class InteractivePolarCrosshairBrowserTests {
         Assert.True(geometry.GetProperty("inside").GetBoolean(), "Polar values stay inside the card: " + geometry);
         Assert.True(geometry.GetProperty("clear").GetBoolean(), "Polar values do not cover the observation: " + geometry);
         Assert.True(geometry.GetProperty("readable").GetBoolean(), "Polar values keep a readable pill: " + geometry);
+        Assert.True(geometry.GetProperty("tip").GetBoolean(), "The readout accompanies the polar guide: " + geometry);
+        Assert.True(geometry.GetProperty("tipClear").GetBoolean(), "The readout leaves the polar value pills uncovered: " + geometry);
     }
 
     private static async Task CaptureAsync(IPage page, string name) {

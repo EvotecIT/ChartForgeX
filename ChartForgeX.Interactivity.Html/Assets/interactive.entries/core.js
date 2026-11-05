@@ -59,8 +59,8 @@
         if (keyboard) stops(node);
         // Focus may read retained geometry that a pointer cannot hit, exactly as the full runtime does.
         if (!tooltipReadoutAvailable(node, event)) { clear(false); return; }
-        show(node, event);
         if (focus.matches(':focus-visible')) showFocusCrosshair(root, crosshair, node);
+        show(node, event);
       });
       listenChart(root, focus, 'focusout', () => clear(false));
       if (keyboard) listenChart(root, focus, 'keydown', event => {

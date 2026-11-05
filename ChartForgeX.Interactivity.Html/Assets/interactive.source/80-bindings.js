@@ -123,8 +123,9 @@
           }
           if (!tooltipReadoutAvailable(node, event)) { clearHover(root, true, true); hideTip(root, tip, false); return; }
           setHover(root, node, true, true);
-          showTip(root, tip, node, event);
+          // The guide's value pills exist before the readout chooses a side clear of them.
           showFocusCrosshair(root, crosshair, node);
+          showTip(root, tip, node, event);
         });
         listenChart(root, focusNode, 'blur', () => {
           pointerFocus = false;

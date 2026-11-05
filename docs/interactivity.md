@@ -70,7 +70,7 @@ bundle needs it. They exclude the drawing, font payloads and stylesheet:
 | Bundle | Raw budget | Gzip budget |
 | --- | ---: | ---: |
 | Core reader (tooltips, keyboard, crosshair) | 99 KiB | 31 KiB |
-| Standalone reader | 280 KiB | 82 KiB |
+| Standalone reader | 280 KiB | 83 KiB |
 | Full controller/native host | 342 KiB | 102 KiB |
 
 Optional behaviour ships in separate feature bundles, so the runtimes above do
@@ -489,7 +489,7 @@ The [light Graphite example](../Website/static/examples/generated/graphite-light
 
 `Tooltip.Position` selects the readout's screen anchor and placement independently of its content or acquisition range. `HtmlChartTooltipAnchor.Pointer` is the default and follows the latest pointer; keyboard focus uses the target's centre. `Node` uses the acquired native target's current bounds. `Chart` uses the displayed chart stage, excluding controls and compare panels; a narrow `Readable` chart uses its contained viewport rather than its wider SVG. A readout below a flowing legend row is placed under that row, so the legend stays reachable while a readout is pinned.
 
-By default, placement is automatic with a 12 CSS pixel `Gap`. Line and Area prefer a side placement, followed by centred and diagonal alternatives; other families prefer a diagonal placement above the anchor. The adapter uses the rendered tooltip size and an 8 CSS pixel inset inside the visual viewport and any containing host that clips the fixed readout. When no direction fits completely, automatic placement tries a clamped position that keeps the gap from the anchor before clamping its first choice.
+By default, placement is automatic with a 12 CSS pixel `Gap`. Line and Area prefer a side placement, followed by centred and diagonal alternatives; other families prefer a diagonal placement above the anchor. The adapter uses the rendered tooltip size and an 8 CSS pixel inset inside the visual viewport and any containing host that clips the fixed readout. When no direction fits completely, automatic placement tries a clamped position that keeps the gap from the anchor before clamping its first choice. Among fitting directions it skips any that would cover a visible crosshair value pill, Cartesian or polar.
 
 Assign `Placements` to use an explicit order of `Top`, `TopRight`, `Right`, `BottomRight`, `Bottom`, `BottomLeft`, `Left`, and `TopLeft`. The adapter copies that sequence, tries each direction in order, and clamps the first choice if none fits. A diagonal placement applies the gap on both axes; `OffsetX` and `OffsetY` add signed CSS pixel offsets after anchoring. The gap must be finite and non-negative, and both offsets must be finite.
 

@@ -262,9 +262,15 @@
     const cover = root.dataset.cfxTooltipPinned === 'true' && [...root.querySelectorAll('button,input,select,a[href]')].filter(node => !tip.contains(node)).map(node => [node, 1e6])
       .concat(interactiveTargets(root).filter(node => !node.contains(state.node) && !state.node.contains(node)).map(node => [node, 1])).map(([node, weight]) => [node.getBoundingClientRect(), weight]);
     const covered = c => cover.reduce((sum, [r, weight]) => sum + weight * Math.max(0, Math.min(c.x + unit.width, r.right) - Math.max(c.x, r.left)) * Math.max(0, Math.min(c.y + unit.height, r.bottom) - Math.max(c.y, r.top)), 0);
-    const fitting = candidates.filter(c => c.x >= bounds.left + 8 && c.y >= bounds.top + 8 && c.x + unit.width <= bounds.right - 8 && c.y + unit.height <= bounds.bottom - 8);
+    const fits = candidates.filter(c => c.x >= bounds.left + 8 && c.y >= bounds.top + 8 && c.x + unit.width <= bounds.right - 8 && c.y + unit.height <= bounds.bottom - 8);
+    // Automatic placement prefers fits that leave the crosshair's value pills readable; an authored order stays exact.
+    // Hidden pills measure as an empty box at the origin, outside every inset placement.
+    const auto = (root.dataset.cfxTooltipPlacements || 'auto') === 'auto';
+    const pills = auto ? [...root.querySelectorAll('.cfx-crosshair__axis-value')].map(node => node.getBoundingClientRect()) : [];
+    const clear = fits.filter(c => !pills.some(r => c.x < r.right && c.x + unit.width > r.left && c.y < r.bottom && c.y + unit.height > r.top));
+    const fitting = clear.length ? clear : fits;
     const position = (cover ? fitting.reduce((best, c) => !best || covered(c) < covered(best) ? c : best, null) : fitting[0])
-      || (root.dataset.cfxTooltipPlacements || 'auto') === 'auto' && candidates.map(constrain).find(candidate =>
+      || auto && candidates.map(constrain).find(candidate =>
         candidate.x >= anchor.right + gap || candidate.x + unit.width <= anchor.left - gap
         || candidate.y >= anchor.bottom + gap || candidate.y + unit.height <= anchor.top - gap) || candidates[0];
     const { x, y } = constrain(position);
