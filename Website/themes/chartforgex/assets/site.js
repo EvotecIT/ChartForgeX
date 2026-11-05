@@ -411,8 +411,8 @@
     var frame = viewer.querySelector('[data-cfx-viewer-frame]');
     fitFrame(frame);
     var familyLink = viewer.querySelector('[data-cfx-viewer-family-page]');
-    // Static or interactive output; the choice carries over to the next card that has a live page.
-    var viewMode = 'static';
+    // A card with a live page opens it; Static shows the rendered SVG. The choice carries over to the next card.
+    var viewMode = 'interactive';
     var pick = function (light, darkValue) { return theme() === 'dark' && darkValue ? darkValue : light; };
     var fileName = function (url) { return url.split('/').pop().replace(/\.csharp\.txt$/, '.cs').replace(/\.txt$/, ''); };
 

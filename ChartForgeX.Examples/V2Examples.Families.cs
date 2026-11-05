@@ -184,9 +184,11 @@ public static partial class V2Examples {
             width = (int)Math.Ceiling(natural.NaturalSize!.Value.Width);
             height = (int)Math.Ceiling(natural.NaturalSize.Value.Height);
             WriteRecipe(output, id, recipe, variant, title, subtitle, mode, width, height, legend, "Topology");
+            var live = !compact && variant == "expanded";
+            if (live) WriteInteractiveTopology(output, topology, id, title, subtitle, mode);
             artifacts.Add(new ProofArtifact(id, family, title, variant, mode.ToString().ToLowerInvariant(), width, height,
                 new[] { "example.native-natural-size" }, natural.Regions.Count, kinds,
-                new[] { "Complete authored geometry retains natural size; compact hosts may scroll." }, compact));
+                new[] { "Complete authored geometry retains natural size; compact hosts may scroll." }, compact, live));
             return;
         }
         var prepared = model.Prepare(context);
@@ -197,8 +199,10 @@ public static partial class V2Examples {
         var artifactKind = model is TopologyChart ? "Topology" : family is "flow" or "sequence" ? char.ToUpperInvariant(family[0]) + family.Substring(1) : "Chart";
         WriteRecipe(output, id, recipe, variant, title, subtitle, mode, width, height, legend, artifactKind);
         var interactive = !compact && (model is Chart && (id.Contains("-wide-") || IsScenarioVariant(variant))
-            || model is TopologyChart && family == "org-chart");
+            || model is ChartGrid && id.Contains("-wide-")
+            || model is TopologyChart && (family == "org-chart" || variant == "expanded"));
         if (interactive && model is Chart chart) WriteInteractive(output, chart, id, title, subtitle, mode, width, height, legend);
+        else if (interactive && model is ChartGrid grid) WriteInteractiveGrid(output, grid, id, title, mode, width);
         else if (interactive) WriteInteractiveTopology(output, (TopologyChart)model, id, title, subtitle, mode);
         artifacts.Add(new ProofArtifact(id, family, title, variant, mode.ToString().ToLowerInvariant(), width, height,
             prepared.Diagnostics.Select(diagnostic => diagnostic.Code).ToArray(), prepared.Regions.Count, kinds,
