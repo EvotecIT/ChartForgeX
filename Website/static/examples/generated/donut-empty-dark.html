@@ -107,12 +107,29 @@ File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
 File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quot;, VisualArtifactKind.Chart).ToHtmlPage());
 #endregion
 
-/// &lt;summary&gt;Findings by category with explicit zero, empty, dense and semantic-color variants.&lt;/summary&gt;
+/// &lt;summary&gt;Open assessment findings by category with explicit zero, empty, dense and semantic-color variants.&lt;/summary&gt;
 public static class FindingsRecipe {
+    private static readonly (string Name, string Long, double Count)[] Categories = {
+        (&quot;Patching&quot;, &quot;Missing security updates on servers&quot;, 46), (&quot;Identity&quot;, &quot;Stale and over-privileged accounts&quot;, 38),
+        (&quot;Certificates&quot;, &quot;Certificates expiring within 30 days&quot;, 27), (&quot;Network&quot;, &quot;Exposed management ports&quot;, 21),
+        (&quot;Backups&quot;, &quot;Backups without a recent restore test&quot;, 17), (&quot;Logging&quot;, &quot;Audit logging disabled or incomplete&quot;, 12),
+        (&quot;Encryption&quot;, &quot;Unencrypted data at rest&quot;, 8)
+    };
+
+    private static readonly string[] DenseCategories = {
+        &quot;Patching&quot;, &quot;Identity&quot;, &quot;Certificates&quot;, &quot;Network&quot;, &quot;Backups&quot;, &quot;Logging&quot;, &quot;Encryption&quot;, &quot;DNS&quot;, &quot;Firewall&quot;, &quot;Endpoints&quot;,
+        &quot;Mail flow&quot;, &quot;Licensing&quot;, &quot;Monitoring&quot;, &quot;Replication&quot;, &quot;Group Policy&quot;, &quot;Service accounts&quot;, &quot;Shares&quot;, &quot;Printers&quot;,
+        &quot;Remote access&quot;, &quot;Web servers&quot;, &quot;Databases&quot;, &quot;Hypervisors&quot;, &quot;Storage&quot;, &quot;Wireless&quot;
+    };
+
     public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
-        var count = variant == &quot;empty&quot; ? 0 : variant == &quot;dense&quot; ? 24 : 7;
+        var dense = variant == &quot;dense&quot;;
+        var count = variant == &quot;empty&quot; ? 0 : dense ? DenseCategories.Length : Categories.Length;
+        // Dense findings fall off steeply, as they do in a real assessment: a few categories carry most of the work.
+        double Count(int index) =&gt; dense ? Math.Round(60 * Math.Pow(.84, index)) + 1 : Categories[index].Count;
+        string Name(int index) =&gt; dense ? DenseCategories[index] : variant == &quot;wrapped-legend&quot; ? Categories[index].Long : Categories[index].Name;
         var points = Enumerable.Range(0, count).Where(index =&gt; variant != &quot;missing&quot; || index is not (2 or 3))
-            .Select(index =&gt; new ChartPoint(index + 1, variant == &quot;zero&quot; ? 0 : 20 + index * 3 % 23));
+            .Select(index =&gt; new ChartPoint(index + 1, variant == &quot;zero&quot; ? 0 : Count(index)));
         var findings = new ChartSeries(new ChartSeriesId(&quot;findings&quot;), &quot;Findings&quot;, ChartSeriesKind.Donut, points);
         if (variant is &quot;explicit-status&quot; or &quot;explicit-series&quot;) {
             var colors = VisualTheme.Graphite().Resolve(mode);
@@ -121,8 +138,7 @@ public static class FindingsRecipe {
                 : colors.Palette.Take(3).ToArray();
             for (var index = 0; index &lt; findings.Points.Count; index++) findings.WithPointColor(index, selected[index % selected.Length]);
         }
-        return Chart.Create().WithXLabels(Enumerable.Range(1, count).Select(index =&gt; variant == &quot;wrapped-legend&quot;
-            ? &quot;Assessment category &quot; + index + &quot; requiring follow-up&quot; : &quot;Day &quot; + index).ToArray()).AddSeries(findings);
+        return Chart.Create().WithXLabels(Enumerable.Range(0, count).Select(Name).ToArray()).AddSeries(findings);
     }
 }
 </code></pre><pre data-visual-theme="dark"><code data-example-source>#region Setup
@@ -152,12 +168,29 @@ File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
 File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quot;, VisualArtifactKind.Chart).ToHtmlPage());
 #endregion
 
-/// &lt;summary&gt;Findings by category with explicit zero, empty, dense and semantic-color variants.&lt;/summary&gt;
+/// &lt;summary&gt;Open assessment findings by category with explicit zero, empty, dense and semantic-color variants.&lt;/summary&gt;
 public static class FindingsRecipe {
+    private static readonly (string Name, string Long, double Count)[] Categories = {
+        (&quot;Patching&quot;, &quot;Missing security updates on servers&quot;, 46), (&quot;Identity&quot;, &quot;Stale and over-privileged accounts&quot;, 38),
+        (&quot;Certificates&quot;, &quot;Certificates expiring within 30 days&quot;, 27), (&quot;Network&quot;, &quot;Exposed management ports&quot;, 21),
+        (&quot;Backups&quot;, &quot;Backups without a recent restore test&quot;, 17), (&quot;Logging&quot;, &quot;Audit logging disabled or incomplete&quot;, 12),
+        (&quot;Encryption&quot;, &quot;Unencrypted data at rest&quot;, 8)
+    };
+
+    private static readonly string[] DenseCategories = {
+        &quot;Patching&quot;, &quot;Identity&quot;, &quot;Certificates&quot;, &quot;Network&quot;, &quot;Backups&quot;, &quot;Logging&quot;, &quot;Encryption&quot;, &quot;DNS&quot;, &quot;Firewall&quot;, &quot;Endpoints&quot;,
+        &quot;Mail flow&quot;, &quot;Licensing&quot;, &quot;Monitoring&quot;, &quot;Replication&quot;, &quot;Group Policy&quot;, &quot;Service accounts&quot;, &quot;Shares&quot;, &quot;Printers&quot;,
+        &quot;Remote access&quot;, &quot;Web servers&quot;, &quot;Databases&quot;, &quot;Hypervisors&quot;, &quot;Storage&quot;, &quot;Wireless&quot;
+    };
+
     public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
-        var count = variant == &quot;empty&quot; ? 0 : variant == &quot;dense&quot; ? 24 : 7;
+        var dense = variant == &quot;dense&quot;;
+        var count = variant == &quot;empty&quot; ? 0 : dense ? DenseCategories.Length : Categories.Length;
+        // Dense findings fall off steeply, as they do in a real assessment: a few categories carry most of the work.
+        double Count(int index) =&gt; dense ? Math.Round(60 * Math.Pow(.84, index)) + 1 : Categories[index].Count;
+        string Name(int index) =&gt; dense ? DenseCategories[index] : variant == &quot;wrapped-legend&quot; ? Categories[index].Long : Categories[index].Name;
         var points = Enumerable.Range(0, count).Where(index =&gt; variant != &quot;missing&quot; || index is not (2 or 3))
-            .Select(index =&gt; new ChartPoint(index + 1, variant == &quot;zero&quot; ? 0 : 20 + index * 3 % 23));
+            .Select(index =&gt; new ChartPoint(index + 1, variant == &quot;zero&quot; ? 0 : Count(index)));
         var findings = new ChartSeries(new ChartSeriesId(&quot;findings&quot;), &quot;Findings&quot;, ChartSeriesKind.Donut, points);
         if (variant is &quot;explicit-status&quot; or &quot;explicit-series&quot;) {
             var colors = VisualTheme.Graphite().Resolve(mode);
@@ -166,8 +199,7 @@ public static class FindingsRecipe {
                 : colors.Palette.Take(3).ToArray();
             for (var index = 0; index &lt; findings.Points.Count; index++) findings.WithPointColor(index, selected[index % selected.Length]);
         }
-        return Chart.Create().WithXLabels(Enumerable.Range(1, count).Select(index =&gt; variant == &quot;wrapped-legend&quot;
-            ? &quot;Assessment category &quot; + index + &quot; requiring follow-up&quot; : &quot;Day &quot; + index).ToArray()).AddSeries(findings);
+        return Chart.Create().WithXLabels(Enumerable.Range(0, count).Select(Name).ToArray()).AddSeries(findings);
     }
 }
 </code></pre></section></main><footer><a href="catalog.html">Explore more examples</a><a href="fonts/OFL.txt">Font license</a></footer><script data-gallery-script>(() => {
