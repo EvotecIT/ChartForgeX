@@ -114,6 +114,7 @@ internal static partial class TopologyVisualExamples {
         SaveMap(target, artifacts, "visual-wan-latency-map", BuildWanLatencyMap(), "WAN Latency Map", "Map-backed route chart for WAN latency paths that can sit behind an HtmlForgeX region panel.");
 
         WriteRoutingExamples(target, artifacts);
+        WriteDenseEstateNavigator(target);
 
         WriteManifest(target, artifacts);
         WriteCoverageIndex(target, artifacts);
