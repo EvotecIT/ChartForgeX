@@ -178,9 +178,11 @@ internal static partial class TopologyLayoutEngine {
             var dx = CenterX(other) - CenterX(group);
             var dy = CenterY(other) - CenterY(group);
             if (Math.Abs(dx) >= Math.Abs(dy)) return dx < 0 ? TopologyEdgePort.Left : TopologyEdgePort.Right;
-            // Group titles occupy the upper boundary. A side entry reaches the
-            // shell below the reserved header when the other item is above it.
-            return dy > 0 ? TopologyEdgePort.Bottom : dx < 0 ? TopologyEdgePort.Left : TopologyEdgePort.Right;
+            if (dy > 0) return TopologyEdgePort.Bottom;
+            // An item directly above enters through the top border beside the title, which sits inside
+            // the shell. Otherwise a side entry reaches the shell below the reserved header.
+            var overlaps = other.X < group.X + group.Width && other.X + other.Width > group.X;
+            return overlaps ? TopologyEdgePort.Top : dx < 0 ? TopologyEdgePort.Left : TopologyEdgePort.Right;
         }
 
     }

@@ -37,7 +37,6 @@ Static HTML from reports and email has to feel interactive without a .NET host. 
 
 Charts already look professional; topology-laid-out diagrams don't yet. The defects below were seen on the published atlas renders.
 
-- [ ] **Edge labels on short and group-bound edges.** Layered layouts don't reserve room for a label between adjacent ranks, so a short labelled edge pushes its caption beside the line (C4 "Starts publication" in `c4-config-typography-native`), and an edge into a group boundary loops round the group header instead of entering beside it (C4 "Operates" in `mermaid-c4-source-rows`). Done when both captions sit on their own segment.
 - [ ] **Gantt section names.** Row labels still repeat the section ("Engine / Layout pass") instead of naming the section once beside its band. Done when each section name appears once and the task rows show only their titles.
 - Done when the atlas renders for every family pass a side-by-side review against Mermaid and the visual baselines are refreshed deliberately.
 

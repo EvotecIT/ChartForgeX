@@ -35,13 +35,7 @@ internal static partial class TopologyLayoutEngine {
         foreach (var edge in chart.Edges) {
             if (!nodesById.TryGetValue(edge.SourceNodeId, out var source) || !nodesById.TryGetValue(edge.TargetNodeId, out var target)
                 || GetLayer(source) == GetLayer(target)) continue;
-            var primary = EdgeLabel(edge, labelOptions.EdgeLabelMetricKey, edge.Label);
-            var secondary = EdgeLabel(edge, labelOptions.EdgeSecondaryLabelMetricKey, edge.SecondaryLabel);
-            var tertiary = EdgeLabel(edge, labelOptions.EdgeTertiaryLabelMetricKey, edge.TertiaryLabel);
-            var lines = EdgeLabelRows(primary, secondary, tertiary, labelOptions);
-            if (lines == 0) continue;
-            var width = EdgeLabelTextWidth(primary, secondary, tertiary, chart.TextMeasurement, labelOptions.ResolvedEdgeLabelScale, labelOptions.AllowMultilineNodeLabels);
-            var size = InlineEdgeLabelExtent(chart, edge, primary, secondary, tertiary, labelOptions, width, EdgeLabelHeight(lines, labelOptions));
+            if (EdgeLabelBadge(chart, edge, labelOptions) is not { } size) continue;
             var extent = horizontal ? size.Width : size.Height;
             var groupReserve = 0d;
             if (options?.IncludeGroups != false && source.GroupId != target.GroupId) {
@@ -55,6 +49,17 @@ internal static partial class TopologyLayoutEngine {
             gap = Math.Max(gap, extent + EdgeEndpointGap * 2 + 32 + groupReserve);
         }
         return gap;
+    }
+
+    /// <summary>The painted inline badge of an edge's caption rows, or null for an unlabelled edge.</summary>
+    private static (double Width, double Height)? EdgeLabelBadge(TopologyChart chart, TopologyEdge edge, TopologyRenderOptions options) {
+        var primary = EdgeLabel(edge, options.EdgeLabelMetricKey, edge.Label);
+        var secondary = EdgeLabel(edge, options.EdgeSecondaryLabelMetricKey, edge.SecondaryLabel);
+        var tertiary = EdgeLabel(edge, options.EdgeTertiaryLabelMetricKey, edge.TertiaryLabel);
+        var lines = EdgeLabelRows(primary, secondary, tertiary, options);
+        if (lines == 0) return null;
+        var width = EdgeLabelTextWidth(primary, secondary, tertiary, chart.TextMeasurement, options.ResolvedEdgeLabelScale, options.AllowMultilineNodeLabels);
+        return InlineEdgeLabelExtent(chart, edge, primary, secondary, tertiary, options, width, EdgeLabelHeight(lines, options));
     }
 
     /// <summary>Bounds automatic group shells around their layered members and separates overlapping shells.</summary>
