@@ -1,7 +1,12 @@
 param(
     [Parameter(Mandatory = $true)]
     [string] $OutputRoot,
-    [switch] $SkipBuild
+    [switch] $SkipBuild,
+    # Runs one class shard. Test-BrowserShardCoverage.ps1 proves the shards together.
+    [ValidateRange(1, 16)]
+    [int] $ShardIndex = 1,
+    [ValidateRange(1, 16)]
+    [int] $ShardCount = 1
 )
 
 $ErrorActionPreference = 'Stop'
@@ -24,6 +29,14 @@ if ($LASTEXITCODE) { throw 'Fresh browser gallery generation failed.' }
 if (-not (Test-Path -LiteralPath (Join-Path $gallery 'manifest.json'))) { throw 'The generated gallery has no manifest.' }
 
 . (Join-Path $PSScriptRoot 'Invoke-BrowserTestHost.ps1')
+. (Join-Path $PSScriptRoot 'Select-BrowserTestShard.ps1')
+$filter = 'Category=Browser'
+$selection = $null
+if ($ShardCount -gt 1) {
+    $selection = Select-BrowserTestShard -Project $project -Configuration Release -Filter $filter -ShardIndex $ShardIndex -ShardCount $ShardCount -Suite chromium-required -ResultsDirectory $results
+    if (-not $selection.Filter) { throw "Browser shard $ShardIndex/$ShardCount owns no test classes." }
+    $filter = $selection.Filter
+}
 $variables = @('HFX_TEST_ENABLE_PLAYWRIGHT', 'CFX_TEST_REQUIRE_BROWSER', 'CFX_TEST_BROWSER', 'CFX_V2_GALLERY_URL', 'CFX_V2_CAPTURE_ROOT', 'CFX_BROWSER_CAPTURE_DIRECTORY')
 $saved = @{}
 foreach ($name in $variables) { $saved[$name] = [Environment]::GetEnvironmentVariable($name) }
@@ -38,7 +51,7 @@ try {
     $env:CFX_BROWSER_CAPTURE_DIRECTORY = $captures
     Invoke-WebRequest -Uri $env:CFX_V2_GALLERY_URL -TimeoutSec 10 | Out-Null
     # HtmlTinkerX installs and opens Chromium through the shared test session when it is first needed.
-    dotnet test $project -c Release --no-build --no-restore --filter 'Category=Browser' `
+    dotnet test $project -c Release --no-build --no-restore --filter $filter `
         --settings (Join-Path $PSScriptRoot 'browser.runsettings') --logger 'trx;LogFileName=browser.trx' --results-directory $results
     if ($LASTEXITCODE) { throw 'Required browser contracts failed. See the retained TRX, captures and console evidence.' }
     [xml] $report = Get-Content -LiteralPath (Join-Path $results 'browser.trx') -Raw
@@ -46,6 +59,7 @@ try {
     if ([int]$counters.total -eq 0 -or [int]$counters.notExecuted -ne 0 -or [int]$counters.executed -ne [int]$counters.total) {
         throw 'Required browser proof must discover and execute tests without skips.'
     }
+    if ($selection) { Assert-BrowserShardExecution -Selection $selection -Report $report }
     $requiredContracts = @(
         'SvgRasterTurbulenceAffineBrowserTests.NativeAffineSheetKeepsActualSourceCoverageAndCompleteDownloadAtBothWidths',
         'StaticExportNativeFontBrowserTests.ActualNativeNumericFallbackSuffixesRemainVisibleAndExportAcceptedValuesThroughTheExistingLifetime',
@@ -306,13 +320,23 @@ try {
         'ShadowHostLegacyEventsBrowserTests.TopologyPublicNotificationsCrossShadowHostWhilePeerSyncStaysLocal',
         'ShadowHostLegacyEventsBrowserTests.IconBrowserSelectionCrossesShadowHostWithItsStableIconIdentity'
     )
+    if ($selection) {
+        $listed = $selection.AllCases -join "`n"
+        $owned = $selection.Cases -join "`n"
+    }
     foreach ($contract in $requiredContracts) {
+        if ($selection) {
+            # Every shard requires each contract to exist; the shard owning its class proves it passed.
+            if (-not $listed.Contains($contract)) { throw "Required browser contract was not discovered: $contract" }
+            if (-not $owned.Contains($contract)) { continue }
+        }
         $observed = @($report.TestRun.Results.UnitTestResult | Where-Object { $_.testName.Contains($contract) })
         if ($observed.Count -eq 0 -or @($observed | Where-Object outcome -ne 'Passed').Count) {
             throw "Required browser contract did not execute successfully: $contract"
         }
     }
-    if (-not (Test-Path -LiteralPath (Join-Path $captures 'native-family-matrix.json'))) { throw 'Native family matrix evidence is missing.' }
+    if ((-not $selection -or $selection.Classes.Contains('ChartForgeX.Tests.V2GalleryBrowserMatrixTests')) -and
+        -not (Test-Path -LiteralPath (Join-Path $captures 'native-family-matrix.json'))) { throw 'Native family matrix evidence is missing.' }
     Write-Host "Required browser proof passed: $($counters.total) executed tests. Evidence: $output"
     }
 } finally {

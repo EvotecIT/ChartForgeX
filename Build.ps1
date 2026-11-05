@@ -2,6 +2,9 @@ param(
     [ValidateSet('Debug','Release')]
     [string] $Configuration = 'Release',
 
+    # Leaves the Mermaid/runtime conformance, unit and raster-stress runs to a parallel test lane.
+    [switch] $SkipTests,
+
     [switch] $SkipExamples,
 
     [switch] $SkipAot,
@@ -676,28 +679,32 @@ try {
         }
     }
 
-    # The runtime DOM suites share the locked conformance package's dependencies.
-    Invoke-MermaidConformance -Root $root -TimeoutSeconds $PackageConsumerTimeoutSeconds
-    Invoke-NodeCommand -FileName 'node' -Arguments @('Build/Test-GraphRuntime.js') -WorkingDirectory $root -Description 'Bundled graph runtime tests' -TimeoutSeconds $PackageConsumerTimeoutSeconds
+    if (-not $SkipTests) {
+        # The runtime DOM suites share the locked conformance package's dependencies.
+        Invoke-MermaidConformance -Root $root -TimeoutSeconds $PackageConsumerTimeoutSeconds
+        Invoke-NodeCommand -FileName 'node' -Arguments @('Build/Test-GraphRuntime.js') -WorkingDirectory $root -Description 'Bundled graph runtime tests' -TimeoutSeconds $PackageConsumerTimeoutSeconds
+    }
     Invoke-DotNetCommand -Arguments @('restore', '.\ChartForgeX.sln') -Description 'Solution restore' -TimeoutSeconds $DotNetCommandTimeoutSeconds
     Invoke-DotNetCommand -Arguments @('build', $solution, '-c', $Configuration, '--no-restore') -Description 'Solution build' -TimeoutSeconds $DotNetCommandTimeoutSeconds
-    # Explicit expensive rendering contracts retain their own normal command budgets.
-    $testArguments = @('test', $tests, '-c', $Configuration, '--no-build', '--no-restore', '--filter', 'Category!=Gallery&Category!=RasterStress')
-    if (-not [string]::IsNullOrWhiteSpace($TestDiagnosticsDirectory)) {
-        New-Item -ItemType Directory -Path $TestDiagnosticsDirectory -Force | Out-Null
-        $testArguments += @('--settings', (Join-Path $root 'Build/native-diagnostics.runsettings'),
-            '--logger', 'console;verbosity=detailed', '--logger', 'trx;LogFileName=native.trx',
-            '--results-directory', $TestDiagnosticsDirectory,
-            '--diag', (Join-Path $TestDiagnosticsDirectory 'native.vstest.log'))
-    }
-    Invoke-DotNetCommand -Arguments $testArguments -Description 'Test run' -TimeoutSeconds $DotNetCommandTimeoutSeconds
-
-    Write-Host 'Running required raster-stress contracts.'
-    $rasterContractRoot = if ($TestDiagnosticsDirectory) { Join-Path $TestDiagnosticsDirectory 'raster-stress' } else { Join-Path $root "ChartForgeX.Tests/bin/$Configuration/net8.0/raster-stress-contracts" }
     $contractSettings = if ($TestDiagnosticsDirectory) { Join-Path $root 'Build/native-diagnostics.runsettings' } else { $null }
-    Invoke-RequiredTestContract -Name 'raster-stress' -Project $tests -Configuration $Configuration `
-        -Filter 'Category=RasterStress' -RequiredTestName 'ChartForgeX.Tests.SvgRasterStrokePaintTests.TiledSvgStrokeRetainsItsTransformedGradientFrame' `
-        -RequiredCaseCount 2 -ReportRoot $rasterContractRoot -TimeoutSeconds $DotNetCommandTimeoutSeconds -DiagnosticsSettingsPath $contractSettings
+    if (-not $SkipTests) {
+        # Explicit expensive rendering contracts retain their own normal command budgets.
+        $testArguments = @('test', $tests, '-c', $Configuration, '--no-build', '--no-restore', '--filter', 'Category!=Gallery&Category!=RasterStress')
+        if (-not [string]::IsNullOrWhiteSpace($TestDiagnosticsDirectory)) {
+            New-Item -ItemType Directory -Path $TestDiagnosticsDirectory -Force | Out-Null
+            $testArguments += @('--settings', (Join-Path $root 'Build/native-diagnostics.runsettings'),
+                '--logger', 'console;verbosity=detailed', '--logger', 'trx;LogFileName=native.trx',
+                '--results-directory', $TestDiagnosticsDirectory,
+                '--diag', (Join-Path $TestDiagnosticsDirectory 'native.vstest.log'))
+        }
+        Invoke-DotNetCommand -Arguments $testArguments -Description 'Test run' -TimeoutSeconds $DotNetCommandTimeoutSeconds
+
+        Write-Host 'Running required raster-stress contracts.'
+        $rasterContractRoot = if ($TestDiagnosticsDirectory) { Join-Path $TestDiagnosticsDirectory 'raster-stress' } else { Join-Path $root "ChartForgeX.Tests/bin/$Configuration/net8.0/raster-stress-contracts" }
+        Invoke-RequiredTestContract -Name 'raster-stress' -Project $tests -Configuration $Configuration `
+            -Filter 'Category=RasterStress' -RequiredTestName 'ChartForgeX.Tests.SvgRasterStrokePaintTests.TiledSvgStrokeRetainsItsTransformedGradientFrame' `
+            -RequiredCaseCount 2 -ReportRoot $rasterContractRoot -TimeoutSeconds $DotNetCommandTimeoutSeconds -DiagnosticsSettingsPath $contractSettings
+    }
 
     if (-not $SkipAot) {
         $nativeAotRid = Get-NativeAotRuntimeIdentifier
