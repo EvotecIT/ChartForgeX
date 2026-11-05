@@ -117,9 +117,9 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     }
 
     [BrowserFact]
-    public async Task NativeWheelZoomsAndCanceledTouchBrushReleasesUncommittedPresentation() {
+    public async Task DeclinedWheelLeavesTheDrawingAndCanceledTouchBrushReleasesUncommittedPresentation() {
         if (!Enabled) return;
-        // A lollipop series keeps this saved chart on the whole-drawing viewport, so a committed brush stays a selection.
+        // A saved page cannot re-project a lollipop series, so zoom declines and a committed brush stays a selection.
         var chart = Readings(dark: true).AddSeries(new ChartSeries(new ChartSeriesId("stems"), "Stems", ChartSeriesKind.Lollipop, new[] { new ChartPoint(0.5, 3) }));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             Fit(options); options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Brush);
@@ -136,8 +136,11 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         var stage = await BoxAsync(page, ".cfx-stage");
         await page.Mouse.MoveAsync((float)(stage.X + stage.Width * .5), (float)(stage.Y + stage.Height * .5));
         await page.Mouse.WheelAsync(0, -120);
-        await page.WaitForFunctionAsync("()=>Number(document.querySelector('.cfx-interactive-chart').dataset.cfxZoom)>1");
-        Assert.Equal(1, await page.EvaluateAsync<int>("()=>nativeInput.viewport.length"));
+        // The wheel never scales a drawing the page cannot redraw: no viewport change and no zoom state.
+        Assert.Equal("true", await page.Locator(Root).GetAttributeAsync("data-cfx-zoom-declined"));
+        Assert.True(await page.Locator("[data-cfx-zoom=in]").IsDisabledAsync());
+        Assert.Equal(0, await page.EvaluateAsync<int>("()=>nativeInput.viewport.length"));
+        Assert.True(await page.EvaluateAsync<bool>("()=>!(Number(document.querySelector('.cfx-interactive-chart').dataset.cfxZoom)>1)"));
         await SettlePresentationAsync(page);
         await page.Locator("[data-cfx-mode-button=brush]").ClickAsync();
         var mark = await BoxAsync(page, North);

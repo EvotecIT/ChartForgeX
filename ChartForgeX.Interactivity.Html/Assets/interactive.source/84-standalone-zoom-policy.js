@@ -9,14 +9,15 @@
       && !(horizontal && metadata.secondaryYProjection) && axes.every(axis => ['linear', 'logarithmic'].includes(axis.scale))
       && !!metadata.series?.length && metadata.series.every(row => standaloneReprojectedKinds.includes(row.kind));
   };
-  // Matrices, maps and every chart without a Cartesian data projection (polar, radial, hierarchy,
-  // flow and diagram scenes) have no data window to narrow. Scaling their whole drawing would
-  // only enlarge text, so a saved report declines zoom and pan for them instead.
-  const standaloneDeclinedKinds = ['heatmap', 'hexbinheatmap', 'calendarheatmap', 'dottedmap', 'tilemap', 'regionmap'];
+  // A saved report zooms only what it can re-project with native-consistent ticks. Matrices, maps,
+  // polar, hierarchy, flow and diagram scenes, and Cartesian charts outside the families above (time
+  // and symmetric-logarithmic axes, a secondary X axis, stacked, waterfall, lollipop, dumbbell,
+  // range-bar and timeline marks) have no window it can redraw faithfully. Scaling their whole
+  // drawing would only enlarge text, so zoom and pan decline for them; a connected .NET host
+  // re-prepares every family natively instead.
   const standaloneZoomDeclined = root => {
     if (!hasFeature(root, 'Zoom') || nativePreparationBinding(root, 'viewport') || standaloneViewport(root)) return false;
-    const metadata = capturedCartesianMetadata(root);
-    return !metadata.dataProjection || !!metadata.polarProjection || metadata.series?.some(row => standaloneDeclinedKinds.includes(row.kind)) === true;
+    return !standaloneReprojects(capturedCartesianMetadata(root));
   };
   const syncStandaloneZoomDecline = root => {
     const declined = standaloneZoomDeclined(root), reason = uiText(root, 'ZoomUnavailable', 'Zoom is not available for this chart type');

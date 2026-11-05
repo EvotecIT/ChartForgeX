@@ -167,7 +167,7 @@ try {
         'InteractiveChartLifecycleBrowserTests.DefaultResetAndLoopingPlaybackReleaseResourcesAfterUpdateAndDisposalOrRemoval',
         'InteractiveChartLifecycleBrowserTests.PointLegendMuteAndIsolationFollowAuthoredIdentityAcrossNativeReordering',
         'InteractiveChartLifecycleBrowserTests.DisposalClearsComparisonBrushAndResetPresentationBeforeFreshMount',
-        'InteractiveChartLifecycleBrowserTests.NativeWheelZoomsAndCanceledTouchBrushReleasesUncommittedPresentation',
+        'InteractiveChartLifecycleBrowserTests.DeclinedWheelLeavesTheDrawingAndCanceledTouchBrushReleasesUncommittedPresentation',
         'InteractiveChartLifecycleBrowserTests.KeyedPointTransactionsRetainSelectedFactsAndCanceledUpdatesLeaveCommittedBrushUntouched',
         'SvgHostProjectionBrowserTests.HostZoomKeepsPartialPointerReadoutsFocusAndGuidesOnActualSvgMarks',
         'SvgHostProjectionBrowserTests.HostZoomKeepsBrushDataAndNativeViewportAnchorsInTheRenderedPlot',
