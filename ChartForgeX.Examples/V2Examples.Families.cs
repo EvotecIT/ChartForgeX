@@ -156,6 +156,7 @@ public static partial class V2Examples {
         ChartSeriesKind.Radar => "A filled area and an unfilled target line share one radial scale",
         ChartSeriesKind.Pyramid => "Reversed horizontal pyramid; areas encode values including zero",
         ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn => "Named stacks reach 100; labels retain source counts",
+        ChartSeriesKind.BoxPlot => "Expected and observed delivery times side by side; observed Premium is hatched",
         _ => "Configured chart geometry"
     };
 
