@@ -345,17 +345,54 @@
 
   // Family pages: the live chart and its source follow the page theme. Generated programs keep imports and output
   // plumbing in a Setup region; the page shows the chart model and the download keeps the whole file.
-  // Live chart pages are same-origin, so a frame takes the height its page needs instead of scrolling inside.
+  // Live chart pages are same-origin, so a frame takes the height its content needs instead of scrolling inside or
+  // leaving space under the chart. The page's own shell fills the window and centres the chart; inside a frame it
+  // keeps its content height, and the frame follows that height as the chart lays out and the frame changes width.
+  var FRAME_MIN = 240;
   var fitFrame = function (live) {
-    live.addEventListener('load', function () {
+    var observer = null;
+    var size = function () {
       try {
         var page = live.contentDocument && live.contentDocument.documentElement;
-        if (!page) return;
-        // Measure at a minimal height: pages that fill the viewport would otherwise report the frame's own height.
-        page.style.overflow = 'hidden';
+        if (!page || !live.contentDocument.body) return;
+        // The root's own box, not scrollHeight: scrollHeight never reports less than the frame, so a frame could only grow.
+        var body = live.contentDocument.body;
+        var bottom = body.getBoundingClientRect().bottom + (parseFloat(live.contentWindow.getComputedStyle(body).marginBottom) || 0);
+        var height = Math.max(FRAME_MIN, Math.ceil(Math.max(page.getBoundingClientRect().height, bottom)));
+        if (Math.abs(live.getBoundingClientRect().height - height) < 2) return;
         live.style.aspectRatio = 'auto';
-        live.style.height = '1px';
-        live.style.height = (page.scrollHeight + 2) + 'px';
+        live.style.height = height + 'px';
+      } catch (e) { /* a cross-origin page keeps its CSS height */ }
+    };
+    live.addEventListener('load', function () {
+      if (observer) { observer.disconnect(); observer = null; }
+      try {
+        var doc = live.contentDocument;
+        if (!doc || !doc.head || !doc.body) return;
+        var style = doc.createElement('style');
+        // The runtime reserves room for an empty compare tray so a standalone page does not jump; a frame that follows
+        // its content can drop that room and grow when the tray fills.
+        style.textContent = 'html,body,.cfx-shell{min-height:0!important;height:auto!important}html{overflow:hidden}'
+          + '.cfx-compare-tray[hidden]{display:none!important}';
+        doc.head.appendChild(style);
+        size();
+        var Observer = live.contentWindow.ResizeObserver || window.ResizeObserver;
+        if (Observer) {
+          observer = new Observer(function () { size(); });
+          observer.observe(doc.body);
+        }
+        // A wider or narrower frame re-lays the chart out inside it after the page's own resize handling.
+        if (!live.cfxWidthWatch && window.ResizeObserver) {
+          var width = 0;
+          live.cfxWidthWatch = new ResizeObserver(function (entries) {
+            var next = Math.round(entries[0].contentRect.width);
+            if (next === width) return;
+            width = next;
+            requestAnimationFrame(size);
+            setTimeout(size, 300);
+          });
+          live.cfxWidthWatch.observe(live);
+        }
       } catch (e) { /* a cross-origin page keeps its CSS height */ }
     });
   };
@@ -584,6 +621,8 @@
     viewer.addEventListener('click', function (event) { if (event.target === viewer) viewer.close(); });
     // Escape and the close button both end here: focus goes back to the card that opened the viewer.
     viewer.addEventListener('close', function () {
+      // The close event arrives after the dialog closes; a card opened since then keeps its page.
+      if (viewer.open) return;
       frame.removeAttribute('src');
       if (opener && opener.isConnected) opener.focus();
     });
