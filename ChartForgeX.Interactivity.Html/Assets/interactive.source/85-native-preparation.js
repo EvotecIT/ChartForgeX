@@ -187,7 +187,8 @@
       // Only a completely validated SourceReflow can relax the same-value source key. Old/default replies keep their existing validation order.
       for (const [drawing, previous] of sourceChanges) validateRequestedNativeVisibility(root, drawing, request, previous, capturedMotion?.sourceReflow === true);
       const before = hooks.beforeCommit?.();
-      replaceChartSection(root, lifetime, next, hooks.resetView ? 'reset' : 'prepared', '', hooks.preserveViewport === true, nativeState, binding.motion, adaptive, capturedMotion);
+      const motion = hooks.motionTarget && binding.motion ? Object.freeze({ ...binding.motion, target: hooks.motionTarget }) : binding.motion;
+      replaceChartSection(root, lifetime, next, hooks.resetView ? 'reset' : 'prepared', '', hooks.preserveViewport === true, nativeState, motion, adaptive, capturedMotion);
       hooks.accepted?.(); hooks.committed?.(request, before);
       emitHostEvent(root, hooks.eventPrefix + 'change', { requestId: request.requestId, sceneRevision: lifetime.sceneRevision, kind: request.kind });
     }).catch(error => {

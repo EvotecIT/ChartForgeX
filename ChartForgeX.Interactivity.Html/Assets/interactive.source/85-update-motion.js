@@ -19,7 +19,8 @@
     const svg = root.querySelector('.cfx-stage svg'), media = window.matchMedia?.('(prefers-reduced-motion: reduce)');
     if (!svg || media?.matches) return;
     if (captured) { beginCapturedValueMotion(root, motion, captured, svg, media); return; }
-    const stage = root.querySelector('.cfx-stage');
+    // A reply that changes one mark (an annotation edit) fades only that mark; null means nothing new to reveal.
+    const stage = motion.target ? motion.target(root) : root.querySelector('.cfx-stage');
     if (typeof stage?.animate !== 'function') return;
     const animation = stage.animate([{ opacity: .35 }, { opacity: 1 }], { duration: motion.duration, easing: 'ease-out' });
     svg.dataset.cfxUpdateMotion = 'true';
