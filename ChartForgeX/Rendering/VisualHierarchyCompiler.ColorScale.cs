@@ -12,6 +12,10 @@ internal static partial class VisualHierarchyCompiler {
     private static bool HasHierarchyScale(Chart chart, VisualRenderContext context, ChartHierarchySurface surface) =>
         surface.Scale != null && surface.ShowLegend && context.Frame.ShowLegend;
 
+    private static bool InlineMidpoint(VisualRenderContext context, VisualSceneBuilder builder, ChartHierarchySurface surface, double width) =>
+        surface.HasDomain && VisualColorScaleLegendScene.InlineMidpoint(builder, surface.Scale!, surface.Presentation.Labels, HierarchyScaleStyle(context),
+            context.Theme.Spacing, width, surface.Minimum, surface.Maximum, surface.Presentation.ScaleValues, surface.Presentation.LegendStyle);
+
     private static TextStyle HierarchyScaleStyle(VisualRenderContext context) => context.Frame.LegendStyle ?? new TextStyle {
         Font = context.Font, FontSize = context.Theme.Typography.LegendSize, Color = context.Theme.Resolve(context.ThemeMode).Foreground
     };
@@ -30,7 +34,7 @@ internal static partial class VisualHierarchyCompiler {
                 new ChartRect(plot.Left, plot.Bottom - captionHeight, plot.Width, captionHeight));
         }
         var numeric = scale.Mode == ChartColorScaleMode.Discrete || surface.HasDomain;
-        var lines = numeric ? 2 + (scale.MidpointLabel != null ? 1 : 0) + (surface.HasMissing ? 1 : 0) : 2;
+        var lines = numeric ? 2 + (scale.MidpointLabel != null && !InlineMidpoint(context, builder, surface, plot.Width) ? 1 : 0) + (surface.HasMissing ? 1 : 0) : 2;
         var height = Math.Min(plot.Height * .35, row * lines + (numeric ? row * .8 : 0) + context.Theme.Spacing);
         var gap = Math.Min(context.Theme.Spacing, plot.Height * .05);
         return (new ChartRect(plot.X, plot.Y, plot.Width, Math.Max(0, plot.Height - height - gap)), new ChartRect(plot.X, plot.Bottom - height, plot.Width, height));
@@ -110,13 +114,12 @@ internal static partial class VisualHierarchyCompiler {
                 ScaleCaption((scale.HighLabel ?? surface.Presentation.Labels.More) + " · " + values[1], area.X + area.Width / 2, labelY, area.Width / 2, TextAlignment.Right, "high");
                 if (scale.MidpointLabel != null) {
                     var text = scale.MidpointLabel + " · " + surface.Presentation.ScaleValues(new[] { scale.EffectiveMidpoint(surface.Minimum, surface.Maximum) })[0];
-                    if ((scale.HasPositionedStops || gradient) && scale.Mode == ChartColorScaleMode.Diverging) {
-                        var center = gradient ? area.X + area.Width * ChartColorScaleLegend.MidpointRatio(scale, surface.Minimum, surface.Maximum)
-                            : area.X + (ChartColorScaleLegend.MidpointStep(scale, surface.Minimum, surface.Maximum, steps.Length) + .5) * width;
-                        var lane = VisualColorScaleLegendScene.MidpointCaptionLane(builder, text, style,
-                            new ChartRect(area.Left, labelY + row, area.Width, Math.Min(row, Math.Max(0, area.Bottom - labelY - row))), center, inwardEdges: gradient);
-                        ScaleCaption(text, lane.Bounds.Left, lane.Bounds.Top, lane.Bounds.Width, lane.Alignment, "midpoint", fit: true);
-                    } else ScaleCaption(text, area.X, labelY + row, area.Width, TextAlignment.Center, "midpoint");
+                    // The midpoint caption sits under its value: between the end captions when it fits, else on its own row.
+                    var center = area.X + VisualColorScaleLegendScene.MidpointAnchor(scale, surface.Minimum, surface.Maximum, area.Width, surface.Presentation.LegendStyle);
+                    var midpointY = InlineMidpoint(context, builder, surface, area.Width) ? labelY : labelY + row;
+                    var lane = VisualColorScaleLegendScene.MidpointCaptionLane(builder, text, style,
+                        new ChartRect(area.Left, midpointY, area.Width, Math.Min(row, Math.Max(0, area.Bottom - midpointY))), center);
+                    ScaleCaption(text, lane.Bounds.Left, lane.Bounds.Top, lane.Bounds.Width, lane.Alignment, "midpoint", fit: true);
                 }
             }
             if (surface.HasMissing) {

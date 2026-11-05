@@ -385,17 +385,22 @@ internal static partial class VisualColorScaleLegendScene {
     }
 
     // Share a caption row only when actual glyph widths leave all three labels disjoint at their exact anchors.
-    private static bool InlineMidpoint(VisualSceneBuilder builder, ChartColorScale scale, ChartLabels labels, TextStyle style,
+    internal static bool InlineMidpoint(VisualSceneBuilder builder, ChartColorScale scale, ChartLabels labels, TextStyle style,
         double gap, double width, double min, double max, Func<IReadOnlyList<double>, string[]> formatValues, ChartColorLegendStyle legendStyle) {
         if (scale.Mode == ChartColorScaleMode.Discrete || scale.MidpointLabel == null || width <= 0) return false;
         var endpoints = formatValues(new[] { scale.EffectiveMinimum(min), scale.EffectiveMaximum(max) });
         var low = builder.MeasureText((scale.LowLabel ?? labels.Less) + " · " + endpoints[0], style).Width;
         var high = builder.MeasureText((scale.HighLabel ?? labels.More) + " · " + endpoints[1], style).Width;
         var midpoint = builder.MeasureText(scale.MidpointLabel + " · " + formatValues(new[] { scale.EffectiveMidpoint(min, max) })[0], style).Width;
-        var steps = ChartColorScaleLegend.Steps(scale, min, max);
-        var x = scale.Mode == ChartColorScaleMode.Diverging && scale.EffectiveMaximum(max) > scale.EffectiveMinimum(min)
-            ? legendStyle == ChartColorLegendStyle.Gradient ? width * ChartColorScaleLegend.MidpointRatio(scale, min, max)
-                : (ChartColorScaleLegend.MidpointStep(scale, min, max, steps.Length) + .5) * width / steps.Length : width / 2;
+        var x = MidpointAnchor(scale, min, max, width, legendStyle);
         return low + gap <= x - midpoint / 2 && x + midpoint / 2 + gap <= width - high;
+    }
+
+    /// <summary>The midpoint caption's centre from the key's left edge: under the midpoint of a diverging key, else centred.</summary>
+    internal static double MidpointAnchor(ChartColorScale scale, double min, double max, double width, ChartColorLegendStyle legendStyle) {
+        if (scale.Mode != ChartColorScaleMode.Diverging || scale.EffectiveMaximum(max) <= scale.EffectiveMinimum(min)) return width / 2;
+        if (legendStyle == ChartColorLegendStyle.Gradient) return width * ChartColorScaleLegend.MidpointRatio(scale, min, max);
+        var steps = ChartColorScaleLegend.Steps(scale, min, max).Length;
+        return (ChartColorScaleLegend.MidpointStep(scale, min, max, steps) + .5) * width / steps;
     }
 }

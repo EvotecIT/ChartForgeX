@@ -39,6 +39,39 @@ public sealed class TreemapColorTests {
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void GroupsWithoutColorValuesAreContainersWhileAnUncoloredLeafIsMissingData(bool uncoloredLeaf) {
+        var chart = Chart.Create().WithSize(720, 460).AddTreemap("Work", new[] {
+            new ChartHierarchyItem("south", "South"), new ChartHierarchyItem("north", "North"),
+            new ChartHierarchyItem("support", "Support", "south", 22, 6), new ChartHierarchyItem("field", "Field", "south", 15, -4),
+            new ChartHierarchyItem("platform", "Platform", "north", 18, uncoloredLeaf ? null : 2)
+        }).ConfigureTreemap(options => options.ColorScale = ChartColorScale.Diverging(Red, ChartColor.White, Blue, 0)
+            .WithLabels("Decrease", "No change", "Increase"));
+        var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(720, 460)), frame: new VisualFrame(showLegend: true)));
+        var missing = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Id == "treemap-color-scale-label-missing");
+        Assert.Equal(uncoloredLeaf ? 1 : 0, missing.Count());
+    }
+
+    [Fact]
+    public void ADivergingMidpointCaptionSitsUnderItsValueBetweenTheEndCaptions() {
+        var chart = Chart.Create().WithSize(800, 440).AddTreemap("Work", new[] {
+            new ChartHierarchyItem("a", "A", value: 6, colorValue: -10), new ChartHierarchyItem("b", "B", value: 4, colorValue: 15)
+        }).ConfigureTreemap(options => options.ColorScale = ChartColorScale.Diverging(Red, ChartColor.White, Blue, 0)
+            .WithLabels("Decrease", "No change", "Increase"));
+        var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 440)), frame: new VisualFrame(showLegend: true)));
+        var captions = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "treemap-color-scale-label").ToDictionary(node => node.Id!);
+        var low = captions["treemap-color-scale-label-low"]; var middle = captions["treemap-color-scale-label-midpoint"];
+        var high = captions["treemap-color-scale-label-high"];
+        Assert.Equal(low.Baseline, middle.Baseline, 3); Assert.Equal(high.Baseline, middle.Baseline, 3);
+        var steps = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "treemap-color-scale-step").ToArray();
+        var left = steps.Min(step => step.Bounds.Left); var right = steps.Max(step => step.Bounds.Right);
+        var line = Assert.Single(middle.Text.Lines); var center = middle.LineLeft(line) + line.Width / 2;
+        // Zero lies 40% of the way from -10 to 15, so its caption sits left of the key's centre, clear of both end captions.
+        Assert.InRange(center, left + (right - left) * .3, left + (right - left) * .48);
+        Assert.True(Right(low) < middle.LineLeft(line) && middle.LineLeft(line) + line.Width < high.LineLeft(Assert.Single(high.Text.Lines)));
+    }
+    [Theory]
     [InlineData(VisualThemeMode.Light)]
     [InlineData(VisualThemeMode.Dark)]
     public void NodeStateOutlinesPreserveQuantitativeFillGeometryAndPreparedFacts(VisualThemeMode mode) {
@@ -193,4 +226,5 @@ public sealed class TreemapColorTests {
         var x = (int)(bounds.X + bounds.Width / 2); var y = (int)(bounds.Y + bounds.Height / 2); var offset = (y * image.Width + x) * 4;
         Assert.Equal(new[] { expected.R, expected.G, expected.B, expected.A }, image.Pixels.AsSpan(offset, 4).ToArray());
     }
+    private static double Right(VisualSceneText text) { var line = Assert.Single(text.Text.Lines); return text.LineLeft(line) + line.Width; }
 }
