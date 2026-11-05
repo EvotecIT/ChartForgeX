@@ -116,7 +116,8 @@ internal static partial class VisualCartesianCompiler {
 
     private static Action<VisualSceneBuilder, ChartRect, VisualRenderContext>? FinancialLegend(Chart chart, ChartSeries series,
         int index, VisualThemeColors colors, int point = -1, ChartFillPattern pattern = ChartFillPattern.None) {
-        if (!series.HasFinancialStyleOverrides || series.Kind is not (ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc)) return null;
+        // Rising and falling marks carry the paired colours, so the key shows both rather than one series swatch.
+        if (series.Kind is not (ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc)) return null;
         var candle = series.Kind == ChartSeriesKind.Candlestick;
         var rising = point < 0 || series.RenderPoints[point * 4 + 3].Y >= series.RenderPoints[point * 4].Y;
         var first = FinancialStyle(series, index, point, rising, colors);
