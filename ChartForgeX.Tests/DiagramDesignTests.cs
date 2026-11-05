@@ -102,7 +102,8 @@ public sealed class DiagramDesignTests {
 
     [Fact]
     public void CompactScheduleWrapsCompleteRowNamesAndOmitsARedundantLegend() {
-        const string source = "gantt\nsection Engine\nLabel placement :labels,2026-01-01,3d\nRoute layout :route,after labels,2d";
+        // Row titles no longer carry their section, so a long title exercises the wrap.
+        const string source = "gantt\nsection Engine\nLabel placement and collision review :labels,2026-01-01,3d\nRoute layout :route,after labels,2d";
         var chart = new MermaidParser().ParseGantt(source).Document!.ToChart(new MermaidGanttRenderOptions { Width = 390 });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "schedule-row-label").ToArray();

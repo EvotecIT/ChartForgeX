@@ -41,7 +41,7 @@ public sealed class MermaidPolarScheduleTypographyTests {
             var rows = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "schedule-row-label").ToArray();
             Assert.Equal(2, rows.Length);
             Assert.True(labels.Count(element => Role(element) == "schedule-tick-label") >= 2);
-            Assert.Equal(new[] { "Delivery / Build", "Delivery / Review" },
+            Assert.Equal(new[] { "Build", "Review" },
                 rows.Select(row => string.Join(" ", row.Text.Lines.Select(line => line.Text))));
             Assert.Equal(2, labels.Count(element => Role(element) == "data-label"));
         }

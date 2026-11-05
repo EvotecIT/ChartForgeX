@@ -23,9 +23,9 @@ internal static partial class TopologyLayoutEngine {
             var children = chart.Groups.Where(group => group.ParentGroupId == parentId).ToArray();
             foreach (var child in children) Layout(child.Id);
             var nodes = chart.Nodes.Where(node => node.GroupId == parentId).ToArray();
-            var width = 0d; var height = 0d;
-            Pack(nodes.Select(node => new GridItem(node.Width, node.Height, (x, y) => { node.X = x; node.Y = y; })).ToArray(), policy.MaximumNodesPerRow);
-            Pack(children.Select(group => new GridItem(group.Width, group.Height, (x, y) => ShiftGroup(group, x, y))).ToArray(), policy.MaximumGroupsPerRow);
+            var width = 0d; var height = 0d; GridItem[]? previous = null;
+            Pack(nodes.Select(node => new GridItem("node:" + node.Id, node.Width, node.Height, (x, y) => { node.X = x; node.Y = y; })).ToArray(), policy.MaximumNodesPerRow);
+            Pack(children.Select(group => new GridItem("group:" + group.Id, group.Width, group.Height, (x, y) => ShiftGroup(group, x, y))).ToArray(), policy.MaximumGroupsPerRow);
             var insetX = policy.PaddingX ?? Math.Max(24, chart.Viewport.Padding); var insetY = (policy.PaddingY ?? Math.Max(24, chart.Viewport.Padding)) + (string.IsNullOrWhiteSpace(chart.Title) ? 0 : 72);
             if (parentId != null) {
                 var parent = groups[parentId]; parent.X = 0; parent.Y = 0;
@@ -38,18 +38,43 @@ internal static partial class TopologyLayoutEngine {
             foreach (var child in children) ShiftGroup(child, child.X + insetX, child.Y + insetY);
 
             void Pack(GridItem[] items, int maximum) {
-                if (items.Length == 0) return;
-                if (height > 0) height += policy.VerticalSpacing;
                 for (var start = 0; start < items.Length; start += Math.Min(maximum, items.Length - start)) {
-                    var count = Math.Min(maximum, items.Length - start); var x = start == 0 ? 0d : policy.RowIndent; var rowHeight = 0d;
-                    for (var i = 0; i < count; i++) {
-                        var item = items[start + i]; item.Place(x, height);
-                        x += item.Width + policy.HorizontalSpacing; rowHeight = Math.Max(rowHeight, item.Height);
+                    var row = items.Skip(start).Take(Math.Min(maximum, items.Length - start)).ToArray();
+                    if (previous != null) height += Math.Max(policy.VerticalSpacing, CaptionGap(previous, row, parentId, horizontal: false));
+                    var x = start == 0 ? 0d : policy.RowIndent; var rowHeight = 0d;
+                    for (var i = 0; i < row.Length; i++) {
+                        if (i > 0) x += Math.Max(policy.HorizontalSpacing, CaptionGap(new[] { row[i - 1] }, new[] { row[i] }, parentId, horizontal: true));
+                        row[i].Place(x, height);
+                        x += row[i].Width; rowHeight = Math.Max(rowHeight, row[i].Height);
                     }
-                    width = Math.Max(width, x - policy.HorizontalSpacing); height += rowHeight;
-                    if (start + count < items.Length) height += policy.VerticalSpacing;
+                    width = Math.Max(width, x); height += rowHeight; previous = row;
                 }
             }
+        }
+        // A labelled relationship between neighbouring cells keeps room for its caption on its own segment,
+        // including one that ends on a region boundary; the authored spacing remains the minimum.
+        double CaptionGap(GridItem[] first, GridItem[] second, string? parentId, bool horizontal) {
+            if (!options.IncludeEdgeLabels) return 0;
+            var gap = 0d;
+            foreach (var edge in chart.Edges) {
+                var source = ImmediateItem(edge.SourceNodeId, parentId); var target = ImmediateItem(edge.TargetNodeId, parentId);
+                if (source == null || target == null) continue;
+                var joins = first.Any(item => item.Id == source) && second.Any(item => item.Id == target)
+                    || first.Any(item => item.Id == target) && second.Any(item => item.Id == source);
+                if (!joins || EdgeLabelBadge(chart, edge, options) is not { } badge) continue;
+                gap = Math.Max(gap, (horizontal ? badge.Width : badge.Height) + EdgeEndpointGap * 2 + 32);
+            }
+            return gap;
+        }
+        string? ImmediateItem(string endpoint, string? parentId) {
+            var node = chart.Nodes.FirstOrDefault(item => item.Id == endpoint);
+            string? id = node != null ? "node:" + endpoint : groups.ContainsKey(endpoint) ? "group:" + endpoint : null;
+            var groupId = node != null ? node.GroupId : groups.TryGetValue(endpoint, out var own) ? own.ParentGroupId : null;
+            while (id != null && groupId != parentId) {
+                if (groupId == null || !groups.TryGetValue(groupId, out var parent)) return null;
+                id = "group:" + groupId; groupId = parent.ParentGroupId;
+            }
+            return id;
         }
         void ShiftGroup(TopologyGroup group, double x, double y) {
             var dx = x - group.X; var dy = y - group.Y; group.X = x; group.Y = y;
@@ -62,7 +87,8 @@ internal static partial class TopologyLayoutEngine {
         }
     }
     private sealed class GridItem {
-        internal GridItem(double width, double height, Action<double, double> place) { Width = width; Height = height; Place = place; }
+        internal GridItem(string id, double width, double height, Action<double, double> place) { Id = id; Width = width; Height = height; Place = place; }
+        internal string Id { get; }
         internal double Width { get; }
         internal double Height { get; }
         internal Action<double, double> Place { get; }

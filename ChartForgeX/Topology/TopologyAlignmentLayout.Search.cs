@@ -17,7 +17,7 @@ internal sealed partial class TopologyAlignmentLayout {
             var horizontal = x.Solve(); var vertical = y.Solve();
             if (horizontal != null && vertical != null) {
                 var pair = FindOverlap(horizontal, vertical);
-                if (pair == null) { Commit(horizontal, vertical); return; }
+                if (pair == null) { Tighten(horizontal, vertical); Commit(horizontal, vertical); return; }
                 budget.Work();
                 trials.Add(new Trial { First = pair.Value.First, Second = pair.Value.Second,
                     XCount = x.Count, YCount = y.Count, Directions = Preferences(pair.Value.First, pair.Value.Second) });
