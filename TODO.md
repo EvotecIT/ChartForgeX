@@ -49,9 +49,8 @@ Token contract v2 has landed: ChartForgeX reads its font stack, typography roles
 
 ## 5. Website showcase
 
-Gallery cards open their live page (chart grids as an interactive dashboard, topology as a pan-and-zoom page), every chart family has its own page with variants, options and chart-first code, and the primary Line page carries the range navigator and chart menu.
+Gallery cards open their live page (chart grids as an interactive dashboard, topology as a pan-and-zoom page, flow and sequence diagrams with keyboard exploration and message playback), every chart family has its own page with variants, options and chart-first code, and the primary Line page carries the range navigator and chart menu.
 
-- [ ] **Live Flow and Sequence cards.** Flow and Sequence diagrams have no browser adapter yet, so their cards still open the static SVG. Done when both open an interactive page from the gallery.
 - [ ] **Annotation editor on the site.** The editor needs a connected native host, so a saved gallery page cannot show it. Done when one site example demonstrates it, for example through the playground engine.
 
 ## Mermaid

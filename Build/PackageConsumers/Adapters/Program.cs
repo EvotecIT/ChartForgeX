@@ -134,10 +134,10 @@ internal static partial class Program {
         if (mermaid.Document.Nodes.Count != 2 || mermaid.Document.Edges.Count != 1) throw new InvalidOperationException("Mermaid package parser model missing nodes or edges.");
         var mermaidArtifact = mermaid.Document.ToVisualArtifact(new MermaidFlowchartRenderOptions { Id = "package-mermaid", Presentation = FixtureOptions().Presentation });
         if (mermaidArtifact.Kind != VisualArtifactKind.Mermaid || !mermaidArtifact.SupportsExport(VisualArtifactExportFormat.Svg)) throw new InvalidOperationException("Mermaid package artifact contract missing.");
+        // Mermaid's dark theme selects dark mode and renders it with Graphite, on the dark card surface.
         PackageAssertions.Require(mermaidArtifact.Model is TopologyChart mermaidTopology && mermaidTopology.ThemeMode == VisualThemeMode.Dark
-            && mermaidTopology.Theme.Resolve(VisualThemeMode.Dark).Background.Equals(ChartColor.FromHex("#333333"))
-            && mermaidTopology.Theme.Resolve(VisualThemeMode.Dark).Foreground.Equals(ChartColor.FromHex("#CCCCCC")),
-            "Packed Mermaid conversion lost its native dark source preset.");
+            && mermaidTopology.Theme.Resolve(VisualThemeMode.Dark).Background.Equals(VisualTheme.Graphite().Resolve(VisualThemeMode.Dark).ElevatedSurface),
+            "Packed Mermaid conversion lost its dark source theme.");
         var hostTheme = VisualTheme.Graphite().WithFontFamily(PackageAssertions.OutlineFontFamily);
         var hostArtifact = mermaid.Document.ToVisualArtifact(new MermaidFlowchartRenderOptions {
             Presentation = new MermaidPresentationOptions { Theme = hostTheme, ThemeMode = VisualThemeMode.Dark }

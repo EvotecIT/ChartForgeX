@@ -101,7 +101,8 @@ public sealed class NativeStandardBlendBrowserTests {
             // Canvas image readback may quantize the PNG through a premultiplied browser surface.
             // Exact unassociated native bytes are asserted above, and both actual browser values are captured.
             Assert.Equal(192, row.GetProperty("native")[3].GetInt32());
-            Assert.Equal(192, row.GetProperty("source")[3].GetInt32());
+            // The SVG source unites two 128/255 inputs to 191.75/255; Linux Firefox truncates darken and lighten to 191.
+            Assert.InRange(row.GetProperty("source")[3].GetInt32(), 191, 192);
             Assert.Equal(new[] { 2, 2 }, row.GetProperty("size").EnumerateArray().Select(value => value.GetInt32()).ToArray());
             Assert.Equal(0, row.GetProperty("scripts").GetInt32());
         }

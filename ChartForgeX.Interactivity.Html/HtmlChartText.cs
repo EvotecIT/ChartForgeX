@@ -625,6 +625,20 @@ public enum HtmlChartText {
     ScenarioResponse,
     /// <summary>UI text naming a use case step whose call fails.</summary>
     ScenarioFailure,
+    /// <summary>Names the playback toolbar of an interactive sequence diagram.</summary>
+    DiagramPlayback,
+    /// <summary>Explains keyboard exploration of an interactive flow or sequence diagram.</summary>
+    DiagramHint,
+    /// <summary>Describes a connector or message route. Template: {source}, {target}.</summary>
+    DiagramRoute,
+    /// <summary>Lists the steps that lead into a flow step. Template: {items}.</summary>
+    DiagramIncoming,
+    /// <summary>Lists the steps a flow step leads to. Template: {items}.</summary>
+    DiagramOutgoing,
+    /// <summary>Places one sequence message in its order. Template: {current}, {count}.</summary>
+    DiagramMessage,
+    /// <summary>Counts the messages a sequence participant sends and receives. Template: {sent}, {received}.</summary>
+    DiagramParticipantMessages,
     /// <summary>UI text: All kinds</summary>
     TopologyAllKinds,
     /// <summary>UI text: {count} of {total} nodes match</summary>
