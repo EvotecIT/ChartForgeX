@@ -45,7 +45,8 @@ public sealed class MermaidXYOrientationBrowserTests {
         await page.Locator(Point(0, 0)).FocusAsync();
         await page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await page.Locator(Point(0, 0)).GetAttributeAsync("aria-selected"));
-        await page.Keyboard.PressAsync("ArrowRight");
+        // Categories run down a horizontal chart, so the next one is below.
+        await page.Keyboard.PressAsync("ArrowDown");
         Assert.Equal("2", await page.EvaluateAsync<string>("() => document.activeElement.dataset.cfxX"));
         AssertNoConsoleErrors(session);
         var capture = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");

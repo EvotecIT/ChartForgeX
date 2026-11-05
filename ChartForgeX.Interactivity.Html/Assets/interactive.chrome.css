@@ -434,7 +434,7 @@
 .cfx-frame[data-cfx-card-head] > .cfx-reset { margin-block-end: 8px; }
 .cfx-frame[data-cfx-card-head]::before {
   content: ""; position: absolute; z-index: -1; top: var(--cfx-card-top); bottom: var(--cfx-card-bottom); left: var(--cfx-card-inset);
-  box-sizing: border-box; width: var(--cfx-card-width); border: var(--cfx-card-stroke-width) solid var(--cfx-card-stroke);
+  box-sizing: border-box; width: var(--cfx-card-width); max-width: calc(100% - var(--cfx-card-inset)); border: var(--cfx-card-stroke-width) solid var(--cfx-card-stroke);
   border-radius: var(--cfx-card-radius); background: var(--cfx-card-fill);
 }
 .cfx-frame[data-cfx-card-head] > .cfx-stage > svg {
@@ -442,7 +442,7 @@
   clip-path: inset(max(0px, calc(var(--cfx-heading-crop, 0px) - 1px)) 0 var(--cfx-card-foot) 0);
 }
 .cfx-frame[data-cfx-card-head] > :is(.cfx-responsive-heading, .cfx-responsive-legend) {
-  box-sizing: border-box; width: var(--cfx-card-width); margin-left: var(--cfx-card-inset);
+  box-sizing: border-box; width: var(--cfx-card-width); max-width: calc(100% - var(--cfx-card-inset)); margin-left: var(--cfx-card-inset);
 }
 .cfx-frame[data-cfx-card-head] > .cfx-responsive-heading { padding: var(--cfx-card-pad-top) var(--cfx-card-pad-x) 6px; }
 .cfx-frame[data-cfx-card-head] > .cfx-responsive-legend {
