@@ -1,0 +1,36 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+#endregion
+
+// Service desk requests per week, August to October 2026.
+var weeks = new[] { "Aug 3", "Aug 10", "Aug 17", "Aug 24", "Aug 31", "Sep 7", "Sep 14", "Sep 21", "Sep 28", "Oct 5", "Oct 12", "Oct 19", "Oct 26" };
+var requests = new[] { 1180d, 1242, 1214, 1302, 1287, 1356, 1341, 1408, 1397, 1463, 1506, 1488, 1541 };
+var points = requests.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();
+var observations = ChartSeries.CreateScatter(new ChartSeriesId("observations"), "Weekly requests", points);
+var trend = ChartSeries.CreateTrendLine(new ChartSeriesId("least-squares-trend"), "Least-squares trend", points);
+var chart = Chart.Create().WithXLabels(weeks).WithYAxis("Requests").AddSeries(observations).AddSeries(trend);
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame("Request volume and its trend", "Weekly service desk requests, August to October 2026", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion

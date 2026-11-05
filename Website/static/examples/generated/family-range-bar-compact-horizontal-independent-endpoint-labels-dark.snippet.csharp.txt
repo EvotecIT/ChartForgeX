@@ -1,0 +1,57 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+using static RangeBarRecipe;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+Chart chart;
+chart = EndpointLabels(mode);
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame("Minimum and maximum delivery times", "Start and end captions retain the authored interval order", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion
+
+static class RangeBarRecipe {
+    internal static Chart EndpointLabels(VisualThemeMode mode) {
+        var expected = ChartSeries.CreateRangeBar(new ChartSeriesId("expected"), "Expected", new[] {
+            new ChartInterval(1, 15, 35), new ChartInterval(2, 10, 30), new ChartInterval(3, 25, 50)
+        });
+        var observed = ChartSeries.CreateRangeBar(new ChartSeriesId("observed"), "Observed", new[] {
+            new ChartInterval(1, 20, 42), new ChartInterval(2, 32, 12), new ChartInterval(3, 30, 55)
+        }).WithPointLabel(1, "Recorded express delivery");
+        var chart = Chart.Create().WithXLabels("Standard", "Express", "Bulk").AddSeries(expected).AddSeries(observed)
+            .ConfigureRangeBar(options => {
+                options.Orientation = ChartOrientation.Horizontal;
+                options.LabelContent = ChartRangeBarLabelContent.Endpoints;
+                options.EndpointLabelFormatter = label => label.FormattedValue + (label.Endpoint == ChartRangeBarEndpoint.Start ? " S" : " E");
+                    options.StartLabel.Style.WithColor(mode == VisualThemeMode.Dark ? "#82b8ff" : "#235b9f").WithFontSize(10);
+                    options.EndLabel.Style.WithColor(mode == VisualThemeMode.Dark ? "#ffbe79" : "#975000").WithFontSize(12).WithWeight("700");
+                    options.StartLabel.Placement = ChartDataLabelPlacement.Above;
+                    options.EndLabel.Placement = ChartDataLabelPlacement.Below;
+            }).WithBarStyle(ChartBarStyle.Flat).WithDataLabels();
+        chart.Options.XAxis.WithBounds(0, 70);
+            chart.WithXAxis("Delivery time (minutes)").WithYAxis("Service");
+            chart.ConfigureDataLabelStyle(style => style.WithFontSize(10));
+        return chart;
+    }
+}

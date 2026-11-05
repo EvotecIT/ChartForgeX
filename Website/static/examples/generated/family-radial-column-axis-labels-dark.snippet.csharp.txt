@@ -1,0 +1,43 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+using static RadialColumnRecipe;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var requests = new ChartSeries(new ChartSeriesId("requests"), "Requests", ChartSeriesKind.RadialColumn, Points(1200, 950, 680, 1050));
+var followUps = new ChartSeries(new ChartSeriesId("follow-ups"), "Follow-ups", ChartSeriesKind.RadialColumn, Points(320, 410, 260, 360));
+var chart = Chart.Create().WithXLabels("North", "South", "East", "West")
+    .WithRadialGeometry(new ChartRadialGeometryOptions(-90, 180, .22, .22, .15))
+    .AddSeries(requests).AddSeries(followUps).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
+chart.WithYAxisBounds(0, 1500);
+chart.WithXAxis("Region").WithYAxis("Requests")
+    .ConfigureXAxis(axis => { axis.LabelOrientation = ChartAxisLabelOrientation.Parallel; axis.LabelAngle = 10; axis.LabelDensity = ChartLabelDensity.Relaxed; })
+    .ConfigureYAxis(axis => { axis.LabelOrientation = ChartAxisLabelOrientation.Perpendicular; axis.LabelDensity = ChartLabelDensity.Dense; });
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Regional service workload", "Upright axis-relative labels with independent density", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion
+
+static class RadialColumnRecipe {
+    internal static ChartPoint[] Points(params double[] values) => values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();
+}

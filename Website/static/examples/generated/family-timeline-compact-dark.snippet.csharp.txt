@@ -1,0 +1,42 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var start = new DateTime(2026, 3, 2, 8, 0, 0, DateTimeKind.Utc);
+var chart = Chart.Create();
+// Each activity starts and ends a whole number of days after the kick-off on Monday 2 March.
+foreach (var (id, name, from, to) in new[] {
+    ("discovery", "Discovery", 0, 3), ("design", "Service design", 2, 7), ("implementation", "Implementation", 4, 15),
+    ("migration", "Data migration", 9, 16), ("validation", "Validation", 14, 19), ("training", "User training", 16, 21),
+    ("rollout", "Rollout", 19, 23) })
+    chart.AddSeries(new ChartSeries(new ChartSeriesId(id), name, ChartSeriesKind.Timeline,
+        new[] { new ChartPoint(start.AddDays(from).ToOADate(), start.AddDays(to).ToOADate()) }));
+chart.ConfigureXAxis(axis => {
+    axis.Scale = ChartScaleKind.Time;
+    axis.ValueFormat = ChartValueFormat.Custom(value => DateTime.FromOADate(value).ToString("MMM d", CultureInfo.InvariantCulture));
+});
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame("Project activities in March 2026", "Seven overlapping activities from kick-off to rollout", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion

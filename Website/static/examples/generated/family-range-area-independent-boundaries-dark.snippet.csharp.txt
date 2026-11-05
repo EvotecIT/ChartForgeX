@@ -1,0 +1,36 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var chart = Chart.Create();
+var ranges = ChartRangeBands.FromXY(new[] { 1d, 2, 3, 4, 5, 6, 7, 8 },
+    new double?[] { 12, 22, 16, null, 25, 15, 20, 18 }, new double?[] { 32, 46, 38, 40, 48, 41, 52, 44 });
+var expected = ChartSeries.CreateRangeArea(new ChartSeriesId("expected-range"), "Expected range", ranges)
+    .WithBoundaryInterpolation(new(ChartInterpolation.Smooth), new(ChartInterpolation.Step, ChartStepPosition.Middle))
+    .WithObservationId(3, new ChartObservationId("resumed-range"));
+chart.WithTitle("Smooth lower and held upper limits").WithXAxis("Observation").WithYAxis("Expected level").AddSeries(expected);
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Expected operating range", "", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion

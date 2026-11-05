@@ -1,0 +1,40 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+// How often each topic appeared in a quarter of service review notes.
+var terms = new (string Text, double Mentions)[] {
+    ("Availability", 96), ("Identity", 81), ("Latency", 74), ("Network", 69), ("Storage", 61), ("Recovery", 57),
+    ("Capacity", 52), ("Backups", 47), ("Certificates", 44), ("Patching", 41), ("Monitoring", 38), ("Access reviews", 35),
+    ("DNS", 33), ("Licensing", 30), ("Firewall", 28), ("Replication", 26), ("Alerts", 24), ("Onboarding", 22),
+    ("Encryption", 20), ("Audit", 19), ("Change control", 18), ("Escalation", 16), ("Runbooks", 15), ("MFA", 14),
+    ("Retention", 13), ("Cost", 12), ("Vendors", 11), ("Training", 10), ("Load balancing", 9), ("Failover", 9),
+    ("Inventory", 8), ("Tickets", 8), ("Compliance", 7), ("Endpoints", 7), ("Mail flow", 6), ("Quotas", 6)
+};
+var count = 20;
+var chart = Chart.Create().AddWordCloud("Mentions", terms.Take(count).Select(term => new ChartWordCloudItem(term.Text, term.Mentions)).ToArray());
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame("Topics in service observations", "", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion

@@ -1,0 +1,36 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var chart = Chart.Create().WithTitle("Observed and forecast").WithXAxis("Observation").WithYAxis("Completed requests")
+            .AddSeries(ChartSeries.CreateDifferenceArea(new ChartSeriesId("comparison"), "Actual and forecast",
+                Enumerable.Range(0, 32).Select(index => new ChartDifferencePoint(index,
+                    index % 7 == 0 ? 0 : Math.Sin(index * .6) * 9,
+                    index % 7 == 0 ? 0 : Math.Cos(index * .6) * 7, index == 16)))
+                .ConfigureDifferenceArea(options => { options.FirstName = "Actual"; options.SecondName = "Forecast"; })
+                .ConfigureMarkers(options => options.Radius = 2));
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(760, 440)), theme, mode,
+    new VisualFrame("Actual and forecast requests", "Shading compares Actual above and below Forecast", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion

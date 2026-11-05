@@ -1,0 +1,46 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+using static BubbleRecipe;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var chart = RequestVolume();
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame("Workload, time and request volume", "Bubble area shows requests handled in one week, by service tier", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion
+
+static class BubbleRecipe {
+    // Batch size in items, median processing time in minutes and requests handled during the week.
+    internal static Chart RequestVolume() => Chart.Create()
+        .WithXAxis("Batch size (items)").WithYAxis("Processing time (minutes)")
+        .AddSeries(ChartSeries.CreateBubble(new ChartSeriesId("standard"), "Standard", new[] {
+            new ChartBubble(40, 18, 320), new ChartBubble(80, 26, 540), new ChartBubble(120, 31, 410),
+            new ChartBubble(160, 39, 620), new ChartBubble(220, 47, 380), new ChartBubble(280, 58, 260) }))
+        .AddSeries(ChartSeries.CreateBubble(new ChartSeriesId("express"), "Express", new[] {
+            new ChartBubble(30, 9, 210), new ChartBubble(60, 12, 360), new ChartBubble(90, 16, 450),
+            new ChartBubble(140, 21, 300), new ChartBubble(190, 27, 240), new ChartBubble(240, 33, 150) }))
+        .AddSeries(ChartSeries.CreateBubble(new ChartSeriesId("priority"), "Priority", new[] {
+            new ChartBubble(20, 5, 90), new ChartBubble(45, 7, 140), new ChartBubble(70, 10, 180),
+            new ChartBubble(110, 13, 120), new ChartBubble(150, 17, 80) }));
+}

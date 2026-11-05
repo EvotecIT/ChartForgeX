@@ -1,0 +1,43 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var chart = Chart.Create();
+var movement = ChartSeries.CreateWaterfall(new ChartSeriesId("movement"), "Movement", new[] {
+    ChartWaterfallItem.OpeningBalance(1, 120), ChartWaterfallItem.Delta(2, -30), ChartWaterfallItem.Subtotal(3),
+    ChartWaterfallItem.Delta(4, -130), ChartWaterfallItem.Subtotal(5), ChartWaterfallItem.Delta(6, 70),
+    ChartWaterfallItem.Total(7)
+}).WithObservationId(3, new ChartObservationId("cost-change"))
+    .WithObservationId(4, new ChartObservationId("cost-checkpoint"))
+    .WithPointColor(4, "#A5358A");
+chart.WithXLabels("Open", "Adjust", "Stage", "Costs", "Cost sum", "Recover", "Balance").AddSeries(movement)
+    .ConfigureWaterfall(options => options.Orientation = ChartOrientation.Horizontal);
+chart.WithXAxis("Running balance").WithYAxis("Stage").WithBarStyle(ChartBarStyle.SegmentedCapsule);
+chart.Options.XAxis.WithReversal(true);
+chart.Options.YAxis.WithReversal();
+chart.WithDataLabels();
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame("Changes in available capacity", "Horizontal changes and checkpoints share a cumulative value axis", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion

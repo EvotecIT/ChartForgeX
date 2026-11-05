@@ -1,0 +1,49 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var day = new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Utc);
+var actual = new[] { 42d, 68, 48, 60, 74, 46, 62 };
+var forecast = new[] { 56d, 54, 60, 60, 58, 64, 50 };
+var pairs = new ChartDifferencePoint[actual.Length];
+for (var item = 0; item < pairs.Length; item++) pairs[item] = new ChartDifferencePoint(day.AddDays(item + (item >= 4 ? 2 : 0)), actual[item], forecast[item], item == 4);
+var chart = Chart.Create().WithXAxis("Observation date (UTC)")
+    .WithYAxis("Primary reference");
+chart.ConfigureXAxis(axis => axis.WithTimeScale());
+var reference = ChartSeries.CreateLine(new ChartSeriesId("primary-reference"), "Primary reference",
+    new[] { new ChartPoint(day, 1), new ChartPoint(day.AddDays(8), 2) });
+chart.AddSeries(reference);
+var comparison = ChartSeries.CreateDifferenceArea(new ChartSeriesId("comparison"), "Actual and forecast", pairs);
+comparison.ConfigureDifferenceArea(options => {
+    options.FirstName = "Actual"; options.SecondName = "Forecast";
+    options.PositiveFill = ChartColor.FromHex("#267EAB"); options.NegativeFill = ChartColor.FromHex("#D47A34");
+    options.PositiveFillOpacity = .48; options.NegativeFillOpacity = .48;
+}).ConfigureMarkers(markers => markers.Radius = 3);
+comparison.UseSecondaryValueAxis().WithFillPattern(ChartFillPattern.DiagonalForward);
+chart.WithSecondaryYAxis("Completed requests");
+chart.AddSeries(comparison);
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame("Actual and forecast requests", "Named paired values retain a missing section on an independent scale", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion

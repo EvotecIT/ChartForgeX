@@ -1,0 +1,34 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var reversedRevenue = new ChartSeries(new ChartSeriesId("revenue"), "Revenue", ChartSeriesKind.PolarArea,
+    new[] { new ChartPoint(1, 92), new ChartPoint(2, 0), new ChartPoint(3, 58), new ChartPoint(4, 74) })
+    .WithPointColor(0, ChartColor.FromHex("#2563EB")).WithPointFillPattern(2, ChartFillPattern.DiagonalForward);
+var chart = Chart.Create().WithXLabels("North", "East", "South", "West").WithDataLabels().AddSeries(reversedRevenue)
+    .ConfigureXAxis(axis => axis.WithReversal());
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame("Service revenue in radial segments", "Reversed category angles retain source labels, values and paint", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion

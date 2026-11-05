@@ -1,0 +1,33 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var chart = Chart.Create().WithTitle("One observed comparison")
+            .AddSeries(ChartSeries.CreateDifferenceArea(new ChartSeriesId("comparison"), "Actual and forecast", new[] { new ChartDifferencePoint(0, 0, 7) })
+                .WithObservationId(0, new ChartObservationId("only-comparison"))
+                .ConfigureDifferenceArea(options => { options.FirstName = "Actual"; options.SecondName = "Forecast"; }));
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(760, 440)), theme, mode,
+    new VisualFrame("Actual and forecast requests", "Shading compares Actual above and below Forecast", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion

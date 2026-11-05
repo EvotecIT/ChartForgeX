@@ -1,0 +1,54 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var items = new[] {
+    new ChartHierarchyItem("all", "All teams", value: 140, colorValue: -10),
+    new ChartHierarchyItem("engineering", "Engineering", "all", 80, 12),
+    new ChartHierarchyItem("operations", "Operations", "all", colorValue: 0),
+    new ChartHierarchyItem("platform", "Platform", "engineering", 35, -4),
+    new ChartHierarchyItem("engineering-support", "Support", "engineering", 25, 5),
+    new ChartHierarchyItem("operations-support", "Support", "operations", 40),
+    new ChartHierarchyItem("reserve", "Reserve", "operations", 0)
+};
+var allocation = ChartSeries.CreateSunburst(new ChartSeriesId("allocation-source"), "Allocated work", items);
+var chart = Chart.Create().WithDataLabels().AddSeries(allocation);
+var colors = VisualTheme.Graphite().Resolve(mode);
+var low = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(153, 138, 224) : ChartColor.FromRgb(101, 78, 169);
+var high = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(238, 157, 98) : ChartColor.FromRgb(191, 92, 34);
+chart.ConfigureSunburst(options => {
+    options.CornerRadius = 6;
+    options.SecondaryLabelFormatter = context => context.Item.Id == "all" ? "Allocation" : context.Item.Id == "engineering" ? "Delivery teams"
+        : context.Item.Id == "operations-support" ? "Shared service" : null;
+    options.ParentValuePolicy = ChartHierarchyValuePolicy.LeafAggregate;
+    options.ColorDimension.Name = "Change (%)";
+    options.ColorScale = ChartColorScale.Diverging(low, colors.Border, high, 0).WithValueRange(-10, 15)
+        .WithLabels("Decrease", "No change", "Increase").WithNoDataColor(colors.Surface);
+});
+allocation.WithNodeState("engineering-support", ChartSeriesState.Warning);
+allocation.WithPointFillPattern(4, ChartFillPattern.DiagonalForward);
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame("Allocation through the team hierarchy", "Leaf totals size sectors; measured color stays independent", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion

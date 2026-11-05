@@ -1,0 +1,40 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+// Hourly server-room temperature: the expected band follows the daily cycle and the reading leaves it once.
+var hours = 24;
+var step = 24 / hours;
+var middle = Enumerable.Range(0, hours).Select(index => 21.5 + 2.6 * Math.Sin((index * step - 9) * Math.PI / 12)).ToArray();
+var expected = ChartSeries.CreateRangeBand(new ChartSeriesId("expected-range"), "Expected range",
+    middle.Select((value, index) => new ChartRangeBand(index + 1, Math.Round(value - 1.4, 1), Math.Round(value + 1.4, 1))));
+var observed = ChartSeries.CreateLine(new ChartSeriesId("observed"), "Observed",
+    middle.Select((value, index) => new ChartPoint(index + 1,
+        Math.Round(value + Math.Sin(index * 2.3) * .8 + (index * step is >= 14 and <= 16 ? 2.6 : 0), 1))));
+var chart = Chart.Create().WithXLabels(Enumerable.Range(0, hours).Select(index => (index * step).ToString("00", CultureInfo.InvariantCulture) + ":00").ToArray())
+    .WithYAxis("Temperature (°C)").AddSeries(expected).AddSeries(observed);
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Expected temperature band", "", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion

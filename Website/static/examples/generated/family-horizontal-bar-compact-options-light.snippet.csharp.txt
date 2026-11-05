@@ -1,0 +1,47 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+using static HorizontalBarRecipe;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var chart = Chart.Create();
+chart.WithXLabels("North", "South", "East", "West").WithXAxis("Share (%)");
+var names = new[] { "First half · Completed", "First half · Remaining", "Second half · Completed", "Second half · Remaining" };
+var ids = new[] { "first-half-completed", "first-half-remaining", "second-half-completed", "second-half-remaining" };
+var values = new[] { new[] { 60d, 75, 40, 90 }, new[] { 40d, 25, 60, 30 }, new[] { 90d, 60, 100, 70 }, new[] { 30d, 40, 25, 30 } };
+for (var index = 0; index < names.Length; index++) {
+    var points = values[index].Select((value, point) => new ChartPoint(point + 1, value));
+    var series = new ChartSeries(new ChartSeriesId(ids[index]), names[index], ChartSeriesKind.HorizontalBar, points)
+        .WithStackGroup(index < 2 ? "first-half" : "second-half").WithNormalization(100);
+    chart.AddSeries(series);
+}
+chart.Options.XAxis.WithBounds(0, 100).WithLabelFormatter(Percent).WithReversal(true);
+chart.WithBarStyle(ChartBarStyle.SegmentedCapsule).WithStackTotals().WithDataLabels(false);
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame("Regional order fulfilment", "Two independent stacks; each reaches 100%; source values remain counts", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion
+
+static class HorizontalBarRecipe {
+    internal static string Percent(double value) => value.ToString("0", CultureInfo.InvariantCulture) + "%";
+}

@@ -1,0 +1,40 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var chart = FlowArtifact.Create("assessment-flow").WithSize(800, 533)
+    .AddLane("service", "Service").AddLane("review", "Review")
+    .AddStep("received", "Request received", FlowArtifactStepKind.Start, "service")
+    .AddStep("decision", "Automatic checks pass?", FlowArtifactStepKind.Decision, "service")
+    .ConfigureStep("decision", step => step.Width = 200)
+    .AddStep("manual", "Review observations", FlowArtifactStepKind.Process, "review", VisualStatus.Warning)
+    .AddStep("complete", "Assessment complete", FlowArtifactStepKind.End, "service", VisualStatus.Positive)
+    .AddConnector("received", "decision", "Evaluate")
+    .AddConnector("decision", "manual", "Review required")
+    .AddConnector("decision", "complete", "Passed")
+    .AddConnector("manual", "complete", "Accepted");
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(900, 600)), theme, mode,
+    new VisualFrame("Assessment workflow", "Typed lanes, decisions and branched routes", showLegend: false, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Flow).ToHtmlPage());
+#endregion

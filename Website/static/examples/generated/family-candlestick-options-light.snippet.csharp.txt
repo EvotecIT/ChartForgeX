@@ -1,0 +1,51 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var chart = Chart.Create();
+var prices = ChartSeries.CreateCandlestick(new ChartSeriesId("daily-prices"), "Daily prices", new[] {
+    new ChartCandlestick(1, 44, 58, 38, 53), new ChartCandlestick(2, 53, 60, 42, 45),
+    new ChartCandlestick(3, 46, 55, 41, 46), new ChartCandlestick(4, 47, 47, 47, 47),
+    new ChartCandlestick(5, 47, 63, 44, 58)
+});
+prices.ConfigureFinancial(financial => {
+    financial.Rising.Stroke = ChartColor.FromHex("#2A967B");
+    financial.Rising.StrokeWidth = 2.4;
+    financial.Falling.Stroke = ChartColor.FromHex("#DB825B");
+    financial.Falling.StrokeWidth = 2.8;
+    financial.Falling.StrokeOpacity = .85;
+    financial.Rising.FillOpacity = 0;
+    financial.Rising.Wick.Stroke = ChartColor.FromHex("#729BB7");
+    financial.Rising.Wick.StrokeWidth = 1.2;
+    financial.Falling.Fill = ChartColor.FromHex("#EBA85B");
+    financial.Falling.FillOpacity = .65;
+    financial.Falling.Wick.Stroke = ChartColor.FromHex("#729BB7");
+    financial.Falling.Wick.StrokeWidth = 1.4;
+}).WithPointColor(4, "#729BB7");
+chart.WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri").WithYAxis("Price")
+    .WithPointLegend().WithDataLabels(false).AddSeries(prices);
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Daily opening and closing prices", "Hollow rising bodies, filled falling bodies and independent wick strokes", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion

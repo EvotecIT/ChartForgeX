@@ -1,0 +1,38 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var chart = Chart.Create().WithDataLabels();
+var requests = new ChartSeries(new ChartSeriesId("requests"), "Requests", ChartSeriesKind.Funnel, new[] {
+    new ChartPoint(1, 100), new ChartPoint(2, 75), new ChartPoint(3, 25), new ChartPoint(4, 0)
+});
+chart.WithXLabels("Received", "Reviewed", "Qualified", "Completed").AddSeries(requests)
+    .ConfigureFunnel(options => {
+        options.Form = ChartFunnelForm.Cone;
+        options.Orientation = ChartOrientation.Vertical;
+    });
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Requests from receipt to completion", "Vertical cone; stage lines encode source values", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion

@@ -1,0 +1,34 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var chart = Chart.Create().WithXLabels("Identity", "Network", "Storage", "Backup", "Access", "Recovery")
+    .AddHexbinHeatmapRow("Primary", new double?[] { 92, 70, 56, null, 84, 41 }, id: new ChartSeriesId("primary-measurements"))
+    .AddHexbinHeatmapRow("Secondary", new double?[] { 76, 84, 46, 70, 90, 62 }, id: new ChartSeriesId("secondary-measurements"))
+    .WithHeatmapScale(ChartHeatmapScale.Sequential).WithHeatmapCellGap(3).WithHeatmapCellRadius(3)
+    .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Auto);
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Service coverage in hexagonal cells", "", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion

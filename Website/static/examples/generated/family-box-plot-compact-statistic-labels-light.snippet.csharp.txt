@@ -1,0 +1,54 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+using static BoxPlotRecipe;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var chart = Chart.Create();
+chart = StatisticLabels(mode);
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame("Delivery time by service level", "", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion
+
+static class BoxPlotRecipe {
+    internal static Chart StatisticLabels(VisualThemeMode mode) {
+        var chart = Chart.Create().WithTitle("Five-number delivery summaries").WithXLabels("Standard", "Express")
+            .AddSeries(ChartSeries.CreateBoxPlot(new ChartSeriesId("delivery"), "Delivery time", new[] {
+                new ChartBoxPlot(1, 10, 20, 30, 40, 50), new ChartBoxPlot(2, 5, 15, 25, 35, 45)
+            }).WithPointLabel(0, "Standard delivery summary"))
+            .ConfigureBoxPlot(options => {
+                options.Orientation = ChartOrientation.Vertical;
+                options.LabelContent = ChartBoxPlotLabelContent.Statistics;
+                foreach (var label in new[] { options.MinimumLabel, options.Q1Label, options.MedianLabel, options.Q3Label, options.MaximumLabel }) {
+                    label.Placement = ChartDataLabelPlacement.Right;
+                    label.Style.WithFontSize(10);
+                }
+                options.MinimumLabel.Style.WithColor(mode == VisualThemeMode.Dark ? "#82b8ff" : "#235b9f");
+                options.MaximumLabel.Style.WithColor(mode == VisualThemeMode.Dark ? "#ffbe79" : "#975000");
+                options.MedianLabel.Style.WithFontSize(12).WithWeight("700");
+            }).WithDataLabels();
+        chart.Options.YAxis.WithBounds(0, 60);
+        return chart.WithYAxis("Delivery time (minutes)");
+    }
+}

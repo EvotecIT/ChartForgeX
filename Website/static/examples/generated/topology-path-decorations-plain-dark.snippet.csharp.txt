@@ -1,0 +1,34 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var chart = TopologyChart.Create().WithId("maintenance-boundary").WithTitle("Maintenance boundary")
+    .WithViewport(760, 400, 28).WithTheme(VisualTheme.Graphite(), mode);
+chart.AddNode("gateway", "Gateway", 80, 130, width: 180, height: 90);
+chart.AddNode("worker", "Worker", 460, 130, width: 180, height: 90);
+chart.AddEdge("dispatch", "gateway", "worker", "Dispatch");
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(760, 400)), theme, mode,
+    new VisualFrame("Independent maintenance boundary", "One native path decorates the graph without adding source nodes or relationships", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Topology).ToHtmlPage());
+#endregion

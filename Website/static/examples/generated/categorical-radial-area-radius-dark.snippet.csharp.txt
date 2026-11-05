@@ -1,0 +1,52 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+using static CategoricalRadialAreaRecipe;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var completed = Values("completed", "Completed", new[] { 25d, 80, 0, 45 });
+var followup = Values("follow-up", "Follow-up", new[] { 15d, 25, 20, 30 });
+// Zero baseline makes nominal sector area proportional to the source value. A nonzero
+// visible minimum encodes only the displayed interval; gaps/corners are separate paint.
+var chart = Chart.Create().WithSize(900, 600)
+    .WithTheme(VisualTheme.Graphite(), mode).WithTitle("Requests by region and intake channel")
+    .WithXAxis("Region").WithYAxis("Requests").WithXLabels("North", "South", "East", "West")
+    .WithYAxisBounds(0, 120).WithLegend().WithDataLabels(false)
+    .WithValueFormat(ChartValueFormat.Number("0' requests'"))
+    .WithRadialGeometry(new ChartRadialGeometryOptions(-90, 270, .12, .12, .08,
+        valueEncoding: ChartRadialValueEncoding.Radius))
+    .AddSeries(completed).AddSeries(followup);
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(900, 600)), theme, mode,
+    new VisualFrame("Requests by region and intake channel", "Sector area measures the visible interval while source observations retain their values", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion
+
+static class CategoricalRadialAreaRecipe {
+    internal static ChartSeries Values(string key, string name, double[] values) {
+        var points = values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();
+        var series = new ChartSeries(new ChartSeriesId(key), name, ChartSeriesKind.RadialColumn, points);
+        var ids = new[] { "north", "south", "east", "west" };
+        for (var index = 0; index < ids.Length; index++) series.WithObservationId(index, new ChartObservationId(ids[index]));
+        return series;
+    }
+}

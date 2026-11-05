@@ -1,0 +1,43 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var chart = TopologyChart.Create();
+chart.Id = "service-request";
+chart.Viewport = new TopologyViewport { Width = 640, Height = 400 };
+chart.Nodes.Add(new TopologyNode {
+    Id = "source", Label = "Source\nservice", X = 24, Y = 70, Width = 140, Height = 64,
+    Status = TopologyHealthStatus.Healthy
+});
+chart.Nodes.Add(new TopologyNode {
+    Id = "target", Label = "Target", X = 300, Y = 70, Width = 140, Height = 64
+});
+chart.Edges.Add(new TopologyEdge {
+    Id = "route", SourceNodeId = "source", TargetNodeId = "target", Direction = VisualLinkDirection.Forward,
+    Routing = TopologyEdgeRouting.Straight, LineStyle = TopologyEdgeLineStyle.Solid, Label = "Request"
+});
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(600, 375)), theme, mode,
+    new VisualFrame("Service request route", "Product-neutral diagram semantics", showLegend: false, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Topology).ToHtmlPage());
+#endregion

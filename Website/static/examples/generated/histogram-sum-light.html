@@ -107,15 +107,13 @@ File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
 File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quot;, VisualArtifactKind.Chart).ToHtmlPage());
 #endregion
 
-/// &lt;summary&gt;Counts, probabilities, densities and signed or weighted means over unequal measurement intervals.&lt;/summary&gt;
+/// &lt;summary&gt;Ticket resolution times as counts, shares and densities, and signed or weighted means, over unequal intervals.&lt;/summary&gt;
 public static class HistogramRecipe {
     /// &lt;summary&gt;Creates a native histogram while retaining its source observations and raw bin aggregates.&lt;/summary&gt;
     public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
         var aggregation = variant.StartsWith(&quot;compact-&quot;, StringComparison.Ordinal) ? variant.Substring(8) : variant;
         if (aggregation == &quot;compact&quot;) aggregation = &quot;wide&quot;;
-        var layout = ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 1, 3, 6, 10 });
-        var chart = Chart.Create().WithXAxis(&quot;Measurement&quot;).WithDataLabels();
-        chart.Options.XAxis.WithBounds(0, 10);
+        var chart = Chart.Create().WithDataLabels();
         ChartSeries observations;
         if (aggregation is &quot;wide&quot; or &quot;density&quot; or &quot;probability&quot; or &quot;probability-density&quot;) {
             var encoding = aggregation switch {
@@ -124,16 +122,26 @@ public static class HistogramRecipe {
                 &quot;probability-density&quot; =&gt; ChartHistogramEncoding.ProbabilityDensity,
                 _ =&gt; ChartHistogramEncoding.Value
             };
-            observations = ChartSeries.CreateHistogram(new ChartSeriesId(&quot;observations&quot;), &quot;Observations&quot;,
-                new[] { .2, .4, .8, 1.2, 1.8, 2.5, 6.1, 7.5, 9 }, layout,
-                encoding);
-            chart.WithYAxis(aggregation switch {
-                &quot;density&quot; =&gt; &quot;Observations per unit&quot;, &quot;probability&quot; =&gt; &quot;Probability&quot;,
-                &quot;probability-density&quot; =&gt; &quot;Probability per unit&quot;, _ =&gt; &quot;Observation count&quot;
+            // Hours to resolve each service desk ticket closed in October 2026; the intervals widen as tickets get rarer.
+            var hours = new[] {
+                .2, .3, .4, .5, .6, .8, .9, 1.1, 1.2, 1.4, 1.5, 1.6, 1.8, 1.9,
+                2.1, 2.2, 2.3, 2.5, 2.6, 2.7, 2.8, 3, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9,
+                4.2, 4.4, 4.7, 5, 5.2, 5.5, 5.8, 6, 6.3, 6.5, 6.8, 7, 7.2, 7.5, 7.8,
+                8.5, 9, 9.6, 10.4, 11, 12, 13, 14.5, 15.5, 17, 18.5, 20, 22.5
+            };
+            observations = ChartSeries.CreateHistogram(new ChartSeriesId(&quot;resolution-time&quot;), &quot;Tickets&quot;, hours,
+                ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 2, 4, 8, 16, 24 }), encoding);
+            chart.WithXAxis(&quot;Resolution time (hours)&quot;).WithYAxis(aggregation switch {
+                &quot;density&quot; =&gt; &quot;Tickets per hour&quot;, &quot;probability&quot; =&gt; &quot;Share of tickets&quot;,
+                &quot;probability-density&quot; =&gt; &quot;Share of tickets per hour&quot;, _ =&gt; &quot;Tickets&quot;
             });
-            // An empty bin draws nothing, so it gets no caption either.
-            foreach (var bin in observations.HistogramBins) if (bin.Count &gt; 0) observations.WithPointLabel(bin.Index, bin.Count + &quot; obs&quot;);
-        } else if (aggregation == &quot;weighted-mean&quot;) {
+            chart.Options.XAxis.WithBounds(0, 24);
+            foreach (var bin in observations.HistogramBins) observations.WithPointLabel(bin.Index, bin.Count.ToString(CultureInfo.InvariantCulture));
+            return chart.AddSeries(observations);
+        }
+        var layout = ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 1, 3, 6, 10 });
+        chart.WithXAxis(&quot;Measurement&quot;).Options.XAxis.WithBounds(0, 10);
+        if (aggregation == &quot;weighted-mean&quot;) {
             observations = ChartSeries.CreateHistogram(new ChartSeriesId(&quot;weighted-quantity&quot;), &quot;Weighted quantity&quot;,
                 new[] { new ChartHistogramObservation(.2, 10, 1), new ChartHistogramObservation(.4, 20, 3),
                     new ChartHistogramObservation(1.2, -4, 2), new ChartHistogramObservation(2.5, 12, 1),
@@ -177,15 +185,13 @@ File.WriteAllBytes(&quot;visual.png&quot;, prepared.ToPng());
 File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quot;, VisualArtifactKind.Chart).ToHtmlPage());
 #endregion
 
-/// &lt;summary&gt;Counts, probabilities, densities and signed or weighted means over unequal measurement intervals.&lt;/summary&gt;
+/// &lt;summary&gt;Ticket resolution times as counts, shares and densities, and signed or weighted means, over unequal intervals.&lt;/summary&gt;
 public static class HistogramRecipe {
     /// &lt;summary&gt;Creates a native histogram while retaining its source observations and raw bin aggregates.&lt;/summary&gt;
     public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
         var aggregation = variant.StartsWith(&quot;compact-&quot;, StringComparison.Ordinal) ? variant.Substring(8) : variant;
         if (aggregation == &quot;compact&quot;) aggregation = &quot;wide&quot;;
-        var layout = ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 1, 3, 6, 10 });
-        var chart = Chart.Create().WithXAxis(&quot;Measurement&quot;).WithDataLabels();
-        chart.Options.XAxis.WithBounds(0, 10);
+        var chart = Chart.Create().WithDataLabels();
         ChartSeries observations;
         if (aggregation is &quot;wide&quot; or &quot;density&quot; or &quot;probability&quot; or &quot;probability-density&quot;) {
             var encoding = aggregation switch {
@@ -194,16 +200,26 @@ public static class HistogramRecipe {
                 &quot;probability-density&quot; =&gt; ChartHistogramEncoding.ProbabilityDensity,
                 _ =&gt; ChartHistogramEncoding.Value
             };
-            observations = ChartSeries.CreateHistogram(new ChartSeriesId(&quot;observations&quot;), &quot;Observations&quot;,
-                new[] { .2, .4, .8, 1.2, 1.8, 2.5, 6.1, 7.5, 9 }, layout,
-                encoding);
-            chart.WithYAxis(aggregation switch {
-                &quot;density&quot; =&gt; &quot;Observations per unit&quot;, &quot;probability&quot; =&gt; &quot;Probability&quot;,
-                &quot;probability-density&quot; =&gt; &quot;Probability per unit&quot;, _ =&gt; &quot;Observation count&quot;
+            // Hours to resolve each service desk ticket closed in October 2026; the intervals widen as tickets get rarer.
+            var hours = new[] {
+                .2, .3, .4, .5, .6, .8, .9, 1.1, 1.2, 1.4, 1.5, 1.6, 1.8, 1.9,
+                2.1, 2.2, 2.3, 2.5, 2.6, 2.7, 2.8, 3, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9,
+                4.2, 4.4, 4.7, 5, 5.2, 5.5, 5.8, 6, 6.3, 6.5, 6.8, 7, 7.2, 7.5, 7.8,
+                8.5, 9, 9.6, 10.4, 11, 12, 13, 14.5, 15.5, 17, 18.5, 20, 22.5
+            };
+            observations = ChartSeries.CreateHistogram(new ChartSeriesId(&quot;resolution-time&quot;), &quot;Tickets&quot;, hours,
+                ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 2, 4, 8, 16, 24 }), encoding);
+            chart.WithXAxis(&quot;Resolution time (hours)&quot;).WithYAxis(aggregation switch {
+                &quot;density&quot; =&gt; &quot;Tickets per hour&quot;, &quot;probability&quot; =&gt; &quot;Share of tickets&quot;,
+                &quot;probability-density&quot; =&gt; &quot;Share of tickets per hour&quot;, _ =&gt; &quot;Tickets&quot;
             });
-            // An empty bin draws nothing, so it gets no caption either.
-            foreach (var bin in observations.HistogramBins) if (bin.Count &gt; 0) observations.WithPointLabel(bin.Index, bin.Count + &quot; obs&quot;);
-        } else if (aggregation == &quot;weighted-mean&quot;) {
+            chart.Options.XAxis.WithBounds(0, 24);
+            foreach (var bin in observations.HistogramBins) observations.WithPointLabel(bin.Index, bin.Count.ToString(CultureInfo.InvariantCulture));
+            return chart.AddSeries(observations);
+        }
+        var layout = ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 1, 3, 6, 10 });
+        chart.WithXAxis(&quot;Measurement&quot;).Options.XAxis.WithBounds(0, 10);
+        if (aggregation == &quot;weighted-mean&quot;) {
             observations = ChartSeries.CreateHistogram(new ChartSeriesId(&quot;weighted-quantity&quot;), &quot;Weighted quantity&quot;,
                 new[] { new ChartHistogramObservation(.2, 10, 1), new ChartHistogramObservation(.4, 20, 3),
                     new ChartHistogramObservation(1.2, -4, 2), new ChartHistogramObservation(2.5, 12, 1),

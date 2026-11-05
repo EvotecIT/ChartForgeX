@@ -1,0 +1,39 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var reading = new ChartGaugeValue(12500.125, 0, 20000, new[] {
+    new ChartGaugeTarget(1800, "Baseline"), new ChartGaugeTarget(9500, "Expected"),
+    new ChartGaugeTarget(10500, "Goal"), new ChartGaugeTarget(19000, "Limit")
+});
+var chart = Chart.Create().WithTitle("Processed requests").AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Capacity", reading))
+    .ConfigureGauge(options => {
+        options.Form = ChartGaugeForm.Linear; options.TickCount = 11; options.Caption = "Processed requests";
+        options.Bands.Add(new ChartGaugeBand(0, 10000, ChartSeriesState.Warning));
+        options.Bands.Add(new ChartGaugeBand(10000, 20000, ChartSeriesState.Success));
+    });
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(390, 187)), theme, mode,
+    new VisualFrame("Available capacity against a target", "", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion

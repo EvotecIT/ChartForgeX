@@ -1,0 +1,46 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+using static RadarRecipe;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var chart = Markers();
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame("Observed and expected service levels", "A filled area and an unfilled target line share one radial scale", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion
+
+static class RadarRecipe {
+    internal static Chart Markers() {
+        var observed = new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.Radar, Points(58, 76, 69, 84, 62, 73))
+            .ConfigureRadar(options => options.FillOpacity = .2)
+            .ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Diamond; markers.Enabled = true; });
+        var target = new ChartSeries(new ChartSeriesId("target"), "Target", ChartSeriesKind.Radar, Points(75, 85, 80, 90, 75, 85))
+            .ConfigureRadar(options => options.Form = ChartLineAreaForm.Line)
+            .ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Square; markers.Enabled = true; });
+        return Chart.Create().WithXLabels("Speed", "Coverage", "Capacity", "Quality", "Recovery", "Support")
+            .WithYAxisBounds(0, 100).AddSeries(observed).AddSeries(target);
+    }
+
+    internal static ChartPoint[] Points(params double[] values) => values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();
+}

@@ -1,0 +1,55 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var chart = Chart.Create().WithSize(800, 620)
+    .WithTheme(VisualTheme.Graphite(), mode).WithTitle("Requests through the intake stages")
+    .WithSubtitle("Native paint and captions retain every source value, including the zero completion stage")
+    .WithLegend(false).WithDataLabels().WithXLabels("Received", "Reviewed", "Qualified", "Completed");
+var series = new ChartSeries(new ChartSeriesId("requests"), "Requests", ChartSeriesKind.Funnel,
+    new[] { new ChartPoint(1, 120), new ChartPoint(2, 80), new ChartPoint(3, 40), new ChartPoint(4, 0) })
+    .WithObservationIds(new[] { new ChartObservationId("received"), new ChartObservationId("reviewed"), new ChartObservationId("qualified"), new ChartObservationId("completed") })
+    .WithPointColor(0, "#2978A5").WithPointColor(1, "#3C8D70").WithPointColor(2, "#BA7834")
+    .WithPointFillPattern(1, ChartFillPattern.DiagonalForward)
+    .WithPointStrokeColor(1, ChartColor.FromHex("#93455E"));
+chart.AddSeries(series).ConfigureFunnel(options => {
+    options.Form = ChartFunnelForm.Cone;
+    options.Orientation = ChartOrientation.Horizontal;
+    options.LabelContent = ChartStageLabelContent.Separate;
+    options.CategoryLabel.Style.FontSize = 12; options.ValueLabel.Style.FontSize = 13;
+    options.RetentionLabel.Style.FontSize = 11; options.DropOffLabel.Style.FontSize = 11;
+    options.RetentionLabel.Placement = ChartDataLabelPlacement.Above;
+    options.DropOffLabel.Placement = ChartDataLabelPlacement.Above;
+    options.StageOutline = new ChartStrokeStyle(width: 2, dash: new[] { 5d, 3d });
+    options.StageOutlineDashOffset = 1;
+    options.ConnectorStyle = new ChartFunnelConnectorStyle(fillOpacity: .16);
+});
+series.WithFunnelConnectorStyle(1, new ChartFunnelConnectorStyle(fill: ChartColor.FromHex("#8763A1"), fillOpacity: .45,
+    fillPattern: ChartFillPattern.DiagonalBackward, outlineStroke: new ChartStrokeStyle(width: 1.5, dash: new[] { 4d, 2d }), strokeDashOffset: 2));
+// Crowded captions can be omitted at the requested size; the complete source, ratio and connection facts remain descriptive.
+chart.WithValueFormat(ChartValueFormat.Number("0", CultureInfo.InvariantCulture));
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 620)), theme, mode,
+    new VisualFrame("Independent stage and connection presentation", "Measured component captions and source-owned connection paint retain every ordered stage", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion

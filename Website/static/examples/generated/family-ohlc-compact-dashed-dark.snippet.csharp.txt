@@ -1,0 +1,50 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var chart = Chart.Create();
+var prices = ChartSeries.CreateOhlc(new ChartSeriesId("daily-prices"), "Daily prices", new[] {
+    new ChartCandlestick(1, 44, 58, 38, 53), new ChartCandlestick(2, 53, 60, 42, 45),
+    new ChartCandlestick(3, 46, 55, 41, 46), new ChartCandlestick(4, 47, 47, 47, 47),
+    new ChartCandlestick(5, 47, 63, 44, 58)
+});
+prices.ConfigureFinancial(financial => {
+    financial.Rising.Stroke = ChartColor.FromHex("#2A967B");
+    financial.Rising.StrokeWidth = 2.4;
+    financial.Falling.Stroke = ChartColor.FromHex("#DB825B");
+    financial.Falling.StrokeWidth = 2.8;
+    financial.Falling.StrokeOpacity = .85;
+}).WithPointColor(4, "#729BB7");
+prices.ConfigureFinancial(financial => {
+                financial.Rising.DashPattern = new[] { 7d, 5d, 2d };
+                financial.Rising.DashOffset = -3;
+                financial.Falling.DashPattern = new[] { 4d, 4d };
+                financial.Falling.DashOffset = 2;
+            });
+chart.WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri").WithYAxis("Price")
+    .WithPointLegend().WithDataLabels(false).AddSeries(prices);
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame("Daily market price ranges", "Direction-specific dash patterns and phase preserve the source prices", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion

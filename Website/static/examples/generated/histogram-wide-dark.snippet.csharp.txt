@@ -1,0 +1,45 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var chart = Chart.Create().WithDataLabels();
+ChartSeries observations;
+var encoding = ChartHistogramEncoding.Value;
+// Hours to resolve each service desk ticket closed in October 2026; the intervals widen as tickets get rarer.
+var hours = new[] {
+    .2, .3, .4, .5, .6, .8, .9, 1.1, 1.2, 1.4, 1.5, 1.6, 1.8, 1.9,
+    2.1, 2.2, 2.3, 2.5, 2.6, 2.7, 2.8, 3, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9,
+    4.2, 4.4, 4.7, 5, 5.2, 5.5, 5.8, 6, 6.3, 6.5, 6.8, 7, 7.2, 7.5, 7.8,
+    8.5, 9, 9.6, 10.4, 11, 12, 13, 14.5, 15.5, 17, 18.5, 20, 22.5
+};
+observations = ChartSeries.CreateHistogram(new ChartSeriesId("resolution-time"), "Tickets", hours,
+    ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 2, 4, 8, 16, 24 }), encoding);
+chart.WithXAxis("Resolution time (hours)").WithYAxis("Tickets");
+chart.Options.XAxis.WithBounds(0, 24);
+foreach (var bin in observations.HistogramBins) observations.WithPointLabel(bin.Index, bin.Count.ToString(CultureInfo.InvariantCulture));
+chart.AddSeries(observations);
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Ticket resolution time", "Service desk tickets closed in October 2026, counted in widening intervals", showLegend: false, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion

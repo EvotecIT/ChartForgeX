@@ -1,0 +1,35 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var completion = ChartSeries.CreateLayeredRadial(new ChartSeriesId("completion"), "Completion", new[] {
+    new ChartRadialLayer("Reviewed", 76) { RadiusRatio = 1, StrokeRatio = .13, SweepAngleDegrees = 300, StartAngleDegrees = -60 },
+    new ChartRadialLayer("Verified", 58) { RadiusRatio = .7, StrokeRatio = .13, SweepAngleDegrees = 240, StartAngleDegrees = -30, SeparatorCount = 8 },
+    new ChartRadialLayer("Complete", 42) { RadiusRatio = .4, StrokeRatio = .13, SweepAngleDegrees = 360 }
+});
+var chart = Chart.Create().WithXLabels("North", "South", "East", "West", "Central", "Online").AddSeries(completion);
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Reviewed, verified and completed", "", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion

@@ -1,0 +1,53 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var actualValues = new[] { 2d, 4, 80, 5, 120 };
+var forecastValues = new[] { 20d, 18, 10, 50, 8 };
+var actual = ChartSeries.CreateLine(new ChartSeriesId("actual-source"), "Actual", new[] {
+    new ChartPoint(1, actualValues[0]), new ChartPoint(2, actualValues[1]), new ChartPoint(4, actualValues[2]),
+    new ChartPoint(8, actualValues[3]), new ChartPoint(16, actualValues[4]) })
+    .WithObservationIds(Enumerable.Range(0, 5).Select(index => new ChartObservationId("actual-" + index)));
+var forecast = ChartSeries.CreateLine(new ChartSeriesId("forecast-source"), "Forecast", new[] {
+    new ChartPoint(1, forecastValues[0]), new ChartPoint(3, forecastValues[1]), new ChartPoint(4, forecastValues[2]),
+    new ChartPoint(8, forecastValues[3]), new ChartPoint(16, forecastValues[4]) })
+    .WithObservationIds(Enumerable.Range(0, 5).Select(index => new ChartObservationId("forecast-" + index)));
+var alignment = ChartDifferencePoints.Align(actual, forecast, ChartMissingDataPolicy.Connect);
+var comparison = ChartSeries.CreateAlignedDifferenceArea(new ChartSeriesId("comparison"), "Actual against forecast", alignment)
+    // Reuse actual authored first-source IDs explicitly; Align never invents a destination key.
+    .WithObservationIds(alignment.FirstSourceIndices.Select(index => alignment.FirstObservationIds[index]))
+    .ConfigureMarkers(options => options.Radius = 3)
+    .ConfigureDifferenceArea(options => {
+        options.PositiveFill = ChartColor.FromHex("#2F8199"); options.NegativeFill = ChartColor.FromHex("#C7703C");
+        options.PositiveFillOpacity = .38; options.NegativeFillOpacity = .38;
+    });
+var chart = Chart.Create().WithSize(390, 500).WithTheme(VisualTheme.Graphite(), mode)
+    .WithTitle("Observed and forecast at shared coordinates")
+    .WithSubtitle("Unmatched source slots remain captured; surviving pairs connect")
+    .WithXAxis("Authored coordinate").WithYAxis("Requests").AddSeries(comparison);
+chart.Options.YAxis.WithLogarithmicScale(domain: ChartLogarithmicDomain.Positive);
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(390, 500)), theme, mode,
+    new VisualFrame("Independent source comparison", "Exact shared coordinates retain both complete inputs and nonlinear native crossing geometry", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion

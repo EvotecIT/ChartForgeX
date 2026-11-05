@@ -1,0 +1,58 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+using static HeatmapHierarchicalAxesRecipe;
+
+var mode = VisualThemeMode.Light;
+var outputTheme = VisualTheme.Graphite();
+#endregion
+
+var theme = VisualTheme.Graphite();
+var colors = theme.Resolve(mode);
+var chart = Chart.Create().WithSize(390, 560).WithTheme(theme, mode)
+    .WithTitle("Service states by region and work window")
+    .WithXAxis("Work window").WithYAxis("Source row slots").WithDataLabels(false)
+    .WithHeatmapCellGap(3);
+chart.WithStateCategories(new ChartStateCategory("pass", "Available", colors.Status.Pass.Fill),
+    new ChartStateCategory("review", "Review", colors.Status.Medium.Fill));
+chart.AddSeries(States("west", "West service", new[] { "pass", null, "review", "pass" }));
+chart.AddSeries(States("unknown", "Unknown service", new string?[] { null, null, null, null }));
+chart.AddSeries(States("east", "East service", new[] { "review", "pass", "pass", "review" }));
+chart.AddSeries(States("return", "Return service", new[] { null, "pass", "review", "pass" }));
+chart.WithXLabels(new[] {
+    new ChartAxisLabel(1, "A", "Morning", "Work"), new ChartAxisLabel(2, "B", "Morning", "Work"),
+    new ChartAxisLabel(3, "A", "Evening", "Work"), new ChartAxisLabel(4, "B", "Evening", "Work")
+});
+// Y labels bind one-based SOURCE ROW SLOTS, not intensities or series IDs.
+// Reorder these mappings deliberately when changing row membership; mirroring axes leaves them intact.
+chart.ConfigureYAxis(axis => axis.Labels.AddRange(new[] {
+    new ChartAxisLabel(1, "West", "North", "Core"), new ChartAxisLabel(2, "Unknown", "North", "Core"),
+    new ChartAxisLabel(3, "East", "South", "Core"), new ChartAxisLabel(4, "Return", "North", "Core")
+}));
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(390, 560)), outputTheme, mode,
+    new VisualFrame("Service states by region and work window", "Columns bind to raw coordinates; row groups bind to one-based source slots", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion
+
+static class HeatmapHierarchicalAxesRecipe {
+    internal static ChartSeries States(string id, string name, string?[] values) => ChartSeries.CreateHeatmapCategoryRow(new ChartSeriesId(id), name,
+        values.Select(value => value == null ? (ChartHeatmapCell?)null : new ChartHeatmapCell(value)))
+        .WithObservationIds(Enumerable.Range(1, values.Length).Select(column => new ChartObservationId("column-" + column.ToString(CultureInfo.InvariantCulture))));
+}

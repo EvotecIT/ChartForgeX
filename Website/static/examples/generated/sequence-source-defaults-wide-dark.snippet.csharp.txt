@@ -1,0 +1,37 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var model=SequenceArtifact.Create("sequence-source-defaults").WithSize(1000,820).AddParticipant("A","Review").AddParticipant("B","Archive").AddMessage("A","A","Check").AddMessage("A","B","Save");
+model.AddBlock(SequenceArtifactBlockKind.Loop,"Review work",0,1);
+model.AddNote(SequenceArtifactNotePlacement.Over,new[]{"A","B"},"Complete note");
+model.Notes[0].StepIndex=1;
+model.Layout=new SequenceLayoutPolicy(participantMinimumWidth:150,participantMinimumHeight:65,participantSpacing:50,fragmentMargin:10,fragmentLabelPadding:5,mirrorParticipants:true,messageAlignment:TextAlignment.Center,noteAlignment:TextAlignment.Center,selfMessageRouting:SequenceSelfMessageRouting.Curved,footerBottomMargin:1,fragmentTabMinimumWidth:50,fragmentTabMinimumHeight:20);
+model.Typography=new SequenceTypography(participant:new TextStyleOverride{FontSize=14},message:new TextStyleOverride{FontSize=16},note:new TextStyleOverride{FontSize=14},fragment:new TextStyleOverride{FontSize=16});
+model.Paint.LifelineStroke=new ChartStrokeStyle(width:.5,dash:Array.Empty<double>());
+model.ThemeMode=mode;
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(1000, 820)), theme, mode,
+    new VisualFrame("Sequence source defaults", "Measured tabs and mirrored participants", showLegend: false, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Sequence).ToHtmlPage());
+#endregion

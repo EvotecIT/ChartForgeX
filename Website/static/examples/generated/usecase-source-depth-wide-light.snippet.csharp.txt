@@ -1,0 +1,61 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var chart = TopologyChart.Create().WithId("native-usecase-depth").WithTitle("Publish prepared documents")
+    .WithSubtitle("Actors, stereotypes, approval notes and named associations")
+    .WithTheme(VisualTheme.Graphite(), mode).WithViewport(900, 520, 28)
+    .WithLayout(TopologyLayoutMode.Swimlane, TopologyLayoutDirection.LeftToRight);
+chart.DefaultRenderOptions = new TopologyRenderOptions { FitContentToViewport = true,
+    MaxNodeLabelLines = 8, MaxNodeSubtitleLines = 8, WrapNodeLabels = true, AllowMultilineNodeLabels = true };
+chart.AddAutoGroup("Service", "Publication service");
+chart.AddAutoNode("Operator", "Release coordinator", width: 190, height: 110);
+chart.AddAutoNode("Publish", "Publish prepared documents", groupId: "Service", width: 200, height: 92);
+chart.AddAutoNode("Validate", "Validate request", groupId: "Service", width: 180, height: 76);
+foreach (var node in chart.Nodes) {
+    node.Kind = TopologyNodeKind.Generic; node.Shape = node.Id == "Operator" ? TopologyNodeShape.Actor : TopologyNodeShape.Ellipse;
+    node.DisplayMode = TopologyNodeDisplayMode.Card; node.PreserveDisplayModeSize = true; node.ShowStatusBadge = false;
+    node.FitLabelToContent = node.Shape != TopologyNodeShape.Actor; node.MaximumTextWidth = 150;
+    if (node.Shape != TopologyNodeShape.Actor) node.TextStyle = new ChartForgeX.Typography.TextStyleOverride { FontSize = 13, FontWeight = "400" };
+}
+chart.Nodes[0].Subtitle = "«primary»";
+chart.Nodes[0].TextStyle = new ChartForgeX.Typography.TextStyleOverride { FontSize = 14, FontWeight = "500" };
+chart.Nodes[1].Subtitle = "«business action»";
+chart.AddEdge("request", "Operator", "Publish", "requests", kind: TopologyEdgeKind.Dependency, direction: VisualLinkDirection.Forward, routing: TopologyEdgeRouting.Straight);
+var request = chart.Edges[0];
+request.Color = "#2563EB";
+request.LabelColor = "#0F766E";
+request.StrokeWidth = 2.5;
+request.Opacity = .8;
+request.LineStyle = TopologyEdgeLineStyle.Solid;
+request.DashPattern.AddRange(new[] { 6d, 3, 2, 6, 3, 2 });
+chart.AddEdge("include-validation", "Publish", "Validate", "<<include>>", kind: TopologyEdgeKind.Dependency, direction: VisualLinkDirection.Forward, routing: TopologyEdgeRouting.Straight);
+chart.Edges[1].LineStyle = TopologyEdgeLineStyle.Dotted;
+chart.Edges[1].MinimumRankSpan = 2;
+chart.Annotations.Add(new TopologyAnnotation("approval", "Approval required before delivery", "Publish"));
+chart.Accessibility.Name = "Document publication use cases";
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(900, 520)), theme, mode,
+    new VisualFrame("Native actor and use case captions", "Native stereotypes, attached approval notes and independently styled named associations", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Topology).ToHtmlPage());
+#endregion
