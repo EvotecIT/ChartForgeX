@@ -91,7 +91,8 @@
       const wide=plotWidth>plotHeight*1.4?plotWidth*.6:Infinity;
       const radii=r.frames.map(([horizontal,vertical,extent])=>Math.max(0,(Math.min(plotWidth*horizontal,wide,plotHeight*vertical)/2-gap)/extent));
       if(!printing)plotHeight=Math.max(side?legendHeight:0,...r.frames.map((frame,i)=>2*(radii[i]*frame[2]+gap)/frame[1]));
-      const height=plotTop+plotHeight+bottomBand+pb,cx=left+plotWidth/2,cy=plotTop+plotHeight/2;
+      // Whole pixels keep the CSS box and viewBox at one scale.
+      const height=Math.ceil(plotTop+plotHeight+bottomBand+pb-.001),cx=left+plotWidth/2,cy=plotTop+plotHeight/2;
       let legendTop=side||above?top:plotTop+plotHeight+gap;
       for(const entries of rows){
         const occupied=entries.reduce((sum,e)=>sum+e.width,0)+Math.max(0,entries.length-1)*gap;
