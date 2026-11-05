@@ -8,6 +8,7 @@
 //   const result = await engine.render('mermaid', source, 'dark');
 //   // { ok, svg, error, line, column, diagramType, elapsedMs, wallMs, language, theme, themed, artifactCount, diagnostics }
 //   const samples = await engine.samples();                // [{ id, title, language, source }]
+//   const scene = await engine.openAnnotations('', 'dark'); // { ok, html, basis }; prepareAnnotation(request, theme) answers runtime edits
 
 const DEFAULT_FRAMEWORK_URL = '/playground/engine/_framework/';
 const EXPORTS_NAMESPACE = ['ChartForgeX', 'Playground', 'PlaygroundExports'];
@@ -83,6 +84,26 @@ function createEngine(frameworkUrl) {
       await engine.ready;
       if (!samplesCache) samplesCache = JSON.parse(api.Samples());
       return samplesCache.map((sample) => ({ ...sample }));
+    },
+
+    // Annotation host: the HTML chart runtime sends each edit here and receives the re-prepared section.
+    async annotationRuntime() {
+      await engine.ready;
+      return JSON.parse(api.AnnotationRuntime());
+    },
+
+    async openAnnotations(basis, theme = 'light') {
+      await engine.ready;
+      return JSON.parse(api.OpenAnnotations(String(basis ?? ''), String(theme)));
+    },
+
+    async prepareAnnotation(request, theme = 'light') {
+      await engine.ready;
+      const drawing = request.sourceDrawing || {};
+      const start = drawing.start || { x: 0, y: 0 }, end = drawing.end || { x: 0, y: 0 };
+      return JSON.parse(api.PrepareAnnotation(String(request.basis ?? ''), String(theme), String(request.kind ?? ''),
+        String(request.annotationId ?? ''), String(drawing.kind ?? ''), start.x, start.y, end.x, end.y,
+        drawing.yOffset ?? 0, String(drawing.label ?? ''), String(drawing.yAxis ?? '')));
     }
   };
 

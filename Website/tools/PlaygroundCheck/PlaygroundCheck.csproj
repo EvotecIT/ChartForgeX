@@ -22,6 +22,7 @@
     <Compile Include="..\Playground\PlaygroundJson.cs" Link="Engine\PlaygroundJson.cs" />
     <Compile Include="..\Playground\PlaygroundSamples.cs" Link="Engine\PlaygroundSamples.cs" />
     <Compile Include="..\Playground\PlaygroundFonts.cs" Link="Engine\PlaygroundFonts.cs" />
+    <Compile Include="..\Playground\PlaygroundAnnotations.cs" Link="Engine\PlaygroundAnnotations.cs" />
     <EmbeddedResource Include="..\..\..\ChartForgeX.Examples\Fixtures\Fonts\Carlito\Carlito-Regular.ttf" LogicalName="Fonts.Carlito-Regular.ttf" />
     <EmbeddedResource Include="..\..\..\ChartForgeX.Examples\Fixtures\Fonts\Carlito\Carlito-Bold.ttf" LogicalName="Fonts.Carlito-Bold.ttf" />
     <EmbeddedResource Include="..\..\..\ChartForgeX.Examples\Fixtures\Fonts\Carlito\OFL.txt" LogicalName="Fonts.Carlito-OFL.txt" />
@@ -39,5 +40,6 @@
     <ProjectReference Include="..\..\..\ChartForgeX.Markup\ChartForgeX.Markup.csproj" />
     <ProjectReference Include="..\..\..\ChartForgeX.Mermaid\ChartForgeX.Mermaid.csproj" />
     <ProjectReference Include="..\..\..\ChartForgeX.Markup.Mermaid\ChartForgeX.Markup.Mermaid.csproj" />
+    <ProjectReference Include="..\..\..\ChartForgeX.Interactivity.Html\ChartForgeX.Interactivity.Html.csproj" />
   </ItemGroup>
 </Project>

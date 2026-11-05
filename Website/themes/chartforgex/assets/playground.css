@@ -108,6 +108,13 @@
 .cfx-pg__notes p { max-width: 60ch; font-size: .9375rem; }
 .cfx-pg__noscript { margin-top: 20px; color: var(--pg-err); }
 
+/* Annotation editor (/playground/annotations/): one live chart whose edits the engine re-prepares. */
+.cfx-pga__link { display: inline-flex; align-items: center; text-decoration: none; }
+.cfx-pga__stage { flex: none; min-height: 560px; overflow: visible; }
+.cfx-pga__canvas { padding: 20px; }
+.cfx-pga__canvas[hidden] { display: none; }
+.cfx-pga__canvas .cfx-interactive-chart { max-width: 860px; margin: 0 auto; }
+
 @media (max-width: 1000px) {
   .cfx-pg__split { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(280px, 38vh) minmax(480px, 70vh); height: auto; }
   .cfx-pg__below { grid-template-columns: minmax(0, 1fr); }
@@ -118,6 +125,8 @@
   .cfx-pg__actions { width: 100%; }
   .cfx-pg__actions > .cfx-pg__btn { flex: 1; }
   .cfx-pg__canvas { padding: 14px; }
+  .cfx-pga__canvas { padding: 12px 0; }
+  .cfx-pga__stage { min-height: 420px; }
   /* On a phone the options scroll sideways in one row so the render keeps its height. */
   .cfx-pg__tools { padding: 6px 0; }
   .cfx-pg__opts { flex-wrap: nowrap; width: 100%; padding: 0 10px; overflow-x: auto; scrollbar-width: none; }
