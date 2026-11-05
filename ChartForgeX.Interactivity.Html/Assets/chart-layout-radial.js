@@ -22,6 +22,8 @@
       const node=[...svg.querySelectorAll('[data-cfx-role=legend-entry],[data-cfx-role=legend-item]')].find(e=>e.dataset.cfxSourceId===data[0]);
       if(!node)throw new Error('Missing native radial legend entry.');
       unclipped(node,svg);
+      // Shared columns leave room between a name and its value; the whole entry stays one pointer target.
+      if(!node.querySelector(':scope > [data-cfx-browser-hit-area]')){const hit=document.createElementNS(ns,'rect');hit.setAttribute('data-cfx-browser-hit-area','true');hit.setAttribute('fill','transparent');hit.setAttribute('pointer-events','all');node.prepend(hit);}
       const label=textOf(node.querySelector('[data-cfx-role=legend-label]')),value=textOf(node.querySelector('[data-cfx-role=legend-value]')),percentage=textOf(node.querySelector('[data-cfx-role=legend-percentage]'));
       return {node,data,label,value,percentage,texts:[label,value,percentage].filter(Boolean).map(text=>[text,number(text,'font-size')]),x:number(label,'x')-18,baseline:number(label,'y')};
     });
@@ -122,7 +124,7 @@
           let end=entry.x+entry.width-4;
           if(percentage){percentage.setAttribute('x',end);percentage.setAttribute('text-anchor','end');end-=entry.percentWidth+gap*2/3;}
           if(value){value.setAttribute('x',end);value.setAttribute('text-anchor','end');}
-          for(const hit of node.querySelectorAll('[data-cfx-browser-hit-area]')){hit.setAttribute('x',entry.x);hit.setAttribute('y',entry.baseline-m.ascent);hit.setAttribute('width',entry.width);hit.setAttribute('height',m.line);}
+          for(const hit of node.querySelectorAll('[data-cfx-browser-hit-area]')){hit.setAttribute('x',entry.x+2);hit.setAttribute('y',entry.baseline-m.ascent);hit.setAttribute('width',Math.max(0,entry.width-2));hit.setAttribute('height',m.line);}
           x+=entry.width+gap;
         }
         legendTop+=m.line;
