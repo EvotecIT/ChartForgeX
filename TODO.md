@@ -89,6 +89,11 @@ Grammar coverage is broad; the remaining work is fidelity and honest results. Th
 - [ ] **Remaining approximations.** Retained-only or approximate features (styles and edge IDs beyond Flowchart/Class/ER/Requirement, safe rich text in the other families, sequence spacing and participant presentation, dense State/ER routing) either render natively or stay listed as limits in the matrix.
 - [ ] **Reference comparisons.** Extend the browser comparison against upstream Mermaid from Flowchart to every family, recording intentional differences rather than chasing pixel equality. Each completed contract reaches `MermaidRenderer`, the typed APIs, `ChartForgeX.Markup.Mermaid`, examples and host paths.
 
+## Diagram interchange
+
+- [ ] **Import draw.io diagrams.** Read compressed and uncompressed `.drawio` pages into the existing topology model. Preserve page and layer order, groups, labels, authored positions, and connector endpoints and waypoints within the supported profile. Report unsupported shapes and styles. Done when files produced by draw.io pass graph and rendered-output checks, with bounded decompression and no new core runtime dependency.
+- [ ] **Follow up with editable Visio export.** Once the import profile is qualified, project it through the existing [OfficeIMO.ChartForgeX bridge](https://github.com/EvotecIT/OfficeIMO/tree/master/OfficeIMO.ChartForgeX). Verify that Visio reopens the result with editable shapes, groups, and connected edges.
+
 ## Visual effects
 
 The [visual effects reference](docs/visual-effects.md) describes the implemented finite effects and the proposed wider design.
