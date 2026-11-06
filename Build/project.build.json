@@ -1,17 +1,17 @@
 {
   "$schema": "https://raw.githubusercontent.com/EvotecIT/PSPublishModule/main/Schemas/project.build.schema.json",
   "RootPath": "..",
-  "ExpectedVersion": "3.4.X",
+  "ExpectedVersion": "4.0.X",
   "ExpectedVersionMap": {
-    "ChartForgeX": "3.4.X",
-    "ChartForgeX.Visuals": "3.4.X",
-    "ChartForgeX.Stories": "3.4.X",
-    "ChartForgeX.Interactivity": "3.4.X",
-    "ChartForgeX.Interactivity.Html": "3.4.X",
-    "ChartForgeX.Markup": "3.4.X",
-    "ChartForgeX.Mermaid": "3.4.X",
-    "ChartForgeX.Markup.Mermaid": "3.4.X",
-    "ChartForgeX.Markup.Cli": "3.4.X"
+    "ChartForgeX": "4.0.X",
+    "ChartForgeX.Visuals": "4.0.X",
+    "ChartForgeX.Stories": "4.0.X",
+    "ChartForgeX.Interactivity": "4.0.X",
+    "ChartForgeX.Interactivity.Html": "4.0.X",
+    "ChartForgeX.Markup": "4.0.X",
+    "ChartForgeX.Mermaid": "4.0.X",
+    "ChartForgeX.Markup.Mermaid": "4.0.X",
+    "ChartForgeX.Markup.Cli": "4.0.X"
   },
   "VersionBindings": [
     {
