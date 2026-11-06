@@ -39,5 +39,10 @@
         if (state.step >= graph.messages.length) state.step = 0;
         tick();
       });
+      // Safari does not focus a clicked button, so Escape would never reach the diagram after Play or Next.
+      listen(toolbar, 'click', event => {
+        const button = event.target.closest?.('button');
+        if (button && document.activeElement !== button) button.focus({ preventScroll: true });
+      });
       updatePlayback();
     }
