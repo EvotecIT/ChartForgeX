@@ -73,7 +73,7 @@
     const target = seriesTarget(node), token = seriesTargetToken(target), previous = root._cfxLegendActivation;
     const touch = event.pointerType === 'touch' || root._cfxLegendTouch === true;
     const double = !(event instanceof KeyboardEvent) && previous?.token === token
-      && (event.detail === 2 || touch && performance.now() - previous.time < 350);
+      && (event.detail === 2 || touch && event.timeStamp - previous.time < 350);
     if (double && !nativeLegendConnected(root)) {
       delete root._cfxLegendActivation;
       // The first click already toggled. Undo it before applying isolation so
@@ -89,7 +89,8 @@
       return;
     }
     const original = root._cfxIsolationMutes?.get(node);
-    root._cfxLegendActivation = event instanceof KeyboardEvent ? null : { token, time: performance.now(),
+    // Event timestamps keep a quick double-tap together when a busy main thread handles the second tap late.
+    root._cfxLegendActivation = event instanceof KeyboardEvent ? null : { token, time: event.timeStamp,
       isolated: root.dataset.cfxIsolatedSeries, muted: (original ? original.legend : node.dataset.cfxMuted) === 'true' };
     toggleSeries(root, node);
   };

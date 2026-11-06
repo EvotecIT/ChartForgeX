@@ -111,6 +111,29 @@ public sealed partial class StandaloneViewportBrowserTests {
     }
 
     [BrowserFact]
+    public async Task TouchDoubleTapIsolatesWhenTheSecondTapIsHandledLate() {
+        if (!Enabled) return;
+        await using var session = await OpenAsync(Page(ChartSeriesKind.Line, reference: true), 980, 1000);
+        var page = session.Page;
+        await MountAsync(page);
+        // Both taps happen together, but a busy main thread handles the second one 500 ms later.
+        // Automation waits for each tap to be handled before creating the next, so the taps are queued directly.
+        await page.Locator("[data-cfx-role=legend-item][data-cfx-series-key=reference]").EvaluateAsync("""
+            legend=>{
+                const tap=()=>new PointerEvent('click',{bubbles:true,cancelable:true,detail:1,pointerType:'touch'});
+                const first=tap(),second=tap();
+                legend.dispatchEvent(first);
+                const end=performance.now()+500;while(performance.now()<end){}
+                legend.dispatchEvent(second);
+            }
+            """);
+        Assert.NotNull(await page.Locator(Root).GetAttributeAsync("data-cfx-isolated-series"));
+        Assert.Equal("true", await page.Locator("[data-cfx-role=legend-item][data-cfx-series-key=reference]").GetAttributeAsync("aria-pressed"));
+        Assert.Equal("false", await page.Locator("[data-cfx-role=legend-item][data-cfx-series-key=samples]").GetAttributeAsync("aria-pressed"));
+        AssertNoConsoleErrors(session);
+    }
+
+    [BrowserFact]
     public async Task CompactPlotSelectionUsesReadableTargetsAndKeepsPinnedTooltipInsideTheViewport() {
         if (!Enabled) return;
         await using var session = await OpenAsync(Page(ChartSeriesKind.Line, dark: true), 375, 812,
