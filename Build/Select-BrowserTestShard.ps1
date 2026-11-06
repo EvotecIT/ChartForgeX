@@ -1,26 +1,15 @@
-function Select-BrowserTestShard {
+function Get-BrowserTestCase {
     <#
     .SYNOPSIS
-    Selects one deterministic test-class shard of the browser contracts matched by a filter.
+    Lists the browser test cases a filter selects from the built test assembly, sorted ordinally.
     .DESCRIPTION
-    Lists the matching cases from the built test assembly and balances whole classes across
-    shards by their number of listed cases, largest first onto the lightest shard (the same split
-    as Test-BrowserCompatibility.ps1). Every class belongs to exactly one shard and keeps its xUnit
-    collection on one runner. Discovery lists a theory whose rows are only known at run time as
-    one method case. Writes shard.json beside the results so Test-BrowserShardCoverage.ps1 can
-    prove the shards of one suite cover the listed classes exactly once.
+    Discovery lists a theory whose rows are only known at run time as one method case.
     #>
     param(
         [Parameter(Mandatory)] [string] $Project,
         [Parameter(Mandatory)] [string] $Configuration,
-        [Parameter(Mandatory)] [string] $Filter,
-        [Parameter(Mandatory)] [ValidateRange(1, 16)] [int] $ShardIndex,
-        [Parameter(Mandatory)] [ValidateRange(1, 16)] [int] $ShardCount,
-        [Parameter(Mandatory)] [string] $Suite,
-        [Parameter(Mandatory)] [string] $ResultsDirectory
+        [Parameter(Mandatory)] [string] $Filter
     )
-    if ($ShardIndex -gt $ShardCount) { throw 'ShardIndex must not exceed ShardCount.' }
-
     $listing = & dotnet test $Project -c $Configuration --no-build --no-restore --nologo --list-tests --filter $Filter 2>&1
     if ($LASTEXITCODE) {
         $listing | Write-Host
@@ -35,9 +24,41 @@ function Select-BrowserTestShard {
     }
     if ($cases.Count -eq 0) { throw "No browser tests matched '$Filter'." }
     $cases.Sort([StringComparer]::Ordinal)
+    , $cases.ToArray()
+}
 
-    # Display names are Namespace.Class.Method plus optional theory arguments.
-    $classOf = { param($case) $method = $case.Split('(')[0]; $method.Substring(0, $method.LastIndexOf('.')) }
+function Get-BrowserTestClass {
+    <# Returns Namespace.Class for a listed display name: Namespace.Class.Method plus optional theory arguments. #>
+    param([Parameter(Mandatory)] [string] $Case)
+    $method = $Case.Split('(')[0]
+    $method.Substring(0, $method.LastIndexOf('.'))
+}
+
+function Select-BrowserTestShard {
+    <#
+    .SYNOPSIS
+    Selects one deterministic test-class shard of the browser contracts matched by a filter.
+    .DESCRIPTION
+    Lists the matching cases from the built test assembly and balances whole classes across
+    shards by their number of listed cases, largest first onto the lightest shard (the same split
+    for every browser suite). Every class belongs to exactly one shard and keeps its xUnit
+    collection on one runner. Writes shard.json beside the results so Test-BrowserShardCoverage.ps1 can
+    prove the shards of one suite cover the listed classes exactly once.
+    #>
+    param(
+        [Parameter(Mandatory)] [string] $Project,
+        [Parameter(Mandatory)] [string] $Configuration,
+        [Parameter(Mandatory)] [string] $Filter,
+        [Parameter(Mandatory)] [ValidateRange(1, 16)] [int] $ShardIndex,
+        [Parameter(Mandatory)] [ValidateRange(1, 16)] [int] $ShardCount,
+        [Parameter(Mandatory)] [string] $Suite,
+        [Parameter(Mandatory)] [string] $ResultsDirectory
+    )
+    if ($ShardIndex -gt $ShardCount) { throw 'ShardIndex must not exceed ShardCount.' }
+
+    $cases = Get-BrowserTestCase -Project $Project -Configuration $Configuration -Filter $Filter
+
+    $classOf = { param($case) Get-BrowserTestClass -Case $case }
     $ordinal = { param($values) $sorted = [string[]] @($values); [Array]::Sort($sorted, [StringComparer]::Ordinal); , $sorted }
     $classes = @($cases | Group-Object { & $classOf $_ } | Sort-Object @{ Expression = 'Count'; Descending = $true }, Name)
     $loads = [int[]]::new($ShardCount)
@@ -68,7 +89,7 @@ function Select-BrowserTestShard {
         cases = $selected
     } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $ResultsDirectory 'shard.json') -Encoding utf8
     Write-Host "Browser shard $ShardIndex/$ShardCount runs $($selected.Count) of $($cases.Count) cases in $($owned.Count) of $($classes.Count) classes."
-    [pscustomobject]@{ Filter = $shardFilter; Classes = $owned; Cases = $selected; AllCases = $cases.ToArray() }
+    [pscustomobject]@{ Filter = $shardFilter; Classes = $owned; Cases = $selected; AllCases = $cases }
 }
 
 function Assert-BrowserShardExecution {

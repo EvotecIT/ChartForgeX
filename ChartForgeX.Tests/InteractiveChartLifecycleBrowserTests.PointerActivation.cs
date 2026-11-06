@@ -9,6 +9,24 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveChartLifecycleBrowserTests {
+    // Chromium dispatches the automated press with its platform timestamps; Firefox automation
+    // creates the pointerup only after the page finishes the pointerdown, so it cannot express this press.
+    [BrowserFact]
+    public async Task QuickClickSelectsWhenTheHostBlocksTheMainThreadBeforePointerUp() {
+        if (!Enabled) return;
+        var chart = Chart.Create().WithSize(800, 440).WithXLabels("Monday", "Tuesday", "Wednesday").WithDataLabels(false)
+            .AddBar("Capacity", ChartPoints.FromValues(90, 60, 75));
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), 980, 800);
+        var page = session.Page;
+        // The host's own pointerdown work delays delivery of the pointerup past the chart's tap window.
+        await page.EvaluateAsync("()=>document.addEventListener('pointerdown',()=>{const end=performance.now()+900;while(performance.now()<end){}})");
+        var bar = page.Locator("[data-cfx-point='1'][data-cfx-series='0']");
+        var box = await bar.BoundingBoxAsync() ?? throw new InvalidOperationException("The Tuesday bar has no layout box.");
+        await page.Mouse.ClickAsync(box.X + box.Width / 2, box.Y + box.Height / 2);
+        Assert.Equal("true", await bar.GetAttributeAsync("aria-selected"));
+        AssertNoConsoleErrors(session);
+    }
+
     [BrowserTheory]
     [InlineData(false, 1440)]
     [InlineData(true, 1440)]
