@@ -234,7 +234,7 @@ public sealed class V2GalleryBrowserMatrixTests {
                 }).ToArray(),
                 light = VisualTheme.Graphite().Resolve(VisualThemeMode.Light).Background.ToHex(),
                 dark = VisualTheme.Graphite().Resolve(VisualThemeMode.Dark).Background.ToHex()
-            }).WaitAsync(TimeSpan.FromSeconds(30));
+            }).WaitAsync(TimeSpan.FromSeconds(90)); // Outlasts the page's own 60-second guard so its message is reported.
         } catch (Exception error) {
             // HtmlTinkerX already records transport failures. Keep them in the TRX even
             // when evaluation fails before the normal matrix/console receipt is written.
