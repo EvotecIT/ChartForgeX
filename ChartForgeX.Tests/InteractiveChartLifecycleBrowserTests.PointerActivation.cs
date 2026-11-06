@@ -115,6 +115,8 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         // Standalone mute removes the fact and rescales the remaining value domain.
         await page.Locator("[data-cfx-role=legend-item][data-cfx-series-key=worker]").ClickAsync();
         Assert.Equal("true", await page.Locator("[data-cfx-role=legend-item][data-cfx-series-key=worker]").GetAttributeAsync("data-cfx-muted"));
+        // Point at the rescaled domain, not at a frame of the rescale transition.
+        await SettlePresentationAsync(page);
         var remaining = await BoxAsync(page, point);
         var rescaledInteriorY = await page.Locator(point).EvaluateAsync<double>("""
             node=>{
@@ -124,15 +126,17 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
                 return (bounds.top+bounds.height/2+bottom.y)/2;
             }
             """);
-        await page.Mouse.ClickAsync((float)(remaining.X + remaining.Width / 2), (float)rescaledInteriorY);
-        var mutedState = await page.EvaluateAsync<JsonElement>("""
+        var press = new double[] { remaining.X + remaining.Width / 2, rescaledInteriorY };
+        // Read the native target under the press before it pins a tooltip over the plot.
+        await page.EvaluateAsync("""
             p=>{
                 const native=document.elementFromPoint(p[0],p[1]),owner=native.closest('[data-cfx-role=series]'),style=getComputedStyle(native);
-                return {nativeRole:native.dataset.cfxRole,nativeSeries:native.closest('[data-cfx-series-key]').dataset.cfxSeriesKey,
-                  pointerEvents:style.pointerEvents,visibility:style.visibility,opacity:style.opacity,ownerClass:owner.getAttribute('class'),
-                  selection:chartController.getSelection(),events:lifecycleSelections};
+                window.nativeUnderPress={nativeRole:native.dataset.cfxRole,nativeSeries:native.closest('[data-cfx-series-key]')?.dataset.cfxSeriesKey,
+                  pointerEvents:style.pointerEvents,visibility:style.visibility,opacity:style.opacity,ownerClass:owner?.getAttribute('class')};
             }
-            """, new double[] { x, y });
+            """, press);
+        await page.Mouse.ClickAsync((float)press[0], (float)press[1]);
+        var mutedState = await page.EvaluateAsync<JsonElement>("()=>({...nativeUnderPress,selection:chartController.getSelection(),events:lifecycleSelections})");
         await CaptureAsync(page, "covered-fill-muted-series-" + kind + "-" + dark + "-" + width + "-" + tooltips, mutedState);
         Assert.Equal("hidden", await page.Locator("[data-cfx-observation-id='worker-covered']").EvaluateAsync<string>("node=>getComputedStyle(node).visibility"));
         var selected = Assert.Single(mutedState.GetProperty("selection").EnumerateArray());
