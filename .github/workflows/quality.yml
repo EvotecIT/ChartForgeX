@@ -435,8 +435,8 @@ jobs:
               dotnet build $project -c Release
               if ($LASTEXITCODE) { throw 'Compatibility test project build failed.' }
               . ./Build/Select-BrowserTestShard.ps1
-              $classes = @(Get-BrowserTestCase -Project $project -Configuration Release -Filter $env:CHANGED_BROWSER_FILTER |
-                  ForEach-Object { Get-BrowserTestClass -Case $_ } | Sort-Object -Unique)
+              $cases = Get-BrowserTestCase -Project $project -Configuration Release -Filter $env:CHANGED_BROWSER_FILTER
+              $classes = @($cases | ForEach-Object { Get-BrowserTestClass -Case $_ } | Sort-Object -Unique)
               $count = [Math]::Min($count, $classes.Count)
               Write-Host "The focused selection lists $($classes.Count) classes: $($classes -join ', ')"
           }
