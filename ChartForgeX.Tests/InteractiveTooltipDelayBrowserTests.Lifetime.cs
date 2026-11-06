@@ -156,8 +156,9 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         var queued = await page.EvaluateAsync<JsonElement>(resetState);
         var timers = queued.GetProperty("timers");
         var canceledTimers = timers.GetProperty("canceled").EnumerateArray().Select(timer => timer.GetProperty("id").GetInt64()).ToArray();
-        var queuedTimer = Assert.Single(timers.GetProperty("queued").EnumerateArray(),
-            timer => !canceledTimers.Contains(timer.GetProperty("id").GetInt64())).GetProperty("id").GetInt64();
+        var pending = timers.GetProperty("queued").EnumerateArray().Where(timer => !canceledTimers.Contains(timer.GetProperty("id").GetInt64())).ToArray();
+        Assert.True(pending.Length == 1, "One delayed readout is pending after the pointer reaches the point: " + queued.GetRawText());
+        var queuedTimer = pending[0].GetProperty("id").GetInt64();
         Assert.Empty(queued.GetProperty("timers").GetProperty("fired").EnumerateArray());
         Assert.True(await page.Locator(Point(0, 0)).EvaluateAsync<bool>("node=>{const b=node.getBoundingClientRect();return node.contains(document.elementFromPoint(b.x+b.width/2,b.y+b.height/2));}"));
         await page.Locator("[data-cfx-reset]").FocusAsync();
