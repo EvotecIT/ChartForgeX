@@ -30,6 +30,9 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          # The path diff needs commits and trees only. A sparse checkout fetches without blobs,
+          # so this step no longer downloads the whole gallery history and snapshot.
+          sparse-checkout: .github
           persist-credentials: false
       - name: Detect build and test inputs
         id: plan
