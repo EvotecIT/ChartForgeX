@@ -1,0 +1,54 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+using static PictorialArtworkRecipe;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var series = new ChartSeries(new ChartSeriesId("assessments"), "Completed assessments", ChartSeriesKind.Pictorial,
+    new[] { new ChartPoint(1, 2.5), new ChartPoint(2, 1.25), new ChartPoint(3, .75) })
+    .WithObservationId(0, new ChartObservationId("team-a")).WithObservationId(1, new ChartObservationId("team-b"))
+    .WithObservationId(2, new ChartObservationId("team-c"));
+var chart = Chart.Create().WithSize(900, 460).WithTheme(VisualTheme.Graphite(), mode)
+    .WithTitle("Completed assessments by team").WithLegend(false).WithAxes(false).WithGrid(false)
+    .WithXLabels("Team A", "Team B", "Team C").WithPictorialColumns(4).WithPictorialValuePerSymbol(1)
+    .WithPictorialSvgPath("M1 1H23V23H1Z M8 8V16H16V8Z").WithPictorialEmptyOpacity(.16)
+    .WithValueFormat(ChartValueFormat.Number("0.##' units'", CultureInfo.InvariantCulture)).AddSeries(series);
+chart.WithPictorialArtwork(ChartPictorialArtwork.FromImage(Image()));
+chart.WithPictorialFillDirection(ChartPictorialFillDirection.LeftToRight);
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(900, 195)), theme, mode,
+    new VisualFrame("Completed assessments by team", "Captured self-contained artwork and explicit fractional clipping retain the complete source counts", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion
+
+static class PictorialArtworkRecipe {
+    internal static ChartForgeX.Raster.RgbaImage Image() {
+        var pixels = new byte[12 * 8 * 4];
+        for (var y = 0; y < 8; y++) for (var x = 0; x < 12; x++) {
+            var offset = (y * 12 + x) * 4;
+            pixels[offset] = x < 6 ? (byte)36 : (byte)201;
+            pixels[offset + 1] = y < 4 ? (byte)105 : (byte)164;
+            pixels[offset + 2] = 153; pixels[offset + 3] = 255;
+        }
+        return new ChartForgeX.Raster.RgbaImage(12, 8, pixels);
+    }
+}

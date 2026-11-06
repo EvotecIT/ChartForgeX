@@ -155,7 +155,7 @@ internal static partial class VisualCartesianCompiler {
         }
     }
 
-    private static (double Width, double Offset) ResolveBarLayout(Chart chart, VisualRenderContext context, ChartRect plot, ChartBarCoordinateMap coordinates, ChartMapper map, ChartStackLayout stacks, int index) {
+    private static (double Width, double Offset, double CaptionWidth) ResolveBarLayout(Chart chart, VisualRenderContext context, ChartRect plot, ChartBarCoordinateMap coordinates, ChartMapper map, ChartStackLayout stacks, int index) {
         var barIndices = Enumerable.Range(0, chart.Series.Count).Where(i => chart.Series[i].Kind == ChartSeriesKind.Bar && (!chart.Series[i].IsVisibilityPreparation || chart.Series[i].HasSourceData)
             && (chart.Series[i].HistogramBinLayout == null || chart.Series[i].HistogramBinLayout!.Minimum == chart.Series[i].HistogramBinLayout!.Maximum)).ToArray();
         var slot = stacks.Slot(barIndices, index);
@@ -165,7 +165,7 @@ internal static partial class VisualCartesianCompiler {
             maximumThickness: chart.Options.IsSparkline ? double.PositiveInfinity : chart.Options.MaximumBarWidth ?? ChartMarkSurface.MaximumThickness(context.Theme.MaximumBarWidth, horizontal: false),
             minimumThickness: sampleSlots > 0 ? 0 : Math.Min(.1, chart.Options.MaximumBarWidth ?? context.Theme.MaximumBarWidth),
             sampleSlots: sampleSlots, maximumPitch: map.CalendarBandPitch(horizontal: false));
-        return (layout.Thickness, layout.Offset);
+        return (layout.Thickness, layout.Offset, slot.Count > 1 ? layout.Stride : layout.Pitch);
     }
 
     private static bool ShowMarker(Chart chart, ChartSeries series, int pointIndex) {
@@ -187,7 +187,7 @@ internal static partial class VisualCartesianCompiler {
 
     private static TextStyle SeriesLabelStyle(Chart chart, VisualRenderContext context, ChartSeries series, VisualThemeColors colors) =>
         series.DataLabelStyle.Resolve(chart.Options.DataLabelStyle.Resolve(new TextStyle {
-            Font = context.Font, FontSize = context.Theme.Typography.DataLabelSize, Color = colors.Foreground
+            Font = context.FontWithWeight(context.Theme.Typography.DataLabelWeight), FontSize = context.Theme.Typography.DataLabelSize, Color = colors.Foreground
         }));
 
     // Only automatic captions of a series' own points share a unit; authored labels and histogram gaps keep their text.
@@ -279,6 +279,12 @@ internal static partial class VisualCartesianCompiler {
         }
         else {
             var positive = barDirection.GetValueOrDefault(value) >= 0;
+            // A box plot median and a candlestick or OHLC value sit on a body crossed by a stem or wick; a caption
+            // above that anchor lands on the stem or the body edge. Try the sides of the mark first.
+            if (series.Kind is ChartSeriesKind.BoxPlot or ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc) {
+                candidates.Add(new LabelCandidate(rightOffset, 0, 0, .5));
+                candidates.Add(new LabelCandidate(leftOffset, 0, 1, .5));
+            }
             candidates.Add(new LabelCandidate(0, positive ? -endGap : endGap, .5, positive ? 1 : 0));
             if (bar && placement == ChartDataLabelPlacement.Auto) {
                 // Keep a bar caption centered on its own mark before trying sideways fallbacks.
@@ -311,9 +317,11 @@ internal static partial class VisualCartesianCompiler {
             && placement != ChartDataLabelPlacement.Inside && placement != ChartDataLabelPlacement.Center) {
             // Callouts commonly mark a first/last extremum. Preserve the requested side
             // first, then keep the full caption beside its point when that side is outside.
+            // Vertical lanes start at the marker's edges: a larger marker must not consume the spacing.
+            var below = mark.Bottom - anchor.Y + spacing; var above = mark.Top - anchor.Y - spacing;
             foreach (var alignment in new[] { .5, 0, 1 }) {
-                candidates.Add(new LabelCandidate(0, spacing, alignment, 0));
-                candidates.Add(new LabelCandidate(0, -spacing, alignment, 1));
+                candidates.Add(new LabelCandidate(0, below, alignment, 0));
+                candidates.Add(new LabelCandidate(0, above, alignment, 1));
             }
             candidates.Add(new LabelCandidate(leftOffset, 0, 1, .5));
             candidates.Add(new LabelCandidate(rightOffset, 0, 0, .5));
@@ -323,13 +331,14 @@ internal static partial class VisualCartesianCompiler {
                 // straight to a full height can skip the clear band between two lines.
                 // Placement still rejects every collision and out-of-bounds candidate.
                 foreach (var fraction in new[] { .5, 1d }) {
-                    var lane = spacing + calloutMetrics.Value.Height * fraction;
+                    var lane = calloutMetrics.Value.Height * fraction;
                     foreach (var direction in new[] { 1d, -1d }) {
                         var alignment = direction > 0 ? 0 : 1;
-                        candidates.Add(new LabelCandidate(leftOffset, lane * direction, 1, alignment));
-                        candidates.Add(new LabelCandidate(rightOffset, lane * direction, 0, alignment));
-                        candidates.Add(new LabelCandidate(0, lane * direction, 1, alignment));
-                        candidates.Add(new LabelCandidate(0, lane * direction, 0, alignment));
+                        var offset = direction > 0 ? below + lane : above - lane;
+                        candidates.Add(new LabelCandidate(leftOffset, offset, 1, alignment));
+                        candidates.Add(new LabelCandidate(rightOffset, offset, 0, alignment));
+                        candidates.Add(new LabelCandidate(0, offset, 1, alignment));
+                        candidates.Add(new LabelCandidate(0, offset, 0, alignment));
                     }
                 }
             }

@@ -4,6 +4,39 @@
 
 Use it for static or embeddable diagrams such as service maps, SQL/server dependency views, people/team relationship diagrams, network connectivity maps, replication meshes, geographic-style location views, and product-specific topology views supplied by host applications.
 
+## Circular nodes in regions
+
+Set a group's `StatusText` to show an optional status chip in its header; null omits it. Its editable anatomy is in `topology-region-status.svg`.
+
+The HTML adapter reuses native preparations at container width bands, so automatic regions wrap before the phone breakpoint without a second layout engine. Authored positions preserve their arrangement on resize. Fitting a detached preparation keeps its original layout and actual shaped glyphs; prepare the model at a narrow width to choose the stacked phone arrangement instead.
+
+`TopologyLayoutMode.Regions` arranges circular nodes inside wrapping regions. At container widths below 640 pixels, the HTML adapter switches to stacked regions, cross-region link rows and overlay chips. The server also prepares this narrow arrangement when the requested SVG width is below 640 pixels. Static output has no script and always includes the used legend entries.
+
+```csharp
+var map = TopologyChart.Create().WithId("services")
+    .WithViewport(860, 500, 20).WithLayout(TopologyLayoutMode.Regions)
+    .AddAutoGroup("north", "North region", subtitle: "Primary processing")
+    .AddAutoGroup("south", "South region", subtitle: "Recovery processing")
+    .AddAutoNode("api", "API", groupId: "north", status: TopologyHealthStatus.Healthy)
+    .AddAutoNode("replica", "REPL", groupId: "south", status: TopologyHealthStatus.Warning)
+    .AddEdge("sync", "api", "replica", "42 s lag", status: TopologyHealthStatus.Warning);
+map.Nodes[0].Weight = TopologyNodeWeight.Primary;
+map.Nodes[0].AddBadge(new TopologyNodeBadge("crown", "Primary role"));
+map.Nodes[1].StatusText = "Warning: last update 42 seconds ago";
+var svg = map.ToSvg();
+var page = new HtmlInteractiveTopologyRenderer().RenderPage(map,
+    new TopologyRenderOptions { IncludeRegionDetails = true });
+var printSvg = map.ToSvg(new TopologyRenderOptions { RegionPrint = true });
+```
+
+Weights are `Primary`, `Standard` and `Minor`. `Tone` optionally overrides the health-derived presentation with `Good`, `Warn`, `Bad`, `Info` or `Neutral`; it does not replace the host's full `StatusText`. Named badges use the crown, star or lock anatomy. The first two are drawn; tooltips and accessible details retain every meaning. `IsOverlay` marks a spanning relationship. Node and group positions use the existing chart-coordinate overrides. Automatic nodes leave room for positioned nodes; overlapping manual node cores produce a clear error. Preparation does not mutate the source model.
+
+The visual contract is split between `ChartForgeX/Topology/Assets/topology-regions.svg` and `topology-regions.css`. The SVG asset contains editable anatomy and theme-role substitutions, compiled into the shared native scene. The stylesheet owns responsive layout and browser states. Keep `.cfx-topo`, `.cfx-region`, `.cfx-node`, `.cfx-edge`, `.cfx-edge-label`, `.cfx-legend` and `tone-*` class names stable. Literal model text is substituted as data, not interpreted as SVG markup. The examples add licensed IBM Plex Sans reference faces so browser and native measurements match.
+
+The HTML adapter has one visible chart tab stop. Arrow keys choose the nearest node in that direction, Enter selects, and Escape clears the focus dim. Hover and keyboard focus show the full node text, badge meanings and status. Edge hover shows the label and host metadata. Selection emits the existing `cfx-topology-select` event plus `node:select` or `edge:select`, with stable chart/model IDs. No record panel is created. Dispatch `cfx-topology-update-tones` with `{ nodes: [{ id, status, statusText }] }` to change health without moving prepared geometry; reduced-motion preferences disable the color transition. Membership changes require a new render.
+
+Print output uses the light theme and warning/failure dash patterns. `IncludeRegionDetails` adds a hidden nodes/links table to HTML and exposes it under Details when printing. Register the normal topology stylesheet/runtime when using the asset-free fragment API.
+
 ## Shared themes
 
 Topology uses the same immutable `VisualTheme` as charts, grids and other visual models. Reuse one paired theme and select `VisualThemeMode.Light` or `Dark` explicitly for each model. `WithFontFamily(...)` and `Configure(...)` return new theme snapshots; assign the returned value when customizing a shared theme.
@@ -15,7 +48,7 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 
-var theme = VisualTheme.Graphite().WithFontFamily("Segoe UI, sans-serif");
+var theme = VisualTheme.Graphite();
 var mode = VisualThemeMode.Dark;
 var trend = Chart.Create().WithTheme(theme, mode)
     .AddLine("Requests", new[] { new ChartPoint(1, 12), new ChartPoint(2, 18) });
@@ -46,6 +79,46 @@ Use `chart.GetPngFontInfo()` to inspect the PNG face and fallback; installed-fon
 In installed-font mode, for Arial and recognized DejaVu or Liberation bold companions, layout reserves the larger of native bold advances and the raster renderer's synthetic bold advances. Other faces retain the resolved regular-face measurement with synthetic bold spacing. SVG keeps the theme's font-family stack. A browser or document viewer may resolve it differently from the generating machine, so matching layout does not guarantee identical glyphs across hosts. Fonts are not embedded, and this measurement path does not add complex-script shaping or per-glyph fallback.
 
 ## Model
+
+Regions use `TopologyGroup`: a stable ID, title (`Label`), subtitle, health and optional position. Use `AddAutoGroup` with `GroupGrid` or `DenseGrouped` to pack nodes automatically. Assign `X` and `Y` on individual nodes to keep authored positions. Node dimensions, subtitles, symbols, icons and `Badge` remain caller-owned facts.
+
+Set `node.ShowHealthRing = true` or call `chart.WithNodeHealthRing(id)` for a semantic health ring inside the node bounds. The ring follows `Status` and the shared theme's health tokens independently of the node's accent, badge or icon colour. Circular shapes and icon nodes work particularly well. SVG and PNG use the same scene geometry; rings are opt-in and do not change existing diagrams. Set `AccessibleName` for a localized node name, or retain the default full label, subtitle, badge and health summary. Visual truncation does not truncate that name.
+
+### Labelled trees
+
+`AddHierarchy` creates a tree from neutral parent/child records. Each child's `ParentEdgeLabel` labels its incoming relationship, and `ParentEdgeStatus` overrides the shared edge health for that relationship. A root has no incoming edge. Node health, badge and optional health ring remain separate from relationship health.
+
+```csharp
+var hierarchy = TopologyChart.Create().WithViewport(800, 520)
+    .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Light)
+    .AddHierarchy(new[] {
+        new TopologyHierarchyItem("reference", "Reference clock") {
+            Status = TopologyHealthStatus.Healthy, Badge = "REF"
+        },
+        new TopologyHierarchyItem("relay", "Regional clock", "reference") {
+            Subtitle = "Last synchronization 15 seconds ago",
+            ParentEdgeLabel = "+0.2 ms",
+            ParentEdgeStatus = TopologyHealthStatus.Healthy,
+            Status = TopologyHealthStatus.Healthy
+        }
+    });
+var svg = hierarchy.ToSvg(); // Script-free output for documents, email and print.
+var png = hierarchy.ToPng();
+```
+
+`TopologyHierarchyExamples` in the examples project generates service regions and a timing tree at 1440 light and 390 dark, plus an illustrative directory-shaped mapping. Run the examples with `--topology-hierarchy-only --output <directory>` to generate these SVG, PNG and interactive HTML files.
+
+### Browser events and linked views
+
+`HtmlInteractiveTopologyRenderer` hydrates the native SVG through the adapter-owned JavaScript runtime. Nodes receive keyboard focus, Enter or Space selects, arrow keys follow related items, and Escape clears selection. `cfx-topology-select` and `cfx-topology-hover` bubble to the embedding host. Their node detail contains the stable `id`, `label`, `subtitle`, `status`, `badge`, `accessibleName`, `healthRing`, group ID and caller metadata. Hosts use these facts to update their own linked views; inspectors, data collection and domain calculations remain outside the chart.
+
+```javascript
+document.addEventListener('cfx-topology-select', event => {
+  if (event.detail.kind === 'node') showServiceDetails(event.detail.id);
+});
+```
+
+Static SVG does not require JavaScript. The browser adapter reuses that geometry rather than maintaining a second layout implementation.
 
 - `TopologyChart` contains viewport, layout mode, layout direction, groups, nodes, edges, legend, and theme.
 - `TopologyGroup` represents a cluster, region, tier, team, location, or any other logical grouping.
@@ -433,6 +506,21 @@ Interactive topology HTML is owned by `ChartForgeX.Interactivity.Html`. Add that
 
 The adapter runtime marks clicked groups, nodes, or edges and dispatches `cfx-topology-select` / `cfx-topology-clear` events. Selection details include the selected id, kind, status, metadata, metrics, group/node/edge context, callout counts, route diagnostics, geographic route-arc diagnostics, and related node/edge/group ids so a host can populate inspector panels without reparsing SVG markup. Selectable topology elements are keyboard focusable, Enter/Space activates selection, Escape clears selection, pointer/focus hover highlights related elements and dispatches `cfx-topology-hover` / `cfx-topology-hover-clear`, and arrow keys cycle related topology elements. Set `TopologyRenderOptions.EnableHtmlViewportControls = true` for zoom, pan, fit, and reset; `EnableHtmlExportControls = true` for SVG/PNG export; or `EnableHtmlSynchronizedState = true` with `HtmlSyncGroupName` to mirror selection and viewport state across same-page topology wrappers.
 
+### Dense topologies in the browser
+
+With viewport controls on, a topology whose node captions would render below 10 px at the page width opens magnified instead of shrinking: the viewport takes a bounded height, the zoom brings the smallest node caption to 10 px, and the view starts at the drawing's top and reading-start edge. Only the plot zooms: the drawing's title, subtitle and legend move into an HTML heading above it at their normal size and wrap with the page, while exports keep them in the SVG. Fit shows the whole drawing as an overview, and Reset returns to the readable opening view. Drawings that are already readable at the page width open unchanged. A host that renders its own `data-cfx-topology-zoom` keeps it, and the wrapper dispatches `cfx-topology-readable-start` when the magnified start applies. Set `TopologyRenderOptions.HtmlOpeningView = TopologyHtmlOpeningView.Fit` (or `WithHtmlOpeningView`) when a host panel should open on the whole drawing and leave closer inspection to the zoom controls. When the host supplies the colour roles (`SvgColorVariables`), the card around the plot leaves the surface to the host.
+
+The viewport is a keyboard target: `+` and `-` zoom, `0` fits, and the arrow keys pan (Shift pans further). Arrow keys on a focused node still move between related elements.
+
+`.WithHtmlFindControls()` adds a find row inside the diagram card, above the plot, for layouts without force graph controls (which already carry their own search). It matches node labels, ids, kinds and group names as you type, narrows by group and by node kind (named as the legend's node-kind entries name them, otherwise by the kind value), highlights the matches with the edges between them while the rest dims, and moves the viewport to them without dropping below the readable zoom. Enter selects and focuses the first match; Escape clears the find. Hosts can drive it with `cfx-topology-set-find` (`query`, `group`, `kind`, optional `reveal: false`) and listen for `cfx-topology-find`. The gallery's `visual-dense-service-estate-navigator.html` shows twelve sites and 93 services this way.
+
+```csharp
+var options = new TopologyRenderOptions { ReadableDenseLayout = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile }
+    .WithHtmlFindControls();
+chart.SaveInteractiveHtml("estate.html", options);
+```
+
+Static SVG and PNG output is unchanged. For print or email, split a dense topology into readable pages with `PrepareReport` (see [Split dense topologies into report pages](#split-dense-topologies-into-report-pages)); collapsed and expanded hierarchy views use `TopologyHierarchyView` (see [Organization hierarchy views](#organization-hierarchy-views)).
 A chart can carry the options it was designed for: `.WithRenderOptions(options)` stores a copy in `TopologyChart.DefaultRenderOptions` (setting the property directly stores the instance you pass). `ToSvg`, `ToPng`, the static and interactive HTML renderers, `Prepare`, `TopologyLayoutDiagnostics.Analyze`, animated exports, and visual-artifact rendering and interchange use them when the call passes no options. Options passed to a call replace the stored ones as a whole. A builder can therefore return one chart and every host draws the same layout. Helpers that take no chart (`TopologyHtmlRenderer.BuildFragmentStyle`, `HtmlInteractiveTopologyRenderer.BuildInteractionScript`, `HtmlInteractiveAssetFiles.TopologyScript`) still need the options passed in, for example when a stored `CssClassPrefix` must match host-registered assets. Report pagination (`PrepareReport`) and the graph explorer (`ToGraphScene`) choose their own layout options and do not read the stored ones.
 
 `TopologyRenderOptions` also supports reusable render presets and node display modes:

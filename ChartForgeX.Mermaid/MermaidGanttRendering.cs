@@ -28,7 +28,8 @@ public static class MermaidGanttRendering {
         chart.Options.GanttTodayStyle = options.TodayStyle ?? MermaidGanttTodayStyle.Parse(document.TodayMarker, out _);
         chart.WithGanttTickInterval(MermaidGanttTicks.Parse(document.TickInterval, document.Weekday));
         foreach (var task in document.Tasks) {
-            var name = string.IsNullOrWhiteSpace(task.Section) ? task.Title : task.Section + " / " + task.Title;
+            // The section is named once beside its band; the row keeps the task's own title.
+            var name = task.Title;
             if (task.IsVerticalMarker) chart.AddGanttMarker(name, task.Start, task.End);
             else if (task.IsMilestone) chart.AddGanttMilestone(name, task.Start.AddTicks((task.End.Ticks - task.Start.Ticks) / 2));
             else chart.AddGanttTask(name, task.Start, task.RenderEnd, task.Progress);

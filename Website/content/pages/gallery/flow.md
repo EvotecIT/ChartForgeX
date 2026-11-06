@@ -1,6 +1,6 @@
 ---
 title: Flow examples in C#
-description: Flow examples rendered by ChartForgeX: static SVG images, variants in light and dark themes, the C# source and the options to configure it.
+description: Flow examples rendered by ChartForgeX: a live chart, variants in light and dark themes, the C# source and the options to configure it.
 layout: gallery-family
 ---
 

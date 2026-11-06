@@ -1,0 +1,36 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var chart = Chart.Create();
+// Completed orders per region, this year against last year.
+var lastYear = new[] { 1240d, 980, 1460, 1720, 860, 2140 };
+var thisYear = new[] { 1380d, 1050, 1390, 1940, 1010, 2710 };
+chart.WithXLabels("North", "South", "East", "West", "Central", "Online").WithYAxis("Orders")
+    .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("last-year"), "2025", lastYear.Select((value, index) => new ChartPoint(index + 1, value))))
+    .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("orders"), "2026", thisYear.Select((value, index) => new ChartPoint(index + 1, value))));
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Completed orders by region", "", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion

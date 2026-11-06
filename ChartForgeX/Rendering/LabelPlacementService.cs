@@ -121,6 +121,7 @@ public sealed partial class LabelPlacementService {
         var occupied = new LabelSpatialIndex(gap);
         if (obstacles != null) foreach (var obstacle in obstacles) { ValidateBounds(obstacle.Bounds); occupied.Add(obstacle.Bounds, obstacle.Id, obstacle.Shape); }
         var placed = new PlacedLabel[requests.Count];
+        string[]? displayedTexts = null;
         foreach (var index in order) {
             var request = requests[index];
             var text = TextCaseTransformer.Apply(request.Text, request.Style.TextCase, CultureInfo.InvariantCulture);
@@ -134,10 +135,25 @@ public sealed partial class LabelPlacementService {
                 if (lines.Length == 2) result = TryPlace(request, string.Join("\n", lines), bounds, occupied,
                     measureText, displayedStyle, avoidLeaderLabels, remeasure: true);
             }
+            if (result == null && request.MinimumFontSize.HasValue)
+                result = TryPlaceSmaller(request, text, bounds, occupied, measureText, avoidLeaderLabels);
             if (result == null && request.Fallback == LabelFallbackRule.EllipsisThenDrop) {
                 // Text elements retain surrogate pairs and combining marks during shortening.
                 var elements = StringInfo.ParseCombiningCharacters(text);
+                // Similar names share their leading words; shorten that shared head and keep the words that differ.
+                var tailStart = ChartTextFitting.DistinguishingTailStart(text, displayedTexts ??= DisplayedTexts(requests));
+                if (tailStart > 0) {
+                    var tail = text.Substring(tailStart);
+                    for (var count = elements.Length - 1; count >= MinimumSharedHeadElements && result == null; count--) {
+                        if (elements[count] >= tailStart - 1) continue;
+                        var head = text.Substring(0, elements[count]).TrimEnd();
+                        if (head.Length == 0 || head.Length + tail.Length + 2 >= text.Length) continue;
+                        result = TryPlace(request, head + "… " + tail, bounds, occupied, measureText, displayedStyle, avoidLeaderLabels, ellipsized: true);
+                    }
+                }
+                // An end ellipsis inside the shared head would name a sibling equally well; such a caption is omitted.
                 for (var count = elements.Length - 1; count >= ChartTextFitting.MinimumEllipsizedTextElements && result == null; count--) {
+                    if (tailStart > 0 && elements[count] <= tailStart) break;
                     var prefix = text.Substring(0, elements[count]);
                     if (!ChartTextFitting.KeepsShortenedMinimum(prefix)) continue;
                     var shorter = prefix.TrimEnd() + "…";
@@ -154,11 +170,38 @@ public sealed partial class LabelPlacementService {
         return Array.AsReadOnly(placed);
     }
 
+    // A shortened shared head keeps a recognisable word stem, such as "Paym… west".
+    private const int MinimumSharedHeadElements = 4;
+
+    private static string[] DisplayedTexts(IReadOnlyList<LabelPlacementRequest> requests) {
+        var texts = new string[requests.Count];
+        for (var i = 0; i < requests.Count; i++) texts[i] = TextCaseTransformer.Apply(requests[i].Text, requests[i].Style.TextCase, CultureInfo.InvariantCulture);
+        return texts;
+    }
+
+    /// <summary>Steps complete text down in half-pixel sizes to the request's readable floor, keeping its candidates and checks.</summary>
+    private PlacedLabel? TryPlaceSmaller(LabelPlacementRequest request, string text, ChartRect scene, LabelSpatialIndex occupied,
+        Func<string, TextStyle, TextMetrics>? measureText, bool avoidLeaderLabels) {
+        const double step = .5;
+        var preferred = request.Style.EffectiveFontSize; var floor = request.MinimumFontSize!.Value;
+        for (var size = preferred - step; size > floor - step; size -= step) {
+            var fitted = request.Style.Clone();
+            // FontSize scales with any baseline shift, so the effective size lands on the stepped value.
+            fitted.FontSize = request.Style.FontSize * Math.Max(floor, size) / preferred;
+            TextStyle? displayed = null;
+            if (measureText != null) { displayed = fitted.Clone(); displayed.TextCase = TextCaseTransform.None; }
+            var result = TryPlace(request, text, scene, occupied, measureText, displayed, avoidLeaderLabels, remeasure: true, fitted: fitted);
+            if (result != null) return result;
+        }
+        return null;
+    }
+
     private PlacedLabel? TryPlace(LabelPlacementRequest request, string text, ChartRect scene, LabelSpatialIndex occupied,
-        Func<string, TextStyle, TextMetrics>? measureText, TextStyle? displayedStyle, bool avoidLeaderLabels, bool ellipsized = false, bool remeasure = false) {
+        Func<string, TextStyle, TextMetrics>? measureText, TextStyle? displayedStyle, bool avoidLeaderLabels, bool ellipsized = false, bool remeasure = false,
+        TextStyle? fitted = null) {
         if (text.Length == 0) return null;
         var metrics = !ellipsized && !remeasure && request.MeasuredSize.HasValue ? request.MeasuredSize.Value
-            : measureText != null ? measureText(text, displayedStyle!) : MeasureDisplayed(text, request.Style);
+            : measureText != null ? measureText(text, displayedStyle!) : MeasureDisplayed(text, fitted ?? request.Style);
         metrics = VisualAxisText.RotatedMetrics(metrics, request.RotationDegrees);
         var decoration = text != request.Text ? request.DecorationSize : null;
         var width = metrics.Width + request.Padding * 2 + (decoration?.Width ?? 0);
@@ -181,7 +224,7 @@ public sealed partial class LabelPlacementService {
                 request.Anchor.Y + candidate.OffsetY - height * candidate.VerticalAlignment, width, height);
             if (!Contains(scene, box) || request.Bounds.HasValue && !Contains(request.Bounds.Value, box)) return null;
             if (occupied.Intersects(box, request.AssociatedMarkId, request.MinimumLabelGap, request.AllowLabelOverlap)) return null;
-            var result = new PlacedLabel(request, text, box, false, index, ellipsized);
+            var result = new PlacedLabel(request, text, box, false, index, ellipsized) { Style = fitted ?? request.Style };
             if (result.HasLeaderLine) result.LeaderStart = occupied.LeaderStart(request.Anchor, result.LeaderEnd, request.AssociatedMarkId);
             if (avoidLeaderLabels && result.HasLeaderLine && occupied.LeaderIntersectsLabel(result.LeaderStart, result.LeaderEnd, request.MinimumLabelGap, request.AssociatedMarkId)) return null;
             return result;

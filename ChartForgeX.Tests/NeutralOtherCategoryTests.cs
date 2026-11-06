@@ -19,7 +19,7 @@ public sealed class NeutralOtherCategoryTests {
         var series = chart.Series[0];
         Assert.Equal(colors.Other, ChartSeriesColours.CategoryPoint(series, 2, colors));
         // Other is the second largest value but takes no slot: the remaining categories rank 0, 1 and 2.
-        Assert.Equal(new[] { colors.Palette[0], colors.Palette[1], colors.Palette[2] },
+        Assert.Equal(new[] { colors.CategoricalColor(0), colors.CategoricalColor(1), colors.CategoricalColor(2) },
             new[] { 0, 1, 3 }.Select(point => ChartSeriesColours.CategoryPoint(series, point, colors)).ToArray());
         // The painted slice uses the same neutral fill.
         Assert.Contains(XDocument.Parse(chart.ToSvg()).Descendants(), item => ((string?)item.Attribute("data-cfx-role"))?.Contains("slice", StringComparison.Ordinal) == true
@@ -33,7 +33,7 @@ public sealed class NeutralOtherCategoryTests {
             .AddSeries(new ChartSeries(new ChartSeriesId("other"), "Other", ChartSeriesKind.Bar, new[] { new ChartPoint(1, 2), new ChartPoint(2, 1) }));
         var colors = chart.Options.Theme.Resolve(chart.Options.ThemeMode);
         Assert.Equal(colors.Other, ChartSeriesColours.Resolve(chart, 1, colors));
-        Assert.Equal(colors.Palette[0], ChartSeriesColours.Resolve(chart, 0, colors));
+        Assert.Equal(colors.CategoricalColor(0), ChartSeriesColours.Resolve(chart, 0, colors));
         chart.Series[1].Color = ChartColor.FromHex("#123456");
         Assert.Equal(ChartColor.FromHex("#123456"), ChartSeriesColours.Resolve(chart, 1, colors));
     }

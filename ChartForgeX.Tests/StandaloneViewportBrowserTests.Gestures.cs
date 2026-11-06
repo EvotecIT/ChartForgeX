@@ -100,6 +100,8 @@ public sealed partial class StandaloneViewportBrowserTests {
         AssertViewportScale(initial, await SceneAsync(page));
 
         await page.Locator("[data-cfx-reset]").ClickAsync();
+        // The brush reads the drawing the reader sees, so it starts once the reset has eased in.
+        await SettleMotionAsync(page);
         await page.Locator("[data-cfx-mode-button=brush]").ClickAsync();
         await DragAsync(page, await PlotPointerAsync(page, .25, .2), await PlotPointerAsync(page, .75, .8));
         var brushed = await ViewportAsync(page);

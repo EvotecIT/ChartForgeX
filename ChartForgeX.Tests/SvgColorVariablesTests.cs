@@ -13,6 +13,56 @@ public sealed class SvgColorVariablesTests {
     private static readonly VisualDesignTokens Graphite = VisualDesignTokens.FromJsonFile(FixturePath("tokens", "palette-v1-graphite.json"));
 
     [Fact]
+    public void ThemeRampScaleCopiesRetainIdentityWithoutChangingAuthoredScalesOrNativeOutput() {
+        var theme = VisualTheme.Graphite(); var tokens = theme.Resolve(VisualThemeMode.Light).ToTokens();
+        var ramp = tokens.DivergingRamp!;
+        ChartColorScale Configure(ChartColorScale scale) => scale.WithValueRange(-3, 3).WithMidpoint(0)
+            .WithNoDataColor(ChartColor.FromRgb(128, 128, 128)).WithLabels("Low", "Mid", "High")
+            .WithCaptions(new[] { new ChartColorScaleCaption(0, "Midpoint") });
+        var themed = Configure(ramp.ToColorScale(0));
+        var authored = Configure(ChartColorScale.Diverging(ramp.Negative.Reverse(), ramp.Neutral, ramp.Positive, 0));
+        Chart Cells(ChartColorScale scale) => Chart.Create().WithSize(600, 200).WithTheme(theme).WithDataLabels()
+            .WithHeatmapColorScale(scale).AddHeatmapRow("Change", new double?[] { -3, -2, -1, 0, 1, 2, 3 });
+        string Fill(ChartColorScale scale, SvgColorVariables variables, string value = "2", bool ink = false) {
+            var svg = Cells(scale).ToSvg(new ChartForgeX.Rendering.VisualSvgOptions(colorVariables: variables), "ramp-compat");
+            var cell = System.Xml.Linq.XDocument.Parse(svg).Descendants().Single(element =>
+                (string?)element.Attribute("data-cfx-role") == "heatmap-cell" && (string?)element.Attribute("data-cfx-value") == value);
+            var painted = cell.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == (ink ? "data-label" : "heatmap-cell-shape"));
+            if (ink) painted = painted.DescendantsAndSelf().Single(element => element.Name.LocalName == "text");
+            return (string)painted.Attribute("fill")!;
+        }
+        foreach (var value in new[] { -3, -1.5, 0, 1.5, 3 }) Assert.Equal(authored.ColorFor(value), themed.ColorFor(value));
+        Assert.Equal(Cells(authored).ToPng(), Cells(themed).ToPng());
+        Assert.Equal(Cells(authored).ToSvg("literal-ramp"), Cells(themed).ToSvg("literal-ramp"));
+        var variables = tokens.ToSvgColorVariables();
+        Assert.Equal("rgb(from var(--cfx-ramps-diverging-positive-2, #2171CE) r g b / 1)", Fill(themed, variables));
+        Assert.Equal("rgb(from var(--cfx-ramps-sequential-3, #2171CE) r g b / 1)", Fill(authored, variables));
+        Assert.Equal(variables.Variables.Count, variables.Variables.Select(variable => variable.Name).Distinct().Count());
+        string? Host(string path) => path == "ramps.diverging.positive.2" ? null : "--host-" + path.Replace('.', '_');
+        var host = tokens.ToSvgColorVariables(Host).Clone();
+        Assert.Equal("#2171CE", Fill(themed, host));
+        Assert.Equal("var(--host-ramps_diverging_positive_3, #1C5CAB)", Fill(themed, host, "3"));
+        var legacy = new SvgColorVariables().Add("--first", ramp.Positive[1], SvgColorRole.Ramp)
+            .Add("--second", ramp.Positive[1], SvgColorRole.Ramp);
+        Assert.Equal("rgb(from var(--first, #2171CE) r g b / 1)", Fill(themed, legacy));
+        Assert.Equal("rgb(from var(--first, #2171CE) r g b / 1)", Fill(authored, legacy));
+        var explicitScale = ChartColorScale.Diverging(ramp.Negative.Reverse(), ramp.Neutral,
+            ramp.Positive.Select(color => color.WithCssVariable("--authored")), 0).WithValueRange(-3, 3);
+        Assert.Equal("var(--authored, #1C5CAB)", Fill(explicitScale, variables, "3"));
+        Assert.Equal("var(--cfx-ramps-sequential-4-ink, #FFFFFF)", Fill(authored, variables, "3", ink: true));
+        Assert.StartsWith("var(--cfx-derived-ink-v1-", Fill(themed, variables, "3", ink: true), StringComparison.Ordinal);
+        var customInk = ChartColor.FromHex("#DDBB11");
+        var manualInk = new SvgColorVariables().Add("--legacy-stop", ramp.Positive[2], SvgColorRole.Ramp)
+            .AddInk("--legacy-ink", ramp.Positive[2], customInk, SvgColorRole.Ramp);
+        Assert.Equal("var(--legacy-ink, #DDBB11)", Fill(authored, manualInk, "3", ink: true));
+        Assert.Equal("var(--legacy-ink, #DDBB11)", Fill(themed, manualInk, "3", ink: true));
+        variables.AddInk("--host-ink", ramp.Positive[2], customInk, SvgColorRole.Ramp);
+        Assert.Equal("var(--host-ink, #DDBB11)", Fill(authored, variables, "3", ink: true));
+        Assert.Equal("var(--host-ink, #DDBB11)", Fill(themed, variables, "3", ink: true));
+        Assert.Single(variables.Variables, variable => variable.Name == "--host-ink");
+    }
+
+    [Fact]
     public void Chart_WritesTokenColoursAsVariablesAndFallsBackToTheSameLiterals() {
         var literal = Lines().ToSvg();
         var themed = Lines().WithSvgColorVariables(Graphite.ToSvgColorVariables()).ToSvg();
@@ -123,7 +173,7 @@ public sealed class SvgColorVariablesTests {
 
     [Fact]
     public void GridAndPreparedTopology_ApplyTheirVariables() {
-        var grid = new ChartGrid().Add(Lines().WithLuminousLineStyle()).Add(Lines().WithLuminousLineStyle()).WithTitle("Two").WithSvgColorVariables(Graphite.ToSvgColorVariables());
+        var grid = new ChartGrid().WithTheme(new VisualTheme(Graphite, Graphite)).Add(Lines().WithLuminousLineStyle()).Add(Lines().WithLuminousLineStyle()).WithTitle("Two").WithSvgColorVariables(Graphite.ToSvgColorVariables());
         var svg = grid.ToSvg();
         Assert.Contains("var(--cfx-series-1, #2A78D6)", svg, StringComparison.Ordinal);
         // Panels without variables of their own resolve their typed paints with the grid's: the white sheen stays literal.

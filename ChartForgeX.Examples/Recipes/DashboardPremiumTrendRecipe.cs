@@ -6,7 +6,7 @@ public static class DashboardPremiumTrendRecipe {
         return Chart.Create()
             .WithHeader(false)
             .WithTransparentBackground(false)
-            .WithTheme(VisualTheme.SaasDashboard()
+            .WithTheme(VisualTheme.Graphite()
                 .WithPalette(new[] { ChartColor.FromHex("#2563EB"), ChartColor.FromHex("#14B8A6") })
                 .Configure(builder => { builder.Light.Grid = builder.Dark.Grid = ChartColor.FromHex("#D7DEE8"); builder.Light.Axis = builder.Dark.Axis = ChartColor.FromHex("#94A3B8"); })
                 .Configure(builder => { builder.MarkerRadius = 3.2; })

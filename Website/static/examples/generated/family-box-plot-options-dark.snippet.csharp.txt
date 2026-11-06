@@ -1,0 +1,42 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var chart = Chart.Create();
+var expected = ChartSeries.CreateBoxPlot(new ChartSeriesId("expected"), "Expected", new[] {
+    new ChartBoxPlot(1, 10, 20, 25, 30, 40), new ChartBoxPlot(2, 5, 10, 15, 25, 35),
+    new ChartBoxPlot(3, 12, 20, 28, 35, 45), new ChartBoxPlot(4, 20, 30, 35, 45, 55)
+});
+var observed = ChartSeries.CreateBoxPlot(new ChartSeriesId("observed"), "Observed", new[] {
+    new ChartBoxPlot(1, 12, 22, 30, 38, 48), new ChartBoxPlot(2, 8, 12, 22, 30, 42),
+    new ChartBoxPlot(3, 15, 24, 32, 40, 50), new ChartBoxPlot(4, 22, 35, 40, 48, 58)
+}).WithPointFillPattern(2, ChartFillPattern.DiagonalForward);
+chart.WithXLabels("Standard", "Express", "Premium", "Bulk").AddSeries(expected).AddSeries(observed)
+    .ConfigureBoxPlot(options => options.Orientation = ChartOrientation.Vertical)
+    .WithDataLabels();
+chart.WithYAxis("Delivery time (minutes)");
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Delivery time by service level", "Expected and observed delivery times side by side; observed Premium is hatched", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion

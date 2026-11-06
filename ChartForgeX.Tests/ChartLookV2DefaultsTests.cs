@@ -145,6 +145,7 @@ public sealed class ChartLookV2DefaultsTests {
     [InlineData(800, 440, VisualThemeMode.Dark)]
     [InlineData(360, 360, VisualThemeMode.Light)]
     [InlineData(360, 360, VisualThemeMode.Dark)]
+    [InlineData(390, 420, VisualThemeMode.Light)]
     public void PartToWholeLegendListsBesideAWidePlotOrInTwoCompactColumns(int width, int height, VisualThemeMode mode) {
         var prepared = Prepare(PieRecipe.Create(width < 480 ? "compact" : "wide", mode), width, height, mode);
         var entries = prepared.Regions.Where(region => region.Role == "legend").Select(region => region.Bounds).ToArray();
@@ -160,6 +161,9 @@ public sealed class ChartLookV2DefaultsTests {
         } else {
             Assert.Equal(2, entries.Select(entry => Math.Round(entry.Left, 3)).Distinct().Count());
             Assert.All(entries, entry => Assert.True(entry.Bottom <= slice.Cy - slice.Outer + .001, "The compact grid stays above the pie."));
+            // Columns are sized from their own entries, so a 390 px frame keeps every name whole rather than halving the row.
+            if (width >= 390) Assert.DoesNotContain(prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "legend-label"),
+                node => Assert.Single(node.Text.Lines).Text.EndsWith("…", StringComparison.Ordinal));
         }
         var authored = PieRecipe.Create(width < 480 ? "compact" : "wide", mode);
         authored.Options.LegendPosition = ChartLegendPosition.TopLeft;
@@ -167,6 +171,17 @@ public sealed class ChartLookV2DefaultsTests {
         var keptSlice = kept.Scene.Nodes.OfType<VisualSceneSlice>().First(node => node.Role != null && node.Outer > 0);
         Assert.All(kept.Regions.Where(region => region.Role == "legend"), region =>
             Assert.True(region.Bounds.Bottom <= keptSlice.Cy - keptSlice.Outer + .001, "An authored position keeps the wrapped legend above the plot."));
+    }
+
+    [Theory]
+    [InlineData(VisualThemeMode.Light)]
+    [InlineData(VisualThemeMode.Dark)]
+    public void CompactColumnsThatCannotFitShortenNamesButKeepEveryValue(VisualThemeMode mode) {
+        // Three-digit revenue and long service names cannot fit two columns in 292 px, so names give up the width.
+        var prepared = Prepare(DonutRecipe.Create("compact", mode), 320, 360, mode);
+        Assert.Contains(Texts(prepared, "legend-label"), node => Assert.Single(node.Text.Lines).Text.EndsWith("…", StringComparison.Ordinal));
+        Assert.Equal(new[] { "312", "241", "187", "133", "79", "48" }, Texts(prepared, "legend-value").Select(node => Assert.Single(node.Text.Lines).Text));
+        Assert.Equal(6, Texts(prepared, "legend-percentage").Count(node => Assert.Single(node.Text.Lines).Text.EndsWith("%", StringComparison.Ordinal)));
     }
 
     [Fact]

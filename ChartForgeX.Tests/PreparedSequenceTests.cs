@@ -202,7 +202,7 @@ public sealed class PreparedSequenceTests {
         Assert.True(width >= 500); Assert.True(height > 240);
         Assert.Contains(xml.Descendants(), e => (string?)e.Attribute("data-cfx-role") == "sequence-activation-bar");
         Assert.Contains(xml.Descendants(), e => (string?)e.Attribute("data-cfx-role") == "sequence-branch");
-        Assert.Equal(model.ToSvg(), source.ToSvg());
+        Assert.Equal(model.ToSvg(), source.ToSvg(new VisualArtifactRenderOptions { EmbedProductFonts = true }));
         var pixels = ChartForgeX.Raster.RasterImageDecoder.Decode(model.ToPng());
         Assert.Equal((int)Math.Ceiling(width), pixels.Width); Assert.Equal((int)Math.Ceiling(height), pixels.Height);
         Assert.Throws<NotSupportedException>(() => model.Prepare(Context(500, 240)));

@@ -12,19 +12,19 @@ This split keeps ChartForgeX dependency-free at runtime, keeps Markdown support 
 
 ## Diagram appearance
 
-Unconfigured diagrams use Graphite in the selected light or dark mode. Fonts come from `VisualTheme.Typography.Family`; a host theme or font override remains authoritative. Diagram roles use a 20-pixel title, 14-pixel subtitle, 13-pixel node caption and smaller relationship/member text. Explicit source typography still applies.
+Unconfigured diagrams, and sources that name Mermaid's `default` or `dark` theme, use Graphite in the matching light or dark mode. Every family draws on the theme's card surface, like a chart, with node surfaces one step toward the ink. Fonts come from `VisualTheme.Typography.Family`; a host theme or font override remains authoritative. Diagram headings use the shared chart scale (17-pixel titles, 15 on canvases narrower than 480 pixels), node captions keep a 13-pixel minimum and relationship/member text is smaller. Explicit source typography still applies.
 
-Every family shares one flat look. Connectors are single 1.5-pixel strokes without glow layers, solid unless the notation is dashed (dotted flowchart links, class dependencies, non-identifying ER relationships, traced requirement relationships). Relationship captions sit on a borderless chip just off the canvas tone that hugs the text, and multiplicities only mask their line. Cards with an icon (C4, architecture) fit their content up to a shared wrapping width. Sequence participants are flat; Mermaid's neo elevation applies when the source sets `look: neo` or names one of Mermaid's themes. A C4 boundary whose containers form a chain lays that chain along the requested canvas's long axis, with people and external systems across it.
+Every family shares one flat look. Connectors are single 1.5-pixel strokes without glow layers, solid unless the notation is dashed (dotted flowchart links, class dependencies, non-identifying ER relationships, traced requirement relationships). Relationship captions sit on a borderless chip just off the canvas tone that hugs the text, and multiplicities only mask their line. Cards with an icon (C4, architecture) fit their content up to a shared wrapping width. Sequence participants are flat; Mermaid's neo elevation applies when the source sets `look: neo` or names one of Mermaid's alternative themes. A C4 boundary whose containers form a chain lays that chain along the requested canvas's long axis, with people and external systems across it.
 
-To retain Mermaid's lavender default palette, request it in the source:
+Mermaid's alternative themes (`base`, `forest`, `neutral`, `neo`, `neo-dark` and the `redux` family) remain explicit opt-ins, and authored `themeVariables`, `classDef` and `style` declarations override the defaults:
 
 ```mermaid
-%%{init: {"theme":"default"}}%%
+%%{init: {"theme":"forest"}}%%
 flowchart LR
     Request --> Response
 ```
 
-Automatic topology-backed diagrams fit their measured nodes, groups, routes and labels with even outer padding. Width and height guide layout and aspect selection; they no longer force empty space around a small diagram. An explicit source direction is preserved. Class, state, ER and C4 layouts choose a direction from the requested aspect when the source omits one. Git graphs fit their commit columns and lanes, and Gantt height follows its task rows. Hosts that require a fixed topology canvas can select `MermaidTopologySizing.FixedViewport`.
+Automatic topology-backed diagrams fit their measured nodes, groups, routes and labels with even outer padding. Width and height guide layout and aspect selection; they no longer force empty space around a small diagram. An explicit source direction is preserved. Class, state, ER and C4 layouts choose a direction from the requested aspect when the source omits one. Git graphs fit their commit columns and lanes, and Gantt height follows its task rows. Tree views, railroad grammars and Ishikawa diagrams use their measured natural frame, and block and packet diagrams end where their rows stop growing, unless the host sets a size. Venn set captions sit in their set's exclusive region, clear of other sets' outlines. Hosts that require a fixed topology canvas can select `MermaidTopologySizing.FixedViewport`.
 
 Class members render in attribute and method compartments. ER attributes use editable native table columns for type, name and key, with a description column when comments exist. Metadata retains the original member or attribute facts after layout, and portable snapshots retain compartments, grid lines and rich comments.
 
@@ -46,7 +46,7 @@ Reference rendering tools can be useful in tests and compatibility checks, but t
 
 The current semantic reference is Mermaid.js 12.2.0. The test harness also qualifies its recorded examples against pinned 10.9.8 and 11.17.2 references. Older spellings such as `graph`, `stateDiagram`/`stateDiagram-v2`, and `xychart`/`xychart-beta` are accepted where implemented. These fixture results do not establish complete compatibility with every Mermaid 10, 11 or 12 release.
 
-The [Mermaid roadmap](../TODO.md#mermaid) plans newer-syntax adoption and regression coverage for supported older syntax. The [support matrix](mermaid-support-matrix.md) separates native render paths, retained-only features, approximate mappings and missing families. CFX uses its own deterministic scene and appearance; syntax compatibility does not imply the same layout or pixels as Mermaid's browser renderer.
+The [support matrix](mermaid-support-matrix.md) lists what each family renders natively, what is read from the source but not drawn yet, where the drawing is an approximation, and which families are still missing. CFX uses its own deterministic scene and appearance; syntax compatibility does not imply the same layout or pixels as Mermaid's browser renderer.
 
 ## Current Scope
 
@@ -77,7 +77,7 @@ if (!result.HasErrors && result.Artifact != null) {
 }
 ```
 
-Inspect `Diagnostics` even when rendering succeeds: warnings identify syntax or configuration retained without exact visual interpretation. `accTitle` and single-line or multiline `accDescr` provide accessible names and descriptions. The `dark` and `default` source themes select static palettes. Source font stacks reach chart, topology, sequence and visual-block owners; native font resolution uses the existing fallback rules and does not fetch remote fonts. Additional themes and settings follow the documented family mappings; unsupported settings produce approximation warnings.
+Inspect `Diagnostics` even when rendering succeeds: warnings identify syntax or configuration retained without exact visual interpretation. `accTitle` and single-line or multiline `accDescr` provide accessible names and descriptions. The `dark` and `default` source themes select Graphite in dark or light mode. Source font stacks reach chart, topology, sequence and visual-block owners; native font resolution uses the existing fallback rules and does not fetch remote fonts. Additional themes and settings follow the documented family mappings; unsupported settings produce approximation warnings.
 
 The artifact title comes from the family render option `Title`, then the diagram's own `title` statement, then the frontmatter `title`, then a family name such as `Mermaid flowchart`. Like Mermaid, rendered diagrams have no subtitle by default; set the family option `Subtitle` (for example `options.Flowchart.Subtitle`) to add one. The header keyword line stays available as `mermaid.header` artifact metadata.
 
@@ -92,7 +92,7 @@ Topology diagram dimensions set the minimum canvas. The renderer expands the can
 ```csharp
 var options = new MermaidRenderOptions {
     Presentation = new MermaidPresentationOptions {
-        FontFamily = "Carlito",
+        FontFamily = ChartFontStacks.ProductSans,
         FontSize = 16,
         ThemeMode = VisualThemeMode.Dark,
         TopologySizing = MermaidTopologySizing.Natural
@@ -224,7 +224,7 @@ Flowchart links preserve circle (`A ---o B`), cross (`A ---x B`) and bidirection
 
 The metadata shape names `fr-rect` and `framed-rectangle` select the native subprocess surface; `question` selects a decision diamond; `lean-right` and `lean-left` select the two input/output parallelograms. `manual` and `trapezoid-top` select the upper-base trapezoid, while `priority` and `trapezoid-bottom` select the lower-base trapezoid. `odd` selects the asymmetric surface. These names use the same geometry as their supported short names or bracket notation. Expanded shapes without a native owner retain a warning and rectangle fallback.
 
-Gantt duration calculations apply `excludes`, `includes`, and Friday/Saturday weekend definitions. Explicit end dates stay explicit. Milestones use the midpoint of their authored duration, and `active` does not invent a percentage complete.
+Gantt duration calculations apply `excludes`, `includes`, and Friday/Saturday weekend definitions. Explicit end dates stay explicit. Milestones use the midpoint of their authored duration, and `active` does not invent a percentage complete. Each `section` is named once in a column beside its band, and task rows show only their own titles.
 
 ## Flowcharts
 
@@ -1545,7 +1545,7 @@ graph.SavePng("history.png");
 graph.SaveHtml("history.html");
 ```
 
-The compiled `GitGraphDepthRecipe` and its complete `.csharp.txt` programs use this ordinary Core-only block boundary. Exact gallery typography is an explicit optional program using the gallery's shipped Carlito regular/bold faces. Default programs use normal native font resolution. The native design is a deterministic static graph, not an upstream pixel-identity promise. Dense captions use the existing measured fitting/collision owner; the complete source model remains available when a caption cannot be displayed.
+The compiled `GitGraphDepthRecipe` and its complete `.csharp.txt` programs use this ordinary Core-only block boundary. Default programs use the bundled Archivo face. The optional gallery-typography program requests `ChartFontStacks.ProductSans` explicitly; standalone SVG carries its browser font, and `ChartFontAssets.StyleSheet` supplies the same faces for additional host text. See [font delivery and coverage](v2/typography.md). The native design is a deterministic static graph, not an upstream pixel-identity promise. Dense captions use the existing measured fitting/collision owner; the complete source model remains available when a caption cannot be displayed.
 
 ## Block Diagrams
 
@@ -2085,7 +2085,7 @@ Fence attributes currently understood by the bridge are `id`, `title`, `subtitle
 
 ## Growth Path
 
-The [Mermaid roadmap](../TODO.md#mermaid) tracks language depth, version coverage and missing families. New families follow the same pattern:
+The [support matrix](mermaid-support-matrix.md) shows language depth, version coverage and missing families. New families follow the same pattern:
 
 1. Detect the diagram family and preserve source spans.
 2. Add typed AST nodes for the real Mermaid grammar used by that family.

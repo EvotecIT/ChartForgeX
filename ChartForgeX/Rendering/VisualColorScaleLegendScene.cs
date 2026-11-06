@@ -81,7 +81,7 @@ internal static partial class VisualColorScaleLegendScene {
         var headingHeight = Math.Max(0, Math.Min(maximum, HeadingHeight(builder, style, gap, heading)));
         maximum = Math.Max(0, maximum - headingHeight);
         if (!hasDomain) return headingHeight + (inlineMissing ? 0 : Math.Max(0, Math.Min(maximum, row + gap)));
-        var captions = scale.Mode == ChartColorScaleMode.Discrete ? ChartColorScaleLegend.BandCaptions(labels, scale, formatValues, unit) : null;
+        var captions = scale.Mode == ChartColorScaleMode.Discrete ? ChartColorScaleLegend.BandCaptions(labels, scale, formatValues, unit, hasDomain ? max : null) : null;
         if (captions != null) {
             var flowMissing = missing && !inlineMissing && !BandMissingInHeading(builder, captions, labels, style, gap, width, headingHeight, heading, maximum);
             return headingHeight + Math.Max(0, Math.Min(maximum, BandFlowHeight(BandFlow(BandItems(builder, captions, labels, style, gap, flowMissing), gap, width), row, gap)));
@@ -94,12 +94,12 @@ internal static partial class VisualColorScaleLegendScene {
 
     /// <summary>Draws shared canonical stops or bands, retaining full captions and domains independently of viewport fit.</summary>
     internal static void Draw(VisualSceneBuilder builder, ChartColorScale scale, ChartLabels labels, TextStyle style, double gap,
-        ChartRect bounds, double min, double max, string prefix, bool missing, ChartColorBlend missingBlend,
+        ChartRect bounds, double min, double max, string prefix, bool missing, ChartMissingLook missingLook,
         Func<IReadOnlyList<double>, string[]> formatValues, string diagnosticCode = "matrix.scale-overflow", bool hasDomain = true,
         bool compact = false, ChartRect? missingBounds = null, string? heading = null, string? valueName = null,
         ChartColorLegendStyle legendStyle = ChartColorLegendStyle.Auto, string? unit = null, bool showStepLabels = false, bool numericIntervals = false) {
         if (scale.Captions.Count > 0) {
-            DrawCaptioned(builder, scale, labels, style, gap, bounds, min, max, prefix, missing, missingBlend, formatValues,
+            DrawCaptioned(builder, scale, labels, style, gap, bounds, min, max, prefix, missing, missingLook, formatValues,
                 diagnosticCode, hasDomain, missingBounds, heading, valueName, legendStyle);
             return;
         }
@@ -107,7 +107,7 @@ internal static partial class VisualColorScaleLegendScene {
         var fullBounds = bounds;
         var headingHeight = Math.Max(0, Math.Min(bounds.Height, HeadingHeight(builder, style, gap, heading)));
         if (heading != null) bounds = new ChartRect(bounds.Left, bounds.Top + headingHeight, bounds.Width, Math.Max(0, bounds.Height - headingHeight));
-        var captions = scale.Mode == ChartColorScaleMode.Discrete ? ChartColorScaleLegend.BandCaptions(labels, scale, formatValues, unit) : null;
+        var captions = scale.Mode == ChartColorScaleMode.Discrete ? ChartColorScaleLegend.BandCaptions(labels, scale, formatValues, unit, hasDomain ? max : null) : null;
         var inlineMidpoint = hasDomain && compact && InlineMidpoint(builder, scale, labels, style, gap, bounds.Width, min, max, formatValues, legendStyle);
         var plan = PlanLegacyLayout(builder, labels, style, gap, bounds.Width, headingHeight, bounds.Height, captions,
             scale.MidpointLabel != null && !inlineMidpoint, hasDomain && missing && !missingBounds.HasValue, heading);
@@ -245,13 +245,11 @@ internal static partial class VisualColorScaleLegendScene {
         }
 
         void Missing(double top, ChartRect? target = null) {
-            var blend = missingBlend;
             var lane = target ?? bounds;
             var box = new ChartRect(lane.Left, top + row * .15, row * .7, row * .7);
             using (VisualStateSceneTools.Mark(builder, prefix + "-empty", prefix + "-empty", box, labels.NoData,
                 new Dictionary<string, string> { ["data-cfx-empty"] = "true" })) {
-                // A pale fill alone disappears on both themes, so the no-data key also gets an outline and a hatch.
-                VisualMissingDataScene.Swatch(builder, box, blend, style.Color, prefix, scale.NoDataColor == null);
+                VisualMissingDataScene.Swatch(builder, box, missingLook, prefix, style.Color);
             }
             Caption(labels.NoData, new ChartRect(lane.Left + row, top, Math.Max(0, lane.Width - row), row), "missing", TextAlignment.Left);
         }
@@ -265,6 +263,12 @@ internal static partial class VisualColorScaleLegendScene {
                 builder.Rect(box, blend.Color, radius: 1, role: prefix + "-swatch", paint: VisualChartPaint.Fill(blend.Paint));
         }
         void Caption(string text, ChartRect box, string id, TextAlignment alignment) {
+            if (id == "low" || id == "high") {
+                // Endpoint ink can extend beyond its measured advance. Keep the key's
+                // existing half-gap inside each caption lane, as for its swatch captions.
+                var inset = Math.Min(gap / 2, box.Width / 2);
+                box = new ChartRect(box.Left + inset, box.Top, Math.Max(0, box.Width - inset * 2), box.Height);
+            }
             var captionStyle = captions != null || id == "midpoint" ? FitCaptionStyle(builder, text, style, box.Width) : style;
             VisualStateSceneTools.Text(builder, text, box, captionStyle, prefix + "-label", prefix + "-label-" + id, alignment);
         }
@@ -335,8 +339,10 @@ internal static partial class VisualColorScaleLegendScene {
         string text, TextStyle style, ChartRect lane, double anchor, bool inwardEdges = true) {
         anchor = Math.Max(lane.Left, Math.Min(lane.Right, anchor));
         var symmetric = Math.Max(0, 2 * Math.Min(anchor - lane.Left, lane.Right - anchor));
-        if (!inwardEdges || symmetric > 0 && builder.MeasureText(text, FitCaptionStyle(builder, text, style, symmetric)).Width <= symmetric)
-            return (new ChartRect(anchor - symmetric / 2, lane.Top, symmetric, lane.Height), TextAlignment.Center);
+        if (!inwardEdges || symmetric > 0 && builder.MeasureText(text, FitCaptionStyle(builder, text, style, symmetric)).Width <= symmetric) {
+            var left = Math.Max(lane.Left, anchor - symmetric / 2);
+            return (new ChartRect(left, lane.Top, Math.Min(symmetric, Math.Max(0, lane.Right - left)), lane.Height), TextAlignment.Center);
+        }
         return anchor <= lane.Left + lane.Width / 2
             ? (new ChartRect(anchor, lane.Top, Math.Max(0, lane.Right - anchor), lane.Height), TextAlignment.Left)
             : (new ChartRect(lane.Left, lane.Top, Math.Max(0, anchor - lane.Left), lane.Height), TextAlignment.Right);
@@ -379,17 +385,22 @@ internal static partial class VisualColorScaleLegendScene {
     }
 
     // Share a caption row only when actual glyph widths leave all three labels disjoint at their exact anchors.
-    private static bool InlineMidpoint(VisualSceneBuilder builder, ChartColorScale scale, ChartLabels labels, TextStyle style,
+    internal static bool InlineMidpoint(VisualSceneBuilder builder, ChartColorScale scale, ChartLabels labels, TextStyle style,
         double gap, double width, double min, double max, Func<IReadOnlyList<double>, string[]> formatValues, ChartColorLegendStyle legendStyle) {
         if (scale.Mode == ChartColorScaleMode.Discrete || scale.MidpointLabel == null || width <= 0) return false;
         var endpoints = formatValues(new[] { scale.EffectiveMinimum(min), scale.EffectiveMaximum(max) });
         var low = builder.MeasureText((scale.LowLabel ?? labels.Less) + " · " + endpoints[0], style).Width;
         var high = builder.MeasureText((scale.HighLabel ?? labels.More) + " · " + endpoints[1], style).Width;
         var midpoint = builder.MeasureText(scale.MidpointLabel + " · " + formatValues(new[] { scale.EffectiveMidpoint(min, max) })[0], style).Width;
-        var steps = ChartColorScaleLegend.Steps(scale, min, max);
-        var x = scale.Mode == ChartColorScaleMode.Diverging && scale.EffectiveMaximum(max) > scale.EffectiveMinimum(min)
-            ? legendStyle == ChartColorLegendStyle.Gradient ? width * ChartColorScaleLegend.MidpointRatio(scale, min, max)
-                : (ChartColorScaleLegend.MidpointStep(scale, min, max, steps.Length) + .5) * width / steps.Length : width / 2;
+        var x = MidpointAnchor(scale, min, max, width, legendStyle);
         return low + gap <= x - midpoint / 2 && x + midpoint / 2 + gap <= width - high;
+    }
+
+    /// <summary>The midpoint caption's centre from the key's left edge: under the midpoint of a diverging key, else centred.</summary>
+    internal static double MidpointAnchor(ChartColorScale scale, double min, double max, double width, ChartColorLegendStyle legendStyle) {
+        if (scale.Mode != ChartColorScaleMode.Diverging || scale.EffectiveMaximum(max) <= scale.EffectiveMinimum(min)) return width / 2;
+        if (legendStyle == ChartColorLegendStyle.Gradient) return width * ChartColorScaleLegend.MidpointRatio(scale, min, max);
+        var steps = ChartColorScaleLegend.Steps(scale, min, max).Length;
+        return (ChartColorScaleLegend.MidpointStep(scale, min, max, steps) + .5) * width / steps;
     }
 }

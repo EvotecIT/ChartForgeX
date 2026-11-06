@@ -67,11 +67,17 @@
     <EmbeddedResource Include="Assets\interactive.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.interactive.js" />
     <EmbeddedResource Include="Assets\interactive.core.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.interactive.core.js" />
     <EmbeddedResource Include="Assets\interactive.standalone.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.interactive.standalone.js" />
+    <EmbeddedResource Include="Assets\interactive.feature.motion.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.interactive.feature.motion.js" />
+    <EmbeddedResource Include="Assets\interactive.feature.data.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.interactive.feature.data.js" />
+    <EmbeddedResource Include="Assets\interactive.feature.isolate.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.interactive.feature.isolate.js" />
+    <EmbeddedResource Include="Assets\interactive.feature.hierarchy.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.interactive.feature.hierarchy.js" />
     <EmbeddedResource Include="Assets\adapter-localization.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.adapter-localization.js" />
     <EmbeddedResource Include="Assets\adapter-lifetime.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.adapter-lifetime.js" />
     <EmbeddedResource Include="Assets\adapter-native-text-export.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.adapter-native-text-export.js" />
     <EmbeddedResource Include="Assets\graph-explorer.00-lifetime.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.00-lifetime.js" />
     <EmbeddedResource Include="Assets\topology-interaction.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.topology-interaction.js" />
+    <EmbeddedResource Include="Assets\diagram-interaction.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.diagram-interaction.js" />
+    <EmbeddedResource Include="Assets\diagram-interaction.css" LogicalName="ChartForgeX.Interactivity.Html.Assets.diagram-interaction.css" />
     <EmbeddedResource Include="Assets\topology-icon-stencil-browser.css" LogicalName="ChartForgeX.Interactivity.Html.Assets.topology-icon-stencil-browser.css" />
     <EmbeddedResource Include="Assets\topology-icon-stencil-browser.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.topology-icon-stencil-browser.js" />
     <EmbeddedResource Include="Assets\graph-explorer.css" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.css" />

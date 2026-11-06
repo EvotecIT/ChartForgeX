@@ -11,7 +11,7 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualScheduleCompiler {
     private static ScheduleLayout LaneLayout(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport,
         IEnumerable<string> names, IEnumerable<string?> summaries, bool hasSummary, bool now, IReadOnlyList<double> ticks, Func<double, string> format, bool hasFixedTicks = false,
-        double units = 0) {
+        double units = 0, double leadingWidth = 0) {
         if (chart.IsStrip) return new ScheduleLayout(viewport, false, viewport.Right, 0, viewport,
             VisualStateSceneTools.TickStyle(chart, context), format, hasFixedTicks);
         var cache = new Dictionary<double, string>(); var originalFormat = format;
@@ -25,13 +25,14 @@ internal static partial class VisualScheduleCompiler {
         var lineHeight = builder.MeasureText("Mg", style).Height;
         var hasRowState = chart.Series.Any(series => HasRowState(series.RowOptions));
         var rowStyle = hasRowState ? EmphasizedRowStyle(style) : style;
-        var nameWidth = names.Select(name => builder.MeasureText(name, rowStyle).Width).DefaultIfEmpty(0).Max() + (hasRowState ? 6 : 0);
+        var nameWidth = names.Select(name => builder.MeasureText(name, rowStyle).Width).DefaultIfEmpty(0).Max() + (hasRowState ? 6 : 0) + leadingWidth;
         var summaryWidth = summaries.Select(summary => builder.MeasureText(summary ?? string.Empty, rowStyle).Width).DefaultIfEmpty(0).Max();
-        summaryWidth = Math.Max(summaryWidth, builder.MeasureText(chart.Options.LaneSummaryHeader ?? string.Empty, style).Width);
+        // A whole-pixel reserve keeps right-edge subtraction from undercutting fractional measured advances.
+        summaryWidth = Math.Ceiling(Math.Max(summaryWidth, builder.MeasureText(chart.Options.LaneSummaryHeader ?? string.Empty, style).Width));
         var angle = Math.Max(-80, Math.Min(80, chart.Options.XAxis.LabelAngle));
         var tickHeight = ticks.Select(tick => VisualAxisText.RotatedMetrics(builder.MeasureText(format(tick), style), angle).Height).DefaultIfEmpty(lineHeight).Max();
         var axisTitleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle {
-            Font = context.Font, FontSize = context.Theme.Typography.AxisTitleSize, Color = context.Theme.Resolve(context.ThemeMode).Foreground
+            Font = context.FontWithWeight(context.Theme.Typography.AxisTitleWeight), FontSize = context.Theme.Typography.AxisTitleSize, Color = context.Theme.Resolve(context.ThemeMode).MutedForeground
         });
         var axisTitle = ChartTimeScale.DecorateTitle(chart.Options.XAxis, chart.XAxisTitle);
         axisTitleStyle = VisualAxisText.FitOversized(builder, axisTitleStyle, new ChartRect(0, 0, viewport.Width, viewport.Height * .15), new[] { axisTitle });
@@ -42,7 +43,9 @@ internal static partial class VisualScheduleCompiler {
         var titleReserve = axisTitle.Length > 0 ? axisTitleHeight + gap : 0;
         var axisReserve = Math.Min(tickHeight + gap, Math.Max(0, viewport.Height - top - titleReserve - 1));
         var plot = ChartStateTimelineModel.LanePlotArea(chart, viewport, hasSummary, chart.Options.LaneSummaryHeader,
-            nameWidth, summaryWidth, lineHeight, 0, top, axisReserve, axisTitleHeight + gap);
+            nameWidth, summaryWidth, lineHeight, 0, top, axisReserve, axisTitleHeight + gap,
+            // A leading section column shares the gutter with the row titles, so the gutter may grow a little.
+            leadingWidth > 0 ? SectionedLabelShare : ChartStateTimelineModel.LabelColumnShare);
         var plotLeft = Math.Min(viewport.Right, plot.Left); var plotTop = Math.Min(viewport.Bottom, plot.Top);
         plot = new ChartRect(plotLeft, plotTop, Math.Max(0, Math.Min(viewport.Right, plot.Right) - plotLeft), Math.Max(0, Math.Min(viewport.Bottom, plot.Bottom) - plotTop));
         // Design rule 10: rows keep a fixed slot; the time axis follows the last row instead of the canvas bottom.
@@ -77,7 +80,7 @@ internal static partial class VisualScheduleCompiler {
             TickLabels(chart, context, builder, viewport, layout, ticks, project, format, style);
             if (chart.Options.XAxis.ShowLine) builder.Line(plot.Left, plot.Bottom, plot.Right, plot.Bottom, colors.Border, context.Theme.AxisStrokeWidth, "schedule-axis", paint: VisualChartPaint.Stroke(colors.Border, SvgColorRole.Axis));
             var title = ChartTimeScale.DecorateTitle(chart.Options.XAxis, chart.XAxisTitle);
-            var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.Foreground });
+            var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.FontWithWeight(context.Theme.Typography.AxisTitleWeight), FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.MutedForeground });
             VisualStateSceneTools.Text(builder, title, new ChartRect(plot.Left, plot.Bottom + layout.AxisReserve, plot.Width, Math.Max(0, viewport.Bottom - plot.Bottom - layout.AxisReserve)),
                 titleStyle, "schedule-x-axis-title", "schedule-x-title", TextAlignment.Center);
         }
@@ -86,11 +89,12 @@ internal static partial class VisualScheduleCompiler {
                 chart.Options.AxisTitleStyle.Resolve(style), "schedule-y-axis-title", "schedule-y-title");
         if (layout.HasSummary && !string.IsNullOrWhiteSpace(chart.Options.LaneSummaryHeader))
             VisualStateSceneTools.Text(builder, chart.Options.LaneSummaryHeader!, new ChartRect(layout.SummaryLeft, viewport.Top,
-                Math.Max(0, viewport.Right - layout.SummaryLeft), Math.Max(0, plot.Top - viewport.Top)), style, "lane-summary-header", "schedule-summary-header", TextAlignment.Right);
+                Math.Max(0, viewport.Right - layout.SummaryLeft), Math.Max(0, plot.Top - viewport.Top)), style, "lane-summary-header", "schedule-summary-header", TextAlignment.Right,
+                shrink: (chart.Options.TickLabelStyle.FontSize ?? context.Theme.Typography.AxisSize) > VisualTextFitting.MaximumOrdinaryFontSize);
     }
 
     private static void LaneText(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport, ScheduleLayout layout,
-        string name, string? summary, double top, double height, int index, string? group = null, double pitch = 0) {
+        string name, string? summary, double top, double height, int index, string? group = null, double pitch = 0, double leading = 0) {
         var style = VisualStateSceneTools.TickStyle(chart, context); var plot = layout.Plot; var gap = context.Theme.Spacing;
         if (chart.Options.ShowGrid) {
             var grid = chart.Options.ResolvePreparedGridLineStyle();
@@ -114,11 +118,19 @@ internal static partial class VisualScheduleCompiler {
         }
         using var row = builder.PushGroup("schedule-lane-row-" + index, ChartDomRoles.ScheduleRow, LaneMetadata(chart, index, group));
         if (showName) {
-            var inset = emphasized ? 6 : 0;
+            var inset = (emphasized ? 6 : 0) + leading;
             var labelWidth = Math.Max(0, plot.Left - viewport.Left - gap - inset);
             var labelStyle = ChartRowText.Style(builder, style, name, height, labelWidth);
             var wrapped = TextLayoutEngine.Layout(name, Math.Max(1, labelWidth), labelStyle);
             var captionHeight = pitch > 0 ? Math.Max(height, pitch) : height;
+            // A narrow gutter must not split a word across lines. Use the readable floor
+            // for the complete name first; otherwise the name shortens on one line.
+            if (wrapped.Lines.Count > 1 && !WrapsWholeWords(name, wrapped)) {
+                var floor = labelStyle.Clone(); floor.FontSize = Math.Min(labelStyle.EffectiveFontSize, ChartRowText.MinimumFontSize);
+                var refit = TextLayoutEngine.Layout(name, Math.Max(1, labelWidth), floor);
+                if (WrapsWholeWords(name, refit) && refit.Metrics.Height <= captionHeight) { labelStyle = floor; wrapped = refit; }
+                else wrapped = TextLayoutEngine.Layout(name, 1e6, labelStyle);
+            }
             if (wrapped.Lines.Count > 1 && wrapped.Metrics.Height <= captionHeight) {
                 var displayed = string.Join("\n", wrapped.Lines.Select(line => line.Text));
                 VisualStateSceneTools.Text(builder, name, new ChartRect(viewport.Left + inset, top + (height - captionHeight) / 2, labelWidth, captionHeight), labelStyle,
@@ -137,6 +149,9 @@ internal static partial class VisualScheduleCompiler {
                 ChartDomRoles.LaneSummary, "schedule-summary-" + index, TextAlignment.Right);
         }
     }
+
+    private static bool WrapsWholeWords(string text, TextLayout layout) =>
+        string.Join(" ", layout.Lines.Select(line => line.Text.Trim())) == string.Join(" ", text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
 
     private static void GroupHeader(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, string name, double left, double width, double top, double height,
         string role, string id) {

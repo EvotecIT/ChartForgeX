@@ -1,0 +1,68 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var chart = TopologyChart.Create().WithId("native-usecase-advanced-actors").WithTitle("Participants in a request")
+    .WithSubtitle("Plain, hollow, business, silhouette and finite native icon actors")
+    .WithTheme(VisualTheme.Graphite(), mode).WithViewport(1100, 680, 28)
+    .WithLayout(TopologyLayoutMode.Layered, TopologyLayoutDirection.TopToBottom);
+chart.DefaultRenderOptions = new TopologyRenderOptions { FitContentToViewport = false, IncludeLegend = false,
+    WrapNodeLabels = true, AllowMultilineNodeLabels = true, MaxNodeLabelLines = 6, MaxNodeSubtitleLines = 6 };
+var ids = new[] { "Plain", "Hollow", "Business", "BusinessHollow", "Silhouette", "Icon" };
+var stereotypes = new[] { "participant", "external", "business", "partner", "operator", "system" };
+var shapes = new[] { TopologyNodeShape.Actor, TopologyNodeShape.ActorHollow, TopologyNodeShape.ActorBusiness,
+    TopologyNodeShape.ActorBusinessHollow, TopologyNodeShape.ActorSilhouette, TopologyNodeShape.ActorIcon };
+var associations = new[] { "plain", "hollow", "business", "partner", "operator", "system" };
+for (var index = 0; index < ids.Length; index++) {
+    chart.AddAutoNode(ids[index], ids[index], width: 140, height: 116);
+    var actor = chart.Nodes[index]; actor.Shape = shapes[index]; actor.Kind = TopologyNodeKind.Generic;
+    actor.Subtitle = "«" + stereotypes[index] + "»";
+}
+// Retain finite native geometry independently of the optional catalog id, including after save/load.
+chart.Nodes[5].IconId = "network:router";
+chart.Nodes[5].IconShape = TopologyIconShape.Router;
+chart.Nodes[5].Kind = TopologyNodeKind.Gateway;
+chart.Nodes[5].Symbol = "RTR";
+chart.Nodes[5].Color = "#2563EB";
+chart.AddAutoNode("Submit", "Submit request", width: 190, height: 100);
+chart.Nodes[6].Shape = TopologyNodeShape.BusinessEllipse;
+chart.Nodes[6].Kind = TopologyNodeKind.Generic;
+chart.Nodes[6].Subtitle = "«business action»";
+foreach (var node in chart.Nodes) { node.ShowStatusBadge = false; node.DisplayMode = TopologyNodeDisplayMode.Card; node.PreserveDisplayModeSize = true; }
+for (var index = 0; index < ids.Length; index++)
+    chart.AddEdge(associations[index], ids[index], "Submit", kind: TopologyEdgeKind.Dependency,
+        direction: VisualLinkDirection.Forward, routing: TopologyEdgeRouting.Straight);
+chart.Annotations.Add(new TopologyAnnotation("participants", "All participants retain their own identity", "Submit"));
+chart.Accessibility.Name = "Finite native use case actor forms";
+
+#region Output
+if ((object)chart is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Finite native actor forms").WithSubtitle("Hollow, business, silhouette and retained native icon participants share measured captions and routes").WithTheme(theme, mode).ToVisualArtifact();
+    natural.SaveSvg("visual.svg");
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(1391, 377)), theme, mode,
+    new VisualFrame("Finite native actor forms", "Hollow, business, silhouette and retained native icon participants share measured captions and routes", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Topology).ToHtmlPage());
+#endregion

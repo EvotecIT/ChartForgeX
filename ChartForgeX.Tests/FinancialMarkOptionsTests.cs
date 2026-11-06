@@ -71,7 +71,8 @@ public sealed class FinancialMarkOptionsTests {
         item.StrokeWidth = null; item.Stroke = null; item.StrokeOpacity = null;
         Assert.Equal(before, Prepare(chart).ToSvg());
         var scene = Prepare(chart).Scene;
-        Assert.DoesNotContain(scene.Nodes, node => node.Role?.StartsWith("legend-financial", StringComparison.Ordinal) == true);
+        // The key always shows the rising and falling marks the series paints, never a single series swatch.
+        Assert.Contains(scene.Nodes, node => node.Role?.StartsWith("legend-financial", StringComparison.Ordinal) == true);
         var strokes = scene.Nodes.OfType<VisualSceneLine>().Where(node => node.Role == (kind == ChartSeriesKind.Candlestick ? "candlestick-wick" : "ohlc-stem")).ToArray();
         Assert.Equal(2, strokes.Length);
         Assert.All(strokes, stroke => Assert.Equal(kind == ChartSeriesKind.Candlestick ? 2 : 2.2, stroke.StrokeWidth));

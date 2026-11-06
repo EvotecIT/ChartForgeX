@@ -15,7 +15,7 @@ public sealed class MermaidUpperTypographyRegressionTests {
     [InlineData(true, 2)]
     [InlineData(true, 3)]
     public async Task NativeVennLongSetAndRegionCaptionsShareMeasuredSpace(bool dark, int count) {
-        var theme = VisualTheme.Report().WithFontFamily("Arial"); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: 256, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
+        var theme = VisualTheme.Graphite().WithFontFamily("Arial"); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: 256, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
         var block = VennDiagramBlock.Create().WithSize(320, 460).WithTheme(theme, dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .AddSet("A", "A collection", 60).AddSet("B", "B collection", 55)
             .AddIntersection(new[] { "A", "B" }, "Both", 18).AddText(new[] { "A" }, "note", "Data");
@@ -71,7 +71,7 @@ public sealed class MermaidUpperTypographyRegressionTests {
         Assert.NotEmpty(png);
         if (!InteractiveChartBrowser.Enabled) return;
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + svg + "</body></html>", width, 460);
-        Assert.True(await session.Page.EvaluateAsync<bool>("() => [...document.querySelectorAll('svg text')].filter(t=>t.textContent.length).every(t=>{ const b=t.getBoundingClientRect(); return b.width>0 && b.left>=-.01 && b.right<=innerWidth+.01 && b.top>=-.01 && b.bottom<=460.01; })"));
+        Assert.Empty(await session.Page.EvaluateAsync<string[]>("() => [...document.querySelectorAll('svg text')].filter(t=>t.textContent.length).filter(t=>{ const b=t.getBoundingClientRect(); return !(b.width>0 && b.left>=-.01 && b.right<=innerWidth+.01 && b.top>=-.01 && b.bottom<=460.01); }).map(t=>{ const b=t.getBoundingClientRect(); return t.textContent+' ['+[b.left,b.top,b.right,b.bottom].map(v=>v.toFixed(2)).join(',')+']'; })"));
         if (venn) Assert.True(await session.Page.EvaluateAsync<bool>("() => { const boxes=[...document.querySelectorAll('svg text')].filter(t=>['API','UI','Shared','Data'].includes(t.textContent)).map(t=>t.getBoundingClientRect()); return boxes.every((a,i)=>boxes.slice(i+1).every(b=>Math.min(a.right,b.right)-Math.max(a.left,b.left)<=.01 || Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)<=.01)); }"), "Venn captions must remain separate as well as inside the viewport.");
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
         var captures = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");

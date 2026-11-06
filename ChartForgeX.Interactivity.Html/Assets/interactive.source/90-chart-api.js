@@ -30,7 +30,11 @@
         if (renderer === null) delete root.cfxTooltipRenderer; else root.cfxTooltipRenderer = renderer;
         return controller;
       },
-      exportData: (format, options = {}) => { requireMounted(); return options.copy ? copyChartData(root, format) : exportChartData(root, format); },
+      exportData: (format, options = {}) => {
+        requireMounted();
+        if (!['csv', 'json'].includes(format)) throw new TypeError('Data export format: csv or json required.');
+        return exportChartData(root, format, options.copy);
+      },
       setContextMenuItems: items => { requireMounted(); lifetime.contextMenuItems = captureContextMenuItems(items); return controller; },
       update: (section, options = {}) => {
         requireMounted();
@@ -137,11 +141,12 @@
       dispose: () => { if (!lifetime.disposed) releaseChartLifetime(root); }
     });
     lifetime.controller = controller; chartLifetimes.set(root, lifetime); mountedCharts.add(root);
-    try { rememberNativeDrawingSnapshot(root, lifetime, root); prepareAdaptiveRoot(root, lifetime); bindChart(root); window[Symbol.for('ChartForgeX.nativeTextExport')].mount(root, release => ownChartWork(root, release)); bindAdaptiveLayout(root); watchChartLifetimes(); } catch (error) { releaseChartLifetime(root); throw error; }
+    try { rememberNativeDrawingSnapshot(root, lifetime, root); prepareAdaptiveRoot(root, lifetime); bindChart(root); window[Symbol.for('ChartForgeX.nativeTextExport')].mount(root, release => ownChartWork(root, release)); bindAdaptiveLayout(root); enterChart(root); watchChartLifetimes(); } catch (error) { releaseChartLifetime(root); throw error; }
     return controller;
   };
 
   window.ChartForgeXCharts = Object.freeze({ mount: mountChart,
     get: target => { const root = chartRoot(target), lifetime = root?.isConnected && chartLifetimes.get(root); return lifetime && !lifetime.disposed ? lifetime.controller : null; } });
   document.querySelectorAll('.cfx-interactive-chart').forEach(root => mountChart(root));
+  prefetchChartFeatures();
 })();

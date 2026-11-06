@@ -15,13 +15,19 @@ internal static partial class Program {
             if (result.HasErrors || result.Artifact?.Model is not SequenceArtifact model || model.Layout?.ParticipantBands == null)
                 throw new InvalidOperationException("Omitted Sequence preset/band projection failed.");
             if (model.Participants[0].Fill != null || model.Paint.ParticipantFill != null
-                || !model.Theme.Resolve(mode).Surface.Equals(VisualTheme.Graphite().Resolve(mode).Surface)
+                // Diagrams sit on the Graphite card surface; node surfaces are raised slightly from it.
+                || !model.Theme.Resolve(mode).Background.Equals(VisualTheme.Graphite().Resolve(mode).ElevatedSurface)
                 || result.Artifact.ToPng().Length == 0)
                 throw new InvalidOperationException("Unthemed Sequence did not inherit Graphite in the effective host mode.");
-            var literal = RenderFixture("%%{init:{\"theme\":\"default\"}}%%\n" + source, options);
-            if (literal.HasErrors || literal.Artifact?.Model is not SequenceArtifact explicitModel
-                || (explicitModel.Participants[0].Fill ?? explicitModel.Paint.ParticipantFill)?.ToCss() != "#ECECFF")
-                throw new InvalidOperationException("Explicit default Sequence palette did not remain literal.");
+            // Mermaid's default theme renders Graphite; an opt-in preset such as forest keeps its own palette.
+            var standard = RenderFixture("%%{init:{\"theme\":\"default\"}}%%\n" + source, options);
+            if (standard.HasErrors || standard.Artifact?.Model is not SequenceArtifact standardModel
+                || (standardModel.Participants[0].Fill ?? standardModel.Paint.ParticipantFill) != null)
+                throw new InvalidOperationException("Explicit default Sequence theme did not render Graphite.");
+            var preset = RenderFixture("%%{init:{\"theme\":\"forest\"}}%%\n" + source, options);
+            if (preset.HasErrors || preset.Artifact?.Model is not SequenceArtifact presetModel
+                || (presetModel.Participants[0].Fill ?? presetModel.Paint.ParticipantFill) == null)
+                throw new InvalidOperationException("Explicit forest Sequence preset did not keep its palette.");
             var restored = VisualArtifactInterchangeEnvelope.FromJson(result.Artifact.ToInterchangeJson()).ToSequenceArtifact();
             restored.Messages[0].Text = "Edited";
             if (!restored.ToSvg().Contains("Edited"))

@@ -115,7 +115,7 @@ public sealed class InteractiveCrosshairStylesBrowserTests {
 
     private static Chart Observation(bool graphite, bool dark) {
         var chart = Chart.Create().WithSize(800, 440).WithLegend(false).WithHeader(false)
-            .WithTheme(graphite ? VisualTheme.Graphite() : VisualTheme.Report(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
             .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("reading-source"), "Reading", new[] { new ChartPoint(5, 5) }));
         return chart;

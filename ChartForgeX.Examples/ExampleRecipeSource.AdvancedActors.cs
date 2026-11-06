@@ -9,8 +9,8 @@ public static partial class ExampleRecipeSource {
         return Template("RecipeAdvancedActorSourceProgram", new Dictionary<string, string>(StringComparer.Ordinal) {
             ["{{SOURCE_TEXT}}"] = JsonSerializer.Serialize(source), ["{{WIDTH}}"] = variant == "compact" ? "390" : "1100",
             ["{{HEIGHT}}"] = variant == "compact" ? "1160" : "680", ["{{MODE}}"] = mode.ToString(),
-            ["{{FONT_SETUP}}"] = galleryTypography ? "// Optional exact gallery typography; copy the gallery fonts directory beside this program.\nFontRegistry.Register(\"CFX Proof Carlito\", \"fonts/Carlito-Regular.ttf\", 400);\nFontRegistry.Register(\"CFX Proof Carlito\", \"fonts/Carlito-Bold.ttf\", 700);\n" : "",
-            ["{{FONT_FAMILY}}"] = galleryTypography ? JsonSerializer.Serialize("CFX Proof Carlito") : "null"
+            ["{{FONT_SETUP}}"] = galleryTypography ? ProductFontSetup : "",
+            ["{{FONT_FAMILY}}"] = galleryTypography ? "ChartFontStacks.ProductSans" : "null"
         });
     }
 }

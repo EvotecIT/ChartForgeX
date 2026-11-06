@@ -1,0 +1,48 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+using static RangeBarRecipe;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+#endregion
+
+Chart chart;
+chart = GroupedIntervals();
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Minimum and maximum delivery times", "Grouped horizontal intervals preserve both authored endpoints", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion
+
+static class RangeBarRecipe {
+    internal static Chart GroupedIntervals() {
+        var expected = ChartSeries.CreateRangeBar(new ChartSeriesId("expected"), "Expected", new[] {
+            new ChartInterval(1, 20, 40), new ChartInterval(2, 10, 30), new ChartInterval(3, 15, 35), new ChartInterval(4, 25, 50)
+        });
+        var observed = ChartSeries.CreateRangeBar(new ChartSeriesId("observed"), "Observed", new[] {
+            new ChartInterval(1, 22, 45), new ChartInterval(2, 32, 12), new ChartInterval(3, 18, 42), new ChartInterval(4, 28, 55)
+        });
+        var chart = Chart.Create().WithXLabels("Standard", "Express", "Premium", "Bulk").AddSeries(expected).AddSeries(observed)
+            .ConfigureRangeBar(options => options.Orientation = ChartOrientation.Horizontal)
+            .WithBarStyle(ChartBarStyle.SegmentedCapsule).WithDataLabels();
+    chart.WithXAxis("Delivery time (minutes)").WithYAxis("Service");
+        return chart;
+    }
+}

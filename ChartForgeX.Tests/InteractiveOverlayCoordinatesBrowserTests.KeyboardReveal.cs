@@ -19,7 +19,7 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
     public async Task KeyboardNavigationRevealsNativeMarksThroughScaledHorizontalAndVerticalStageScroll(bool graphite, double scale, bool verticalScroll) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(596, 338).WithTitle("Keyboard reveal coordinates").WithLegend(false)
-            .WithTheme(graphite ? VisualTheme.Graphite() : VisualTheme.Report())
+            .WithTheme(VisualTheme.Graphite())
             .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
             .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("reading-source"), "Reading", new[] { new ChartPoint(1, 9), new ChartPoint(5, 5), new ChartPoint(9, 1) }))
             .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("secondary-source"), "Secondary", new[] { new ChartPoint(1, 1), new ChartPoint(5, 1), new ChartPoint(9, 9) }));

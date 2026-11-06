@@ -256,7 +256,8 @@ public sealed class PyramidGeometryTests {
     private const double FullPlotAspect = 400d / 240d;
 
     private static Chart Pyramid(params double[] values) {
-        var chart = Chart.Create().WithXLabels(values.Select((_, index) => "Stage " + index).ToArray()).AddSeries(new ChartSeries(new ChartSeriesId("allocation"), "Allocation", ChartSeriesKind.Pyramid, Points(values)));
+        // Geometry is measured without the default stage captions, which take plot space.
+        var chart = Chart.Create().WithDataLabels(false).WithXLabels(values.Select((_, index) => "Stage " + index).ToArray()).AddSeries(new ChartSeries(new ChartSeriesId("allocation"), "Allocation", ChartSeriesKind.Pyramid, Points(values)));
         var colors = new[] { "#2468AC", "#BA7542", "#34957A", "#8762A3", "#7297AA" };
         for (var index = 0; index < values.Length; index++) chart.Series[0].WithPointColor(index, colors[index % colors.Length]);
         return chart;

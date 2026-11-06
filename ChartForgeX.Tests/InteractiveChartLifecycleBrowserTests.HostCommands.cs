@@ -1,4 +1,5 @@
 using System.Text.Json;
+using ChartForgeX.Core;
 using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
 using Microsoft.Playwright;
@@ -91,15 +92,17 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         await ScenarioCommandAsync(page, "cfx-capture-state", new { source = "review-bookmark", sync = false });
         var snapshot = await page.EvaluateAsync<JsonElement>("()=>bookmarkEvents[0].snapshot");
         Assert.Equal("north", Assert.Single(snapshot.GetProperty("selectedTargets").EnumerateArray()).GetProperty("observationId").GetString());
-        Assert.True(snapshot.GetProperty("viewport").GetProperty("zoom").GetDouble() > 1);
-        Assert.NotEqual(0, snapshot.GetProperty("viewport").GetProperty("panX").GetDouble());
+        // The saved bubble chart re-projects, so its zoom and pan are a source-coordinate window.
+        var window = snapshot.GetProperty("nativeViewport").GetProperty("x");
+        Assert.True(window.GetProperty("maximum").GetDouble() - window.GetProperty("minimum").GetDouble() < 3 - 1e-6);
+        Assert.NotEqual(.3, window.GetProperty("minimum").GetDouble(), 6);
         await CaptureAsync(page, "review-bookmark-captured", snapshot);
         await page.Locator("[data-cfx-reset]").ClickAsync();
         Assert.Equal(0, await page.Locator("[aria-selected=true]").CountAsync());
-        Assert.Equal("1.000", await page.Locator(Root).GetAttributeAsync("data-cfx-zoom"));
+        Assert.Equal("[0,3]", await page.EvaluateAsync<string>("()=>JSON.stringify([chartController.getViewport().x.minimum,chartController.getViewport().x.maximum])"));
         await page.Locator(Root).EvaluateAsync("root=>root.dispatchEvent(new CustomEvent('cfx-apply-state',{detail:{snapshot:bookmarkEvents[0].snapshot,sync:false}}))");
         Assert.Equal("true", await page.Locator(North).GetAttributeAsync("aria-selected"));
-        Assert.True(await page.Locator(Root).EvaluateAsync<bool>("root=>Number(root.dataset.cfxZoom)===bookmarkEvents[0].snapshot.viewport.zoom && Number(root.dataset.cfxPanX)===bookmarkEvents[0].snapshot.viewport.panX"));
+        Assert.True(await page.EvaluateAsync<bool>("()=>{const saved=bookmarkEvents[0].snapshot.nativeViewport.x,current=chartController.getViewport().x;return Math.abs(saved.minimum-current.minimum)<1e-9&&Math.abs(saved.maximum-current.maximum)<1e-9;}"));
         Assert.Equal(1, await page.EvaluateAsync<int>("()=>bookmarkApplied.length"));
         await CaptureAsync(page, "review-bookmark-restored", snapshot);
         await UpdateAsync(page, Readings().ToInteractiveHtmlFragmentWithoutAssets(options => Configure(options, false)));
@@ -114,9 +117,12 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     }
 
     [BrowserFact]
-    public async Task NativeWheelZoomsAndCanceledTouchBrushReleasesUncommittedPresentation() {
+    public async Task DeclinedWheelLeavesTheDrawingAndCanceledTouchBrushReleasesUncommittedPresentation() {
         if (!Enabled) return;
-        await using var session = await OpenAsync(Readings(dark: true).ToInteractiveHtmlPage(options => {
+        // A saved page cannot re-project a difference-area series, so zoom declines and a committed brush stays a selection.
+        var chart = Readings(dark: true).AddSeries(ChartSeries.CreateDifferenceArea(new ChartSeriesId("gap"), "Gap",
+            new[] { new ChartDifferencePoint(0.4, 0, 1), new ChartDifferencePoint(0.6, 0, 1) }));
+        await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             Fit(options); options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Brush);
         }), 820, 680);
         var page = session.Page;
@@ -131,8 +137,12 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         var stage = await BoxAsync(page, ".cfx-stage");
         await page.Mouse.MoveAsync((float)(stage.X + stage.Width * .5), (float)(stage.Y + stage.Height * .5));
         await page.Mouse.WheelAsync(0, -120);
-        await page.WaitForFunctionAsync("()=>Number(document.querySelector('.cfx-interactive-chart').dataset.cfxZoom)>1");
-        Assert.Equal(1, await page.EvaluateAsync<int>("()=>nativeInput.viewport.length"));
+        // The wheel never scales a drawing the page cannot redraw: no viewport change and no zoom state.
+        Assert.Equal("true", await page.Locator(Root).GetAttributeAsync("data-cfx-zoom-declined"));
+        Assert.True(await page.Locator("[data-cfx-zoom=in]").IsDisabledAsync());
+        Assert.Equal(0, await page.EvaluateAsync<int>("()=>nativeInput.viewport.length"));
+        Assert.True(await page.EvaluateAsync<bool>("()=>!(Number(document.querySelector('.cfx-interactive-chart').dataset.cfxZoom)>1)"));
+        await SettlePresentationAsync(page);
         await page.Locator("[data-cfx-mode-button=brush]").ClickAsync();
         var mark = await BoxAsync(page, North);
         var x = mark.X + mark.Width / 2; var y = mark.Y + mark.Height / 2;

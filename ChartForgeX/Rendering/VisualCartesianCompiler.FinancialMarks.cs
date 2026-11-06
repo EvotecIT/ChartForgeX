@@ -116,7 +116,8 @@ internal static partial class VisualCartesianCompiler {
 
     private static Action<VisualSceneBuilder, ChartRect, VisualRenderContext>? FinancialLegend(Chart chart, ChartSeries series,
         int index, VisualThemeColors colors, int point = -1, ChartFillPattern pattern = ChartFillPattern.None) {
-        if (!series.HasFinancialStyleOverrides || series.Kind is not (ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc)) return null;
+        // Rising and falling marks carry the paired colours, so the key shows both rather than one series swatch.
+        if (series.Kind is not (ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc)) return null;
         var candle = series.Kind == ChartSeriesKind.Candlestick;
         var rising = point < 0 || series.RenderPoints[point * 4 + 3].Y >= series.RenderPoints[point * 4].Y;
         var first = FinancialStyle(series, index, point, rising, colors);
@@ -132,8 +133,10 @@ internal static partial class VisualCartesianCompiler {
                     FinancialDash(style.WickDash, scale), ChartStrokeDashes.NormalizeOffset(style.WickDash, style.WickDashOffset) * scale);
                 var x = slot.Left + slot.Width / 2; var y = slot.Top + slot.Height / 2;
                 var open = y + (up ? 8 : -8) * scale; var close = y - (up ? 8 : -8) * scale;
-                DrawFinancialMark(builder, candle, FinancialBody(x, 12 * scale, open, close), y - 18 * scale, y + 18 * scale,
-                    open, close, scaled, pattern, backdrop, legend: true, radiusScale: scale);
+                // The key names the direction its paired colour encodes, as the plotted marks do.
+                using (builder.PushGroup(null, null, new Dictionary<string, string> { ["data-cfx-direction"] = up ? "rising" : "falling" }))
+                    DrawFinancialMark(builder, candle, FinancialBody(x, 12 * scale, open, close), y - 18 * scale, y + 18 * scale,
+                        open, close, scaled, pattern, backdrop, legend: true, radiusScale: scale);
             }
             if (point >= 0) Glyph(bounds, first, rising);
             else {

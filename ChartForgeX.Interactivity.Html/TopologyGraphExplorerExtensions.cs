@@ -164,7 +164,7 @@ public static class TopologyGraphExplorerExtensions {
         var themedBackground = string.IsNullOrWhiteSpace(node.BackgroundColor);
         graphNode.Style.BackgroundColor = themedBackground
             ? null
-            : TopologyRenderPrimitives.NodeFill(node, theme, accentColor, new TopologyRenderOptions());
+            : TopologyRenderPrimitives.NodeFill(node, theme);
         graphNode.Style.BorderColor = options.AccentSource == TopologyAccentSource.Status
             ? "var(--cfx-topology-status-accent, " + accentColor + ")" : accentColor;
         if (options.AccentSource == TopologyAccentSource.Status) graphNode.Metadata["topology.accentSource"] = "status";

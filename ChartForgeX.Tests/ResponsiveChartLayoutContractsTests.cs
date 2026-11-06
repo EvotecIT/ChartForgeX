@@ -42,15 +42,41 @@ public sealed class ResponsiveChartLayoutContractsTests {
             .WithBarStyle(ChartBarStyle.Flat).WithMaximumBarWidth(220).WithXLabels("First", "Second")
             .AddBar("A", new[] { new ChartPoint(1, 1), new ChartPoint(2, 3) })
             .AddBar("B", new[] { new ChartPoint(equivalentCoordinates ? Math.BitIncrement(Math.BitIncrement(Math.BitIncrement(1))) : 1, 2) });
-        var html = "<html><body style='margin:0'><div id='panel' style='width:320px'>" +
-            new HtmlResponsiveChartRenderer().RenderFragment(chart, 240, 1600) + "</div></body></html>";
-        await using var session = await InteractiveChartBrowser.OpenAsync(html, 1440, 700);
+        // Fragments leave the product faces to the host, and the source caption centres rely on the measured face.
+        await using var session = await BrowserProofFonts.OpenAsync("<div id='panel' style='width:320px'>" +
+            new HtmlResponsiveChartRenderer().RenderFragment(chart, 240, 1600) + "</div>", 1440, 700);
         foreach (var width in new[] { 320, 779, 1120, 320 }) {
             await session.Page.EvaluateAsync("w=>document.querySelector('#panel').style.width=w+'px'", width);
             await session.Page.WaitForFunctionAsync("w=>Number(document.querySelector('[data-cfx-responsive-chart]').dataset.cfxLayoutWidth)===w", width);
             var geometry = await session.Page.EvaluateAsync<double[]>("()=>{const box=(s,p)=>document.querySelector(`[data-cfx-role=point][data-cfx-series='${s}'][data-cfx-point='${p}'] [data-cfx-role=bar]`).getBoundingClientRect(),a=box(0,0),b=box(1,0),c=box(0,1),label=[...document.querySelectorAll('[data-cfx-role=axis-x-label] text')].find(n=>n.textContent==='Second').getBoundingClientRect();return [a.width,b.width,c.width,(b.x+b.width/2-a.x-a.width/2)/2,label.x+label.width/2-c.x-c.width/2];}");
             Assert.InRange(geometry[0], 20, 220); Assert.Equal(geometry[0], geometry[1], .1); Assert.Equal(geometry[0], geometry[2], .1);
             Assert.Equal(geometry[3], geometry[4], .5);
+        }
+        InteractiveChartBrowser.AssertNoConsoleErrors(session);
+    }
+
+    [BrowserFact]
+    public async Task CartesianTextUsesTheStaticTypeRolesOnEitherSideOfTheCompactBreakpoint() {
+        if (!InteractiveChartBrowser.Enabled) return;
+        Chart Build(int width) {
+            var chart = Chart.Create().WithSize(width, 320).WithTitle("Requests").WithSubtitle("Last week")
+                .WithXLabels("North", "South", "East", "West").WithDataLabels(true);
+            chart.XAxisTitle = "Region"; chart.YAxisTitle = "Requests";
+            return chart.AddBar("Accepted", new[] { new ChartPoint(1, 12), new ChartPoint(2, 30), new ChartPoint(3, 22), new ChartPoint(4, 8) })
+                .AddBar("Rejected", new[] { new ChartPoint(1, 4), new ChartPoint(2, 6), new ChartPoint(3, 3), new ChartPoint(4, 2) });
+        }
+        const string sizes = """
+            root=>['frame-heading','legend-label','axis-x-label','axis-y-label','axis-x-title','axis-y-title','data-label'].map(role=>
+              [...new Set([...root.querySelectorAll('[data-cfx-role='+role+'] text')].map(t=>(parseFloat(getComputedStyle(t).fontSize)*t.getScreenCTM().a).toFixed(2)))].sort().join(' '))
+            """;
+        await using var session = await BrowserProofFonts.OpenAsync("<div id='panel' style='width:390px'>" + new HtmlResponsiveChartRenderer().RenderFragment(Build(760), 240, 1600)
+            + "</div><div id='compact' style='width:390px'>" + Build(390).ToSvg() + "</div><div id='wide' style='width:1120px'>" + Build(1120).ToSvg() + "</div>", 1440, 1400);
+        foreach (var (width, reference) in new[] { (390, "#compact"), (1120, "#wide"), (390, "#compact") }) {
+            await session.Page.EvaluateAsync("w=>document.querySelector('#panel').style.width=w+'px'", width);
+            await session.Page.WaitForFunctionAsync("w=>Number(document.querySelector('[data-cfx-responsive-chart]').dataset.cfxLayoutWidth)===w", width);
+            var expected = await session.Page.Locator(reference).EvaluateAsync<string[]>(sizes);
+            Assert.All(expected, size => Assert.NotEmpty(size));
+            Assert.Equal(expected, await session.Page.Locator("[data-cfx-responsive-chart]").EvaluateAsync<string[]>(sizes));
         }
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
     }

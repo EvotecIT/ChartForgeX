@@ -10,7 +10,9 @@ internal static partial class VisualSceneSvgRenderer {
     /// <summary>One SVG owns one captured glyph resource set with explicit visible-scene or capture-only lifetime.</summary>
     private sealed class PngTextResources {
         private readonly string _prefix;
-        private readonly Dictionary<(TrueTypeFont Face, ushort Glyph, double Scale, bool Italic, double BoldOffset), int> _ids = new();
+        // Keyed by face content: font caches may hand one render separate instances of the same face.
+        private readonly Dictionary<(string Face, ushort Glyph, double Scale, bool Italic, double BoldOffset), int> _ids = new();
+        private readonly Dictionary<TrueTypeFont, string> _faces = new();
         private readonly List<(string Id, string Path, bool SceneInk)> _paths = new();
         private readonly Dictionary<(char Character, double Size, bool Italic, double BoldOffset), int> _tinyIds = new();
         internal PngTextResources(string prefix) { _prefix = prefix; }
@@ -36,7 +38,8 @@ internal static partial class VisualSceneSvgRenderer {
                 face.SynthesizeItalic, boldOffset, out var placements, allowSyntheticBold: sceneInk)) return false;
             var result = new List<NativeGlyphReference>();
             foreach (var glyph in placements) {
-                var key = (glyph.Face, glyph.Glyph, glyph.Scale, glyph.Italic, glyph.BoldOffset);
+                if (!_faces.TryGetValue(glyph.Face, out var faceIdentity)) _faces.Add(glyph.Face, faceIdentity = glyph.Face.OutlineIdentity);
+                var key = (faceIdentity, glyph.Glyph, glyph.Scale, glyph.Italic, glyph.BoldOffset);
                 if (!_ids.TryGetValue(key, out var index)) {
                     index = _paths.Count; var id = _prefix + "-png-glyph-" + index.ToString(CultureInfo.InvariantCulture);
                     var path = new SvgPathDataBuilder();

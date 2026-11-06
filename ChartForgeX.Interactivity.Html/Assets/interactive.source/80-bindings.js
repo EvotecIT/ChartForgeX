@@ -15,6 +15,7 @@
     bindHierarchyNavigation(root);
     bindProgressEditing(root);
     bindChartContextMenu(root);
+    bindChartFeatures(root);
     bindHostCommands(root);
     bindAnnotationEditor(root);
     prepareRootBranchHighlights(root);
@@ -31,6 +32,8 @@
     syncSelectionAppearance(root);
     listenChart(root, root, 'keydown', event => {
       if (event.key !== 'Escape') return;
+      // Escape dismisses a pinned readout as well as the selection it came from.
+      if (root.dataset.cfxTooltipPinned === 'true') unpinTooltip(root);
       clearBrushCommand(root, { emit: true, sync: true });
       if (!hasFeature(root, 'Selection') || !selectedTargets(root).length) return;
       clearSelections(root);
@@ -120,6 +123,8 @@
           }
           if (!tooltipReadoutAvailable(node, event)) { clearHover(root, true, true); hideTip(root, tip, false); return; }
           setHover(root, node, true, true);
+          // The guide's value pills exist before the readout chooses a side clear of them.
+          showFocusCrosshair(root, crosshair, node);
           showTip(root, tip, node, event);
         });
         listenChart(root, focusNode, 'blur', () => {
@@ -127,6 +132,7 @@
           clearKeyboardFocusPaint(root);
           if (root._cfxKeyboardReadout === node) delete root._cfxKeyboardReadout;
           clearHover(root, true, true);
+          hideCrosshair(root, crosshair);
           hideTip(root, tip, false);
         });
       }
@@ -181,7 +187,7 @@
       });
     });
     root.querySelectorAll('[data-cfx-zoom]').forEach((button) => {
-      listenChart(root, button, 'click', () => zoomBy(root, button.dataset.cfxZoom === 'in' ? 1.25 : 0.8));
+      listenChart(root, button, 'click', () => zoomBy(root, button.dataset.cfxZoom === 'in' ? 1.25 : 0.8, undefined, undefined, true));
     });
     const zoomReset = root.querySelector('[data-cfx-zoom-reset]');
     if (zoomReset) listenChart(root, zoomReset, 'click', () => resetZoom(root));
@@ -263,6 +269,11 @@
     }
     if (stage) {
       const updateStageReadout = (event, nativeTarget = event.target) => {
+        // The drawing's margin outside its card is page, not chart: the readout clears there as it does off the stage.
+        const card = (nativeTarget.closest?.('svg') || stage).querySelector('[data-cfx-role="frame-card"]')?.getBoundingClientRect();
+        if (card && (event.clientX < card.left || event.clientX > card.right || event.clientY < card.top || event.clientY > card.bottom)) {
+          hideCrosshair(root, crosshair); clearHover(root, true, true); hideTip(root, tip, false); return;
+        }
         const legend = nativeTarget instanceof Element && nativeTarget.closest('[data-cfx-role="legend-item"]');
         if (legend && !legendEntryShown(root, legend)) { clearLegendReadout(root); return; }
         updateNearestPoint(root, crosshair, tip, event, nativeTarget);
@@ -330,7 +341,7 @@
         if (!ownsTooltipPointer(root, event)) updateStageReadout(event);
       });
       listenChart(root, stage, 'wheel', (event) => {
-        if (!hasFeature(root, 'Zoom')) return;
+        if (!hasFeature(root, 'Zoom') || standaloneZoomDeclined(root)) return;
         const point = logicalChartPointer(root, event);
         if (standaloneViewport(root)) {
           const plot = root._cfxDataProjection.plotBounds;
@@ -477,7 +488,7 @@
           if (boxTargets.length || replaceSelection) emitSync(root, { action: 'lasso', bounds: root.dataset.cfxBrush,
             targets: selectedTargets(root), previousTargets, replace: replaceSelection });
           publishCompare(root, false);
-          if (zoomRange) { requestStandaloneWindow(root, zoomRange); brush.hidden = true; }
+          if (zoomRange) { requestStandaloneWindow(root, zoomRange, true, undefined, true, true); brush.hidden = true; }
         } else if (drag.mode === 'pan') {
           emitHostEvent(root, 'cfxviewport', { state: getState(root) });
           emitSync(root, { action: 'viewport', state: getState(root) });

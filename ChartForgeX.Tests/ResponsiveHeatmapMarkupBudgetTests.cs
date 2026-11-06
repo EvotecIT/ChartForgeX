@@ -34,7 +34,12 @@ public sealed partial class ResponsiveHeatmapMarkupBudgetTests {
     [Fact]
     public void SerializedFixtureStaysWithinBudget() {
         var fragment = new HtmlResponsiveChartRenderer().RenderFragment(Fixture(12), 240, 1600);
-        var bytes = Encoding.UTF8.GetByteCount(fragment);
+        var fontCss = ChartForgeX.Typography.ChartFontAssets.StyleSheet;
+        Assert.NotEmpty(fontCss);
+        // The fragment leaves product fonts to its host page.
+        Assert.Equal(0, fragment.Split(new[] { fontCss }, StringSplitOptions.None).Length - 1);
+        Assert.InRange(Encoding.UTF8.GetByteCount(fontCss), 1, 230_000);
+        var bytes = Encoding.UTF8.GetByteCount(fragment.Replace(fontCss, string.Empty, StringComparison.Ordinal));
         Assert.True(bytes <= 256 * 1024, $"Serialized markup is {bytes} bytes.");
         Assert.Contains("chartforgex/layout-3", fragment);
     }
@@ -255,10 +260,14 @@ public sealed partial class ResponsiveHeatmapMarkupBudgetTests {
         chart.WithSize(1600, chart.Options.Size.Height);
         var raw = chart.Prepare(VisualExportRequest.ForChart(chart).Context).ToSvg(new VisualSvgOptions(null, chart.Options.SvgColorVariables).WithPatternTiles());
         var compact = System.Text.RegularExpressions.Regex.Match(fragment, "<svg.*?</svg>", System.Text.RegularExpressions.RegexOptions.Singleline).Value;
-        const string style = "<style>body{margin:0}svg{display:block;width:1100px;height:auto}</style>";
+        // The fragment leaves the product faces to its host page, so the page supplies them for both drawings.
+        var style = "<style>" + ChartForgeX.Typography.ChartFontAssets.StyleSheet + "body{margin:0}svg{display:block;width:1100px;height:auto}</style>";
+        const string fonts = "async()=>{await Promise.all([...document.fonts].map(face=>face.load()));await document.fonts.ready;}";
         await using var session = await InteractiveChartBrowser.OpenAsync(style + raw, 1100, 1000);
+        await session.Page.EvaluateAsync(fonts);
         var expected = await session.Page.Locator("svg").ScreenshotAsync();
         await session.Page.SetContentAsync(style + compact);
+        await session.Page.EvaluateAsync(fonts);
         var actual = await session.Page.Locator("svg").ScreenshotAsync();
         var comparison = PixelBaseline.Compare("compact-heatmap", actual, expected, Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY"));
         Assert.Null(comparison.Failure);

@@ -19,25 +19,31 @@ internal sealed class VisualSvgFontResources {
             if (font == null || !font.IsSingleCapturedFace || prepared.Face.SynthesizeBold || prepared.Face.SynthesizeItalic
                 || font.CapturedByteLength > OwnedFontResources.MaximumRootBytes || style.Font.Variations.Count != 0
                 || style.Font.ColorPaletteIndex != 0 || style.OpenTypeLanguageTag != null
-                || font.Weight != style.Font.Weight || font.IsItalic != style.Font.Italic) continue;
+                || !MatchesWeight(font, style.Font.Weight) || font.IsItalic != style.Font.Italic) continue;
             for (var lineIndex = 0; lineIndex < prepared.Lines.Count; lineIndex++) {
                 var line = prepared.Lines[lineIndex]; if (line.Text.Length == 0 || rasterLines?.Contains((node, lineIndex)) == true) continue;
                 var admitted = true;
                 foreach (var glyph in line.Glyphs) if (glyph.Glyph == 0 || !ReferenceEquals(glyph.Face.Root, font.Root)
-                    || glyph.Face.CollectionIndex != font.CollectionIndex || glyph.Face.Variations.Count != 0
+                    || glyph.Face.CollectionIndex != font.CollectionIndex || glyph.Face.Variations.Key != font.Variations.Key
                     || glyph.Face.ColorPaletteIndex != 0) { admitted = false; break; }
                 if (!admitted) continue;
                 Face? face = null;
-                foreach (var existing in _faces) if (existing.Weight == font.Weight && existing.Italic == font.IsItalic
+                foreach (var existing in _faces) if (existing.Weight == style.Font.Weight && existing.Italic == font.IsItalic
                     && existing.Font.CapturedByteIdentity == font.CapturedByteIdentity && existing.Font.SameCapturedBytes(font)) { face = existing; break; }
                 if (face == null) {
-                    face = new Face(Alias(font, font.Weight, font.IsItalic), font, font.Weight, font.IsItalic); _faces.Add(face);
+                    face = new Face(Alias(font, style.Font.Weight, font.IsItalic), font, style.Font.Weight, font.IsItalic); _faces.Add(face);
                 }
                 if (!_lines.TryGetValue(node, out var lines)) _lines.Add(node, lines = new Dictionary<int, Face>());
                 lines.Add(lineIndex, face);
             }
         }
     }
+    // A static face painted without synthesis is delivered under the requested weight, so the browser draws the same
+    // captured glyphs (for example a 500 caption on a family that ships only Regular). CSS font-weight selects the same
+    // wght instance of a variable face without an extra variation descriptor. Other selected axes retain the established
+    // native-contour fallback until their delivery policy is supported.
+    private static bool MatchesWeight(TrueTypeFont font, int weight) => font.Variations.Count == 0 && !font.HasAxis("wght")
+        || font.Variations.Count == 1 && font.HasSelectedAxis("wght") && font.Variations["wght"] == weight;
     // A face keeps one byte/descriptor identity across captured SVG scopes and frames.
     // Per-chart registration handles still own its lifetime; SVG resource IDs retain their own prefixes.
     private static string Alias(TrueTypeFont font, int weight, bool italic) {

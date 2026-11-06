@@ -1,0 +1,44 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+using static StackedAreaRecipe;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var chart = Chart.Create();
+var completed = new ChartSeries(new ChartSeriesId("completed"), "Completed", ChartSeriesKind.StackedArea,
+    new[] { 45d, 70, 80, 55, 90 }.Select((value, point) => new ChartPoint(point + 1, value)))
+    .WithNormalization(100).WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+var remaining = new ChartSeries(new ChartSeriesId("remaining"), "Remaining", ChartSeriesKind.StackedArea,
+    new[] { 55d, 45, 20, 45, 30 }.Select((value, point) => new ChartPoint(point + 1, value)))
+    .WithNormalization(100).WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+chart.WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri").WithYAxis("Share (%)")
+    .AddSeries(completed).AddSeries(remaining);
+chart.Options.YAxis.WithBounds(0, 100).WithLabelFormatter(Percent);
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Requests and follow-ups over time", "A normalized stack with middle-step boundaries", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion
+
+static class StackedAreaRecipe {
+    internal static string Percent(double value) => value.ToString("0", CultureInfo.InvariantCulture) + "%";
+}

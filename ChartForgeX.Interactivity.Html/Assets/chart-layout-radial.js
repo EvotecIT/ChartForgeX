@@ -14,7 +14,7 @@
   }
   function create(host,spec,svg){
     const r=spec.radial,gap=spec.spacing,[pl,pt,pr,pb]=r.padding,[sx,sy,sw,sh]=r.plot,sourceX=sx+sw/2,sourceY=sy+sh/2;
-    let lastWidth=0;
+    let lastWidth=0,m=r;
     const headings=[...svg.querySelectorAll('[data-cfx-role=frame-heading-source]')].map((node,i)=>{
       unclipped(node,svg);return {node,template:textOf(node).cloneNode(true),data:r.headings[i]};
     });
@@ -22,8 +22,10 @@
       const node=[...svg.querySelectorAll('[data-cfx-role=legend-entry],[data-cfx-role=legend-item]')].find(e=>e.dataset.cfxSourceId===data[0]);
       if(!node)throw new Error('Missing native radial legend entry.');
       unclipped(node,svg);
+      // Shared columns leave room between a name and its value; the whole entry stays one pointer target.
+      if(!node.querySelector(':scope > [data-cfx-browser-hit-area]')){const hit=document.createElementNS(ns,'rect');hit.setAttribute('data-cfx-browser-hit-area','true');hit.setAttribute('fill','transparent');hit.setAttribute('pointer-events','all');node.prepend(hit);}
       const label=textOf(node.querySelector('[data-cfx-role=legend-label]')),value=textOf(node.querySelector('[data-cfx-role=legend-value]')),percentage=textOf(node.querySelector('[data-cfx-role=legend-percentage]'));
-      return {node,data,label,value,percentage,x:number(label,'x')-18,baseline:number(label,'y')};
+      return {node,data,label,value,percentage,texts:[label,value,percentage].filter(Boolean).map(text=>[text,number(text,'font-size')]),x:number(label,'x')-18,baseline:number(label,'y')};
     });
     const groups=[...svg.querySelectorAll('[data-cfx-role=coordinate-system] > g[clip-path]')].map(node=>{
       const point=node.querySelector('[data-cfx-role=radial-point]'),center=node.querySelector('[data-cfx-role=donut-center]'),overlay=node.querySelector('[data-cfx-radial-callout=overlay]');
@@ -49,18 +51,20 @@
       const available=requestedWidth||host.clientWidth;
       if(!host.isConnected||!available||!host.getClientRects().length)return;
       const width=printing?available:Math.min(spec.maximum,Math.max(spec.minimum,available));
+      // Below the breakpoint the native drawing uses compact type roles; authored or fitted sizes keep their painted size.
+      const c=r.compact&&width<r.compact.breakpoint?r.compact:null;m=c?{...r,...c}:r;
       let top=pt;
       for(let h=0;h<headings.length;h++){
-        const {node,template,data}=headings[h];if(!data)continue;
+        const {node,template,data}=headings[h];if(!data)continue;const [lineHeight,ascent,size]=m.headings[h].slice(-3);
         node.replaceChildren();let remaining=data[0];
         if(h)top+=gap/6;
         for(let line=0;remaining&&line<2;line++){
-          const text=template.cloneNode(true);node.appendChild(text);
+          const text=template.cloneNode(true);node.appendChild(text);if(c)text.setAttribute('font-size',size);
           let caption=fit(text,remaining,width-pl-pr,line===1);
           if(line===0&&caption.length<remaining.length){const space=caption.lastIndexOf(' ');if(space>0)caption=caption.slice(0,space);}
           text.textContent=caption;text.setAttribute('data-cfx-role',line?'frame-heading-continuation':'frame-heading');
           const anchor=text.getAttribute('text-anchor');text.setAttribute('x',anchor==='middle'?(pl+width-pr)/2:anchor==='end'?width-pr:pl);
-          text.setAttribute('y',top+data[2]);top+=data[1];
+          text.setAttribute('y',top+ascent);top+=lineHeight;
           remaining=caption.endsWith('…')?'':remaining.slice(caption.length).trimStart();
         }
       }
@@ -68,43 +72,62 @@
       const position=spec.legendPosition,side=position==='Left'||position==='Right',above=position.startsWith('Top');
       const contentWidth=Math.max(1,width-pl-pr),legendWidth=side?Math.min(contentWidth*.32,180):contentWidth;
       const rows=[];let row=[],used=0;
-      for(const entry of legend){
-        const [,full,labelWidth,,valueWidth,,percentWidth]=entry.data;
-        entry.width=Math.min(legendWidth,28+labelWidth+(valueWidth?gap+valueWidth+(percentWidth?percentWidth+gap*2/3:0):0));
-        if(row.length&&(side||used+gap+entry.width>legendWidth)){rows.push(row);row=[];used=0;}
+      const widths=legend.map((entry,i)=>c?c.entries[i]:[2,4,6].map(k=>entry.data[k]));
+      // Percentages share the widest one's column, so the values beside them align.
+      const percentColumn=Math.max(0,...widths.map(w=>w[2]||0));
+      const natural=widths.map(([labelWidth,valueWidth,percentWidth])=>Math.min(legendWidth,28+labelWidth+(valueWidth?gap+valueWidth+(percentWidth?percentColumn+gap*2/3:0):0)));
+      // A stacked list with values gives every entry its widest entry's width, so the value columns line up.
+      const uniform=side&&widths.some(w=>w[1])?Math.max(...natural):0;
+      // Mirrors VisualFrameLayout: wrapped value rows above or below share content-sized columns, as many as fit.
+      let columns=null;
+      if(!side&&widths.some(w=>w[1])){
+        let wrapped=0,run=0;for(const w of natural){if(run&&run+gap+w>legendWidth){wrapped++;run=0;}run+=(run?gap:0)+w;}
+        for(let count=natural.length-1;wrapped&&count>=1;count--){
+          const candidate=Array(count).fill(0);natural.forEach((w,i)=>candidate[i%count]=Math.max(candidate[i%count],w));
+          if(count===1){columns=[Math.min(legendWidth,candidate[0])];break;}
+          if(candidate.reduce((sum,w)=>sum+w,0)+gap*(count-1)<=legendWidth){columns=candidate;break;}
+        }
+      }
+      legend.forEach((entry,i)=>{
+        const full=entry.data[1],[,valueWidth,percentWidth]=widths[i];entry.percentWidth=percentWidth?percentColumn:0;
+        for(const [text,size] of entry.texts)text.setAttribute('font-size',size===r.legendSize?m.legendSize:size);
+        entry.width=uniform||(columns?columns[i%columns.length]:natural[i]);
+        if(row.length&&(side||(columns?row.length===columns.length:used+gap+entry.width>legendWidth))){rows.push(row);row=[];used=0;}
         row.push(entry);used+=(used?gap:0)+entry.width;
-        entry.label.textContent=fit(entry.label,full,Math.max(0,entry.width-22-(valueWidth?gap+valueWidth+(percentWidth?percentWidth+gap*2/3:0):0)));
+        entry.label.textContent=fit(entry.label,full,Math.max(0,entry.width-22-(valueWidth?gap+valueWidth+(percentWidth?entry.percentWidth+gap*2/3:0):0)));
         let title=entry.node.querySelector(':scope > title');
         if(entry.label.textContent!==full){if(!title){title=document.createElementNS(ns,'title');entry.node.prepend(title);}title.textContent=full;}
         if(entry.value)entry.value.textContent=entry.data[3];if(entry.percentage)entry.percentage.textContent=entry.data[5];
-      }
+      });
       if(row.length)rows.push(row);
-      const legendHeight=rows.length*r.line,legendBand=legendHeight?legendHeight+gap:0;
+      const legendHeight=rows.length*m.line,legendBand=legendHeight?legendHeight+gap:0;
       const left=pl+(side&&position==='Left'?legendWidth+gap:0),plotWidth=Math.max(1,contentWidth-(side?legendWidth+gap:0));
       const plotTop=top+(above?legendBand:0),bottomBand=!side&&!above?legendBand:0;
-      const minimumPlot=Math.min(plotWidth,2*(r.labelSize*3+gap));
+      const minimumPlot=Math.min(plotWidth,2*(m.labelSize*3+gap));
       let plotHeight=Math.max(minimumPlot,r.height-pb-plotTop-bottomBand,side?legendHeight:0);
       // Mirrors VisualRadialCompiler.WideWidth: a plot wider than 1.4:1 spans at most 0.6 of its width.
       const wide=plotWidth>plotHeight*1.4?plotWidth*.6:Infinity;
       const radii=r.frames.map(([horizontal,vertical,extent])=>Math.max(0,(Math.min(plotWidth*horizontal,wide,plotHeight*vertical)/2-gap)/extent));
       if(!printing)plotHeight=Math.max(side?legendHeight:0,...r.frames.map((frame,i)=>2*(radii[i]*frame[2]+gap)/frame[1]));
-      const height=plotTop+plotHeight+bottomBand+pb,cx=left+plotWidth/2,cy=plotTop+plotHeight/2;
+      // Whole pixels keep the CSS box and viewBox at one scale.
+      const height=Math.ceil(plotTop+plotHeight+bottomBand+pb-.001),cx=left+plotWidth/2,cy=plotTop+plotHeight/2;
       let legendTop=side||above?top:plotTop+plotHeight+gap;
       for(const entries of rows){
-        const occupied=entries.reduce((sum,e)=>sum+e.width,0)+Math.max(0,entries.length-1)*gap;
+        // Every grid row starts where the full grid does, so a shorter last row keeps the columns.
+        const occupied=columns?columns.reduce((sum,w)=>sum+w,0)+(columns.length-1)*gap:entries.reduce((sum,e)=>sum+e.width,0)+Math.max(0,entries.length-1)*gap;
         let x=position.endsWith('Right')?width-pr-occupied:['Top','Bottom'].includes(position)?pl+(contentWidth-occupied)/2:pl;
         if(side)x=position==='Right'?width-pr-legendWidth:pl;
         for(const entry of entries){
           const {node,label,value,percentage,data}=entry;
-          node.setAttribute('transform',`translate(${x-entry.x} ${legendTop+r.ascent-entry.baseline})`);
+          node.setAttribute('transform',`translate(${x-entry.x} ${legendTop+m.ascent-entry.baseline})`);
           label.setAttribute('x',entry.x+18);label.setAttribute('text-anchor','start');
           let end=entry.x+entry.width-4;
-          if(percentage){percentage.setAttribute('x',end);percentage.setAttribute('text-anchor','end');end-=data[6]+gap*2/3;}
+          if(percentage){percentage.setAttribute('x',end);percentage.setAttribute('text-anchor','end');end-=entry.percentWidth+gap*2/3;}
           if(value){value.setAttribute('x',end);value.setAttribute('text-anchor','end');}
-          for(const hit of node.querySelectorAll('[data-cfx-browser-hit-area]')){hit.setAttribute('x',entry.x);hit.setAttribute('y',entry.baseline-r.ascent);hit.setAttribute('width',entry.width);hit.setAttribute('height',r.line);}
+          for(const hit of node.querySelectorAll('[data-cfx-browser-hit-area]')){hit.setAttribute('x',entry.x+2);hit.setAttribute('y',entry.baseline-m.ascent);hit.setAttribute('width',Math.max(0,entry.width-2));hit.setAttribute('height',m.line);}
           x+=entry.width+gap;
         }
-        legendTop+=r.line;
+        legendTop+=m.line;
       }
       for(const group of groups){
         const frame=r.frames[group.index],radius=radii[group.index],scale=radius/frame[3];if(!Number.isFinite(scale)||scale<=0)continue;
@@ -113,7 +136,10 @@
         for(const pattern of group.patterns.values())pattern.node.setAttribute('patternTransform',pattern.transform+` scale(${1/scale})`);
         if(group.overlay){
           // Every ring shares these lanes. Group by disjoint placement band, never by series.
-          const band=label=>['Above','Below'].includes(r.frames[label.series][6])?r.frames[label.series][6]:'Outside';
+          const declared=label=>['Above','Below'].includes(r.frames[label.series][6])?r.frames[label.series][6]:'Outside';
+          for(const label of group.labels){label.band=declared(label);delete label.order;}
+          roomierBands(group.labels,frame,scale,plotTop,plotWidth,plotHeight,cy);
+          const band=label=>label.band;
           for(const placement of new Set(group.labels.map(band))){
             const shared=frame.slice();shared[6]=placement;
             layoutLabels({...group,labels:group.labels.filter(label=>band(label)===placement)},shared,scale,left,plotTop,plotWidth,plotHeight,cx,cy);
@@ -131,7 +157,7 @@
         if(group.center){
           const value=textOf(group.center.querySelector('[data-cfx-role=donut-total-label]')),caption=textOf(group.center.querySelector('[data-cfx-role=donut-title]'));
           const inner=radius*frame[4];
-          value.setAttribute('font-size',Math.min(r.centerSize,inner*.44)/scale);caption.setAttribute('font-size',Math.min(r.labelSize,inner*.25)/scale);
+          value.setAttribute('font-size',Math.min(r.centerSize,inner*.44)/scale);caption.setAttribute('font-size',Math.min(r.captionSize,inner*.25)/scale);
           if(frame[9]){
             const maximum=Math.min(r.centerSize,inner*.44),minimum=Math.min(10,maximum),room=inner*1.6/scale;
             value.textContent=frame[9][0];let low=minimum,high=maximum;
@@ -155,13 +181,28 @@
       svg.setAttribute('width',width);svg.setAttribute('height',height);svg.setAttribute('viewBox',`0 0 ${width} ${height}`);svg.style.cssText=`display:block;width:${width}px;height:${height}px;max-width:none`;
       host.dataset.cfxLayoutWidth=String(width);host.dataset.cfxLayoutVersion='spec-4';lastWidth=width;
     }
+    // Mirrors VisualRadialCompiler.UseRoomierBands: an automatic outside caption that would be shortened in its narrow
+    // side lane moves to the open band above or below the rings when it fits there whole, keeping its leader order.
+    function roomierBands(labels,frame,scale,top,width,height,cy){
+      const g=Math.max(2,gap/2),extent=frame[3]*scale*frame[2],side=Math.max(0,width/2-extent-g);
+      for(const placement of ['Above','Below']){
+        if(labels.some(l=>l.band===placement))continue;
+        const room=placement==='Above'?cy-extent-g-top:top+height-cy-extent-g;
+        const moved=labels.filter(l=>l.band==='Outside'&&l.slice&&(Math.sin(l.slice[5]+l.slice[6]/2)<0)===(placement==='Above')).map(l=>{
+          const size=l.font===r.labelSize?m.labelSize:l.font;l.text.setAttribute('font-size',size/scale);l.text.textContent=l.full;
+          return {l,width:l.text.getComputedTextLength()*scale,height:m.labelLine*size/m.labelSize,order:l.slice[1]+Math.cos(l.slice[5]+l.slice[6]/2)*l.slice[3]};
+        }).filter(item=>item.width>side);
+        if(!moved.length||room<Math.max(...moved.map(item=>item.height))+g||moved.reduce((sum,item)=>sum+item.width+2*g,0)-2*g>width)continue;
+        for(const item of moved){item.l.band=placement;item.l.order=item.order;}
+      }
+    }
     function layoutLabels(group,frame,scale,left,top,width,height,cx,cy){
       const placement=frame[6],side=['Outside','Left','Right'].includes(placement),vertical=['Above','Below'].includes(placement);
       const toSourceX=x=>sourceX+(x-cx)/scale,toSourceY=y=>sourceY+(y-cy)/scale;
-      const baseline=(label,y)=>y+(r.labelAscent-r.labelLine/2)*(label.font/r.labelSize)/scale;
+      const baseline=(label,y)=>y+(m.labelAscent-m.labelLine/2)*(label.size/m.labelSize)/scale;
       for(const label of group.labels){
         label.owner.style.display='';if(label.connector)label.connector.style.display='';if(label.halo)label.halo.style.display='';
-        label.text.setAttribute('font-size',label.font/scale);label.text.setAttribute('text-anchor',label.anchor||'start');label.text.setAttribute('x',label.x);label.text.setAttribute('y',label.y);label.text.textContent=label.full;
+        label.size=label.font===r.labelSize?m.labelSize:label.font;label.text.setAttribute('font-size',label.size/scale);label.text.setAttribute('text-anchor',label.anchor||'start');label.text.setAttribute('x',label.x);label.text.setAttribute('y',label.y);label.text.textContent=label.full;
       }
       const hide=label=>{label.owner.style.display='none';if(label.connector)label.connector.style.display='none';if(label.halo)label.halo.style.display='none';};
       const caption=(label,room)=>{label.text.textContent=fit(label.text,label.full,Math.max(0,room)/scale);if(!label.text.textContent)hide(label);};
@@ -179,7 +220,7 @@
         for(const anchor of ['end','start']){
           let lane=group.labels.filter(l=>l.anchor===anchor).sort((a,b)=>a.y-b.y);
           if(!lane.length)continue;
-          const step=Math.max(...lane.map(l=>r.labelLine*l.font/r.labelSize))+gap,capacity=Math.floor(height/step);
+          const step=Math.max(...lane.map(l=>m.labelLine*l.size/m.labelSize))+gap,capacity=Math.floor(height/step);
           const kept=new Set([...lane].sort((a,b)=>(b.slice?.[6]||0)-(a.slice?.[6]||0)).slice(0,capacity));
           lane.forEach(l=>{if(!kept.has(l))hide(l);});lane=lane.filter(l=>kept.has(l));
           let previous=top-step/2;
@@ -195,9 +236,9 @@
         }
       }else if(vertical){
         const extent=frame[3]*scale*frame[2],above=placement==='Above',begin=above?top:cy+extent+gap,end=above?cy-extent-gap:top+height;
-        const ordered=[...group.labels].sort((a,b)=>a.x-b.x),slot=width/Math.max(1,ordered.length);
+        const ordered=[...group.labels].sort((a,b)=>(a.order??a.x)-(b.order??b.x)),slot=width/Math.max(1,ordered.length);
         for(let i=0;i<ordered.length;i++){
-          const label=ordered[i];if(end-begin<r.labelLine*label.font/r.labelSize){hide(label);continue;}
+          const label=ordered[i];if(end-begin<m.labelLine*label.size/m.labelSize){hide(label);continue;}
           caption(label,slot-gap);const x=toSourceX(left+slot*(i+.5)),y=toSourceY((begin+end)/2);
           label.text.setAttribute('x',x);label.text.setAttribute('y',baseline(label,y));route(label,x,y);
         }

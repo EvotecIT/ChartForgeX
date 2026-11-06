@@ -1,0 +1,60 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+using static TopologyInterchangeRecipe;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var source = Author(mode);
+var envelope = VisualArtifactInterchangeEnvelope.FromJson(source.ToVisualArtifact().ToInterchangeJson());
+var chart = Edit(envelope.ToTopologyChart());
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(900, 400)), theme, mode,
+    new VisualFrame("An editable saved route", "Native JSON is loaded into detached owners before editing", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Topology).ToHtmlPage());
+#endregion
+
+static class TopologyInterchangeRecipe {
+    internal static TopologyChart Edit(TopologyChart chart) {
+        var source = chart.Nodes.Single(node => node.Id == "request");
+        source.Details[0].Value = "Delivered";
+        source.Status = TopologyHealthStatus.Healthy;
+        chart.Edges.Single(edge => edge.Id == "dispatch").Label = "Accepted";
+        return chart;
+    }
+
+    internal static TopologyChart Author(VisualThemeMode mode) {
+        var chart = TopologyChart.Create().WithId("saved-request-route").WithTitle("An editable saved route")
+            .WithSubtitle("The loaded graph owns independent native data")
+            .WithTheme(VisualTheme.Graphite(), mode).WithViewport(900, 400);
+        chart.Nodes.Add(new TopologyNode { Id = "request", Label = "Request", X = 40, Y = 75, Width = 210, Height = 110,
+            Kind = TopologyNodeKind.Server, Status = TopologyHealthStatus.Warning, ShowStatusBadge = true });
+        chart.Nodes[0].Details.Add(new TopologyNodeDetail { Label = "State", Value = "Queued" });
+        chart.Nodes[0].Ports.Add(new TopologyNodePort { Id = "send", Side = TopologyEdgePort.Right, Offset = .5 });
+        chart.Nodes[0].Metadata["host.record"] = "request-42";
+        chart.Nodes.Add(new TopologyNode { Id = "worker", Label = "Worker", X = 470, Y = 75,
+            Width = 210, Height = 110, Status = TopologyHealthStatus.Healthy });
+        chart.Edges.Add(new TopologyEdge { Id = "dispatch", SourceNodeId = "request", TargetNodeId = "worker", SourcePortId = "send",
+            Label = "Dispatch", Direction = VisualLinkDirection.Forward, Routing = TopologyEdgeRouting.Orthogonal });
+        chart.Accessibility.Name = "Saved request route";
+        return chart;
+    }
+}

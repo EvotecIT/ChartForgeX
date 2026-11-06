@@ -3,6 +3,7 @@ using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
+using HtmlTinkerX;
 using Microsoft.Playwright;
 using Xunit;
 using static ChartForgeX.Tests.InteractiveChartBrowser;
@@ -12,9 +13,12 @@ namespace ChartForgeX.Tests;
 [Trait("BrowserSuite", "Compatibility")]
 public sealed class InteractiveBundleTests {
     [Theory]
-    [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.Tooltips, 96 * 1024, 30 * 1024)]
-    [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.ReportReview, 280 * 1024, 82 * 1024)]
-    [InlineData(HtmlChartRuntime.Full, ChartInteractionFeatures.ReportReview, 337 * 1024, 100 * 1024)]
+    // The report runtimes grew by about 7.5 KiB raw (2.5 KiB gzip) when saved stacks learned to restack on legend toggles,
+    // and by about 2.6 KiB raw (1 KiB gzip) when saved windows learned zoned and culture calendars, symmetric-log and
+    // horizontal secondary axes.
+    [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.Tooltips, 99 * 1024, 31 * 1024)]
+    [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.ReportReview, 288 * 1024, 88 * 1024)]
+    [InlineData(HtmlChartRuntime.Full, ChartInteractionFeatures.ReportReview, 356 * 1024, 107 * 1024)]
     public void EmittedRuntimeFitsRawAndGzipBudgets(HtmlChartRuntime runtime, ChartInteractionFeatures features, int rawBudget, int gzipBudget) {
         var asset = HtmlInteractiveAssetFiles.ChartScriptFor(runtime, features);
         var bytes = Encoding.UTF8.GetBytes(asset.Content);
@@ -35,6 +39,61 @@ public sealed class InteractiveBundleTests {
             Assert.DoesNotContain("connectNative", asset.Content);
             Assert.True(bytes.Length < Encoding.UTF8.GetByteCount(HtmlInteractiveAssetFiles.ChartScript.Content) / 3);
         }
+    }
+
+    // Optional behaviour ships beside the runtimes; each bundle has its own budget so the runtimes do not absorb it.
+    [Theory]
+    [InlineData("motion", 4 * 1024, 2 * 1024)]
+    [InlineData("data", 8 * 1024, 4 * 1024)]
+    [InlineData("isolate", 2 * 1024, 1024)]
+    [InlineData("hierarchy", 8 * 1024, 3 * 1024)]
+    public void FeatureBundlesFitTheirOwnBudgetsAndShipOnlyWhenDeclared(string name, int rawBudget, int gzipBudget) {
+        var asset = HtmlInteractiveAssetFiles.ChartFeatureScripts.Single(file => file.FileName.StartsWith("cfx-feature-" + name + ".", StringComparison.Ordinal));
+        var bytes = Encoding.UTF8.GetBytes(asset.Content);
+        using var output = new MemoryStream();
+        using (var gzip = new GZipStream(output, CompressionLevel.Optimal, leaveOpen: true)) gzip.Write(bytes);
+        Assert.True(bytes.Length <= rawBudget, $"{name}: {bytes.Length} raw bytes exceeds {rawBudget}.");
+        Assert.True(output.Length <= gzipBudget, $"{name}: {output.Length} gzip bytes exceeds {gzipBudget}.");
+        Assert.DoesNotContain(asset.Content, HtmlInteractiveAssetFiles.ChartScript.Content);
+
+        var line = Chart.Create().AddLine("Requests", ChartPoints.FromValues(2, 7, 4));
+        var core = line.ToInteractiveHtmlPage(options => {
+            options.Runtime = HtmlChartRuntime.Standalone;
+            options.Interaction.Features = ChartInteractionFeatures.Tooltips;
+        });
+        Assert.DoesNotContain("data-cfx-feature=", core);
+        var declared = (name == "hierarchy" ? Chart.Create().AddTreemap("Spend", new[] { new ChartHierarchyItem("ops", "Ops", value: 3), new ChartHierarchyItem("dev", "Dev", value: 5) }) : line)
+            .ToInteractiveHtmlPage(options => {
+                options.Interaction.Enable(ChartInteractionFeatures.Export);
+                options.IncludeContextMenu = name == "data";
+                options.Motion.Enabled = name == "motion";
+            });
+        Assert.Contains("data-cfx-feature=\"" + name + "\"", declared);
+        Assert.Contains(asset.Content, declared);
+    }
+
+    // Flow and sequence pages inline the shared adapter lifetime and owned-font helpers with their small exploration runtime.
+    [Fact]
+    public void DiagramRuntimeFitsRawAndGzipBudgetsAndShipsOnlyWithDiagramPages() {
+        var bytes = Encoding.UTF8.GetBytes(HtmlDiagramAssets.Script);
+        using var output = new MemoryStream();
+        using (var gzip = new GZipStream(output, CompressionLevel.Optimal, leaveOpen: true)) gzip.Write(bytes);
+        Assert.True(bytes.Length <= 40 * 1024, $"diagram: {bytes.Length} raw bytes exceeds the budget.");
+        Assert.True(output.Length <= 12 * 1024, $"diagram: {output.Length} gzip bytes exceeds the budget.");
+        Assert.Contains(HtmlDiagramAssets.Script, FlowRecipe.Create().ToInteractiveHtmlPage());
+        Assert.DoesNotContain("ChartForgeX.diagramInteraction", Chart.Create().AddLine("Requests", ChartPoints.FromValues(2, 7, 4)).ToInteractiveHtmlPage());
+    }
+    [Fact]
+    public void ExternalPagesNameFeatureBundlesForLazyLoadingInsteadOfEmbeddingThem() {
+        var page = Chart.Create().AddLine("Requests", ChartPoints.FromValues(2, 7, 4)).ToInteractiveHtmlPage(options => {
+            options.IncludeContextMenu = true;
+            options.ExternalAssets = new HtmlAssetReferences("assets");
+        });
+        var data = HtmlInteractiveAssetFiles.ChartFeatureScripts.Single(file => file.FileName.StartsWith("cfx-feature-data.", StringComparison.Ordinal));
+        Assert.DoesNotContain(data.Content, page);
+        Assert.Contains("assets/" + data.FileName, page);
+        Assert.Contains(data, HtmlInteractiveAssetFiles.Charts());
+        Assert.DoesNotContain(data, HtmlInteractiveAssetFiles.Charts(HtmlChartRuntime.Standalone, ChartInteractionFeatures.Tooltips));
     }
 
     [Fact]
@@ -87,6 +146,92 @@ public sealed class InteractiveBundleTests {
         }
         Assert.Empty(requests);
         Assert.False(await browser.EvaluateAsync<bool>("() => !!window.ChartForgeXCharts"));
+        AssertNoConsoleErrors(session);
+    }
+
+    private static Task<HtmlBrowserSession> OpenCoreReaderAsync() {
+        var html = Chart.Create().WithSize(600, 360).WithXLabels("Mon", "Tue", "Wed")
+            .AddLine("Requests", ChartPoints.FromValues(2, 7, 4))
+            .AddLine("Previous", ChartPoints.FromValues(1, 3, 2))
+            .ToInteractiveHtmlPage(options => {
+                options.Runtime = HtmlChartRuntime.Standalone;
+                options.Interaction.Features = ChartInteractionFeatures.Tooltips | ChartInteractionFeatures.KeyboardNavigation | ChartInteractionFeatures.Crosshair;
+                options.TextPresentation = HtmlChartTextPresentation.Browser;
+            });
+        Assert.Contains(HtmlInteractiveAssetFiles.ChartScriptFor(HtmlChartRuntime.Standalone, ChartInteractionFeatures.Tooltips).Content, html);
+        return OpenAsync(html);
+    }
+
+    private static Task<bool> FocusedAsync(IPage page, string selector) =>
+        page.EvaluateAsync<bool>("selector => document.activeElement === document.querySelector(selector)", selector);
+
+    [BrowserFact]
+    public async Task SavedCoreReaderTraversesLegendThenPlotWithArrowKeysAndAnnouncesTheReadout() {
+        if (!Enabled) return;
+        await using var session = await OpenCoreReaderAsync();
+        var page = session.Page;
+        Assert.Equal("core", await page.EvaluateAsync<string>("() => document.querySelector('.cfx-interactive-chart')[Symbol.for('ChartForgeX.chartRuntime')].kind"));
+        Assert.Equal(1, await page.Locator(".cfx-stage svg [tabindex='0'][data-cfx-keyboard-component='data']").CountAsync());
+
+        await page.Keyboard.PressAsync("Tab");
+        Assert.True(await FocusedAsync(page, Legend(0)));
+        await page.Keyboard.PressAsync("ArrowRight");
+        Assert.True(await FocusedAsync(page, Legend(1)));
+        await page.Keyboard.PressAsync("Tab");
+        Assert.True(await FocusedAsync(page, Point(0, 0)));
+        var status = page.Locator(".cfx-tooltip[role='status'][aria-live='polite']");
+        Assert.True(await status.IsVisibleAsync());
+        Assert.Contains("Mon", await status.InnerTextAsync());
+
+        await page.Keyboard.PressAsync("ArrowRight");
+        Assert.True(await FocusedAsync(page, Point(0, 1)));
+        Assert.Matches("Tue[\\s\\S]*Requests[\\s\\S]*7", await status.InnerTextAsync());
+        await page.Keyboard.PressAsync("ArrowDown");
+        Assert.True(await FocusedAsync(page, Point(1, 1)));
+        Assert.Matches("Previous[\\s\\S]*3", await status.InnerTextAsync());
+        await page.Keyboard.PressAsync("End");
+        Assert.True(await FocusedAsync(page, Point(1, 2)));
+        await page.Keyboard.PressAsync("Home");
+        Assert.True(await FocusedAsync(page, Point(1, 0)));
+        Assert.Equal(1, await page.Locator(".cfx-stage svg [tabindex='0'][data-cfx-keyboard-component='data']").CountAsync());
+
+        await page.Keyboard.PressAsync("Escape");
+        await status.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Hidden });
+        await page.Keyboard.PressAsync("Shift+Tab");
+        Assert.True(await FocusedAsync(page, Legend(1)));
+        AssertNoConsoleErrors(session);
+    }
+
+    [BrowserFact]
+    public async Task SavedCoreReaderPutsTheFocusedValuesAtTheAxisEdges() {
+        if (!Enabled) return;
+        await using var session = await OpenCoreReaderAsync();
+        var page = session.Page;
+        await FocusWithKeyboardAsync(page, page.Locator(Point(0, 1)));
+        var crosshair = page.Locator(".cfx-crosshair");
+        Assert.True(await crosshair.IsVisibleAsync());
+        Assert.Equal("Tue", await page.Locator(".cfx-crosshair__axis-value[data-cfx-axis-value=x]").InnerTextAsync());
+        Assert.Equal("7", await page.Locator(".cfx-crosshair__axis-value[data-cfx-axis-value=y]").InnerTextAsync());
+        Assert.Matches("Tue[\\s\\S]*7", await TooltipTextAsync(page));
+        var edges = await page.EvaluateAsync<bool>("""
+            () => {
+              const plot = document.querySelector('.cfx-crosshair').getBoundingClientRect();
+              const x = document.querySelector('[data-cfx-axis-value=x]').getBoundingClientRect();
+              const y = document.querySelector('[data-cfx-axis-value=y]').getBoundingClientRect();
+              return x.top >= plot.bottom && y.right <= plot.left;
+            }
+            """);
+        Assert.True(edges, "The X value sits below the plot and the Y value left of it.");
+
+        await page.Keyboard.PressAsync("ArrowRight");
+        Assert.Equal("Wed", await page.Locator(".cfx-crosshair__axis-value[data-cfx-axis-value=x]").InnerTextAsync());
+        Assert.Equal("4", await page.Locator(".cfx-crosshair__axis-value[data-cfx-axis-value=y]").InnerTextAsync());
+        await page.Keyboard.PressAsync("Escape");
+        Assert.False(await crosshair.IsVisibleAsync());
+
+        await MoveToAsync(page, Point(1, 0));
+        Assert.Equal("Mon", await page.Locator(".cfx-crosshair__axis-value[data-cfx-axis-value=x]").InnerTextAsync());
+        Assert.Equal("1", await page.Locator(".cfx-crosshair__axis-value[data-cfx-axis-value=y]").InnerTextAsync());
         AssertNoConsoleErrors(session);
     }
 

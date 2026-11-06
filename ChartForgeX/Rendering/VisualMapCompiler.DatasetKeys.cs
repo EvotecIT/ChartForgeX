@@ -40,7 +40,7 @@ internal static partial class VisualMapCompiler {
                     ["data-cfx-series"] = N(data.Index), ["data-cfx-series-key"] = data.Series.InteractionIdentityKey,
                     ["data-cfx-label-color"] = data.Presentation.Name, ["data-cfx-label"] = data.Series.Name + " · " + data.Presentation.Name
                 })) VisualColorScaleLegendScene.Draw(builder, data.ResolveKeyScale(colors)!, data.Presentation.Labels, style, gap, bounds, data.Minimum, data.Maximum,
-                    prefix, data.Missing, ChartColorScaleSurface.NoData(data.ResolveKeyScale(colors), colors), data.Presentation.ScaleValues,
+                    prefix, data.Missing, ChartMissingData.KeyLook(data.ResolveKeyScale(colors), colors), data.Presentation.ScaleValues,
                     "map.color-scale-overflow", data.HasDomain, compact: true, heading: data.Series.Name + " · " + data.Presentation.Name,
                     valueName: data.Presentation.Name, legendStyle: data.Presentation.LegendStyle);
             }

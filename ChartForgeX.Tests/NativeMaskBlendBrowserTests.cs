@@ -67,7 +67,8 @@ public sealed class NativeMaskBlendBrowserTests {
         Assert.Equal(new[] { 255, 255, 255, 55 }, observed.GetProperty("linear").EnumerateArray().Select(item => item.GetInt32()));
         Assert.Equal(new[] { 128, 0, 128, 255 }, observed.GetProperty("additive").EnumerateArray().Select(item => item.GetInt32()));
         var sourceBlend = observed.GetProperty("sourceBlend").EnumerateArray().Select(item => item.GetInt32()).ToArray();
-        Assert.InRange(sourceBlend[0], 169, 171); Assert.Equal(0, sourceBlend[1]); Assert.InRange(sourceBlend[2], 169, 171); Assert.Equal(192, sourceBlend[3]);
+        // Two 128/255 inputs unite to 191.75/255; Linux Firefox's filter path truncates that to 191 where other engines round.
+        Assert.InRange(sourceBlend[0], 169, 171); Assert.Equal(0, sourceBlend[1]); Assert.InRange(sourceBlend[2], 169, 171); Assert.InRange(sourceBlend[3], 191, 192);
         Assert.Equal(1, observed.GetProperty("chart").GetProperty("images").GetInt32()); Assert.Equal(0, observed.GetProperty("chart").GetProperty("scripts").GetInt32());
         Assert.Equal(0, observed.GetProperty("chart").GetProperty("targets").GetInt32()); Assert.True(observed.GetProperty("chart").GetProperty("width").GetDouble() > 0);
         Assert.Equal(new[] { (compact ? 320 : 740) + 64, 304 }, observed.GetProperty("report").EnumerateArray().Select(item => item.GetInt32()));

@@ -345,21 +345,100 @@
 
   // Family pages: the live chart and its source follow the page theme. Generated programs keep imports and output
   // plumbing in a Setup region; the page shows the chart model and the download keeps the whole file.
-  // Live chart pages are same-origin, so a frame takes the height its page needs instead of scrolling inside.
+  // Live chart pages are same-origin, so a frame takes the height its content needs instead of scrolling inside or
+  // leaving space under the chart. The page's own shell fills the window and centres the chart; inside a frame it
+  // keeps its content height, and the frame follows that height as the chart lays out and the frame changes width.
+  var FRAME_MIN = 240;
   var fitFrame = function (live) {
-    live.addEventListener('load', function () {
+    var observer = null;
+    var size = function () {
       try {
         var page = live.contentDocument && live.contentDocument.documentElement;
-        if (!page) return;
-        // Measure at a minimal height: pages that fill the viewport would otherwise report the frame's own height.
-        page.style.overflow = 'hidden';
+        if (!page || !live.contentDocument.body) return;
+        // The root's own box, not scrollHeight: scrollHeight never reports less than the frame, so a frame could only grow.
+        var body = live.contentDocument.body;
+        var bottom = body.getBoundingClientRect().bottom + (parseFloat(live.contentWindow.getComputedStyle(body).marginBottom) || 0);
+        var height = Math.max(FRAME_MIN, Math.ceil(Math.max(page.getBoundingClientRect().height, bottom)));
+        if (Math.abs(live.getBoundingClientRect().height - height) < 2) return;
         live.style.aspectRatio = 'auto';
-        live.style.height = '1px';
-        live.style.height = (page.scrollHeight + 2) + 'px';
+        live.style.height = height + 'px';
+      } catch (e) { /* a cross-origin page keeps its CSS height */ }
+    };
+    live.addEventListener('load', function () {
+      if (observer) { observer.disconnect(); observer = null; }
+      try {
+        var doc = live.contentDocument;
+        if (!doc || !doc.head || !doc.body) return;
+        var style = doc.createElement('style');
+        // The runtime reserves room for an empty compare tray so a standalone page does not jump; a frame that follows
+        // its content can drop that room and grow when the tray fills.
+        style.textContent = 'html,body,.cfx-shell{min-height:0!important;height:auto!important}html{overflow:hidden}'
+          + '.cfx-compare-tray[hidden]{display:none!important}';
+        doc.head.appendChild(style);
+        size();
+        var Observer = live.contentWindow.ResizeObserver || window.ResizeObserver;
+        if (Observer) {
+          observer = new Observer(function () { size(); });
+          observer.observe(doc.body);
+        }
+        // A wider or narrower frame re-lays the chart out inside it after the page's own resize handling.
+        if (!live.cfxWidthWatch && window.ResizeObserver) {
+          var width = 0;
+          live.cfxWidthWatch = new ResizeObserver(function (entries) {
+            var next = Math.round(entries[0].contentRect.width);
+            if (next === width) return;
+            width = next;
+            requestAnimationFrame(size);
+            setTimeout(size, 300);
+          });
+          live.cfxWidthWatch.observe(live);
+        }
       } catch (e) { /* a cross-origin page keeps its CSS height */ }
     });
   };
-  var stripSetup = function (text) { return text.replace(/^#region Setup\n[\s\S]*?^#endregion[^\n]*\n+/m, ''); };
+  // The chart code leads. Generated sources keep imports in a Setup region and the lines that write files in an
+  // Output region; Show setup puts both back in place, so the code then reads (and copies) as the whole program.
+  var FOLDED = /^#region (?:Setup|Output)\n[\s\S]*?^#endregion[^\n]*\n*/gm;
+  var showSetupCode = false;
+  var setupBlocks = [];
+  var renderSource = function (block) {
+    var parts = block.cfxParts;
+    var code = block.querySelector('pre > code');
+    if (!parts || !code) return;
+    var text = parts.setup && showSetupCode ? parts.full : parts.body;
+    var button = block.querySelector('[data-cfx-setup-toggle]');
+    if (button) {
+      button.hidden = !parts.setup;
+      button.setAttribute('aria-pressed', showSetupCode ? 'true' : 'false');
+      button.textContent = showSetupCode ? 'Hide setup' : 'Show setup';
+    }
+    block.cfxSource = text;
+    code.textContent = text;
+    highlight(code);
+  };
+  var setSource = function (block, text) {
+    var folded = text.replace(FOLDED, '');
+    block.cfxParts = {
+      body: folded.replace(/^\n+/, '').replace(/\n{3,}/g, '\n\n'),
+      setup: folded !== text,
+      full: text.replace(/^#(?:end)?region[^\n]*\n/gm, '').replace(/^\n+/, '')
+    };
+    var actions = block.querySelector('.cfx-codeblock__actions');
+    if (actions && !actions.querySelector('[data-cfx-setup-toggle]')) {
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'cfx-codeblock__btn';
+      button.setAttribute('data-cfx-setup-toggle', '');
+      button.title = 'Imports and the lines that write SVG, PNG and HTML';
+      button.addEventListener('click', function () {
+        showSetupCode = !showSetupCode;
+        setupBlocks.forEach(renderSource);
+      });
+      actions.insertBefore(button, actions.firstChild);
+      setupBlocks.push(block);
+    }
+    renderSource(block);
+  };
   var themedFamily = function () {
     document.querySelectorAll('[data-cfx-live-frame]').forEach(function (live) {
       var url = live.getAttribute(theme() === 'dark' ? 'data-dark' : 'data-light');
@@ -371,13 +450,10 @@
       figure.setAttribute('data-loaded', url);
       var code = figure.querySelector('[data-cfx-source-code]');
       var link = figure.querySelector('[data-cfx-source-download]');
-      if (link) link.href = url;
+      if (link) link.href = figure.getAttribute(theme() === 'dark' ? 'data-download-dark' : 'data-download-light') || url;
       fetch(url).then(function (response) { return response.ok ? response.text() : Promise.reject(); }).then(function (text) {
         if (figure.getAttribute('data-loaded') !== url) return;
-        text = stripSetup(text);
-        figure.cfxSource = text;
-        code.textContent = text;
-        highlight(code);
+        setSource(figure, text);
       }).catch(function () { code.textContent = 'The source file could not be loaded. Use the download link instead.'; });
     });
   };
@@ -411,8 +487,8 @@
     var frame = viewer.querySelector('[data-cfx-viewer-frame]');
     fitFrame(frame);
     var familyLink = viewer.querySelector('[data-cfx-viewer-family-page]');
-    // Static or interactive output; the choice carries over to the next card that has a live page.
-    var viewMode = 'static';
+    // A card with a live page opens it; Static shows the rendered SVG. The choice carries over to the next card.
+    var viewMode = 'interactive';
     var pick = function (light, darkValue) { return theme() === 'dark' && darkValue ? darkValue : light; };
     var fileName = function (url) { return url.split('/').pop().replace(/\.csharp\.txt$/, '.cs').replace(/\.txt$/, ''); };
 
@@ -433,15 +509,12 @@
       viewer.querySelector('[data-cfx-viewer-file]').textContent = fileName(source);
       block.cfxSource = '';
       code.textContent = 'Loading source…';
-      loadSource(source)
+      loadSource(pick(current.snippet, current.darkSnippet) || source)
         .then(function (text) {
           if (ticket !== request) return;
           if (range && range.from) text = text.split('\n').slice(range.from - 1, range.to).join('\n') + '\n';
           // Generated programs keep imports and output plumbing in a Setup region; the download keeps the whole file.
-          text = stripSetup(text);
-          block.cfxSource = text;
-          code.textContent = text;
-          highlight(code);
+          setSource(block, text);
         })
         .catch(function () {
           if (ticket !== request) return;
@@ -529,7 +602,8 @@
         current = {
           title: d.title, family: d.family, note: d.note, alt: d.alt, image: d.image, darkImage: d.darkImage, full: d.full,
           darkFull: d.darkFull, source: d.source, darkSource: d.darkSource, page: d.page, darkPage: d.darkPage, tabs: tabs,
-          interactive: d.interactive, darkInteractive: d.darkInteractive, familyPage: d.familyPage
+          interactive: d.interactive, darkInteractive: d.darkInteractive, familyPage: d.familyPage,
+          snippet: d.snippet, darkSnippet: d.darkSnippet
         };
         opener = button;
         var card = button.closest('.cfx-card');
@@ -551,6 +625,8 @@
     viewer.addEventListener('click', function (event) { if (event.target === viewer) viewer.close(); });
     // Escape and the close button both end here: focus goes back to the card that opened the viewer.
     viewer.addEventListener('close', function () {
+      // The close event arrives after the dialog closes; a card opened since then keeps its page.
+      if (viewer.open) return;
       frame.removeAttribute('src');
       if (opener && opener.isConnected) opener.focus();
     });

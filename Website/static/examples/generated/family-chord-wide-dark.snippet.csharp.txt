@@ -1,0 +1,40 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var transfers = ChartSeries.CreateChord(new ChartSeriesId("transfer-source"), "Transfers", new[] {
+    new ChartNode("north", "North"), new ChartNode("south", "South"),
+    new ChartNode("north-support", "Services"), new ChartNode("south-support", "Support")
+}, new[] {
+    new ChartFlowLink("north-south", "north", "south", 18), new ChartFlowLink("south-north", "south", "north", 7),
+    new ChartFlowLink("north-standard", "north", "north-support", 12), new ChartFlowLink("north-priority", "north", "north-support", 5),
+    new ChartFlowLink("support-south", "north-support", "south", 9), new ChartFlowLink("south-support", "south", "south-support", 14),
+    new ChartFlowLink("support-return", "south-support", "north", 4), new ChartFlowLink("support-internal", "south-support", "south-support", 3),
+    new ChartFlowLink("zero-transfer", "north-support", "south-support", 0)
+});
+var chart = Chart.Create().AddSeries(transfers);
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Transfers between teams", "", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion

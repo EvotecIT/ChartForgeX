@@ -1,6 +1,6 @@
 ---
 title: Sequence examples in C#
-description: Sequence examples rendered by ChartForgeX: static SVG images, variants in light and dark themes, the C# source and the options to configure it.
+description: Sequence examples rendered by ChartForgeX: a live chart, variants in light and dark themes, the C# source and the options to configure it.
 layout: gallery-family
 ---
 

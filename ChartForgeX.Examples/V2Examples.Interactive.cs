@@ -4,9 +4,10 @@ using ChartForgeX.Themes;
 
 public static partial class V2Examples {
     private const string InteractiveAssetFolder = "interactive";
-    private static readonly HtmlAssetFile[] InteractiveAssets = {
+    // Pages fetch the feature bundles they declare from the same folder.
+    private static readonly HtmlAssetFile[] InteractiveAssets = new[] {
         HtmlInteractiveAssetFiles.ChartStyle, HtmlInteractiveAssetFiles.ChartScript, HtmlInteractiveAssetFiles.NativeTextScript
-    };
+    }.Concat(HtmlInteractiveAssetFiles.ChartFeatureScripts).ToArray();
 
     private static bool IsScenarioVariant(string variant) => variant is "latency-week" or "issuers" or "licence-waste" or "availability";
 
@@ -19,9 +20,29 @@ public static partial class V2Examples {
             // The gallery shows these pages in narrow frames: scale the whole chart and keep the toolbar small.
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
             options.Toolbar = HtmlChartToolbarLayout.Compact;
-            if (id.StartsWith("family-line-wide-", StringComparison.Ordinal))
-                options.Interaction.Features = ChartInteractionFeatures.ReportReview | ChartInteractionFeatures.Zoom
-                    | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush;
+            // Every live page offers zoom, pan, brush, export and the chart menu; charts a saved page cannot re-project
+            // keep their zoom controls disabled. The primary Line page also carries the range navigator.
+            options.Interaction.Features = ChartInteractionFeatures.ReportReview | ChartInteractionFeatures.Zoom
+                | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export;
+            options.IncludeContextMenu = true;
+            if (id.StartsWith("family-line-wide-", StringComparison.Ordinal)) options.XNavigation.Enabled = true;
+            options.ExternalAssets = new HtmlAssetReferences(InteractiveAssetFolder + "/");
+        }));
+    }
+
+    /// <summary>Writes a chart grid's live page: each panel as an interactive chart in the grid's columns, sharing one runtime copy.</summary>
+    private static void WriteInteractiveGrid(string output, ChartGrid grid, string id, string title, VisualThemeMode mode, int width) {
+        // Two columns at the gallery width keep each panel readable instead of stacking full-size charts down the page.
+        var columns = Math.Max(1, Math.Min(2, grid.Charts.Count));
+        var panelWidth = Math.Max(280, (width - 16 * (columns - 1)) / columns - 34);
+        var charts = grid.Charts.Select(chart => chart.WithTheme(VisualTheme.Graphite(), mode).WithSize(panelWidth, (int)(panelWidth * 0.62))).ToArray();
+        ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".interactive.html"), charts.ToInteractiveHtmlDashboardPage(options => {
+            options.PageTitle = title;
+            options.Columns = columns;
+            options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
+            options.Toolbar = HtmlChartToolbarLayout.Compact;
+            options.Interaction.Features = ChartInteractionFeatures.ReportReview | ChartInteractionFeatures.Zoom
+                | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush;
             options.ExternalAssets = new HtmlAssetReferences(InteractiveAssetFolder + "/");
         }));
     }
@@ -30,6 +51,16 @@ public static partial class V2Examples {
     private static void WriteInteractiveTopology(string output, ChartForgeX.Topology.TopologyChart chart, string id, string title, string subtitle, VisualThemeMode mode) {
         chart.WithTitle(title).WithSubtitle(subtitle).WithTheme(VisualTheme.Graphite(), mode);
         ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".interactive.html"), chart.ToInteractiveHtmlPage(chart.DefaultRenderOptions));
+    }
+
+    /// <summary>Writes a flow or sequence live page: the gallery's own preparation with hover, keyboard steps and, for sequences, message playback.</summary>
+    private static void WriteInteractiveDiagram(string output, ChartForgeX.Rendering.IVisualRenderable model, string id, ChartForgeX.Rendering.VisualRenderContext context) {
+        var html = model switch {
+            ChartForgeX.VisualArtifacts.FlowArtifact flow => flow.ToInteractiveHtmlPage(context),
+            ChartForgeX.VisualArtifacts.SequenceArtifact sequence => sequence.ToInteractiveHtmlPage(context),
+            _ => throw new ArgumentException("Only flow and sequence diagrams have a diagram live page.", nameof(model))
+        };
+        ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".interactive.html"), html);
     }
 
     private static IEnumerable<string> WriteInteractiveAssets(string output) {

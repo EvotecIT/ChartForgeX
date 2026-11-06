@@ -28,7 +28,8 @@
     if(!svg)throw new Error('Missing ChartForgeX paint specification.');
     namespace(svg);
     if(spec.schema==='chartforgex/layout-4')return window.ChartForgeXLayoutRadial.create(host,spec,svg);
-    let source,legend,sticky;
+    let source,legend,sticky,typed;
+    const compactSizes=new Map(spec.compact?.sizes||[]);
     let lastWidth=0,matrixViewport;
     function matrixOverlay(){
       if(!spec.matrix)return null;
@@ -72,7 +73,12 @@
       const matrixGutter=spec.matrix ? Math.min(left,Math.max(spec.matrix[2],hostWidth*.35)) : left;
       const minimumPlot=spec.matrix ? spec.matrix[0]*14+Math.max(0,spec.matrix[0]-1)*spec.matrix[1] : 0;
       const width=spec.matrix && !printing ? Math.max(hostWidth,matrixGutter+right+minimumPlot) : hostWidth;
-      if(!source){sticky=matrixOverlay();source=window.ChartForgeXLayoutGeometry.snapshot(svg,spec);legend=window.ChartForgeXLayoutLegend.snapshot(svg,spec);}
+      if(!source){sticky=matrixOverlay();source=window.ChartForgeXLayoutGeometry.snapshot(svg,spec);legend=window.ChartForgeXLayoutLegend.snapshot(svg,spec);
+        typed=[...svg.querySelectorAll(':is([data-cfx-role^="frame-heading"],[data-cfx-role^="legend-"],[data-cfx-role^="axis-"],[data-cfx-role^="data-label"]) text')].map(text=>[text,text.getAttribute('font-size')]);
+        if(legend.summary)typed.push([legend.summary,legend.summary.getAttribute('font-size')]);}
+      // Below the breakpoint the static drawing uses the compact type roles; other painted sizes stay as they are.
+      const compact=spec.compact&&hostWidth<spec.compact.breakpoint;
+      for(const [text,size] of typed){const next=compact&&compactSizes.get(Number(size));if(next)text.setAttribute('font-size',next);else if(size!=null)text.setAttribute('font-size',size);}
       const delta=window.ChartForgeXLayoutLegend.layout(legend,spec,hostWidth);
       // Lane gutters narrow to keep 60% of the remaining width for lanes.
       const gutterLeft=spec.matrix ? matrixGutter : spec.gutter ? Math.min(left,Math.max(spec.gutter[1],spec.gutter[0]+(width-right-spec.gutter[0])*.4)) : left;
@@ -98,7 +104,7 @@
       }
       // Thin captions at a regular stride, keeping matrix endpoints clear.
       const labels=source.labels.map(label=>{
-        const size=label.text.getComputedTextLength(),projected=projection.x(label.center);
+        const size=label.text.getComputedTextLength(),projected=projection.x(label.center(size));
         const center=spec.matrix ? Math.max(gutterLeft+size/2,Math.min(width-size/2,projected)) : projected;
         return {...label,center,width:size};
       });

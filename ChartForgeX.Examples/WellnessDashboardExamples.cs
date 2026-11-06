@@ -62,7 +62,7 @@ internal static class WellnessDashboardExamples {
         var chart = Chart.Create()
             .WithTitle("Layered Radial Progress")
             .WithSubtitle("Generic radial layers with independent radius, stroke, color, and value scale.")
-            .WithSize(560, 560)
+            .WithSize(600, 600)
             .WithPadding(48, 48, 48, 48)
             .WithTheme(WellnessTheme())
             .WithPlotBackground(false)
@@ -89,7 +89,7 @@ internal static class WellnessDashboardExamples {
         var card = RadialMetricCard.Create()
             .WithTitle("Weight Data")
             .WithSubtitle("Goal progress as reusable radial metric layers.")
-            .WithSize(560, 420)
+            .WithSize(600, 450)
             .WithTheme(WellnessTheme())
             .WithPngOutputScale(outputScale)
             .WithMetric("Current Weight", "78 kg")
@@ -141,7 +141,7 @@ internal static class WellnessDashboardExamples {
 
         var macros = Chart.Create()
             .WithTitle("Macro Balance")
-            .WithSize(738, 210)
+            .WithSize(800, 228)
             .WithPadding(26, 48, 26, 24)
             .WithTheme(WellnessTheme())
             .WithLegend(false)
@@ -174,7 +174,7 @@ internal static class WellnessDashboardExamples {
     }
 
     private static void SavePowerBgInfoStatsSection(string output, int outputScale) {
-        var theme = VisualTheme.Report().Configure(builder => {
+        var theme = VisualTheme.Graphite().Configure(builder => {
             builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#101319");
             builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.FromHex("#171B22");
             builder.Light.Surface = builder.Dark.Surface = ChartColor.FromHex("#171B22");
@@ -229,7 +229,7 @@ internal static class WellnessDashboardExamples {
     }
 
     private static void SaveReportMetricStrip(string output, int outputScale) {
-        var theme = VisualTheme.Report().Configure(builder => {
+        var theme = VisualTheme.Graphite().Configure(builder => {
             builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#F8FAFC");
             builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.FromHex("#FFFFFF");
             builder.Light.Surface = builder.Dark.Surface = ChartColor.FromHex("#FFFFFF");
@@ -345,7 +345,7 @@ internal static class WellnessDashboardExamples {
         var orange = ChartColor.FromHex("#FF7A1A");
 
         var week = DateStripBlock.Create()
-            .WithSize(760, 158)
+            .WithSize(800, 166)
             .WithTheme(theme)
             .WithPadding(18)
             .WithHeader("May 9, 2026")
@@ -397,7 +397,7 @@ internal static class WellnessDashboardExamples {
 
         var goalsHeader = SectionHeaderBlock.Create()
             .WithTitle("Today's Goals")
-            .WithSize(760, 44)
+            .WithSize(800, 46)
             .WithTheme(theme)
             .WithPadding(0, 4, 0, 0)
             .WithTransparentBackground()
@@ -405,7 +405,7 @@ internal static class WellnessDashboardExamples {
 
         var friends = EntityStripBlock.Create()
             .WithTitle("Duel with friends")
-            .WithSize(760, 144)
+            .WithSize(800, 152)
             .WithTheme(theme)
             .WithPadding(18)
             .AddItem("Karrem", color: blue)
@@ -435,7 +435,7 @@ internal static class WellnessDashboardExamples {
         grid.SavePng(Path.Combine(output, "wellness-weekly-progress-dashboard.png"));
     }
 
-    private static VisualTheme WellnessTheme() => VisualTheme.Minimal().Configure(builder => {
+    private static VisualTheme WellnessTheme() => VisualTheme.Graphite().Configure(builder => {
             builder.Light.Background = builder.Dark.Background = Background;
             builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = Card;
             builder.Light.Surface = builder.Dark.Surface = Card;

@@ -28,29 +28,29 @@ public static class ConsumerRenderingExamples {
         foreach (var pair in sources) {
             var result = MermaidRenderer.Render(pair.Value);
             if (result.HasErrors) throw new InvalidOperationException(string.Join("; ", result.Diagnostics.Select(d => d.Message)));
-            SaveExample( pair.Key, result.Artifact!.ToSvg(), result.Artifact!.ToPng());
+            SaveExample( pair.Key, result.Artifact!.ToSvg(StandaloneSvg), result.Artifact!.ToPng());
             var dark = MermaidRenderer.Render("%%{init: {'theme':'dark'}}%%\n" + pair.Value);
             if (dark.HasErrors) throw new InvalidOperationException("Cannot render dark " + pair.Key);
-            SaveExample( pair.Key + "-dark", dark.Artifact!.ToSvg(), dark.Artifact!.ToPng());
+            SaveExample( pair.Key + "-dark", dark.Artifact!.ToSvg(StandaloneSvg), dark.Artifact!.ToPng());
             if (result.Artifact!.Model is TopologyChart fit) {
                 fit.WithViewport(520, 260, 12);
                 var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false };
                 SaveExample( pair.Key + "-fit", fit.ToSvg(options), fit.ToPng(options));
             }
         }
-        var primaryBranchCase = SequenceArtifact.Create("sequence-primary-case").WithSize(640, 400)
+        var primaryBranchCase = SequenceArtifact.Create("sequence-primary-case").WithSize(600, 375)
             .AddParticipant("client", "Client").AddParticipant("service", "Service")
             .AddMessage("client", "service", "Request")
             .AddBlock(SequenceArtifactBlockKind.Alt, "Success", 0, 1)
             .AddBranch(SequenceArtifactBlockKind.Alt, "PRIMARY", "Success", 0, 1);
         var preparedPrimaryBranchCase = primaryBranchCase.Prepare(new VisualRenderContext(
-            new VisualLayoutOptions(new VisualSize(640, 400)), frame: new VisualFrame(showLegend: false)));
+            new VisualLayoutOptions(new VisualSize(600, 375)), frame: new VisualFrame(showLegend: false)));
         SaveExample("sequence-primary-branch-case", preparedPrimaryBranchCase.ToSvg(), preparedPrimaryBranchCase.ToPng());
         var wideFlow = MermaidRenderer.Render("%%{init: {'theme':'dark'}}%%\n" + flow.Replace("flowchart TD", "flowchart LR"), new MermaidRenderOptions {
             Flowchart = new MermaidFlowchartRenderOptions { Width = 3440, Height = 1440 }
         });
         if (wideFlow.HasErrors) throw new InvalidOperationException("Cannot render the wide Mermaid flowchart example.");
-        SaveExample("flow-wide-panel-dark", wideFlow.Artifact!.ToSvg(), wideFlow.Artifact!.ToPng());
+        SaveExample("flow-wide-panel-dark", wideFlow.Artifact!.ToSvg(StandaloneSvg), wideFlow.Artifact!.ToPng());
         var actorColor = MermaidRenderer.Render("flowchart LR\n A[Escalation] --> B[Response]\n classDef oncall color:#ef4444,fill:#111827,stroke:#64748b\n class A oncall");
         if (actorColor.HasErrors) throw new InvalidOperationException("Cannot render the Mermaid actor label-color example.");
         if (actorColor.Artifact!.Model is not TopologyChart actorChart)
@@ -222,7 +222,7 @@ public static class ConsumerRenderingExamples {
         }
         foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
             var suffix = mode.ToString().ToLowerInvariant();
-            var radar = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(520, 320)
+            var radar = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(600, 369)
                 .WithXLabels("Mail auth", "DNSSEC", "TLS", "CT", "Policy", "Monitoring")
                 .AddRadar("Current", new[] { 78d, 62, 74, 80, 70, 66 }.Select((v, i) => new ChartPoint(i + 1, v)).ToArray())
                 .AddRadar("Target", Enumerable.Range(1, 6).Select(i => new ChartPoint(i, 80)).ToArray());
@@ -242,32 +242,32 @@ public static class ConsumerRenderingExamples {
             var scaledList = ChartList.Create().WithTheme(scaledListTheme, mode).WithSize(380, 170).WithMarker(VisualListMarker.Check)
                 .AddCheckItem("Backup integrity", true, "verified").AddCheckItem("Recovery exercise", false, "scheduled");
             SaveExample("list-typography-" + suffix, scaledList.ToSvg(), scaledList.ToPng());
-            var bars = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(520, 220)
+            var bars = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(600, 254)
                 .WithXLabels("Alpha", "Beta", "Gamma").WithDataLabels(true)
                 .AddBar("Count", new[] { new ChartPoint(1, 26), new ChartPoint(2, 24), new ChartPoint(3, 19) });
             SaveExample( "bars-" + suffix, bars.ToSvg(), bars.ToPng());
-            var horizontal = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(520, 220)
+            var horizontal = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(600, 254)
                 .WithXLabels("Alpha", "Beta", "Gamma").WithDataLabels(true)
                 .AddHorizontalBar("Count", new[] { new ChartPoint(1, 26), new ChartPoint(2, 24), new ChartPoint(3, 19) });
             horizontal.Series[0].WithPointColor(0, ChartColor.FromRgb(255, 0, 0)).WithPointColor(1, ChartColor.FromRgb(0, 180, 0));
             SaveExample( "horizontal-" + suffix, horizontal.ToSvg(), horizontal.ToPng());
-            var tree = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(520, 300)
+            var tree = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(600, 346)
                 .AddTreemap("Work", new[] { new ChartHierarchyItem("a", "Alpha", value: 3), new ChartHierarchyItem("b", "Beta", value: 2) });
             SaveExample( "treemap-" + suffix, tree.ToSvg(), tree.ToPng());
             var start = new DateTime(2026, 1, 1);
-            var calendar = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(1400, 220)
+            var calendar = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(800, 126)
                 .AddCalendarHeatmap("Sign-ins", Enumerable.Range(0, 126).Select(i => new ChartCalendarHeatmapItem(start.AddDays(i), i % 5 + 1)));
             SaveExample( "calendar-" + suffix, calendar.ToSvg(), calendar.ToPng());
             var largeText = VisualTheme.Graphite().WithTypography(new VisualTypography(dataLabelSize: 24));
-            var table = ChartTable.Create().WithTheme(largeText, mode).WithSize(460, 260)
+            var table = ChartTable.Create().WithTheme(largeText, mode).WithSize(600, 339)
                 .WithColumns("Check", "State").AddRow("Backups", "Verified").AddRow("Recovery test", "Scheduled");
             table.ConfigureRow(0, row => row.Cells[1].WithBadge("Verified", VisualStatus.Positive));
             SaveExample( "table-typography-" + suffix, table.ToSvg(), table.ToPng());
-            var bullet = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(520, 200).AddBullet("Coverage", 72, 85);
+            var bullet = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(600, 231).AddBullet("Coverage", 72, 85);
             SaveExample( "bullet-" + suffix, bullet.ToSvg(), bullet.ToPng());
         }
         var timelineStart = new DateTime(2026, 9, 24, 0, 0, 0, DateTimeKind.Utc);
-        var timeline = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(760, 360).WithLegend(false).WithAxes(true).WithYAxisVisible(true)
+        var timeline = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(800, 379).WithLegend(false).WithAxes(true).WithYAxisVisible(true)
             .WithStateCategories(new VisualStatusTokens().SeverityCategories())
             .AddGanttLane("Escalation lane", new[] { new ChartGanttLaneItem(timelineStart, timelineStart.AddMinutes(2), "high", "Investigate") })
             .AddGanttLane("Directory replication", new[] { new ChartGanttLaneItem(timelineStart, timelineStart.AddDays(2), "low", "Replication window") });
@@ -275,9 +275,12 @@ public static class ConsumerRenderingExamples {
             timeline.AddGanttLane("Service " + index.ToString(System.Globalization.CultureInfo.InvariantCulture),
                 new[] { new ChartGanttLaneItem(timelineStart, timelineStart.AddHours(4), "low") });
         SaveExample("timeline-dense-labels", timeline.ToSvg(), timeline.ToPng());
-        File.WriteAllText(Path.Combine(output, "index.html"), "<!doctype html><meta charset=utf-8><link rel=icon href=\"data:,\"><title>Consumer rendering cases</title><style>body{font:16px sans-serif;background:#ccc}article{margin:30px}img{max-width:48%;vertical-align:top}</style>" +
-            string.Join("", generatedNames.OrderBy(name => name, StringComparer.Ordinal).Select(name => "<article><h2>" + name + "</h2><img src='" + name + ".svg'><img src='" + name + ".png'></article>")));
+        File.WriteAllText(Path.Combine(output, "index.html"), ExampleTypography.EmbedInHost("<!doctype html><html><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><link rel=icon href=\"data:,\"><title>Consumer rendering cases</title><style>body{font-size:16px;background:#ccc}article{margin:30px}img{max-width:48%;vertical-align:top}</style></head><body>" +
+            string.Join("", generatedNames.OrderBy(name => name, StringComparer.Ordinal).Select(name => "<article><h2>" + name + "</h2><img src='" + name + ".svg'><img src='" + name + ".png'></article>")) + "</body></html>"));
     }
+    // Saved example files are standalone, so they carry the product fonts that artifact hand-off SVG omits.
+    private static readonly VisualArtifactRenderOptions StandaloneSvg = new() { EmbedProductFonts = true };
+
     private static void Save(string output, string name, string svg, byte[] png) {
         File.WriteAllText(Path.Combine(output, name + ".svg"), svg);
         File.WriteAllBytes(Path.Combine(output, name + ".png"), png);

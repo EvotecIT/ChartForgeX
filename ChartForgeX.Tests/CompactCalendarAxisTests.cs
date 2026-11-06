@@ -15,8 +15,9 @@ public sealed class CompactCalendarAxisTests {
     [InlineData("state", 400, VisualThemeMode.Light, 6)]
     [InlineData("state", 400, VisualThemeMode.Dark, 6)]
     [InlineData("state", 800, VisualThemeMode.Light, 6)]
-    [InlineData("gantt", 400, VisualThemeMode.Light, 5)]
-    [InlineData("gantt", 400, VisualThemeMode.Dark, 5)]
+    // Short date captions below 400 px keep one em clear, so the nine-day plan steps by three days.
+    [InlineData("gantt", 400, VisualThemeMode.Light, 4)]
+    [InlineData("gantt", 400, VisualThemeMode.Dark, 4)]
     [InlineData("timeline", 400, VisualThemeMode.Light, 4)]
     [InlineData("lane", 400, VisualThemeMode.Light, 4)]
     public void ShortScheduleCaptionsKeepUsefulCalendarStepsWithoutMovingOffTheirGrid(string family, int width, VisualThemeMode mode, int minimum) {

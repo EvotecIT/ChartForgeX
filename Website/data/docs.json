@@ -14,7 +14,7 @@
       {"slug": "markup-v1-reference", "title": "Markup v1 reference", "summary": "The supported fence grammar, models and static preview contract.", "source": "markup-v1-reference.md"},
       {"slug": "architecture-diagrams", "title": "Architecture diagrams and playback", "summary": "Components, routes and use cases rendered as diagrams, sequence views and terminal text.", "source": "architecture-diagrams.md"},
       {"slug": "visual-artifacts", "title": "Visual artifacts", "summary": "Typed models, metadata and reusable export capabilities.", "source": "visual-artifacts.md"},
-      {"slug": "mermaid-support-matrix", "title": "Mermaid support matrix", "summary": "Native families, safe styles, bounded grammar, diagnostics and pinned reference limits.", "source": "mermaid-support-matrix.md"}
+      {"slug": "mermaid-support-matrix", "title": "Mermaid support matrix", "summary": "What each Mermaid family renders, what it keeps without drawing, and what is not supported yet.", "source": "mermaid-support-matrix.md"}
     ] },
     { "title": "Compose output", "summary": "Choose a composition surface for exact facts or deliberately placed artwork.", "guides": [
       {"slug": "embedding", "title": "Server-rendered pages", "summary": "Native mark links, page themes, readable fluid SVG and shared-domain HTML-labelled strips.", "source": "embedding.md"},
@@ -34,10 +34,11 @@
       {"slug": "design-language", "source": "design-language.md", "title": "Chart design language", "summary": "Shared page roles, categorical colours, readable axes and consistent mark states."},
       {"slug": "api-conventions", "source": "v2/api-conventions.md", "title": "Public API conventions", "summary": "Preparation, transactions, identity, ordinal/calendar-unit spacing and explicit concentric bands."},
       {"slug": "chart-combinations", "source": "v2/chart-combinations.md", "title": "Chart combinations and axes", "summary": "Vertical and horizontal mixtures, independent physical value axes and native limits."},
-      {"slug": "migration", "source": "v2/migration.md", "title": "Consumer migration", "summary": "Move application and adapter code to the current public contracts."}
+      {"slug": "migration", "source": "v2/migration.md", "title": "Consumer migration", "summary": "Move application and adapter code to the current public contracts."},
+      {"slug": "typography", "source": "v2/typography.md", "title": "Product typography", "summary": "Bundled Archivo and JetBrains Mono with matching browser and native metrics, licensed sources and script fallbacks."}
     ] },
     { "title": "Design notes", "summary": "Proposals are kept separate from the implemented API guides.", "guides": [
-      {"slug": "visual-effects", "title": "Visual effects design", "summary": "A proposed shared effects system. It is not an implemented capability.", "source": "visual-effects.md"}
+      {"slug": "visual-effects", "title": "Visual effects", "summary": "Shadows, glow, blur, masks and blend modes that render the same in SVG and PNG.", "source": "visual-effects.md"}
     ] }
   ],
   "nativeExamples": [
@@ -158,6 +159,13 @@
     {"from": "../visual-artifacts.md#static-producers-and-raster-limits", "to": "/docs/visual-artifacts/#static-producers-and-raster-limits"},
     {"from": "../visual-canvas.md", "to": "/docs/visual-canvas/"},
     {"from": "api-conventions.md", "to": "/docs/api-conventions/"},
+    {"from": "typography.md", "to": "/docs/typography/"},
+    {"from": "typography.md#chart-roles-in-the-shared-type-ramp", "to": "/docs/typography/#chart-roles-in-the-shared-type-ramp"},
+    {"from": "v2/typography.md", "to": "/docs/typography/"},
+    {"from": "v2/typography.md#chart-roles-in-the-shared-type-ramp", "to": "/docs/typography/#chart-roles-in-the-shared-type-ramp"},
+    {"from": "../../ChartForgeX/Typography/Fonts/font-sources.json", "to": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX/Typography/Fonts/font-sources.json"},
+    {"from": "../../ChartForgeX/Typography/Fonts/OFL-Archivo.txt", "to": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX/Typography/Fonts/OFL-Archivo.txt"},
+    {"from": "../../ChartForgeX/Typography/Fonts/OFL-JetBrainsMono.txt", "to": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX/Typography/Fonts/OFL-JetBrainsMono.txt"},
     {"from": "architecture-diagrams.md", "to": "/docs/architecture-diagrams/"},
     {"from": "architecture-diagrams.md#rendering-from-the-command-line", "to": "/docs/architecture-diagrams/#rendering-from-the-command-line"},
     {"from": "api-conventions.md#bubble-size-scale", "to": "/docs/api-conventions/#bubble-size-scale"},
@@ -189,6 +197,7 @@
     {"from": "migration.md", "to": "/docs/migration/"},
     {"from": "migration.md#gauge-readings-and-presentation", "to": "/docs/migration/#gauge-readings-and-presentation"},
     {"from": "migration.md#html-sunburst-branch-emphasis", "to": "/docs/migration/#html-sunburst-branch-emphasis"},
+    {"from": "migration.md#product-typography", "to": "/docs/migration/#product-typography"},
     {"from": "stories.md", "to": "/docs/stories/"},
     {"from": "v2/api-conventions.md", "to": "/docs/api-conventions/"},
     {"from": "v2/api-conventions.md#flow-paint-and-semantic-state", "to": "/docs/api-conventions/#flow-paint-and-semantic-state"},

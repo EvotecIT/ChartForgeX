@@ -16,8 +16,8 @@ internal static class DenseLegendExamples {
     }
 
     private static Chart Base(string title, string subtitle, ChartPngOutputScale scale) => Chart.Create()
-        .WithTitle(title).WithSubtitle(subtitle).WithSize(1000, 640)
-        .WithTheme(VisualTheme.Report()).WithPngOutputScale(scale)
+        .WithTitle(title).WithSubtitle(subtitle).WithSize(800, 512)
+        .WithTheme(VisualTheme.Graphite()).WithPngOutputScale(scale)
         .WithLegendBudget(maximumRows: 4);
 
     private static void Save(Chart chart, string output, string name) {

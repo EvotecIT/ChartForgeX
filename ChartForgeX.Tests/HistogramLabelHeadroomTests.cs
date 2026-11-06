@@ -17,12 +17,12 @@ public sealed class HistogramLabelHeadroomTests {
     [InlineData(VisualThemeMode.Light, null)]
     [InlineData(VisualThemeMode.Dark, null)]
     public void CompactHistogramKeepsCompleteCountsAboveNarrowMaximumHeightBins(VisualThemeMode mode, double? maximum) {
-        var chart = HistogramRecipe.Create();
+        var chart = NarrowPeakHistogram();
         if (maximum.HasValue) chart.Options.YAxis.WithBounds(0, maximum.Value);
         var prepared = chart.Prepare(Context(mode));
         ScatterBubbleColorRenderingTests.Capture(prepared, "histogram-complete-counts-" + mode + "-" + (maximum?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "auto"));
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label").ToArray();
-        // The empty bin draws nothing, so the recipe gives it no caption.
+        // The empty bin draws nothing, so the fixture gives it no caption.
         Assert.Equal(new[] { "3 obs", "3 obs", "3 obs" }, labels.Select(node => Assert.Single(node.Text.Lines).Text));
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.data-label-overflow");
         var plot = Assert.Single(prepared.Regions, region => region.Role == "cartesian-plot").Bounds;
@@ -68,7 +68,7 @@ public sealed class HistogramLabelHeadroomTests {
 
     [Fact]
     public void ExplicitInsideLabelsDoNotReserveAnOutsideLane() {
-        var chart = HistogramRecipe.Create().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
+        var chart = NarrowPeakHistogram().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
         var inside = chart.Prepare(Context(VisualThemeMode.Light));
         chart.WithDataLabels(false);
         var hidden = chart.Prepare(Context(VisualThemeMode.Light));
@@ -88,6 +88,16 @@ public sealed class HistogramLabelHeadroomTests {
         Assert.Contains("4 requests", prepared.ToSvg(), StringComparison.Ordinal);
         Assert.NotEmpty(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
         Assert.Equal(2, calls);
+    }
+
+    // Three bins of three observations share the maximum height; the first is only one unit wide, and one bin is empty.
+    private static Chart NarrowPeakHistogram() {
+        var observations = ChartSeries.CreateHistogram(new ChartSeriesId("observations"), "Observations",
+            new[] { .2, .4, .8, 1.2, 1.8, 2.5, 6.1, 7.5, 9 }, ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 1, 3, 6, 10 }));
+        foreach (var bin in observations.HistogramBins) if (bin.Count > 0) observations.WithPointLabel(bin.Index, bin.Count + " obs");
+        var chart = Chart.Create().WithXAxis("Measurement").WithYAxis("Observation count").WithDataLabels().AddSeries(observations);
+        chart.Options.XAxis.WithBounds(0, 10);
+        return chart;
     }
 
     private static VisualRenderContext Context(VisualThemeMode mode) {

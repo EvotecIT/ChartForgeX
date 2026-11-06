@@ -8,7 +8,7 @@ public static partial class ExampleRecipeSource {
         var split=recipe.IndexOf("/// <summary>",StringComparison.Ordinal);
         return "using System;\nusing System.IO;\nusing ChartForgeX.Mermaid;\nusing ChartForgeX.Themes;\nusing ChartForgeX.VisualArtifacts;\n"
             +"var artifact=ZenUmlPresentationRecipe.Create(\""+family+"\",\""+variant+"\",VisualThemeMode."+mode+");\n"
-            +"Directory.CreateDirectory(\"output\");File.WriteAllText(\"output/sequence.svg\",artifact.ToSvg());File.WriteAllBytes(\"output/sequence.png\",artifact.ToPng());File.WriteAllText(\"output/sequence.html\",artifact.ToHtmlPage());File.WriteAllText(\"output/sequence.json\",artifact.ToInterchangeJson());\n"
+            +"Directory.CreateDirectory(\"output\");artifact.SaveSvg(\"output/sequence.svg\");File.WriteAllBytes(\"output/sequence.png\",artifact.ToPng());File.WriteAllText(\"output/sequence.html\",artifact.ToHtmlPage());File.WriteAllText(\"output/sequence.json\",artifact.ToInterchangeJson());\n"
             +recipe.Substring(split);
     }
 }

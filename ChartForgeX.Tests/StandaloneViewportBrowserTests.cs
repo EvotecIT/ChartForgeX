@@ -77,7 +77,7 @@ public sealed partial class StandaloneViewportBrowserTests {
         Assert.Equal(28, toolbar[2], 1);
         Assert.Equal(toolbar[2], toolbar[3], 1);
         Assert.Equal(5, toolbar[4]);
-        var zoomReset = page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Reset zoom", Exact = true });
+        var zoomReset = page.GetByRole(AriaRole.Button, new PageGetByRoleOptions { Name = "Reset view", Exact = true });
         Assert.False(await zoomReset.IsVisibleAsync());
         await page.Locator(".cfx-stage").HoverAsync();
         await page.Locator("[data-cfx-zoom=in]").ClickAsync();
@@ -173,7 +173,11 @@ public sealed partial class StandaloneViewportBrowserTests {
         Assert.Equal(maximum, window.GetProperty("maximum").GetDouble(), 7);
     }
 
+    // Toolbar, brush, reset and legend changes ease the painted window; the document animations carry that transition.
+    private static Task SettleMotionAsync(IPage page) => page.EvaluateAsync("async()=>{await Promise.all(document.getAnimations().map(animation=>animation.finished.catch(()=>{})));}");
+
     private static async Task AssertTicksAsync(IPage page, string axis, double minimum, double maximum) {
+        await SettleMotionAsync(page);
         var values = await page.Locator("[data-cfx-browser-axis=" + axis + "] text[data-cfx-axis-value]").EvaluateAllAsync<JsonElement>(
             "nodes=>nodes.map(node=>({value:Number(node.dataset.cfxAxisValue),text:node.textContent,width:node.getBoundingClientRect().width}))");
         var ticks = values.EnumerateArray().ToArray();
@@ -181,7 +185,8 @@ public sealed partial class StandaloneViewportBrowserTests {
         Assert.All(ticks, tick => {
             var value = tick.GetProperty("value").GetDouble();
             Assert.InRange(value, minimum - .000001, maximum + .000001);
-            Assert.Equal(value, double.Parse(tick.GetProperty("text").GetString()!, System.Globalization.CultureInfo.CurrentCulture), 5);
+            // The browser formats with its own locale; accept either decimal separator.
+            Assert.Equal(value, double.Parse(tick.GetProperty("text").GetString()!.Replace(',', '.'), System.Globalization.CultureInfo.InvariantCulture), 5);
             Assert.True(tick.GetProperty("width").GetDouble() > 0);
         });
     }
@@ -216,7 +221,12 @@ public sealed partial class StandaloneViewportBrowserTests {
         Assert.Equal(initial.GetProperty("viewportScaleY").GetDouble(), scene.GetProperty("viewportScaleY").GetDouble(), 6);
     }
 
-    private static Task<JsonElement> SceneAsync(IPage page) => page.EvaluateAsync<JsonElement>("""
+    private static async Task<JsonElement> SceneAsync(IPage page) {
+        await SettleMotionAsync(page);
+        return await ReadSceneAsync(page);
+    }
+
+    private static Task<JsonElement> ReadSceneAsync(IPage page) => page.EvaluateAsync<JsonElement>("""
         selector=>{
             const root=controller.root,svg=root.querySelector('.cfx-stage svg'), point=root.querySelector(selector);
             const series=point.closest('[data-cfx-role=series]');

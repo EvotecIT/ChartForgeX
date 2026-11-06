@@ -159,6 +159,10 @@ public sealed partial class PreparedVisual {
     public VisualAccessibility Accessibility => _accessibility.Clone();
     /// <summary>Exports script-free SVG without repeating layout.</summary>
     public string ToSvg() => ExportSvg(_svgIdPrefix.Value);
+    /// <summary>Host HTML supplies the product font assets once outside its prepared SVGs.</summary>
+    internal string ToSvgWithoutProductFonts() => VisualSceneSvgRenderer.Render(_scene, _accessibility.Name,
+        _accessibility.Description, _accessibility.Language, _accessibility.IsDecorative, _svgIdPrefix.Value,
+        (_defaultSvgOptions ?? new VisualSvgOptions()).WithoutProductFonts(), _capturePngText);
     /// <summary>Exports SVG with a host-owned ID namespace, allowing identical prepared visuals in one document.</summary>
     /// <param name="idPrefix">A unique host prefix beginning with an ASCII letter and containing only letters, digits, hyphens, underscores and periods.</param>
     /// <remarks>DOM IDs are scoped; source identities in semantic data attributes and regions remain unchanged.</remarks>
@@ -173,10 +177,11 @@ public sealed partial class PreparedVisual {
         _accessibility.Description, _accessibility.Language, _accessibility.IsDecorative, idPrefix, _defaultSvgOptions, _capturePngText);
     /// <summary>Exports an owning artifact's metadata without altering the prepared snapshot.</summary>
     internal string ToSvg(VisualAccessibility accessibility, string? idPrefix = null, int? maximumCharacters = null,
-        VisualSvgTextPresentation? textPresentation = null) {
+        VisualSvgTextPresentation? textPresentation = null, bool productFonts = true) {
         if (accessibility == null) throw new ArgumentNullException(nameof(accessibility));
         var options = textPresentation.HasValue
             ? (_defaultSvgOptions ?? new VisualSvgOptions()).WithTextPresentation(textPresentation.Value) : _defaultSvgOptions;
+        if (!productFonts) options = (options ?? new VisualSvgOptions()).WithoutProductFonts();
         return VisualSceneSvgRenderer.Render(_scene, accessibility.Name, accessibility.Description,
             accessibility.Language, accessibility.IsDecorative, idPrefix ?? options?.IdPrefix, options, _capturePngText, maximumCharacters);
     }

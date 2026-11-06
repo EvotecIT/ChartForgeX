@@ -81,7 +81,7 @@ internal static partial class SmokeTests {
             .OfType<VisualSceneLine>().Single(node => node.Role == "axis-y");
     }
     private static Chart FormattedAxisChart(Func<double, string> formatter) {
-        var theme = VisualTheme.Report();
+        var theme = VisualTheme.Graphite();
         theme = theme.Configure(builder => { builder.Light.Axis = builder.Dark.Axis = ChartColor.FromHex("#FF00FF"); });
         var chart = Chart.Create()
             .WithSize(420, 280)

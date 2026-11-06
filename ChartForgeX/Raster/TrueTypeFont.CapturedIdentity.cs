@@ -15,4 +15,7 @@ internal sealed partial class TrueTypeFont {
             }
         }
     }
+
+    /// <summary>Names the outlines this face draws by content, so separately loaded or viewed copies of one face are interchangeable.</summary>
+    internal string OutlineIdentity => CapturedByteIdentity + "#" + _head.ToString(System.Globalization.CultureInfo.InvariantCulture) + "#" + _variationSettings.Key;
 }

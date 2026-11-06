@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{ include "head" }}
+  {{ assets.preloads_html }}
+  {{ assets.critical_css_html }}
+  {{ include "theme-tokens" }}
+  {{ extra_css_html }}
+  {{ assets.css_html }}
+  {{ opengraph_html }}
+  {{ structured_data_html }}
+  {{ head_html }}
+  <script src="/examples/generated/cfx-native-text.js"></script>
+  <link rel="modulepreload" href="/themes/chartforgex/assets/playground-engine.js" />
+</head>
+<body class="cfx-body cfx-body--playground{{ if body_class != "" }} {{ body_class }}{{ end }}">
+{{ include "site-header" }}
+<main id="main" class="cfx-pg cfx-pga" data-cfx-annotation-playground>
+  <div class="cfx-pg__bar">
+    <h1 class="cfx-pg__title">{{ page.title }}</h1>
+    <div class="cfx-pg__actions">
+      <a class="cfx-pg__btn cfx-pga__link" href="/playground/">Markup playground</a>
+      <button type="button" class="cfx-pg__btn" data-pga-reset disabled>Reset chart</button>
+    </div>
+  </div>
+
+  <section class="cfx-pg__preview cfx-pga__preview" aria-label="Annotated chart" data-pg-preview-theme="light">
+    <div class="cfx-pg__tools">
+      <div class="cfx-pg__opts" role="group" aria-label="Preview options">
+        <div class="cfx-pg__opt">
+          <span class="cfx-pg__opt-label" id="cfx-pga-theme">Theme</span>
+          <div class="cfx-pg__seg cfx-seg" role="group" aria-labelledby="cfx-pga-theme">
+            <button type="button" data-pg-theme="light" aria-pressed="false"><span class="cfx-key cfx-key--light" aria-hidden="true"></span>Light</button>
+            <button type="button" data-pg-theme="dark" aria-pressed="false"><span class="cfx-key cfx-key--dark" aria-hidden="true"></span>Dark</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="cfx-pg__stage cfx-pga__stage" data-pg-stage>
+      <div class="cfx-pg__boot" data-pg-boot>
+        <p class="cfx-pg__boot-title">Starting the ChartForgeX engine</p>
+        <p data-pg-boot-text>The browser downloads the engine on first use and caches it for later visits. Every edit is prepared in your browser; nothing is sent anywhere.</p>
+        <div class="cfx-pg__meter" role="progressbar" aria-label="Engine download" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span data-pg-meter></span></div>
+      </div>
+      <div class="cfx-pga__canvas" data-pg-canvas hidden></div>
+    </div>
+    <div class="cfx-pg__statusbar">
+      <div class="cfx-pg__status" role="status" aria-live="polite" data-pg-status></div>
+    </div>
+  </section>
+
+  <div class="cfx-pg__below">
+    <section aria-labelledby="cfx-pga-host">
+      <h2 id="cfx-pga-host">Connect the editor to a native host</h2>
+      <p>The chart runtime owns the editor: anchors, the caption field, apply, undo and redo. It never moves a drawing itself. Each applied edit becomes a request that the host answers with a freshly prepared chart, so what you see is always what .NET rendered. Here the host is ChartForgeX running in this page as WebAssembly; in an application it is your server or desktop process.</p>
+      <figure class="cfx-codeblock cfx-pg__snippet" data-lang="javascript">
+        <figcaption class="cfx-codeblock__bar"><span class="cfx-codeblock__lang">JavaScript</span><span class="cfx-codeblock__actions"></span></figcaption>
+        <pre><code class="language-javascript">const chart = ChartForgeXCharts.mount(section);
+chart.connectNative(async (request, signal) =&gt; {
+  // request: { kind, annotationId, sourceDrawing, basis }
+  const reply = await host.prepareAnnotation(request);
+  return { html: reply.html, basis: reply.basis };
+}, { basis: initialBasis, axes: null });
+chart.editAnnotations({ createId: kind =&gt; nextId(kind) });</code></pre>
+      </figure>
+    </section>
+    <section class="cfx-pg__notes" aria-labelledby="cfx-pga-notes">
+      <h2 id="cfx-pga-notes">Try it</h2>
+      <p>Choose Add note, Add line or Add channel, drag an anchor or move it with Shift and the arrow keys, type a caption, then Apply. Edit and Delete work on the drawing picked in the list.</p>
+      <p>A saved page has no host, so it shows the drawings without the editor.</p>
+      <p><a class="cfx-link" href="/docs/interactivity/">Interactivity documentation</a></p>
+    </section>
+  </div>
+  <noscript><p class="cfx-pg__noscript">The annotation editor runs ChartForgeX in your browser and needs JavaScript and WebAssembly.</p></noscript>
+</main>
+{{ include "site-footer" }}
+{{ assets.js_html }}
+{{ extra_scripts_html }}
+<script type="module" src="/themes/chartforgex/assets/playground-annotations.js"></script>
+</body>
+</html>

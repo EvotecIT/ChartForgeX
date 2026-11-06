@@ -32,14 +32,12 @@ public sealed class MermaidThemeLayoutTests {
         var (baselineTheme, _) = Presentation(baseline, packet);
         var (theme, mode) = Presentation(rendered, packet);
         var native = VisualTheme.Graphite().Resolve(expectedMode);
-        // Literal named presets materialize their finite common color roles; legacy native-mode
-        // aliases and unknown names retain their existing fallback palette and diagnostics.
-        var named = sourceTheme is "default" or "dark";
-        var background = named ? ChartForgeX.Primitives.ChartColor.FromHex(sourceTheme == "dark" ? "#333333" : "#FFFFFF") : native.Background;
-        var foreground = named ? ChartForgeX.Primitives.ChartColor.FromHex(sourceTheme == "dark" ? "#E0DFDF" : "#131300") : native.Foreground;
-        if (!named) Assert.Equal(baselineTheme.ToJson(), theme.ToJson());
+        // Mermaid's default and dark themes, their casing variants and unknown names all keep the
+        // native Graphite palette in the selected mode; only unknown names add a diagnostic.
+        var foreground = native.Foreground;
+        Assert.Equal(baselineTheme.ToJson(), theme.ToJson());
         Assert.Equal(expectedMode, mode);
-        Assert.Equal(background, theme.Resolve(mode).Background);
+        Assert.Equal(native.Background, theme.Resolve(mode).Background);
         Assert.Equal(foreground, theme.Resolve(mode).Foreground);
         Assert.Equal(native.Palette, theme.Resolve(mode).Palette);
 
@@ -48,7 +46,7 @@ public sealed class MermaidThemeLayoutTests {
         Assert.Equal(Geometry(baselineSvg), Geometry(svg));
         Assert.Contains(svg.Descendants(), element => element.Name.LocalName == "text" &&
             element.Attribute("fill")?.Value == foreground.ToHex());
-        if (!packet) Assert.Equal(named, svg.Descendants().Any(element => (string?)element.Attribute("data-cfx-role") == "visual-background"));
+        if (!packet) Assert.DoesNotContain(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "visual-background");
     }
 
     private static VisualArtifact Render(string source, bool unsupported = false) {

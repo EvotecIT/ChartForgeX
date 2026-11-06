@@ -36,21 +36,8 @@ public sealed partial class MarkupChartParser {
         }
         state.Theme = NormalizeKey(value) switch {
             "graphite" => VisualTheme.Graphite(),
-            "report" => VisualTheme.Report(),
-            "executive" => VisualTheme.Executive(),
-            "product" => VisualTheme.Product(),
             "accessible" => VisualTheme.Accessible(),
-            "colorblind" => VisualTheme.Colorblind(),
-            "aurora" => VisualTheme.Aurora(),
-            "editorial" => VisualTheme.Editorial(),
-            "candy" => VisualTheme.Candy(),
-            "peopleinfographic" => VisualTheme.PeopleInfographic(),
-            "terminal" => VisualTheme.Terminal(),
             "transparentoverlay" => VisualTheme.TransparentOverlay(),
-            "minimal" => VisualTheme.Minimal(),
-            "dashboard" => VisualTheme.Dashboard(),
-            "saasdashboard" => VisualTheme.SaasDashboard(),
-            "restaurantdashboard" => VisualTheme.RestaurantDashboard(),
             _ => throw new ArgumentException("Unknown chart theme '" + value + "'.")
         };
     }

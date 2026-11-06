@@ -6,6 +6,8 @@ using static ChartForgeX.Topology.TopologyRenderPrimitives;
 namespace ChartForgeX.Topology;
 
 internal static partial class TopologyLayoutEngine {
+    private const double SameRankConnectorSpacing = 50;
+
     /// <summary>Uses the native rank layout recursively, treating child regions as measured layout items.</summary>
     private static bool TryApplyCompoundLayered(TopologyChart chart, TopologyRenderOptions? options, bool inferRoutes = true, bool compact = false) {
         var groupIds = new HashSet<string>(chart.Groups.Select(group => group.Id), StringComparer.Ordinal);
@@ -80,7 +82,19 @@ internal static partial class TopologyLayoutEngine {
             ApplyEdgeRankHints(local, force: true, rankConstraint: swimlaneConstraint == null ? null : rankConstraints.Contains,
                 preserveAuthoredRanks: swimlane || optimizeRanks, optimizeCrossings: optimizeRanks);
             var bands = orderedResponsibilities ? new LayeredResponsibilityBands(local, localOptions) : null;
-            ApplyLayered(local, localOptions, inferRoutes && bands == null, ranksPrepared: swimlane || optimizeRanks, responsibilityBands: bands);
+            // Only the root spreads across the viewport. A group's local pass packs its items, so the
+            // measured shell hugs its children instead of inheriting the viewport's empty cells.
+            localOptions.FitContentToViewport = parentId == null && !compact;
+            // Packed items in one rank sit a node gap apart; an edge between two of them needs room
+            // for its own line and arrowhead (and its return edge) instead of the bare gap.
+            var authoredSpacing = localOptions.LayeredNodeSpacing;
+            if (parentId != null && local.Edges.Any(edge => GetLayer(local.Nodes.First(item => item.Id == edge.SourceNodeId))
+                    == GetLayer(local.Nodes.First(item => item.Id == edge.TargetNodeId))))
+                localOptions.LayeredNodeSpacing = Math.Max(authoredSpacing ?? 0, SameRankConnectorSpacing);
+            ApplyLayered(local, localOptions, inferRoutes && bands == null, ranksPrepared: swimlane || optimizeRanks, responsibilityBands: bands,
+                regionItems: compact ? null : new HashSet<string>(childrenByKey.Keys, StringComparer.Ordinal));
+            localOptions.LayeredNodeSpacing = authoredSpacing;
+            if (parentId != null && bands == null) AlignLoneRanksWithPredecessors(local);
             var minX = local.Nodes.Select(node => node.X).DefaultIfEmpty(0).Min();
             var minY = local.Nodes.Select(node => node.Y).DefaultIfEmpty(0).Min();
             var width = local.Nodes.Select(node => node.X + node.Width - minX).DefaultIfEmpty(142).Max();
@@ -147,6 +161,23 @@ internal static partial class TopologyLayoutEngine {
         }
     }
 
+    /// <summary>
+    /// A packed rank holding one item lines it up with the items that feed it instead of the middle of the rank
+    /// block, so a sibling whose edges leave the region keeps a clear lane past it on the outer side.
+    /// </summary>
+    private static void AlignLoneRanksWithPredecessors(TopologyChart local) {
+        var horizontal = local.LayoutDirection is TopologyLayoutDirection.LeftToRight or TopologyLayoutDirection.RightToLeft;
+        var byId = local.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+        foreach (var rank in local.Nodes.GroupBy(GetLayer).OrderBy(group => group.Key).Where(group => group.Count() == 1)) {
+            var item = rank.Single();
+            var feeders = local.Edges.Where(edge => edge.TargetNodeId == item.Id && byId.TryGetValue(edge.SourceNodeId, out var source)
+                    && GetLayer(source) < rank.Key).Select(edge => byId[edge.SourceNodeId]).Distinct().ToArray();
+            if (feeders.Length == 0) continue;
+            var center = feeders.Average(node => horizontal ? CenterY(node) : CenterX(node));
+            if (horizontal) item.Y = center - item.Height / 2; else item.X = center - item.Width / 2;
+        }
+    }
+
     /// <summary>Associates group ports and selects the canonical obstacle route for inferred automatic connections.</summary>
     private static void InferCompoundRoutes(TopologyChart chart, IReadOnlyDictionary<string, TopologyGroup> groups,
         bool preserveRouting = false, bool avoidOrthogonalObstacles = false) {
@@ -166,9 +197,11 @@ internal static partial class TopologyLayoutEngine {
             var dx = CenterX(other) - CenterX(group);
             var dy = CenterY(other) - CenterY(group);
             if (Math.Abs(dx) >= Math.Abs(dy)) return dx < 0 ? TopologyEdgePort.Left : TopologyEdgePort.Right;
-            // Group titles occupy the upper boundary. A side entry reaches the
-            // shell below the reserved header when the other item is above it.
-            return dy > 0 ? TopologyEdgePort.Bottom : dx < 0 ? TopologyEdgePort.Left : TopologyEdgePort.Right;
+            if (dy > 0) return TopologyEdgePort.Bottom;
+            // An item directly above enters through the top border beside the title, which sits inside
+            // the shell. Otherwise a side entry reaches the shell below the reserved header.
+            var overlaps = other.X < group.X + group.Width && other.X + other.Width > group.X;
+            return overlaps ? TopologyEdgePort.Top : dx < 0 ? TopologyEdgePort.Left : TopologyEdgePort.Right;
         }
 
     }

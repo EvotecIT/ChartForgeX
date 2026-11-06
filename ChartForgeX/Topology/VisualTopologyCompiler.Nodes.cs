@@ -31,7 +31,7 @@ internal sealed partial class VisualTopologyCompiler {
         var accent = Highlight(baseAccent, active);
         var baseFill = string.IsNullOrWhiteSpace(node.BackgroundColor) && EffectiveNodeSurfaceStyle(_options) != TopologyNodeSurfaceStyle.Card
             ? ChartColorMath.BlendPremultiplied(_colors.Background, baseAccent, IsMonitoringDashboardStyle(_options) ? .065 : .10)
-            : Color(NodeFill(node, Theme(), baseAccent.ToHexRgba(), _options), _colors.Surface);
+            : Color(NodeFill(node, Theme()), _colors.Surface);
         var fill = Highlight(baseFill, active);
         var accentPaint = NodeAccentPaint(node, accent, active);
         var surfacePaint = new VisualScenePaintBinding(NodeFillPaint(node, baseFill, baseAccent, accentRole, active), accentPaint);
@@ -74,6 +74,7 @@ internal sealed partial class VisualTopologyCompiler {
                     else if (mode != TopologyNodeDisplayMode.Dot) BuildNodeText(node, textBounds, accent, active, caption);
                 }
             }
+            BuildHealthRing(node, bounds, active);
             if (image && TopologyExternalCaption.HasPolicy(node)) BuildExternalCaption(node, accent, active);
             if (!shapeContent && _options.IncludeStatusBadges && node.ShowStatusBadge && mode != TopologyNodeDisplayMode.Dot) {
                 var status = Highlight(Status(node.Status), active);
@@ -104,7 +105,7 @@ internal sealed partial class VisualTopologyCompiler {
         var titleLines = node.LabelContent.IsStructured ? CaptionRowCount(NodeCaptionContent(node), bounds.Width, size * _scale, _options.MaxNodeLabelLines)
             : TextLineCount(label, bounds.Width, size, 600, _options.MaxNodeLabelLines);
         var height = Math.Min(bounds.Height, CaptionLineHeight(NodeCaptionContent(node), size * _scale) * titleLines);
-        var fitSingleLine = !_options.WrapNodeLabels && _options.FitContentToViewport
+        var fitSingleLine = TopologyCaptionPresentation.ResolveSingleLineFitting(_options)
             || MeasurePolicyText("Ag", size * _scale, 600).LineHeight > height;
         var labelColor = string.IsNullOrWhiteSpace(node.LabelColor) ? _colors.Foreground : Color(node.LabelColor, _colors.Foreground);
         Text(node.LabelContent.IsStructured ? NodeCaptionContent(node) : TextContent.Plain(label), new ChartRect(bounds.X, bounds.Y, bounds.Width, height), size, Highlight(labelColor, active), 600, "topology-node-label", titleLines, caption || node.Shape.HasValue, node.Id + "-label", opacity: HighlightFactor(active), paint: string.IsNullOrWhiteSpace(node.LabelColor) ? null : SourcePaint(node.LabelColor, Highlight(labelColor, active), SvgColorRole.Any, HighlightFactor(active), _colors.Foreground), fitSingleLine: fitSingleLine);
@@ -185,7 +186,7 @@ internal sealed partial class VisualTopologyCompiler {
     }
 
     private ChartRect? Text(string value, ChartRect bounds, double size, ChartColor color, int weight, string role, int maxLines = 1, bool centered = false, string? id = null, SvgPaint? paint = null, double opacity = 1, bool fitSingleLine = false, bool verticallyCentered = false, TextStyleOverride? textStyle = null, double defaultUnits = 1) {
-        var minimumFontSize = role == "topology-node-label" && !_options.WrapNodeLabels && _options.FitContentToViewport
+        var minimumFontSize = role == "topology-node-label" && TopologyCaptionPresentation.ResolveSingleLineFitting(_options)
             ? DotNodeSymbolFontSize * .9 * defaultUnits * _scale
             : DotNodeSymbolFontSize * defaultUnits * _scale;
         size = RoleTextSize(size, textStyle);

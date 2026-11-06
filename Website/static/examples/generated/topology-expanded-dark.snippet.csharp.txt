@@ -1,0 +1,92 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var chart = TopologyChart.Create();
+chart.ThemeMode = mode;
+chart.Id = "service-topology";
+chart.DefaultRenderOptions = new TopologyRenderOptions {
+    FitContentToViewport = false,
+    WrapNodeLabels = true,
+    IncludeLegend = true,
+    IncludeGroupStatusDots = true
+};
+chart.WithViewport(1100, 620).WithLayout(TopologyLayoutMode.Layered)
+    .WithLayoutDirection(TopologyLayoutDirection.LeftToRight);
+chart.Groups.Add(new TopologyGroup {
+    Id = "primary", Label = "Primary region",
+    Status = TopologyHealthStatus.Healthy
+});
+chart.Groups.Add(new TopologyGroup {
+    Id = "secondary", Label = "Secondary region",
+    Status = TopologyHealthStatus.Warning
+});
+var source = new TopologyNode {
+    Id = "client", Label = "Client service", Subtitle = "Requests", Width = 240, Height = 85,
+    Kind = TopologyNodeKind.Server, GroupId = "primary", Status = TopologyHealthStatus.Healthy
+};
+source.Details.Add(new TopologyNodeDetail {
+    Label = "State", Value = "Available", Status = TopologyHealthStatus.Healthy
+});
+chart.Nodes.Add(source);
+chart.Nodes.Add(new TopologyNode {
+    Id = "cache", Label = "Cache", Width = 150, Height = 65,
+    Shape = TopologyNodeShape.Cylinder, GroupId = "primary", ShowStatusBadge = false
+});
+chart.Nodes.Add(new TopologyNode {
+    Id = "worker", Label = "Processing service", Width = 240, Height = 85,
+    Kind = TopologyNodeKind.Server, GroupId = "secondary", Status = TopologyHealthStatus.Warning
+});
+chart.Nodes.Add(new TopologyNode {
+    Id = "store", Label = "Result store", Width = 150, Height = 65,
+    Shape = TopologyNodeShape.Cylinder, GroupId = "secondary", ShowStatusBadge = false
+});
+chart.Edges.Add(new TopologyEdge {
+    Id = "request", SourceNodeId = "client", TargetNodeId = "worker", Label = "Requests", SecondaryLabel = "Active",
+    Routing = TopologyEdgeRouting.ObstacleAvoidingOrthogonal, Direction = VisualLinkDirection.Forward
+});
+chart.Edges.Add(new TopologyEdge {
+    Id = "cache-read", SourceNodeId = "client", TargetNodeId = "cache", Label = "Lookup", Routing = TopologyEdgeRouting.Curved,
+    LineStyle = TopologyEdgeLineStyle.Dashed, Direction = VisualLinkDirection.Bidirectional
+});
+chart.Edges.Add(new TopologyEdge {
+    Id = "persist", SourceNodeId = "worker", TargetNodeId = "store", Label = "Persist",
+    Routing = TopologyEdgeRouting.Orthogonal, Direction = VisualLinkDirection.Forward
+});
+chart.Legend = TopologyLegend.Create()
+    .AddStatus("Available", TopologyHealthStatus.Healthy)
+    .AddStatus("Review", TopologyHealthStatus.Warning)
+    .AddNodeKind("Service", TopologyNodeKind.Server)
+    .AddEdgeKind("Dependency", TopologyEdgeKind.Dependency, lineStyle: TopologyEdgeLineStyle.Dashed);
+
+#region Output
+if ((object)chart is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
+    var natural = topology.WithTitle("Service request topology").WithSubtitle("Groups, status, details and routed links").WithTheme(theme, mode).ToVisualArtifact();
+    natural.SaveSvg("visual.svg");
+    File.WriteAllBytes("visual.png", natural.ToPng());
+    File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
+    return;
+}
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(1057, 508)), theme, mode,
+    new VisualFrame("Service request topology", "Groups, status, details and routed links", showLegend: true, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Topology).ToHtmlPage());
+#endregion

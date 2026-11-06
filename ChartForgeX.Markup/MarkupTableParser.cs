@@ -358,7 +358,7 @@ public sealed class MarkupTableParser {
     }
 
     private static double? OptionalDouble(Dictionary<string, string> values, string key) =>
-        values.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value) ? double.Parse(value, CultureInfo.InvariantCulture) : null;
+        values.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value) ? VisualMarkupFenceOptions.ParseDouble(value, key) : null;
 
     private static string Required(Dictionary<string, string> values, string key) {
         if (values.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value)) return value;

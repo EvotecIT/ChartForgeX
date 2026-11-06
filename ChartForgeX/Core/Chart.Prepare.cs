@@ -78,7 +78,7 @@ public sealed partial class Chart : IVisualRenderable {
         var captureCompleteCartesian = family == VisualChartFamily.Cartesian && viewport == null && VisualCartesianCompiler.NeedsCompleteCartesianValues(this);
         var textCapture = context.NativeTextCapture ?? (family == VisualChartFamily.Radial || captureHierarchy || captureCompleteCartesian || captureBubble || captureRange || captureError || captureFinancial ? new VisualSceneTextCapture() : null);
         context = new VisualRenderContext(context.Layout, context.Theme, context.ThemeMode, frame, context.Font).WithNativeTextCapture(textCapture).WithRequestsOf(context);
-        var builder = new VisualSceneBuilder(context.Layout.Size, context.Font, textCapture);
+        var builder = new VisualSceneBuilder(context.Layout.Size, context.Font, textCapture) { MinimumTextSize = context.Theme.Typography.MinimumTextSize };
         var colors = context.Theme.Resolve(context.ThemeMode);
         var mapLegendInset = family == VisualChartFamily.Map && !sourceFrame.HasExplicitLegendPosition && !Options.HasExplicitLegendPosition
             ? VisualMapCompiler.ResolveTileLegendInset(this, context, builder, entries, colorScales.Map) : null;

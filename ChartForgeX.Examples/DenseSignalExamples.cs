@@ -10,8 +10,8 @@ internal static class DenseSignalExamples {
             .WithSubtitle("50,000 source samples resolved against the intended report width with source-index provenance")
             .WithXAxis("Sample")
             .WithYAxis("Latency")
-            .WithTheme(VisualTheme.Report())
-            .WithSize(1180, 640)
+            .WithTheme(VisualTheme.Graphite())
+            .WithSize(800, 434)
             .WithPngOutputScale(pngOutputScale)
             .AddAdaptiveLine(
                 "P95 latency",
@@ -32,8 +32,8 @@ internal static class DenseSignalExamples {
             .Select(index => new ChartPoint(index, 100 + Math.Sin(index / 180d) * 20 + (index == 5170 ? 90 : 0), index == 4000 || index == 7500));
         var chart = Chart.Create().WithTitle("Signal with collection gaps")
             .WithSubtitle("Missing intervals stay empty; min/max sampling retains local peaks and troughs")
-            .WithXAxis("Sample").WithYAxis("Latency").WithTheme(VisualTheme.Report())
-            .WithSize(1180, 640).WithPngOutputScale(pngOutputScale)
+            .WithXAxis("Sample").WithYAxis("Latency").WithTheme(VisualTheme.Graphite())
+            .WithSize(800, 434).WithPngOutputScale(pngOutputScale)
             .AddAdaptiveArea("Observed latency", points, 1180,
                 new ChartResolutionPolicy { MaximumPointCount = 500, DecimationMode = ChartDecimationMode.MinMax },
                 ChartColor.FromRgb(37, 99, 235));

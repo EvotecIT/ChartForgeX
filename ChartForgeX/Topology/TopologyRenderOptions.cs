@@ -9,6 +9,14 @@ namespace ChartForgeX.Topology;
 /// Defines topology rendering options.
 /// </summary>
 public sealed class TopologyRenderOptions {
+    // Retains prepared caption fitting without requesting a second viewport transform.
+    internal bool? CapturedSingleLineFitting { get; set; }
+    /// <summary>Uses light tokens and status dash patterns for a region diagram's static print output.</summary>
+    public bool RegionPrint { get; set; }
+    /// <summary>Includes an accessible node/link table, visible under Details in printed region HTML.</summary>
+    public bool IncludeRegionDetails { get; set; }
+    /// <summary>Gets or sets host wording for the region legend's health-ring explanation.</summary>
+    public string RegionRingLegendLabel { get; set; } = "Ring = health";
     internal TextMeasurementContext? TextMeasurement { get; set; }
     internal double ResolvedIconLabelFontSize { get; set; } = 10.5;
     internal double ResolvedSubtitleChipFontSize { get; set; } = 9.5;
@@ -156,6 +164,10 @@ public sealed class TopologyRenderOptions {
     /// <summary>Gets or sets whether force-directed HTML pages should include graph exploration controls.</summary>
     public bool EnableHtmlForceGraphControls { get; set; }
 
+    /// <summary>Gets or sets whether interactive HTML pages render a find bar that highlights nodes by text, group or kind and moves the viewport to them.</summary>
+    /// <remarks>Force graph controls already carry their own search, so force-directed pages with those controls keep that panel instead.</remarks>
+    public bool EnableHtmlFindControls { get; set; }
+
     /// <summary>Gets or sets whether interactive HTML pages should synchronize selection and viewport state with wrappers in the same sync group.</summary>
     public bool EnableHtmlSynchronizedState { get; set; }
 
@@ -179,6 +191,9 @@ public sealed class TopologyRenderOptions {
 
     /// <summary>Gets or sets where viewport, fullscreen, and export controls are placed in interactive HTML output.</summary>
     public TopologyHtmlControlPlacement HtmlControlPlacement { get; set; } = TopologyHtmlControlPlacement.TopLeft;
+
+    /// <summary>Gets or sets the view an interactive HTML topology with viewport controls opens at.</summary>
+    public TopologyHtmlOpeningView HtmlOpeningView { get; set; } = TopologyHtmlOpeningView.Readable;
 
     /// <summary>Gets or sets whether interactive HTML pages should read and update scenario state from the page query string.</summary>
     public bool EnableHtmlScenarioUrlState { get; set; }

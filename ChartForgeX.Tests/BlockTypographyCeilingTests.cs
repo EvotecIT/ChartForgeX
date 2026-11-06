@@ -17,7 +17,7 @@ public sealed class BlockTypographyCeilingTests {
     [InlineData(false)]
     [InlineData(true)]
     public async Task TallSingleBranchGitKeepsMeasuredTagInsideItsBadge(bool dark) {
-        var theme = VisualTheme.Report().WithFontFamily("Arial"); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: 256, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
+        var theme = VisualTheme.Graphite().WithFontFamily("Arial"); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: 256, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
         var block = GitGraphBlock.Create().WithSize(600, 1200).WithTheme(theme, dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithCard(false).AddBranch("main").AddCommit("base", "main", tag: "i");
         var svg = block.ToSvg();
         Assert.Equal("i", Assert.Single(XDocument.Parse(svg).Descendants(), element => (string?)element.Attribute("data-cfx-role") == "git-tag-label").Value);
@@ -34,7 +34,7 @@ public sealed class BlockTypographyCeilingTests {
     [InlineData(false)]
     [InlineData(true)]
     public async Task GitCaptionsWithLineBreaksFitAsSingleTextRuns(bool dark) {
-        var theme = VisualTheme.Report().WithFontFamily("Courier New");
+        var theme = VisualTheme.Graphite().WithFontFamily("Courier New");
         var block = GitGraphBlock.Create().WithSize(320, 300).WithTheme(theme, dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithCard(false)
             .AddBranch("main").AddCommit("first", "main").AddCommit("last", "main", label: "MMMMMMMMMM\nMMMMMMMMMM");
         var svg = block.ToSvg();
@@ -91,7 +91,7 @@ public sealed class BlockTypographyCeilingTests {
     [InlineData(1, "Segoe UI")]
     [InlineData(2, "Segoe UI")]
     public void ClassicVennSetIntersectionAndTextShareTheirSvgBaselineAndWidth(int role, string family) {
-        var theme = VisualTheme.Report().WithFontFamily(family);
+        var theme = VisualTheme.Graphite().WithFontFamily(family);
         theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: 48, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
         theme = theme.Configure(builder => { builder.Light.Foreground = builder.Dark.Foreground = builder.Light.Background = builder.Dark.Background = builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = builder.Light.Surface = builder.Dark.Surface = ChartColor.Transparent; builder.Light.Muted = builder.Dark.Muted = ChartColor.Transparent; });
         var red = ChartColor.FromHex("#FF0000");

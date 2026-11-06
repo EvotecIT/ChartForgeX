@@ -17,7 +17,7 @@ var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = SimpleTopologyRecipe.Create("feasibility", mode);
 var context = new VisualRenderContext(
-    new VisualLayoutOptions(new VisualSize(640, 400)), theme, mode,
+    new VisualLayoutOptions(new VisualSize(600, 375)), theme, mode,
     new VisualFrame("Service request route", "Product-neutral diagram semantics", showLegend: false, showSurface: false));
 var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());

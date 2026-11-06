@@ -1,0 +1,33 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var teamA = new ChartSeries(new ChartSeriesId("team-a"), "Team A", ChartSeriesKind.Slope, new[] { new ChartPoint(1, 28), new ChartPoint(2, 64) });
+var teamB = new ChartSeries(new ChartSeriesId("team-b"), "Team B", ChartSeriesKind.Slope, new[] { new ChartPoint(1, 52), new ChartPoint(2, 43) });
+var teamC = new ChartSeries(new ChartSeriesId("team-c"), "Team C", ChartSeriesKind.Slope, new[] { new ChartPoint(1, 38), new ChartPoint(2, 57) });
+var chart = Chart.Create().WithXLabels("Before", "After").AddSeries(teamA).AddSeries(teamB).AddSeries(teamC);
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Capacity change across teams", "", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion

@@ -9,7 +9,7 @@ using ChartForgeX.Themes;
 public static class ResponsiveRadialExamples {
     /// <summary>Creates six licence categories, optionally grouping the three smallest into Other.</summary>
     public static Chart Create(VisualThemeMode mode, bool other = false) {
-        var chart = Chart.Create().WithSize(1100, 420).WithTheme(VisualTheme.Graphite(), mode)
+        var chart = Chart.Create().WithSize(800, 305).WithTheme(VisualTheme.Graphite(), mode)
             .WithTitle("Licences by product").WithSubtitle("Assigned seats, October 2026")
             .WithXLabels("Microsoft 365 E3", "Microsoft 365 E5", "Exchange Online Plan 1", "Power BI Pro", "Visio Plan 2", "Project Plan 3");
         var values = new double[] { 412, 268, 190, 120, 64, 31 };
@@ -40,10 +40,10 @@ public static class ResponsiveRadialExamples {
         } finally { chart.WithSize(size.Width, size.Height); }
     }
 
-    private static string Document(string content, bool dark) => "<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Responsive pie and donut charts</title>"
-        + "<style>body{margin:0;background:" + (dark ? "#0c0d10" : "#f2f3f4") + ";font:14px system-ui;color:" + (dark ? "#f2f3f5" : "#16181c") + "}"
+    private static string Document(string content, bool dark) => ExampleTypography.EmbedInHost("<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Responsive pie and donut charts</title>"
+        + "<style>body{margin:0;background:" + (dark ? "#0c0d10" : "#f2f3f4") + ";font-size:14px;color:" + (dark ? "#f2f3f5" : "#16181c") + "}"
         + ".panel .cfx-interactive-chart{width:100%;margin:0;padding:0;border:0;box-shadow:none}.cfx-frame{margin:0;border:0;border-radius:0}.cfx-stage{min-width:0}"
-        + "header{padding:16px 24px}h1{font-size:20px;margin:0 0 8px}h2{font-size:15px;margin:16px 24px 8px}select{font:inherit;margin-left:8px}article{margin-bottom:24px}</style></head><body>" + content + "</body></html>";
+        + "header{padding:16px 24px}h1{font-size:20px;margin:0 0 8px}h2{font-size:15px;margin:16px 24px 8px}select{font:inherit;margin-left:8px}article{margin-bottom:24px}</style></head><body>" + content + "</body></html>");
 
     /// <summary>Writes self-contained live examples and matching static references.</summary>
     public static void Write(string output) {

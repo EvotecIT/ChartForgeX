@@ -71,7 +71,9 @@ internal static partial class VisualMapCompiler {
     }
 
     private static string[] BandCaptions(Chart chart, ChartColorPresentation presentation) {
-        return ChartColorScaleLegend.BandCaptions(presentation.Labels, chart.Options.MapColorScale!, presentation.ScaleValues);
+        var values = chart.Series[0].RegionValues;
+        return ChartColorScaleLegend.BandCaptions(presentation.Labels, chart.Options.MapColorScale!, presentation.ScaleValues,
+            maximum: values.Count > 0 ? values.Max(item => item.Value) : null);
     }
 
     private static bool HasMissingMapValues(Chart chart) =>

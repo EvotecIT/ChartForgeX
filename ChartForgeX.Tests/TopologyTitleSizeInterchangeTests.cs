@@ -17,12 +17,12 @@ public sealed class TopologyTitleSizeInterchangeTests {
         Assert.Equal(1, baseline.ToInterchangeEnvelope().Version); Assert.DoesNotContain("\"titleSize\"", json);
         chart.Theme = VisualTheme.Graphite().WithTypography(new VisualTypography(titleSize: 29));
         Assert.Equal(2, chart.Prepare().ToInterchangeEnvelope().Version);
-        chart.Theme = VisualTheme.Graphite().WithTypography(new VisualTypography(titleSize: VisualTheme.Graphite().Typography.TitleSize));
+        chart.Theme = VisualTheme.Graphite();
         Assert.Equal(json, chart.Prepare().ToInterchangeEnvelope().ToJson()); Assert.Equal(svg, chart.ToSvg()); Assert.Equal(png, chart.ToPng());
     }
     [Fact]
     public void NondefaultTopologyAndPresetTitleSizeUsesTheExistingFrameOwnerAndRestoresThroughVersionTwo() {
-        foreach (var theme in new[] { VisualTheme.Report(), VisualTheme.Product(), VisualTheme.Graphite().WithTypography(new VisualTypography(titleSize: 29)) }) {
+        foreach (var theme in new[] { VisualTheme.Graphite(), VisualTheme.Graphite().WithTypography(new VisualTypography(titleSize: 29)) }) {
             var chart = Source(theme);
             // Test the preset/title contract with an explicitly bounded caller face; host Avenir collections
             // may exceed the separate 2 MiB portable-root admission while remaining valid native output.

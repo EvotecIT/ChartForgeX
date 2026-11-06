@@ -20,7 +20,7 @@
         const memberCount = cluster.nodeIds.length;
         const memberLabel = uiText(root, memberCount === 1 ? 'GraphOneObject' : 'GraphObjects', memberCount === 1 ? '{count} object' : '{count} objects', { count: memberCount });
         context.globalAlpha = (metrics.expanded ? .55 : 1) * graphLinkOpacity(cluster.el);
-        context.font = '700 12px Segoe UI, Arial, sans-serif';
+        context.font = `700 12px ${graphNodeFontFamily(root)}`;
         context.textAlign = 'center';
         context.textBaseline = 'middle';
         context.lineWidth = 4;
@@ -28,7 +28,7 @@
         context.fillStyle = palette.clusterText;
         context.strokeText(label, metrics.x, metrics.y - 6);
         context.fillText(label, metrics.x, metrics.y - 6);
-        context.font = '600 9.5px Segoe UI, Arial, sans-serif';
+        context.font = `600 9.5px ${graphNodeFontFamily(root)}`;
         context.fillStyle = palette.muted;
         context.strokeText(memberLabel, metrics.x, metrics.y + 10);
         context.fillText(memberLabel, metrics.x, metrics.y + 10);

@@ -53,6 +53,52 @@ public sealed partial class MermaidFlowchartMembershipTests {
         var saved = artifact.ToInterchangeEnvelope(); Assert.Equal("Inner", saved.Nodes.Single(node => node.Id == "N").GroupId); Assert.Equal("Inner", saved.Nodes.Single(node => node.Id == "Q").GroupId);
         var xml = XDocument.Parse(artifact.ToSvg()); var text = xml.Descendants().Where(element => element.Name.LocalName == "text").Select(element => element.Value).ToArray();
         Assert.Contains("Updated", text); Assert.DoesNotContain("Original", text); Assert.DoesNotContain(xml.Descendants(), element => element.Name.LocalName is "script" or "image" or "foreignObject");
+        if (family == "flowchart") {
+            // Outer and Sibling share a rank through their cycle; hugging their contents keeps Sibling on the flow side.
+            // A tall viewport would fit both packed shells across the flow, so it shows the rank keeps them along it.
+            var tall = Options(dark, width); tall.Flowchart!.Height = 2000;
+            foreach (var facts in new[] { saved, MermaidRenderer.Render(source, tall).Artifact!.ToInterchangeEnvelope() }) {
+                var outer = facts.Groups.Single(group => group.Id == "Outer"); var sibling = facts.Groups.Single(group => group.Id == "Sibling");
+                Assert.True(sibling.X!.Value >= outer.X!.Value + outer.Width!.Value, "Sibling must stay after Outer along the LR flow.");
+            }
+        }
+        // No two painted routes share a straight run.
+        var runs = xml.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-line")
+            .GroupBy(element => (string?)element.Ancestors().FirstOrDefault(parent => parent.Attribute("data-edge-id") != null)?.Attribute("data-edge-id"))
+            .Select(edge => (Id: edge.Key, Runs: StraightRuns((string)edge.First().Attribute("d")!))).ToArray();
+        Assert.Equal(5, runs.Length);
+        for (var a = 0; a < runs.Length; a++)
+            for (var b = a + 1; b < runs.Length; b++)
+                Assert.False(SharesRun(runs[a].Runs, runs[b].Runs), "Routes " + runs[a].Id + " and " + runs[b].Id + " overlap.");
+    }
+
+    // The L segments of an SVG path; rounded corners (C) only move the pen.
+    private static ((double X, double Y) From, (double X, double Y) To)[] StraightRuns(string path) {
+        var tokens = path.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries); var runs = new List<((double, double), (double, double))>();
+        (double X, double Y) pen = default; var index = 0;
+        double Next() => double.Parse(tokens[index++], System.Globalization.CultureInfo.InvariantCulture);
+        while (index < tokens.Length) {
+            var command = tokens[index++];
+            if (command == "M") pen = (Next(), Next());
+            else if (command == "L") { var to = (Next(), Next()); runs.Add((pen, to)); pen = to; }
+            else if (command == "C") { index += 4; pen = (Next(), Next()); }
+            else if (command == "Q") { index += 2; pen = (Next(), Next()); }
+        }
+        return runs.ToArray();
+    }
+
+    private static bool SharesRun(((double X, double Y) From, (double X, double Y) To)[] first, ((double X, double Y) From, (double X, double Y) To)[] second) {
+        foreach (var one in first)
+            foreach (var two in second) {
+                var p = one.From; var q = one.To; var r = two.From; var s = two.To;
+                if (Math.Abs(p.X - q.X) < .5 && Math.Abs(r.X - s.X) < .5 && Math.Abs(p.X - r.X) < .5
+                    && Overlap(p.Y, q.Y, r.Y, s.Y) > 1) return true;
+                if (Math.Abs(p.Y - q.Y) < .5 && Math.Abs(r.Y - s.Y) < .5 && Math.Abs(p.Y - r.Y) < .5
+                    && Overlap(p.X, q.X, r.X, s.X) > 1) return true;
+            }
+        return false;
+        static double Overlap(double a1, double a2, double b1, double b2) =>
+            Math.Min(Math.Max(a1, a2), Math.Max(b1, b2)) - Math.Max(Math.Min(a1, a2), Math.Min(b1, b2));
     }
 
     [Theory]

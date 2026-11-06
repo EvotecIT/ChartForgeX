@@ -461,7 +461,7 @@ internal static partial class SmokeTests {
         ("Topology edge label obstacles follow rendered group options", TopologyEdgeLabelObstaclesFollowRenderedGroupOptions),
         ("Topology edge label obstacles reserve icon label plates", TopologyEdgeLabelObstaclesReserveIconLabelPlates),
         ("Topology hidden nodes do not affect viewport fit or edge labels", TopologyHiddenNodesDoNotAffectViewportFitOrEdgeLabels),
-        ("Topology edge label clearance uses background when groups are hidden", TopologyEdgeLabelClearanceUsesBackgroundWhenGroupsAreHidden),
+        ("Topology edge label clearance tints any group colour and uses background when groups are hidden", TopologyEdgeLabelClearanceTintsAnyGroupColourAndUsesBackgroundWhenGroupsAreHidden),
         ("Topology geographic callouts avoid unlabeled link routes", TopologyGeographicCalloutsAvoidUnlabeledLinkRoutes),
         ("Topology explicit callout placement adds map edge candidates", TopologyExplicitCalloutPlacementAddsMapEdgeCandidates),
         ("Topology single geographic callout uses nearest map corner", TopologySingleGeographicCalloutUsesNearestMapCorner),

@@ -6,8 +6,8 @@ public static class TravelDottedMapRecipe {
         return Chart.Create()
             .WithTitle("Travel Map")
             .WithSubtitle("Dotted world layer with highlighted longitude and latitude points")
-            .WithTheme(VisualTheme.Report(), mode)
-            .WithSize(980, 560)
+            .WithTheme(VisualTheme.Graphite(), mode)
+            .WithSize(800, 457)
             .WithLegend(false)
             .WithDataLabels()
             .AddDottedMap("Visited", new[] {

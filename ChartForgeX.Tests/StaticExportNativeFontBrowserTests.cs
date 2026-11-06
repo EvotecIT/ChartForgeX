@@ -89,7 +89,10 @@ public sealed partial class StaticExportNativeFontBrowserTests {
     [BrowserFact]
     public async Task CapturedOutlinePngDoesNotNeedPageFontsOrBlobImagePermission() {
         if (!Enabled) return;
-        var fragment = Model(800, VisualThemeMode.Light).ToInteractiveHtmlFragment(Options);
+        var fragment = Model(800, VisualThemeMode.Light).ToInteractiveHtmlFragment(options => {
+            Options(options);
+            options.TextPresentation = HtmlChartTextPresentation.NativeContours;
+        });
         const string policy = "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; font-src 'none'; connect-src 'none'; base-uri 'none'";
         var html = "<!doctype html><html><head><meta http-equiv=\"Content-Security-Policy\" content=\"" + policy
             + "\"></head><body><script>window.fontPolicyViolations=[];addEventListener('securitypolicyviolation',event=>fontPolicyViolations.push({directive:event.effectiveDirective,blocked:event.blockedURI}));</script>" + fragment + "</body></html>";

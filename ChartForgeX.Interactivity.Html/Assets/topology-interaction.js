@@ -11,6 +11,142 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
   if (typeof value === 'string') text = value;
   return values ? text.replace(/\{([^{}]+)\}/g, (token, name) => Object.prototype.hasOwnProperty.call(values, name) ? String(values[name]) : token) : text;
 };
+// Region presentation bindings share the adapter's mount/dispose lifetime and public event contract.
+(() => {
+  window[Symbol.for('ChartForgeX.topologyRegions')] = (wrapper, lifetime) => {
+    const listen = (target, type, handler) => lifetime.listen(target, type, handler);
+    const roots = [...wrapper.querySelectorAll('.cfx-topo')];
+    const nodes = [...wrapper.querySelectorAll('[data-cfx-role="topology-node"]')];
+    const tip = document.createElement('div');
+    tip.className = 'cfx-region-tip'; tip.hidden = true; tip.setAttribute('role', 'tooltip');
+    wrapper.append(tip); lifetime.own(() => tip.remove());
+    const visible = element => element.getBoundingClientRect().width > 0;
+    let current = null;
+    const prefixed = (element, prefix) => Object.fromEntries([...element.attributes].filter(attribute => attribute.name.startsWith(prefix))
+      .map(attribute => [attribute.name.slice(prefix.length).replace(/-([a-z0-9])/g, (_, letter) => letter.toUpperCase()), attribute.value]));
+    const data = element => {
+      const kind = element.hasAttribute('data-node-id') ? 'node' : 'edge';
+      return { chartId: wrapper.dataset.chartId, kind, id: element.getAttribute(`data-${kind}-id`),
+        label: element.getAttribute(`data-${kind}-label`) || '', subtitle: element.dataset.nodeSubtitle || '',
+        sourceNodeId: element.dataset.sourceNodeId, targetNodeId: element.dataset.targetNodeId,
+        sourceGroupId:element.dataset.sourceGroupId, targetGroupId:element.dataset.targetGroupId,
+        groupId:element.dataset.groupId, groupLabel:element.dataset.groupLabel,
+        nodeKind:element.dataset.nodeKind, edgeKind:element.dataset.edgeKind, direction:element.dataset.direction,
+        accessibleName: element.getAttribute('aria-label') || element.getAttribute('data-cfx-description') || '', healthRing: kind === 'node',
+        status: element.dataset.cfxStatus || '', metadata:prefixed(element,'data-cfx-meta-'), metrics:prefixed(element,'data-cfx-metric-') };
+    };
+    const emit = (name, element) => wrapper.dispatchEvent(new CustomEvent(name, { bubbles:true, composed:true, detail:data(element) }));
+    const clear = () => {
+      roots.forEach(root => { root.classList.remove('dimming'); root.querySelectorAll('.lit,.focus').forEach(part => part.classList.remove('lit','focus')); });
+      current = null; tip.hidden = true;
+    };
+    lifetime.own(clear);
+    const show = (element, x, y, keyboard = false) => {
+      clear(); current = element;
+      const root = element.closest('.cfx-topo');
+      if (element.hasAttribute('data-node-id')) {
+        root.classList.add('dimming'); element.classList.add('lit');
+        if (keyboard) element.classList.add('focus');
+        const id = element.dataset.nodeId;
+        root.querySelectorAll('[data-a],[data-source-node-id]').forEach(edge => {
+          if ((edge.dataset.a || edge.dataset.sourceNodeId) === id || (edge.dataset.b || edge.dataset.targetNodeId) === id) {
+            edge.classList.add('lit');
+            const other = (edge.dataset.a || edge.dataset.sourceNodeId) === id ? (edge.dataset.b || edge.dataset.targetNodeId) : (edge.dataset.a || edge.dataset.sourceNodeId);
+            root.querySelectorAll('[data-node-id]').forEach(node => { if (node.dataset.nodeId === other) node.classList.add('lit'); });
+          }
+        });
+      }
+      const title = document.createElement('b'); title.textContent = data(element).label;
+      const details = document.createElement('small'); details.textContent = element.dataset.regionTip || title.textContent;
+      tip.replaceChildren(title, details); tip.hidden = false;
+      const bounds = tip.getBoundingClientRect();
+      tip.style.left = Math.max(8, Math.min(innerWidth - bounds.width - 8, x + 14)) + 'px';
+      tip.style.top = Math.max(8, Math.min(innerHeight - bounds.height - 8, y + 14)) + 'px';
+      emit('cfx-topology-hover', element);
+    };
+    const select = element => {
+      wrapper.querySelectorAll('[aria-selected]').forEach(part => part.removeAttribute('aria-selected'));
+      const selected = data(element);
+      wrapper.querySelectorAll('[data-cfx-role="topology-node"],[data-cfx-role="topology-edge"]').forEach(part => {
+        const candidate = data(part);
+        if (candidate.kind === selected.kind && candidate.id === selected.id) part.setAttribute('aria-selected','true');
+      });
+      emit('cfx-topology-select', element);
+      emit(element.hasAttribute('data-node-id') ? 'node:select' : 'edge:select', element);
+    };
+    wrapper.querySelectorAll('[data-cfx-role="topology-node"],[data-cfx-role="topology-edge"]').forEach(element => {
+      element.setAttribute('tabindex','-1');
+      // Keyboard focus reaches nodes and edges, so promote the static description to their accessible name.
+      if (!element.hasAttribute('aria-label') && element.hasAttribute('data-cfx-description')) element.setAttribute('aria-label',element.getAttribute('data-cfx-description'));
+      listen(element,'pointerenter', event => show(element,event.clientX,event.clientY));
+      listen(element,'pointerleave',clear);
+      listen(element,'click', () => select(element));
+      const path = element.querySelector('path');
+      if (path && element.hasAttribute('data-edge-id')) {
+        const width = Number(path.getAttribute('stroke-width') || 3);
+        listen(element,'pointerenter', () => path.setAttribute('stroke-width', String(width + 1)));
+        listen(element,'pointerleave', () => path.setAttribute('stroke-width', String(width)));
+      }
+    });
+    const refresh = () => {
+      const bands = [...wrapper.querySelectorAll('[data-cfx-region-band]')];
+      if (bands.length) {
+        const width = wrapper.getBoundingClientRect().width;
+        const active = bands.filter(band => Number(band.dataset.cfxRegionBand) <= width + 1).sort((a,b) => Number(b.dataset.cfxRegionBand) - Number(a.dataset.cfxRegionBand))[0] || bands[0];
+        bands.forEach(band => band.style.display = width >= 640 && band === active ? 'block' : 'none');
+        const mobile = wrapper.querySelector('.cfx-region-mobile');
+        if (mobile) mobile.style.display = width < 640 ? 'block' : 'none';
+      }
+      roots.forEach(root => root.closest('svg').setAttribute('tabindex', visible(root) ? '0' : '-1'));
+    };
+    const observer = new ResizeObserver(() => { clear(); refresh(); });
+    observer.observe(wrapper); lifetime.own(() => observer.disconnect()); refresh();
+    roots.forEach(root => {
+      const svg = root.closest('svg');
+      listen(svg,'focus', event => {
+        if (event.target !== svg) return;
+        const node = nodes.find(node => root.contains(node));
+        if (node) { const bounds = node.getBoundingClientRect(); show(node,bounds.right,bounds.top,true); }
+      });
+      listen(svg,'keydown', event => {
+        if (event.key === 'Escape') { clear(); event.preventDefault(); return; }
+        if (event.key === 'Enter' || event.key === ' ') { if (current) { select(current); event.preventDefault(); } return; }
+        const vector = {ArrowRight:[1,0],ArrowLeft:[-1,0],ArrowDown:[0,1],ArrowUp:[0,-1]}[event.key];
+        if (!vector) return;
+        event.preventDefault();
+        const candidates = nodes.filter(node => root.contains(node));
+        const origin = current && current.hasAttribute('data-node-id') ? current : candidates[0];
+        if (!origin) return;
+        const x = Number(origin.dataset.nodeX); const y = Number(origin.dataset.nodeY);
+        const next = candidates.filter(node => node !== origin).map(node => {
+          const dx = Number(node.dataset.nodeX) - x; const dy = Number(node.dataset.nodeY) - y;
+          const along = dx * vector[0] + dy * vector[1]; const cross = Math.abs(dx * vector[1] - dy * vector[0]);
+          return {node,along,score:Math.hypot(dx,dy) + cross * 2};
+        }).filter(candidate => candidate.along > 1).sort((a,b) => a.score - b.score)[0]?.node;
+        if (next) { next.focus(); const bounds = next.getBoundingClientRect(); show(next,bounds.right,bounds.top,true); }
+      });
+      listen(svg,'focusout', event => { if (!svg.contains(event.relatedTarget)) clear(); });
+    });
+    listen(wrapper,'cfx-topology-clear-selection',clear);
+    listen(wrapper,'cfx-topology-set-selection',event => {
+      const request = event.detail || {};
+      const element = nodes.find(node => visible(node) && node.dataset.nodeId === (request.nodeId || request.id));
+      if (element) select(element);
+    });
+    listen(wrapper,'cfx-topology-update-tones',event => {
+      const updates = event.detail?.nodes || [];
+      // Updating a tone preserves all prepared coordinates. Membership changes require a host rerender.
+      for (const update of updates) nodes.filter(node => node.dataset.nodeId === update.id).forEach(node => {
+        const tone = {Healthy:'tone-good',Warning:'tone-warn',Critical:'tone-bad',Unknown:'tone-neutral',Disabled:'tone-neutral'}[update.status];
+        if (!tone) return;
+        node.classList.remove('tone-good','tone-warn','tone-bad','tone-info','tone-neutral'); node.classList.add(tone);
+        node.dataset.cfxStatus = update.status;
+        node.dataset.regionTip = [node.dataset.nodeLabel,node.dataset.nodeSubtitle,node.dataset.nodeBadgeMeanings,update.statusText || update.status].filter(Boolean).join(' · ');
+        if (node.dataset.regionGeneratedName === 'true') node.setAttribute('aria-label',node.dataset.regionTip);
+      });
+    });
+  };
+})();
 (() => {
   const selector = '.cfx-topology-wrapper[data-cfx-interactive="true"]';
   const mountForPrefix = root => {
@@ -22,6 +158,10 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     const listen = (target, name, listener, options) => lifetime.listen(target, name, listener, options);
     lifetime.own(() => wrapper.removeAttribute('data-cfx-runtime-bound'));
     wrapper.setAttribute('data-cfx-runtime-bound', 'true');
+    if (wrapper.hasAttribute('data-cfx-region-chart')) {
+      window[Symbol.for('ChartForgeX.topologyRegions')](wrapper, lifetime);
+      continue;
+    }
     const uiText = (message, fallback, values) => window[Symbol.for('ChartForgeX.uiText')](wrapper, message, fallback, values);
     const selectables = '[data-cfx-role="topology-node"],[data-cfx-role="topology-edge"],[data-cfx-role="topology-group"]';
     const viewportControls = wrapper.getAttribute('data-cfx-viewport-controls') === 'true';
@@ -265,7 +405,42 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
         if (attr(button, 'data-cfx-scenario-step-control') === 'play') button.setAttribute('aria-pressed', playing ? 'true' : 'false');
       });
     };
+    // The active edge's arrow points the way its step travels. A step sent from the edge's target (a response, or a
+    // request flowing back) mirrors the drawn arrowhead onto the route's source end; edges drawn with arrows at both
+    // ends, or none, already read either way.
+    const routeEnd = (edge, last) => {
+      const tokens = edge.querySelector('[data-cfx-role="topology-edge-line"]')?.getAttribute('d')?.match(/[a-zA-Z]|[-+]?(?:\d*\.\d+|\d+\.?\d*)(?:[eE][-+]?\d+)?/g) || [];
+      const arity = { M: 2, L: 2, Q: 4, C: 6, A: 7, H: 1, V: 1, Z: 0 }, points = [];
+      for (let index = 0, command = ''; index < tokens.length;) {
+        if (/^[a-zA-Z]$/.test(tokens[index])) { command = tokens[index++].toUpperCase(); if (command === 'Z') continue; }
+        const size = arity[command], values = tokens.slice(index, index + size).map(Number), at = points[points.length - 1] || [0, 0];
+        if (!size || values.length < size) break;
+        index += size;
+        if (command === 'H') points.push([values[0], at[1]]); else if (command === 'V') points.push([at[0], values[0]]);
+        else for (let offset = command === 'A' ? 5 : 0; offset < size; offset += 2) points.push([values[offset], values[offset + 1]]);
+      }
+      const ordered = last ? points.reverse() : points, tip = ordered[0], toward = ordered.find(point => point[0] !== tip?.[0] || point[1] !== tip?.[1]);
+      return tip && toward ? { tip, angle: Math.atan2(tip[1] - toward[1], tip[0] - toward[0]) * 180 / Math.PI } : null;
+    };
+    const pointScenarioArrow = (edge, backward) => {
+      edge.querySelectorAll('[data-cfx-scenario-arrow]').forEach(node => node.remove());
+      edge.querySelectorAll('[data-cfx-scenario-arrow-source]').forEach(node => { node.removeAttribute('data-cfx-scenario-arrow-source'); node.style.removeProperty('visibility'); });
+      edge.removeAttribute('data-cfx-scenario-arrow-reversed');
+      const toTarget = attr(edge, 'data-target-marker') !== 'None', toSource = attr(edge, 'data-source-marker') !== 'None';
+      if (!backward || toTarget === toSource) return;
+      const from = routeEnd(edge, toTarget), to = routeEnd(edge, !toTarget);
+      if (!from || !to) return;
+      edge.querySelectorAll('[data-cfx-role="topology-marker"]').forEach(marker => {
+        const arrow = marker.cloneNode(true);
+        arrow.removeAttribute('data-cfx-role'); arrow.setAttribute('data-cfx-scenario-arrow', 'true');
+        arrow.setAttribute('transform', 'translate(' + to.tip.join(' ') + ') rotate(' + (to.angle - from.angle) + ') translate(' + -from.tip[0] + ' ' + -from.tip[1] + ')');
+        marker.after(arrow);
+        marker.setAttribute('data-cfx-scenario-arrow-source', 'true'); marker.style.visibility = 'hidden';
+      });
+      edge.setAttribute('data-cfx-scenario-arrow-reversed', 'true');
+    };
     const clearScenarioStep = () => {
+      wrapper.querySelectorAll('[data-cfx-scenario-arrow-reversed]').forEach(edge => pointScenarioArrow(edge, false));
       wrapper.removeAttribute('data-cfx-active-scenario-step');
       wrapper.querySelectorAll('.cfx-topology-html-scenario-step-active,.cfx-topology-html-scenario-step-muted').forEach(item => item.classList.remove('cfx-topology-html-scenario-step-active', 'cfx-topology-html-scenario-step-muted'));
       if (scenarioPanel) scenarioPanel.querySelectorAll('[data-cfx-scenario-step-id]').forEach(item => item.removeAttribute('aria-current'));
@@ -300,6 +475,8 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
         const current = routeMember && scenarioStepIndices(item, route.scenarioId).includes(String(index));
         item.classList.toggle('cfx-topology-html-scenario-step-active', current);
         item.classList.toggle('cfx-topology-html-scenario-step-muted', routeMember && !current && route.focusMode === 'spotlight');
+        const step = route.steps[index];
+        if (attr(item, 'data-cfx-role') === 'topology-edge') pointScenarioArrow(item, current && !!step && (step.backward === true || step.reverse === true));
       });
       if (scenarioPanel) scenarioPanel.querySelectorAll('[data-cfx-scenario-step-id]').forEach(item => {
         if (attr(item, 'data-cfx-scenario-step-index') === String(index + 1)) item.setAttribute('aria-current', 'step');
@@ -371,12 +548,21 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
         peer.dispatchEvent(new CustomEvent('cfx-topology-apply-sync', { detail }));
       });
     };
+    // A dense drawing opens magnified for readable text, so its zoom ceiling and pan range scale with that start.
+    const maximumZoom = () => Math.max(4, readableStart ? readableStart.zoom * 3 : 0);
+    const panLimit = zoom => {
+      const svg = topologySvg();
+      const size = svg ? Math.max(svg.clientWidth || 0, svg.clientHeight || 0) : 0;
+      return Math.max(4000, size * zoom * 1.5);
+    };
     const applyViewport = state => {
       if (!viewportControls) return;
+      const zoom = clamp(Number(state.zoom) || 1, 0.001, maximumZoom());
+      const limit = panLimit(zoom);
       const next = {
-        zoom: clamp(Number(state.zoom) || 1, 0.001, 4),
-        panX: clamp(Number(state.panX) || 0, -4000, 4000),
-        panY: clamp(Number(state.panY) || 0, -4000, 4000)
+        zoom,
+        panX: clamp(Number(state.panX) || 0, -limit, limit),
+        panY: clamp(Number(state.panY) || 0, -limit, limit)
       };
       wrapper.setAttribute('data-cfx-topology-zoom', next.zoom.toFixed(3));
       wrapper.setAttribute('data-cfx-topology-pan-x', next.panX.toFixed(1));
@@ -402,12 +588,13 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       return { rect, paddingTop, paddingLeft, width, availableHeight, svgWidth, svgHeight };
     };
     const emitViewport = () => {
+      viewportTouched = true;
       wrapper.dispatchEvent(new CustomEvent('cfx-topology-viewport', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id'), state: viewportState() } }));
       emitSync('viewport', { state: viewportState() });
     };
     const zoomBy = (factor, origin) => {
       const state = viewportState();
-      const nextZoom = clamp(state.zoom * factor, Math.min(0.5, state.zoom), 4);
+      const nextZoom = clamp(state.zoom * factor, Math.min(0.5, state.zoom), maximumZoom());
       const ratio = nextZoom / state.zoom;
       const metrics = viewportMetrics();
       const localX = origin && Number.isFinite(origin.clientX) ? origin.clientX - metrics.rect.left : metrics.rect.width / 2;
@@ -495,7 +682,8 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       }, 280);
     };
     const resetViewport = () => {
-      applyViewport({ zoom: 1, panX: 0, panY: 0 });
+      // Reset returns to the opening view: the readable start of a dense drawing, otherwise the whole drawing.
+      applyViewport(readableStart || { zoom: 1, panX: 0, panY: 0 });
       wrapper.removeAttribute('data-cfx-topology-dragging');
       wrapper.dispatchEvent(new CustomEvent('cfx-topology-reset', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id') } }));
       emitViewport();
@@ -909,6 +1097,9 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
           kind: 'node',
           id: attr(element, 'data-node-id'),
           label: attr(element, 'data-node-label'),
+          subtitle: attr(element, 'data-node-subtitle'),
+          accessibleName: attr(element, 'aria-label') || attr(element, 'data-cfx-description'),
+          healthRing: attr(element, 'data-node-health-ring') === 'true',
           nodeKind: attr(element, 'data-node-kind'),
           groupId: attr(element, 'data-group-id'),
           displayMode: attr(element, 'data-node-display-mode'),
@@ -1337,6 +1528,294 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       wrapper.dispatchEvent(new CustomEvent('cfx-topology-filter', { bubbles: true, composed: true, detail }));
       return detail;
     };
+    // Large-topology navigation. A dense drawing that would shrink its node captions below a readable
+    // size opens magnified inside a bounded viewport; Fit still shows the whole drawing as an overview.
+    const readableTextPixels = 10;
+    let readableStart = null;
+    let viewportTouched = false;
+    // A host that rendered its own zoom state, or asked to open fitted, keeps that view; the readable start only
+    // replaces the default view.
+    const hostViewport = wrapper.hasAttribute('data-cfx-topology-zoom') || wrapper.getAttribute('data-cfx-opening-view') === 'fit';
+    const nodeCaptionSize = () => {
+      const svg = topologySvg();
+      if (!svg) return 0;
+      let smallest = 0;
+      svg.querySelectorAll('[data-cfx-role="topology-node-label"]').forEach(label => {
+        // Captions can paint as glyph ink beside a hidden text twin; the label's own box says whether it shows.
+        const text = label.matches('text') ? label : label.querySelector('text,[font-size]');
+        if (!text || !isViewportVisible(label) || !(label.getBoundingClientRect().width > 0)) return;
+        const size = Number.parseFloat(text.getAttribute('font-size') || window.getComputedStyle(text).fontSize);
+        if (Number.isFinite(size) && size > 0 && (!smallest || size < smallest)) smallest = size;
+      });
+      return smallest;
+    };
+    const drawingUnit = metrics => {
+      const viewBox = topologySvg()?.viewBox?.baseVal;
+      return viewBox && viewBox.width > 0 && viewBox.height > 0 ? Math.min(metrics.svgWidth / viewBox.width, metrics.svgHeight / viewBox.height) : 0;
+    };
+    // The zoom at which the smallest visible node caption reaches the readable size (1 when it already does).
+    const readableZoom = () => {
+      const unit = drawingUnit(viewportMetrics());
+      const caption = nodeCaptionSize() * unit;
+      // Rounded up to the zoom attribute's precision so the stored zoom never lands a hair below the readable size.
+      return caption > 0 && caption < readableTextPixels - 0.01 ? Math.ceil(readableTextPixels / caption * 1000) / 1000 : 1;
+    };
+    const findPanel = wrapper.querySelector('[data-cfx-topology-find-panel]');
+    const cssPrefix = ((viewport.className || '').match(/(?:^|\s)(\S+)-viewport(?:\s|$)/) || [])[1] || 'cfx-topology';
+    // The find row, any lifted heading and the plot share one card, so the controls read as part of the diagram.
+    const ensureCard = () => {
+      if (viewport === wrapper) return null;
+      if (viewport.parentElement?.hasAttribute('data-cfx-topology-card')) return viewport.parentElement;
+      const card = document.createElement('div');
+      card.className = cssPrefix + '-card';
+      card.setAttribute('data-cfx-topology-card', 'true');
+      (findPanel && findPanel.parentElement === viewport.parentElement ? findPanel : viewport).before(card);
+      if (findPanel) card.append(findPanel);
+      card.append(viewport);
+      return card;
+    };
+    const inkText = element => {
+      if (!element) return '';
+      const lines = Array.from(element.querySelectorAll('[data-cfx-ink-line]')).map(line => line.getAttribute('data-cfx-ink-line') || '');
+      return (lines.length ? lines : Array.from(element.querySelectorAll('text')).map(text => text.textContent || '')).join(' ').replace(/\s+/g, ' ').trim();
+    };
+    const unionBounds = elements => elements.map(elementBounds).filter(box => box).reduce((all, box) => all
+      ? { x: Math.min(all.x, box.x), y: Math.min(all.y, box.y), right: Math.max(all.right, box.x + box.width), bottom: Math.max(all.bottom, box.y + box.height) }
+      : { x: box.x, y: box.y, right: box.x + box.width, bottom: box.y + box.height }, null);
+    // A magnified plot would carry the heading and legend out of view, so they are lifted into HTML at their normal size.
+    const liftHeading = () => {
+      const svg = topologySvg();
+      if (!svg || wrapper.querySelector('[data-cfx-topology-heading]')) return;
+      const headings = Array.from(svg.querySelectorAll('[data-cfx-role="frame-heading"]'));
+      const entries = Array.from(svg.querySelectorAll('[data-cfx-role="legend-entry"]'));
+      if (!headings.length && !entries.length) return;
+      const heading = document.createElement('div');
+      heading.className = cssPrefix + '-heading';
+      heading.setAttribute('data-cfx-topology-heading', 'true');
+      heading.setAttribute('aria-hidden', 'true');
+      const line = (name, text) => {
+        if (!text) return;
+        const element = document.createElement('div');
+        element.className = cssPrefix + '-heading__' + name;
+        element.textContent = text;
+        heading.append(element);
+      };
+      line('title', inkText(headings[0]));
+      line('subtitle', inkText(headings[1]));
+      if (entries.length) {
+        const legend = document.createElement('div');
+        legend.className = cssPrefix + '-heading__legend';
+        const title = inkText(svg.querySelector('[data-cfx-role="legend-title"]'));
+        if (title) {
+          const caption = document.createElement('span');
+          caption.className = cssPrefix + '-heading__legend-title';
+          caption.textContent = title;
+          legend.append(caption);
+        }
+        entries.forEach(entry => {
+          const label = entry.querySelector('[data-cfx-role="legend-label"]');
+          const marks = Array.from(entry.children).filter(child => child !== label && !child.contains(label));
+          const item = document.createElement('span');
+          item.className = cssPrefix + '-heading__item';
+          const bounds = unionBounds(marks);
+          if (bounds) {
+            // The swatch is the legend's own artwork, so any status, node or edge mark carries over unchanged.
+            const swatch = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            swatch.setAttribute('viewBox', [bounds.x - 1, bounds.y - 1, bounds.right - bounds.x + 2, bounds.bottom - bounds.y + 2].map(value => value.toFixed(2)).join(' '));
+            swatch.setAttribute('aria-hidden', 'true');
+            marks.forEach(mark => swatch.append(mark.cloneNode(true)));
+            item.append(swatch);
+          }
+          item.append(document.createTextNode(inkText(label)));
+          legend.append(item);
+        });
+        heading.append(legend);
+      }
+      (ensureCard() || wrapper).prepend(heading);
+      wrapper.setAttribute('data-cfx-html-heading', 'true');
+    };
+    const dropHeading = () => {
+      wrapper.querySelector('[data-cfx-topology-heading]')?.remove();
+      wrapper.removeAttribute('data-cfx-html-heading');
+    };
+    const applyReadableStart = () => {
+      const zoom = readableZoom();
+      if (zoom <= 1.001) {
+        // A widened page can make an earlier magnified start unnecessary; return to the whole drawing.
+        if (readableStart) applyViewport({ zoom: 1, panX: 0, panY: 0 });
+        readableStart = null;
+        wrapper.removeAttribute('data-cfx-readable-zoom');
+        wrapper.style.removeProperty('--cfx-topology-readable-height');
+        dropHeading();
+        return false;
+      }
+      ensureCard();
+      liftHeading();
+      const before = viewportMetrics();
+      const height = Math.round(Math.min(before.svgHeight * zoom, Math.max(320, Math.min((window.innerHeight || 800) * 0.72, 760))));
+      wrapper.setAttribute('data-cfx-readable-zoom', zoom.toFixed(3));
+      wrapper.style.setProperty('--cfx-topology-readable-height', height + 'px');
+      // Taking the frame height can add or remove a page scrollbar and narrow the drawing, so measure again inside it.
+      const framed = Math.max(zoom, readableZoom());
+      wrapper.setAttribute('data-cfx-readable-zoom', framed.toFixed(3));
+      // Start where reading starts: the top of the diagram below its lifted heading, at the inline-start edge.
+      const metrics = viewportMetrics();
+      const unit = drawingUnit(metrics);
+      const originX = metrics.svgWidth / 2;
+      const originY = metrics.svgHeight / 2;
+      const rtl = window.getComputedStyle(wrapper).direction === 'rtl';
+      const viewBox = topologySvg()?.viewBox?.baseVal;
+      const content = wrapper.hasAttribute('data-cfx-html-heading') ? elementBounds(wrapper.querySelector('[data-cfx-role="topology"]')) : null;
+      const margin = 12;
+      const top = content ? Math.max(0, content.y - margin) : 0;
+      const left = content ? Math.max(0, content.x - margin) : 0;
+      const right = content && viewBox ? Math.min(viewBox.width, content.x + content.width + margin) : (viewBox ? viewBox.width : metrics.svgWidth / (unit || 1));
+      readableStart = {
+        zoom: framed,
+        panX: rtl ? metrics.width - originX - framed * (right * unit - originX) : framed * (originX - left * unit) - originX,
+        panY: framed * (originY - top * unit) - originY
+      };
+      // The opening view is placed, not animated: settle the transform before transitions resume.
+      wrapper.setAttribute('data-cfx-topology-settling', 'true');
+      applyViewport(readableStart);
+      const settled = topologySvg();
+      if (settled) window.getComputedStyle(settled).transform;
+      wrapper.removeAttribute('data-cfx-topology-settling');
+      wrapper.dispatchEvent(new CustomEvent('cfx-topology-readable-start', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id'), state: viewportState() } }));
+      return true;
+    };    // Moves the viewport to elements without dropping below the readable zoom: everything when it fits, otherwise the first one.
+    const revealElements = elements => {
+      const items = Array.from(elements || []).filter(isViewportVisible);
+      if (!items.length || !viewportControls) return false;
+      const svg = topologySvg();
+      const viewBox = svg?.viewBox?.baseVal;
+      const boxes = items.map(elementBounds).filter(box => box);
+      if (!viewBox || !boxes.length) return false;
+      const metrics = viewportMetrics();
+      const unit = drawingUnit(metrics);
+      const frame = list => list.reduce((current, box) => ({
+        x: Math.min(current.x, box.x), y: Math.min(current.y, box.y),
+        right: Math.max(current.right, box.x + box.width), bottom: Math.max(current.bottom, box.y + box.height)
+      }), { x: list[0].x, y: list[0].y, right: list[0].x + list[0].width, bottom: list[0].y + list[0].height });
+      const padding = 44;
+      const all = frame(boxes);
+      const fitZoom = Math.min(metrics.width / ((all.right - all.x) * unit + padding * 2), metrics.availableHeight / ((all.bottom - all.y) * unit + padding * 2));
+      const minimum = readableZoom();
+      const target = fitZoom >= minimum ? all : frame([boxes[0]]);
+      const zoom = clamp(fitZoom >= minimum ? Math.min(fitZoom, Math.max(minimum, 2)) : minimum, 0.001, maximumZoom());
+      const offsetX = (metrics.svgWidth - viewBox.width * unit) / 2;
+      const offsetY = (metrics.svgHeight - viewBox.height * unit) / 2;
+      const centerX = ((target.x + target.right) / 2 - viewBox.x) * unit + offsetX;
+      const centerY = ((target.y + target.bottom) / 2 - viewBox.y) * unit + offsetY;
+      const originX = metrics.svgWidth / 2;
+      const originY = metrics.svgHeight / 2;
+      applyViewport({ zoom, panX: metrics.width / 2 - originX - zoom * (centerX - originX), panY: metrics.availableHeight / 2 - originY - zoom * (centerY - originY) });
+      emitViewport();
+      return true;
+    };
+    const findState = () => ({
+      query: String(findPanel?.querySelector('[data-cfx-topology-find]')?.value || '').trim(),
+      group: findPanel?.querySelector('[data-cfx-topology-find-group]')?.value || '',
+      kind: findPanel?.querySelector('[data-cfx-topology-find-kind]')?.value || ''
+    });
+    const findMatches = state => {
+      const query = state.query.toLowerCase();
+      return Array.from(wrapper.querySelectorAll('[data-cfx-role="topology-node"]')).filter(node => isViewportVisible(node)
+        && (!state.group || attr(node, 'data-group-id') === state.group)
+        && (!state.kind || attr(node, 'data-node-kind') === state.kind)
+        && (!query || topologyFilterSearchText(node).includes(query)));
+    };
+    // Matches stay in context: everything else dims, edges between two matches stay lit, and the viewport moves to them.
+    const applyFind = reveal => {
+      const state = findState();
+      const summary = findPanel?.querySelector('[data-cfx-topology-find-summary]');
+      const active = !!(state.query || state.group || state.kind);
+      if (!active) {
+        highlight({});
+        wrapper.removeAttribute('data-cfx-find-count');
+        if (summary) summary.textContent = '';
+        wrapper.dispatchEvent(new CustomEvent('cfx-topology-find', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id'), ...state, nodeIds: [] } }));
+        return [];
+      }
+      const matches = findMatches(state);
+      const nodeIds = matches.map(node => attr(node, 'data-node-id'));
+      const matched = new Set(nodeIds);
+      const edgeIds = Array.from(wrapper.querySelectorAll('[data-cfx-role="topology-edge"]'))
+        .filter(edge => matched.has(attr(edge, 'data-source-node-id')) && matched.has(attr(edge, 'data-target-node-id')))
+        .map(edge => attr(edge, 'data-edge-id'));
+      highlight({ nodeIds, edgeIds, dim: true });
+      wrapper.setAttribute('data-cfx-find-count', String(matches.length));
+      const total = Array.from(wrapper.querySelectorAll('[data-cfx-role="topology-node"]')).filter(isViewportVisible).length;
+      if (summary) summary.textContent = matches.length
+        ? uiText('TopologyFindSummary', '{count} of {total} nodes match', { count: matches.length, total })
+        : uiText('TopologyFindNone', 'No matching nodes');
+      if (reveal && matches.length) revealElements(matches);
+      wrapper.dispatchEvent(new CustomEvent('cfx-topology-find', { bubbles: true, composed: true, detail: { chartId: attr(wrapper, 'data-chart-id'), ...state, nodeIds, edgeIds } }));
+      return matches;
+    };
+    const clearFind = () => {
+      findPanel?.querySelectorAll('input,select').forEach(control => { control.value = ''; });
+      applyFind(false);
+    };
+    const bindViewportNavigation = () => {
+      if (!hostViewport) applyReadableStart();
+      if (typeof ResizeObserver === 'function') {
+        let width = viewport.clientWidth;
+        const observer = new ResizeObserver(() => {
+          if (viewport.clientWidth === width) return;
+          width = viewport.clientWidth;
+          if (!viewportTouched && !hostViewport) applyReadableStart();
+        });
+        observer.observe(viewport);
+        lifetime.own(() => observer.disconnect());
+      }
+      const editable = target => target instanceof Element && target.matches('input,textarea,select,[contenteditable="true"]');
+      listen(wrapper, 'keydown', event => {
+        if (event.altKey || event.ctrlKey || event.metaKey || editable(event.target)) return;
+        const key = event.key;
+        if (key === '+' || key === '=') zoomBy(1.2);
+        else if (key === '-' || key === '_') zoomBy(0.8333333333);
+        else if (key === '0') fitViewport();
+        else if (event.target === viewport && key.startsWith('Arrow')) {
+          const step = event.shiftKey ? 160 : 48;
+          const state = viewportState();
+          applyViewport({ zoom: state.zoom, panX: state.panX + (key === 'ArrowLeft' ? step : key === 'ArrowRight' ? -step : 0), panY: state.panY + (key === 'ArrowUp' ? step : key === 'ArrowDown' ? -step : 0) });
+          emitViewport();
+        } else return;
+        event.preventDefault();
+      });
+    };
+    const bindFindControls = () => {
+      if (!findPanel) return;
+      ensureCard();
+      const search = findPanel.querySelector('[data-cfx-topology-find]');
+      findPanel.querySelectorAll('select').forEach(control => listen(control, 'change', () => applyFind(true)));
+      if (search) {
+        listen(search, 'input', () => applyFind(true));
+        listen(search, 'keydown', event => {
+          if (event.key === 'Escape' && search.value) {
+            event.preventDefault();
+            event.stopPropagation();
+            clearFind();
+          } else if (event.key === 'Enter') {
+            event.preventDefault();
+            const first = applyFind(true)[0];
+            if (!first) return;
+            select(first);
+            if (first.focus) first.focus({ preventScroll: true });
+          }
+        });
+      }
+      listen(wrapper, 'cfx-topology-set-find', event => {
+        const detail = event.detail || {};
+        if (search && detail.query !== undefined) search.value = detail.query || '';
+        const group = findPanel.querySelector('[data-cfx-topology-find-group]');
+        if (group && detail.group !== undefined) group.value = detail.group || '';
+        const kind = findPanel.querySelector('[data-cfx-topology-find-kind]');
+        if (kind && detail.kind !== undefined) kind.value = detail.kind || '';
+        applyFind(detail.reveal !== false);
+      });
+    };
     const forceSearchText = element => [
       attr(element, 'data-node-id'), attr(element, 'data-node-label'), attr(element, 'data-node-kind'), attr(element, 'data-group-id'),
       attr(element, 'data-edge-id'), attr(element, 'data-edge-label'), attr(element, 'data-edge-secondary-label'), attr(element, 'data-edge-tertiary-label'), attr(element, 'data-edge-kind'), attr(element, 'data-source-node-id'), attr(element, 'data-target-node-id'),
@@ -1455,6 +1934,8 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     wrapper.querySelectorAll(selectables).forEach(element => {
       if (!element.hasAttribute('tabindex')) element.setAttribute('tabindex', '0');
       if (!element.hasAttribute('role')) element.setAttribute('role', 'button');
+      // Static SVG keeps the derived name in data-cfx-description; a focusable control needs it as its accessible name.
+      if (!element.hasAttribute('aria-label') && element.hasAttribute('data-cfx-description')) element.setAttribute('aria-label', element.getAttribute('data-cfx-description'));
       listen(element, 'pointerenter', () => hover(element));
       listen(element, 'pointerleave', () => {
         clearHover();
@@ -1563,7 +2044,9 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
         event.preventDefault();
         event.stopPropagation();
       }, true);
+      bindViewportNavigation();
     }
+    bindFindControls();
     if (exportControls) {
       wrapper.querySelectorAll('[data-cfx-topology-export]').forEach(button => {
         listen(button, 'click', () => {

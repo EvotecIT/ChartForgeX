@@ -23,7 +23,7 @@ public sealed class MermaidSequenceLayoutTypographyTests {
             Assert.Equal(32,item.Layout!.ParticipantSpacing);Assert.Equal(14,item.Layout.ActivationWidth);Assert.Equal(new[]{"A","B"},item.Participants.Select(participant=>participant.Id));
             Assert.Equal(new[]{"Save","Ready"},item.Messages.Select(message=>message.Text));
         }
-        Assert.Equal(direct.Artifact.ToSvg(),typed.ToSvg());
+        Assert.Equal(model.ToSvg(),typed.ToSvg());
         var setting=document.Configuration.Settings.Last(item=>item.Path=="sequence.messageFontSize");Assert.Equal("20px",setting.Value);Assert.True(setting.IsString);Assert.True(setting.Span.Line>0);
     }
     [Fact]

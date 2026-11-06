@@ -1,0 +1,43 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var chart = Chart.Create().WithSize(900, 560)
+    .WithTitle("Service intake across two periods").WithSubtitle("Caption leaders retain their own ring and observation")
+    .WithTheme(VisualTheme.Graphite(), mode).WithXLabels("Consulting", "Subscriptions")
+    .WithDataLabels().WithDonutCenterLabel(false).WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent);
+for (var index = 0; index < 2; index++) {
+    var values = index == 0 ? new[] { 60d, 30 } : new[] { 40d, 80 };
+    var series = new ChartSeries(new ChartSeriesId(index == 0 ? "prior" : "current"), index == 0 ? "Prior period" : "Current period", ChartSeriesKind.Donut,
+        values.Select((value, category) => new ChartPoint(category + 1, value)))
+        .WithObservationIds(new[] { new ChartObservationId("consulting"), new ChartObservationId("subscriptions") })
+        .WithPointSliceOffset(index, index == 0 ? .16 : .1);
+series.WithRadialBand(index == 0 ? new ChartRadialBand(.18, .48) : new ChartRadialBand(.62, 1));
+    series.DataLabelPlacement = ChartDataLabelPlacement.Outside;
+    chart.AddSeries(series);
+}
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(900, 560)), theme, mode,
+    new VisualFrame("Independent periods with inner captions", "Exact displaced sectors share one frame; source-owned overlay leaders retain every ring association", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion

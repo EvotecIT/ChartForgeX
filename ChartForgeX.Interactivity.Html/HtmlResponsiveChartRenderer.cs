@@ -27,6 +27,8 @@ public sealed class HtmlResponsiveChartRenderer {
     /// <summary>The shared initializer for ordinary, inert, revealed and compressed chart fragments.</summary>
     public static string InitializationScript => RadialScript.Value + Script.Value;
     /// <summary>Print sizing shared by complete fragments and hosts that install assets separately.</summary>
+    /// <remarks>This is style-only CSS. Asset-free hosts also register <see cref="ChartForgeX.Typography.ChartFontAssets.StyleSheet"/>
+    /// once when using bundled fonts, unless the host already supplies them. Explicitly registered families require matching host-provided browser CSS.</remarks>
     public static string Stylesheet => "@media print{[data-cfx-responsive-chart]{min-width:0!important}}";
 
     /// <summary>Renders an offline fragment with one serialized specification and a script-free native fallback.</summary>
@@ -43,7 +45,9 @@ public sealed class HtmlResponsiveChartRenderer {
         Render(chart, minimumWidth, maximumWidth, height, idScope, compressLayouts, printWidth, true);
 
     /// <summary>Renders a script-free host fragment with inert layout data for composition inside an interactive section.</summary>
-    /// <remarks>Install <see cref="Stylesheet"/> and <see cref="InitializationScript"/> outside the section. Source drawing, layout data and slice identities match <see cref="RenderFragment"/>.</remarks>
+    /// <remarks>Install <see cref="Stylesheet"/>, <see cref="InitializationScript"/> and matching fonts outside the section.
+    /// Register <see cref="ChartForgeX.Typography.ChartFontAssets.StyleSheet"/> once for bundled fonts unless the host already supplies them.
+    /// Source drawing, layout data and slice identities match <see cref="RenderFragment"/>.</remarks>
     /// <param name="chart">The caller's chart; authored size and axis policies are restored.</param>
     /// <param name="minimumWidth">Minimum screen drawing width.</param>
     /// <param name="maximumWidth">Maximum screen drawing width.</param>

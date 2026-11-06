@@ -16,7 +16,7 @@ public static partial class V2Examples {
             schemaVersion = 1,
             matrixScope = curated ? "selected" : "full",
             pipeline = "model-to-prepared-scene-to-svg-or-raster",
-            assets = CatalogAssets(artifacts).Concat(EnhanceExamples.Files(output)).Concat(WriteInteractiveAssets(output)).Distinct(StringComparer.Ordinal).OrderBy(file => file, StringComparer.Ordinal).ToArray(),
+            assets = CatalogAssets(artifacts).Concat(Snippets(output, artifacts)).Concat(EnhanceExamples.Files(output)).Concat(WriteInteractiveAssets(output)).Distinct(StringComparer.Ordinal).OrderBy(file => file, StringComparer.Ordinal).ToArray(),
             chartKinds = artifacts.SelectMany(ArtifactKinds).Distinct().OrderBy(kind => kind).ToArray(),
             groups = CatalogGroups.Select(group => new { id = group.Id, label = group.Label }),
             families = artifacts.Select(artifact => artifact.Family).Distinct(StringComparer.Ordinal).OrderBy(family => family, StringComparer.Ordinal)
@@ -31,6 +31,7 @@ public static partial class V2Examples {
                 theme = artifact.Theme, width = artifact.Width, height = artifact.Height,
                 naturalAspect = (double)artifact.Width / artifact.Height,
                 compact = artifact.Compact, interactive = artifact.HtmlAdapter ? artifact.Id + ".interactive.html" : null, source = artifact.Id + ".csharp.txt", gallerySource = artifact.Id + ".gallery.csharp.txt",
+                snippet = File.Exists(Path.Combine(output, artifact.Id + ".snippet.csharp.txt")) ? artifact.Id + ".snippet.csharp.txt" : null,
                 svg = artifact.Id + ".svg", png = artifact.Id + ".png", html = artifact.Id + ".html",
                 thumbnail = artifact.Id + ".thumbnail.svg", thumbnailPng = artifact.Id + ".thumbnail.png",
                 thumbnailWidth = ThumbnailWidth, thumbnailHeight = ThumbnailHeight,
@@ -72,11 +73,14 @@ public static partial class V2Examples {
     private static string ExampleKey(ProofArtifact artifact) => artifact.Id.Substring(0, artifact.Id.Length - artifact.Theme.Length - 1);
 
     private static string[] CatalogAssets(IReadOnlyList<ProofArtifact> artifacts) =>
-        new[] { "catalog.html", "manifest.json", "gallery.css", "gallery.js", "fonts/Carlito-Regular.ttf", "fonts/Carlito-Bold.ttf", "fonts/OFL.txt", "cfx-native-text.js" }
+        new[] { "catalog.html", "manifest.json", "gallery.css", "gallery.js", "fonts/Carlito-Regular.ttf", "fonts/Carlito-Bold.ttf", "fonts/OFL.txt", ExampleTypography.StyleSheetFile, "cfx-native-text.js" }
             .Concat(artifacts.SelectMany(artifact => new[] { ".html", ".svg", ".png", ".csharp.txt", ".gallery.csharp.txt", ".thumbnail.svg", ".thumbnail.png" }.Select(extension => artifact.Id + extension)))
             .Concat(artifacts.Where(artifact => artifact.HtmlAdapter).Select(artifact => artifact.Id + ".interactive.html"))
             .Concat(EmbeddingAssets)
             .Distinct(StringComparer.Ordinal).OrderBy(file => file, StringComparer.Ordinal).ToArray();
+
+    private static IEnumerable<string> Snippets(string output, IReadOnlyList<ProofArtifact> artifacts) =>
+        artifacts.Select(artifact => artifact.Id + ".snippet.csharp.txt").Where(file => File.Exists(Path.Combine(output, file)));
 
     private static IEnumerable<ProofArtifact> PairedArtifacts(IReadOnlyList<ProofArtifact> artifacts, ProofArtifact selected) =>
         artifacts.Where(artifact => ExampleKey(artifact) == ExampleKey(selected));

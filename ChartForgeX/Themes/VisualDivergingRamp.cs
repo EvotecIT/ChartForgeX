@@ -42,7 +42,7 @@ public sealed class VisualDivergingRamp {
     public ChartColorScale ToColorScale(double? midpointValue = null) {
         var low = new ChartColor[_negative.Length];
         for (var i = 0; i < low.Length; i++) low[i] = _negative[_negative.Length - 1 - i];
-        return ChartColorScale.Diverging(low, Neutral, _positive, midpointValue);
+        return ChartColorScale.Diverging(low, Neutral, _positive, midpointValue).WithPaintRole(SvgColorRole.DivergingRamp);
     }
 
     private static ChartColor[] Materialize(IEnumerable<ChartColor> colors, string parameterName) {

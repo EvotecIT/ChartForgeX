@@ -13,7 +13,7 @@ public sealed class InteractiveTooltipAcquisitionBrowserTests {
     [BrowserFact]
     public async Task DefaultAutoUses120CssPixelCategoryLimitIndependentlyOfValueDistance() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(800, 540).WithLegend(true).WithTheme(VisualTheme.Report())
+        var chart = Chart.Create().WithSize(800, 540).WithLegend(true).WithTheme(VisualTheme.Graphite())
             .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).AddLine("Reading", new[] { new ChartPoint(5, 5) });
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Interaction.Features = ChartInteractionFeatures.Tooltips), 950, 720);
         var page = session.Page;
@@ -265,7 +265,7 @@ public sealed class InteractiveTooltipAcquisitionBrowserTests {
     }
 
     private static Chart Observation(bool dark, bool graphite = false) => Chart.Create().WithSize(800, 540).WithLegend(true)
-        .WithTheme(graphite ? VisualTheme.Graphite() : VisualTheme.Report(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
         .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).AddScatter("Reading", new[] { new ChartPoint(5, 5) });
 
     private static async Task CaptureAsync(IPage page, string name, object observations) {

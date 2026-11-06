@@ -84,7 +84,7 @@ public sealed class MermaidUseCaseSourceDepthBrowserTests {
         foreach (var word in new[] { "business", "Approval", "delivery", "requests" }) Assert.Contains(word, observed.GetProperty("text").GetString());
         Assert.NotEmpty(observed.GetProperty("requestPaint").EnumerateArray());
         Assert.All(observed.GetProperty("requestPaint").EnumerateArray(), paint => { Assert.Equal(ChartColor.FromHex("#2563EB").WithOpacity(.8).ToCss(), paint.GetProperty("stroke").GetString()); Assert.NotNull(paint.GetProperty("dash").GetString()); });
-        Assert.All(observed.GetProperty("fonts").EnumerateArray(), family => Assert.Contains(BrowserProofFonts.Family, family.GetString()));
+        Assert.All(observed.GetProperty("fonts").EnumerateArray(), family => BrowserProofFonts.AssertComputedFamily(family.GetString()));
         Assert.Empty(observed.GetProperty("clipped").EnumerateArray()); Assert.Equal(0, observed.GetProperty("active").GetInt32()); Assert.Empty(errors);
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
     }

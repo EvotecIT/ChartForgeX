@@ -97,14 +97,9 @@
     const firstData = Array.from(svg.children).find(branch => data.some(mark => branch.contains(mark)));
     if (firstData) branches.forEach(branch => svg.insertBefore(branch, firstData));
   };
-  const refreshKeyboardNavigation = (root, focused, passive = false) => {
-    refreshRootBranchHighlightAvailability(root);
-    refreshSelectionCuePaint(root);
-    const state = root._cfxKeyboardNavigation;
-    if (!state || !hasFeature(root, 'KeyboardNavigation')) return null;
-    const activeElement = root.getRootNode().activeElement;
-    const activeOwned = root.contains(activeElement) && state.owned.has(activeElement);
-    const targets = keyboardTargets(root);
+  // Roving stops shared by the full runtime and the core reader: one Tab stop per component.
+  const assignKeyboardStops = (root, state, targets, focused) => {
+    state.targets = targets;
     state.legends = targets.filter((node) => renderedTargetKind(node) === 'legend');
     state.groups = keyboardDataGroups(targets.filter((node) => renderedTargetKind(node) !== 'legend'));
     state.data = state.groups.flatMap((group) => group.nodes);
@@ -113,9 +108,11 @@
     if (state.legends.length && !state.legends.includes(state.activeLegend)) state.activeLegend = state.legends[0];
     if (state.data.includes(focused)) state.activeData = focused;
     if (state.legends.includes(focused)) state.activeLegend = focused;
-    if (!state.legendOrderPrepared && state.data.length && state.legends.length) {
+    // A legend that switches between the drawn and flowing presentation brings new entries; each set is placed once.
+    const placed = state.placedLegends ||= new WeakSet();
+    if (state.data.length && state.legends.some((node) => !placed.has(node))) {
       placeKeyboardLegendBeforeData(root, state.data, state.legends);
-      state.legendOrderPrepared = true;
+      state.legends.forEach((node) => placed.add(node));
     }
     state.owned.forEach((node) => node.setAttribute('tabindex', '-1'));
     targets.forEach((node) => {
@@ -124,9 +121,24 @@
       focusNode.setAttribute('data-cfx-keyboard-component', renderedTargetKind(node) === 'legend' ? 'legend' : 'data');
       focusNode.setAttribute('tabindex', node === state.activeData || node === state.activeLegend ? '0' : '-1');
     });
+    return state;
+  };
+  const refreshKeyboardNavigation = (root, focused, passive = false) => {
+    refreshRootBranchHighlightAvailability(root);
+    refreshSelectionCuePaint(root);
+    const state = root._cfxKeyboardNavigation;
+    if (!state || !hasFeature(root, 'KeyboardNavigation')) return null;
+    const activeElement = root.getRootNode().activeElement;
+    const activeOwned = root.contains(activeElement) && state.owned.has(activeElement);
+    // Viewport transition frames are not keyboard state: keep the targets of the final window.
+    assignKeyboardStops(root, state, root._cfxStandaloneViewport?.motionTarget && state.targets || keyboardTargets(root), focused);
+    const targets = state.targets;
     if (activeOwned && !targets.some((node) => targetFocusNode(node) === activeElement)) {
 
-      const replacement = state.data.length ? state.activeData : state.legends.length ? state.activeLegend : null;
+      // Focus stays in the component the reader was in, e.g. when the legend switches between drawn and flowing.
+      const fromLegend = activeElement.getAttribute('data-cfx-keyboard-component') === 'legend';
+      const replacement = fromLegend && state.legends.length ? state.activeLegend
+        : state.data.length ? state.activeData : state.legends.length ? state.activeLegend : null;
       if (replacement) {
 
 
@@ -274,35 +286,41 @@
       }
     } finally { if (passive && !recovering) delete root._cfxRecoveringFocus; }
   };
-  const focusAdjacentTarget = (root, node, key) => {
-    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End'].includes(key)) return false;
-    resumePointerReadout(root);
-    const state = refreshKeyboardNavigation(root, node);
-    if (!state) return false;
+  const keyboardNavigationKeys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End'];
+  // The target a navigation key reaches from node within the assigned stops, or null when the key does not navigate.
+  // Horizontal charts run their categories down the value axis, so Up/Down step along a series there
+  // and Left/Right cross series; otherwise Left/Right step and Up/Down cross series.
+  const adjacentKeyboardTarget = (root, state, node, key) => {
     const legend = state.legends.includes(node);
     const group = legend ? null : state.groups.find((item) => item.nodes.includes(node));
     const targets = legend ? state.legends : group ? group.nodes : [];
-    if (!targets.length) return false;
+    if (!targets.length) return null;
     const current = targets.indexOf(node);
-    let next = node;
-    if (key === 'Home') next = targets[0];
-    else if (key === 'End') next = targets[targets.length - 1];
-    else if (key === 'PageUp' || key === 'PageDown') next = targets[clamp(current + (key === 'PageUp' ? -10 : 10), 0, targets.length - 1)];
-    else if (!legend && (group.series !== null || state.groups.length > 1) && (key === 'ArrowUp' || key === 'ArrowDown')) {
-
+    const horizontal = !legend && root._cfxDataProjection?.horizontal === true;
+    const across = horizontal ? key === 'ArrowLeft' || key === 'ArrowRight' : key === 'ArrowUp' || key === 'ArrowDown';
+    if (key === 'Home') return targets[0];
+    if (key === 'End') return targets[targets.length - 1];
+    if (key === 'PageUp' || key === 'PageDown') return targets[clamp(current + (key === 'PageUp' ? -10 : 10), 0, targets.length - 1)];
+    if (!legend && across && (group.series !== null || state.groups.length > 1)) {
       const groups = state.groups;
-      const nextGroup = groups[clamp(groups.indexOf(group) + (key === 'ArrowUp' ? -1 : 1), 0, groups.length - 1)];
-      if (nextGroup !== group) {
-        const x = node.dataset.cfxX;
-        const sourcePoint = sourcePointIndex(node);
-        next = nextGroup.nodes.find((item) => x !== undefined && item.dataset.cfxX === x)
-          || nextGroup.nodes.find((item) => sourcePoint !== undefined && sourcePointIndex(item) === sourcePoint)
-          || nextGroup.nodes[Math.min(current, nextGroup.nodes.length - 1)];
-      }
-    } else {
-      const direction = key === 'ArrowLeft' || key === 'ArrowUp' ? -1 : 1;
-      next = targets[clamp(current + direction, 0, targets.length - 1)];
+      const nextGroup = groups[clamp(groups.indexOf(group) + (key === 'ArrowUp' || key === 'ArrowLeft' ? -1 : 1), 0, groups.length - 1)];
+      if (nextGroup === group) return node;
+      const x = node.dataset.cfxX;
+      const sourcePoint = sourcePointIndex(node);
+      return nextGroup.nodes.find((item) => x !== undefined && item.dataset.cfxX === x)
+        || nextGroup.nodes.find((item) => sourcePoint !== undefined && sourcePointIndex(item) === sourcePoint)
+        || nextGroup.nodes[Math.min(current, nextGroup.nodes.length - 1)];
     }
+    return targets[clamp(current + (key === 'ArrowLeft' || key === 'ArrowUp' ? -1 : 1), 0, targets.length - 1)];
+  };
+  const focusAdjacentTarget = (root, node, key) => {
+    if (!keyboardNavigationKeys.includes(key)) return false;
+    resumePointerReadout(root);
+    const state = refreshKeyboardNavigation(root, node);
+    if (!state) return false;
+    const next = adjacentKeyboardTarget(root, state, node, key);
+    if (!next) return false;
+    const legend = state.legends.includes(node);
     if (next === node) {
 
       const tip = root.querySelector('.cfx-tooltip');

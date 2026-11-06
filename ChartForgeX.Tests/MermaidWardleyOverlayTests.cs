@@ -84,7 +84,7 @@ public sealed class MermaidWardleyOverlayTests {
 
     [Fact]
     public void ExplicitHostThemeOwnsColorsAndSourceDimensionsPrecedeFamilyDefaults() {
-        var options = Options(640); options.Wardley!.Presentation!.Theme = VisualTheme.Report();
+        var options = Options(640); options.Wardley!.Presentation!.Theme = VisualTheme.Graphite();
         var result = MermaidRenderer.Render(Fixture(), options); Assert.Empty(result.Diagnostics); var map = Assert.IsType<WardleyMapBlock>(result.Artifact!.Model); Assert.Null(map.Style);
         var source = "%%{init:{'wardley-beta':{'width':700,'height':500,'padding':12,'useMaxWidth':true}}}%%\nwardley-beta\nsize [600,400]\ncomponent API [0.5,0.3]";
         var sized = MermaidRenderer.Render(source); Assert.Empty(sized.Diagnostics); var block = (WardleyMapBlock)sized.Artifact!.Model!;

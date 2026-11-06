@@ -50,7 +50,7 @@ internal static class PremiumSurfaceExamples {
     }
 
     private static void SaveCompactEmailSummary(string output, int outputScale) {
-        var theme = VisualTheme.Report().Configure(builder => {
+        var theme = VisualTheme.Graphite().Configure(builder => {
             builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#F8FAFC");
             builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.FromHex("#FFFFFF");
             builder.Light.Surface = builder.Dark.Surface = ChartColor.FromHex("#FFFFFF");

@@ -28,13 +28,14 @@ public sealed partial class ChartGrid : IVisualRenderable {
             var font = context.Font; font.Weight = weight;
             return modelStyle.Resolve(explicitStyle ?? new TextStyle { Font = font, FontSize = size, Color = color });
         }
+        var explicitLegendWeight = frame.HasExplicitLegendWeight;
         frame = new VisualFrame(frame.Title ?? Title, frame.Subtitle ?? Subtitle, frame.ShowLegend, frame.LegendPosition,
             frame.ShowSurface, frame.TransparentBackground,
-            Heading(frame.TitleStyle, TitleStyle, context.Theme.Typography.TitleSize, colors.Foreground, 700),
+            Heading(frame.TitleStyle, TitleStyle, context.Theme.Typography.TitleSize, colors.Foreground, context.Theme.Typography.TitleWeight),
             Heading(frame.SubtitleStyle, SubtitleStyle, context.Theme.Typography.SubtitleSize, colors.MutedForeground, 400), frame.LegendStyle,
-            frame.LegendMaximumRows, frame.LegendMaximumHeightFraction, showCard: frame.ShowCard, legendTitle: frame.LegendTitle);
+            frame.LegendMaximumRows, frame.LegendMaximumHeightFraction, showCard: frame.ShowCard, legendTitle: frame.LegendTitle) { HasExplicitLegendWeight = explicitLegendWeight };
         var resolved = new VisualRenderContext(context.Layout, context.Theme, context.ThemeMode, frame, context.Font);
-        var builder = new VisualSceneBuilder(context.Layout.Size, context.Font);
+        var builder = new VisualSceneBuilder(context.Layout.Size, context.Font) { MinimumTextSize = context.Theme.Typography.MinimumTextSize };
         var content = VisualFrameLayout.Build(builder, resolved, Array.Empty<VisualLegendEntry>());
         var columns = PreserveEmptyColumns ? Columns : Math.Min(Columns, Charts.Count);
         var placements = ChartGridLayout.PlacePanels(this, columns);
@@ -61,13 +62,21 @@ public sealed partial class ChartGrid : IVisualRenderable {
                 var maximumRows = frame.LegendMaximumRows.HasValue && options.LegendMaximumRows.HasValue
                     ? Math.Min(frame.LegendMaximumRows.Value, options.LegendMaximumRows.Value)
                     : frame.LegendMaximumRows ?? options.LegendMaximumRows;
+                var panelTheme = UsePanelThemes ? options.Theme : context.Theme;
+                var panelType = panelTheme.Typography.ForWidth(width);
+                var panelFont = UsePanelThemes ? VisualExportRequest.ChartFont(options) : context.Font;
+                panelFont.Weight = panelType.PanelTitleWeight;
+                var panelTitle = options.TitleStyle.Resolve(new TextStyle { Font = panelFont, FontSize = panelType.TileLabelSize,
+                    Color = panelTheme.Resolve(UsePanelThemes ? options.ThemeMode : context.ThemeMode).Foreground });
                 var panelFrame = new VisualFrame(options.ShowHeader && modelFrame ? chart.Title : string.Empty,
                     options.ShowHeader && modelFrame ? chart.Subtitle : string.Empty,
                     !frame.ShowLegend || !modelFrame ? false : options.HasExplicitLegend ? options.ShowLegend : null, options.LegendPosition,
                     frame.ShowSurface && options.ShowPlotBackground && modelFrame, transparentBackground: true,
-                    legendStyle: frame.LegendStyle, legendMaximumRows: maximumRows,
+                    titleStyle: panelTitle, legendStyle: frame.LegendStyle, legendMaximumRows: maximumRows,
                     legendMaximumHeightFraction: Math.Min(frame.LegendMaximumHeightFraction, options.LegendMaximumHeightFraction),
-                    showCard: frame.ShowCard && options.ShowCard && modelFrame, legendTitle: frame.LegendTitle);
+                    showCard: frame.ShowCard && options.ShowCard && modelFrame, legendTitle: frame.LegendTitle) {
+                    HasExplicitLegendWeight = frame.HasExplicitLegendWeight || options.LegendStyle.FontWeight != null
+                };
                 var padding = options.HostOwnsFrame ? ChartPadding.All(0) : options.Padding;
                 var panelPadding = new ChartPadding(Math.Min(padding.Left, width / 4), Math.Min(padding.Top, height / 4),
                     Math.Min(padding.Right, width / 4), Math.Min(padding.Bottom, height / 4));

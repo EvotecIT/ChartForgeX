@@ -74,12 +74,10 @@ public sealed class V2CartesianMigrationTests {
         Assert.Equal(svg, VisualSceneSvgRenderer.Render(scene));
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void ExplicitLineLayers_UseOnePathAndRetainAlphaAcrossThemeChanges(bool graphite) {
+    [Fact]
+    public void ExplicitLineLayers_UseOnePathAndRetainAlphaAcrossThemeChanges() {
         var chart = Chart.Create().AddLine("Observed", Points(3, 8, 4), ChartColor.FromRgba(50, 100, 150, 128));
-        chart.WithTheme(graphite ? VisualTheme.Graphite() : VisualTheme.Report());
+        chart.WithTheme(VisualTheme.Graphite());
         chart.Options.LineVisualStyle = ChartLineVisualStyle.Luminous();
         chart.Series[0].StrokeWidth = 4;
         var scene = Compile(chart);
@@ -87,7 +85,7 @@ public sealed class V2CartesianMigrationTests {
         Assert.Equal(new[] { "line-ambient-halo", "line-halo", "line", "line-highlight" }, paths.Select(path => path.Role));
         Assert.Equal(4, paths[2].StrokeWidth);
         Assert.All(paths, path => { Assert.Equal(paths[0].Commands.Count, path.Commands.Count); Assert.InRange(path.Stroke!.Value.A, (byte)1, (byte)128); });
-        chart.WithTheme(graphite ? VisualTheme.Report() : VisualTheme.Graphite());
+        chart.WithTheme(VisualTheme.Accessible());
         var updatedPaths = Compile(chart).Nodes.OfType<VisualScenePath>().Where(path => path.Role?.StartsWith("line", StringComparison.Ordinal) == true).ToArray();
         Assert.Equal(paths.Select(path => (path.Role, path.StrokeWidth, path.Stroke)), updatedPaths.Select(path => (path.Role, path.StrokeWidth, path.Stroke)));
         Assert.All(updatedPaths, path => Assert.Equal(paths[0].Commands.Count, path.Commands.Count));
@@ -95,7 +93,7 @@ public sealed class V2CartesianMigrationTests {
 
     [Fact]
     public void DirectLineStyleMutation_PreservesAuthoredHaloAcrossThemeChanges() {
-        var chart = Chart.Create().AddLine("Observed", Points(3, 8)).WithTheme(VisualTheme.Report());
+        var chart = Chart.Create().AddLine("Observed", Points(3, 8)).WithTheme(VisualTheme.Graphite());
         chart.Options.LineVisualStyle.HaloOpacity = .4;
         chart.Options.LineVisualStyle.HaloStrokeExtra = 5;
         var scene = Compile(chart);

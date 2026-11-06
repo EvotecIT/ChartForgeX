@@ -25,6 +25,6 @@ public sealed partial class ChartColorScale {
             if (copy[index - 1].Value == copy[index].Value)
                 throw new ArgumentException("Color caption positions must be distinct.", nameof(captions));
         return new(_colors, _midpointIndex, MidpointValue, MinimumValue, MaximumValue, NoDataColor,
-            LowLabel, MidpointLabel, HighLabel, _bands, _stops, copy.ToArray());
+            LowLabel, MidpointLabel, HighLabel, _bands, _stops, copy.ToArray(), _paintRole);
     }
 }

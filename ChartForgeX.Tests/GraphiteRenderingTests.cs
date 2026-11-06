@@ -58,7 +58,7 @@ public sealed class GraphiteRenderingTests {
         var prepared = Prepare(chart);
         Assert.Equal(chart.Series.Select(series => series.Name), prepared.Regions.Where(region => region.Role == "legend").Select(region => region.Label));
         Assert.All(prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "legend-label"),
-            node => Assert.Equal(chart.Options.Theme.Typography.LegendSize, node.Text.Size));
+            node => Assert.Equal(12, node.Text.Size));
     }
 
     [Fact]

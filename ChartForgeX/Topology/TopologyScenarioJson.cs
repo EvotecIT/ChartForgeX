@@ -81,6 +81,8 @@ internal static class TopologyScenarioJson {
             }
 
             if (step.Reverse) builder.Append(",\"reverse\":true");
+            // Interactive hosts point the active edge's arrow the way the step travels, including inferred backward route steps.
+            if (resolved != null && i < resolved.Steps.Count && resolved.Steps[i].TravelsBackward) builder.Append(",\"backward\":true");
             // Route ends are emitted only for request-flow steps, so plain route scenarios keep their compact JSON.
             if (resolved != null && i < resolved.Steps.Count && (step.Interaction != TopologyScenarioInteraction.None || !string.IsNullOrEmpty(step.Payload))) {
                 var hop = resolved.Steps[i];

@@ -94,7 +94,8 @@ internal static partial class SmokeTests {
 
         var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false }.WithMonitoringDashboardStyle());
 
-        Assert(!svg.Contains("NaN", StringComparison.Ordinal) && !svg.Contains("Infinity", StringComparison.Ordinal), "Rounded topology routes should tolerate duplicate consecutive waypoints.");
+        var numericMarkup = NumericMarkup(svg);
+        Assert(!numericMarkup.Contains("NaN", StringComparison.Ordinal) && !numericMarkup.Contains("Infinity", StringComparison.Ordinal), "Rounded topology routes should tolerate duplicate consecutive waypoints.");
     }
 
     private static void TopologyEdgeLabelsTolerateDuplicateEdgeIds() {
@@ -273,12 +274,28 @@ internal static partial class SmokeTests {
         Assert(Math.Abs(label.CenterY - 150) < 0.01, "Hidden anchor nodes should not reserve phantom edge-label obstacles.");
     }
 
-    private static void TopologyEdgeLabelClearanceUsesBackgroundWhenGroupsAreHidden() {
-        var theme = VisualTheme.Graphite();
-        var group = new TopologyGroup { Id = "g", Label = "Group", X = 40, Y = 40, Width = 160, Height = 120, Status = TopologyHealthStatus.Warning };
-        var fill = TopologyRenderPrimitives.EdgeLabelClearanceFill(group, new TopologyPaint(theme, VisualThemeMode.Light), new TopologyRenderOptions { IncludeGroups = false }.WithMonitoringDashboardStyle());
+    private static void TopologyEdgeLabelClearanceTintsAnyGroupColourAndUsesBackgroundWhenGroupsAreHidden() {
+        (ChartColor Fill, string? SvgFill, byte[] Png) Clearance(string color, bool includeGroups) {
+            var chart = TopologyChart.Create().WithTheme(VisualTheme.Graphite().Configure(builder => builder.Light.Background = ChartColor.White)).WithViewport(600, 360, 20).WithLegend(null)
+                .AddGroup("services", "Services", 10, 10, 560, 320, color: color)
+                .AddNode("source", "Source", 70, 150, groupId: "services")
+                .AddNode("target", "Target", 350, 150, groupId: "services")
+                .AddEdge("connection", "source", "target", label: "Connection", routing: TopologyEdgeRouting.Straight);
+            var prepared = chart.Prepare(new TopologyRenderOptions { IncludeLegend = false, IncludeGroups = includeGroups, VisualStyle = TopologyVisualStyle.MonitoringDashboard, IncludeEdgeLabelBackplates = false });
+            var svg = System.Xml.Linq.XDocument.Parse(prepared.ToSvg()).Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-label-clearance");
+            var fill = prepared.Visual.Scene.Nodes.OfType<ChartForgeX.Rendering.VisualSceneRectangle>().Single(rectangle => rectangle.Role == "topology-edge-label-clearance").Fill!.Value;
+            return (fill, (string?)svg.Attribute("fill"), prepared.ToPng());
+        }
 
-        Assert(string.Equals(fill, theme.Resolve(VisualThemeMode.Light).Background.ToCss(), StringComparison.Ordinal), "Monitoring edge-label clearance should use the actual background when group cards are hidden.");
+        var hex = Clearance("#FF0000", true);
+        Assert(hex.Fill.R == 255 && hex.Fill.G < 255, "A grouped monitoring caption clearance should carry the group tint.");
+        foreach (var color in new[] { "rgb(255, 0, 0)", "red" }) {
+            var functional = Clearance(color, true);
+            Assert(functional.Fill.Equals(hex.Fill) && functional.SvgFill == hex.SvgFill && functional.Png.SequenceEqual(hex.Png), "Group colour '" + color + "' should tint the caption clearance exactly like its hex form in SVG and PNG.");
+        }
+
+        var hidden = Clearance("rgb(255, 0, 0)", false).Fill;
+        Assert(hidden.R == 255 && hidden.G == 255 && hidden.B == 255, "Monitoring edge-label clearance should use the actual background when group cards are hidden.");
     }
 
     private static void TopologyGeographicCalloutsAvoidUnlabeledLinkRoutes() {

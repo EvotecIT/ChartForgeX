@@ -19,6 +19,10 @@ public sealed class VisualArtifactRenderOptions {
     public TopologyRenderOptions? Topology { get; set; }
     /// <summary>Gets or sets dependency-free raster encoding options.</summary>
     public RasterImageOptions? Raster { get; set; }
+    /// <summary>Gets or sets whether SVG embeds the bundled product font faces.</summary>
+    /// <remarks>Off by default: hosts supply the faces once (<see cref="ChartForgeX.Typography.ChartFontAssets.StyleSheet"/>)
+    /// or cannot use CSS fonts. Saved SVG files turn it on so they render their measured typography standalone.</remarks>
+    public bool EmbedProductFonts { get; set; }
 }
 
 /// <summary>Controls host sizing without reflowing a completed visual scene or changing SVG/PNG exports.</summary>

@@ -7,6 +7,25 @@ using ChartForgeX.Svg;
 namespace ChartForgeX.VisualBlocks;
 
 public sealed partial class SvgVisualBlockRenderer {
+    // The frame height at which field rows stop growing, so a short header carries no empty lower canvas.
+    internal static int? PacketContentHeight(PacketLayoutBlock packet) {
+        var slices = VisualBlockRendering.PacketSlices(packet);
+        var rowCount = slices.Count == 0 ? 0 : slices[slices.Count - 1].Row + 1;
+        if (rowCount == 0) return null;
+        var options = packet.Options;
+        var height = options.Size.Height;
+        for (var pass = 0; pass < 3; pass++) {
+            var content = new ChartRect(options.Padding.Left, options.Padding.Top, Math.Max(1, options.Size.Width - options.Padding.Left - options.Padding.Right),
+                Math.Max(1, height - options.Padding.Top - options.Padding.Bottom));
+            var headings = VisualBlockRendering.Headings(packet.Title, packet.Subtitle, options.ResolvedTheme, content);
+            var y = content.Y + (packet.Title.Length > 0 ? headings.TitleAdvance : 0) + (packet.Subtitle.Length > 0 ? headings.SubtitleAdvance : 0);
+            var metrics = VisualBlockRendering.PacketRows(packet, content, y, rowCount, slices);
+            var bottom = y + rowCount * (metrics.LabelTop + metrics.Height) + (rowCount - 1) * metrics.Gap + options.Padding.Bottom;
+            height = Math.Min(height, (int)Math.Ceiling(bottom));
+        }
+        return height;
+    }
+
     private static void RenderPacketLayout(SvgMarkupWriter writer, PacketLayoutBlock packet) {
         var options = packet.Options;
         var theme = options.ResolvedTheme;

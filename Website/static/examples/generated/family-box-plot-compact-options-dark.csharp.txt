@@ -18,7 +18,7 @@ var theme = VisualTheme.Graphite();
 var model = BoxPlotRecipe.Create("compact-options", mode);
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
-    new VisualFrame("Delivery time by service level", "Configured chart geometry", showLegend: null, showSurface: false));
+    new VisualFrame("Delivery time by service level", "Expected and observed delivery times side by side; observed Premium is hatched", showLegend: null, showSurface: false));
 var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());
 File.WriteAllBytes("visual.png", prepared.ToPng());

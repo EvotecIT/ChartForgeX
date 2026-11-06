@@ -12,7 +12,7 @@
     try { return JSON.parse(root.dataset.cfxPreparedChart); } catch { return {}; }
   };
   const chartAxisProjection = (root, name) => root._cfxStandaloneViewport && !nativePreparationBinding(root, 'viewport')
-    ? standaloneAxis(root, name) : capturedCartesianMetadata(root)[name + 'Projection'] || null;
+    ? standaloneAxis(root, name, true) : capturedCartesianMetadata(root)[name + 'Projection'] || null;
   const nativeProjectionWindow = (axis, scale = axis?.scale) => axis ? { minimum: axis.minimum, maximum: axis.maximum,
     ...(scale ? { scale } : {}), ...(axis.innerRadius !== undefined ? { innerRadius: axis.innerRadius, outerRadius: axis.outerRadius } : {}),
     ...(axis.maximumInclusive === false ? { maximumInclusive: false } : {}) } : null;

@@ -51,7 +51,7 @@
       <iframe class="cfx-showcase__iframe cfx-family__live" style="aspect-ratio: {{ f.width }} / {{ f.height + 48 }}" title="{{ item.title }}, interactive"
         data-cfx-live-frame data-light="{{ item.interactive }}" data-dark="{{ item.darkInteractive }}"></iframe>
       <noscript><div class="cfx-showcase__plate"><img src="{{ item.image }}" width="{{ f.width }}" height="{{ f.height }}" loading="lazy" decoding="async" alt="{{ item.title }}" /></div></noscript>
-      <figcaption>The interactive HTML page ChartForgeX writes for this {{ if f.kinds.size > 0 }}chart. Hover for values, click legend items to hide or show series, and use the keyboard to navigate{{ if slug == "line" }}. Use the wheel to zoom, choose Pan to move the window, or choose Brush and drag to zoom to a range. Reset returns to the full chart{{ end }}{{ else }}diagram. Hover and select nodes for details{{ end }}.</figcaption>
+      <figcaption>The interactive HTML page ChartForgeX writes for this {{ if f.kinds.size > 0 }}chart. Hover for values, click legend items to hide or show series, use the keyboard to navigate, and right-click for export and reset. Where the chart can redraw a zoomed range, use the wheel to zoom, choose Pan to move the window, or choose Brush and drag to zoom to a range{{ if slug == "line" }}; the overview under the plot shows and moves the selected range{{ end }}{{ else }}diagram. Drag to pan, use the wheel to zoom, and select a node for its details{{ end }}.</figcaption>
       {{~ else ~}}
       <div class="cfx-showcase__plate">
         <img class="cfx-only-light" src="{{ item.image }}" width="{{ f.width }}" height="{{ f.height }}" fetchpriority="high" decoding="async" alt="{{ item.title }}, rendered by ChartForgeX." />
@@ -65,9 +65,10 @@
   <section class="cfx-wide cfx-family__code" aria-labelledby="cfx-family-code">
     <div class="cfx-family__code-text">
       <h2 id="cfx-family-code" class="cfx-family__heading">Build it in C#</h2>
-      <p>The chart model comes first. The download adds the few lines that write SVG, PNG and HTML, so it runs as a complete console program with the ChartForgeX package.</p>
+      <p>This is the code for the chart above. Show setup adds the imports before it and the few lines that write SVG, PNG and HTML after it, so it reads as one program; the download is the complete console program, ready to run with the ChartForgeX package.</p>
     </div>
-    <figure class="cfx-codeblock" data-lang="csharp" data-cfx-source data-light="{{ item.source }}" data-dark="{{ item.darkSource }}">
+    <figure class="cfx-codeblock" data-lang="csharp" data-cfx-source data-light="{{ item.snippet ?? item.source }}" data-dark="{{ item.darkSnippet ?? item.darkSource }}"
+      data-download-light="{{ item.source }}" data-download-dark="{{ item.darkSource }}">
       <figcaption class="cfx-codeblock__bar">
         <span class="cfx-codeblock__lang">C#</span>
         <span class="cfx-codeblock__file">Program.cs</span>

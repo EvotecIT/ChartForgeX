@@ -50,7 +50,7 @@ internal static partial class TopologyEdgeRouter {
         var sourceCaption = CaptionBox(chart, source);
         var targetCaption = CaptionBox(chart, target);
         var obstacles = RouteObstacles(chart, source.Id, target.Id, routeIdentity, includeCaptions: true, additionalCaptionObstacles: additionalCaptionObstacles, routingUnits: routingUnits);
-        var existingSegments = RouteSegments(chart, routeIdentity, allowDensePlan);
+        var existingSegments = RouteSegments(chart, routeIdentity, allowDensePlan, sharedTerminalsFanOut: true);
         var portedEdge = TopologyLayoutEngine.Clone(edge);
         if (portedEdge.SourcePort == TopologyEdgePort.Auto) portedEdge.SourcePort = BoundarySide(source, sourcePoint, routingUnits);
         if (portedEdge.TargetPort == TopologyEdgePort.Auto) portedEdge.TargetPort = BoundarySide(target, targetPoint, routingUnits);
@@ -106,8 +106,34 @@ internal static partial class TopologyEdgeRouter {
     }
 
     private static int EndpointAttachmentFailures(IReadOnlyList<ChartPoint> points, TopologyNode source, TopologyNode target) =>
-        (TopologyLayoutDiagnostics.RouteEndPointsAtNode(points, true, new ChartRect(source.X, source.Y, source.Width, source.Height)) ? 0 : 1) +
-        (TopologyLayoutDiagnostics.RouteEndPointsAtNode(points, false, new ChartRect(target.X, target.Y, target.Width, target.Height)) ? 0 : 1);
+        EndpointAttachmentFailure(points, true, new ChartRect(source.X, source.Y, source.Width, source.Height)) +
+        EndpointAttachmentFailure(points, false, new ChartRect(target.X, target.Y, target.Width, target.Height));
+
+    // An endpoint on the border also "reaches" its card from inside. The terminal leg must arrive from the
+    // outer side of the half it lands in and must not slide along the border it ends on; otherwise its marker
+    // is drawn inside the card and hidden by the card's fill.
+    private static int EndpointAttachmentFailure(IReadOnlyList<ChartPoint> points, bool fromStart, ChartRect node) {
+        if (!TopologyLayoutDiagnostics.RouteEndPointsAtNode(points, fromStart, node)) return 1;
+        var endIndex = fromStart ? 0 : points.Count - 1;
+        var step = fromStart ? 1 : -1;
+        var index = endIndex + step;
+        while (index + step >= 0 && index + step < points.Count && Distance(points[index], points[endIndex]) < 0.01) index += step;
+        var end = points[endIndex];
+        var previous = points[index];
+        var vertical = Math.Abs(end.X - previous.X) < 0.01;
+        var horizontal = Math.Abs(end.Y - previous.Y) < 0.01;
+        var centerX = node.Left + node.Width / 2;
+        var centerY = node.Top + node.Height / 2;
+        if (vertical && !horizontal) {
+            if (end.X <= node.Left + 1 || end.X >= node.Right - 1) return 1;
+            if (previous.Y < end.Y ? end.Y > centerY : end.Y < centerY) return 1;
+        } else if (horizontal && !vertical) {
+            if (end.Y <= node.Top + 1 || end.Y >= node.Bottom - 1) return 1;
+            if (previous.X < end.X ? end.X > centerX : end.X < centerX) return 1;
+        }
+
+        return 0;
+    }
 
     public static TopologyRouteDiagnostics Diagnose(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes) {
         if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) return new TopologyRouteDiagnostics(edge.Routing.ToString(), "missing-node", 0, 0, 0, 0, 0, 0, "missing-node");
@@ -263,10 +289,27 @@ internal static partial class TopologyEdgeRouter {
             foreach (var header in TopologyGroupHeader.LayoutParts(chart, group, chart.RenderOptions ?? new TopologyRenderOptions()))
                 if (header.Width > 0 && header.Height > 0) obstacles.Add(new RouteBox(header.Left, header.Top, header.Right, header.Bottom).Expand(groupPadding));
         }
+        // A route keeps out of a region that holds neither of its ends, rather than cutting through its shell.
+        // An end drawn over a region it does not belong to (authored geometry) still has to reach inside it.
+        var ends = chart.Nodes.Where(node => node.Id == sourceNodeId || node.Id == targetNodeId).ToArray();
+        foreach (var group in chart.Groups) {
+            if (group.Width <= 0 || group.Height <= 0 || InsideGroup(chart, sourceNodeId, group.Id) || InsideGroup(chart, targetNodeId, group.Id)
+                || ends.Any(node => node.X < group.X + group.Width && node.X + node.Width > group.X && node.Y < group.Y + group.Height && node.Y + node.Height > group.Y)) continue;
+            obstacles.Add(new RouteBox(group.X, group.Y, group.X + group.Width, group.Y + group.Height));
+        }
 
         if (!includeLabels) return obstacles;
         foreach (var box in EstimatedLabelBoxes(chart, routedEdge)) obstacles.Add(box.Expand(4 * routingUnits));
         return obstacles;
+    }
+
+    private static bool InsideGroup(TopologyChart chart, string endpointId, string groupId) {
+        var current = chart.Nodes.FirstOrDefault(node => node.Id == endpointId) is { } node ? node.GroupId : endpointId;
+        for (var depth = 0; current != null && depth <= chart.Groups.Count; depth++) {
+            if (current == groupId) return true;
+            current = chart.Groups.FirstOrDefault(group => group.Id == current)?.ParentGroupId;
+        }
+        return false;
     }
 
     internal static bool SpreadingIntroducesObstacle(TopologyChart chart, TopologyEdge edge, TopologyNode source,
@@ -329,7 +372,9 @@ internal static partial class TopologyEdgeRouter {
         }
     }
 
-    private static List<RouteSegment> RouteSegments(TopologyChart chart, TopologyEdge routedEdge, bool allowDensePlan = true) {
+    // Terminal legs that meet the routed edge at a shared card are fanned apart after routing, so they do not
+    // make a straight approach look crowded when the corridor search compares candidates.
+    private static List<RouteSegment> RouteSegments(TopologyChart chart, TopologyEdge routedEdge, bool allowDensePlan = true, bool sharedTerminalsFanOut = false) {
         var nodes = TopologyGroupEndpoints.Resolve(chart);
         var segments = new List<RouteSegment>();
         var plan = allowDensePlan ? TopologyDenseRoutePlanner.Plan(chart) : null;
@@ -339,10 +384,20 @@ internal static partial class TopologyEdgeRouter {
             var points = edge.Routing == TopologyEdgeRouting.Curved
                 ? RenderedEdgeSamplePoints(chart, edge, nodes, EdgePoints(chart, edge, nodes))
                 : plan != null && plan.TryGetValue(edge, out var plannedPoints) && plannedPoints != null ? plannedPoints : BasicEdgePoints(nodes[edge.SourceNodeId], nodes[edge.TargetNodeId], edge);
-            for (var i = 0; i < points.Count - 1; i++) segments.Add(new RouteSegment(points[i], points[i + 1]));
+            // Edges between the same two cards are parallel routes, not a fan, and still have to stay apart.
+            var fans = sharedTerminalsFanOut && !(SharesEndpoint(routedEdge, edge.SourceNodeId) && SharesEndpoint(routedEdge, edge.TargetNodeId));
+            var skipFirst = fans && SharesEndpoint(routedEdge, edge.SourceNodeId);
+            var skipLast = fans && SharesEndpoint(routedEdge, edge.TargetNodeId);
+            for (var i = 0; i < points.Count - 1; i++) {
+                if (i == 0 && skipFirst || i == points.Count - 2 && skipLast) continue;
+                segments.Add(new RouteSegment(points[i], points[i + 1]));
+            }
         }
 
         return segments;
+
+        static bool SharesEndpoint(TopologyEdge routed, string nodeId) =>
+            string.Equals(routed.SourceNodeId, nodeId, StringComparison.Ordinal) || string.Equals(routed.TargetNodeId, nodeId, StringComparison.Ordinal);
     }
 
     private static List<ChartPoint> BasicEdgePoints(TopologyNode source, TopologyNode target, TopologyEdge edge) {

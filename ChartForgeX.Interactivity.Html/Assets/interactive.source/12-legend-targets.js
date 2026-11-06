@@ -10,7 +10,9 @@
       const reference = shape.localName === 'use' && shape.getAttribute('href')?.startsWith('#')
         ? node.ownerSVGElement.getElementById(shape.getAttribute('href').slice(1)) : shape;
       if (!reference) continue;
-      let box = reference.getBBox?.();
+      let box = reference.getBBox?.(), offset = shape.localName === 'use';
+      // Firefox measures an unrendered definition as empty; the placed <use> already includes its x/y.
+      if (offset && !(box?.width > 0 || box?.height > 0)) { box = shape.getBBox?.(); offset = false; }
       if (!box) continue;
       if (reference.localName === 'image') {
         const alpha = (reference.dataset.cfxImageAlphaBounds || '').trim().split(/\s+/).map(Number);
@@ -22,8 +24,8 @@
       const screen = shape.getScreenCTM?.();
       if (!screen || !(box.width > 0 || box.height > 0)) continue;
       const matrix = inverse.multiply(screen);
-      const x = shape.localName === 'use' ? shape.x.baseVal.value : 0;
-      const y = shape.localName === 'use' ? shape.y.baseVal.value : 0;
+      const x = offset ? shape.x.baseVal.value : 0;
+      const y = offset ? shape.y.baseVal.value : 0;
       for (const [px, py] of [[box.x, box.y], [box.x + box.width, box.y], [box.x, box.y + box.height], [box.x + box.width, box.y + box.height]]) {
         const p = new DOMPoint(px + x, py + y).matrixTransform(matrix);
         if (![p.x, p.y].every(Number.isFinite)) continue;
@@ -130,19 +132,13 @@
       const fill = painted?.style.fill || painted?.getAttribute('fill'), stroke = painted?.style.stroke || painted?.getAttribute('stroke');
       mark.setAttribute('fill', fill && fill !== 'none' && solidPaintColour(style.fill, style.fillOpacity) ? fill
         : stroke && stroke !== 'none' && solidPaintColour(style.stroke, style.strokeOpacity) ? stroke : paintColour(source) || 'currentColor');
+      // The outline keeps a hidden series' marker visible once the stylesheet hollows it.
+      mark.setAttribute('stroke', mark.getAttribute('fill')); mark.setAttribute('stroke-width', '1.5');
       swatch.appendChild(mark);
       const label = document.createElement('span'); label.className = 'cfx-responsive-legend__label';
       label.dataset.cfxRole = 'legend-label';
+      // Flowing rows use real HTML text so labels stay crisp at any device scale.
       label.textContent = source.dataset.cfxLabel || seriesLabel(source);
-      const caption = source.querySelector('[data-cfx-role="legend-label"]');
-      if (caption?.querySelector('[data-cfx-native-raster-text-ink]')) {
-        const box = caption.getBBox(), ink = document.createElementNS(ns, 'svg'), copy = caption.cloneNode(true);
-        copy.removeAttribute('transform'); copy.removeAttribute('id');
-        [copy, ...copy.querySelectorAll('*')].forEach(node => node.style.pointerEvents = '');
-        ink.setAttribute('viewBox', [box.x, box.y, box.width, box.height].join(' '));
-        ink.setAttribute('width', box.width); ink.setAttribute('height', box.height);
-        ink.appendChild(copy); label.replaceChildren(ink);
-      }
       label.style.overflowWrap = 'anywhere'; button.append(swatch, label);
       for (const role of ['legend-value', 'legend-percentage']) {
         const detail = source.querySelector('[data-cfx-role="' + role + '"]');
@@ -173,9 +169,14 @@
         const clips = nativePaintClips(entry.source);
         const projection = svgScreenProjection(svg);
         if (projection && clips) clips.forEach(clip => clip.matrix = projection.multiply(clip.matrix));
-        const clipped = !clips || corners && clips.some(clip => corners.some(point => {
+        // Only clipped label ink forces the flowing legend; the enlarged hit box may exceed a tight legend band.
+        const ink = matrix && [[entry.bounds.x, entry.bounds.y], [entry.bounds.x + entry.bounds.width, entry.bounds.y + entry.bounds.height]]
+          .map(([x, y]) => new DOMPoint(x, y).matrixTransform(matrix));
+        // Ink that merely touches the band's edge, such as a swatch drawn at the clip origin, is not cut off;
+        // half a unit absorbs the browsers' differing matrix rounding.
+        const clipped = !clips || ink && clips.some(clip => ink.some(point => {
           const local = point.matrixTransform(clip.matrix.inverse()), r = clip.rect;
-          return local.x < r.x || local.x > r.x + r.width || local.y < r.y || local.y > r.y + r.height;
+          return local.x < r.x - .5 || local.x > r.x + r.width + .5 || local.y < r.y - .5 || local.y > r.y + r.height + .5;
         }));
         const x = corners?.map(point => point.x), y = corners?.map(point => point.y);
         return { box: corners ? { x: Math.min(...x), y: Math.min(...y), width: Math.max(...x) - Math.min(...x), height: Math.max(...y) - Math.min(...y) } : box, scaleY, clipped };

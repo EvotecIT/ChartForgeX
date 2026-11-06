@@ -146,6 +146,8 @@ graph.Options.Performance.MaxInteractiveWebGlEdges = 80000;
 
 WebGL supports node and edge labels, secondary labels, badges, status indicators, cards, all modeled node shapes, images, and per-edge widths. Curves, prepared polylines, self loops, dashes and directional arrows follow the same geometry and styling rules as Canvas. Compact and moving views reduce labels according to the configured level-of-detail policy; selected and focused items retain their detail. Curved and turning routes, overlapping round dash caps, extremely fine dash patterns and marks beyond the GPU driver's point-size range use the shared Canvas layer. Overlapping mixed marks share that layer to preserve body and status order. Routes that overlap a native fallback route also share an ordered paint pass; separate compact circles and forward straight routes retain GPU batching. Round-capped dash cycles smaller than half a physical pixel render as a continuous stroke when their caps cover the gaps; zooming in restores the visible pattern.
 
+The explorer opens fitted, so every node starts in view. On a narrow page a wide scene fits with small captions; reading it is the job of semantic zoom, search (Enter selects and centers the first match), the status and kind filters, neighborhood focus and hierarchy drill-down, not of a larger opening zoom. `TopologyChart` pages take the other approach: with viewport controls, a topology whose captions would fall below 10 px opens magnified with Fit as the overview (see "Dense topologies in the browser" in `docs/topology.md`).
+
 During dense motion, strokes below one physical pixel use opacity proportional to their width. Zooming into the scene or settling physics restores full stroke geometry.
 
 Panning and zooming reuse retained GPU geometry. Position changes, selection, filters, patches, theme changes and surface resizing invalidate the affected rendering state. If a WebGL context is lost, the explorer switches to Canvas and retains its viewport, selection and graph document; restoration rebuilds the GPU resources. PNG export uses the complete shared Canvas renderer, then restores the current interactive graph, including updates received while images load.
@@ -393,7 +395,7 @@ dotnet run --project .\ChartForgeX.Examples\ChartForgeX.Examples.csproj -c Relea
 
 The latter writes `graph-scale-1000.html`, `graph-scale-5000.html`, and `graph-scale-10000.html`, each with two edges per node and fixed positions for repeatable startup and interaction review.
 
-The July 13, 2026 local Chrome release-gate run on the maintainer workstation produced the following observations. These are evidence for that environment, not universal performance guarantees:
+Here is what those pages measured in desktop Chrome on my development machine. Your numbers will depend on the browser and hardware:
 
 | Fixture | Live DOM elements | Full load | Fit call | Active renderer |
 | --- | ---: | ---: | ---: | --- |

@@ -33,12 +33,14 @@ public sealed partial class HtmlInteractiveChartRenderer {
         var title = options.PageTitle ?? ChartTitle(chart, "ChartForgeX interactive chart");
         var surfaceStyle = HtmlInteractivePage.ChartSurfaceStyle(chart);
         var writer = HtmlInteractivePage.StartDocument(title, options.ExternalAssets, surfaceStyle,
-            options.Localization.ResolveLanguage(chart.Accessibility.Language), options.Localization.DirectionAttribute);
+            options.Localization.ResolveLanguage(chart.Accessibility.Language), options.Localization.DirectionAttribute,
+            options.TextPresentation == HtmlChartTextPresentation.NativeContours ? null : ChartForgeX.Typography.ChartFontAssets.StyleSheet);
         writer.StartElement("main").Attribute("class", "cfx-shell").Attribute("style", surfaceStyle).EndStartElement().Line()
             .RawTrusted(BuildChartSection(chart, options, title, "document")).Line()
             .EndElement().Line();
         HtmlInteractivePage.EndDocument(writer, options.ScriptNonce, options.ExternalAssets,
-            options.Runtime, options.Interaction.Features, options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive);
+            options.Runtime, options.Interaction.Features, options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive,
+            HtmlInteractiveAssets.FeatureBundlesFor(options, chart));
         return writer.Build();
     }
 
@@ -61,14 +63,17 @@ public sealed partial class HtmlInteractiveChartRenderer {
         configure?.Invoke(options);
         var title = options.PageTitle ?? ChartTitle(chart, "ChartForgeX interactive chart");
         var writer = new HtmlMarkupWriter();
+        // A fragment leaves product fonts to its host page, which registers ChartFontAssets.StyleSheet once;
+        // embedding the data-URI faces here would break hosts that restrict font-src to their own origin.
         writer.StartElement("style")
             .Attribute("data-cfx-interactive-assets", "true")
             .RawTrusted(InteractiveFragmentStyle)
             .EndElement()
             .Line()
             .RawTrusted(BuildChartSection(chart, options, title, "inline"))
-            .Line()
-            .StartElement("script")
+            .Line();
+        HtmlInteractivePage.WriteInlineFeatures(writer, options.ScriptNonce, HtmlInteractiveAssets.FeatureBundlesFor(options, chart));
+        writer.StartElement("script")
             .Attribute("nonce", options.ScriptNonce)
             .RawTrusted(HtmlInteractiveAssets.ScriptFor(options.Runtime, options.Interaction.Features,
                 options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive))
@@ -120,6 +125,14 @@ public sealed partial class HtmlInteractiveChartRenderer {
     /// Builds the stylesheet used by embeddable interactive chart fragments.
     /// </summary>
     /// <returns>CSS ready to register once in a host document.</returns>
+    /// <remarks>This is style-only CSS. For bundled browser text, also register
+    /// <see cref="ChartForgeX.Typography.ChartFontAssets.StyleSheet"/> once, unless the host already supplies matching fonts.
+    /// NativeContours needs no font stylesheet. Explicitly registered families require matching host-provided browser CSS.</remarks>
+    /// <example><code>
+    /// var css = ChartFontAssets.StyleSheet + HtmlInteractiveChartRenderer.BuildFragmentStyle();
+    /// var fragment = renderer.RenderFragmentWithoutAssets(chart, options =&gt; options.TextPresentation = HtmlChartTextPresentation.Browser);
+    /// // Register css and BuildInteractionScript() once outside the asset-free fragments.
+    /// </code></example>
     public static string BuildFragmentStyle() => InteractiveFragmentStyle;
 
     /// <summary>
@@ -128,7 +141,15 @@ public sealed partial class HtmlInteractiveChartRenderer {
     /// <returns>JavaScript ready to register once in a host document.</returns>
     public static string BuildInteractionScript() => InteractiveScript;
 
+    /// <summary>
+    /// Builds the optional feature bundles (motion, data export and context menu, series isolation and hierarchy drill)
+    /// for hosts that register <see cref="BuildInteractionScript"/> themselves.
+    /// </summary>
+    /// <returns>JavaScript to register once, before or after the runtime.</returns>
+    public static string BuildFeatureScript() => string.Join(";\n", Array.ConvertAll(HtmlInteractiveAssets.FeatureBundles, bundle => HtmlInteractiveAssets.FeatureScript(bundle.Name)));
+
     internal static string InteractiveStyle => HtmlInteractiveAssets.Style;
+
 
     internal static string InteractiveFragmentStyle => HtmlInteractiveAssets.Style
         .Replace(":root {", ".cfx-interactive-chart {")
@@ -404,9 +425,21 @@ public sealed partial class HtmlInteractiveChartRenderer {
     private const string BrushIcon = "<rect x=\"2.25\" y=\"3.25\" width=\"11.5\" height=\"9.5\" rx=\"1\" stroke-dasharray=\"2.5 2\"/>";
     private const string ResetZoomIcon = "<path d=\"M3.1 6.1A5.25 5.25 0 1 1 2.75 8\"/><path d=\"M2.75 3v3.25H6\"/>";
 
+    /// <summary>A chart with a controls row carries its Reset view there; one without keeps the reset row below the plot.</summary>
+    private static bool ToolbarResetsView(HtmlChartInteractionOptions options) => options.IncludeResetButton
+        && (options.Interaction.Features & (ChartForgeX.Interactivity.ChartInteractionFeatures.Zoom | ChartForgeX.Interactivity.ChartInteractionFeatures.Pan
+            | ChartForgeX.Interactivity.ChartInteractionFeatures.Brush | ChartForgeX.Interactivity.ChartInteractionFeatures.Export)) != 0;
+
     private static string BuildToolbar(HtmlChartInteractionOptions options) {
         var writer = new HtmlMarkupWriter();
         var text = options.Localization;
+        if (ToolbarResetsView(options)) {
+            // One contextual Reset view leads the controls row: no empty row is reserved beneath the plot, and the other
+            // controls never move under the pointer when it appears.
+            // The runtime reveals it only while zoom, selection, visibility or drill state differs from the initial view.
+            AppendToolbarIcon(writer, text[HtmlChartText.ResetView], ResetZoomIcon, ("data-cfx-reset", "true"), ("hidden", "hidden"));
+        }
+
         if (options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Zoom)) {
             AppendToolbarIcon(writer, text[HtmlChartText.ZoomIn], ZoomInIcon, ("data-cfx-zoom", "in"));
             AppendToolbarIcon(writer, text[HtmlChartText.ZoomOut], ZoomOutIcon, ("data-cfx-zoom", "out"));
@@ -420,7 +453,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
             AppendToolbarIcon(writer, text[HtmlChartText.BrushRegion], BrushIcon, ("data-cfx-mode-button", "brush"), ("aria-pressed", "false"));
         }
 
-        if (options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Zoom)) {
+        if (!ToolbarResetsView(options) && options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Zoom)) {
             // The runtime reveals this only while the data viewport differs from its initial window.
             AppendToolbarIcon(writer, text[HtmlChartText.ResetZoom], ResetZoomIcon, ("data-cfx-zoom-reset", "true"), ("hidden", "hidden"));
         }
@@ -453,7 +486,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
     /// differs from its initial state, so the chart carries no permanent control chrome.
     /// </summary>
     private static string BuildResetControl(HtmlChartInteractionOptions options) {
-        if (!options.IncludeResetButton) return string.Empty;
+        if (!options.IncludeResetButton || ToolbarResetsView(options)) return string.Empty;
         var writer = new HtmlMarkupWriter();
         writer.StartElement("button")
             .Attribute("class", "cfx-reset")

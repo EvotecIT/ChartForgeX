@@ -155,7 +155,7 @@
       let style = {}, state = 'neutral';
       if (highlighted) { style = { opacity: '1', ...(branch ? branchStyle : {}), ...itemStyle }; state = 'item'; }
       else if (related) { style = { opacity: graphite ? '1' : '.82', ...branchStyle, ...otherItemStyle }; state = 'branch'; }
-      else if (branch && ownBranch) { style = { opacity: graphite ? '.3' : '.38', ...otherBranchStyle }; state = 'other-branch'; }
+      else if (branch && ownBranch) { style = { opacity: '.4', ...otherBranchStyle }; state = 'other-branch'; }
       node.dataset.cfxHighlightState = state;
       setNodeHovered(node, highlighted, !!related && !highlighted);
       const paint = node.querySelector('[data-cfx-highlight-paint]');

@@ -23,9 +23,6 @@ internal static partial class TopologyRenderPrimitives {
 
     public static bool UseNeutralGroupSurface(TopologyRenderOptions options) => options.GroupSurfaceStyle == TopologyGroupSurfaceStyle.Neutral;
 
-    public static string GroupFill(string accent, TopologyPaint theme, TopologyRenderOptions options) =>
-        UseNeutralGroupSurface(options) ? theme.Card : StatusFill(accent, theme.Background, IsMonitoringDashboardStyle(options) ? 0.055 : 0.10);
-
     public static double EdgeStrokeWidth(TopologyEdge edge, bool selected, TopologyRenderOptions options) {
         if (edge.StrokeWidth.HasValue) return selected ? edge.StrokeWidth.Value * 1.25 : edge.StrokeWidth.Value;
         if (options.UseForceGraphPresentation) return selected ? 2.1 : edge.Emphasis == TopologyEdgeEmphasis.Strong ? 1.25 : edge.IsMuted || edge.Emphasis == TopologyEdgeEmphasis.Subtle ? MinimumReadableFineStrokeWidth : ForceGraphNormalEdgeStrokeWidth;
@@ -78,8 +75,6 @@ internal static partial class TopologyRenderPrimitives {
         if (!highlight.IsActive || isHighlighted) return alpha;
         return (byte)Math.Round(alpha * Clamp(highlight.DimmedOpacity, 0, 1));
     }
-
-    public static string StatusFill(string color, string background, double amount) => Blend(color, background, amount);
 
     public static string NormalizeCssClassPrefix(string? value, string fallback) {
         value = string.IsNullOrWhiteSpace(value) ? fallback : value!.Trim();
@@ -219,8 +214,6 @@ internal static partial class TopologyRenderPrimitives {
 
     public static string StatusMarkerToken(TopologyHealthStatus status) => status.ToString().ToLowerInvariant();
 
-    public static string StatusFill(string color, string background) => StatusFill(color, background, 0.10);
-
     public static List<ChartPoint> EdgePoints(TopologyNode source, TopologyNode target, TopologyEdgeRouting routing) {
         return EdgePoints(source, target, routing, TopologyEdgePort.Auto, TopologyEdgePort.Auto, 0);
     }
@@ -295,6 +288,8 @@ internal static partial class TopologyRenderPrimitives {
     }
 
     public static List<ChartPoint> EdgePoints(TopologyChart chart, TopologyEdge edge, IReadOnlyDictionary<string, TopologyNode> nodes) {
+        if (chart.LayoutMode == TopologyLayoutMode.Regions && chart.PreparedRegionRoutes != null && chart.PreparedRegionRoutes.TryGetValue(edge.Id, out var regionRoute))
+            return new List<ChartPoint>(regionRoute);
         return TopologyRenderRouteCache.Resolve(chart, edge, () => CalculateEdgePoints(chart, edge, nodes));
     }
 

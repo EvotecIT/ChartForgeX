@@ -128,5 +128,5 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
     }
 
     private static Task FinishViewportTransitionAsync(IPage page) => page.Locator(".cfx-stage svg").EvaluateAsync(
-        "async svg => { await new Promise(resolve => requestAnimationFrame(resolve)); await Promise.all(svg.getAnimations().map(a => a.finished)); await new Promise(resolve => requestAnimationFrame(resolve)); }");
+        "async svg => { await new Promise(resolve => requestAnimationFrame(resolve)); await Promise.all(svg.closest('.cfx-interactive-chart').getAnimations({ subtree: true }).map(a => a.finished)); await new Promise(resolve => requestAnimationFrame(resolve)); }");
 }

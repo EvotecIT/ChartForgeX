@@ -78,10 +78,11 @@ internal static class MermaidPresentation {
                 block.Options.ShowCard = false;
                 block.Options.TransparentBackground = false;
             }
-            // An explicit source preset or canvas requests paint; an unstyled diagram keeps its transparent adapter canvas.
-            if (block is JourneyDiagramBlock || block is TimelineDiagramBlock) {
+            // An explicit source preset or canvas requests paint; otherwise the card sits on a transparent
+            // canvas, like a chart, so no page tone shows around its rounded corners.
+            else {
                 var canvasRequested = document.Configuration.ThemeColors?.HasBackground == true
-                    || MermaidThemePreset.IsKnown(document.Configuration.Theme);
+                    || MermaidThemePreset.IsPreset(document.Configuration.Theme);
                 block.Options.TransparentBackground = !canvasRequested
                     || block.Options.Theme.Resolve(block.Options.ThemeMode).Background.A == 0;
             }
@@ -100,7 +101,8 @@ internal static class MermaidPresentation {
 
     private static VisualTypography Typography(VisualTypography source, MermaidSourceConfiguration configuration, MermaidPresentationOptions? host, double? defaultFontSize = null) {
         var fontSize = host?.FontSize ?? configuration.FontSize ?? defaultFontSize;
-        var scale = fontSize.HasValue ? fontSize.Value / source.DataLabelSize : 1;
+        if (!fontSize.HasValue) return source.WithFamily(host?.FontFamily ?? configuration.FontFamily ?? source.Family);
+        var scale = fontSize.Value / source.DataLabelSize;
         return new VisualTypography(host?.FontFamily ?? configuration.FontFamily ?? source.Family, source.TitleSize * scale,
             source.SubtitleSize * scale, source.AxisSize * scale, source.LegendSize * scale,
             fontSize ?? source.DataLabelSize, source.ScalarValueSize * scale, source.CenterValueSize * scale,

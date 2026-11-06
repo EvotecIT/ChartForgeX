@@ -57,7 +57,7 @@ public sealed class MermaidIshikawaDepthTests {
     public void OmittedFamilySettingsPreserveTheIncumbentFittingSceneExactly() {
         const string source = "ishikawa-beta\nAPI\n  People\n    Data\n  Process\n    Review";
         var document = new MermaidParser().ParseIshikawa(source).Document!; var actual = document.ToFishboneDiagramBlock(new MermaidIshikawaRenderOptions { Title = "", Width = 900, Height = 520 });
-        var expected = FishboneDiagramBlock.Create("API").WithTitle("Mermaid Ishikawa").WithSize(900, 520).WithPadding(30); expected.AddCause("People").AddChild("Data"); expected.AddCause("Process").AddChild("Review");
+        var expected = FishboneDiagramBlock.Create("API").WithTitle("Mermaid Ishikawa").WithSize(900, 520).WithPadding(30).WithTransparentBackground(); expected.AddCause("People").AddChild("Data"); expected.AddCause("Process").AddChild("Review");
         Assert.False(actual.UsesNaturalLayout); Assert.Equal(expected.ToSvg(), actual.ToSvg()); Assert.Equal(expected.ToPng(), actual.ToPng());
     }
 
@@ -70,7 +70,7 @@ public sealed class MermaidIshikawaDepthTests {
 
     [Fact]
     public void SafePaintIsFamilyScopedAndExplicitHostThemeRetainsPrecedence() {
-        var source = Fixture(); var host = VisualTheme.Report(); var options = Options(false, 900); options.Ishikawa!.Presentation!.Theme = host;
+        var source = Fixture(); var host = VisualTheme.Graphite(); var options = Options(false, 900); options.Ishikawa!.Presentation!.Theme = host;
         var rendered = MermaidRenderer.Render(source, options); Assert.Empty(rendered.Diagnostics); var block = Assert.IsType<FishboneDiagramBlock>(rendered.Artifact!.Model);
         Assert.Equal(host.Resolve(VisualThemeMode.Light).Axis, block.Options.Theme.Resolve(VisualThemeMode.Light).Axis);
         Assert.Equal(host.Resolve(VisualThemeMode.Light).Surface, block.Options.Theme.Resolve(VisualThemeMode.Light).Surface);

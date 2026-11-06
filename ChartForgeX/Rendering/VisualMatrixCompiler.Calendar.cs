@@ -27,6 +27,14 @@ internal static partial class VisualMatrixCompiler {
         var scaleGap = Math.Min(gap, scaleHeight / 3);
         var area = new ChartRect(viewport.Left + left, viewport.Top + top, Math.Max(0, viewport.Width - left), Math.Max(0, viewport.Height - top - scaleHeight));
         var grid = model.Layout(area);
+        // A width-limited grid leaves spare height. Keep month captions, days and key together as one centred block
+        // instead of pinning captions to the top and the key to the bottom with empty bands between them.
+        var spare = Math.Max(0, area.Height - grid.GridHeight);
+        if (spare > 0) {
+            area = new ChartRect(area.Left, area.Top + spare / 2, area.Width, grid.GridHeight);
+            viewport = new ChartRect(viewport.Left, viewport.Top + spare / 2, viewport.Width, Math.Max(0, viewport.Height - spare));
+            grid = model.Layout(area);
+        }
         var sourceIndices = model.Series.CalendarItems.Select((item, index) => new { Date = item.Date, Index = index })
             .GroupBy(item => item.Date).ToDictionary(group => group.Key, group => group.Select(item => item.Index).ToArray());
         using (builder.PushGroup("calendar", "calendar-heatmap", new Dictionary<string, string> {
@@ -88,7 +96,7 @@ internal static partial class VisualMatrixCompiler {
             if (ScaleVisible(context, presentation)) {
                 var scaleBounds = new ChartRect(area.Left, viewport.Bottom - scaleHeight + scaleGap, area.Width, Math.Max(0, scaleHeight - scaleGap));
                 if (scale != null) ColorScale(chart, context, builder, scaleBounds, model.Min, model.Max, "calendar-scale", presentation, model.EmptyDays > 0,
-                    CalendarMissingBlend(chart, colors));
+                    ChartMissingData.Look(chart.Options.HeatmapColorScale, colors));
                 else CalendarScale(chart, context, builder, model, scaleBounds, presentation);
             }
         }

@@ -298,8 +298,8 @@ public sealed class MarkupSequenceParser {
     private static void ParseSize(SequenceArtifact sequence, string value) {
         var parts = value.Split(new[] { 'x', 'X', ',' }, StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length != 2) throw new ArgumentException("Sequence size must use WIDTHxHEIGHT syntax.");
-        sequence.Width = double.Parse(parts[0], CultureInfo.InvariantCulture);
-        sequence.Height = double.Parse(parts[1], CultureInfo.InvariantCulture);
+        sequence.Width = VisualMarkupFenceOptions.ParseDouble(parts[0], "width");
+        sequence.Height = VisualMarkupFenceOptions.ParseDouble(parts[1], "height");
     }
 
     private static SequenceArtifactParticipantKind ParseParticipantKind(string value) {

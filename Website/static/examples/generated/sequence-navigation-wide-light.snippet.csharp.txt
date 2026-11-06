@@ -1,0 +1,33 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var model=SequenceArtifact.Create("sequence-navigation").WithSize(1000,820).AddParticipant("A","Review").AddParticipant("B","Archive").AddMessage("A","B","Save");
+model.Layout=new SequenceLayoutPolicy(participantMinimumWidth:64,participantMinimumHeight:60,participantSpacing:8);
+model.Participants[0].NavigationLinks=new[]{new VisualNavigationLink("Guide","#guide"),new VisualNavigationLink("Status","#status")};
+model.ThemeMode=mode;
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(1000, 820)), theme, mode,
+    new VisualFrame("Participant navigation", "Detached participant links", showLegend: false, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Sequence).ToHtmlPage());
+#endregion

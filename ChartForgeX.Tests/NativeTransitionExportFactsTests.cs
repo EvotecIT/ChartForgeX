@@ -11,7 +11,8 @@ public sealed class NativeTransitionExportFactsTests {
         var section = NativeTransitionExportDefaultControls.Section(scope, width, dark, export);
         NativeTransitionExportDefaultControls.Save(section, "same-emission-" + width + "-" + dark + "-" + export, new { scope, width, dark, export });
         var wide = Assert.IsType<VisualSvgEmission>(section.WideEmission); var narrow = Assert.IsType<VisualSvgEmission>(section.NarrowEmission);
-        var embedded = Regex.Matches(section.Html, @"<svg[\s\S]*?</svg>").Select(match => match.Value).ToArray();
+        // Toolbar icons are decorative SVGs; only the chart drawings count.
+        var embedded = Regex.Matches(section.Html, @"<svg(?![^>]*focusable=""false"")[\s\S]*?</svg>").Select(match => match.Value).ToArray();
         Assert.Equal(2, embedded.Length); Assert.Equal(embedded[0], wide.Svg); Assert.Equal(embedded[1], narrow.Svg);
         Assert.Equal(VisualSvgOptions.NamespaceFromExternalId(scope), wide.Prefix);
         Assert.Equal(VisualSvgOptions.NamespaceFromExternalId(scope + "-narrow"), narrow.Prefix);
@@ -27,8 +28,9 @@ public sealed class NativeTransitionExportFactsTests {
     [Fact]
     public void AutomaticNativeNamespaceIsReturnedFromTheSameOwnerWithoutScrapingOrSemanticIdChanges() {
         var section = NativeTransitionExportDefaultControls.Section("native-native-scope", 760, false, true);
-        var normal = section.PreparedVisual.ExportSvgEmission(new VisualSvgOptions());
-        Assert.Equal(section.PreparedVisual.ToSvg(new VisualSvgOptions()), normal.Svg);
+        var options = new VisualSvgOptions().WithoutProductFonts();
+        var normal = section.PreparedVisual.ExportSvgEmission(options);
+        Assert.Equal(section.PreparedVisual.ToSvg(options), normal.Svg);
         Assert.Contains(normal.Prefix + "-node-", normal.Svg, StringComparison.Ordinal);
         Assert.Contains("data-cfx-series-key=\"reviewed\"", normal.Svg, StringComparison.Ordinal);
         Assert.Contains("data-cfx-source-id=\"series-0", normal.Svg, StringComparison.Ordinal);

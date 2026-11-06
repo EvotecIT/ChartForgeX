@@ -10,7 +10,6 @@ public static partial class GalleryWriter {
     // New examples stay strict until their size policy is reviewed here.
     private static readonly HashSet<string> NaturalHeightExamples = new(StringComparer.Ordinal) {
         "advanced-topology",
-        "brand-kit-showcase-grid",
         "cartesian-automatic-category-margins",
         "chart-mark-surfaces-showcase-grid",
         "control-scorecards-grid",

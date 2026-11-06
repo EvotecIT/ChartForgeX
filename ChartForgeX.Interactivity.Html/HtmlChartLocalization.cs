@@ -19,6 +19,7 @@ public sealed partial class HtmlChartLocalization {
     private static readonly HtmlChartText[] GraphKeys;
     private static readonly HtmlChartText[] TopologyKeys;
     private static readonly HtmlChartText[] ReportKeys;
+    private static readonly HtmlChartText[] DiagramKeys;
 
     static HtmlChartLocalization() {
         var chart = new Dictionary<HtmlChartText, string> {
@@ -31,6 +32,7 @@ public sealed partial class HtmlChartLocalization {
         [HtmlChartText.DownloadPng] = "Download PNG",
         [HtmlChartText.ResetView] = "Reset view",
         [HtmlChartText.ResetZoom] = "Reset zoom",
+        [HtmlChartText.ZoomUnavailable] = "Zoom is not available for this chart type",
         [HtmlChartText.XNavigation] = "Data range",
         [HtmlChartText.XFullRange] = "Full range",
         [HtmlChartText.XRangeStart] = "Start",
@@ -78,9 +80,10 @@ public sealed partial class HtmlChartLocalization {
         ChartKeys = chart.Keys.ToArray();
         var graph = GraphDefaults();
         var report = ReportDefaults();
+        var diagram = DiagramDefaults();
         var topology = TopologyHtmlText.Defaults.ToDictionary(pair => (HtmlChartText)Enum.Parse(typeof(HtmlChartText), pair.Key), pair => pair.Value);
         var messages = new Dictionary<HtmlChartText, string>(chart);
-        foreach (var pair in graph.Concat(topology).Concat(report)) messages[pair.Key] = pair.Value;
+        foreach (var pair in graph.Concat(topology).Concat(report).Concat(diagram)) messages[pair.Key] = pair.Value;
         messages[HtmlChartText.HierarchyCollapse] = "Collapse {label}";
         messages[HtmlChartText.HierarchyExpand] = "Expand {label}";
         Defaults = messages;
@@ -88,6 +91,7 @@ public sealed partial class HtmlChartLocalization {
             .Concat(new[] { HtmlChartText.ZoomIn, HtmlChartText.ZoomOut, HtmlChartText.Clear, HtmlChartText.Pause }).Distinct().ToArray();
         TopologyKeys = topology.Keys.ToArray();
         ReportKeys = report.Keys.Concat(new[] { HtmlChartText.Next, HtmlChartText.ExplorerOverview }).ToArray();
+        DiagramKeys = diagram.Keys.Concat(DiagramPlaybackKeys).ToArray();
     }
 
     /// <summary>Gets or sets the HTML language tag, or null to inherit the chart's accessibility language.</summary>
@@ -131,6 +135,7 @@ public sealed partial class HtmlChartLocalization {
     internal string ToTopologyHierarchyJson() => ToJson(ChartKeys.Concat(new[] { HtmlChartText.HierarchyCollapse, HtmlChartText.HierarchyExpand }));
     internal string ToGraphJson() => ToJson(GraphKeys);
     internal string ToReportJson() => ToJson(ReportKeys);
+    internal string ToDiagramJson() => ToJson(DiagramKeys);
     internal TopologyHtmlText ForTopology(string? inheritedLanguage) => new TopologyHtmlText(
         TopologyKeys.ToDictionary(key => key.ToString(), key => this[key]), ToJson(TopologyKeys), ResolveLanguage(inheritedLanguage), DirectionAttribute);
     private string ToJson(IEnumerable<HtmlChartText> keys) => "{" + string.Join(",", keys.Select(key => HtmlJsonString.Encode(key.ToString())

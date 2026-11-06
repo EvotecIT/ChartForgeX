@@ -137,6 +137,37 @@ public sealed class InteractiveHtmlPagePolishBrowserTests {
         Assert.True(restored.GetProperty("toolbarVisible").GetBoolean());
     }
 
+    // A two-column dashboard fits each 800 px chart to its column without scaling chart text below the 10px floor,
+    // so at 1024px it uses one column; a light chart on the dark page of a dark first chart keeps its own readable heading and legend.
+    [BrowserFact]
+    public async Task DashboardChartsFitTheirColumnsAndKeepTheirOwnChrome() {
+        if (!Enabled) return;
+        var charts = new[] { StatusLines(true), StatusLines(false), SeverityBars(false) };
+        foreach (var chart in charts) chart.WithSize(800, 440);
+        await using var session = await OpenAsync(charts.ToInteractiveHtmlDashboardPage(options => options.Columns = 2), 1024, 900);
+        var page = session.Page;
+        var panels = await page.EvaluateAsync<JsonElement>("""
+            ()=>{const rgb=text=>{const c=document.createElement('canvas').getContext('2d');c.fillStyle=text;c.fillRect(0,0,1,1);return [...c.getImageData(0,0,1,1).data].slice(0,3);};
+              const lum=c=>c.map(v=>{v/=255;return v<=.03928?v/12.92:((v+.055)/1.055)**2.4}).reduce((s,v,i)=>s+v*[.2126,.7152,.0722][i],0);
+              const contrast=(a,b)=>{const [x,y]=[lum(rgb(a)),lum(rgb(b))].sort((p,q)=>q-p);return (x+.05)/(y+.05);};
+              return [...document.querySelectorAll('.cfx-interactive-chart')].map(root=>{const frame=root.querySelector('.cfx-frame'),stage=root.querySelector('.cfx-stage');
+                const fill=getComputedStyle(frame,'::before').backgroundColor,svg=stage.querySelector('svg').getBoundingClientRect();
+                const scale=svg.width/stage.querySelector('svg').viewBox.baseVal.width;
+                return {minText:Math.min(...[...stage.querySelectorAll('svg text')].map(node=>parseFloat(getComputedStyle(node).fontSize)*scale)),card:frame.dataset.cfxCardHead==='true',overflow:stage.scrollWidth-stage.clientWidth,drawingOverflow:svg.right-root.getBoundingClientRect().right,
+                  contrast:Math.min(...[...frame.querySelectorAll('.cfx-responsive-heading,.cfx-responsive-legend__label')].map(node=>contrast(getComputedStyle(node).color,fill)))};});}
+            """);
+        Assert.Equal(3, panels.GetArrayLength());
+        foreach (var panel in panels.EnumerateArray()) {
+            Assert.True(panel.GetProperty("card").GetBoolean());
+            Assert.True(panel.GetProperty("minText").GetDouble() >= 10, "Fitted chart text: " + panel.GetProperty("minText").GetDouble());
+            Assert.InRange(panel.GetProperty("overflow").GetDouble(), 0, 1);
+            Assert.True(panel.GetProperty("drawingOverflow").GetDouble() <= 1, "The drawing fits its column.");
+            Assert.True(panel.GetProperty("contrast").GetDouble() >= 4.5, "Heading and legend text contrast: " + panel.GetProperty("contrast").GetDouble());
+        }
+        Assert.Equal(0, await page.EvaluateAsync<int>("()=>Math.max(0,document.documentElement.scrollWidth-innerWidth)"));
+        AssertNoConsoleErrors(session);
+    }
+
     private static async Task WaitForPrintProjectionAsync(IPage page, bool printing) {
         await page.WaitForFunctionAsync("printing=>document.querySelector('.cfx-interactive-chart')._cfxStandaloneViewport?.printing===printing", printing);
         // Print layout can deliver ResizeObserver after the media event itself.

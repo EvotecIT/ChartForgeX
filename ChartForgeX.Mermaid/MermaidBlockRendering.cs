@@ -21,7 +21,7 @@ public static class MermaidBlockRendering {
         var block = BlockLayoutBlock.Create()
             .WithTitle(ResolveTitle(document, options))
             .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
-            .WithSize(options.Width, options.Height)
+            .WithSize(options.Width, options.Height ?? MermaidBlockRenderOptions.PreviewHeight)
             .WithPadding(options.Padding)
             .WithColumns(columns)
             .WithEdges(options.ShowEdges);
@@ -59,7 +59,10 @@ public static class MermaidBlockRendering {
             block.Edges[block.Edges.Count - 1].Stroke = edge.Stroke;
         }
         MermaidPresentation.Apply(block, document, options.Presentation);
-        MermaidNativeStyles.ResolveLetterSpacing(block); return block;
+        MermaidNativeStyles.ResolveLetterSpacing(block);
+        // Without a host height the frame ends where its rows stop growing.
+        if (!options.Height.HasValue && SvgVisualBlockRenderer.BlockLayoutContentHeight(block) is int content) block.WithSize(options.Width, content);
+        return block;
     }
 
     /// <summary>
@@ -111,8 +114,10 @@ public sealed class MermaidBlockRenderOptions : MermaidDiagramRenderOptions {
     /// <summary>Gets or sets the natural preview width.</summary>
     public int Width { get; set; } = 900;
 
-    /// <summary>Gets or sets the natural preview height.</summary>
-    public int Height { get; set; } = 420;
+    internal const int PreviewHeight = 420;
+
+    /// <summary>Gets or sets a fixed preview height. Null ends the frame where its rows stop growing, up to 420.</summary>
+    public int? Height { get; set; }
 
     /// <summary>Gets or sets the inner preview padding.</summary>
     public double Padding { get; set; } = 30;

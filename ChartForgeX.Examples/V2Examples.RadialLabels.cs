@@ -15,7 +15,7 @@ public static partial class V2Examples {
                     var id = family + "-" + variant + "-" + mode.ToString().ToLowerInvariant();
                     var recipe = ExampleRecipes.Named("equal-" + family);
                     var chart = (Chart)recipe.Create(variant, mode);
-                    var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)),
+                    var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(600, 375)),
                         VisualTheme.Graphite(), mode, new VisualFrame("Four equal shares", "Labels " + placement.ToString().ToLowerInvariant(), showLegend: false), FontSpec.FromFamily(ProofFont));
                     var prepared = chart.Prepare(context);
                     var svg = ExampleArtifactWriter.Svg(prepared, id);
@@ -25,8 +25,8 @@ public static partial class V2Examples {
                     ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), svg);
                     File.WriteAllBytes(Path.Combine(output, id + ".png"), prepared.ToPng());
                     WriteThumbnail(output, chart, id, "Four equal shares", family, mode, legend: false);
-                    WriteRecipe(output, id, recipe, variant, "Four equal shares", "Labels " + placement.ToString().ToLowerInvariant(), mode, 640, 400, false);
-                    artifacts.Add(new ProofArtifact(id, family, "Four equal shares", variant, mode.ToString().ToLowerInvariant(), 640, 400,
+                    WriteRecipe(output, id, recipe, variant, "Four equal shares", "Labels " + placement.ToString().ToLowerInvariant(), mode, 600, 375, false);
+                    artifacts.Add(new ProofArtifact(id, family, "Four equal shares", variant, mode.ToString().ToLowerInvariant(), 600, 375,
                         prepared.Diagnostics.Select(diagnostic => diagnostic.Code).ToArray(), prepared.Regions.Count,
                         DiagnosticMessages: prepared.Diagnostics.Select(diagnostic => diagnostic.Message).ToArray()));
                 }

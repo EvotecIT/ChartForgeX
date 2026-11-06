@@ -37,9 +37,9 @@ public sealed class BoxPlotCapacityTests {
             Assert.Equal(point, Number(group, "data-cfx-source-point"));
             var paint = group.Descendants().Where(node => Role(node) is "boxplot-body" or "boxplot-whisker" or "boxplot-cap" or "boxplot-median")
                 .Select(node => PaintBounds(document, node)).ToArray();
-            Assert.Equal(5, paint.Length);
+            Assert.Equal(6, paint.Length);
             Assert.Single(paint, part => part.Role == "boxplot-body");
-            Assert.Single(paint, part => part.Role == "boxplot-whisker");
+            Assert.Equal(2, paint.Count(part => part.Role == "boxplot-whisker"));
             Assert.Single(paint, part => part.Role == "boxplot-median");
             Assert.Equal(2, paint.Count(part => part.Role == "boxplot-cap"));
             return paint;

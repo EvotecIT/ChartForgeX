@@ -83,6 +83,8 @@ public static class MermaidArchitectureRendering {
             alignment.Metadata["mermaid.length"] = source.Span.Length.ToString(CultureInfo.InvariantCulture);
             chart.Alignments.Add(alignment);
         }
+        // Mermaid places an R-to-L pair side by side and a B-to-T pair one above the other.
+        chart.PlacesFacingPorts = true;
         return MermaidPresentation.Apply(chart, document, options.Presentation);
     }
 

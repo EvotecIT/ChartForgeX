@@ -36,6 +36,22 @@ public sealed class MermaidGitGraphDepthTests {
         Assert.Equal(Number(feature, time), Number(main, time)); Assert.Equal(Number(first, lane), Number(main, lane));
         Assert.Equal(direction != "BT", Number(joined, time) > Number(main, time));
         Assert.Equal(7, xml.Descendants().Count(node => (string?)node.Attribute("data-cfx-role") == "git-commit-edge"));
+        // The trunk lane stops at its last commit: the consumer branch forks there instead of stretching it.
+        var trunk = xml.Descendants().Single(node => (string?)node.Attribute("data-cfx-role") == "git-branch-line" && (string?)node.Attribute("data-branch") == "trunk");
+        Assert.Equal(Number(joined, time), new[] { Number(trunk, direction == "LR" ? "x1" : "y1"), Number(trunk, direction == "LR" ? "x2" : "y2") }.OrderBy(value => direction == "BT" ? value : -value).First(), 3);
+        // Connectors between lanes turn once instead of crossing the lanes diagonally.
+        foreach (var connector in xml.Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "git-commit-edge")) {
+            var tokens = ((string)connector.Attribute("d")!).Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
+            double x = 0, y = 0;
+            for (var index = 0; index < tokens.Length;) {
+                var command = tokens[index++];
+                var count = command == "Q" ? 4 : 2;
+                var values = tokens.Skip(index).Take(count).Select(value => double.Parse(value, CultureInfo.InvariantCulture)).ToArray(); index += count;
+                var endX = values[count - 2]; var endY = values[count - 1];
+                if (command == "L") Assert.True(Math.Abs(endX - x) < .01 || Math.Abs(endY - y) < .01, "Diagonal git connector " + connector.Attribute("data-commit-id"));
+                x = endX; y = endY;
+            }
+        }
         var image = PngReader.Decode(png);
         Assert.Equal(Number(xml.Root!, "width"), image.Width); Assert.Equal(Number(xml.Root!, "height"), image.Height);
         if (direction == "LR") Assert.True(image.Height < 400, "A small branch set should fit its native lanes without a tall empty frame.");

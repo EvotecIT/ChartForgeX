@@ -253,6 +253,7 @@ public sealed partial class InteractiveSelectionDockBrowserTests {
         if (!Enabled) return;
         var html = new[] { StatusLines(false), StatusLines(true) }.ToInteractiveHtmlDashboardPage(options => {
             options.Columns = 2;
+            options.ResponsiveLayout = HtmlChartResponsiveLayout.Readable;
             options.Interaction.Enable(ChartInteractionFeatures.SynchronizedCharts);
         });
         await using var session = await OpenAsync(html, 1100, 560);

@@ -12,27 +12,27 @@ public sealed class StableSeriesPaletteTests {
     [Theory]
     [InlineData(VisualThemeMode.Light)]
     [InlineData(VisualThemeMode.Dark)]
-    public void ExplicitIdsKeepMarkAndLegendPaintWhenOrderAndMembershipChange(VisualThemeMode mode) {
-        var samples = Series("samples", 1); var reference = Series("reference", 2);
+    public void NonCollidingExplicitIdsKeepMarkAndLegendPaintWhenOrderAndMembershipChange(VisualThemeMode mode) {
+        var samples = Series("samples", 1); var reference = Series("beta", 2);
         var chart = Bare(mode, identity: true).AddSeries(samples).AddSeries(reference);
         var before = Paints(chart); var prepared = Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng();
-        Assert.NotEqual(before["samples"], before["reference"]);
+        Assert.NotEqual(before["samples"], before["beta"]);
         chart.MoveSeries(samples, 1); samples.WithName("Localized samples");
         Assert.Equal(before["samples"], Paints(chart)["samples"]);
-        chart.AddSeries(Series("another", 3)).RemoveSeries(reference);
+        chart.AddSeries(Series("delta", 3)).RemoveSeries(reference);
         Assert.Equal(before["samples"], Paints(chart)["samples"]);
-        var rebuilt = Paints(Bare(mode, identity: true).AddSeries(Series("reference", 2)).AddSeries(Series("samples", 1)));
-        Assert.Equal(before["samples"], rebuilt["samples"]); Assert.Equal(before["reference"], rebuilt["reference"]);
+        var rebuilt = Paints(Bare(mode, identity: true).AddSeries(Series("beta", 2)).AddSeries(Series("samples", 1)));
+        Assert.Equal(before["samples"], rebuilt["samples"]); Assert.Equal(before["beta"], rebuilt["beta"]);
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
     }
 
     [Fact]
-    public void ExplicitPaintAndSemanticStateRetainPrecedenceAndFinitePalettesMayRepeat() {
+    public void ExplicitPaintAndSemanticStateRetainPrecedenceWhileAutomaticColorsStayDistinct() {
         var color = ChartColor.FromHex("#123456");
         var theme = VisualTheme.Graphite().WithPalette(color);
         var chart = Bare(VisualThemeMode.Light).WithTheme(theme).AddSeries(Series("first", 1)).AddSeries(Series("second", 2));
         var repeated = Paints(chart);
-        Assert.Equal(repeated["first"], repeated["second"]);
+        Assert.NotEqual(repeated["first"], repeated["second"]);
         chart.Series[0].StateRole = ChartSeriesState.Warning;
         Assert.NotEqual(repeated["first"], Paints(chart)["first"]);
         chart.Series[0].Color = ChartColor.FromHex("#987654");
@@ -41,6 +41,41 @@ public sealed class StableSeriesPaletteTests {
         Assert.Equal(authored, Paints(chart)["first"]);
         chart.Series[0].WithPointColor(0, color);
         Assert.Contains(color.ToCss(), Prepare(chart).ToSvg(), StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData(VisualThemeMode.Light, false)]
+    [InlineData(VisualThemeMode.Dark, false)]
+    [InlineData(VisualThemeMode.Light, true)]
+    [InlineData(VisualThemeMode.Dark, true)]
+    public void AutomaticMarksAndLegendsStayDistinctBeyondTheBasePalette(VisualThemeMode mode, bool identity) {
+        var chart = Bare(mode, identity).WithSize(1800, 1200);
+        for (var i = 0; i < 18; i++) chart.AddSeries(Series("series-" + i, i + 1));
+        var paints = Paints(chart);
+        Assert.Equal(18, paints.Count);
+        Assert.Equal(18, paints.Values.Distinct(StringComparer.OrdinalIgnoreCase).Count());
+        var before = paints.ToDictionary(entry => entry.Key, entry => entry.Value);
+        if (identity) {
+            chart.MoveSeries(chart.Series[0], 17);
+            Assert.Equal(before.OrderBy(entry => entry.Key), Paints(chart).OrderBy(entry => entry.Key));
+        }
+        Assert.NotEmpty(Prepare(chart).ToPng());
+        chart.WithSvgColorVariables(SvgColorVariables.SharedRoles(VisualTheme.Graphite(), mode).Clone());
+        var bound = Paints(chart).Values.ToArray();
+        Assert.All(bound, fill => Assert.Contains("var(--hfx-color-chart-series-", fill, StringComparison.Ordinal));
+        Assert.Contains(bound, fill => fill.StartsWith("color-mix(", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(VisualThemeMode.Light)]
+    [InlineData(VisualThemeMode.Dark)]
+    public void MixedLocalAndExplicitIdentitiesRemainDistinctThroughReorder(VisualThemeMode mode) {
+        var chart = Bare(mode, identity: true).AddScatter("Local", new[] { new ChartPoint(1, 1) }).AddSeries(Series("forecast", 2));
+        void Distinct(Chart model) { var paints = Paints(model); Assert.Equal(2, paints.Values.Distinct(StringComparer.OrdinalIgnoreCase).Count()); }
+        Distinct(chart);
+        chart.MoveSeries(chart.Series[0], 1);
+        Distinct(chart);
+        Assert.NotEmpty(chart.ToPng());
     }
 
     [Theory]

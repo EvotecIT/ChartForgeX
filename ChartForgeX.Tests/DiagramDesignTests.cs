@@ -102,7 +102,8 @@ public sealed class DiagramDesignTests {
 
     [Fact]
     public void CompactScheduleWrapsCompleteRowNamesAndOmitsARedundantLegend() {
-        const string source = "gantt\nsection Engine\nLabel placement :labels,2026-01-01,3d\nRoute layout :route,after labels,2d";
+        // Row titles no longer carry their section, so a long title exercises the wrap.
+        const string source = "gantt\nsection Engine\nLabel placement and collision review :labels,2026-01-01,3d\nRoute layout :route,after labels,2d";
         var chart = new MermaidParser().ParseGantt(source).Document!.ToChart(new MermaidGanttRenderOptions { Width = 390 });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "schedule-row-label").ToArray();
@@ -116,6 +117,25 @@ public sealed class DiagramDesignTests {
         var withoutRows = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.DoesNotContain(withoutRows.Scene.Nodes, node => node.Role == "schedule-row-label");
         Assert.Equal(2, withoutRows.Scene.Nodes.Count(node => node.Role == "legend-entry"));
+    }
+
+    [Fact]
+    public void RelationshipsReachEntityBordersFromOutsideSoTheirCardinalityStaysVisible() {
+        // Two relationships share LINE_ITEM's top; the corridor search once let PRODUCT's run pass below that
+        // border and turn back up, drawing its crow's foot inside the entity where the card fill hides it.
+        const string source = "erDiagram\nCUSTOMER ||--o{ ORDER : places\nORDER ||--|{ LINE_ITEM : contains\nPRODUCT ||--o{ LINE_ITEM : \"ordered in\"\n"
+            + "CUSTOMER {\nstring id PK\nstring name\nstring email\n}\nORDER {\nstring id PK\nstring customerId FK\ndate placed\n}\n";
+        var result = MermaidRenderer.Render(source, new MermaidRenderOptions { EntityRelationship = new MermaidTopologyRenderOptions { Width = 760, Height = 570 } });
+        Assert.False(result.HasErrors);
+        var prepared = Assert.IsType<TopologyChart>(result.Artifact!.Model).Prepare();
+        var nodes = prepared.Analyze().Nodes.ToDictionary(node => node.Id, node => node.Bounds);
+        foreach (var edge in prepared.ToInterchangeEnvelope().Edges) {
+            var route = edge.ResolvedRoute;
+            Assert.False(Inside(nodes[edge.SourceId], route[1].X, route[1].Y), edge.Id + " leaves its source from inside.");
+            Assert.False(Inside(nodes[edge.TargetId], route[^2].X, route[^2].Y), edge.Id + " approaches its target from inside.");
+        }
+
+        static bool Inside(ChartRect bounds, double x, double y) => x > bounds.Left + .5 && x < bounds.Right - .5 && y > bounds.Top + .5 && y < bounds.Bottom - .5;
     }
 
     private static string? Role(XElement node) => (string?)node.Attribute("data-cfx-role");

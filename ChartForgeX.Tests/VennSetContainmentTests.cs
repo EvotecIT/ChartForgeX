@@ -32,6 +32,25 @@ public sealed class VennSetContainmentTests {
         Assert.NotEmpty(block.ToPng());
     }
 
+    [Fact]
+    public void SetCaptionsKeepClearOfOutlinesOfSetsTheyDoNotBelongTo() {
+        var block = VennDiagramBlock.Create().WithSize(780, 460).WithTitle("Overlap")
+            .AddSet("A", "First", 100).AddSet("B", "Second", 60).AddIntersection(new[] { "A", "B" }, "Shared", 25);
+        var svg = XDocument.Parse(block.ToSvg());
+        var circles = svg.Descendants().Where(item => (string?)item.Attribute("data-cfx-role") == "venn-set")
+            .ToDictionary(item => item.Attribute("data-set-id")!.Value);
+        double Number(XElement element, string name) => double.Parse(element.Attribute(name)!.Value, CultureInfo.InvariantCulture);
+        foreach (var (caption, other) in new[] { ("First", "B"), ("Second", "A") }) {
+            var text = svg.Descendants().Single(item => (string?)item.Attribute("data-cfx-label-original") == caption);
+            double left = Number(text, "data-cfx-label-x"), top = Number(text, "data-cfx-label-y");
+            double right = left + Number(text, "data-cfx-label-width"), bottom = top + Number(text, "data-cfx-label-height");
+            var circle = circles[other];
+            double cx = Number(circle, "cx"), cy = Number(circle, "cy"), radius = Number(circle, "r") + Number(circle, "stroke-width") / 2;
+            var dx = cx - Math.Max(left, Math.Min(cx, right)); var dy = cy - Math.Max(top, Math.Min(cy, bottom));
+            Assert.True(dx * dx + dy * dy > radius * radius, caption + " must sit outside set " + other + ", clear of its outline.");
+        }
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

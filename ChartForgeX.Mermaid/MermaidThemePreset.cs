@@ -11,20 +11,22 @@ internal sealed partial class MermaidThemePreset {
     private readonly bool _topology;
     internal readonly string? Name;
     private MermaidThemePreset(string? name,Dictionary<string,ChartColor> colors,ChartColor[]? backgrounds,ChartColor[]? borders,bool topology){Name=name;_colors=colors;_backgrounds=backgrounds;_borders=borders;_topology=topology;}
-    internal static bool IsKnown(string? name)=>name is "base" or "default" or "dark" or "forest" or "neutral" or "neo" or "neo-dark" or "redux" or "redux-dark" or "redux-color" or "redux-dark-color";
+    internal static bool IsKnown(string? name)=>IsNative(name)||IsPreset(name);
+    /// <summary>Mermaid's own default theme and its dark mode select the native Graphite theme in the matching mode.</summary>
+    internal static bool IsNative(string? name)=>name is "default" or "dark";
+    /// <summary>Named alternative Mermaid looks that a source opts into explicitly.</summary>
+    internal static bool IsPreset(string? name)=>name is "base" or "forest" or "neutral" or "neo" or "neo-dark" or "redux" or "redux-dark" or "redux-color" or "redux-dark-color";
     internal static MermaidThemePreset Create(string? name,bool hostTheme,Dictionary<string,Precise> authored,bool darkMode,ChartColor[]? backgrounds,ChartColor[]? borders,bool topology=false) {
-        var selected=IsKnown(name)&&!hostTheme?name:null;
+        var selected=IsPreset(name)&&!hostTheme?name:null;
         var values=selected!=null?Seed(selected):new Dictionary<string,Precise>(StringComparer.Ordinal);
         if(topology&&selected!=null)SeedTopologyRoles(selected,values);
-        // The default constructor alone eagerly updates its roles before receiving overrides.
-        if(selected=="default"){DeriveRoles(selected,values,false);if(topology)DeriveTopologyRoles(selected,values,false);}
         foreach(var pair in authored)values[pair.Key]=pair.Value;
         if(selected!=null){DeriveRoles(selected,values,darkMode);if(topology)DeriveTopologyRoles(selected,values,darkMode);}
         // Upstream calculate replays authored literals after its derived-role assignments.
         foreach(var pair in authored)values[pair.Key]=pair.Value;
         var colors=new Dictionary<string,ChartColor>(StringComparer.Ordinal);foreach(var pair in values)colors[pair.Key]=pair.Value.ToColor();
         var palette=name=="redux-color"||name=="redux-dark-color";
-        return new MermaidThemePreset(name,colors,palette?Clone(backgrounds??DefaultBackgrounds(selected)):null,palette?Clone(borders??DefaultBorders(selected)):null,topology);
+        return new MermaidThemePreset(selected,colors,palette?Clone(backgrounds??DefaultBackgrounds(selected)):null,palette?Clone(borders??DefaultBorders(selected)):null,topology);
     }
     internal bool TryGet(string name,out ChartColor value)=>_colors.TryGetValue(name,out value);
     internal ChartColor? AtBackground(int sourceIndex)=>At(_backgrounds,sourceIndex);

@@ -63,7 +63,7 @@ internal sealed class ChartFlowColorSurface {
             compact: true, min: Minimum, max: Maximum, heading: Presentation.Name, legendStyle: Presentation.LegendStyle);
         var key = new ChartRect(plot.Left, plot.Bottom - height, plot.Width, height);
         VisualColorScaleLegendScene.Draw(builder, Scale, Presentation.Labels, style, gap, key,
-            Minimum, Maximum, family + "-color-scale", HasMissing, ChartColorScaleSurface.NoData(Scale, colors),
+            Minimum, Maximum, family + "-color-scale", HasMissing, ChartMissingData.KeyLook(Scale, colors),
             Presentation.ScaleValues, family + ".scale-overflow", hasDomain: HasDomain, compact: true,
             heading: Presentation.Name, valueName: Presentation.Name, legendStyle: Presentation.LegendStyle);
         return new ChartRect(plot.Left, plot.Top, plot.Width, Math.Max(0, plot.Height - height - Math.Min(gap, plot.Height * .05)));

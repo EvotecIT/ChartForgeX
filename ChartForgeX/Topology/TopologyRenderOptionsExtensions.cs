@@ -504,6 +504,19 @@ public static class TopologyRenderOptionsExtensions {
     }
 
     /// <summary>
+    /// Chooses the view an interactive HTML topology with viewport controls opens at.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <param name="view">The opening view.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithHtmlOpeningView(this TopologyRenderOptions options, TopologyHtmlOpeningView view) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        TopologyModelGuards.EnumDefined(view, nameof(view));
+        options.HtmlOpeningView = view;
+        return options;
+    }
+
+    /// <summary>
     /// Enables or disables query-string scenario state in interactive HTML output.
     /// </summary>
     /// <param name="options">The render options.</param>
@@ -525,6 +538,24 @@ public static class TopologyRenderOptionsExtensions {
     public static TopologyRenderOptions WithHtmlForceGraphControls(this TopologyRenderOptions options, bool enabled = true) {
         if (options == null) throw new ArgumentNullException(nameof(options));
         options.EnableHtmlForceGraphControls = enabled;
+        if (enabled) {
+            options.EnableHtmlInteractions = true;
+            options.EnableHtmlViewportControls = true;
+        }
+
+        return options;
+    }
+
+    /// <summary>
+    /// Enables or disables the interactive HTML find bar for dense topologies.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <param name="enabled">Whether interactive HTML should render a find bar with text, group and kind filters.</param>
+    /// <returns>The current render options.</returns>
+    /// <remarks>Matches are highlighted rather than hidden, and the viewport moves to them at a readable scale.</remarks>
+    public static TopologyRenderOptions WithHtmlFindControls(this TopologyRenderOptions options, bool enabled = true) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        options.EnableHtmlFindControls = enabled;
         if (enabled) {
             options.EnableHtmlInteractions = true;
             options.EnableHtmlViewportControls = true;

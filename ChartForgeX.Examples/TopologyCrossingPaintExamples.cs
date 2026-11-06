@@ -18,7 +18,7 @@ internal static class TopologyCrossingPaintExamples {
             }
         }
         void Save(VisualArtifact artifact, string name) {
-            var stem = Path.Combine(output, name); File.WriteAllText(stem + ".svg", artifact.ToSvg()); File.WriteAllBytes(stem + ".png", artifact.ToPng());
+            var stem = Path.Combine(output, name); artifact.SaveSvg(stem + ".svg"); File.WriteAllBytes(stem + ".png", artifact.ToPng());
             File.WriteAllText(stem + ".html", artifact.ToHtmlPage()); File.WriteAllText(stem + ".json", artifact.ToInterchangeJson());
         }
     }

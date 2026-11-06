@@ -42,7 +42,6 @@ public sealed partial class RuntimeSelectionCueBrowserTests {
             node=>JSON.stringify({text:node.textContent,ink:[...node.querySelectorAll('image,use,path')].filter(shape=>!shape.closest('[data-cfx-state-outline],[data-cfx-highlight-outline]')).map(shape=>[shape.localName,shape.localName==='use'?null:shape.getAttribute('href'),shape.localName==='use'?[...node.ownerSVGElement.querySelectorAll('[id]')].find(glyph=>'#'+glyph.id===shape.getAttribute('href'))?.getAttribute('d'):shape.getAttribute('d')]),paint:['fill','fill-opacity','stroke','stroke-opacity','font-family','font-weight','opacity']
                 .map(key=>node.getAttribute(key))})
             """);
-        var paint = await TextPaint();
         await page.EvaluateAsync("target=>cueController.select({targets:[target]})", new { targetKind = kind, targetId = id });
         await page.WaitForFunctionAsync("()=>cueRoot.querySelectorAll('[data-cfx-state-outline]').length===1");
         Assert.Equal(id, Assert.Single(await page.EvaluateAsync<string[]>("()=>cueController.getSelection().map(t=>t.targetId)")));
@@ -68,12 +67,14 @@ public sealed partial class RuntimeSelectionCueBrowserTests {
         await page.WaitForFunctionAsync("()=>cueRoot.dataset.cfxAdaptiveDrawing==='wide'");
         Assert.Equal(id, await target.GetAttributeAsync("data-cfx-target-id"));
         Assert.Equal(kind, await target.GetAttributeAsync("data-cfx-target-kind"));
+        // The wide drawing uses the wide type scale, so its caption ink is the reference after the resize.
+        var widePaint = await TextPaint();
         await FocusWithKeyboardAsync(page, target);
         // A text-only annotation can retain an unpainted band much wider than its real caption.
         await AssertNativeKeyboardFocusAsync(page, nativeCaption: true);
         await page.EvaluateAsync("()=>cueController.clearSelection()");
         Assert.Equal(0, await page.Locator("[data-cfx-state-outline]").CountAsync());
-        Assert.Equal(paint, await TextPaint());
+        Assert.Equal(widePaint, await TextPaint());
         AssertNoConsoleErrors(session);
     }
 }

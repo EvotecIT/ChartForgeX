@@ -99,7 +99,7 @@ public sealed partial class RuntimeSelectionCueBrowserTests {
             .WithObservationIds(ids.Select(id => new ChartObservationId(id)).ToArray())
             .WithPointColor(1, ChartColor.FromRgb(40, 120, 200).WithOpacity(.65));
         var chart = Chart.Create().WithSize(640, 360).WithTitle("Persistent observation cues")
-            .WithTheme(graphite ? VisualTheme.Graphite() : VisualTheme.Report(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
             .WithXLabels(reordered ? new[] { "C", "B", "A" } : new[] { "A", "B", "C" }).AddSeries(series);
         return kind == ChartSeriesKind.Bar ? chart.WithBarStyle(ChartBarStyle.Flat) : chart;
     }

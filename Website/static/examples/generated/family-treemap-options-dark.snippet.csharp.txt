@@ -1,0 +1,58 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var items = new[] {
+    new ChartHierarchyItem("north", "North"),
+    new ChartHierarchyItem("north-services", "Services", parentId: "north"),
+    new ChartHierarchyItem("north-support", "Support", parentId: "north-services", value: 18, colorValue: -4),
+    new ChartHierarchyItem("north-research", "Research", parentId: "north-services", value: 12, colorValue: 11),
+    new ChartHierarchyItem("north-platform", "Platform", parentId: "north", value: 18, colorValue: 3),
+    new ChartHierarchyItem("south", "South"),
+    new ChartHierarchyItem("south-services", "Services", parentId: "south"),
+    new ChartHierarchyItem("south-support", "Support", parentId: "south-services", value: 22, colorValue: 8),
+    new ChartHierarchyItem("south-field", "Field", parentId: "south-services", value: 15, colorValue: 1),
+    new ChartHierarchyItem("south-operations", "Operations", parentId: "south", value: 15, colorValue: -6),
+    new ChartHierarchyItem("research", "Independent research", value: 8, colorValue: 14)
+};
+var colors = VisualTheme.Graphite().Resolve(mode);
+var low = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(153, 138, 224) : ChartColor.FromRgb(101, 78, 169);
+var high = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(238, 157, 98) : ChartColor.FromRgb(191, 92, 34);
+var scale = ChartColorScale.Discrete(new[] {
+    new ChartColorBand(0, low, "Decline"), new ChartColorBand(10, colors.Border, "Steady"), new ChartColorBand(null, high, "Growth")
+});
+var allocation = ChartSeries.CreateTreemap(new ChartSeriesId("allocation-source"), "Allocated work", items);
+var chart = Chart.Create().WithDataLabels(true).AddSeries(allocation).ConfigureTreemap(options => {
+    options.GroupPadding = 8;
+    options.Gap = 3;
+    options.ShowGroupLabels = true;
+    options.ColorDimension.Name = "Change (%)";
+    // Only the sparse model has an item without a measured change, so only it needs a no-data colour.
+    options.ColorScale = scale;
+});
+allocation.WithNodeState("south-support", ChartSeriesState.Warning);
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("How work is allocated across teams", "", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion

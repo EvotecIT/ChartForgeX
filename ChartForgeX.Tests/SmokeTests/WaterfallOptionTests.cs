@@ -78,8 +78,10 @@ internal static partial class SmokeTests {
         foreach (var dark in new[] { false, true })
         foreach (var style in new[] { ChartBarStyle.Flat, ChartBarStyle.SegmentedCapsule })
         foreach (var paint in new[] { "status", "series", "point" }) {
+            // Pin the controlled Carlito pixel fixture at 12px; responsive Archivo sizes are checked separately.
             // Automatic captions take a reserved lane outside full-height levels; this checks the contained ink.
             var chart = WaterfallLabelSample(180, dark).WithPngFont(font).WithBarStyle(style).WithDataLabelPlacement(ChartDataLabelPlacement.Inside)
+                .ConfigureDataLabelStyle(label => label.WithFontSize(12))
                 .AddWaterfall("Delta", Points(100), paint == "series" ? ChartColor.FromHex("#172554") : null);
             if (paint == "point") chart.Series[0].WithPointColor(0, ChartColor.FromHex("#172554"));
             chart.Options.YAxis.WithBounds(0, 100).WithReversal();
@@ -112,7 +114,7 @@ internal static partial class SmokeTests {
                 Assert(label.Color.Equals(expected), "Contained Waterfall captions must contrast with the actual status, series, or point fill and body opacity.");
                 Assert(CountNearColorInRect(pixels, width, (int)System.Math.Ceiling(bounds.Left), (int)System.Math.Ceiling(bounds.Top),
                     (int)System.Math.Floor(bounds.Width), (int)System.Math.Floor(bounds.Height), expected.R, expected.G, expected.B, 8) > 0,
-                    "Native PNG must paint the contrasting contained caption.");
+                    $"Native PNG must paint the contrasting contained caption: dark={dark}, style={style}, paint={paint}, label={label.Id}, bounds={bounds.Left},{bounds.Top},{bounds.Width},{bounds.Height}, ink={expected}.");
                 if (style == ChartBarStyle.Flat) {
                     // A derived total is a level, so it takes the series role; changes keep their status role unless painted.
                     var role = paint == "series" || region.Role == "waterfall-total" || paint == "point" && label.Id!.Contains("-point-")
@@ -143,5 +145,5 @@ internal static partial class SmokeTests {
         .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
 
     private static ChartRect WaterfallLabelBounds(VisualSceneText text) =>
-        new(text.X, text.Baseline - text.Text.Ascent, text.Text.Metrics.Width, text.Text.Metrics.Height);
+        new(text.LineLeft(text.Text.Lines[0]), text.Baseline - text.Text.Ascent, text.Text.Metrics.Width, text.Text.Metrics.Height);
 }

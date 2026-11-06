@@ -67,7 +67,7 @@ public sealed class MermaidSourceConfigurationTests {
         var artifact = ((MermaidDocument)document).ToVisualArtifact();
         var topology = Assert.IsType<TopologyChart>(artifact.Model);
         Assert.Equal(VisualThemeMode.Dark, topology.ThemeMode);
-        Assert.Equal(ChartForgeX.Primitives.ChartColor.FromHex("#333333"), topology.Theme.Resolve(topology.ThemeMode).Background);
+        Assert.Equal(VisualTheme.Graphite().Resolve(VisualThemeMode.Dark).ElevatedSurface, topology.Theme.Resolve(topology.ThemeMode).Background);
         Assert.Equal("Arial, sans-serif", topology.Theme.Typography.Family);
         Assert.Equal("classic", artifact.Metadata["mermaid.config.look"]);
         Assert.Contains(topology.Theme.Resolve(topology.ThemeMode).Background.ToHex(), artifact.ToSvg());

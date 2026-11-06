@@ -16,7 +16,7 @@ internal static partial class MermaidExamples {
                 if (result.HasErrors || result.Artifact == null) throw new InvalidOperationException(string.Join("; ", result.Diagnostics.Select(diagnostic => diagnostic.Message)));
                 var id = "mermaid-usecase-source-depth-" + variant + "-" + mode.ToString().ToLowerInvariant();
                 File.WriteAllText(Path.Combine(output, id + ".mmd"), source);
-                File.WriteAllText(Path.Combine(output, id + ".svg"), result.Artifact.ToSvg()); File.WriteAllBytes(Path.Combine(output, id + ".png"), result.Artifact.ToPng());
+                result.Artifact.SaveSvg(Path.Combine(output, id + ".svg")); File.WriteAllBytes(Path.Combine(output, id + ".png"), result.Artifact.ToPng());
                 File.WriteAllText(Path.Combine(output, id + ".html"), result.Artifact.ToHtmlPage().Replace("</head>", ExampleTypography.EmbeddedStyle + "</head>", StringComparison.Ordinal));
                 File.WriteAllText(Path.Combine(output, id + ".csharp.txt"), ExampleRecipeSource.EmitUseCaseSource(variant, mode, galleryTypography: true));
             }

@@ -48,6 +48,7 @@ internal static partial class VisualRadialCompiler {
     private static void DrawBandLabels(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, RadialBandFrame frame) {
         if (frame.Labels.Count == 0) return;
         var gap = Math.Max(2, context.Theme.Spacing / 2);
+        UseRoomierBands(builder, plot, frame, gap);
         var requests = frame.Labels.Select(label => BandLabelRequest(chart, builder, plot, frame, label, gap)).ToArray();
         // Shared placement reserves straight source leaders against all captions in both placement orders.
         // Actual bent/curved paths are checked below through the same typed flattening/shape owner.
@@ -99,6 +100,43 @@ internal static partial class VisualRadialCompiler {
                 style.Baseline = TextBaseline.Normal; style.Alignment = TextAlignment.Left; style.TextCase = TextCaseTransform.None;
                 builder.Text(result.Text, result.Bounds.Left, result.Bounds.Top + builder.TextAscent(style), style,
                     "data-label", id + "-label", paint: VisualChartPaint.Text(style));
+            }
+        }
+    }
+
+    // A compact frame leaves narrow lanes beside the rings but open bands above and below them. An automatic
+    // outside caption that would be shortened in its side lane moves to the nearer open band when it fits there
+    // whole, together with the other captions already using that band.
+    private static void UseRoomierBands(VisualSceneBuilder builder, ChartRect plot, RadialBandFrame frame, double gap) {
+        var cy = plot.Top + plot.Height / 2;
+        var sideWidth = Math.Max(0, plot.Width / 2 - frame.Extent - gap);
+        var aboveHeight = cy - frame.Extent - gap - plot.Top; var belowHeight = plot.Bottom - cy - frame.Extent - gap;
+        foreach (var placement in new[] { ChartDataLabelPlacement.Above, ChartDataLabelPlacement.Below }) {
+            var above = placement == ChartDataLabelPlacement.Above;
+            // Authored captions in this band keep their own layout.
+            if (frame.Labels.Any(label => label.Placement == placement)) continue;
+            var moved = Enumerable.Range(0, frame.Labels.Count).Where(index => frame.Labels[index].Placement == ChartDataLabelPlacement.Outside
+                    && Math.Sin(frame.Labels[index].Angle) < 0 == above)
+                .Select(index => (Index: index, Size: builder.MeasureText(frame.Labels[index].Text, frame.Labels[index].Style),
+                    Anchor: frame.Labels[index].SliceX + Math.Cos(frame.Labels[index].Angle) * frame.Labels[index].Radius))
+                .Where(item => item.Size.Width > sideWidth).OrderBy(item => item.Anchor).ToArray();
+            if (moved.Length == 0 || (above ? aboveHeight : belowHeight) < moved.Max(item => item.Size.Height) + gap
+                || moved.Sum(item => item.Size.Width + 2 * gap) - 2 * gap > plot.Width) continue;
+            // Captions keep their leaders' left-to-right order, each as close above or below its own sector as the others allow.
+            var centers = new double[moved.Length];
+            for (var item = 0; item < moved.Length; item++) {
+                centers[item] = Math.Max(moved[item].Anchor, plot.Left + moved[item].Size.Width / 2);
+                if (item > 0) centers[item] = Math.Max(centers[item], centers[item - 1] + (moved[item - 1].Size.Width + moved[item].Size.Width) / 2 + 2 * gap);
+            }
+            for (var item = moved.Length - 1; item >= 0; item--) {
+                var limit = item == moved.Length - 1 ? plot.Right - moved[item].Size.Width / 2
+                    : centers[item + 1] - (moved[item].Size.Width + moved[item + 1].Size.Width) / 2 - 2 * gap;
+                centers[item] = Math.Min(centers[item], limit);
+            }
+            for (var item = 0; item < moved.Length; item++) {
+                var label = frame.Labels[moved[item].Index];
+                frame.Labels[moved[item].Index] = new RadialLabel(label.Slice, label.Text, label.Angle, centers[item],
+                    cy + (above ? -1 : 1) * frame.Extent * 1.12, label.SliceX, label.SliceY, false, label.Style, label.Radius, placement);
             }
         }
     }

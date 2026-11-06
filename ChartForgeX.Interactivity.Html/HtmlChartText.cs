@@ -614,4 +614,39 @@ public enum HtmlChartText {
     HierarchyExpand,
     /// <summary>UI text: Topology diagram</summary>
     TopologyDiagram,
+    /// <summary>Explains why a saved chart family without a data window disables its zoom and pan controls.</summary>
+    ZoomUnavailable,
+    // New entries go last: compiled consumers keep the numeric values of existing ones.
+    /// <summary>UI text naming a use case step that sends a request.</summary>
+    ScenarioRequest,
+    /// <summary>UI text naming a use case step that sends a one-way message.</summary>
+    ScenarioMessage,
+    /// <summary>UI text naming a use case step that answers a request.</summary>
+    ScenarioResponse,
+    /// <summary>UI text naming a use case step whose call fails.</summary>
+    ScenarioFailure,
+    /// <summary>Names the playback toolbar of an interactive sequence diagram.</summary>
+    DiagramPlayback,
+    /// <summary>Explains keyboard exploration of an interactive flow or sequence diagram.</summary>
+    DiagramHint,
+    /// <summary>Describes a connector or message route. Template: {source}, {target}.</summary>
+    DiagramRoute,
+    /// <summary>Lists the steps that lead into a flow step. Template: {items}.</summary>
+    DiagramIncoming,
+    /// <summary>Lists the steps a flow step leads to. Template: {items}.</summary>
+    DiagramOutgoing,
+    /// <summary>Places one sequence message in its order. Template: {current}, {count}.</summary>
+    DiagramMessage,
+    /// <summary>Counts the messages a sequence participant sends and receives. Template: {sent}, {received}.</summary>
+    DiagramParticipantMessages,
+    /// <summary>UI text: All kinds</summary>
+    TopologyAllKinds,
+    /// <summary>UI text: {count} of {total} nodes match</summary>
+    TopologyFindSummary,
+    /// <summary>UI text: No matching nodes</summary>
+    TopologyFindNone,
+    /// <summary>UI text: Find a node</summary>
+    TopologyFindNodesPlaceholder,
+    /// <summary>UI text: Find nodes by name, kind or group</summary>
+    TopologyFindNodes,
 }

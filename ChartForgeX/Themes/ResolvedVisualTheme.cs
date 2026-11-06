@@ -37,6 +37,7 @@ internal sealed class ResolvedVisualTheme {
     internal ChartColor Neutral2 => _colors.Neutral2;
     internal ChartColor Neutral3 => _colors.Neutral3;
     internal ChartColor[] Palette => _palette;
+    internal ChartColor CategoricalColor(int index) => _colors.CategoricalColor(index);
     internal ChartColor[]? SequentialRampValue => _sequentialRamp;
     internal ChartColor[]? SequentialRamp => SequentialRampValue;
     internal double CornerRadius => _theme.CardRadius;

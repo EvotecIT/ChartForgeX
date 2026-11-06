@@ -361,20 +361,13 @@ internal static partial class MermaidExamples {
                 options = new MermaidRenderOptions { Quadrant = new MermaidQuadrantRenderOptions {
                     Width = item.Key.Contains("compact", StringComparison.Ordinal) ? 390 : 800, Height = 500 } };
             var parsed = new MermaidParser().Parse(item.Value, options?.ParseOptions);
-            // Ordinary gallery examples keep the native Graphite host palette. Dedicated
-            // source-palette recipes and authored source paint retain their own presentation.
-            var configuration = parsed.Document?.Configuration;
-            var galleryTheme = configuration != null
-                && (configuration.Theme == null || configuration.Theme is "default" or "dark")
-                && configuration.Settings.All(setting => !setting.Path.StartsWith("themeVariables.", StringComparison.Ordinal)
-                    || setting.Path is "themeVariables.fontFamily" or "themeVariables.fontSize");
             // Keep gallery metrics independent of installed fonts without replacing source fonts or sizes.
+            var configuration = parsed.Document?.Configuration;
             var proofTypography = configuration != null && configuration.FontFamily == null;
-            if (proofTypography || galleryTheme) {
+            if (proofTypography) {
                 options ??= new MermaidRenderOptions();
                 options.Presentation ??= new MermaidPresentationOptions();
-                if (proofTypography) options.Presentation.FontFamily = ExampleTypography.FontFamily;
-                if (galleryTheme) options.Presentation.Theme ??= ChartForgeX.Themes.VisualTheme.Graphite();
+                options.Presentation.FontFamily = ExampleTypography.FontFamily;
             }
             var result = MermaidRenderer.RenderParsed(parsed, options);
             if (result.HasErrors || result.Artifact == null) throw new InvalidOperationException(string.Join("; ", result.Diagnostics.Select(diagnostic => diagnostic.Message)));
@@ -388,9 +381,6 @@ internal static partial class MermaidExamples {
                 result.Artifact.NaturalSize = new VisualArtifactSize(960, 621);
                 result.Artifact.PreserveNaturalSize = true;
             }
-            if (galleryTheme && result.Artifact.Model is ChartForgeX.VisualBlocks.IVisualBlock galleryBlock
-                && galleryBlock is ChartForgeX.VisualBlocks.JourneyDiagramBlock or ChartForgeX.VisualBlocks.TimelineDiagramBlock)
-                galleryBlock.Options.TransparentBackground = true;
             if ((item.Key.StartsWith("mermaid-source-font-size-", StringComparison.Ordinal) || item.Key.StartsWith("mermaid-packet-", StringComparison.Ordinal)) && result.Artifact.Model is ChartForgeX.VisualBlocks.IVisualBlock block
                 && block is not ChartForgeX.VisualBlocks.JourneyDiagramBlock && block is not ChartForgeX.VisualBlocks.TimelineDiagramBlock)
                 block.Options.ShowCard = false;
@@ -398,7 +388,7 @@ internal static partial class MermaidExamples {
                 wardley.WithSize(420, 320);
             }
             if (item.Key == "mermaid-source-font-size-packet-narrow-fit" && result.Artifact.Model is ChartForgeX.VisualBlocks.PacketLayoutBlock packet)
-                packet.WithSize(640, 280);
+                packet.WithSize(600, 262);
             if (item.Key == "mermaid-source-font-size-group-header-fit" && result.Artifact.Model is ChartForgeX.Topology.TopologyChart grouped)
                 grouped.Groups[0].Subtitle = "Group description";
             if (item.Key.StartsWith("mermaid-source-font-size-icon-", StringComparison.Ordinal) && result.Artifact.Model is ChartForgeX.Topology.TopologyChart icons) {

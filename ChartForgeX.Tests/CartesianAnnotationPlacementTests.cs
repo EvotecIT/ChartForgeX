@@ -69,7 +69,7 @@ public sealed class CartesianAnnotationPlacementTests {
         var text = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "annotation-label");
         Assert.Equal("Target 80", Assert.Single(text.Text.Lines).Text);
         var plate = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneRectangle>(), node => node.Role == "annotation-label-backplate");
-        Assert.Equal(axisSize, text.Text.Size);
+        Assert.Equal(axisSize == 12 ? 11 : axisSize, text.Text.Size);
         Assert.InRange(plate.Bounds.Left, 0, width); Assert.InRange(plate.Bounds.Right, 0, width);
         Assert.InRange(plate.Bounds.Top, 0, 260); Assert.InRange(plate.Bounds.Bottom, 0, 260);
         foreach (var line in prepared.Scene.Nodes.OfType<VisualScenePath>().Where(node => node.Role == "line"))
@@ -94,7 +94,7 @@ public sealed class CartesianAnnotationPlacementTests {
         const string family = "CFX Threshold Wide Face";
         var glyphs = Enumerable.Range(32, 95).ToDictionary(value => value, _ => OpenTypeTestFonts.H);
         FontRegistry.Register(family, OpenTypeTestFonts.NameKeyed(extraGlyphs: glyphs));
-        var chart = NarrowThreshold(360, mode).WithFontFamily(family);
+        var chart = NarrowThreshold(360, mode).WithTheme(VisualTheme.Graphite().WithTypography(new VisualTypography()), mode).WithFontFamily(family);
         if (occupiedTitle) chart.WithYAxis("Coverage and availability scores");
         if (header) chart.WithSize(360, 320).WithHeader(true).WithTitle("Coverage").WithSubtitle("Service checks");
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -136,7 +136,7 @@ public sealed class CartesianAnnotationPlacementTests {
         var displayed = Assert.Single(caption.Text.Lines).Text;
         Assert.StartsWith("Long label", displayed, StringComparison.Ordinal);
         Assert.EndsWith("…", displayed, StringComparison.Ordinal);
-        Assert.Equal(12, caption.Text.Size);
+        Assert.Equal(11, caption.Text.Size);
         var plate = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneRectangle>(), node => node.Role == "annotation-label-backplate");
         Assert.InRange(plate.Bounds.Left, 0, 320); Assert.InRange(plate.Bounds.Right, 0, 320);
         Assert.InRange(plate.Bounds.Top, 0, 80); Assert.InRange(plate.Bounds.Bottom, 0, 80);
@@ -164,7 +164,7 @@ public sealed class CartesianAnnotationPlacementTests {
         var displayed = Assert.Single(caption.Text.Lines).Text;
         Assert.StartsWith("A detailed service level", displayed, StringComparison.Ordinal);
         Assert.EndsWith("…", displayed, StringComparison.Ordinal);
-        Assert.Equal(12, caption.Text.Size);
+        Assert.Equal(width < 480 ? 11 : 12, caption.Text.Size);
         var plate = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneRectangle>(), node => node.Role == "annotation-label-backplate");
         var plot = Assert.Single(prepared.Regions, region => region.Role == "cartesian-plot").Bounds;
         Assert.True(plate.Bounds.Bottom <= plot.Top);
@@ -184,7 +184,7 @@ public sealed class CartesianAnnotationPlacementTests {
         const string caption = "Review concentration";
         var values = new[] { 3d, 1, 3, 1, 0, 0, 0, 9, 10, 9, 7, 0, 0 };
         var chart = Chart.Create().WithSize(656, 360).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false)
-            .WithTheme(VisualTheme.Dashboard()).WithDashboardBarPanelStyle()
+            .WithTheme(VisualTheme.Graphite()).WithDashboardBarPanelStyle()
             .WithYAxisBounds(0, 10).WithDataLabels(dataLabels)
             .AddVerticalBand(7.5, 11.5, caption, opacity: .08)
             .AddBar("Reviews", Points(values));

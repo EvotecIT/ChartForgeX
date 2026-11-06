@@ -40,9 +40,10 @@ public sealed class HtmlInteractiveDashboardRenderer {
 
         var surfaceStyle = HtmlInteractivePage.ChartSurfaceStyle(chartArray[0]);
         var writer = HtmlInteractivePage.StartDocument(title, options.ExternalAssets, surfaceStyle,
-            options.Localization.ResolveLanguage(chartArray[0].Accessibility.Language), options.Localization.DirectionAttribute);
+            options.Localization.ResolveLanguage(chartArray[0].Accessibility.Language), options.Localization.DirectionAttribute,
+            ChartForgeX.Typography.ChartFontAssets.StyleSheet);
         writer.StartElement("main").Attribute("class", "cfx-shell").Attribute("style", surfaceStyle).EndStartElement().Line()
-            .StartElement("div").Attribute("class", "cfx-dashboard").Attribute("style", "--cfx-dashboard-columns:" + options.Columns.ToString(System.Globalization.CultureInfo.InvariantCulture)).EndStartElement().Line();
+            .StartElement("div").Attribute("class", "cfx-dashboard").Attribute("style", DashboardStyle(options, chartArray)).EndStartElement().Line();
         for (var i = 0; i < chartArray.Length; i++) {
             var childOptions = CreateChildOptions(options, scope, groupName, i);
             writer.RawTrusted(HtmlInteractiveChartRenderer.BuildChartSection(chartArray[i], childOptions, title, "document")).Line();
@@ -51,8 +52,18 @@ public sealed class HtmlInteractiveDashboardRenderer {
         writer.EndElement().Line()
             .EndElement().Line();
         HtmlInteractivePage.EndDocument(writer, options.ScriptNonce, options.ExternalAssets,
-            options.Runtime, options.Interaction.Features, options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive);
+            options.Runtime, options.Interaction.Features, options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive,
+            HtmlInteractiveAssets.FeatureBundlesFor(options.Runtime, options.Interaction.Features,
+                options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive, options.Motion.EffectiveDuration > 0, false, chartArray.Any(HtmlInteractiveAssets.HasHierarchy)));
         return writer.Build();
+    }
+
+    // A fitted chart scales its text with its column; 5/6 of the widest design width keeps 12px text at the 10px floor.
+    private static string DashboardStyle(HtmlInteractiveDashboardOptions options, Chart[] charts) {
+        var style = "--cfx-dashboard-columns:" + options.Columns.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        if (options.ResponsiveLayout != HtmlChartResponsiveLayout.Fit) return style;
+        var minimum = (int)Math.Ceiling(charts.Max(chart => chart.Options.Size.Width) * 5 / 6.0);
+        return style + ";--cfx-dashboard-column-min:" + minimum.ToString(System.Globalization.CultureInfo.InvariantCulture) + "px";
     }
 
     private static HtmlChartInteractionOptions CreateChildOptions(HtmlInteractiveDashboardOptions options, string scope, string groupName, int index) {
@@ -68,6 +79,7 @@ public sealed class HtmlInteractiveDashboardRenderer {
         childOptions.Adaptive.Breakpoint = options.Adaptive.Breakpoint;
         HtmlChartTooltipOptionsCopy.Copy(options.Tooltip, childOptions.Tooltip);
         options.Highlight.CopyTo(childOptions.Highlight);
+        options.Motion.CopyTo(childOptions.Motion);
         options.Localization.CopyTo(childOptions.Localization);
         options.Crosshair.CopyTo(childOptions.Crosshair);
         childOptions.Interaction.ChartId = chartId;

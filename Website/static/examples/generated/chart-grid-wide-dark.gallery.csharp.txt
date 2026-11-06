@@ -13,15 +13,14 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
-FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
-FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+// Native PNG and standalone SVG use bundled Archivo.
+// Add ChartFontAssets.StyleSheet once for other text on a host page.
 var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = ChartGridRecipe.Create("wide", mode);
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(960, 700)), theme, mode,
-    new VisualFrame("Requests and capacity", "Three panels share the same axis domains", showLegend: true, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+    new VisualFrame("Requests and capacity", "Three panels share the same axis domains", showLegend: true, showSurface: false), FontSpec.FromFamily(ChartFontStacks.ProductSans));
 var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());
 File.WriteAllBytes("visual.png", prepared.ToPng());
@@ -38,7 +37,7 @@ public static class ChartGridRecipe {
             .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("orders"), "Orders", observations));
         var capacity = Chart.Create().WithTitle("Capacity used").WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
             .AddSeries(ChartSeries.CreateArea(new ChartSeriesId("used-capacity"), "Used capacity", observations));
-        return ChartGrid.Create().WithColumns(2).WithGap(16).WithPanelSize(640, 400)
+        return ChartGrid.Create().WithColumns(2).WithGap(16).WithPanelSize(600, 375)
             .Add(requests).Add(reviewed).Add(capacity, 2).WithSharedAxes();
     }
 }

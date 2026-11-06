@@ -134,7 +134,9 @@ public sealed class ResponsiveChartGeometryTests {
             await page.EvaluateAsync("w=>document.querySelector('#panel').style.width=w+'px'",width);
             await page.WaitForFunctionAsync("w=>Math.abs(Number(document.querySelector('[data-cfx-responsive-chart]').dataset.cfxLayoutWidth)-w)<1",width);
             var result=await page.EvaluateAsync<double[]>("()=>{const svg=document.querySelector('svg'),label=svg.querySelector('[data-cfx-role=axis-y-label] text');return[svg.getBoundingClientRect().width,svg.getBoundingClientRect().height,parseFloat(getComputedStyle(label).fontSize)*Math.hypot(label.getScreenCTM().c,label.getScreenCTM().d),document.documentElement.scrollWidth];}");
-            Assert.InRange(Math.Abs(result[0]-width),0,.5);Assert.Equal(280,result[1],.1);Assert.Equal(12,result[2],.1);Assert.InRange(result[3],0,1440);
+            Assert.InRange(Math.Abs(result[0]-width),0,.5);Assert.Equal(280,result[1],.1);
+            // Text is never stretched with the width; below the compact breakpoint it takes the static compact tick size.
+            Assert.Equal(ChartForgeX.Themes.VisualTheme.Graphite().Typography.ForWidth(width).AxisSize,result[2],.1);Assert.InRange(result[3],0,1440);
         }
         await page.WaitForTimeoutAsync(150);
         await page.EvaluateAsync("()=>{window.layoutWrites=0;new MutationObserver(records=>window.layoutWrites+=records.filter(r=>r.attributeName==='viewBox').length).observe(document.querySelector('svg'),{attributes:true});}");

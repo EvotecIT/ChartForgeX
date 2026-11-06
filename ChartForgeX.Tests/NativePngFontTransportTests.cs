@@ -119,7 +119,7 @@ public sealed class NativePngFontTransportTests : IDisposable {
     public void ChartAndTopologyCallbackCaptureAreOptedInByTheirExistingExportFeature() {
         FontRegistry.Register(Family, OpenTypeTestFonts.NameKeyed());
         FontRegistry.Register(Family, OpenTypeTestFonts.NameKeyed(weight: 700), weight: 700);
-        var chart = Chart.Create().WithSize(360, 240).WithTheme(VisualTheme.Report().WithFontFamily(Family))
+        var chart = Chart.Create().WithSize(360, 240).WithTheme(VisualTheme.Graphite().WithFontFamily(Family))
             .WithTitle("HH").WithXLabels("H").AddBar("H", ChartPoints.FromValues(12));
         var renderer = new HtmlInteractiveChartRenderer();
         var plain = renderer.PrepareSection(chart, configure: options => options.Interaction.Disable(ChartInteractionFeatures.Export));
@@ -127,7 +127,7 @@ public sealed class NativePngFontTransportTests : IDisposable {
         Assert.DoesNotContain("data-cfx-png-glyphs", plain.Html, StringComparison.Ordinal);
         Assert.Contains("data-cfx-png-glyphs", exported.Html, StringComparison.Ordinal);
         Assert.Equal(plain.PreparedVisual.ToSvg(), exported.PreparedVisual.ToSvg());
-        var topology = TopologyChart.Create().WithViewport(360, 240).WithTheme(VisualTheme.Report().WithFontFamily(Family));
+        var topology = TopologyChart.Create().WithViewport(360, 240).WithTheme(VisualTheme.Graphite().WithFontFamily(Family));
         topology.Title = "HH";
         topology.Nodes.Add(new TopologyNode { Id = "node", Label = "H", X = 30, Y = 60, Width = 160, Height = 60 });
         var ordinary = topology.Prepare().ToSvg(); var calls = 0; string? callbackSvg = null;

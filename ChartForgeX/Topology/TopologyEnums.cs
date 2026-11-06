@@ -27,7 +27,9 @@ public enum TopologyLayoutMode {
     /// <summary>Place a centered root with balanced left and right hierarchy branches for mind-map style diagrams.</summary>
     MindMap = 9,
     /// <summary>Align responsibility lanes across shared process ranks.</summary>
-    Swimlane = 10
+    Swimlane = 10,
+    /// <summary>Arrange circular status nodes in wrapping regions with a stacked narrow presentation.</summary>
+    Regions = 11
 }
 
 /// <summary>
@@ -153,6 +155,16 @@ public enum TopologyHtmlControlPlacement {
     BottomLeft,
     /// <summary>Place controls in the lower-right corner.</summary>
     BottomRight
+}
+
+/// <summary>
+/// Defines the view an interactive HTML topology with viewport controls opens at.
+/// </summary>
+public enum TopologyHtmlOpeningView {
+    /// <summary>Open magnified when node captions would render below 10 px at the page width; Fit gives the overview.</summary>
+    Readable,
+    /// <summary>Open with the whole drawing fitted to the viewport; zoom controls give a closer view.</summary>
+    Fit
 }
 
 /// <summary>

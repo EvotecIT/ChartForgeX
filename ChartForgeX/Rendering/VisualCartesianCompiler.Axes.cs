@@ -107,7 +107,7 @@ internal static partial class VisualCartesianCompiler {
         ChartRange range, ChartRange? secondaryRange, VisualThemeColors colors, AxisLabelCache labels) {
         if (!chart.Options.ShowAxes) return viewport;
         var style = chart.Options.TickLabelStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisSize, Color = colors.MutedForeground });
-        var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.Foreground });
+        var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.FontWithWeight(context.Theme.Typography.AxisTitleWeight), FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.MutedForeground });
         var spacing = context.Theme.Spacing;
         var yMetrics = chart.Options.YAxis.Visible ? TickMetrics(builder, chart.Options.YAxis, range.MinY, range.MaxY, style, chart.Options.ValueFormatter, labels) : default;
         var xMetrics = chart.Options.XAxis.Visible ? TickMetrics(builder, chart.Options.XAxis, range.MinX, range.MaxX, style, null, labels) : default;
@@ -198,7 +198,7 @@ internal static partial class VisualCartesianCompiler {
             var tickHeight = xTickHeight ?? TickMetrics(builder, chart.Options.XAxis, range.MinX, range.MaxX, style, null, labels).Height;
             var title = XAxisTitle(chart);
             var titleHeight = string.IsNullOrEmpty(title) ? 0 : builder.MeasureText(title,
-                chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.Foreground })).Height + spacing;
+                chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.FontWithWeight(context.Theme.Typography.AxisTitleWeight), FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.MutedForeground })).Height + spacing;
             // Outside bar labels and stack totals own the strip between the mapper
             // and labelBounds. Category captions start after that strip, including
             // negative or reversed totals that sit below the plotted marks.
@@ -269,8 +269,7 @@ internal static partial class VisualCartesianCompiler {
                 shortenedCategories |= shortened;
                 return displayed;
             }
-            return string.Join("\n", ChartLabelWrapping.BalancedTwoLine(text, style.EffectiveFontSize, bounds.Width,
-                (value, _) => builder.MeasureText(value, style).Width));
+            return VisualAxisText.WrapAuthoredValue(builder, text, style, bounds.Width);
         }
         var visible = labels.PlannedCategoryTicks(axis) is { } planned ? new HashSet<double>(planned)
             : SelectAxisLabelStride(builder, axis, ticks, coordinate, horizontal, style, gap, fallback, labels, Display);
@@ -329,7 +328,7 @@ internal static partial class VisualCartesianCompiler {
 
     private static void DrawAxisTitle(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, string text, ChartRect bounds,
         VisualThemeColors colors, TextAlignment alignment, string role, List<LabelObstacle>? obstacles = null) {
-        var style = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.Font, FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.Foreground, Alignment = alignment });
+        var style = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.FontWithWeight(context.Theme.Typography.AxisTitleWeight), FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.MutedForeground, Alignment = alignment });
         style.Alignment = alignment;
         style = VisualAxisText.FitOversized(builder, style, bounds, new[] { text });
         VisualAxisText.Title(builder, text, bounds, style, role, null,

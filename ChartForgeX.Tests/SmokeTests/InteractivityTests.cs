@@ -170,13 +170,14 @@ internal static partial class SmokeTests {
         Assert(html.Contains("data-cfx-scenario-playback-delay=\"1100\"", StringComparison.Ordinal) && html.Contains("data-cfx-scenario-loop=\"true\"", StringComparison.Ordinal) && html.Contains("&quot;durationMilliseconds&quot;:1400", StringComparison.Ordinal), "Interactive scenario timelines should serialize scenario and per-step pacing deterministically.");
         Assert(html.Contains("class=\"cfx-reveal-layer\"", StringComparison.Ordinal) && html.Contains("data-cfx-reveal-layer=\"true\"", StringComparison.Ordinal), "Interactive HTML should include an opt-in reveal label layer.");
         Assert(html.Contains("class=\"cfx-brush-box\"", StringComparison.Ordinal), "Interactive HTML should include a brush selection overlay.");
-        Assert(html.Contains("<button class=\"cfx-reset\" type=\"button\" data-cfx-reset=\"true\" hidden>Reset view</button>", StringComparison.Ordinal), "Interactive HTML should include a contextual reset control that starts hidden by default.");
+        Assert(html.Contains("aria-label=\"Reset view\" title=\"Reset view\" data-cfx-reset=\"true\" hidden=\"hidden\"", StringComparison.Ordinal) && !html.Contains("class=\"cfx-reset\"", StringComparison.Ordinal), "Interactive HTML with a toolbar should lead it with a contextual Reset view control that starts hidden, with no reserved reset row.");
+        Assert(SampleChart().ToInteractiveHtmlPage().Contains("<button class=\"cfx-reset\" type=\"button\" data-cfx-reset=\"true\" hidden>Reset view</button>", StringComparison.Ordinal), "Interactive HTML without a toolbar should keep the contextual reset control below the plot, hidden by default.");
         Assert(!SampleChart().ToInteractiveHtmlPage().Contains("class=\"cfx-toolbar\"", StringComparison.Ordinal), "Report-review charts without zoom, pan, brush, or export should not render permanent toolbar chrome.");
         Assert(html.Contains("<svg", StringComparison.Ordinal), "Interactive HTML should embed the static SVG output.");
         Assert(html.Contains("aria-live=\"polite\"", StringComparison.Ordinal), "Interactive tooltips should expose polite assistive announcements.");
         Assert(!html.Contains("<link", StringComparison.OrdinalIgnoreCase), "Interactive HTML should not reference external stylesheets.");
         Assert(!html.Contains("@import", StringComparison.OrdinalIgnoreCase), "Interactive HTML should not import external stylesheets.");
-        var withoutSvgNamespace = html.Replace("http://www.w3.org/2000/svg", string.Empty);
+        var withoutSvgNamespace = ResourceMarkup(html);
         Assert(!withoutSvgNamespace.Contains("http://", StringComparison.OrdinalIgnoreCase) && !withoutSvgNamespace.Contains("https://", StringComparison.OrdinalIgnoreCase), "Interactive HTML should remain self-contained.");
 
         var fragment = SampleChart().ToInteractiveHtmlFragment(options => {
@@ -315,7 +316,9 @@ internal static partial class SmokeTests {
         Assert(html.Contains("data-cfx-export=\"svg\"", StringComparison.Ordinal) && html.Contains("data-cfx-export=\"png\"", StringComparison.Ordinal), "Interactive dashboards should include enabled per-chart export controls.");
         Assert(!html.Contains("<link", StringComparison.OrdinalIgnoreCase), "Interactive dashboards should not reference external stylesheets.");
         Assert(!html.Contains("@import", StringComparison.OrdinalIgnoreCase), "Interactive dashboards should not import external stylesheets.");
-        var withoutSvgNamespace = html.Replace("http://www.w3.org/2000/svg", string.Empty);
+        // Bundled font faces carry their OFL notice as a CSS comment; its licence URLs are text, not fetches.
+        var withoutSvgNamespace = System.Text.RegularExpressions.Regex.Replace(html, @"/\*.*?\*/", string.Empty, System.Text.RegularExpressions.RegexOptions.Singleline)
+            .Replace("http://www.w3.org/2000/svg", string.Empty);
         Assert(!withoutSvgNamespace.Contains("http://", StringComparison.OrdinalIgnoreCase) && !withoutSvgNamespace.Contains("https://", StringComparison.OrdinalIgnoreCase), "Interactive dashboards should remain self-contained.");
         AssertThrows<ArgumentException>(() => new HtmlInteractiveDashboardRenderer().RenderPage(Array.Empty<ChartForgeX.Core.Chart>()), "Interactive dashboards should reject empty chart sets.");
     }

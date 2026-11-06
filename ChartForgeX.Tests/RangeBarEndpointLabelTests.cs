@@ -214,7 +214,7 @@ public sealed class RangeBarEndpointLabelTests {
         Assert.Equal(2, captions.Length);
         Assert.All(captions, caption => {
             Assert.EndsWith("…", Assert.Single(caption.Text.Lines).Text);
-            Assert.Equal(12, caption.Text.Size);
+            Assert.Equal(11, caption.Text.Size);
         });
         var point = Assert.Single(Points(prepared));
         Assert.Equal(start, point.Metadata["data-cfx-start-label"]); Assert.Equal(end, point.Metadata["data-cfx-end-label"]);

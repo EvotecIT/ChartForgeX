@@ -115,12 +115,12 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         await InsertAsync(page, Section(HtmlChartToolbarLayout.Band));
         await BindControllerAsync(page);
         await page.Locator(Root).EvaluateAsync("root=>root.style.width='360px'");
-        await page.WaitForFunctionAsync("()=>getComputedStyle(document.querySelector('.cfx-toolbar .cfx-tool')).minHeight==='36px'");
-        var band = await page.Locator(".cfx-toolbar .cfx-tool").First.EvaluateAsync<JsonElement>("button=>({height:button.getBoundingClientRect().height,grow:getComputedStyle(button).flexGrow})");
+        await page.WaitForFunctionAsync("()=>getComputedStyle(document.querySelector('.cfx-toolbar .cfx-tool:not([hidden])')).minHeight==='36px'");
+        var band = await page.Locator(".cfx-toolbar .cfx-tool:not([hidden])").First.EvaluateAsync<JsonElement>("button=>({height:button.getBoundingClientRect().height,grow:getComputedStyle(button).flexGrow})");
         Assert.Equal("1", band.GetProperty("grow").GetString());
         await UpdateAsync(page, Section(HtmlChartToolbarLayout.Compact));
         await page.Locator(Root).HoverAsync();
-        var compact = await page.Locator(".cfx-toolbar .cfx-tool").First.EvaluateAsync<JsonElement>("button=>({height:button.getBoundingClientRect().height,grow:getComputedStyle(button).flexGrow})");
+        var compact = await page.Locator(".cfx-toolbar .cfx-tool:not([hidden])").First.EvaluateAsync<JsonElement>("button=>({height:button.getBoundingClientRect().height,grow:getComputedStyle(button).flexGrow})");
         Assert.Equal("0", compact.GetProperty("grow").GetString());
         Assert.Equal(28, compact.GetProperty("height").GetDouble());
         Assert.True(compact.GetProperty("height").GetDouble() < band.GetProperty("height").GetDouble());

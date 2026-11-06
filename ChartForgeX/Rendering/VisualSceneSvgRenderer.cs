@@ -47,6 +47,7 @@ internal static partial class VisualSceneSvgRenderer {
         if (regionLabels != null) foreach (var region in scene.Regions) regionLabels[region.Id] = region.Label;
         var prefix = idPrefix == null ? Identity(scene, title, description, language, decorative, options) : ValidatePrefix(idPrefix);
         resolvedPrefix = prefix;
+        var images = new VisualSvgImageResources(prefix);
         fonts = options?.TextPresentation == VisualSvgTextPresentation.Automatic ? new VisualSvgFontResources(scene, textImages?.Lines) : null;
         string? resourceOwner = null;
         var resourceOwners = maximumCharacters.HasValue ? new Stack<string?>() : null;
@@ -57,7 +58,7 @@ internal static partial class VisualSceneSvgRenderer {
         if (fluid != null) WriteFluidRootAttributes(writer, scene);
         else writer.Attribute("width", scene.Size.Width).Attribute("height", scene.Size.Height)
             .Attribute("viewBox", "0 0 " + N(scene.Size.Width) + " " + N(scene.Size.Height));
-        writer.Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round")
+        writer.Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round").Attribute("font-variant-numeric", "tabular-nums")
             .Attribute("lang", language).Attribute("xml:lang", language);
         if (fluid == null && options?.Responsive == true) writer.Attribute("style", "max-width:100%;height:auto;display:block");
         if (decorative) writer.Attribute("aria-hidden", true).Attribute("focusable", false);
@@ -68,6 +69,9 @@ internal static partial class VisualSceneSvgRenderer {
         }
         var enhancePlan = WriteEnhanceRootAttributes(writer, scene, options, prefix);
         writer.EndStartElement();
+        if (options?.IncludeProductFonts != false && options?.HasPageFonts != true
+            && options?.TextPresentation is not (VisualSvgTextPresentation.Automatic or VisualSvgTextPresentation.NativeContours))
+            WriteProductFonts(writer, scene);
         if (!decorative && !string.IsNullOrEmpty(title)) writer.StartElement("title").Attribute("id", prefix + "-title").Text(title!).EndElement();
         if (!decorative && !string.IsNullOrEmpty(description)) writer.StartElement("desc").Attribute("id", prefix + "-description").Text(description!).EndElement();
         WriteEnhanceData(writer, scene, options);
@@ -137,7 +141,7 @@ internal static partial class VisualSceneSvgRenderer {
                 if (options?.PatternTiles == true && WritePatternTile(writer, scene, group, prefix, ref i, paintOptions)) continue;
                 if (group.Tooltip != null) writer.StartElement("title").Text(group.Tooltip).EndElement();
                 if (group.ImageResource != null) {
-                    WriteImageResource(writer, group.ImageResource, prefix, i);
+                    WriteImageResource(writer, group.ImageResource, images, prefix, i);
                     SkipImageFallback(scene, ref i);
                     writer.EndElement();
                     if (resourceOwners != null) resourceOwner = resourceOwners.Pop();

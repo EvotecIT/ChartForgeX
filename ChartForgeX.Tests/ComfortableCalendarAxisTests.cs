@@ -114,7 +114,7 @@ public sealed class ComfortableCalendarAxisTests {
         var role = scenario.StartsWith("state-", StringComparison.Ordinal) ? "schedule-tick-label" : "axis-x-label";
         var prepared = Prepare(chart);
         var native = Labels(prepared, role);
-        await using var session = await BrowserProofFonts.OpenAsync(chart.ToHtmlFragment(),
+        await using var session = await BrowserProofFonts.OpenAsync(BrowserProofFonts.CarlitoStyle + chart.ToHtmlFragment(),
             (int)chart.Options.Size.Width, (int)chart.Options.Size.Height);
         var selector = "[data-cfx-role='" + role + "']";
         Assert.Equal(native.Select(node => node.Text.Lines.Single().Text), await session.Page.Locator(selector).AllTextContentsAsync());
@@ -173,8 +173,8 @@ public sealed class ComfortableCalendarAxisTests {
     }
 
     private static Chart Base(int width) => Chart.Create().WithSize(width, 320).WithHeader(false).WithLegend(false).WithXAxisTimeScale()
-        .WithFontFamily(BrowserProofFonts.Family)
-        .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"))
+        .WithFontFamily(BrowserProofFonts.CarlitoFamily)
+        .WithPngFont(BrowserProofFonts.CarlitoPath)
         .ConfigureGridStyle(style => style.ShowVerticalLines = true);
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
     private static VisualSceneText[] Labels(PreparedVisual prepared, string role) => prepared.Scene.Nodes.OfType<VisualSceneText>()

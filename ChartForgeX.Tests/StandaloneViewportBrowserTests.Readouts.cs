@@ -20,8 +20,9 @@ public sealed partial class StandaloneViewportBrowserTests {
             }));
         var page = session.Page;
         await MountAsync(page);
-        Assert.Equal(reduced ? "none" : "cfx-series-enter", await page.Locator(".cfx-stage")
-            .EvaluateAsync<string>("node=>getComputedStyle(node).animationName"));
+        // The motion bundle replaces the stylesheet fade with per-series entry effects.
+        Assert.Equal("none", await page.Locator(".cfx-stage").EvaluateAsync<string>("node=>getComputedStyle(node).animationName"));
+        Assert.Equal(reduced ? null : "enter", await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-motion"));
         var moving = await page.EvaluateAsync<bool>("html=>{controller.update(html);return !!document.querySelector('[data-cfx-update-motion]');}",
             chart.ToInteractiveHtmlFragmentWithoutAssets());
         Assert.Equal(!reduced, moving);

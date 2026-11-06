@@ -21,7 +21,7 @@ public sealed class HtmlInteractiveDashboardOptions {
     public HtmlInteractiveDashboardOptions() {
         Interaction = ChartInteractionOptions.ReportReview();
         IncludeResetButton = true;
-        ResponsiveLayout = HtmlChartResponsiveLayout.Readable;
+        ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
     }
 
     /// <summary>
@@ -77,7 +77,8 @@ public sealed class HtmlInteractiveDashboardOptions {
     /// </summary>
     public bool IncludeResetButton { get; set; }
 
-    /// <summary>Gets or sets how every dashboard chart protects readability in narrow containers.</summary>
+    /// <summary>Gets or sets how every dashboard chart sizes itself in its column. The default fits each chart to its column;
+    /// set <see cref="HtmlChartResponsiveLayout.Readable"/> to keep the full design size inside a horizontal scroller.</summary>
     public HtmlChartResponsiveLayout ResponsiveLayout { get; set; }
 
     /// <summary>Gets the narrow drawing and container breakpoint shared by every adaptive dashboard chart.</summary>
@@ -96,6 +97,9 @@ public sealed class HtmlInteractiveDashboardOptions {
 
     /// <summary>Gets the transient mark and branch emphasis options shared by every dashboard chart.</summary>
     public HtmlChartHighlightOptions Highlight { get; } = new HtmlChartHighlightOptions();
+
+    /// <summary>Gets load and transition motion applied to every child chart. Motion honours reduced-motion preferences.</summary>
+    public HtmlChartMotionOptions Motion { get; } = new HtmlChartMotionOptions();
 
     /// <summary>Gets control translations, language and direction shared by the dashboard charts.</summary>
     public HtmlChartLocalization Localization { get; } = new HtmlChartLocalization();

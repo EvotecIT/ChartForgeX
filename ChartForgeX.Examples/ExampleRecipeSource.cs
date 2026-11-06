@@ -3,18 +3,18 @@ using System.Text.Json;
 
 /// <summary>Packages one compiled native recipe as a standalone ordinary-package C# program.</summary>
 public static partial class ExampleRecipeSource {
+    private const string ProductFontSetup = "// Native PNG and standalone SVG use bundled Archivo.\n"
+        + "// Add ChartFontAssets.StyleSheet once for other text on a host page.\n";
+
     /// <summary>Creates a standalone program with the selected viewport, frame, palette mode and optional gallery typography.</summary>
     public static string Emit(ExampleRecipe recipe, string variant, string title, string subtitle, VisualThemeMode mode,
         int width, int height, bool? legend = null, string artifactKind = "Chart", bool surface = false,
         bool viewport = false, bool galleryTypography = false) {
         if (recipe == null) throw new ArgumentNullException(nameof(recipe));
         var tokens = new Dictionary<string, string>(StringComparer.Ordinal) {
-            ["{{FONT_SETUP}}"] = galleryTypography
-                ? "// Optional exact gallery typography; copy the gallery's fonts directory beside this program.\n" +
-                    "FontRegistry.Register(\"CFX Proof Carlito\", \"fonts/Carlito-Regular.ttf\", 400);\n" +
-                    "FontRegistry.Register(\"CFX Proof Carlito\", \"fonts/Carlito-Bold.ttf\", 700);\n" : "",
-            ["{{FONT_THEME}}"] = galleryTypography ? ".WithFontFamily(\"CFX Proof Carlito\")" : "",
-            ["{{FONT}}"] = galleryTypography ? ", FontSpec.FromFamily(\"CFX Proof Carlito\")" : "",
+            ["{{FONT_SETUP}}"] = galleryTypography ? ProductFontSetup : "",
+            ["{{FONT_THEME}}"] = galleryTypography ? ".WithFontFamily(ChartFontStacks.ProductSans)" : "",
+            ["{{FONT}}"] = galleryTypography ? ", FontSpec.FromFamily(ChartFontStacks.ProductSans)" : "",
             ["{{MODE}}"] = mode.ToString(),
             ["{{FACTORY}}"] = recipe.Factory,
             ["{{VARIANT}}"] = JsonSerializer.Serialize(variant),
@@ -30,8 +30,8 @@ public static partial class ExampleRecipeSource {
             ["{{NATURAL}}"] = recipe.Create(variant, mode) is TopologyChart { DefaultRenderOptions.FitContentToViewport: false }
                 ? "if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {\n" +
                     "    var natural = topology.WithTitle(" + JsonSerializer.Serialize(title) + ").WithSubtitle(" + JsonSerializer.Serialize(subtitle) + ")" +
-                    ".WithTheme(theme" + (galleryTypography ? ".WithFontFamily(\"CFX Proof Carlito\")" : "") + ", mode).ToVisualArtifact();\n" +
-                    "    File.WriteAllText(\"visual.svg\", natural.ToSvg());\n" +
+                    ".WithTheme(theme" + (galleryTypography ? ".WithFontFamily(ChartFontStacks.ProductSans)" : "") + ", mode).ToVisualArtifact();\n" +
+                    "    natural.SaveSvg(\"visual.svg\");\n" +
                     "    File.WriteAllBytes(\"visual.png\", natural.ToPng());\n" +
                     "    File.WriteAllText(\"visual.html\", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));\n" +
                     "    return;\n}\n" : ""
@@ -57,9 +57,8 @@ public static partial class ExampleRecipeSource {
         _ = GitGraphDepthRecipe.Create(variant, mode);
         return Package(nameof(GitGraphDepthRecipe), "RecipeBlockProgram", new Dictionary<string, string>(StringComparer.Ordinal) {
             ["{{FACTORY}}"] = nameof(GitGraphDepthRecipe), ["{{VARIANT}}"] = JsonSerializer.Serialize(variant), ["{{MODE}}"] = mode.ToString(),
-            ["{{FONT_SETUP}}"] = galleryTypography
-                ? "// Optional exact gallery typography; copy the gallery's fonts directory beside this program.\nFontRegistry.Register(\"CFX Proof Carlito\", \"fonts/Carlito-Regular.ttf\", 400);\nFontRegistry.Register(\"CFX Proof Carlito\", \"fonts/Carlito-Bold.ttf\", 700);\n" : "",
-            ["{{FONT_THEME}}"] = galleryTypography ? ".WithFontFamily(\"CFX Proof Carlito\")" : ""
+            ["{{FONT_SETUP}}"] = galleryTypography ? ProductFontSetup : "",
+            ["{{FONT_THEME}}"] = galleryTypography ? ".WithFontFamily(ChartFontStacks.ProductSans)" : ""
         });
     }
 
@@ -68,9 +67,8 @@ public static partial class ExampleRecipeSource {
         if (variant != "wide" && variant != "compact") throw new ArgumentOutOfRangeException(nameof(variant));
         return Package(nameof(BlockLayoutDepthRecipe), "RecipeBlockProgram", new Dictionary<string, string>(StringComparer.Ordinal) {
             ["{{FACTORY}}"] = nameof(BlockLayoutDepthRecipe), ["{{VARIANT}}"] = JsonSerializer.Serialize(variant), ["{{MODE}}"] = mode.ToString(),
-            ["{{FONT_SETUP}}"] = galleryTypography
-                ? "// Optional exact gallery typography; copy the gallery's fonts directory beside this program.\nFontRegistry.Register(\"CFX Proof Carlito\", \"fonts/Carlito-Regular.ttf\", 400);\nFontRegistry.Register(\"CFX Proof Carlito\", \"fonts/Carlito-Bold.ttf\", 700);\n" : "",
-            ["{{FONT_THEME}}"] = galleryTypography ? ".WithFontFamily(\"CFX Proof Carlito\")" : ""
+            ["{{FONT_SETUP}}"] = galleryTypography ? ProductFontSetup : "",
+            ["{{FONT_THEME}}"] = galleryTypography ? ".WithFontFamily(ChartFontStacks.ProductSans)" : ""
         });
     }
 
@@ -89,9 +87,8 @@ public static partial class ExampleRecipeSource {
         _ = IshikawaDepthRecipe.Create(variant, mode);
         return Package(nameof(IshikawaDepthRecipe), "RecipeFishboneProgram", new Dictionary<string, string>(StringComparer.Ordinal) {
             ["{{VARIANT}}"] = JsonSerializer.Serialize(variant), ["{{MODE}}"] = mode.ToString(), ["{{WIDTH}}"] = variant == "compact" ? "390" : "1100",
-            ["{{FONT_SETUP}}"] = galleryTypography
-                ? "// Optional exact gallery typography; copy the gallery's fonts directory beside this program.\nFontRegistry.Register(\"CFX Proof Carlito\", \"fonts/Carlito-Regular.ttf\", 400);\nFontRegistry.Register(\"CFX Proof Carlito\", \"fonts/Carlito-Bold.ttf\", 700);\n" : "",
-            ["{{FONT_THEME}}"] = galleryTypography ? ".WithFontFamily(\"CFX Proof Carlito\")" : ""
+            ["{{FONT_SETUP}}"] = galleryTypography ? ProductFontSetup : "",
+            ["{{FONT_THEME}}"] = galleryTypography ? ".WithFontFamily(ChartFontStacks.ProductSans)" : ""
         });
     }
 
@@ -100,9 +97,8 @@ public static partial class ExampleRecipeSource {
         _ = WardleyDepthRecipe.Create(variant, mode);
         return Package(nameof(WardleyDepthRecipe), "RecipeBlockProgram", new Dictionary<string, string>(StringComparer.Ordinal) {
             ["{{FACTORY}}"] = nameof(WardleyDepthRecipe), ["{{VARIANT}}"] = JsonSerializer.Serialize(variant), ["{{MODE}}"] = mode.ToString(),
-            ["{{FONT_SETUP}}"] = galleryTypography
-                ? "// Optional exact gallery typography; copy its fonts directory beside this program.\nFontRegistry.Register(\"CFX Proof Carlito\", \"fonts/Carlito-Regular.ttf\", 400);\nFontRegistry.Register(\"CFX Proof Carlito\", \"fonts/Carlito-Bold.ttf\", 700);\n" : "",
-            ["{{FONT_THEME}}"] = galleryTypography ? ".WithFontFamily(\"CFX Proof Carlito\")" : ""
+            ["{{FONT_SETUP}}"] = galleryTypography ? ProductFontSetup : "",
+            ["{{FONT_THEME}}"] = galleryTypography ? ".WithFontFamily(ChartFontStacks.ProductSans)" : ""
         });
     }
 
@@ -114,6 +110,9 @@ public static partial class ExampleRecipeSource {
             ["{{MODE}}"] = mode.ToString(), ["{{NAME}}"] = JsonSerializer.Serialize("xy-source-depth")
         });
     }
+
+    /// <summary>Gets the compiled source file of a recipe's factory.</summary>
+    internal static string RecipeSource(ExampleRecipe recipe) => ReadResource("ChartForgeX.Examples.Recipes." + recipe.Factory + ".cs").Replace("\r\n", "\n");
 
     private static string SetupFirst(string program) => "#region Setup\n" + program.Replace("#region Setup\n", string.Empty);
 

@@ -169,6 +169,13 @@ public sealed partial class HtmlInteractiveChartRenderer {
         .Append(",\"threshold\":").Append(axis.Threshold.ToString("R", CultureInfo.InvariantCulture))
         .Append(",\"reversed\":").Append(axis.Reversed ? "true" : "false");
         if (!axis.MaximumInclusive) json.Append(",\"maximumInclusive\":false");
+        if (axis.IntegerTicks) json.Append(",\"integerTicks\":true");
+        if (axis.DefaultCaptions) json.Append(",\"captions\":\"compact\"");
+        // Saved pages repeat the automatic calendar fit only with the fitter's own caption gap.
+        if (axis.CalendarCaptions && axis.LabelGap is double gap) {
+            json.Append(",\"captions\":\"calendar\",\"labelGap\":").Append(gap.ToString("R", CultureInfo.InvariantCulture));
+            AppendTimeCaptionFacts(json, axis.TimeZone, axis.TimeCulture);
+        }
         AppendLogarithmicPolicy(json, axis.LogarithmBase, axis.LogarithmicDomain);
         AppendTimeSessions(json, axis.TimeSessions);
         AppendTimeSpacing(json, axis.TimeDomain);
@@ -191,6 +198,37 @@ public sealed partial class HtmlInteractiveChartRenderer {
             json.Append('}');
         }
         json.Append("]}");
+    }
+
+    // A zoned or culture-formatted calendar carries the facts its saved page needs to name the dates a native window would name.
+    private static void AppendTimeCaptionFacts(StringBuilder json, ChartTimeZoneFacts? zone, ChartTimeCultureFacts? culture) {
+        if (zone != null) {
+            json.Append(",\"timeZone\":[");
+            for (var index = 0; index < zone.Offsets.Count; index++) {
+                if (index > 0) json.Append(',');
+                json.Append('[').Append(zone.Offsets[index].FromMilliseconds.ToString(CultureInfo.InvariantCulture)).Append(',')
+                    .Append(zone.Offsets[index].OffsetMinutes.ToString("R", CultureInfo.InvariantCulture)).Append(']');
+            }
+            json.Append(']');
+        }
+        if (culture == null) return;
+        void Names(string name, System.Collections.Generic.IReadOnlyList<string> values) {
+            json.Append(',').Append(HtmlJsonString.Encode(name)).Append(":[");
+            for (var index = 0; index < values.Count; index++) json.Append(index > 0 ? "," : "").Append(HtmlJsonString.Encode(values[index]));
+            json.Append(']');
+        }
+        json.Append(",\"timeCulture\":{\"dayYear\":").Append(HtmlJsonString.Encode(culture.DayYearPattern))
+            .Append(",\"day\":").Append(HtmlJsonString.Encode(culture.DayPattern))
+            .Append(",\"time\":").Append(HtmlJsonString.Encode(culture.TimePattern))
+            .Append(",\"seconds\":").Append(HtmlJsonString.Encode(culture.SecondsPattern))
+            .Append(",\"dateSeparator\":").Append(HtmlJsonString.Encode(culture.DateSeparator))
+            .Append(",\"timeSeparator\":").Append(HtmlJsonString.Encode(culture.TimeSeparator))
+            .Append(",\"am\":").Append(HtmlJsonString.Encode(culture.AMDesignator))
+            .Append(",\"pm\":").Append(HtmlJsonString.Encode(culture.PMDesignator));
+        Names("months", culture.AbbreviatedMonths); Names("genitiveMonths", culture.AbbreviatedGenitiveMonths);
+        Names("monthNames", culture.MonthNames); Names("genitiveMonthNames", culture.GenitiveMonthNames);
+        Names("days", culture.AbbreviatedDays); Names("dayNames", culture.Days);
+        json.Append('}');
     }
 
     private static void AppendLogarithmicPolicy(StringBuilder json, double logarithmBase, ChartLogarithmicDomain logarithmicDomain) {

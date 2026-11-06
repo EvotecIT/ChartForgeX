@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using ChartForgeX.Interactivity;
 
 namespace ChartForgeX.Interactivity.Html;
@@ -59,6 +60,16 @@ public sealed class HtmlChartInteractionOptions {
     /// <summary>Gets or sets whether right-click and the Context Menu key expose the chart's existing reset and export actions.</summary>
     /// <remarks>Disabled by default. Actions retain their feature flags, translations and ordinary toolbar behavior.</remarks>
     public bool IncludeContextMenu { get; set; }
+
+    /// <summary>Gets host-defined context-menu items, listed after the built-in actions. Any item enables the menu.</summary>
+    /// <remarks>Choosing an item dispatches <c>cfxcontextaction</c> from the chart section with the item's id,
+    /// the selection and the exported data rows. Identifiers must be unique.</remarks>
+    public IList<HtmlChartContextMenuItem> ContextMenuItems { get; } = new List<HtmlChartContextMenuItem>();
+
+    /// <summary>Gets load and transition motion options. Motion is on by default and honours reduced-motion preferences.</summary>
+    public HtmlChartMotionOptions Motion { get; } = new HtmlChartMotionOptions();
+
+    internal bool HasContextMenu => IncludeContextMenu || ContextMenuItems.Count > 0;
 
     /// <summary>
     /// Gets or sets shared asset references. When set, <see cref="HtmlInteractiveChartRenderer.RenderPage(ChartForgeX.Core.Chart, System.Action{HtmlChartInteractionOptions})"/>

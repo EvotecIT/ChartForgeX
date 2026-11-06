@@ -100,7 +100,7 @@ internal static class ChartHeatmapSurface {
     public static ChartColorBlend ColorBlend(Chart chart, ChartColor? highColor, double value, double min, double max) {
         var ratio = Ratio(chart, value, min, max);
         if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) return SemanticBlend(chart, ratio);
-        if (!highColor.HasValue && chart.Options.ResolvedTheme.SequentialRampValue is { } ramp) return ChartColorBlend.Solid(ramp[Math.Max(1, Math.Min(ramp.Length - 1, (int)Math.Ceiling(ratio * (ramp.Length - 1))))], SvgColorRole.Ramp);
+        if (!highColor.HasValue && chart.Options.ResolvedTheme.SequentialRampValue is { } ramp) return ChartColorBlend.Solid(ramp[Math.Max(1, Math.Min(ramp.Length - 1, (int)Math.Ceiling(ratio * (ramp.Length - 1))))], SvgColorRole.SequentialRamp);
         return new ChartColorBlend(chart.Options.ResolvedTheme.PlotBackground, SvgColorRole.Surface, highColor ?? chart.Options.ResolvedTheme.Palette[0], SvgColorRole.Series, 0.18 + ratio * 0.82);
     }
 
@@ -204,10 +204,10 @@ internal static class ChartHeatmapSurface {
 
     /// <summary>Returns <see cref="RampColor"/> as a blend of the two ramp steps around the ratio.</summary>
     public static ChartColorBlend RampBlend(IReadOnlyList<ChartColor> ramp, double ratio) {
-        if (ramp.Count == 1) return ChartColorBlend.Solid(ramp[0], SvgColorRole.Ramp);
+        if (ramp.Count == 1) return ChartColorBlend.Solid(ramp[0], SvgColorRole.SequentialRamp);
         var position = Clamp(ratio, 0, 1) * (ramp.Count - 1);
         var index = Math.Min(ramp.Count - 2, (int)Math.Floor(position));
-        return new ChartColorBlend(ramp[index], SvgColorRole.Ramp, ramp[index + 1], SvgColorRole.Ramp, position - index);
+        return new ChartColorBlend(ramp[index], SvgColorRole.SequentialRamp, ramp[index + 1], SvgColorRole.SequentialRamp, position - index);
     }
 
     public static double Ratio(double value, double min, double max) {

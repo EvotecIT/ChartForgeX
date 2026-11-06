@@ -22,7 +22,7 @@ public sealed class InteractiveTooltipValueBrowserTests {
     [InlineData("cartesian", true)]
     public async Task TooltipValueRowsRetainRawCartesianYAndValueOnlyFacts(string family, bool dark) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(600, 340).WithTheme(VisualTheme.Report(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        var chart = Chart.Create().WithSize(600, 340).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
         var nodes = new[] { new ChartNode("teams", "All teams"), new ChartNode("support", "Support") };
         var selector = ""; var expected = family is "zero" or "cell" ? "0" : family == "cartesian" ? "7" : "8";
         switch (family) {

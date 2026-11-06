@@ -1,0 +1,72 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = XZoomRecipe.Create("x-zoom", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Requests at 2\u00D7 X zoom", "Pan 17.3%; full-data Y scales; utilization on secondary Y", showLegend: true, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion
+
+
+public static class XZoomRecipe {
+    public static IVisualRenderable Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) =>
+        new View(Build(variant.Contains("step", StringComparison.Ordinal) ? ChartSeriesKind.StepLine : ChartSeriesKind.Line,
+            variant.StartsWith("compact", StringComparison.Ordinal)));
+
+    private sealed class View : IVisualRenderable {
+        private readonly Chart _chart;
+        internal View(Chart chart) { _chart = chart; }
+        public PreparedVisual Prepare(VisualRenderContext context) =>
+            _chart.PrepareXZoom(context, new ChartXZoomLevels(1, 2, 4)).At(1, .173);
+    }
+
+    /// <summary>Creates the complete numeric source model used by the prepared X zoom examples.</summary>
+    private static Chart Build(ChartSeriesKind kind, bool compact) {
+        if (kind is not (ChartSeriesKind.Line or ChartSeriesKind.StepLine)) throw new ArgumentOutOfRangeException(nameof(kind));
+        var steps = kind == ChartSeriesKind.StepLine;
+        var x = new[] { 0d, .86, 1, 2, 3, 4, 5, 5.87, 8, 10 };
+        ChartPoint[] Points(params double[] values) => values.Select((value, index) => new ChartPoint(x[index], value, x[index] == 4)).ToArray();
+        var chart = Chart.Create().WithXAxis("Sample").WithYAxis("Requests").WithXAxisBounds(0, 10).WithDataLabels()
+            .WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+        var observed = Points(88, 44, 34, 56, 46, 64, 42, 58, 50, 82);
+        if (steps) chart.AddStepLine("Observed", observed);
+        else chart.AddLine("Observed", observed);
+        if (!compact) {
+            var utilization = Points(96, 72, 48, 61, 55, 76, 49, 67, 84, 100);
+            if (steps) chart.AddStepLine("Utilization", utilization);
+            else chart.AddLine("Utilization", utilization);
+            chart.Series[1].UseSecondaryValueAxis();
+            chart.WithSecondaryYAxis("Utilization (%)");
+            chart.Options.SecondaryYAxis.TickCount = 4;
+        }
+        chart.Options.XAxis.WithReversal(steps);
+        chart.Options.XAxis.TickCount = 4; chart.Options.YAxis.TickCount = 4;
+        foreach (var series in chart.Series) {
+            series.ConfigureMarkers(markers => { markers.Enabled = true; markers.Radius = 3; });
+            if (steps) series.WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+        }
+        return chart.AddVerticalLine(2, "Deployment").AddHorizontalLine(60, "Target")
+            .AddPlotRegion(new(ChartColor.FromHex("#5487b8"), xMinimum: 2.5, xMaximum: 6.5,
+                label: "Observation period", showLabel: true, opacity: .12))
+            .AddPlotRegion(new(ChartColor.FromHex("#ac9148"), yMinimum: 65, yMaximum: 80,
+                label: "High load", showLabel: true, opacity: .10));
+    }
+}

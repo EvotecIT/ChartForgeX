@@ -1,0 +1,38 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var smoothPairs = ChartDifferencePoints.FromXY(new[] { 1d, 2, 3, 4, 5, 6, 7, 8 },
+    new double?[] { 42, 68, 48, null, 74, 46, 62, 55 }, new double?[] { 56, 54, 60, 60, 58, 64, 50, 68 });
+var smoothComparison = ChartSeries.CreateDifferenceArea(new ChartSeriesId("comparison"), "Actual and forecast", smoothPairs)
+    .WithBoundaryInterpolation(new(ChartInterpolation.Smooth), new(ChartInterpolation.Step, ChartStepPosition.Middle))
+    .WithObservationId(3, new ChartObservationId("resumed-comparison"))
+    .ConfigureDifferenceArea(options => { options.FirstName = "Actual"; options.SecondName = "Forecast"; })
+    .ConfigureMarkers(markers => markers.Radius = 3);
+var chart = Chart.Create().WithTitle("Smooth actual and held forecast").WithXAxis("Observation").WithYAxis("Completed requests")
+    .AddSeries(smoothComparison);
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame("Actual and forecast requests", "Shading compares Actual above and below Forecast", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion

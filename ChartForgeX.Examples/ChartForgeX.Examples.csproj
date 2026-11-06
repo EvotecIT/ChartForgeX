@@ -20,10 +20,13 @@
   <ItemGroup>
     <!-- The linked-views example pairs enhanced charts with a real CanopyX grid; CanopyX stays out of every ChartForgeX package. -->
     <PackageReference Include="CanopyX.Html" Version="0.3.3" PrivateAssets="all" />
+    <!-- Reads the compiled recipes to write the per-variant snippets the website shows. -->
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" PrivateAssets="all" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Fixtures\Fonts\Carlito\*" CopyToOutputDirectory="PreserveNewest" />
     <EmbeddedResource Include="ExampleRecipeImports.cs" LogicalName="ChartForgeX.Examples.ExampleRecipeImports.cs" WithCulture="false" />
+    <None Update="Fixtures\Fonts\IBMPlexSans\*" CopyToOutputDirectory="PreserveNewest" />
     <EmbeddedResource Include="Recipes\*Recipe.cs" LogicalName="ChartForgeX.Examples.Recipes.%(Filename)%(Extension)" WithCulture="false" />
     <EmbeddedResource Include="Assets\Embedding\*" LogicalName="ChartForgeX.Examples.Embedding.%(Filename)%(Extension)" WithCulture="false" />
     <EmbeddedResource Include="Assets\Enhance\*" LogicalName="ChartForgeX.Examples.Enhance.%(Filename)%(Extension)" WithCulture="false" />

@@ -27,8 +27,13 @@ internal sealed partial class TopologyAlignmentLayout {
         internal bool Visible;
     }
 
-    internal static void Apply(TopologyChart chart, TopologyRenderOptions? options) =>
-        new TopologyAlignmentLayout(chart, options ?? new TopologyRenderOptions()).Solve();
+    internal static void Apply(TopologyChart chart, TopologyRenderOptions? options) {
+        options ??= new TopologyRenderOptions();
+        new TopologyAlignmentLayout(chart, options).Solve();
+        // The first pass sizes shells from the preparation's estimate and then tightens them to their
+        // children. Solving again from those tight sizes closes the gaps the larger estimates reserved.
+        if (chart.Groups.Count > 0) RepackTightened(chart, options);
+    }
 
     private TopologyAlignmentLayout(TopologyChart chart, TopologyRenderOptions options) {
         this.chart = chart; this.options = options;
@@ -63,7 +68,7 @@ internal sealed partial class TopologyAlignmentLayout {
         foreach (var alignment in chart.Alignments) {
             for (var i = 1; i < alignment.NodeIds.Count; i++) {
                 budget.Work(); var a = nodes[alignment.NodeIds[i - 1]]; var b = nodes[alignment.NodeIds[i]];
-                Separate(a, b, alignment.Kind == TopologyAlignmentKind.Row ? 0 : 2, alignment.Id);
+                Separate(a, b, alignment.Kind == TopologyAlignmentKind.Row ? 0 : 2, alignment.Id, ConnectorRoom(a, b, alignment.Kind));
             }
         }
         var sets = new Dictionary<string, List<Item>>(StringComparer.Ordinal);
@@ -124,11 +129,49 @@ internal sealed partial class TopologyAlignmentLayout {
         }
     }
 
-    private void Separate(Item first, Item second, int direction, string? declarationId = null) {
-        if (direction == 1 || direction == 3) { var swap = first; first = second; second = swap; }
+    private void Separate(Item first, Item second, int direction, string? declarationId = null, double? connectorRoom = null) {
         var horizontal = direction < 2;
+        // Overlap separations keep the same room as declared neighbours, so a labelled edge between
+        // the two items, or into a region boundary, still has its caption on its own segment.
+        connectorRoom ??= ConnectorRoom(first, second, horizontal ? TopologyAlignmentKind.Row : TopologyAlignmentKind.Column);
+        if (direction == 1 || direction == 3) { var swap = first; first = second; second = swap; }
         (horizontal ? x : y).Add(first.High, second.Low,
-            (horizontal ? first.Right - second.Left : first.Bottom - second.Top) + TopologyLayoutNormalizer.NodeGap, declarationId);
+            (horizontal ? first.Right - second.Left : first.Bottom - second.Top) + Math.Max(TopologyLayoutNormalizer.NodeGap, connectorRoom.Value), declarationId);
+    }
+
+    // Neighbours joined by an edge keep enough room for a visible connector and arrowhead, and a labelled edge
+    // keeps its label's extent, so the caption sits on its own segment instead of being displaced from a route
+    // shorter than the text.
+    private const double MinimumConnectorRoom = 40;
+
+    private double ConnectorRoom(Item a, Item b, TopologyAlignmentKind kind) {
+        var room = 0d; var scale = options.ResolvedEdgeLabelScale;
+        foreach (var edge in chart.Edges) {
+            budget.Work();
+            var joins = Holds(a, edge.SourceNodeId) && Holds(b, edge.TargetNodeId) || Holds(b, edge.SourceNodeId) && Holds(a, edge.TargetNodeId);
+            if (!joins) continue;
+            room = Math.Max(room, MinimumConnectorRoom);
+            if (!options.IncludeEdgeLabels || string.IsNullOrWhiteSpace(edge.Label) && string.IsNullOrWhiteSpace(edge.SecondaryLabel) && string.IsNullOrWhiteSpace(edge.TertiaryLabel)) continue;
+            var lines = (string.IsNullOrWhiteSpace(edge.Label) ? 0 : 1) + (string.IsNullOrWhiteSpace(edge.SecondaryLabel) ? 0 : 1) + (string.IsNullOrWhiteSpace(edge.TertiaryLabel) ? 0 : 1);
+            var extent = kind == TopologyAlignmentKind.Row
+                ? EdgeLabelTextWidth(edge.Label, edge.SecondaryLabel, edge.TertiaryLabel, chart.TextMeasurement, scale) + 24
+                : (lines <= 1 ? 22 : lines == 2 ? 38 : 52) * scale + 24;
+            room = Math.Max(room, extent);
+        }
+        return room;
+    }
+
+    // An item holds an endpoint that is itself or, for a region, any node or region nested inside it.
+    private bool Holds(Item item, string endpoint) {
+        if (item.Node != null) return item.Node.Id == endpoint;
+        var id = item.Group!.Id;
+        var parent = nodes.TryGetValue(endpoint, out var node) ? node.Parent : endpoint;
+        for (var depth = 0; parent != null && depth <= groups.Count; depth++) {
+            budget.Work();
+            if (parent == id) return true;
+            parent = groups.TryGetValue(parent, out var group) ? group.Parent : null;
+        }
+        return false;
     }
 
     private static TopologyValidationException Conflict(string id) {

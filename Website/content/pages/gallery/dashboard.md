@@ -1,6 +1,6 @@
 ---
 title: Dashboard examples in C#
-description: Dashboard examples rendered by ChartForgeX: static SVG images, variants in light and dark themes, the C# source and the options to configure it.
+description: Dashboard examples rendered by ChartForgeX: a live chart, variants in light and dark themes, the C# source and the options to configure it.
 layout: gallery-family
 ---
 

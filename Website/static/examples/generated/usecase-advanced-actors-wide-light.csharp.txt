@@ -18,13 +18,13 @@ var theme = VisualTheme.Graphite();
 var model = UseCaseAdvancedActorsRecipe.Create("wide", mode);
 if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
     var natural = topology.WithTitle("Finite native actor forms").WithSubtitle("Hollow, business, silhouette and retained native icon participants share measured captions and routes").WithTheme(theme, mode).ToVisualArtifact();
-    File.WriteAllText("visual.svg", natural.ToSvg());
+    natural.SaveSvg("visual.svg");
     File.WriteAllBytes("visual.png", natural.ToPng());
     File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
     return;
 }
 var context = new VisualRenderContext(
-    new VisualLayoutOptions(new VisualSize(1382, 376)), theme, mode,
+    new VisualLayoutOptions(new VisualSize(1391, 377)), theme, mode,
     new VisualFrame("Finite native actor forms", "Hollow, business, silhouette and retained native icon participants share measured captions and routes", showLegend: null, showSurface: false));
 var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());

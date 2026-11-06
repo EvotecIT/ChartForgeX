@@ -8,8 +8,8 @@ internal static class PolarExamples {
         .WithSubtitle("True radian angles preserve irregular observation directions")
         .WithXAxis("Direction")
         .WithYAxis("Signal strength")
-        .WithTheme(VisualTheme.Report(), VisualThemeMode.Dark)
-        .WithSize(920, 560)
+        .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)
+        .WithSize(800, 487)
         .ConfigureXAxis(axis => axis.LabelFormatter = angle => (angle * 180 / System.Math.PI).ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "°")
         .AddPolar("Observed", new[] {
             new ChartPoint(0, 84),
@@ -32,8 +32,8 @@ internal static class PolarExamples {
         var chart = Chart.Create()
             .WithTitle("Zero-Value Polar Area")
             .WithSubtitle("Zero segments keep point indexes stable while positive segments remain styled")
-            .WithTheme(VisualTheme.Report())
-            .WithSize(820, 460)
+            .WithTheme(VisualTheme.Graphite())
+            .WithSize(800, 449)
             .WithXLabels("No findings", "Reviewed", "Escalated")
             .AddPolarArea("Review mix", new[] { new ChartPoint(1, 0), new ChartPoint(2, 82), new ChartPoint(3, 18) });
         chart.Series[0].WithPointColor(1, ChartColor.FromRgb(15, 118, 110));

@@ -88,6 +88,7 @@ public static partial class V2Examples {
                         : kind == ChartSeriesKind.Heatmap ? "Signed measurements share a fixed color domain"
                         : kind == ChartSeriesKind.HexbinHeatmap ? "Named numeric intervals keep their exact boundaries" : "Every observed value shares one scale; missing days stay distinct"
                     : variant is "options" or "compact-options" && ExampleRecipes.HasGeometryOptions(kind) ? GeometrySubtitle(kind)
+                    : variant is "wide" or "compact" && DataSubtitle(kind) is { } data ? data
                     : variant == "sparse" ? "Missing observations remain visible as gaps" : string.Empty;
                 // Product scenarios describe their own data; the title already names what the chart shows.
                 if (Scenario(kind, variant) is { } scenario) { title = scenario.Title; subtitle = scenario.Subtitle; }
@@ -140,6 +141,16 @@ public static partial class V2Examples {
         _ => null
     };
 
+    // The default examples describe their data: what was measured, when and how to read the encoding.
+    private static string? DataSubtitle(ChartSeriesKind kind) => kind switch {
+        ChartSeriesKind.Bubble => "Bubble area shows requests handled in one week, by service tier",
+        ChartSeriesKind.ErrorBar => "Median hours with the 10th–90th percentile range; same day is domestic only",
+        ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc => "October 2026 trading sessions with a five-session average close",
+        ChartSeriesKind.TrendLine => "Weekly service desk requests, August to October 2026",
+        ChartSeriesKind.Timeline => "Seven overlapping activities from kick-off to rollout",
+        ChartSeriesKind.Bullet => "Cases reviewed within two working days in October; bands mark poor and acceptable",
+        _ => null
+    };
     private static string GeometrySubtitle(ChartSeriesKind kind) => kind switch {
         ChartSeriesKind.Line => "Step transitions and three configured marker shapes",
         ChartSeriesKind.Bar or ChartSeriesKind.HorizontalBar => "Two independent stacks; each reaches 100%; source values remain counts",
@@ -156,6 +167,7 @@ public static partial class V2Examples {
         ChartSeriesKind.Radar => "A filled area and an unfilled target line share one radial scale",
         ChartSeriesKind.Pyramid => "Reversed horizontal pyramid; areas encode values including zero",
         ChartSeriesKind.RadialBar or ChartSeriesKind.RadialColumn => "Named stacks reach 100; labels retain source counts",
+        ChartSeriesKind.BoxPlot => "Expected and observed delivery times side by side; observed Premium is hatched",
         _ => "Configured chart geometry"
     };
 
@@ -166,15 +178,17 @@ public static partial class V2Examples {
             // Keep the complete natural canvas; compact hosts scroll instead of shrinking authored actors.
             var natural = topology.WithTitle(title).WithSubtitle(subtitle)
                 .WithTheme(context.Theme.WithFontFamily(ProofFont), mode).ToVisualArtifact();
-            ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), ExampleTypography.EmbedInSvg(natural.ToSvg()));
+            ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".svg"), natural.ToSvg(new VisualArtifactRenderOptions { EmbedProductFonts = true }));
             File.WriteAllBytes(Path.Combine(output, id + ".png"), natural.ToPng());
             WriteThumbnail(output, model, id, title, family, mode, legend);
             width = (int)Math.Ceiling(natural.NaturalSize!.Value.Width);
             height = (int)Math.Ceiling(natural.NaturalSize.Value.Height);
             WriteRecipe(output, id, recipe, variant, title, subtitle, mode, width, height, legend, "Topology");
+            var live = !compact && variant == "expanded";
+            if (live) WriteInteractiveTopology(output, topology, id, title, subtitle, mode);
             artifacts.Add(new ProofArtifact(id, family, title, variant, mode.ToString().ToLowerInvariant(), width, height,
                 new[] { "example.native-natural-size" }, natural.Regions.Count, kinds,
-                new[] { "Complete authored geometry retains natural size; compact hosts may scroll." }, compact));
+                new[] { "Complete authored geometry retains natural size; compact hosts may scroll." }, compact, live));
             return;
         }
         var prepared = model.Prepare(context);
@@ -185,9 +199,13 @@ public static partial class V2Examples {
         var artifactKind = model is TopologyChart ? "Topology" : family is "flow" or "sequence" ? char.ToUpperInvariant(family[0]) + family.Substring(1) : "Chart";
         WriteRecipe(output, id, recipe, variant, title, subtitle, mode, width, height, legend, artifactKind);
         var interactive = !compact && (model is Chart && (id.Contains("-wide-") || IsScenarioVariant(variant))
-            || model is TopologyChart && family == "org-chart");
+            || model is ChartGrid && id.Contains("-wide-")
+            || model is TopologyChart && (family == "org-chart" || variant == "expanded")
+            || model is FlowArtifact or SequenceArtifact && variant == "expanded");
         if (interactive && model is Chart chart) WriteInteractive(output, chart, id, title, subtitle, mode, width, height, legend);
-        else if (interactive) WriteInteractiveTopology(output, (TopologyChart)model, id, title, subtitle, mode);
+        else if (interactive && model is ChartGrid grid) WriteInteractiveGrid(output, grid, id, title, mode, width);
+        else if (interactive && model is TopologyChart topologyModel) WriteInteractiveTopology(output, topologyModel, id, title, subtitle, mode);
+        else if (interactive) WriteInteractiveDiagram(output, model, id, context);
         artifacts.Add(new ProofArtifact(id, family, title, variant, mode.ToString().ToLowerInvariant(), width, height,
             prepared.Diagnostics.Select(diagnostic => diagnostic.Code).ToArray(), prepared.Regions.Count, kinds,
             prepared.Diagnostics.Select(diagnostic => diagnostic.Message).ToArray(), compact, interactive));

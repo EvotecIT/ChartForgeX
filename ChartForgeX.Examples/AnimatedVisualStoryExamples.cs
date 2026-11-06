@@ -7,12 +7,12 @@ using ChartForgeX.VisualBlocks;
 
 internal static class AnimatedVisualStoryExamples {
     public static void Write(string output, ChartPngOutputScale pngOutputScale) {
-        var theme = VisualTheme.Report();
+        var theme = VisualTheme.Graphite();
         var activity = Chart.Create()
             .WithTitle("Release activity")
             .WithSubtitle("A native chart can participate in the same story")
             .WithTheme(theme, VisualThemeMode.Dark)
-            .WithSize(780, 330)
+            .WithSize(800, 338)
             .WithAxes(false)
             .WithGrid(false)
             .WithLegend(false)
@@ -23,7 +23,7 @@ internal static class AnimatedVisualStoryExamples {
             .WithTitle("Active portfolio")
             .WithSubtitle("Exact values remain readable when motion is unavailable")
             .WithTheme(theme, VisualThemeMode.Dark)
-            .WithSize(780, 330)
+            .WithSize(800, 338)
             .WithDenseMode()
             .WithColumns("Project", "Purpose", "Signal")
             .AddRow("Identity Core", "Authentication and policy", "Healthy")
@@ -62,6 +62,6 @@ internal static class AnimatedVisualStoryExamples {
     private static MetricCard Metric(string label, string value, string caption) => MetricCard.Create()
         .WithMetric(label, value)
         .WithCaption(caption)
-        .WithTheme(VisualTheme.Report(), VisualThemeMode.Dark)
+        .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)
         .WithSize(250, 150);
 }

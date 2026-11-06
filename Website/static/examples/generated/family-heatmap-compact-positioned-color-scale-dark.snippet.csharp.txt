@@ -1,0 +1,46 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+using static HeatmapPositionedColorScaleRecipe;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var colors = VisualTheme.Graphite().Resolve(mode);
+var values = new double?[] { -30, -20, -3, 0, 2.5, 5, 10, 22.5, 40, 55, null, null };
+var chart = Chart.Create().WithXLabels("A", "B", "C", "D", "E", "F")
+    .AddHeatmapRow("Primary", values.Take(6), id: new ChartSeriesId("primary-measurements"))
+    .AddHeatmapRow("Secondary", values.Skip(6), id: new ChartSeriesId("secondary-measurements"))
+    .WithHeatmapColorScale(TemperatureScale().WithNoDataColor(colors.Border))
+    .WithHeatmapCellGap(3).WithHeatmapCellRadius(3)
+    .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Auto).WithDataLabels();
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame("Temperature across service areas", "Absolute color anchors use uneven numeric intervals", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion
+
+static class HeatmapPositionedColorScaleRecipe {
+    internal static ChartColorScale TemperatureScale() => ChartColorScale.Diverging(new[] {
+        new ChartColorStop(-20, ChartColor.FromHex("#2166AC")), new ChartColorStop(-3, ChartColor.FromHex("#67A9CF"))
+    }, new ChartColorStop(0, ChartColor.FromHex("#D1D5DB")), new[] {
+        new ChartColorStop(5, ChartColor.FromHex("#D9A441")), new ChartColorStop(40, ChartColor.FromHex("#B2182B"))
+    }).WithLabels("Cold", "Freezing", "Warm");
+}

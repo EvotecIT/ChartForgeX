@@ -99,7 +99,7 @@ public sealed class MermaidKanbanSourceGeometryTests {
         Assert.Equal(19, native.Viewport.Padding); Assert.All(native.Groups, group => Assert.Equal(0, group.Width)); Assert.Equal(180, native.Nodes[0].Width);
         Assert.All(native.Groups, group => Assert.DoesNotContain(group.Metadata.Keys, key => key.StartsWith("mermaid.config.kanban.", StringComparison.Ordinal)));
         var artifact = MermaidRenderer.Render(source, new MermaidRenderOptions { Kanban = family }).Artifact!;
-        Assert.Equal(native.ToSvg(), artifact.ToSvg()); Assert.Equal(native.ToPng(), artifact.ToPng());
+        Assert.Equal(native.ToSvg(), artifact.ToSvg(new VisualArtifactRenderOptions { EmbedProductFonts = true })); Assert.Equal(native.ToPng(), artifact.ToPng());
         Capture(native.Prepare(), "kanban-omitted-control-" + dark);
     }
 

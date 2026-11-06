@@ -12,7 +12,7 @@ public sealed partial class HtmlChartRenderer {
         var title = string.IsNullOrWhiteSpace(chart.Title) ? chart.Options.Labels.UntitledChart : chart.Title;
         var writer = new HtmlMarkupWriter();
         writer.StartElement("style").EndStartElement().RawTrusted(
-            ".chartforgex-data-tables{max-width:100%;overflow:auto}.chartforgex-data-tables table{border-collapse:collapse;margin:1em 0;font:inherit;color:inherit}" +
+            ".chartforgex-data-tables{max-width:100%;overflow:auto;font-variant-numeric:tabular-nums}.chartforgex-data-tables table{border-collapse:collapse;margin:1em 0;font:inherit;color:inherit}" +
             ".chartforgex-data-tables caption{text-align:left;font-weight:bold}.chartforgex-data-tables th,.chartforgex-data-tables td{padding:.35em .65em;text-align:left;border-bottom:1px solid currentColor}" +
             "@media screen{.chartforgex-data-table-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}}" +
             "@media print{.chartforgex-data-tables{overflow:visible}.chartforgex-data-tables::details-content{display:block;content-visibility:visible}.chartforgex-data-tables table{break-inside:avoid}}")

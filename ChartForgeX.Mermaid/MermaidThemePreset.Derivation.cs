@@ -19,14 +19,11 @@ internal sealed partial class MermaidThemePreset {
             Default("actorBorder","primaryBorderColor");Default("actorBkg","mainBkg");Default("actorTextColor","primaryTextColor");Default("actorLineColor","actorBorder");Default("labelBoxBkgColor","actorBkg");Default("signalColor","textColor");Default("signalTextColor","textColor");Default("labelBoxBorderColor","actorBorder");Default("labelTextColor","actorTextColor");Default("loopTextColor","actorTextColor");
             Fallback("activationBorderColor",Get("secondaryColor").AdjustHsl(lightness:-10));Default("activationBkgColor","secondaryColor");Fallback("sequenceNumberColor",Get("lineColor").Invert());Default("rectBkgColor","tertiaryColor");return;
         }
-        if(name=="dark") {
-            Set("secondBkg",Get("mainBkg").AdjustHsl(lightness:16));Copy("lineColor","mainContrastColor");Copy("actorBorder","border1");Copy("actorBkg","mainBkg");Copy("actorTextColor","mainContrastColor");Copy("actorLineColor","actorBorder");Copy("signalColor","mainContrastColor");Copy("signalTextColor","mainContrastColor");Copy("labelBoxBkgColor","actorBkg");Copy("labelBoxBorderColor","actorBorder");Copy("labelTextColor","mainContrastColor");Copy("loopTextColor","mainContrastColor");Copy("noteBorderColor","secondaryBorderColor");Copy("noteBkgColor","secondBkg");Copy("noteTextColor","secondaryTextColor");Copy("activationBorderColor","border1");Copy("activationBkgColor","secondBkg");
-        } else if(name=="neutral") {
+        if(name=="neutral") {
             Set("secondBkg",Get("contrast").AdjustHsl(lightness:55));Copy("border2","contrast");Set("actorBorder",Get("border1").AdjustHsl(lightness:23));Copy("actorBkg","mainBkg");Copy("actorTextColor","text");Copy("actorLineColor","actorBorder");Copy("signalColor","text");Copy("signalTextColor","text");Copy("labelBoxBkgColor","actorBkg");Copy("labelBoxBorderColor","actorBorder");Copy("labelTextColor","text");Copy("loopTextColor","text");Set("noteBorderColor",Literal("#999"));Set("noteBkgColor",Literal("#666"));Set("noteTextColor",Literal("#fff"));
         } else {
-            if(name=="forest")Set("actorBorder",Get("mainBkg").AdjustHsl(lightness:-20));else Copy("actorBorder","border1");
+            Set("actorBorder",Get("mainBkg").AdjustHsl(lightness:-20));
             Copy("actorBkg","mainBkg");Copy("labelBoxBkgColor","actorBkg");Copy("labelTextColor","actorTextColor");Copy("loopTextColor","actorTextColor");Copy("noteBorderColor","border2");Copy("noteTextColor","actorTextColor");Copy("actorLineColor","actorBorder");
-            if(name=="default"){Copy("signalColor","textColor");Copy("signalTextColor","textColor");Copy("labelBoxBorderColor","actorBorder");}
         }
         Default("rectBkgColor","tertiaryColor");
     }

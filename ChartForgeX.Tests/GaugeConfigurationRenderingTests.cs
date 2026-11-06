@@ -167,7 +167,7 @@ public sealed class GaugeConfigurationRenderingTests {
         var captions = labels.Select(label => string.Join("\n", label.Text.Lines.Select(line => line.Text))).ToArray();
         Assert.All(captions, caption => Assert.Contains(caption, expected));
         Assert.Equal(expected[0], captions[0]); Assert.Equal(expected[4], captions[captions.Length - 1]);
-        Assert.All(labels, label => Assert.True(label.Text.Style.EffectiveFontSize >= chart.Options.Theme.Typography.AxisSize));
+        Assert.All(labels, label => Assert.True(label.Text.Style.EffectiveFontSize >= 11));
         var coordinates = ticks.Select(tick => tick.Start.X).ToArray();
         var steps = coordinates.Zip(coordinates.Skip(1), (left, right) => right - left).ToArray();
         Assert.All(steps, step => Assert.Equal(steps[0], step, 7));

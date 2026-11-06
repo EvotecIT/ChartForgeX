@@ -20,14 +20,16 @@ public sealed class NativeOwnedValueFlashTests {
             if(target[index] is VisualSceneGroup group){stack.Push(current);if(group.Metadata.TryGetValue("data-cfx-series-key",out var series))current.Series=series;if(group.Metadata.TryGetValue("data-cfx-observation-id",out var point))current.Observation=point;if(group.Metadata.TryGetValue("data-cfx-node",out var node))current.Node=node;}
             else if(target[index] is VisualSceneEndGroup)current=stack.Pop();
             if(ReferenceEquals(target[index],flash[index]))continue;changed.Add((target[index].Role,current.Series,current.Observation,current.Node));
-            if(target[index] is VisualSceneGradient gradient){var actual=Assert.IsType<VisualSceneGradient>(flash[index]);Assert.Equal(gradient.Start,actual.Start);Assert.Equal(gradient.End,actual.End);Assert.Equal(gradient.Stops.Select(row=>row.Offset),actual.Stops.Select(row=>row.Offset));Assert.All(actual.Stops,row=>Assert.True(row.Color.Equals(peak)));Geometry(gradient.Shape,actual.Shape);}
-            else {var expected=Assert.IsAssignableFrom<VisualSceneMark>(target[index]);var actual=Assert.IsAssignableFrom<VisualSceneMark>(flash[index]);Geometry(expected,actual);Assert.True(actual.Fill.HasValue&&actual.Fill.Value.Equals(peak)||actual.Stroke.HasValue&&actual.Stroke.Value.Equals(peak));}
+            // Groups whose totals moved only through the changed leaf flash more quietly, so the leaf reads as the change.
+            var derived=kind is "treemap" or "sunburst"&&current.Node!="leaf-a";bool Peak(ChartColor? color)=>color.HasValue&&color.Value.Equals(peak);
+            if(target[index] is VisualSceneGradient gradient){var actual=Assert.IsType<VisualSceneGradient>(flash[index]);Assert.Equal(gradient.Start,actual.Start);Assert.Equal(gradient.End,actual.End);Assert.Equal(gradient.Stops.Select(row=>row.Offset),actual.Stops.Select(row=>row.Offset));Assert.All(actual.Stops,row=>Assert.Equal(!derived,row.Color.Equals(peak)));Geometry(gradient.Shape,actual.Shape);}
+            else {var expected=Assert.IsAssignableFrom<VisualSceneMark>(target[index]);var actual=Assert.IsAssignableFrom<VisualSceneMark>(flash[index]);Geometry(expected,actual);Assert.Equal(!derived,Peak(actual.Fill)||Peak(actual.Stroke));}
         }
         NativeRadialMotionBeforeControls.Save("owned-flash-"+kind+".owners.json",JsonSerializer.Serialize(changed));Assert.NotEmpty(changed);
         Assert.All(changed,row=>{Assert.NotEqual("comparison",row.Series);Assert.DoesNotContain(row.Role??string.Empty,new[]{"bar-track","grid-line","axis","title","data-label","radial-outer-outline"});});
         if(kind=="line"){Assert.Contains(changed,row=>row.Role=="line");Assert.Contains(changed,row=>row.Role=="marker"&&row.Observation=="current");Assert.All(changed.Where(row=>row.Role is "marker" or "marker-pattern"),row=>Assert.Equal("current",row.Observation));}
         if(kind.StartsWith("bar",StringComparison.Ordinal))Assert.All(changed,row=>Assert.Equal("current",row.Observation));
-        if(kind is "treemap" or "sunburst"){Assert.Contains(changed,row=>row.Node=="leaf-a");Assert.DoesNotContain(changed,row=>row.Node is "leaf-b" or "leaf-c");}
+        if(kind is "treemap" or "sunburst"){Assert.Contains(changed,row=>row.Node=="leaf-a");Assert.Contains(changed,row=>row.Node is not null and not "leaf-a");Assert.DoesNotContain(changed,row=>row.Node is "leaf-b" or "leaf-c");}
         Assert.Equal(to.PreparedVisual.Regions.Select(row=>(row.Id,row.Role,row.Label,row.Bounds)),frames[1].Regions.Select(row=>(row.Id,row.Role,row.Label,row.Bounds)));Assert.Equal(to.PreparedVisual.Accessibility.Description,frames[1].Accessibility.Description);
     }
     private static void Geometry(VisualSceneMark expected,VisualSceneMark actual) {

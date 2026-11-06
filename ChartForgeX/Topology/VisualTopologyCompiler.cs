@@ -44,10 +44,13 @@ internal sealed partial class VisualTopologyCompiler {
         context = PreparedDiagramFont.ScopeContext(context, TopologyPreparedFont.HasMaterialTextPolicy(source, context.Font));
         _frameRequest = context.Frame.RequestValues(retainOwnedFonts: true);
         _source = source;
+        if (source.LayoutMode == TopologyLayoutMode.Regions && options.RegionPrint)
+            context = new VisualRenderContext(context.Layout, context.Theme, VisualThemeMode.Light, context.Frame, context.Font)
+                .WithRequestsOf(context).WithNativeTextCapture(context.NativeTextCapture);
         _svgTheme = new TopologyPaint(context.Theme, context.ThemeMode, options.SvgColorVariables?.Clone());
         _context = ResolveFrame(context, source, options);
         _options = options.CloneForRendering();
-        InitializeOptionsMetrics(context, _options);
+        InitializeOptionsMetrics(context, _options, textFaces: source.LayoutMode != TopologyLayoutMode.Regions);
         if (!Enum.IsDefined(typeof(TextMeasurementMode), _options.TextMeasurementMode)) throw new ArgumentOutOfRangeException(nameof(options.TextMeasurementMode));
         _builder = new VisualSceneBuilder(context.Layout.Size, context.Font, context.NativeTextCapture);
         _colors = context.Theme.Resolve(context.ThemeMode);
@@ -56,6 +59,7 @@ internal sealed partial class VisualTopologyCompiler {
     }
 
     internal PreparedVisual Compile(FlowArtifact? flow = null) {
+        if (_source.LayoutMode == TopologyLayoutMode.Regions) return CompileRegions(flow);
         var validator = new TopologyChartValidator();
         var interpolation = validator.ValidateInterpolationInputs(_source);
         if (!interpolation.IsValid) throw new TopologyValidationException(interpolation);
@@ -165,7 +169,7 @@ internal sealed partial class VisualTopologyCompiler {
     }
 
     private void DiagnoseExportOptions() {
-        if (_options.EnableHtmlInteractions || _options.EnableHtmlViewportControls || _options.EnableHtmlExportControls || _options.EnableHtmlForceGraphControls || _options.EnableHtmlSynchronizedState || _options.EnableHtmlSelectionPanel || _options.EnableHtmlFullscreenControl || _options.EnableHtmlScenarioUrlState)
+        if (_options.EnableHtmlInteractions || _options.EnableHtmlViewportControls || _options.EnableHtmlExportControls || _options.EnableHtmlForceGraphControls || _options.EnableHtmlFindControls || _options.EnableHtmlSynchronizedState || _options.EnableHtmlSelectionPanel || _options.EnableHtmlFullscreenControl || _options.EnableHtmlScenarioUrlState)
             _builder.AddDiagnostic(new VisualDiagnostic("topology.host-options", "HTML interaction and viewport options remain host metadata; a static prepared scene does not install their controls."));
     }
 
@@ -181,7 +185,7 @@ internal sealed partial class VisualTopologyCompiler {
         }
         return new VisualRenderContext(resolved.Layout, resolved.Theme, resolved.ThemeMode,
             new VisualFrame(frame.Title, frame.Subtitle, frame.ShowLegend, frame.LegendPosition, frame.ShowSurface, frame.TransparentBackground,
-                frame.TitleStyle ?? Center(resolved.Theme.Typography.TitleSize, 700, colors.Foreground),
+                frame.TitleStyle ?? Center(resolved.Theme.Typography.TitleSize, 600, colors.Foreground),
                 frame.SubtitleStyle ?? Center(resolved.Theme.Typography.SubtitleSize, 400, colors.MutedForeground), frame.LegendStyle,
                 frame.LegendMaximumRows, frame.LegendMaximumHeightFraction, frame.ShowCard, legendTitle: frame.LegendTitle), resolved.Font).WithNativeTextCapture(resolved.NativeTextCapture);
     }

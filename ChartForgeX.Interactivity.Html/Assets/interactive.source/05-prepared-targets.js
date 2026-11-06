@@ -28,8 +28,8 @@
     let metadata;
     try { metadata = JSON.parse(root.dataset.cfxPreparedChart); } catch (_) { return; }
     const series = metadata.series || [];
-    const compactPoints = window.matchMedia?.('(pointer: coarse)').matches === true
-      || (root.getBoundingClientRect?.().width ?? Infinity) < 560;
+    const coarsePoints = window.matchMedia?.('(pointer: coarse)').matches === true;
+    const compactPoints = coarsePoints || (root.getBoundingClientRect?.().width ?? Infinity) < 560;
     const reflow = metadata.visibility?.layout === 'reflow';
     const annotations = annotationCatalog(svg, metadata);
     svg.querySelectorAll('[data-cfx-role="annotation"]').forEach(node => {
@@ -63,11 +63,8 @@
     root._cfxCartesianPlot = plot && [plot.x, plot.y, plot.width, plot.height, plot.x + plot.width, plot.y + plot.height].every(Number.isFinite)
       && plot.width > 0 && plot.height > 0 ? plot : null;
     series.forEach((item, index) => {
-      svg.setAttribute('data-cfx-series-name-' + index, item.name);
-      svg.setAttribute('data-cfx-series-key-' + index, item.key);
-      svg.setAttribute('data-cfx-series-scope-' + index, item.local ? 'local' : 'shared');
-      svg.setAttribute('data-cfx-series-state-' + index, item.state);
-      svg.setAttribute('data-cfx-series-source-indices-' + index, item.indices.join(','));
+      for (const [name, value] of [['name', item.name], ['key', item.key], ['scope', item.local ? 'local' : 'shared'],
+        ['state', item.state], ['source-indices', item.indices.join(',')]]) svg.setAttribute('data-cfx-series-' + name + '-' + index, value);
     });
     const sourceFacts = new Map(Array.from(svg.querySelectorAll('[data-cfx-point][data-cfx-source-points],[data-cfx-point][data-cfx-derived]'))
       .map((node) => [node.dataset.cfxSeries + ':' + node.dataset.cfxPoint,
@@ -174,12 +171,12 @@
 
       if (retainedGeometryFact(node)) return;
 
-      if (node.localName === 'g' && data.cfxPoint !== undefined
-        && ['line', 'stepline', 'area', 'steparea', 'stackedarea', 'scatter', 'bubble', 'radar'].includes(item.kind.toLowerCase())
-        && compactPoints) {
+      // Touch targets reach 36 CSS pixels; narrow fine-pointer layouts keep 24.
+      if (node.localName === 'g' && data.cfxPoint !== undefined && compactPoints
+        && (coarsePoints ? /^(line|stepline|area|steparea|stackedarea|scatter|bubble|radar|bar|candlestick|ohlc)$/i : /^(line|stepline|area|steparea|stackedarea|scatter|bubble|radar)$/i).test(item.kind)) {
         const matrix = typeof node.getScreenCTM === 'function' ? svgScreenMatrix(node) : null;
         const scale = matrix && Math.min(Math.hypot(matrix.a, matrix.b), Math.hypot(matrix.c, matrix.d));
-        if (scale > 0) appendNativeBrowserHitArea(node, region, 24 / scale);
+        if (scale > 0) appendNativeBrowserHitArea(node, region, (coarsePoints ? 36 : 24) / scale);
       }
 
       const hollowCandle = data.cfxRole === 'point' && (data.cfxKind || '').toLowerCase() === 'candlestick'

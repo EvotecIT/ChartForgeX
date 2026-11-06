@@ -1,0 +1,40 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var start = new DateTime(2026, 3, 2, 8, 0, 0, DateTimeKind.Utc);
+var discovery = ChartSeries.CreateGanttTask(new ChartSeriesId("discovery"), "Discovery", start, start.AddDays(3), .9);
+var implementation = ChartSeries.CreateGanttTask(new ChartSeriesId("implementation"), "Implementation", start.AddDays(3), start.AddDays(7), .55);
+var validation = ChartSeries.CreateGanttTask(new ChartSeriesId("validation"), "Validation", start.AddDays(7), start.AddDays(9), .1);
+var delivery = ChartSeries.CreateGanttMilestone(new ChartSeriesId("delivery"), "Delivery", start.AddDays(9));
+var chart = Chart.Create().AddSeries(discovery).AddSeries(implementation).AddSeries(validation).AddSeries(delivery)
+    .AddGanttDependency(discovery, implementation).AddGanttDependency(implementation, validation).AddGanttDependency(validation, delivery)
+    .ConfigureXAxis(axis => {
+        axis.Scale = ChartScaleKind.Time;
+        axis.ValueFormat = ChartValueFormat.Custom(value => DateTime.FromOADate(value).ToString("MMM d", CultureInfo.InvariantCulture));
+    });
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 259)), theme, mode,
+    new VisualFrame("Project delivery in March 2026", "", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion

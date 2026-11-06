@@ -11,7 +11,7 @@ internal static partial class MermaidExamples {
                 Flowchart=new MermaidFlowchartRenderOptions{Width=width,Height=700},Agentflow=new MermaidTopologyRenderOptions{Width=width,Height=700}});
             if(rendered.HasErrors||rendered.Artifact==null)throw new InvalidOperationException(string.Join("; ",rendered.Diagnostics.Select(item=>item.Message)));
             var artifact=rendered.Artifact;var id="mermaid-"+family+"-style-settings-"+variant+"-"+mode.ToString().ToLowerInvariant();
-            File.WriteAllText(Path.Combine(output,id+".mmd"),source);File.WriteAllText(Path.Combine(output,id+".svg"),artifact.ToSvg());File.WriteAllBytes(Path.Combine(output,id+".png"),artifact.ToPng());
+            File.WriteAllText(Path.Combine(output,id+".mmd"),source);artifact.SaveSvg(Path.Combine(output,id+".svg"));File.WriteAllBytes(Path.Combine(output,id+".png"),artifact.ToPng());
             File.WriteAllText(Path.Combine(output,id+".html"),ExampleTypography.EmbedInHtml(artifact.ToHtmlPage(new VisualArtifactRenderOptions{HtmlSizing=VisualArtifactHtmlSizing.PreserveSize})));
             File.WriteAllText(Path.Combine(output,id+".json"),artifact.ToInterchangeJson());File.WriteAllText(Path.Combine(output,id+".csharp.txt"),ExampleRecipeSource.EmitGraphStyleSettings(family,variant,mode));
         }

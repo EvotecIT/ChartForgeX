@@ -50,7 +50,7 @@ public sealed class HierarchyCaptionPolicyBrowserTests {
                     }
                     for (const text of labels) {
                         const style = getComputedStyle(text), box = text.getBBox();
-                        if (!style.fontFamily.includes(family)) defects.push(fact.id + ': proof font lost');
+                        if (!style.fontFamily.replace(/["']/g, '').includes(family.replace(/["']/g, ''))) defects.push(fact.id + ': proof font lost');
                         if (parseFloat(style.fontSize) < 11 || parseFloat(style.fontSize) > (treemap ? 14 : 13)) defects.push(fact.id + ': explicit font bound');
                         if (box.width === 0 || box.height === 0) continue;
                         const matrix = mark.getCTM().inverse().multiply(text.getCTM());

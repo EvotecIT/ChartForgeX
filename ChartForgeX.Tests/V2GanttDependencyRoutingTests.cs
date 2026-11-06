@@ -32,6 +32,9 @@ public sealed class V2GanttDependencyRoutingTests {
             var route = Assert.Single(scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "gantt-dependency-line");
             var arrow = Assert.Single(scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "gantt-dependency-arrow");
             var first = route.Commands[0]; var last = route.Commands[route.Commands.Count - 1];
+            // A successor starting at or after the finish takes the elbow off the finish, with a readable chevron.
+            if (!sourceMilestone && !targetMilestone && finish <= start) Assert.False(first.Y > sourceBounds.Bottom, "The link should leave the finish, not step off the bar's bottom.");
+            Assert.True(Math.Max(Math.Abs(arrow.Commands[1].X - arrow.Commands[0].X), Math.Abs(arrow.Commands[1].Y - arrow.Commands[0].Y)) >= 4, "The arrowhead should stay readable.");
             if (first.Y > sourceBounds.Bottom) {
                 Assert.InRange(Math.Abs(sourceBounds.Bottom - (first.Y - route.StrokeWidth / 2)), 0, .001);
                 Assert.InRange(first.X, sourceBounds.Left, sourceBounds.Right);

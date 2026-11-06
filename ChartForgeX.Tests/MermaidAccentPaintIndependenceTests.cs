@@ -24,7 +24,7 @@ public sealed class MermaidAccentPaintIndependenceTests {
     [InlineData("fork", "stroke-only", "stroke:#0000ff")]
     [InlineData("fork", "both", "fill:#ff0000,stroke:#0000ff")]
     public void AuthoredAccentFillAndStrokeRemainIndependentThroughNativePaintAndPortableReplay(string shape, string variant, string? style) {
-        var source = "%%{init: {'theme':'default'}}%%\nflowchart LR\nwork@{ shape: " + shape + ", label: 'Work' }"
+        var source = "%%{init: {'theme':'neutral'}}%%\nflowchart LR\nwork@{ shape: " + shape + ", label: 'Work' }"
             + (style == null ? "" : "\nstyle work " + style);
         var result = MermaidRenderer.Render(source, new MermaidRenderOptions {
             Flowchart = new MermaidFlowchartRenderOptions { Title = "", Width = 400, Height = 260 },
@@ -53,17 +53,18 @@ public sealed class MermaidAccentPaintIndependenceTests {
             File.WriteAllBytes(stem + "-restored.png", restored.ToPng());
         }
         Assert.False(result.HasErrors);
-        Assert.Empty(result.Diagnostics);
+        // A named alternative theme reports its static approximation once; nothing else is approximated.
+        Assert.Equal(MermaidDiagnosticCodes.UnsupportedConfiguration, Assert.Single(result.Diagnostics).Code);
         Assert.Equal(shape == "fr-circ" ? 2 : 1, marks.Length);
         if (variant is "fill-only" or "both")
             Assert.All(marks, mark => Assert.Equal(ChartColor.FromHex("#ff0000"), mark.Fill));
         if (variant is "stroke-only" or "both")
             Assert.All(marks, mark => Assert.Equal(ChartColor.FromHex("#0000ff"), mark.Stroke));
-        // These omitted-property defaults are observed independently in the pinned
-        // reference: f-circ has a literal default fill until a style replaces it.
+        // Omitted properties keep the named preset's roles: f-circ fills with its node border
+        // until a style replaces it, and every other surface uses the main background.
         var expectedFill = variant is "fill-only" or "both" ? "#ff0000"
-            : shape == "f-circ" && variant == "default" ? "#9370db" : "#ececff";
-        var expectedStroke = variant is "stroke-only" or "both" ? "#0000ff" : "#9370db";
+            : shape == "f-circ" && variant == "default" ? "#999999" : "#eeeeee";
+        var expectedStroke = variant is "stroke-only" or "both" ? "#0000ff" : "#999999";
         Assert.All(marks, mark => {
             Assert.Equal(ChartColor.FromHex(expectedFill), mark.Fill);
             Assert.Equal(ChartColor.FromHex(expectedStroke), mark.Stroke);

@@ -45,6 +45,8 @@
       throw new TypeError('Drawing: vertical Cartesian axes missing.');
     return requestNativePreparation(root, 'annotation', { kind: change.operation, annotationId, ...(drawing ? { sourceDrawing: drawing } : {}) }, {
       eventPrefix: 'cfxannotation', preserveViewport: true,
+      // Only the source drawing changed; the title, axes and series stay at full strength.
+      motionTarget: next => drawing ? nativeAnnotationNode(next, annotationId) : null,
       ...annotationEditorChangeHooks(root, annotationId, drawing, editorReplay),
       validate: (next, request) => {
         const node = nativeAnnotationNode(next, request.annotationId), source = request.sourceDrawing;

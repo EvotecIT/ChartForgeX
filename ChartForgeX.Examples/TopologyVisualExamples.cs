@@ -114,6 +114,7 @@ internal static partial class TopologyVisualExamples {
         SaveMap(target, artifacts, "visual-wan-latency-map", BuildWanLatencyMap(), "WAN Latency Map", "Map-backed route chart for WAN latency paths that can sit behind an HtmlForgeX region panel.");
 
         WriteRoutingExamples(target, artifacts);
+        WriteDenseEstateNavigator(target);
 
         WriteManifest(target, artifacts);
         WriteCoverageIndex(target, artifacts);
@@ -483,8 +484,8 @@ internal static partial class TopologyVisualExamples {
         return Chart.Create()
             .WithTitle("Geographic Topology View")
             .WithSubtitle("Map-backed region markers and WAN route overlays for HtmlForgeX-hosted region panels")
-            .WithTheme(VisualTheme.Report())
-            .WithSize(1180, 620)
+            .WithTheme(VisualTheme.Graphite())
+            .WithSize(800, 420)
             .WithLegend(false)
             .WithMapViewport(ChartMapViewport.World())
             .WithDataLabels()
@@ -503,8 +504,8 @@ internal static partial class TopologyVisualExamples {
         return Chart.Create()
             .WithTitle("Sites by Geography")
             .WithSubtitle("Weighted dotted map with healthy/degraded/down site markers")
-            .WithTheme(VisualTheme.Report())
-            .WithSize(1180, 620)
+            .WithTheme(VisualTheme.Graphite())
+            .WithSize(800, 420)
             .WithLegend(false)
             .WithMapViewport(ChartMapViewport.World())
             .WithDataLabels()
@@ -526,8 +527,8 @@ internal static partial class TopologyVisualExamples {
         return Chart.Create()
             .WithTitle("Top Cross-Region Links")
             .WithSubtitle("WAN latency routes rendered as a reusable map chart")
-            .WithTheme(VisualTheme.Report())
-            .WithSize(1180, 620)
+            .WithTheme(VisualTheme.Graphite())
+            .WithSize(800, 420)
             .WithLegend(false)
             .WithMapViewport(ChartMapViewport.World())
             .WithDataLabels()

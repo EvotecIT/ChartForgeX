@@ -1,0 +1,44 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+using static RadialColumnRecipe;
+
+var mode = VisualThemeMode.Light;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var requests = new ChartSeries(new ChartSeriesId("requests"), "Requests", ChartSeriesKind.RadialColumn, Points(1200, 950, 680, 1050));
+var followUps = new ChartSeries(new ChartSeriesId("follow-ups"), "Follow-ups", ChartSeriesKind.RadialColumn, Points(320, 410, 260, 360));
+var chart = Chart.Create().WithXLabels("North", "South", "East", "West")
+    .WithRadialGeometry(new ChartRadialGeometryOptions(-90, 180, .22, .22, .15))
+    .AddSeries(requests).AddSeries(followUps).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
+requests.WithStackGroup("work").WithNormalization(100);
+followUps.WithStackGroup("work").WithNormalization(100).WithPointFillPattern(1, ChartFillPattern.DiagonalForward);
+chart.WithRadialGeometry(new ChartRadialGeometryOptions(-90, 180, .22, .22, .15, cornerRadius: 6))
+    .WithYAxisBounds(0, 100).WithXAxis("Region").WithYAxis("Share of regional workload (%)")
+    .ConfigureXAxis(axis => axis.LabelAngle = -30).ConfigureYAxis(axis => axis.LabelAngle = 30);
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Regional service workload", "Named stacks reach 100; labels retain source counts", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion
+
+static class RadialColumnRecipe {
+    internal static ChartPoint[] Points(params double[] values) => values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();
+}

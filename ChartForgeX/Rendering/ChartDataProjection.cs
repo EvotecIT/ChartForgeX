@@ -38,8 +38,9 @@ internal sealed class ChartDataProjection {
     internal IReadOnlyList<ChartAxisLabel>? CategoryLabels { get; }
     internal ChartDataProjection WithDisplayTicks(IReadOnlyList<ChartAxisLabel> x, IReadOnlyList<ChartAxisLabel>? y = null,
         System.Func<double, string>? formatX = null, System.Func<double, string>? formatY = null,
-        IReadOnlyList<ChartAxisLabel>? categoryLabels = null) =>
-        new(Plot, X.WithDisplayTicks(x, formatX), Y == null ? null : Y.WithDisplayTicks(y ?? System.Array.Empty<ChartAxisLabel>(), formatY), Horizontal, categoryLabels, HasX);
+        IReadOnlyList<ChartAxisLabel>? categoryLabels = null, double? xLabelGap = null, double? yLabelGap = null) =>
+        new(Plot, X.WithDisplayTicks(x, formatX, xLabelGap), Y == null ? null : Y.WithDisplayTicks(y ?? System.Array.Empty<ChartAxisLabel>(), formatY, yLabelGap),
+            Horizontal, categoryLabels, HasX);
 }
 
 /// <summary>Captures one axis caption and its precise ordered-time identity independently of browser date support.</summary>
@@ -57,7 +58,31 @@ internal sealed class ChartDataAxisProjection {
         LogarithmBase = axis.LogarithmBase; LogarithmicDomain = axis.LogarithmicDomain;
         TimeSessions = axis.TimeSessions; TimeDomain = axis.PreparedTimeDomain;
         TransformedMinimum = transformedMinimum; TransformedMaximum = transformedMaximum;
+        IntegerTicks = axis.IntegerTicks;
+        // Browser re-ticking can reproduce only the default invariant compact captions.
+        DefaultCaptions = axis.LabelFormatter == null && axis.Labels.Count == 0 && axis.Scale != ChartScaleKind.Time;
+        // ...and the automatic calendar on an unrotated, automatically counted time axis, in UTC or a display zone whose
+        // offsets are captured, with invariant captions or a culture whose patterns and names are captured.
+        var calendar = axis.Scale == ChartScaleKind.Time && axis.LabelFormatter == null && axis.Labels.Count == 0 && axis.ValueFormat == null
+            && axis.TimeSessions == null && axis.TimeSpacing == null && axis.PreparedTimeDomain == null
+            && !axis.HasExplicitTickCount && axis.LabelDensity == ChartLabelDensity.Auto && axis.LabelAngle == 0;
+        if (calendar && axis.TimeZone != null && axis.TimeZone != System.TimeZoneInfo.Utc) {
+            TimeZone = ChartTimeZoneFacts.TryCapture(axis.TimeZone, minimum, maximum);
+            calendar = TimeZone != null;
+        }
+        if (calendar && axis.Culture != null) {
+            TimeCulture = ChartTimeCultureFacts.TryCapture(axis);
+            calendar = TimeCulture != null;
+        }
+        CalendarCaptions = calendar;
     }
+    internal ChartTimeZoneFacts? TimeZone { get; }
+    internal ChartTimeCultureFacts? TimeCulture { get; }
+    internal bool IntegerTicks { get; }
+    internal bool DefaultCaptions { get; }
+    internal bool CalendarCaptions { get; }
+    /// <summary>The ordinary gap the tick fitter keeps between captions, captured with the display ticks.</summary>
+    internal double? LabelGap { get; private set; }
 
     internal static ChartDataAxisProjection? TryCreate(double minimum, double maximum, ChartAxis axis) {
         if (!ChartMath.IsFinite(minimum) || !ChartMath.IsFinite(maximum) || maximum <= minimum) return null;
@@ -80,8 +105,9 @@ internal sealed class ChartDataAxisProjection {
     internal bool Reversed { get; }
     internal IReadOnlyList<ChartDataAxisCaption> DisplayTicks { get; private set; } = System.Array.Empty<ChartDataAxisCaption>();
     internal IReadOnlyList<ChartDataAxisCaption> DisplayBounds { get; private set; } = System.Array.Empty<ChartDataAxisCaption>();
-    internal ChartDataAxisProjection WithDisplayTicks(IReadOnlyList<ChartAxisLabel> ticks, System.Func<double, string>? format) {
+    internal ChartDataAxisProjection WithDisplayTicks(IReadOnlyList<ChartAxisLabel> ticks, System.Func<double, string>? format, double? labelGap = null) {
         var copy = (ChartDataAxisProjection)MemberwiseClone();
+        copy.LabelGap = labelGap;
         ChartDataAxisCaption Caption(ChartAxisLabel label) => new(label.Value, label.Text,
             Scale == ChartScaleKind.Time && Minimum >= 0 && ChartDateTime.TryFromOrderedOaDate(label.Value, out var instant)
                 ? instant.ToString("O", CultureInfo.InvariantCulture) : null);

@@ -54,6 +54,11 @@ internal sealed class TopologyHtmlText {
         ["TopologyQuietPan"] = "Quiet pan",
         ["TopologyGraphReady"] = "Graph ready",
         ["TopologyAllGroups"] = "All groups",
+        ["TopologyAllKinds"] = "All kinds",
+        ["TopologyFindSummary"] = "{count} of {total} nodes match",
+        ["TopologyFindNone"] = "No matching nodes",
+        ["TopologyFindNodesPlaceholder"] = "Find a node",
+        ["TopologyFindNodes"] = "Find nodes by name, kind or group",
         ["TopologyScenarios"] = "Topology scenarios",
         ["TopologyShowAll"] = "Show all",
         ["TopologyAllRoutesVisible"] = "All topology routes visible",
@@ -61,6 +66,10 @@ internal sealed class TopologyHtmlText {
         ["TopologyCopyRouteLink"] = "Copy route link",
         ["TopologyTimelineStep"] = "Topology route timeline step",
         ["TopologyVisibleSummary"] = "{nodes} nodes / {edges} edges visible",
+        ["ScenarioRequest"] = "request",
+        ["ScenarioMessage"] = "message",
+        ["ScenarioResponse"] = "response",
+        ["ScenarioFailure"] = "failed call",
     };
 
     private readonly IReadOnlyDictionary<string, string> _messages;

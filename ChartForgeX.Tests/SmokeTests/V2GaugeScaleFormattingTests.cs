@@ -142,10 +142,10 @@ public sealed class V2GaugeScaleFormattingTests {
         var chart = Chart.Create().WithSize(360, 360).WithLegend(false)
             .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("tolerance"), "Tolerance", new ChartGaugeValue(1.003, 1.001, 1.005, new[] { new ChartGaugeTarget(1.0025) })))
             .ConfigureGauge(options => options.Form = form);
-        chart.Series[0].DataLabelStyle.FontSize = 9;
+        chart.Series[0].DataLabelStyle.FontSize = 10;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
-        Assert.Equal(9, Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "gauge-title").Text.Size);
-        Assert.Equal(9, Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "gauge-label").Text.Size);
+        Assert.Equal(10, Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "gauge-title").Text.Size);
+        Assert.Equal(10, Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "gauge-label").Text.Size);
     }
 
     [Theory]

@@ -7,8 +7,8 @@
   };
   const settleChartUpdateMotion = root => chartLifetimes.get(root)?.updateMotionRelease?.();
   const settleChartLoadMotion = root => {
-    for (const animation of root.querySelector('.cfx-stage')?.getAnimations?.() || [])
-      if (animation.animationName === 'cfx-series-enter' && typeof animation.finish === 'function') animation.finish();
+    for (const animation of root.querySelector('.cfx-stage')?.getAnimations?.({ subtree: true }) || [])
+      if ((animation.animationName === 'cfx-series-enter' || animation.id === 'cfx-enter') && typeof animation.finish === 'function') animation.finish();
   };
   const beginChartUpdateMotion = (root, motion, captured = null) => {
     settleChartUpdateMotion(root);
@@ -19,7 +19,8 @@
     const svg = root.querySelector('.cfx-stage svg'), media = window.matchMedia?.('(prefers-reduced-motion: reduce)');
     if (!svg || media?.matches) return;
     if (captured) { beginCapturedValueMotion(root, motion, captured, svg, media); return; }
-    const stage = root.querySelector('.cfx-stage');
+    // A reply that changes one mark (an annotation edit) fades only that mark; null means nothing new to reveal.
+    const stage = motion.target ? motion.target(root) : root.querySelector('.cfx-stage');
     if (typeof stage?.animate !== 'function') return;
     const animation = stage.animate([{ opacity: .35 }, { opacity: 1 }], { duration: motion.duration, easing: 'ease-out' });
     svg.dataset.cfxUpdateMotion = 'true';

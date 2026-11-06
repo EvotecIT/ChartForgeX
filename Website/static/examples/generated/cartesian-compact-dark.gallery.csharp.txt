@@ -13,15 +13,14 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-// Optional exact gallery typography; copy the gallery's fonts directory beside this program.
-FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Regular.ttf", 400);
-FontRegistry.Register("CFX Proof Carlito", "fonts/Carlito-Bold.ttf", 700);
+// Native PNG and standalone SVG use bundled Archivo.
+// Add ChartFontAssets.StyleSheet once for other text on a host page.
 var mode = VisualThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = ComparisonRecipe.Create("compact", mode);
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
-    new VisualFrame("Checks over the reporting period", "Observed checks against the forecast and available capacity", showLegend: null, showSurface: false), FontSpec.FromFamily("CFX Proof Carlito"));
+    new VisualFrame("Checks over the reporting period", "Observed checks against the forecast and available capacity", showLegend: null, showSurface: false), FontSpec.FromFamily(ChartFontStacks.ProductSans));
 var prepared = model.Prepare(context);
 File.WriteAllText("visual.svg", prepared.ToSvg());
 File.WriteAllBytes("visual.png", prepared.ToPng());
@@ -54,7 +53,7 @@ public static class ComparisonRecipe {
         for (var index = 0; index < count; index++) {
             if (variant == "missing" && (index == 2 || index == 3)) continue;
             // Capacity grows in steps, the forecast follows it and observed checks swing around the forecast.
-            var value = variant == "zero" ? 0 : series switch {
+            var value = variant == "zero" ? 0.0 : series switch {
                 2 => 64 + index / 3 * 5 + index % 3,
                 1 => 46 + index * 1.6,
                 _ => 44 + index * 1.7 + Math.Round(Math.Sin(index * 1.3) * 7)

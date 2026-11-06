@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
@@ -18,7 +19,7 @@ internal static partial class SmokeTests {
             .WithSubtitle("No JS, no CDN")
             .WithXAxis("Run")
             .WithYAxis("Checks")
-            .WithTheme(VisualTheme.Report(), VisualThemeMode.Dark)
+            .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)
             .WithSize(640, 360)
             .WithXLabels("Mon", "Tue", "Wed")
             .AddSmoothArea("Passed", Points(100, 180, 260))
@@ -284,6 +285,23 @@ internal static partial class SmokeTests {
         return document.Descendants().Where(element => string.Equals(element.Name.LocalName, localName, StringComparison.Ordinal));
     }
 
+    // Embedded font bytes are not SVG numbers; keep all geometry and CSS visible.
+    internal static string NumericMarkup(string markup) => Regex.Replace(markup,
+        @"(data:font/(?:ttf|otf|woff2?);base64,)[A-Za-z0-9+/=]+", "$1",
+        RegexOptions.CultureInvariant, TimeSpan.FromSeconds(2));
+
+    internal static string ResourceMarkup(string markup) {
+        // Licensing URLs in CSS comments do not load resources. Quoted CSS remains
+        // intact so comments cannot hide a live URL inside a string or declaration.
+        var observed = Regex.Replace(markup, @"(<style\b[^>]*>)([\s\S]*?)(</style\s*>)", style =>
+            style.Groups[1].Value + Regex.Replace(style.Groups[2].Value,
+                @"""(?:\\.|[^""\\])*""|'(?:\\.|[^'\\])*'|/\*[\s\S]*?\*/",
+                token => token.Value.StartsWith("/*", StringComparison.Ordinal) ? string.Empty : token.Value,
+                RegexOptions.CultureInvariant, TimeSpan.FromSeconds(2)) + style.Groups[3].Value,
+            RegexOptions.CultureInvariant | RegexOptions.IgnoreCase, TimeSpan.FromSeconds(2));
+        return observed.Replace("http://www.w3.org/2000/svg", string.Empty);
+    }
+
     private static void AssertSelfContainedMarkup(string markup, string name) {
         Assert(!markup.Contains("<script", StringComparison.OrdinalIgnoreCase), name + " should not contain script elements.");
         Assert(!markup.Contains("<link", StringComparison.OrdinalIgnoreCase), name + " should not contain external link elements.");
@@ -292,7 +310,7 @@ internal static partial class SmokeTests {
         Assert(!markup.Contains("<embed", StringComparison.OrdinalIgnoreCase), name + " should not contain embed elements.");
         Assert(!markup.Contains("<foreignObject", StringComparison.OrdinalIgnoreCase), name + " should not contain embedded foreign HTML.");
         Assert(!ContainsAny(markup, " onload=", " onclick=", " onerror=", " onmouseover=", " onfocus="), name + " should not contain inline event handlers.");
-        var withoutSvgNamespace = markup.Replace("http://www.w3.org/2000/svg", string.Empty);
+        var withoutSvgNamespace = ResourceMarkup(markup);
         Assert(!withoutSvgNamespace.Contains("http://", StringComparison.OrdinalIgnoreCase), name + " should not reference external HTTP resources.");
         Assert(!withoutSvgNamespace.Contains("https://", StringComparison.OrdinalIgnoreCase), name + " should not reference external HTTPS resources.");
         Assert(!withoutSvgNamespace.Contains("url(http", StringComparison.OrdinalIgnoreCase), name + " should not reference external CSS URLs.");

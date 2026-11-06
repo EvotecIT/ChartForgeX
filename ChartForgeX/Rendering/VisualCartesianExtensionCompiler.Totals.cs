@@ -31,7 +31,7 @@ internal static partial class VisualCartesianCompiler {
             if (total.Value == 0) continue;
             var text = Value(chart, total.Value);
             var style = chart.Options.DataLabelStyle.Resolve(new TextStyle {
-                Font = context.Font, FontSize = context.Theme.Typography.DataLabelSize, Color = colors.Foreground
+                Font = context.FontWithWeight(context.Theme.Typography.DataLabelWeight), FontSize = context.Theme.Typography.DataLabelSize, Color = colors.Foreground
             });
             totals.Add(new HorizontalStackTotal(total, totals.Count, text, style, builder.MeasureText(text, style)));
         }

@@ -1,0 +1,49 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+using static ScatterMarkerShapesRecipe;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var chart = MarkerShapes();
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame("Processing time by workload", "Nine marker shapes with source labels", showLegend: false, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion
+
+static class ScatterMarkerShapesRecipe {
+    internal static Chart MarkerShapes() {
+        var chart = Chart.Create().WithXAxis("Sample position").WithYAxis("Example level");
+        var shapes = Enum.GetValues<ChartMarkerShape>();
+        for (var index = 0; index < shapes.Length; index++) {
+            var shape = shapes[index];
+            var sample = ChartSeries.CreateScatter(new ChartSeriesId("marker-" + shape.ToString().ToLowerInvariant()), shape.ToString(),
+                new[] { new ChartPoint(index % 3 + 1, index / 3 + 1) });
+            sample.WithPointLabel(0, shape.ToString()).WithDataLabels()
+                .ConfigureMarkers(markers => { markers.Shape = shape; markers.Radius = 8; markers.StrokeWidth = 1; });
+            chart.AddSeries(sample);
+        }
+        chart.Options.XAxis.WithBounds(0, 4);
+        chart.Options.YAxis.WithBounds(0, 4);
+        return chart;
+    }
+}

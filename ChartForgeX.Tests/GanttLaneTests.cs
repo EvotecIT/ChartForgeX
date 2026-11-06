@@ -18,7 +18,7 @@ public sealed class GanttLaneTests {
     public void CurrentInstant_LocalTime_AlignsWithOpenLaneItem() {
         var start = new DateTime(2026, 9, 24, 10, 0, 0, DateTimeKind.Local);
         var now = start.AddHours(1);
-        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(640, 240).WithGanttLaneNow(now)
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(640, 240).WithGanttLaneNow(now)
             .WithStateCategories(Status.SeverityCategories())
             .AddGanttLane("A", new[] { new ChartGanttLaneItem(start, null, "low") });
         Assert.Equal(now.ToUniversalTime().ToOADate(), chart.Options.GanttToday);
@@ -70,7 +70,7 @@ public sealed class GanttLaneTests {
         Assert.Contains("ongoing", Title(open), StringComparison.Ordinal);
         Assert.Equal(new[] { "Now" }, Texts(svg, "gantt-now-label"));
 
-        var withoutToday = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(640, 240).WithStateCategories(Status.SeverityCategories())
+        var withoutToday = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(640, 240).WithStateCategories(Status.SeverityCategories())
             .AddGanttLane("A", new[] { new ChartGanttLaneItem(Start, Start.AddHours(4), "low"), new ChartGanttLaneItem(Start.AddHours(1), null, "high") });
         var fallback = XDocument.Parse(withoutToday.ToSvg());
         var openItem = ByRole(fallback, "gantt-lane-item").Single(item => (string?)item.Attribute("data-cfx-open") == "true");
@@ -78,7 +78,7 @@ public sealed class GanttLaneTests {
         Assert.True(Number(openItem, "x") + Number(openItem, "width") > Number(closed, "x") + Number(closed, "width") + 2, "Without a current time, open items extend past the latest data.");
         Assert.Empty(ByRole(fallback, "gantt-now"));
 
-        var lateStart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(640, 240).WithGanttToday(Start.AddHours(2)).WithStateCategories(Status.SeverityCategories())
+        var lateStart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(640, 240).WithGanttToday(Start.AddHours(2)).WithStateCategories(Status.SeverityCategories())
             .AddGanttLane("A", new[] { new ChartGanttLaneItem(Start, Start.AddHours(6), "low"), new ChartGanttLaneItem(Start.AddHours(4), null, "high") });
         var latePrepared = lateStart.Prepare(VisualExportRequest.ForChart(lateStart).Context);
         var late = ByRole(XDocument.Parse(latePrepared.ToSvg()), "gantt-lane-item");
@@ -97,7 +97,7 @@ public sealed class GanttLaneTests {
         Assert.Equal(plot.Left, model.X(model.Min, plot), 6);
         Assert.Equal(plot.Left + plot.Width / 2, model.X(0, plot), 6);
         Assert.Equal(plot.Right, model.X(model.Max, plot), 6);
-        Assert.DoesNotContain("NaN", chart.ToSvg(), StringComparison.Ordinal);
+        Assert.DoesNotContain("NaN", SmokeTests.NumericMarkup(chart.ToSvg()), StringComparison.Ordinal);
         Assert.NotEmpty(chart.ToPng());
     }
 
@@ -106,7 +106,7 @@ public sealed class GanttLaneTests {
         var first = Start;
         var second = first.AddTicks(1000);
         var third = second.AddTicks(1000);
-        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(640, 280).WithStateCategories(Status.SeverityCategories())
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(640, 280).WithStateCategories(Status.SeverityCategories())
             .AddGanttLane("Brief", new[] { new ChartGanttLaneItem(first, second, "low"), new ChartGanttLaneItem(second, third, "high") });
         chart.Options.XAxis.WithBounds(first.ToOADate(), first.AddDays(1).ToOADate());
         var bars = ByRole(XDocument.Parse(chart.ToSvg()), "gantt-lane-item");
@@ -119,7 +119,7 @@ public sealed class GanttLaneTests {
     [Fact]
     public void ThinGanttLaneLabelUsesContrastForItsOutsidePlacement() {
         var start = new DateTime(2026, 9, 24, 0, 0, 0, DateTimeKind.Utc);
-        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(520, 240).WithHeader(false).WithLegend(false)
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(520, 240).WithHeader(false).WithLegend(false)
             .WithXAxisTimeScale(TimeZoneInfo.Utc, true, "UTC")
             .AddGanttLane("Service", new[] { new ChartGanttLaneItem(start, start.AddMinutes(2), "critical", "Restart service") });
         chart.Options.XAxis.WithBounds(start.ToOADate(), start.AddDays(2).ToOADate());
@@ -136,7 +136,7 @@ public sealed class GanttLaneTests {
     [Fact]
     public void Render_NearPixelThreshold_UsesSharedSubRowsForSvgAndPng() {
         Chart Create(double boundary) {
-            var candidate = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(640, 280).WithStateCategories(Status.SeverityCategories())
+            var candidate = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(640, 280).WithStateCategories(Status.SeverityCategories())
                 .AddGanttLane("Brief", new[] { new ChartGanttLaneItem(0, boundary, "low"), new ChartGanttLaneItem(boundary, boundary + 0.001, "high") });
             candidate.Options.ShowLegend = false;
             candidate.Options.XAxis.WithBounds(0, 1);
@@ -154,7 +154,7 @@ public sealed class GanttLaneTests {
     [Fact]
     public void Render_PaddedNarrowPlot_DoesNotOverlapMinimumWidthItems() {
         var boundary = 2.0 / 300;
-        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(640, 280).WithPadding(220, 10, 220, 10).WithAxes(false)
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(640, 280).WithPadding(220, 10, 220, 10).WithAxes(false)
             .WithStateCategories(Status.SeverityCategories())
             .AddGanttLane("Brief", new[] { new ChartGanttLaneItem(0, boundary, "low"), new ChartGanttLaneItem(boundary, boundary + 0.001, "high") });
         chart.Options.XAxis.WithBounds(0, 1);
@@ -177,22 +177,23 @@ public sealed class GanttLaneTests {
 
     [Fact]
     public void Render_OpenItemWithExtremeFiniteRange_KeepsAutomaticBoundsFinite() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(640, 280).WithStateCategories(Status.SeverityCategories())
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(640, 280).WithStateCategories(Status.SeverityCategories())
             .AddGanttLane("Range", new[] { new ChartGanttLaneItem(-1e308, 1e308, "low"), new ChartGanttLaneItem(0, null, "high") });
         var model = ChartGanttLaneModel.Build(chart);
         Assert.True(double.IsFinite(model.Min));
         Assert.True(double.IsFinite(model.Max));
         Assert.True(model.Max > 1e308);
         var svg = chart.ToSvg();
-        Assert.DoesNotContain("Infinity", svg, StringComparison.Ordinal);
-        Assert.DoesNotContain("NaN", svg, StringComparison.Ordinal);
+        var numericMarkup = SmokeTests.NumericMarkup(svg);
+        Assert.DoesNotContain("Infinity", numericMarkup, StringComparison.Ordinal);
+        Assert.DoesNotContain("NaN", numericMarkup, StringComparison.Ordinal);
         Assert.Contains("duration exceeds numeric range", svg, StringComparison.Ordinal);
         Assert.NotEmpty(chart.ToPng());
     }
 
     [Fact]
     public void ToSvg_PackingSkipsHiddenItemsReusesTouchingRowsAndSeparatesUngroupedLanes() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(720, 320).WithStateCategories(Status.SeverityCategories())
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(720, 320).WithStateCategories(Status.SeverityCategories())
             .AddGanttLane("Grouped", new[] { new ChartGanttLaneItem(Start, Start.AddHours(2), "low"), new ChartGanttLaneItem(Start.AddHours(2), Start.AddHours(4), "high") }, "Site")
             .AddGanttLane("Loose", new[] { new ChartGanttLaneItem(Start.AddHours(-10), Start.AddHours(-9), "critical"), new ChartGanttLaneItem(Start.AddHours(-10), Start.AddHours(-8), "critical"), new ChartGanttLaneItem(Start.AddHours(1), Start.AddHours(3), "medium") });
         chart.Options.XAxis.WithBounds(Start.ToOADate(), Start.AddHours(5).ToOADate());
@@ -270,8 +271,8 @@ public sealed class GanttLaneTests {
     public void ValidationRejectsInvalidItemsAndRendersEmptyLanesAsNoData() {
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartGanttLaneItem(Start, Start, "low"));
         Assert.Throws<ArgumentException>(() => new ChartGanttLaneItem(Start, null, " "));
-        Assert.Throws<ArgumentException>(() => Chart.Create().WithTheme(VisualTheme.Report()).AddGanttLane("A", new[] { default(ChartGanttLaneItem) }));
-        var empty = Chart.Create().WithTheme(VisualTheme.Report()).AddGanttLane("A", Array.Empty<ChartGanttLaneItem>());
+        Assert.Throws<ArgumentException>(() => Chart.Create().WithTheme(VisualTheme.Graphite()).AddGanttLane("A", new[] { default(ChartGanttLaneItem) }));
+        var empty = Chart.Create().WithTheme(VisualTheme.Graphite()).AddGanttLane("A", Array.Empty<ChartGanttLaneItem>());
         Assert.Empty(ByRole(XDocument.Parse(empty.ToSvg()), "gantt-lane-item"));
         Assert.True(empty.ToPng().Length > 64);
         var local = new DateTime(2026, 9, 24, 12, 0, 0, DateTimeKind.Local);
@@ -286,7 +287,7 @@ public sealed class GanttLaneTests {
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartGanttLaneItem(start, shortEnd, "low"));
 
         double visibleEnd = start + TimeSpan.FromTicks(2_000).TotalDays;
-        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithXAxisTimeScale().WithStateCategories(Status.SeverityCategories())
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithXAxisTimeScale().WithStateCategories(Status.SeverityCategories())
             .AddGanttLane("Service", new[] { new ChartGanttLaneItem(start, visibleEnd, "low") });
         var item = Assert.Single(ByRole(XDocument.Parse(chart.ToSvg()), "gantt-lane-item"));
         Assert.NotEqual((string?)item.Attribute("data-cfx-start"), (string?)item.Attribute("data-cfx-end"));
@@ -310,7 +311,7 @@ public sealed class GanttLaneTests {
 
     [Fact]
     public void Render_ManyLanesAndDisabledChrome_StayInsidePlot() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(480, 260).WithLegend(false).WithAxes(false).WithStateCategories(Status.SeverityCategories());
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(480, 260).WithLegend(false).WithAxes(false).WithStateCategories(Status.SeverityCategories());
         for (var lane = 0; lane < 60; lane++) chart.AddGanttLane("L" + lane.ToString(CultureInfo.InvariantCulture), new[] { new ChartGanttLaneItem(Start, Start.AddHours(1 + lane % 3), "low") }, lane % 10 == 0 ? "G" + lane.ToString(CultureInfo.InvariantCulture) : null);
         var svg = XDocument.Parse(chart.ToSvg());
         var items = ByRole(svg, "gantt-lane-item");
@@ -395,7 +396,7 @@ public sealed class GanttLaneTests {
         Assert.All(ByRole(svg, "data-label"), label =>
             Assert.Contains(label.Ancestors(), owner => (string?)owner.Attribute("data-cfx-role") == "gantt-lane-item"));
 
-        var shortChart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(720, 300).WithXAxisTimeScale()
+        var shortChart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(720, 300).WithXAxisTimeScale()
             .WithStateCategories(Status.SeverityCategories())
             .AddGanttLane("Service", new[] { new ChartGanttLaneItem(Start, Start.AddMilliseconds(80), "low", "Brief") });
         var shortSvg = XDocument.Parse(shortChart.ToSvg());
@@ -411,7 +412,7 @@ public sealed class GanttLaneTests {
     public void Render_RepeatedHourMetadataAndSummaryHeader_StayUnambiguousAndBounded() {
         var zone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Warsaw");
         var start = new DateTime(2026, 10, 25, 0, 30, 0, DateTimeKind.Utc);
-        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(390, 300).WithXAxisTimeScale(zone)
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(390, 300).WithXAxisTimeScale(zone)
             .WithStateCategories(Status.SeverityCategories())
             .AddGanttLane("Service", new[] { new ChartGanttLaneItem(start, start.AddHours(1), "low", "Repeated hour") }, summary: "1");
         chart.Options.StateTimelineSummaryHeader = "A very long summary header that cannot fit the reserved column";
@@ -427,7 +428,7 @@ public sealed class GanttLaneTests {
 
     [Fact]
     public void Render_UpperBoundOnly_BeforeAllItems_KeepsTheRequestedEmptyWindow() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(640, 240).WithStateCategories(Status.SeverityCategories())
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(640, 240).WithStateCategories(Status.SeverityCategories())
             .AddGanttLane("Service", new[] { new ChartGanttLaneItem(Start, Start.AddHours(2), "low") });
         chart.Options.XAxis.Maximum = Start.AddHours(-1).ToOADate();
         Assert.Empty(ByRole(XDocument.Parse(chart.ToSvg()), "gantt-lane-item"));
@@ -447,7 +448,7 @@ public sealed class GanttLaneTests {
     [Fact]
     public void Render_OpenItemStartingAtNow_IsAnInstantMark() {
         var now = Start.AddHours(1);
-        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(720, 300).WithGanttLaneNow(now).WithStateCategories(Status.SeverityCategories())
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(720, 300).WithGanttLaneNow(now).WithStateCategories(Status.SeverityCategories())
             .AddGanttLane("Service", new[] {
                 new ChartGanttLaneItem(Start, Start.AddHours(4), "low"),
                 new ChartGanttLaneItem(now, null, "high")
@@ -479,14 +480,14 @@ public sealed class GanttLaneTests {
         Assert.Contains("1899-12-30", Assert.Throws<ArgumentOutOfRangeException>(() =>
             new ChartGanttLaneItem(beforeEpoch, beforeEpoch.AddHours(6), "low")).Message);
         Assert.Contains("1899-12-30", Assert.Throws<ArgumentOutOfRangeException>(() =>
-            Chart.Create().WithTheme(VisualTheme.Report()).WithGanttLaneNow(beforeEpoch)).Message);
+            Chart.Create().WithTheme(VisualTheme.Graphite()).WithGanttLaneNow(beforeEpoch)).Message);
     }
 
     [Fact]
     public void Render_SubmillisecondEndpoints_KeepDistinctMetadataAndDuration() {
         var first = Start.AddHours(12).AddTicks(1_000);
         var second = Start.AddHours(12).AddTicks(2_000);
-        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(720, 300).WithXAxisTimeScale()
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(720, 300).WithXAxisTimeScale()
             .WithStateCategories(Status.SeverityCategories())
             .AddGanttLane("Service", new[] { new ChartGanttLaneItem(first, second, "low") });
         var item = Assert.Single(ByRole(XDocument.Parse(chart.ToSvg()), "gantt-lane-item"));
@@ -508,7 +509,7 @@ public sealed class GanttLaneTests {
     [Fact]
     public void DateTimeAxisLabelAtSubmillisecondStart_RemainsVisible() {
         var start = Start.AddTicks(1_000);
-        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(720, 300).WithXAxisTimeScale()
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(720, 300).WithXAxisTimeScale()
             .WithStateCategories(Status.SeverityCategories())
             .WithXLabels(new[] { new ChartAxisLabel(start, "Start") })
             .AddGanttLane("Service", new[] { new ChartGanttLaneItem(start, start.AddMinutes(1), "low") });
@@ -518,7 +519,7 @@ public sealed class GanttLaneTests {
     private static Chart CreateChart() {
         ChartGanttLaneItem Incident(double from, double? to, string severity, string label, string? detail = null) =>
             new(Start.AddHours(from), to.HasValue ? Start.AddHours(to.Value) : null, severity, label, detail);
-        var chart = Chart.Create().WithTheme(VisualTheme.Report()).WithSize(900, 480).WithXAxisTimeScale(showTimeZone: true).WithGanttToday(Start.AddHours(44))
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(900, 480).WithXAxisTimeScale(showTimeZone: true).WithGanttToday(Start.AddHours(44))
             .WithStateCategories(Status.SeverityCategories())
             .AddGanttLane("LDAP", new[] { Incident(2, 5.5, "high", "Bind latency", "p95 above 250 ms") }, "Warsaw", "2")
             .AddGanttLane("Replication", new[] { Incident(8, 30, "critical", "USN rollback"), Incident(26, null, "medium", "Link flapping"), Incident(12, 16, "medium", "Backlog") }, "Warsaw", "3")

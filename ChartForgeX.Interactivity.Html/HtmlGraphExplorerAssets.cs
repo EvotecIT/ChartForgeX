@@ -65,7 +65,7 @@ internal static class HtmlGraphExplorerAssets {
     private static readonly Lazy<string> StyleResource = new Lazy<string>(() => ReadResources(StyleResourceNames));
     private static readonly Lazy<string> ScriptResource = new Lazy<string>(() => ReadResources(ScriptResourceNames));
 
-    internal static string Style => StyleResource.Value;
+    internal static string Style => ChartForgeX.Typography.ChartFontAssets.StyleSheet + "\n" + StyleResource.Value;
 
     internal static string Script => ScriptResource.Value;
 

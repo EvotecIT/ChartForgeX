@@ -103,7 +103,9 @@ foreach ($relative in $declaredAssets) {
     }
 }
 foreach ($artifact in @($manifest.artifacts)) {
-    foreach ($property in @('svg', 'png', 'html', 'source', 'thumbnail', 'thumbnailPng')) {
+    foreach ($property in @('svg', 'png', 'html', 'source', 'thumbnail', 'thumbnailPng', 'snippet')) {
+        # A snippet is optional: older catalogs and non-recipe examples show the complete program.
+        if ($property -eq 'snippet' -and -not $artifact.snippet) { continue }
         $relative = [string] $artifact.$property
         if ([string]::IsNullOrWhiteSpace($relative) -or [IO.Path]::GetFileName($relative) -ne $relative -or
             -not (Test-Path -LiteralPath (Join-Path $v2Source $relative) -PathType Leaf)) {
@@ -206,6 +208,8 @@ $items = foreach ($artifact in $primary) {
         darkThumbnail = $urlRoot + $dark[0].thumbnailPng
         darkHtml = $urlRoot + $dark[0].html
         darkSource = $urlRoot + $dark[0].source
+        snippet = if ($artifact.snippet) { $urlRoot + $artifact.snippet } else { $null }
+        darkSnippet = if ($dark[0].snippet) { $urlRoot + $dark[0].snippet } else { $null }
         compactHtml = if ($compact.Count -eq 1) { $urlRoot + $compact[0].html } else { $null }
         darkCompactHtml = if ($darkCompact.Count -eq 1) { $urlRoot + $darkCompact[0].html } else { $null }
         interactive = if ($artifact.interactive) { $urlRoot + $artifact.interactive } else { $null }
@@ -239,6 +243,8 @@ $families = foreach ($item in $items) {
             height = $candidate.height
             source = $urlRoot + $candidate.source
             darkSource = $urlRoot + $darkVariant[0].source
+            snippet = if ($candidate.snippet) { $urlRoot + $candidate.snippet } else { $null }
+            darkSnippet = if ($darkVariant[0].snippet) { $urlRoot + $darkVariant[0].snippet } else { $null }
         }
     }
     $reference = $manifest.families.($item.slug)

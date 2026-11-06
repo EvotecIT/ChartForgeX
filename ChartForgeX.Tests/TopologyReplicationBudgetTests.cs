@@ -44,6 +44,7 @@ public sealed class TopologyReplicationBudgetTests {
         stopwatch.Restart();
         var svg = prepared.ToSvg();
         var svgMs = stopwatch.ElapsedMilliseconds;
+        var sharedFontSvg = prepared.Visual.ToSvgWithoutProductFonts();
         stopwatch.Restart();
         var png = prepared.ToPng();
         var pngMs = stopwatch.ElapsedMilliseconds;
@@ -67,7 +68,10 @@ public sealed class TopologyReplicationBudgetTests {
             renderedEdges.Select(element => (string?)element.Attribute("data-edge-id") ?? throw new InvalidOperationException("Rendered edge has no ID.")).OrderBy(id => id, StringComparer.Ordinal));
         Assert.True(png.Length > 10_000, "The PNG export should contain the rendered topology.");
         Assert.True(prepareMs + svgMs + pngMs <= RenderTimeBudgetMilliseconds, $"Layout plus SVG and PNG export took {prepareMs + svgMs + pngMs} ms; budget {RenderTimeBudgetMilliseconds} ms.");
-        Assert.True(svg.Length <= svgByteBudget, $"SVG is {svg.Length} bytes; budget {svgByteBudget}.");
+        // The existing diagram budget remains unchanged. Standalone exports additionally
+        // carry at most one copy of the two bundled WOFF2 faces and their OFL notices.
+        Assert.True(sharedFontSvg.Length <= svgByteBudget, $"Diagram SVG is {sharedFontSvg.Length} characters; budget {svgByteBudget}.");
+        Assert.InRange(svg.Length - sharedFontSvg.Length, 0, 230_000);
         var (labelCardOverlaps, labelOverlaps) = ReplicationTopologyFixture.EdgeLabelQuality(chart, options);
         Assert.Equal(0, labelCardOverlaps);
         Assert.True(labelOverlaps <= labelOverlapCeiling, $"Edge labels overlap {labelOverlaps} times; ceiling {labelOverlapCeiling}.");

@@ -47,7 +47,8 @@ public sealed class MermaidSequenceParticipantViewsBrowserTests {
             var allText=string.Join(" ",observed.GetProperty("text").EnumerateArray().Select(item=>item.GetProperty("text").GetString()));Assert.DoesNotContain("Retained unused",allText);Assert.DoesNotContain("empty-group",allText);
             Assert.Equal(5,artifact.ToInterchangeEnvelope().Nodes.Count);
             Assert.Empty(observed.GetProperty("clip").EnumerateArray());Assert.Equal(0,observed.GetProperty("nativeScripts").GetInt32());Assert.False(observed.GetProperty("pageOverflow").GetBoolean());
-            AssertRole("sequence-participant","Review",14,"400");AssertRole("sequence-message","Store",12,"400");AssertRole("sequence-note","Retained",12,"400");
+            // The authored 64px actor width wraps "Review" at 14px under the source's wrapping default; "Audit" stays whole.
+            AssertRole("sequence-participant","Audit",14,"400");AssertRole("sequence-message","Store",12,"400");AssertRole("sequence-note","Retained",12,"400");
             Assert.All(observed.GetProperty("activationWidths").EnumerateArray(),item=>Assert.Equal(10,item.GetDouble()));
             var host=page.Locator("[data-cfx-html-sizing='preserve-size']");
             if(observed.GetProperty("host").GetProperty("contentWidth").GetInt32()>observed.GetProperty("host").GetProperty("width").GetInt32()) {
@@ -62,7 +63,7 @@ public sealed class MermaidSequenceParticipantViewsBrowserTests {
             void AssertRole(string role,string caption,double size,string weight) {
                 var actual=observed.GetProperty("text").EnumerateArray().First(item=>item.GetProperty("text").GetString()!.Contains(caption,StringComparison.Ordinal)
                     &&item.GetProperty("roles").EnumerateArray().Any(value=>value.GetString()==role));
-                Assert.Equal(size,actual.GetProperty("size").GetDouble());Assert.Equal(weight,actual.GetProperty("weight").GetString());Assert.Contains(BrowserProofFonts.Family,actual.GetProperty("family").GetString());
+                Assert.Equal(size,actual.GetProperty("size").GetDouble());Assert.Equal(weight,actual.GetProperty("weight").GetString());BrowserProofFonts.AssertComputedFamily(actual.GetProperty("family").GetString());
             }
         }
     }

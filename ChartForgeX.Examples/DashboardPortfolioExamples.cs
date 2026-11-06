@@ -97,7 +97,7 @@ internal static class DashboardPortfolioExamples {
     private static Chart KpiSparkline() => Chart.Create()
         .WithTitle("Average KPI")
         .WithSubtitle("9/10 company standard  +20%")
-        .WithSize(520, 260)
+        .WithSize(600, 300)
         .WithTheme(DashboardTheme())
         .WithLegend(false)
         .WithAxes(false)
@@ -110,7 +110,7 @@ internal static class DashboardPortfolioExamples {
     private static Chart DeviceSplit() => Chart.Create()
         .WithTitle("Today Used Devices")
         .WithSubtitle("Completion rows with reusable progress bars")
-        .WithSize(520, 260)
+        .WithSize(600, 200)
         .WithTheme(DashboardTheme())
         .WithLegend(false)
         .WithProgressValues(true)
@@ -126,7 +126,7 @@ internal static class DashboardPortfolioExamples {
     private static Chart ProjectActivity() => Chart.Create()
         .WithTitle("Projects")
         .WithSubtitle("Compact activity bars for status cards")
-        .WithSize(520, 260)
+        .WithSize(600, 300)
         .WithTheme(DashboardTheme())
         .WithLegend(false)
         .WithAxes(false)
@@ -139,7 +139,7 @@ internal static class DashboardPortfolioExamples {
         var chart = Chart.Create()
             .WithTitle("Attendance Overview")
             .WithSubtitle("Hexbin heatmap rows for day/time utilization")
-            .WithSize(760, 520)
+            .WithSize(800, 547)
             .WithTheme(DashboardTheme())
             .WithLegend(false)
             .WithDataLabels(false)
@@ -165,7 +165,7 @@ internal static class DashboardPortfolioExamples {
         var chart = Chart.Create()
             .WithTitle("Monthly Recurring Revenue")
             .WithSubtitle("$120,400  +$8,000")
-            .WithSize(920, 520)
+            .WithSize(800, 452)
             .WithTheme(SaasTheme())
             .WithAxisLines(false)
             .WithLegendPosition(ChartLegendPosition.TopRight)
@@ -184,7 +184,7 @@ internal static class DashboardPortfolioExamples {
         var chart = Chart.Create()
             .WithTitle("MRR Drivers")
             .WithSubtitle("Net +$8.0k this month")
-            .WithSize(920, 480)
+            .WithSize(800, 417)
             .WithTheme(SaasTheme())
             .WithAxisLines(false)
             .WithStackedHorizontalBars()
@@ -212,7 +212,7 @@ internal static class DashboardPortfolioExamples {
         var chart = Chart.Create()
             .WithTitle("Reports")
             .WithSubtitle("Earnings $48,620   Bills $6,820")
-            .WithSize(860, 320)
+            .WithSize(800, 298)
             .WithTheme(RestaurantTheme())
             .WithLegend(false)
             .WithGrid(false)
@@ -312,7 +312,7 @@ internal static class DashboardPortfolioExamples {
         var chart = Chart.Create()
             .WithTitle("Detailed Event Analytics")
             .WithSubtitle("May 12 focus | EUR 42.8K revenue | 2,884 tickets sold")
-            .WithSize(1180, 460)
+            .WithSize(800, 312)
             .WithTheme(TicketingTheme())
             .WithDashboardBarPanelStyle()
             .WithLegendPosition(ChartLegendPosition.TopRight)
@@ -336,7 +336,7 @@ internal static class DashboardPortfolioExamples {
     private static Chart TicketingPackageMix() => Chart.Create()
         .WithTitle("Package Selling")
         .WithSubtitle("Arrival-date packages and pick-and-choose inventory")
-        .WithSize(520, 300)
+        .WithSize(600, 346)
         .WithTheme(TicketingTheme())
         .WithLegend(false)
         .WithProgressValues()
@@ -354,7 +354,7 @@ internal static class DashboardPortfolioExamples {
     private static Chart TicketingPromoterAttribution() => Chart.Create()
         .WithTitle("Promoter Attribution")
         .WithSubtitle("Street teams, socials, and partner links by sold tickets")
-        .WithSize(720, 360)
+        .WithSize(800, 400)
         .WithTheme(TicketingTheme())
         .WithDashboardStackedRowStyle(showTotals: true)
         .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture))
@@ -366,7 +366,7 @@ internal static class DashboardPortfolioExamples {
     private static Chart TicketingGuestFunnel() => Chart.Create()
         .WithTitle("Guest Management Flow")
         .WithSubtitle("Invite, confirmation, entry, and paid upgrade visibility")
-        .WithSize(520, 300)
+        .WithSize(600, 346)
         .WithTheme(TicketingTheme())
         .WithLegend(false)
         .WithDashboardBarPanelStyle()
@@ -421,11 +421,11 @@ internal static class DashboardPortfolioExamples {
             .AddDetail("Avg ticket", "EUR 41.5", VisualStatus.Info)
             .WithMiniSparkline(new[] { 14d, 18d, 23d, 31d, 36d, 42.8d }, color: TicketTeal, fillColor: TicketMint.WithAlpha(34)))
         .Add(TicketingGuestList().WithSize(320, 170))
-        .Add(TicketingRevenueTrend().WithSize(1328, 356), 4, 2)
-        .Add(TicketingPromoterAttribution().WithSize(656, 356), 2, 2)
-        .Add(TicketingPackageMix().WithSize(656, 356), 2, 2)
-        .Add(TicketingGuestFunnel().WithSize(656, 356), 2, 2)
-        .Add(TicketingChannelList().WithSize(656, 356), 2, 2);
+        .Add(TicketingRevenueTrend().WithSize(800, 214), 4, 2)
+        .Add(TicketingPromoterAttribution().WithSize(600, 326), 2, 2)
+        .Add(TicketingPackageMix().WithSize(600, 326), 2, 2)
+        .Add(TicketingGuestFunnel().WithSize(600, 326), 2, 2)
+        .Add(TicketingChannelList().WithSize(600, 326), 2, 2);
 
     private static ChartTable TicketingGuestList() => ChartTable.Create()
         .WithTitle("Guest State")
@@ -469,7 +469,7 @@ internal static class DashboardPortfolioExamples {
         .WithPanelFit(VisualPanelFit.Contain)
         .WithTheme(RestaurantTheme())
         .WithPngOutputScale(outputScale)
-        .Add(RestaurantReports().WithSize(860, 320), 2)
+        .Add(RestaurantReports().WithSize(800, 298), 2)
         .Add(RestaurantOrderStatus())
         .Add(RestaurantCustomersHexbin())
         .Add(RestaurantOccupation())
@@ -517,9 +517,9 @@ internal static class DashboardPortfolioExamples {
         .Add(MetricCard.Create().WithTitle("MRR").WithMetric("Monthly Recurring Revenue", "$120,400").WithStatus(VisualStatus.Positive).AddDetail("Change", "+$8K", VisualStatus.Positive).AddDetail("Plan", "$121K", VisualStatus.Info).WithTheme(SaasTheme()).WithSize(420, 190).WithPadding(26, 30, 26, 22))
         .Add(MetricCard.Create().WithTitle("Target").WithMetric("October target", "$121K").WithCaption("Tracking above plan").WithStatus(VisualStatus.Info).AddDetail("Gap", "$0.6K", VisualStatus.Warning).AddDetail("Runway", "98.3%", VisualStatus.Positive).WithTheme(SaasTheme()).WithSize(420, 190).WithPadding(26, 30, 26, 22))
         .Add(MetricCard.Create().WithTitle("Net Change").WithMetric("This month", "+$8.0K").WithCaption("New business offset churn").WithStatus(VisualStatus.Positive).AddDetail("Adds", "+$12K", VisualStatus.Positive).AddDetail("Drag", "-$4K", VisualStatus.Negative).WithTheme(SaasTheme()).WithSize(420, 190).WithPadding(26, 30, 26, 22))
-        .Add(MrrTrend().WithSize(860, 400), 2, 2)
+        .Add(MrrTrend().WithSize(800, 372), 2, 2)
         .Add(DriverSummaryList(), 1, 2)
-        .Add(MrrDrivers().WithSize(860, 400), 2, 2);
+        .Add(MrrDrivers().WithSize(800, 372), 2, 2);
 
     private static ChartList DriverSummaryList() => ChartList.Create()
         .WithTitle("Driver Summary")
@@ -566,7 +566,7 @@ internal static class DashboardPortfolioExamples {
         .WithTitle("Attendance Log")
         .WithSubtitle("Compact operational table block for dashboard grids.")
         .WithTheme(DashboardTheme())
-        .WithSize(1220, 210)
+        .WithSize(800, 138)
         .WithDenseMode()
         .WithColumns("Employee ID", "Name", "Department", "Status", "Check-in", "Check-out")
         .WithStatusColumn("Status")
@@ -618,13 +618,13 @@ internal static class DashboardPortfolioExamples {
 
     private static string CurrencyK(double value) => "$" + (value / 1000d).ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "K";
 
-    private static VisualTheme DashboardTheme() => VisualTheme.Dashboard();
+    private static VisualTheme DashboardTheme() => VisualTheme.Graphite();
 
-    private static VisualTheme SaasTheme() => VisualTheme.SaasDashboard();
+    private static VisualTheme SaasTheme() => VisualTheme.Graphite();
 
-    private static VisualTheme RestaurantTheme() => VisualTheme.RestaurantDashboard();
+    private static VisualTheme RestaurantTheme() => VisualTheme.Graphite();
 
-    private static VisualTheme TicketingTheme() => VisualTheme.Dashboard().Configure(builder => {
+    private static VisualTheme TicketingTheme() => VisualTheme.Graphite().Configure(builder => {
             builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#F7F8F8");
             builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.White;
             builder.Light.Surface = builder.Dark.Surface = ChartColor.White;

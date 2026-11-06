@@ -1,24 +1,30 @@
+using ChartForgeX.Themes;
 using ChartForgeX.Typography;
-using System.Xml.Linq;
 
 /// <summary>Shares the licensed gallery faces between native metrics and example HTML.</summary>
 internal static class ExampleTypography {
-    internal const string FontFamily = "CFX Proof Carlito";
-    private static readonly Lazy<string> FontCss = new(() => "/*"
-        + File.ReadAllText(Path.Combine(FontDirectory, "OFL.txt")) + "*/"
-        + Face("Regular", 400) + Face("Bold", 700));
+    internal const string FontFamily = ChartFontStacks.ProductSans;
 
-    internal static string EmbeddedStyle => "<style>" + FontCss.Value + "</style>";
+    internal static string EmbeddedStyle => "<style data-cfx-product-fonts=\"true\">" + ChartFontAssets.StyleSheet + "</style>";
 
-    internal static string EmbedInHtml(string html) => html.Replace("</head>", EmbeddedStyle + "</head>", StringComparison.Ordinal);
+    /// <summary>The gallery's one shared copy of the product faces, linked from every catalog page.</summary>
+    internal const string StyleSheetFile = "fonts/product-fonts.css";
 
-    internal static string EmbedInSvg(string svg) => svg.Insert(svg.IndexOf('>', svg.IndexOf("<svg", StringComparison.Ordinal)) + 1,
-        new XElement("style", FontCss.Value).ToString(SaveOptions.DisableFormatting));
+    internal static string LinkedStyle => "<link rel=\"stylesheet\" href=\"" + StyleSheetFile + "\" data-cfx-product-fonts=\"true\">";
 
-    internal static void Register() {
-        FontRegistry.Register(FontFamily, FontPath("Regular"), 400);
-        FontRegistry.Register(FontFamily, FontPath("Bold"), 700);
-    }
+    internal static string EmbedInHtml(string html) => html.Contains(ChartFontAssets.StyleSheet, StringComparison.Ordinal)
+        ? html : html.Replace("</head>", EmbeddedStyle + "</head>", StringComparison.Ordinal);
+
+    /// <summary>Applies shared typography to ordinary example hosts without changing authored font demonstrations.</summary>
+    internal static string EmbedInHost(string html) => html
+        .Replace(EmbeddedStyle, string.Empty, StringComparison.Ordinal)
+        .Replace(ChartFontAssets.StyleSheet, string.Empty, StringComparison.Ordinal)
+        .Replace("</head>", EmbeddedStyle + "<style>body{font-family:" + FontFamily
+            + ";font-variant-numeric:tabular-nums}code,pre,kbd,samp{font-family:"
+            + ChartFontStacks.ProductMono + "}</style></head>", StringComparison.Ordinal);
+
+    // Existing gallery entry points initialize the embedded assets here; native faces resolve in core.
+    internal static void Register() => _ = ChartFontAssets.StyleSheet;
 
     internal static void WriteAssets(string output) {
         Register();
@@ -27,11 +33,8 @@ internal static class ExampleTypography {
         Directory.CreateDirectory(destination);
         foreach (var file in new[] { "Carlito-Regular.ttf", "Carlito-Bold.ttf", "OFL.txt" })
             File.Copy(Path.Combine(FontDirectory, file), Path.Combine(destination, file), true);
+        File.WriteAllText(Path.Combine(output, StyleSheetFile), ChartFontAssets.StyleSheet);
     }
 
     private static string FontDirectory => Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito");
-    private static string FontPath(string weight) => Path.Combine(FontDirectory, "Carlito-" + weight + ".ttf");
-    private static string Face(string weight, int numeric) => "@font-face{font-family:'" + FontFamily
-        + "';font-weight:" + numeric + ";font-display:block;src:url(data:font/ttf;base64,"
-        + Convert.ToBase64String(File.ReadAllBytes(FontPath(weight))) + ") format('truetype')}";
 }

@@ -82,8 +82,7 @@ internal static class VisualChartCompiler {
     }
 
     /// <summary>
-    /// A seventh series is never a generated hue: when more series take automatic colours than the palette has slots,
-    /// slots repeat from the first, and the preparation says so instead of reusing them silently.
+    /// More automatic series than base slots use distinct shade extensions; recommend aggregation before the encoding becomes crowded.
     /// </summary>
     internal static void ReportPaletteReuse(Chart chart, int slots, VisualSceneBuilder builder) {
         if (slots <= 0 || chart.Options.SeriesColorAssignment == ChartSeriesColorAssignment.Identity) return;
@@ -93,9 +92,9 @@ internal static class VisualChartCompiler {
         builder.AddDiagnostic(PaletteReused(automatic, slots, "series"));
     }
 
-    internal static VisualDiagnostic PaletteReused(int count, int slots, string items) => new("palette.reused",
+    internal static VisualDiagnostic PaletteReused(int count, int slots, string items) => new("palette.extended",
         count.ToString(System.Globalization.CultureInfo.InvariantCulture) + " " + items + " use automatic colours but the palette has "
-        + slots.ToString(System.Globalization.CultureInfo.InvariantCulture) + " slots, so colours repeat from the first. Group the rest into Other, give them explicit colours, or use small multiples.",
+        + slots.ToString(System.Globalization.CultureInfo.InvariantCulture) + " base slots, so distinct shade extensions are used. Group the rest into Other or use small multiples for easier comparison.",
         ChartForgeX.Diagnostics.VisualDiagnosticSeverity.Information);
 }
 

@@ -40,7 +40,7 @@ public static class IntegerAxisExamples {
     public static void Write(string output, ChartPngOutputScale scale) {
         TopologyAccentExamples.Write(output);
         foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
-            var sparse = Chart.Create().WithSize(1120, 280).WithTheme(VisualTheme.Graphite(), mode)
+            var sparse = Chart.Create().WithSize(800, 200).WithTheme(VisualTheme.Graphite(), mode)
                 .WithTitle("Sparse category counts").WithXLabels("January", "February")
                 .WithStackedBars().WithYAxisIntegerTicks().WithMaximumBarWidth(48)
                 .AddBar("Passed", new[] { new ChartPoint(1, 1), new ChartPoint(2, 2) })
@@ -48,8 +48,8 @@ public static class IntegerAxisExamples {
             ExampleArtifactWriter.SaveChart(sparse, output, "category-counts-" + mode.ToString().ToLowerInvariant(), scale);
             var responsive = new HtmlResponsiveChartRenderer().RenderFragment(sparse, minimumWidth: 240, maximumWidth: 1600, printWidth: 688);
             File.WriteAllText(Path.Combine(output, "responsive-category-counts-" + mode.ToString().ToLowerInvariant() + ".html"),
-                "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>Offline category-count layout</title>" +
-                "<style>body{margin:24px;font:14px system-ui}main{max-width:1600px;margin:auto}.plot{overflow:auto;min-width:0}</style></head><body><main><h1>Offline category-count layout</h1><p>Resize the panel: text stays at its token size, height stays at 280 pixels, and the legend and bar slots reflow.</p><div class=\"plot\">" + responsive + "</div></main></body></html>");
+                ExampleTypography.EmbedInHost("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>Offline category-count layout</title>" +
+                "<style>body{margin:24px;font-size:14px}main{max-width:1600px;margin:auto}.plot{overflow:auto;min-width:0}</style></head><body><main><h1>Offline category-count layout</h1><p>Resize the panel: text stays at its token size, height stays at 280 pixels, and the legend and bar slots reflow.</p><div class=\"plot\">" + responsive + "</div></main></body></html>"));
             foreach (var width in new[] { 320, 1120 })
                 ExampleArtifactWriter.SaveChart(CreateMonthlyCounts(width, mode), output,
                     "monthly-counts-" + width + "-" + mode.ToString().ToLowerInvariant(), scale);

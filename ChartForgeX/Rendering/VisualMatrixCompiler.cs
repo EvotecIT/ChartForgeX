@@ -22,9 +22,9 @@ internal static partial class VisualMatrixCompiler {
             .Concat(Enumerable.Range(1, row.HeatmapColumnCount ?? 0).Select(index => (double)index))).Distinct().Count();
         if (chart.Series.All(row => row.Kind == ChartSeriesKind.Heatmap) && (categorical || chart.Options.HeatmapColorScale == null)
             && chart.Series.Any(row => row.RenderPoints.Count < columns)) {
-            var blend = ChartColorScaleSurface.NoData(chart.Options.HeatmapColorScale, colors);
-            entries.Add(new VisualLegendEntry(chart.Options.Labels.NoData, blend.Color, "matrix-missing",
-                marker: (builder, box, context) => VisualMissingDataScene.Swatch(builder, box, blend, colors.MutedForeground, "heatmap-key")));
+            var look = ChartMissingData.Look(chart.Options.HeatmapColorScale, colors);
+            entries.Add(new VisualLegendEntry(chart.Options.Labels.NoData, look.Fill.Color, "matrix-missing",
+                marker: (builder, box, context) => VisualMissingDataScene.Swatch(builder, box, look, "heatmap-key", colors.MutedForeground)));
         }
         return entries;
     }

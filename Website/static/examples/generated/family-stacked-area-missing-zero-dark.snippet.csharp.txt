@@ -1,0 +1,40 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = VisualThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var chart = Chart.Create();
+var policy = ChartStackedAreaMissingDataPolicy.Zero;
+var received = new ChartSeries(new ChartSeriesId("received"), "Received", ChartSeriesKind.StackedArea,
+    new[] { new ChartPoint(1, 18), new ChartPoint(2, 25), new ChartPoint(4, 0), new ChartPoint(5, 20), new ChartPoint(6, 28) })
+    .WithStackedAreaMissingData(policy).WithObservationId(2, new ChartObservationId("observed-zero"));
+var processed = new ChartSeries(new ChartSeriesId("processed"), "Processed", ChartSeriesKind.StackedArea,
+    new[] { new ChartPoint(1, 12), new ChartPoint(2, 14), new ChartPoint(3, 16), new ChartPoint(4, 9), new ChartPoint(5, 11), new ChartPoint(6, 15) })
+    .WithStackedAreaMissingData(policy);
+chart.WithTitle(policy == ChartStackedAreaMissingDataPolicy.Gap ? "Missing contribution cuts the stack" : "Missing contribution has zero height")
+    .WithXLabels("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday").WithYAxis("Requests")
+    .AddSeries(received).AddSeries(processed);
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Requests and follow-ups over time", "", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion
