@@ -113,7 +113,7 @@ public static partial class VisualArtifactRendering {
     private static string RenderPreparedHtml(VisualArtifact artifact, PreparedVisual prepared, VisualArtifactRenderOptions? options) {
         PreparedModel(artifact, prepared);
         var title = artifact.Title.Length == 0 ? artifact.Id : artifact.Title;
-        return WrapSvgPage(title, artifact.ToSvg(options), artifact.Accessibility.Language,
+        return WrapSvgPage(title, artifact.ToSvg(StandaloneFile(options)), artifact.Accessibility.Language,
             sizing: HtmlSizing(artifact, options), plainScene: true);
     }
 }

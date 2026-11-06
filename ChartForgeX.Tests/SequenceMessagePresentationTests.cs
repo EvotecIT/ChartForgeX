@@ -35,6 +35,9 @@ public sealed class SequenceMessagePresentationTests {
         foreach (var label in new[] { "1000", "1001", "1002" })
             Assert.Equal(ChartFontStacks.ProductSans, SequenceMessageFixture.Text(prepared, "sequence-number", label).Attribute("font-family")!.Value);
         SequenceMessageFixture.AssertBadgeContainsInk(prepared);
+        var html = prepared.ToArtifact().ToHtmlPage();
+        Assert.Contains("@font-face{font-family:'Archivo';", html);
+        Assert.Contains("data:font/woff2;base64,", html);
         Assert.NotEmpty(prepared.ToPng());
     }
 

@@ -162,7 +162,7 @@ public static partial class VisualArtifactRendering {
         };
     }
 
-    /// <summary>A saved SVG file is standalone, so it always carries its product fonts.</summary>
+    /// <summary>Standalone SVG files and HTML pages carry the product fonts used by their scenes.</summary>
     private static VisualArtifactRenderOptions StandaloneFile(VisualArtifactRenderOptions? options) => new() {
         HtmlSizing = options?.HtmlSizing ?? VisualArtifactHtmlSizing.Automatic, Topology = options?.Topology, Raster = options?.Raster,
         EmbedProductFonts = true
