@@ -267,6 +267,8 @@
         if (legend && !legendEntryShown(root, legend)) { clearLegendReadout(root); return; }
         updateNearestPoint(root, crosshair, tip, event, nativeTarget);
       };
+      // Time a tap with the events' own timestamps: a busy main thread can deliver a quick
+      // press's pointerup long after its pointerdown, and that delay is not the user's.
       let tap = null, completedTap = null;
       const tapPointers = new Set();
       // Observe at the root capture boundary: the pinch owner intentionally
@@ -276,7 +278,7 @@
         completedTap = null; delete root._cfxSuppressPlotActivation;
         tapPointers.add(event.pointerId);
         if (tapPointers.size > 1) { if (tap) tap.blocked = true; return; }
-        tap = { id: event.pointerId, x: event.clientX, y: event.clientY, time: performance.now(),
+        tap = { id: event.pointerId, x: event.clientX, y: event.clientY, time: event.timeStamp,
           blocked: ['pan', 'brush'].includes(root.dataset.cfxMode) };
       }, true);
       listenChart(root, root, 'pointermove', event => {
@@ -284,10 +286,10 @@
       }, true);
       listenChart(root, root.ownerDocument, 'pointerup', event => {
         if (!tapPointers.has(event.pointerId)) return;
-        const valid = tap?.id === event.pointerId && !tap.blocked && tapPointers.size === 1 && performance.now() - tap.time < 700
+        const valid = tap?.id === event.pointerId && !tap.blocked && tapPointers.size === 1 && event.timeStamp - tap.time < 700
           && Math.hypot(event.clientX - tap.x, event.clientY - tap.y) <= 8;
         root._cfxSuppressPlotActivation = !valid;
-        completedTap = valid ? { x: event.clientX, y: event.clientY, time: performance.now() } : null;
+        completedTap = valid ? { x: event.clientX, y: event.clientY, time: event.timeStamp } : null;
         tapPointers.delete(event.pointerId);
         if (!tapPointers.size) tap = null;
       }, true);
@@ -299,7 +301,7 @@
       }, true);
       listenChart(root, stage, 'click', event => {
         const tap = completedTap; completedTap = null;
-        if (!tap || event.defaultPrevented || root._cfxSuppressPlotActivation || performance.now() - tap.time > 800
+        if (!tap || event.defaultPrevented || root._cfxSuppressPlotActivation || event.timeStamp - tap.time > 800
           || Math.hypot(event.clientX - tap.x, event.clientY - tap.y) > 8
           || event.target instanceof Element && event.target.closest('[data-cfx-standalone-hierarchy]')) return;
         const plot = root._cfxCartesianPlot || root._cfxDataProjection?.plotBounds, point = logicalChartPointer(root, event);
