@@ -67,7 +67,7 @@ jobs:
             };
             build = paths.length === 0 || !paths.every(documentation);
             const browserInput = path => /^ChartForgeX\.Tests\/[^/]*Browser[^/]*\.cs$/.test(path);
-            standalone = paths.some(path => browserInput(path) || /^(ChartForgeX\.Interactivity[^/]*\/|ChartForgeX\.Tests\/InteractiveBundleTests\.cs$|ChartForgeX\.Examples\/HtmlCrosshairExamples\.cs$|Build\/(InteractiveBundle\.cs|Sync-InteractiveAssets\.ps1|Test-BrowserCompatibility\.ps1)$|\.github\/workflows\/quality\.yml$)/.test(path));
+            standalone = paths.some(path => browserInput(path) || /^(ChartForgeX\.Interactivity[^/]*\/|ChartForgeX\.Tests\/InteractiveBundleTests\.cs$|ChartForgeX\.Examples\/HtmlCrosshairExamples\.cs$|Build\/(InteractiveBundle\.cs|Sync-InteractiveAssets\.ps1|Select-BrowserTestShard\.ps1|Test-BrowserCompatibility\.ps1)$|\.github\/workflows\/quality\.yml$)/.test(path));
             const browserPaths = paths.filter(browserInput);
             const browserClasses = [...new Set(browserPaths.flatMap(path => {
               const match = /^ChartForgeX\.Tests\/([A-Za-z_][A-Za-z0-9_]*BrowserTests)(?:\.[A-Za-z0-9_]+)*\.cs$/.exec(path);
@@ -90,7 +90,7 @@ jobs:
   quality-gates:
     # Keep the PR platform/browser contexts for an explicitly selected docs-only skip.
     name: ${{ matrix.check }}
-    needs: [changes, build-test-pack, browser-quality, browser-compatibility, browser-shards]
+    needs: [changes, build-test-pack, browser-quality, compatibility-plan, browser-compatibility, browser-shards]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -110,6 +110,7 @@ jobs:
           CHANGES_RESULT: ${{ needs.changes.result }}
           BUILD_REQUIRED: ${{ needs.changes.outputs.build }}
           WORK_RESULT: ${{ needs[matrix.job].result }}
+          PLAN_RESULT: ${{ needs.compatibility-plan.result }}
           COMPATIBILITY_RESULT: ${{ needs.browser-compatibility.result }}
           SHARDS_RESULT: ${{ needs.browser-shards.result }}
           STANDALONE_REQUIRED: ${{ needs.changes.outputs.standalone }}
@@ -123,8 +124,9 @@ jobs:
             echo 'Coverage selection did not return a valid decision.'; exit 1
           else
             test "$WORK_RESULT" = success || { echo "Selected coverage failed: $WORK_RESULT"; exit 1; }
-            test "$SHARDS_RESULT" = success || { echo "Chromium shards did not cover the suite exactly once: $SHARDS_RESULT"; exit 1; }
+            test "$SHARDS_RESULT" = success || { echo "Browser shards did not cover their suites exactly once: $SHARDS_RESULT"; exit 1; }
             if [ "$GITHUB_EVENT_NAME" != pull_request ] || [ "$STANDALONE_REQUIRED" = true ]; then
+              test "$PLAN_RESULT" = success || { echo "macOS browser shard planning failed: $PLAN_RESULT"; exit 1; }
               test "$COMPATIBILITY_RESULT" = success || { echo 'macOS browser coverage failed.'; exit 1; }
             fi
           fi
@@ -391,20 +393,70 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-  browser-compatibility:
-    name: Browser compatibility (macOS ${{ matrix.name }} ${{ matrix.shard }}/3)
+  compatibility-plan:
+    # macOS runners are scarce across the organisation. A focused PR selects a few classes, so it
+    # starts one shard per selected class (at most three) instead of three shards with empty ones.
+    name: Plan macOS browser shards
     needs: changes
     if: needs.changes.outputs.build == 'true' && (github.event_name != 'pull_request' || needs.changes.outputs.standalone == 'true')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      count: ${{ steps.plan.outputs.count }}
+      shards: ${{ steps.plan.outputs.shards }}
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      DOTNET_NOLOGO: "1"
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+    steps:
+      - name: Checkout
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Setup .NET
+        if: github.event_name == 'pull_request'
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: |
+            10.0.x
+            8.0.x
+      - name: Size shards to the selected classes
+        id: plan
+        shell: pwsh
+        env:
+          FOCUSED_STANDALONE: ${{ github.event_name == 'pull_request' }}
+          CHANGED_BROWSER_FILTER: ${{ needs.changes.outputs.browser_filter }}
+        run: |
+          $count = 3
+          if ($env:FOCUSED_STANDALONE -eq 'true') {
+              if (-not $env:CHANGED_BROWSER_FILTER) { throw 'Changed-browser coverage filter is missing.' }
+              $project = 'ChartForgeX.Tests/ChartForgeX.Tests.csproj'
+              dotnet build $project -c Release
+              if ($LASTEXITCODE) { throw 'Compatibility test project build failed.' }
+              . ./Build/Select-BrowserTestShard.ps1
+              $classes = @(Get-BrowserTestCase -Project $project -Configuration Release -Filter $env:CHANGED_BROWSER_FILTER |
+                  ForEach-Object { Get-BrowserTestClass -Case $_ } | Sort-Object -Unique)
+              $count = [Math]::Min($count, $classes.Count)
+              Write-Host "The focused selection lists $($classes.Count) classes: $($classes -join ', ')"
+          }
+          Write-Host "macOS browser compatibility runs $count shards per browser."
+          "count=$count" >> $env:GITHUB_OUTPUT
+          "shards=$(ConvertTo-Json -Compress @(1..$count))" >> $env:GITHUB_OUTPUT
+
+  browser-compatibility:
+    name: Browser compatibility (macOS ${{ matrix.name }} ${{ matrix.shard }}/${{ needs.compatibility-plan.outputs.count }})
+    needs: [changes, compatibility-plan]
     runs-on: macos-latest
-    # The serial compatibility rows run in three parallel shards of whole test classes, so each shard
-    # (setup, about a third of the rows, evidence) stays well inside the envelope; a single serial job
-    # had grown past two hours on Firefox.
+    # Full runs split the serial compatibility rows into three shards of whole test classes, so each
+    # shard (setup, about a third of the rows, evidence) stays well inside the envelope; a single
+    # serial job had grown past two hours on Firefox.
     timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
         browser: [firefox, webkit]
-        shard: [1, 2, 3]
+        shard: ${{ fromJSON(needs.compatibility-plan.outputs.shards) }}
         include:
           - browser: firefox
             name: Firefox
@@ -433,13 +485,21 @@ jobs:
               Browser = '${{ matrix.browser }}'
               OutputRoot = Join-Path $env:RUNNER_TEMP 'chartforgex-${{ matrix.browser }}'
               ShardIndex = ${{ matrix.shard }}
-              ShardCount = 3
+              ShardCount = ${{ needs.compatibility-plan.outputs.count }}
           }
           if ($env:FOCUSED_STANDALONE -eq 'true') {
               if (-not $env:CHANGED_BROWSER_FILTER) { throw 'Changed-browser coverage filter is missing.' }
               $options.Filter = $env:CHANGED_BROWSER_FILTER
           }
           ./Build/Test-BrowserCompatibility.ps1 @options
+      - name: Retain shard manifest
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: chartforgex-compatibility-shard-${{ matrix.browser }}-${{ matrix.shard }}
+          path: ${{ runner.temp }}/chartforgex-${{ matrix.browser }}/results/shard.json
+          if-no-files-found: error
+          retention-days: 7
       - name: Retain compatibility evidence
         if: always()
         uses: actions/upload-artifact@v7
@@ -453,7 +513,7 @@ jobs:
 
   browser-shards:
     name: Browser shard coverage
-    needs: [changes, browser-quality]
+    needs: [changes, browser-quality, browser-compatibility]
     if: always() && needs.changes.outputs.build == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -466,8 +526,13 @@ jobs:
       - name: Download shard manifests
         uses: actions/download-artifact@v8
         with:
-          pattern: chartforgex-browser-shard-*
+          pattern: chartforgex-*-shard-*
           path: ${{ runner.temp }}/browser-shards
       - name: Require every listed class exactly once
         shell: pwsh
-        run: ./Build/Test-BrowserShardCoverage.ps1 -ManifestRoot (Join-Path $env:RUNNER_TEMP 'browser-shards') -Suite chromium-required
+        env:
+          COMPATIBILITY_RESULT: ${{ needs.browser-compatibility.result }}
+        run: |
+          $suites = @('chromium-required')
+          if ($env:COMPATIBILITY_RESULT -ne 'skipped') { $suites += 'firefox-compatibility', 'webkit-compatibility' }
+          ./Build/Test-BrowserShardCoverage.ps1 -ManifestRoot (Join-Path $env:RUNNER_TEMP 'browser-shards') -Suite $suites
