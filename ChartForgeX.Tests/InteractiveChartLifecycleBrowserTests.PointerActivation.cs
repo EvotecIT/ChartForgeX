@@ -138,6 +138,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         await page.Mouse.ClickAsync((float)press[0], (float)press[1]);
         var mutedState = await page.EvaluateAsync<JsonElement>("()=>({...nativeUnderPress,selection:chartController.getSelection(),events:lifecycleSelections})");
         await CaptureAsync(page, "covered-fill-muted-series-" + kind + "-" + dark + "-" + width + "-" + tooltips, mutedState);
+        Assert.Equal("api", mutedState.GetProperty("nativeSeries").GetString());
         Assert.Equal("hidden", await page.Locator("[data-cfx-observation-id='worker-covered']").EvaluateAsync<string>("node=>getComputedStyle(node).visibility"));
         var selected = Assert.Single(mutedState.GetProperty("selection").EnumerateArray());
         Assert.Equal("api-covered", selected.GetProperty("observationId").GetString());
