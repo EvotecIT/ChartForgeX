@@ -91,7 +91,7 @@ Grammar coverage is broad; the remaining work is fidelity and honest results. Th
 
 ## Diagram interchange
 
-- [ ] **Import draw.io diagrams.** Read compressed and uncompressed `.drawio` pages into the existing topology model. Preserve page and layer order, groups, labels, authored positions, and connector endpoints and waypoints within the supported profile. Report unsupported shapes and styles. Done when files produced by draw.io pass graph and rendered-output checks, with bounded decompression and no new core runtime dependency.
+- [ ] **Import draw.io diagrams.** Read compressed and uncompressed `.drawio` pages into the existing topology model, one chart per page. The model has no layers, so layers flatten into draw order with their names kept in metadata and hidden layers reported. Preserve groups, labels, authored positions, and connector endpoints and waypoints within the supported profile. Report unsupported shapes and styles. Done when files produced by draw.io pass graph and rendered-output checks, with bounded decompression and no new core runtime dependency.
 - [ ] **Follow up with editable Visio export.** Once the import profile is qualified, project it through the existing [OfficeIMO.ChartForgeX bridge](https://github.com/EvotecIT/OfficeIMO/tree/master/OfficeIMO.ChartForgeX). Verify that Visio reopens the result with editable shapes, groups, and connected edges.
 
 ## Visual effects
