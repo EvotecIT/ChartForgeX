@@ -44,6 +44,7 @@
   "PublishNuget": false,
   "PublishGitHub": false,
   "CreateReleaseZip": true,
+  "SignDependencyAssemblies": true,
   "CertificateThumbprint": "92e95fb58effa6a4a75e77a33cdd6bfe6dd30f1a",
   "CertificateStore": "CurrentUser",
   "TimeStampServer": "http://timestamp.digicert.com",
