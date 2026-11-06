@@ -1,6 +1,6 @@
 # Next-major API: example migrations
 
-This is the example companion to the [API design](next-major-api.md). I use the current README and gallery at `cee06bbee0d5ef2148db7622ebdd70cfe1954e56` for the before side. Every after block is a proposed API, not a runnable example for the current package. I retain the original data and meaningful settings; imports and repeated file exports are omitted where they do not change.
+This is the example companion to the [API design](next-major-api.md) and follows the [unified authoring convention](unified-authoring.md). I use the current README and gallery at `cee06bbee0d5ef2148db7622ebdd70cfe1954e56` for the before side. Every after block is a proposed API, not a runnable example for the current package. I retain the original data and meaningful settings; imports and repeated file exports are omitted where they do not change.
 
 ## README coverage
 
@@ -43,9 +43,9 @@ var chart = Chart.Line("Weekly orders", c => c
     .Y("Orders")
     .Series("Completed", new double[] { 28, 34, 41, 48, 32 })
     .Series("Target", new double[] { 30, 35, 40, 45, 50 }));
-chart.SaveSvg("orders.svg");
-chart.SavePng("orders.png");
-chart.SaveHtml("orders.html");
+chart.Save("orders.svg");
+chart.Save("orders.png");
+chart.Save("orders.html");
 ```
 
 The shorthand still assigns X = 1 through N. The README's count-axis note becomes `Y(y => y.Ticks(t => t.Integer(true)))`, or physical `X` for horizontal bars. A dashed target is an optional deliberate style change, not part of this behavior-preserving migration.
@@ -77,7 +77,7 @@ After:
 var chart = Chart.Line("CPU usage", c => c
     .X("Minutes").Y("CPU (%)", y => y.Bounds(0, 100))
     .Series("CPU", readings, row => new ChartPoint(row.Minute, row.Cpu)));
-chart.SavePng("cpu.png");
+chart.Save("cpu.png");
 ```
 
 The typed selector executes once at ingestion. It preserves numeric X = 0, 5, 10 and does not introduce category indexing or reflection.
@@ -104,10 +104,10 @@ var chart = Chart.Line("Weekly orders", c => c
         s => s.Id("completed-orders").Marker(m => m.Radius(4))));
 var orders = chart.Series.Get(new SeriesId("completed-orders"));
 orders.Name = "Completed orders";
-chart.SavePng("orders-dark.png");
+chart.Save("orders-dark.png");
 ```
 
-The handle is the typed child model, with the same identity after renaming. Further fluent edits use `orders.Edit(s => s.Marker(...))`. Updating complete typed observations and replacing the collection keep their distinct retention/clearing rules from the main design.
+The handle is the typed child model, with the same identity after renaming. Further fluent edits call the same generated methods on it: `orders.Marker(m => m.Radius(5))`. Updating complete typed observations and replacing the collection keep their distinct retention/clearing rules from the main design.
 
 ### R4. Prepare once, export several ways
 
@@ -166,8 +166,8 @@ var report = Chart.Grid("Order summary", g => {
         .X(x => x.Labels("North", "South", "East"))
         .Series("Orders", new double[] { 52, 38, 46 })));
 });
-report.SaveHtml("summary.html");
-report.SavePng("summary.png");
+report.Save("summary.html");
+report.Save("summary.png");
 ```
 
 `Panel` is the repeated grid child. This is a visual arrangement for export; the report host supplies report pages, tabs, filters and other page structure.
@@ -189,7 +189,7 @@ if (result.Artifact != null) {
 }
 ```
 
-After, using a generated options builder on the existing optional Mermaid entry point:
+After, using generated option methods on the existing optional Mermaid entry point:
 
 ```csharp
 var result = MermaidRenderer.Render(@"flowchart LR
@@ -232,7 +232,7 @@ chart.SaveInteractiveHtml("explore.html", html => html
     .Interaction(i => i.Tooltips(true).Selection(true).KeyboardNavigation(true).Export(true)));
 ```
 
-The optional adapter still owns the export and runtime. `SaveHtml` alone does not acquire scripting. The adapter's default runtime remains the landed default; selecting `Standalone` is an explicit setting.
+The optional adapter still owns the export and runtime. `Save("report.html")` alone does not acquire scripting. The adapter's default runtime remains the landed default; selecting `Standalone` is an explicit setting.
 
 ## Selecting the ten gallery examples
 
@@ -534,11 +534,11 @@ var chart = Chart.Donut("Services contributing to revenue", c => c
 The `options` variant's center and slice treatments also fit the same model:
 
 ```csharp
-chart.Edit(c => c.Labels(l => l.Visible(true).Content(SliceLabelContent.Label))
-    .Center(center => center.Value("1,000").Caption("Revenue (k)")));
+chart.Labels(l => l.Visible(true).Content(SliceLabelContent.Label))
+    .Center(center => center.Value("1,000").Caption("Revenue (k)"));
 var revenue = chart.Series.Get(new SeriesId("revenue"));
-revenue.Edit(s => s.Item(0, item => item.Offset(.12))
-    .Item(1, item => item.Pattern(FillPattern.Crosshatch)));
+revenue.Item(0, item => item.Offset(.12))
+    .Item(1, item => item.Pattern(FillPattern.Crosshatch));
 ```
 
 Here ordinal item edits retain the source recipe's one-shot semantics. Live consumers should assign observation IDs and use keyed `Item(id, ...)` edits. Sparse and automatic Other behavior follow the landed core contract.
