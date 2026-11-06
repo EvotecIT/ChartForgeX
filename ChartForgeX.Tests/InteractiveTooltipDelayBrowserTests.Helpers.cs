@@ -33,11 +33,18 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         Assert.True(entries[entries.Length - 1].GetProperty("hidden").GetBoolean());
     }
 
-    private static Task SettleCameraAsync(IPage page) => page.Locator(".cfx-stage svg").EvaluateAsync("""
-        async svg => {
-            await new Promise(resolve=>requestAnimationFrame(resolve));
-            await Promise.all(svg.getAnimations().map(animation=>animation.finished));
-            await new Promise(resolve=>requestAnimationFrame(resolve));
+    // Toolbar zoom and reset ease the drawing from script (the viewport keeps a motion target until the tween ends),
+    // so CSS animations alone do not show that the camera rests. A marker still moving under a stationary pointer
+    // fires boundary events that rightly cancel a pending readout.
+    private static Task SettleCameraAsync(IPage page) => page.Locator(".cfx-interactive-chart").First.EvaluateAsync("""
+        async root => {
+            const frame=()=>new Promise(resolve=>requestAnimationFrame(resolve));
+            await frame();
+            for(let frames=0;root._cfxStandaloneViewport?.motionTarget&&frames<600;frames++)await frame();
+            if(root._cfxStandaloneViewport?.motionTarget)throw new Error('The viewport transition did not finish.');
+            const svg=root.querySelector('.cfx-stage svg');
+            await Promise.all((svg?svg.getAnimations():[]).map(animation=>animation.finished));
+            await frame();
         }
         """);
 
