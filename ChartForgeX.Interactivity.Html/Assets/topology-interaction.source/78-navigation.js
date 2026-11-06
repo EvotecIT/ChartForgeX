@@ -3,8 +3,9 @@
     const readableTextPixels = 10;
     let readableStart = null;
     let viewportTouched = false;
-    // A host that rendered its own zoom state keeps it; the readable start only replaces the default view.
-    const hostViewport = wrapper.hasAttribute('data-cfx-topology-zoom');
+    // A host that rendered its own zoom state, or asked to open fitted, keeps that view; the readable start only
+    // replaces the default view.
+    const hostViewport = wrapper.hasAttribute('data-cfx-topology-zoom') || wrapper.getAttribute('data-cfx-opening-view') === 'fit';
     const nodeCaptionSize = () => {
       const svg = topologySvg();
       if (!svg) return 0;

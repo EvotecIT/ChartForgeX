@@ -192,6 +192,9 @@ public sealed class TopologyRenderOptions {
     /// <summary>Gets or sets where viewport, fullscreen, and export controls are placed in interactive HTML output.</summary>
     public TopologyHtmlControlPlacement HtmlControlPlacement { get; set; } = TopologyHtmlControlPlacement.TopLeft;
 
+    /// <summary>Gets or sets the view an interactive HTML topology with viewport controls opens at.</summary>
+    public TopologyHtmlOpeningView HtmlOpeningView { get; set; } = TopologyHtmlOpeningView.Readable;
+
     /// <summary>Gets or sets whether interactive HTML pages should read and update scenario state from the page query string.</summary>
     public bool EnableHtmlScenarioUrlState { get; set; }
 

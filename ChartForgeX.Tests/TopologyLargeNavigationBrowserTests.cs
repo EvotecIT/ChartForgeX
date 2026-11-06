@@ -101,6 +101,42 @@ public sealed class TopologyLargeNavigationBrowserTests {
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
     }
 
+    [BrowserFact]
+    public async Task FitOpeningViewKeepsTheWholeDenseDrawingInView() {
+        if (!InteractiveChartBrowser.Enabled) return;
+        var options = new TopologyRenderOptions { ReadableDenseLayout = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile, EnableHtmlViewportControls = true }
+            .WithHtmlOpeningView(TopologyHtmlOpeningView.Fit);
+        var html = new HtmlInteractiveTopologyRenderer().RenderPage(DenseEstate(), options);
+        await using var session = await InteractiveChartBrowser.OpenAsync(html, 375, 820);
+        var page = session.Page;
+        await page.WaitForFunctionAsync("() => document.querySelector('.cfx-topology-wrapper').hasAttribute('data-cfx-runtime-bound')");
+        await Settle(page);
+        var wrapper = page.Locator(".cfx-topology-wrapper");
+        // The host asked for the overview, so the drawing stays fitted where the default would open magnified.
+        Assert.Null(await wrapper.GetAttributeAsync("data-cfx-readable-zoom"));
+        Assert.Equal(0, await page.Locator("[data-cfx-topology-heading]").CountAsync());
+        var fits = await page.EvaluateAsync<bool>(@"() => {
+            const view = document.querySelector('.cfx-topology-viewport').getBoundingClientRect(), svg = document.querySelector('.cfx-topology-viewport > svg').getBoundingClientRect();
+            return svg.width <= view.width + 1 && svg.left >= view.left - 1;
+        }");
+        Assert.True(fits);
+        InteractiveChartBrowser.AssertNoConsoleErrors(session);
+    }
+
+    [BrowserFact]
+    public async Task ThemeAdaptiveCardLeavesTheSurfaceToItsHost() {
+        if (!InteractiveChartBrowser.Enabled) return;
+        // A host that supplies the colour roles owns the surface; the card must not paint the drawing's literal canvas.
+        var options = new TopologyRenderOptions { ReadableDenseLayout = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile,
+            EnableHtmlViewportControls = true, SvgColorVariables = SvgColorVariables.SharedRoles() };
+        var html = new HtmlInteractiveTopologyRenderer().RenderPage(DenseEstate(), options);
+        await using var session = await InteractiveChartBrowser.OpenAsync(html, 375, 820);
+        var page = session.Page;
+        await page.WaitForFunctionAsync("() => document.querySelector('.cfx-topology-wrapper').hasAttribute('data-cfx-readable-zoom')");
+        Assert.Equal("rgba(0, 0, 0, 0)", await page.Locator("[data-cfx-topology-card]").EvaluateAsync<string>("card => getComputedStyle(card).backgroundColor"));
+        InteractiveChartBrowser.AssertNoConsoleErrors(session);
+    }
+
     // The viewport eases its transform over 120 ms; geometry is read once it rests.
     private static Task Settle(Microsoft.Playwright.IPage page) => page.EvaluateAsync("() => Promise.all(document.querySelector('.cfx-topology-viewport > svg').getAnimations().map(animation => animation.finished.catch(() => {})))");
 

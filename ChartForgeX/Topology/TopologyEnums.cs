@@ -158,6 +158,16 @@ public enum TopologyHtmlControlPlacement {
 }
 
 /// <summary>
+/// Defines the view an interactive HTML topology with viewport controls opens at.
+/// </summary>
+public enum TopologyHtmlOpeningView {
+    /// <summary>Open magnified when node captions would render below 10 px at the page width; Fit gives the overview.</summary>
+    Readable,
+    /// <summary>Open with the whole drawing fitted to the viewport; zoom controls give a closer view.</summary>
+    Fit
+}
+
+/// <summary>
 /// Defines how interactive HTML topology scenarios are exposed to users.
 /// </summary>
 public enum TopologyHtmlScenarioControlMode {

@@ -162,6 +162,7 @@
 
 /* Dense topologies: the find row, a lifted heading and the plot share one card; only the plot zooms. */
 .cfx-topology-card{position:relative;border-radius:8px;box-shadow:0 0 0 1px var(--cfx-topology-control-border);background:var(--cfx-topology-canvas,transparent);overflow:hidden}
+.cfx-topology-wrapper[data-cfx-theme-adaptive="true"] .cfx-topology-card{background:transparent}
 .cfx-topology-wrapper[data-cfx-readable-zoom] .cfx-topology-viewport{height:var(--cfx-topology-readable-height,480px)}
 .cfx-topology-wrapper[data-cfx-viewport-controls='true'] .cfx-topology-viewport:focus-visible{outline:2px solid var(--cfx-topology-accent,#2563eb);outline-offset:-2px}
 .cfx-topology-wrapper[data-cfx-html-heading] .cfx-topology-viewport>svg :is([data-cfx-role='frame-heading'],[data-cfx-role='legend-title'],[data-cfx-role='legend-entry']){visibility:hidden}

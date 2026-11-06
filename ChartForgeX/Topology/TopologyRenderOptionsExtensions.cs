@@ -504,6 +504,19 @@ public static class TopologyRenderOptionsExtensions {
     }
 
     /// <summary>
+    /// Chooses the view an interactive HTML topology with viewport controls opens at.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <param name="view">The opening view.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithHtmlOpeningView(this TopologyRenderOptions options, TopologyHtmlOpeningView view) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        TopologyModelGuards.EnumDefined(view, nameof(view));
+        options.HtmlOpeningView = view;
+        return options;
+    }
+
+    /// <summary>
     /// Enables or disables query-string scenario state in interactive HTML output.
     /// </summary>
     /// <param name="options">The render options.</param>
