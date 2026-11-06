@@ -58,8 +58,10 @@ public sealed class V2GalleryBrowserMatrixTests {
             async expected => {
                 const defects = [];
                 const report = (artifact, message) => defects.push(artifact.id + ': ' + message);
-                const deadline = performance.now() + 25000;
-                const signal = AbortSignal.timeout(25000);
+                // A hang guard, not a performance budget: since 4.0 every standalone SVG carries its product faces,
+                // so a slower shared runner needs longer than the 25 seconds this inspection had before.
+                const deadline = performance.now() + 60000;
+                const signal = AbortSignal.timeout(60000);
                 const fetchAsset = async (file, binary = false) => {
                     try {
                         const response = await fetch(new URL(file, location.href), { signal });
@@ -119,7 +121,7 @@ public sealed class V2GalleryBrowserMatrixTests {
                     return value;
                 };
                 for (let start = 0; start < artifacts.length; start += 8) {
-                    if (performance.now() > deadline) throw new Error('Native family inspection exceeded its 25-second bound.');
+                    if (performance.now() > deadline) throw new Error('Native family inspection exceeded its 60-second bound.');
                     const batch = await Promise.all(artifacts.slice(start, start + 8).map(async artifact => ({
                         artifact, svgText: await fetchAsset(artifact.svg), png: await fetchAsset(artifact.png, true)
                     })));
@@ -232,7 +234,7 @@ public sealed class V2GalleryBrowserMatrixTests {
                 }).ToArray(),
                 light = VisualTheme.Graphite().Resolve(VisualThemeMode.Light).Background.ToHex(),
                 dark = VisualTheme.Graphite().Resolve(VisualThemeMode.Dark).Background.ToHex()
-            }).WaitAsync(TimeSpan.FromSeconds(30));
+            }).WaitAsync(TimeSpan.FromSeconds(90)); // Outlasts the page's own 60-second guard so its message is reported.
         } catch (Exception error) {
             // HtmlTinkerX already records transport failures. Keep them in the TRX even
             // when evaluation fails before the normal matrix/console receipt is written.
