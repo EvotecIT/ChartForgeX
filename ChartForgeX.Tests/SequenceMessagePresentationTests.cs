@@ -14,6 +14,34 @@ namespace ChartForgeX.Tests;
 [Collection(nameof(FontRegistryCollection))]
 public sealed class SequenceMessagePresentationTests {
     [Fact]
+    public void CompactNumberBadgesUsePortableMetricsAndPreserveParticipantMinima() {
+        var model = SequenceArtifact.Create("compact-badges")
+            .AddParticipant("client", "Review").AddParticipant("store", "Archive")
+            .AddMessage("client", "store", "Save\nFact")
+            .AddMessage("store", "client", "Ready\nNext")
+            .AddMessage("store", "store", "Check\nSelf")
+            .AddNote(SequenceArtifactNotePlacement.Over, new[] { "client", "store" }, "Review\nNote");
+        model.Metadata["mermaid.autonumber"] = "true";
+        model.Metadata["mermaid.autonumber.start"] = "1000";
+        model.Layout = new SequenceLayoutPolicy(participantMinimumWidth: 64, participantSpacing: 8,
+            wrapPadding: 8, numberPresentation: SequenceNumberPresentation.Badge);
+        model.Typography = new SequenceTypography(participant: new TextStyleOverride { FontSize = 14 },
+            message: new TextStyleOverride { FontSize = 12 }, note: new TextStyleOverride { FontSize = 12 });
+        var prepared = model.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(390, 820))));
+        var participants = prepared.Regions.Where(item => item.Role == "sequence-participant").ToArray();
+        Assert.All(participants, item => Assert.True(item.Bounds.Width >= 64));
+        Assert.True(participants[1].Bounds.Left - participants[0].Bounds.Right >= 8);
+        Assert.Equal(new[] { "1000", "1001", "1002" }, prepared.Regions.Where(item => item.Role == "sequence-number").Select(item => item.Label));
+        foreach (var label in new[] { "1000", "1001", "1002" })
+            Assert.Equal(ChartFontStacks.ProductSans, SequenceMessageFixture.Text(prepared, "sequence-number", label).Attribute("font-family")!.Value);
+        SequenceMessageFixture.AssertBadgeContainsInk(prepared);
+        var html = prepared.ToArtifact().ToHtmlPage();
+        Assert.Contains("@font-face{font-family:'Archivo';", html);
+        Assert.Contains("data:font/woff2;base64,", html);
+        Assert.NotEmpty(prepared.ToPng());
+    }
+
+    [Fact]
     public void NullAndExplicitInlineKeepExactOrdinaryNativeNumberSvgPngJson() {
         var model=SequenceMessageFixture.Basic();model.Metadata["mermaid.autonumber"]="true";var svg=model.ToSvg();var png=model.ToPng();var json=model.ToVisualArtifact().ToInterchangeJson();SequenceMessageFixture.Capture("sequence-message-native-default",model);
         model.Layout=new SequenceLayoutPolicy(numberPresentation:SequenceNumberPresentation.Inline);SequenceMessageFixture.Capture("sequence-message-native-inline",model);
@@ -45,7 +73,7 @@ public sealed class SequenceMessagePresentationTests {
     [InlineData("1",12)] [InlineData("1000",9)] [InlineData("1000000",7)] [InlineData("-1000",9)] [InlineData("1.25",9)]
     public void AutomaticBadgeFontFollowsNumericStringLengthAndItsMeasuredInkFitsTheCircle(string start,double size) {
         var model=SequenceMessageFixture.Badged(start);var prepared=model.Prepare(SequenceMessageFixture.Context());SequenceMessageFixture.Capture("sequence-number-digits-"+start.Replace('.','-'),prepared);
-        var number=SequenceMessageFixture.Text(prepared,"sequence-number",start);Assert.Equal(SequenceMessageFixture.F(size),number.Attribute("font-size")!.Value);Assert.Equal("sans-serif",number.Attribute("font-family")!.Value);
+        var number=SequenceMessageFixture.Text(prepared,"sequence-number",start);Assert.Equal(SequenceMessageFixture.F(size),number.Attribute("font-size")!.Value);Assert.Equal(ChartFontStacks.ProductSans,number.Attribute("font-family")!.Value);
         SequenceMessageFixture.AssertBadgeContainsInk(prepared);Assert.Equal(start,prepared.Regions.Single(item=>item.Role=="sequence-number").Label);
         Assert.DoesNotContain(start+". Long request",prepared.ToSvg());
     }

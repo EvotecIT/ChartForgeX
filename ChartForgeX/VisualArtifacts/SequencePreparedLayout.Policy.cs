@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 
 namespace ChartForgeX.VisualArtifacts;
@@ -122,7 +123,8 @@ internal sealed class SequencePreparedPresentation {
     internal static string NumberLabel(string prefix) => prefix.EndsWith(". ", StringComparison.Ordinal) ? prefix.Substring(0, prefix.Length - 2) : prefix;
     internal TextStyle BadgeStyle(string label, ChartColor ink) {
         var size = label.Length > 5 ? 7 : label.Length > 3 ? 9 : 12;
-        var fallback = new TextStyle { Font = new FontSpec { Family = "sans-serif" }, FontSize = size, Color = ink, LineHeight = 1 };
+        // Badge metrics also reserve lane space, so the default face must travel with the chart.
+        var fallback = new TextStyle { Font = new FontSpec { Family = ChartFontStacks.ProductSans }, FontSize = size, Color = ink, LineHeight = 1 };
         return _numberOverride?.Resolve(fallback) ?? fallback;
     }
     internal double BadgeRadius(string label, VisualSceneBuilder builder) {

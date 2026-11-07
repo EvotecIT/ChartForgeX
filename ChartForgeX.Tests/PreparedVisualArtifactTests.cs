@@ -37,7 +37,7 @@ public sealed class PreparedVisualArtifactTests {
         Assert.Same(prepared, artifact.Model);
         Assert.Equal(PaintGeometry(prepared.ToSvg()), PaintGeometry(artifact.ToSvg()));
         Assert.Equal(prepared.ToPng(), artifact.ToPng());
-        Assert.Contains(artifact.ToSvg(), artifact.ToHtmlPage());
+        Assert.Contains(artifact.ToSvg(new VisualArtifactRenderOptions { EmbedProductFonts = true }), artifact.ToHtmlPage());
         Assert.Contains("<html lang=\"pl-PL\">", artifact.ToHtmlPage());
         Assert.DoesNotContain("<script", artifact.ToHtmlPage());
         Assert.Contains("-webkit-font-smoothing:antialiased", artifact.ToHtmlPage());
