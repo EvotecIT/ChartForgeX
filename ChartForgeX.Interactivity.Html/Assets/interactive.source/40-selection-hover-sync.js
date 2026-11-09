@@ -37,21 +37,36 @@
     if (target.label && (data.cfxLabel === target.label || data.cfxText === target.label || node.getAttribute('aria-label') === target.label)) return true;
     return false;
   };
+  // Legend hover quickens the marker transition. A :has() rule restyled every marker on any inline style or
+  // hidden write in the chart, so the chart carries the hovered legend item as an attribute instead.
+  const bindLegendHover = root => {
+    const hover = event => {
+      const node = event.type === 'pointerover' ? event.target : event.relatedTarget;
+      root.toggleAttribute('data-cfx-legend-hover', node instanceof Element && root.contains(node) && !!node.closest('[data-cfx-role="legend-item"]'));
+    };
+    listenChart(root, root, 'pointerover', hover); listenChart(root, root, 'pointerout', hover);
+    ownChartWork(root, () => root.removeAttribute('data-cfx-legend-hover'));
+  };
+  const hoverStateNames = ['hovering', 'hover-label', 'hover-mode', 'hover-unit', 'flow-hover'];
+  const settleHover = (root, names, all) => {
+    if (all || root._cfxHoverPending) names.forEach(name => root.removeAttribute('data-cfx-' + name));
+    delete root._cfxHoverPending;
+  };
   const clearHover = (root, emit, sync, preservePaint = false) => {
     delete root._cfxPeerHoverSource;
     clearRootBranchHighlight(root);
-    root.removeAttribute('data-cfx-hovering');
-    root.removeAttribute('data-cfx-hover-label');
     root.removeAttribute('data-cfx-hover-key');
-    root.removeAttribute('data-cfx-hover-mode');
     root.removeAttribute('data-cfx-hover-continuous');
-    root.removeAttribute('data-cfx-hover-unit');
-    root.removeAttribute('data-cfx-flow-hover');
+    // Hover handed to another target keeps the shared root state until applyHoverByTarget settles it:
+    // removing and re-adding the same attributes restyles every mark of a dense chart.
+    if (preservePaint) root._cfxHoverPending = true;
+    else settleHover(root, hoverStateNames, true);
     clearReveals(root, 'hover');
     clearReveals(root, 'crosshair');
     clearReveals(root, 'navigate');
 
 
+    if (!preservePaint || root._cfxBranchHighlights) delete root._cfxHoverPaint;
     if (!preservePaint || root._cfxBranchHighlights)
       root.querySelectorAll('.cfx-hovered,.cfx-hover-related,.cfx-hover-column,.cfx-hover-series').forEach((node) => node.classList.remove('cfx-hovered', 'cfx-hover-related', 'cfx-hover-column', 'cfx-hover-series'));
 
@@ -66,13 +81,13 @@
     const crosshair = root.querySelector('.cfx-crosshair');
     if (crosshair) crosshair.hidden = true;
   };
-  const pointLegendUnits = (root, target) => target.point !== undefined && Array.from(root.querySelectorAll('[data-cfx-role="legend-item"][data-cfx-point]'))
+  const pointLegendUnits = (root, target) => target.point !== undefined && chartNodes(root, '[data-cfx-role="legend-item"]').filter(item => item.hasAttribute('data-cfx-point'))
     .some((item) => target.seriesKey ? seriesKey(item) === target.seriesKey : (item.dataset || {}).cfxSeries === String(target.series));
   const legendItemUnit = (root, target) => {
     const reference = target.legendTargetKind ? { targetKind: target.legendTargetKind, targetId: target.legendTargetId }
       : target.targetKind === 'node' ? { targetKind: target.targetKind, targetId: target.targetId } : null;
     if (!reference) return null;
-    const hasLegend = Array.from(root.querySelectorAll('[data-cfx-role="legend-item"]')).some((node) => {
+    const hasLegend = chartNodes(root, '[data-cfx-role="legend-item"]').some((node) => {
       const item = legendTarget(node);
       return item && item.targetKind === reference.targetKind && item.targetId === reference.targetId
         && (target.seriesKey ? seriesKey(node) === target.seriesKey : node.dataset.cfxSeries === String(target.series));
@@ -99,11 +114,28 @@
   };
 
 
+  // Hover moving within one series keeps every node's series relation and series unit, so only nodes that match
+  // either target by identity, point or label can change; the rest keep the classes the previous hover gave them.
+  const repaintHoverChange = (previous, next, paint) => {
+    if (!next || previous?.groups !== next.groups || previous.mode !== next.mode || previous.look !== next.look
+      || previous.target.seriesKey !== next.target.seriesKey) return false;
+    const changed = new Set();
+    for (const { targetKind, targetId, point, label } of [previous.target, next.target])
+      [next.groups.identity.get(targetKind + '\n' + targetId), point !== undefined && next.groups.point.get(String(point)), label && next.groups.label.get(label)]
+        .forEach(list => list && list.forEach(node => changed.add(node)));
+    changed.forEach(paint);
+    return true;
+  };
   const applyHoverByTarget = (root, target, mode) => {
     if (!target) { clearHover(root, false, false); return false; }
-    const nodes = interactiveTargets(root);
+    const previous = root._cfxHoverPaint;
+    delete root._cfxHoverPaint;
+    const nodes = modelled(root, 'targets', () => interactiveTargets(root)), groups = chartModel(root) && hoverGroups(root);
+    const keyed = target => target.targetKind && target.targetId && target.annotationId === undefined;
     const hierarchyView = root._cfxStandaloneHierarchy?.overlay;
-    const localNode = nodes.find((node) => matchesTargetIdentity(node, target) && (!hierarchyView || hierarchyView.contains(node)));
+    // A target with a kind and id can only match nodes rendered with that identity.
+    const localNode = (groups && keyed(target) ? groups.identity.get(target.targetKind + '\n' + target.targetId) || [] : nodes)
+      .find((node) => matchesTargetIdentity(node, target) && (!hierarchyView || hierarchyView.contains(node)));
     if (!localNode && target.targetKind && target.targetId) { clearHover(root, false, false); return false; }
 
     const localTarget = localNode ? targetIdentity(localNode) : target;
@@ -119,28 +151,38 @@
       });
       root.dataset.cfxHovering = 'true'; root.dataset.cfxFlowHover = 'true'; root.dataset.cfxHoverMode = 'flow';
       root.dataset.cfxHoverLabel = localTarget.label || '';
+      settleHover(root, ['hover-unit']);
       return true;
     }
     const hoverMode = hoverModeForTarget(root, localNode, mode);
-    if (hoverMode === 'root-branch') return applyRootBranchHighlight(root, localNode);
+    if (hoverMode === 'root-branch') {
+      const highlighted = applyRootBranchHighlight(root, localNode);
+      settleHover(root, highlighted ? ['flow-hover'] : hoverStateNames);
+      return highlighted;
+    }
     const pointUnits = hoverMode === 'series' && pointLegendUnits(root, localTarget);
     const itemUnit = hoverMode === 'series' && (legendItemUnit(root, localTarget)
       || pointUnits && referencedTargetNode(root, { ...localTarget, targetKind: 'point' }));
     let matched = false;
-    nodes.forEach((node) => {
+    const paint = (node) => {
       const hovered = matchesTargetIdentity(node, localTarget);
       const related = !hovered && targetRelated(node, localTarget);
       if (hovered || related) matched = true;
       setNodeHovered(node, hovered, related);
       node.classList.toggle('cfx-hover-series', hoverMode === 'series' && inHoverUnit(node, localTarget, pointUnits, itemUnit));
       if (root.dataset.cfxLook === 'graphite') node.classList.toggle('cfx-hover-column', localTarget.point !== undefined && node.dataset.cfxPoint === String(localTarget.point));
-    });
+    };
+    const snapshot = groups && !hierarchyView && !pointUnits && !itemUnit && keyed(localTarget) && localTarget.seriesKey
+      && { groups, mode: hoverMode, look: root.dataset.cfxLook, target: localTarget };
+    if (!repaintHoverChange(previous, snapshot, paint)) nodes.forEach(paint);
+    if (snapshot) root._cfxHoverPaint = snapshot;
     if (matched) {
       root.dataset.cfxHovering = 'true';
       root.dataset.cfxHoverMode = hoverMode;
       root.dataset.cfxHoverUnit = pointUnits ? 'point' : 'series';
       root.dataset.cfxHoverLabel = localTarget.label || localTarget.role || localTarget.id || '';
     }
+    settleHover(root, matched ? ['flow-hover'] : hoverStateNames);
     return matched;
   };
   const clearFocusTrail = (root) => {

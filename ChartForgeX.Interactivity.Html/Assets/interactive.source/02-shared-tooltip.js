@@ -25,7 +25,8 @@
     };
 
     addObservation(node);
-    svg.querySelectorAll('[data-cfx-point][data-cfx-series][data-cfx-x]').forEach(addObservation);
+    // Only observations at the same x can join the readout; the chart model groups them by x once.
+    (modelled(root, 'sharedX', () => modelGroups(Array.from(svg.querySelectorAll('[data-cfx-point][data-cfx-series][data-cfx-x]')), point => [Number(point.dataset.cfxX)])).get(x) || []).forEach(addObservation);
     const priority = { danger: 5, warning: 4, info: 3, none: 2, neutral: 1, quiet: 0, success: 0 };
     const stacked = data.cfxStackTotal !== undefined;
     const rows = Array.from(points.values()).sort((a, b) => {

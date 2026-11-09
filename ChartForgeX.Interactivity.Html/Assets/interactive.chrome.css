@@ -191,7 +191,15 @@
 .cfx-interactive-chart[data-cfx-prepared-chart] .cfx-series-isolated-out .cfx-series-isolated-out:not(:where([data-cfx-highlight-managed])),
 .cfx-interactive-chart:not([data-cfx-highlight-probe])[data-cfx-prepared-chart] .cfx-series-muted .cfx-series-muted[data-cfx-highlight-managed] > [data-cfx-highlight-paint],
 .cfx-interactive-chart:not([data-cfx-highlight-probe])[data-cfx-prepared-chart] .cfx-series-isolated-out .cfx-series-isolated-out[data-cfx-highlight-managed] > [data-cfx-highlight-paint] { opacity: 1; }
-.cfx-interactive-chart .cfx-prepared-point-marker { opacity: 0; }
+/* Hidden markers and point hit areas also leave paint, not just view: thousands of transparent shapes made every
+   frame of a dense chart re-layer its whole drawing. Visibility transitions with opacity, so markers still fade out. */
+.cfx-interactive-chart .cfx-prepared-point-marker { opacity: 0; visibility: hidden; }
+.cfx-interactive-chart [data-cfx-point]:not([data-cfx-role="legend-item"]) > [data-cfx-browser-hit-area] { visibility: hidden; }
+.cfx-interactive-chart [data-cfx-point].cfx-hovered > .cfx-prepared-point-marker,
+.cfx-interactive-chart [data-cfx-point].cfx-hover-column > .cfx-prepared-point-marker,
+.cfx-interactive-chart [data-cfx-point].cfx-selected > .cfx-prepared-point-marker,
+.cfx-interactive-chart [data-cfx-point].cfx-highlighted > .cfx-prepared-point-marker,
+.cfx-interactive-chart[data-cfx-export-probe] .cfx-prepared-point-marker { visibility: inherit; }
 .cfx-interactive-chart [data-cfx-point].cfx-hovered > .cfx-prepared-point-marker,
 .cfx-interactive-chart [data-cfx-point].cfx-hover-column > .cfx-prepared-point-marker,
 .cfx-interactive-chart [data-cfx-point].cfx-selected > .cfx-prepared-point-marker,
@@ -332,7 +340,9 @@
 /* Opacity belongs to the series or paint owner once; hover never restores a muted mark. */
 .cfx-interactive-chart[data-cfx-export-probe] svg,
 .cfx-interactive-chart[data-cfx-export-probe] svg * { transition: none !important; }
-.cfx-interactive-chart :is(.cfx-prepared-point-marker, .cfx-responsive-legend__label) { transition: opacity 250ms ease-out; }
+/* A zoom easing by one transform keeps strokes at their drawn width. */
+.cfx-interactive-chart [data-cfx-glide]:is(path, line, polyline, polygon) { vector-effect: non-scaling-stroke; }
+.cfx-interactive-chart :is(.cfx-prepared-point-marker, .cfx-responsive-legend__label) { transition: opacity 250ms ease-out, visibility 250ms ease-out; }
 .cfx-interactive-chart[data-cfx-hovering="true"] :is(.cfx-prepared-point-marker, .cfx-responsive-legend__label) { transition-duration: 150ms; }
 .cfx-interactive-chart:not([data-cfx-hover-continuous])[data-cfx-hover-mode="series"] :is([data-cfx-role="series"],[data-cfx-role="legend-item"]):not(.cfx-hover-series):not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-linked-series-active):not(.cfx-series-isolated-in):not(.cfx-selected):not(.cfx-highlighted) { opacity: .4; }
 .cfx-interactive-chart:not([data-cfx-hover-continuous])[data-cfx-hover-mode="series"][data-cfx-hover-unit="point"] [data-cfx-point]:not(.cfx-hover-series):not(.cfx-linked-series-active):not(.cfx-series-isolated-in):not(.cfx-selected):not(.cfx-highlighted) { opacity: .4; }
@@ -392,8 +402,10 @@
 .cfx-crosshair__label { display: none; }
 .cfx-interactive-chart:not([data-cfx-hover-continuous]):not([data-cfx-prepared-chart])[data-cfx-hover-mode="series"] [data-cfx-series]:not(.cfx-hover-series):not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-point-interaction-target):not(.cfx-selected):not(.cfx-highlighted) { opacity: .4; }
 
-/* HTML chrome above the plot moves below the floating toolbar so the two never overlap. */
-.cfx-interactive-chart[data-cfx-toolbar="compact"] .cfx-frame:has(> .cfx-toolbar):not(:has(> .cfx-responsive-heading[style*="display: block"])):has(> :is(.cfx-hierarchy-breadcrumb, .cfx-responsive-legend[style*="display: flex"])) { padding-block-start: calc(var(--cfx-toolbar-height, 34px) + var(--cfx-toolbar-inset)); }
+/* HTML chrome above the plot moves below the floating toolbar so the two never overlap.
+   The shown heading and legend carry data-cfx-shown: a style attribute inside :has() would make every inline
+   style write in the chart restyle all of its markers. */
+.cfx-interactive-chart[data-cfx-toolbar="compact"] .cfx-frame:has(> .cfx-toolbar):not(:has(> .cfx-responsive-heading[data-cfx-shown])):has(> :is(.cfx-hierarchy-breadcrumb, .cfx-responsive-legend[data-cfx-shown])) { padding-block-start: calc(var(--cfx-toolbar-height, 34px) + var(--cfx-toolbar-inset)); }
 .cfx-interactive-chart :is([data-cfx-role="map-series"], [data-cfx-role="heatmap"], [data-cfx-kind="treemap" i]) .cfx-hovered :is(path, rect, polygon):not([data-cfx-hit]):not([data-cfx-state-halo]) {
   stroke: var(--cfx-focus-ring, var(--hfx-color-focus-ring, currentColor)); stroke-width: 2px; vector-effect: non-scaling-stroke;
 }
@@ -420,7 +432,9 @@
 .cfx-interactive-chart [data-cfx-role="legend-item"]:hover > [data-cfx-browser-hit-area] {
   fill: color-mix(in srgb, var(--cfx-tooltip-text) 6%, transparent); rx: var(--cfx-control-radius, var(--hfx-radius-control, 6px));
 }
-.cfx-interactive-chart:has([data-cfx-role="legend-item"]:hover) :is(.cfx-prepared-point-marker, .cfx-responsive-legend__label) { transition-duration: 100ms; }
+/* The runtime marks a hovered legend item on the chart: a :has() rule here made every inline style or hidden
+   write in the chart restyle all of its markers. */
+.cfx-interactive-chart[data-cfx-legend-hover] :is(.cfx-prepared-point-marker, .cfx-responsive-legend__label) { transition-duration: 100ms; }
 
 /* Narrow readers move the heading into HTML so it can wrap beside the toolbar inside the card. */
 .cfx-responsive-heading {

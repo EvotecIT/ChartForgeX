@@ -112,6 +112,8 @@
         data.cfxLegendTargetKind = 'point'; data.cfxLegendTargetId = pointTargetId(node);
       }
     });
+    // Measure every target before adding markers and hit areas: interleaving the two re-lays the chart out per point.
+    const appends = [];
     svg.querySelectorAll('[data-cfx-point],[data-cfx-series],[data-cfx-role="gauge"],[data-cfx-role="circle-chart"]').forEach((node) => {
       const data = node.dataset;
       if (data.cfxSeries === undefined) {
@@ -164,7 +166,7 @@
         const owner = node.closest('[data-cfx-role="series"]');
         const line = owner && owner.querySelector('[data-cfx-role="line"]');
         marker.setAttribute('fill', line ? getComputedStyle(line).stroke : 'currentColor');
-        node.appendChild(marker);
+        appends.push(() => node.appendChild(marker));
       }
 
 
@@ -176,14 +178,15 @@
         && (coarsePoints ? /^(line|stepline|area|steparea|stackedarea|scatter|bubble|radar|bar|candlestick|ohlc)$/i : /^(line|stepline|area|steparea|stackedarea|scatter|bubble|radar)$/i).test(item.kind)) {
         const matrix = typeof node.getScreenCTM === 'function' ? svgScreenMatrix(node) : null;
         const scale = matrix && Math.min(Math.hypot(matrix.a, matrix.b), Math.hypot(matrix.c, matrix.d));
-        if (scale > 0) appendNativeBrowserHitArea(node, region, (coarsePoints ? 36 : 24) / scale);
+        if (scale > 0) appends.push(() => appendNativeBrowserHitArea(node, region, (coarsePoints ? 36 : 24) / scale));
       }
 
       const hollowCandle = data.cfxRole === 'point' && (data.cfxKind || '').toLowerCase() === 'candlestick'
         && node.querySelector('[data-cfx-role="candlestick-body"][fill="none"]');
       if (box.width > 0 && box.height > 0 && !hollowCandle) return;
-      appendNativeBrowserHitArea(node, region, 8);
+      appends.push(() => appendNativeBrowserHitArea(node, region, 8));
     });
+    appends.forEach(append => append());
     const marks = new Map(Array.from(svg.querySelectorAll('[data-cfx-source-id]')).map(node => [node.dataset.cfxSourceId, node]));
     svg.querySelectorAll('[data-cfx-label-for]').forEach(label => {
       const mark = marks.get(label.dataset.cfxLabelFor);

@@ -195,7 +195,7 @@
     if (tooltipPositionResize) tooltipPositionResize.observe(state.stage);
   };
   const refreshTooltipPosition = (root) => {
-    const state = tooltipPositions.get(root.querySelector('.cfx-tooltip'));
+    const state = tooltipPositions.get(chartNodes(root, '.cfx-tooltip')[0]);
     if (state && activeTooltipPositions.has(state)) { state.paintChanged = true; queueTooltipPositionRefresh(); }
   };
   const tooltipAnchorRect = (state) => {
@@ -223,14 +223,14 @@
   const placeTooltip = (state, skipUnchanged = false) => {
     const { root, tip } = state, anchor = tooltipAnchorRect(state);
     const bounds = tooltipClippingBounds(state.placementClippingAncestors);
-    const dock = root.querySelector('[data-cfx-compare-tray]');
+    const dock = chartNodes(root, '[data-cfx-compare-tray]')[0];
     if (dock && !dock.hidden) {
       const box = dock.getBoundingClientRect();
       if (box.right > bounds.left && box.left < bounds.right && box.top < bounds.bottom
         && box.top >= bounds.top + tip.getBoundingClientRect().height + 16) bounds.bottom = box.top;
     }
     // A flowing legend row above the drawing stays reachable while a readout is shown.
-    const row = root.querySelector('.cfx-responsive-legend[style*="display: flex"]')?.getBoundingClientRect();
+    const row = chartNodes(root, '.cfx-responsive-legend').find(node => node.matches('[style*="display: flex"]'))?.getBoundingClientRect();
     if (row?.bottom <= anchor.top) bounds.top = Math.max(bounds.top, row.bottom);
     const geometry = tooltipPositionGeometry(state, anchor, bounds);
     if (skipUnchanged && state.geometry && geometry.every((value, index) => value === state.geometry[index])) return;
@@ -266,7 +266,7 @@
     // Automatic placement prefers fits that leave the crosshair's value pills readable; an authored order stays exact.
     // Hidden pills measure as an empty box at the origin, outside every inset placement.
     const auto = (root.dataset.cfxTooltipPlacements || 'auto') === 'auto';
-    const pills = auto ? [...root.querySelectorAll('.cfx-crosshair__axis-value')].map(node => node.getBoundingClientRect()) : [];
+    const pills = auto ? chartNodes(root, '.cfx-crosshair').flatMap(crosshair => [...crosshair.querySelectorAll('.cfx-crosshair__axis-value')]).map(node => node.getBoundingClientRect()) : [];
     const clear = fits.filter(c => !pills.some(r => c.x < r.right && c.x + unit.width > r.left && c.y < r.bottom && c.y + unit.height > r.top));
     const fitting = clear.length ? clear : fits;
     const position = (cover ? fitting.reduce((best, c) => !best || covered(c) < covered(best) ? c : best, null) : fitting[0])

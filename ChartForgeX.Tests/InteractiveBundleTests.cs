@@ -16,10 +16,11 @@ public sealed class InteractiveBundleTests {
     [Theory]
     // The report runtimes grew by about 7.5 KiB raw (2.5 KiB gzip) when saved stacks learned to restack on legend toggles,
     // and by about 2.6 KiB raw (1 KiB gzip) when saved windows learned zoned and culture calendars, symmetric-log and
-    // horizontal secondary axes.
-    [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.Tooltips, 99 * 1024, 31 * 1024)]
-    [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.ReportReview, 288 * 1024, 88 * 1024)]
-    [InlineData(HtmlChartRuntime.Full, ChartInteractionFeatures.ReportReview, 356 * 1024, 107 * 1024)]
+    // horizontal secondary axes. Dense-chart hover and zoom (a per-chart pointer model, incremental hover and the eased
+    // zoom transform) added about 2.5 KiB raw (1.1 KiB gzip) to the core reader and 6.3 KiB raw (2.5 KiB gzip) to the others.
+    [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.Tooltips, 102 * 1024, 33 * 1024)]
+    [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.ReportReview, 294 * 1024, 91 * 1024)]
+    [InlineData(HtmlChartRuntime.Full, ChartInteractionFeatures.ReportReview, 362 * 1024, 110 * 1024)]
     public void EmittedRuntimeFitsRawAndGzipBudgets(HtmlChartRuntime runtime, ChartInteractionFeatures features, int rawBudget, int gzipBudget) {
         var asset = HtmlInteractiveAssetFiles.ChartScriptFor(runtime, features);
         var bytes = Encoding.UTF8.GetBytes(asset.Content);

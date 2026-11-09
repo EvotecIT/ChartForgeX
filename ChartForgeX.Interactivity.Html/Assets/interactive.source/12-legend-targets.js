@@ -186,7 +186,7 @@
         return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
       }));
       const next = stage.getBoundingClientRect().width < 560 || collision || boxes.some(box => box.scaleY < 0.85 || box.clipped);
-      tray.style.display = next ? 'flex' : 'none';
+      tray.style.display = next ? 'flex' : 'none'; tray.toggleAttribute('data-cfx-shown', next);
       entries.forEach(entry => {
         entry.source.style.display = next ? 'none' : entry.display;
         entry.source.dataset.cfxRole = next ? 'legend-native' : 'legend-item';
