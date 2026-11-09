@@ -20,14 +20,14 @@
       || ancestry.nodes.some(boundary => node.contains(boundary)));
   };
 
-  const keyboardTargetAvailable = (node) => {
+  const keyboardTargetAvailable = (node, styles = new Map()) => {
     if (node.dataset.cfxVisible === 'false') return false;
-    if (node.closest('[aria-hidden="true"]') || !paintAncestorsVisible(node, new Map())) return false;
+    if (node.closest('[aria-hidden="true"]') || !paintAncestorsVisible(node, styles)) return false;
 
     if (renderedTargetKind(node) !== 'legend' && node.closest('.cfx-series-muted,.cfx-series-isolated-out')) return false;
     const style = getComputedStyle(node);
     if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') return false;
-    if (pointerTargetPaint(node)) return true;
+    if (pointerTargetPaint(node, styles)) return true;
 
     const data = node.dataset;
     if (!data.cfxTargetKind || !data.cfxTargetId || !retainedGeometryFact(node)) return false;
@@ -42,7 +42,9 @@
   };
   const keyboardTargets = (root) => withNativeHighlightPaint(root, () => {
     const hierarchy = hasFeature(root, 'HierarchyNavigation') ? capturedHierarchy(root) : null;
-    const candidates = interactiveTargets(root).filter(keyboardTargetAvailable);
+    // Discovery only reads, so one pass shares computed styles, series paint layers and shown ancestors across every target.
+    const styles = Object.assign(new Map(), { _cfxShown: new Set() });
+    const candidates = interactiveTargets(root).filter(node => keyboardTargetAvailable(node, styles));
     const candidateSet = new Set(candidates);
     const containers = new Set();
     candidates.forEach((node) => {

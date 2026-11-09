@@ -7,7 +7,8 @@
   const refreshKeyboardFocusPaint = (root) => {
     if (!hasFeature(root, 'KeyboardNavigation') || root._cfxPointerFocus === true) { clearKeyboardFocusPaint(root); return; }
     const focused = root.getRootNode().activeElement;
-    const node = interactiveTargets(root).find(node => targetFocusNode(node) === focused);
+    // Focus outside the chart names none of its targets; only focus inside it needs the target search.
+    const node = root.contains(focused) && interactiveTargets(root).find(node => targetFocusNode(node) === focused);
     if (!node || !focused.matches(':focus-visible') || !keyboardTargetAvailable(node)) {
       clearKeyboardFocusPaint(root); return;
     }

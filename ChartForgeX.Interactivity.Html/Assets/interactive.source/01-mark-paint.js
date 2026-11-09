@@ -20,13 +20,16 @@
     if (styles.has(node)) return styles.get(node);
     const style = getComputedStyle(node); styles.set(node, style); return style;
   };
+  // A read-only pass may give its styles map a _cfxShown set, so each shown ancestor is checked once per pass.
   const paintAncestorsVisible = (node, styles) => {
     if (!node || node.closest('defs,[hidden]')) return false;
-    for (let ancestor = node; ancestor; ancestor = composedParent(ancestor)) {
+    const shown = styles._cfxShown, path = [];
+    for (let ancestor = node; ancestor && !shown?.has(ancestor); ancestor = composedParent(ancestor)) {
       const style = paintStyle(ancestor, styles);
       if (style.display === 'none' || Number(style.opacity) === 0) return false;
+      path.push(ancestor);
     }
-
+    path.forEach(ancestor => shown?.add(ancestor));
     return true;
   };
   const paintNodeVisible = (node, styles) => {
@@ -275,6 +278,9 @@
     }
     return null;
   };
+  const roleSelector = roles => roles.split(' ').map(role => '[data-cfx-role="' + role + '"]').join();
+  const seriesPaintLayers = roleSelector('line trend-line slope-line area range-area range-band range-upper range-lower range-midline difference-positive difference-negative difference-first difference-second radar-outline radar-area polar-line');
+  const seriesPatternLayers = roleSelector('area-pattern range-area-pattern range-band-pattern difference-positive-pattern difference-negative-pattern radar-pattern');
   const seriesPaint = (node, styles) => {
     const owner = node.closest('[data-cfx-role="series"],[data-cfx-role="radar-series"],[data-cfx-role="polar-series"]');
     if (!owner) return null;
@@ -289,12 +295,10 @@
       if (role === 'difference-negative' || role === 'difference-negative-pattern') return Number(data.cfxFirst) < Number(data.cfxSecond);
       return true;
     };
-    for (const layer of owner.querySelectorAll('[data-cfx-role="line"],[data-cfx-role="trend-line"],[data-cfx-role="slope-line"],[data-cfx-role="area"],[data-cfx-role="range-area"],[data-cfx-role="range-band"],[data-cfx-role="range-upper"],[data-cfx-role="range-lower"],[data-cfx-role="range-midline"],[data-cfx-role="difference-positive"],[data-cfx-role="difference-negative"],[data-cfx-role="difference-first"],[data-cfx-role="difference-second"],[data-cfx-role="radar-outline"],[data-cfx-role="radar-area"],[data-cfx-role="polar-line"]')) {
-      if (!relevant(layer)) continue;
-      const paint = childPaint(layer, false, styles, node.hasAttribute('data-cfx-point') ? node : undefined);
-      if (paint) return paint;
-    }
-    for (const layer of owner.querySelectorAll('[data-cfx-role="area-pattern"],[data-cfx-role="range-area-pattern"],[data-cfx-role="range-band-pattern"],[data-cfx-role="difference-positive-pattern"],[data-cfx-role="difference-negative-pattern"],[data-cfx-role="radar-pattern"]')) {
+    // A pass shares its styles map, so each series is searched for its paint layers once rather than once per point.
+    const layers = styles._cfxLayers ||= new Map();
+    if (!layers.has(owner)) layers.set(owner, [...owner.querySelectorAll(seriesPaintLayers), ...owner.querySelectorAll(seriesPatternLayers)]);
+    for (const layer of layers.get(owner)) {
       if (!relevant(layer)) continue;
       const paint = childPaint(layer, false, styles, node.hasAttribute('data-cfx-point') ? node : undefined);
       if (paint) return paint;
