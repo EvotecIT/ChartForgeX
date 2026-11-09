@@ -87,7 +87,7 @@ public sealed class InteractiveBundleTests {
     }
 
     // Topology and graph Explorer pages inline their own runtimes, so each gets a budget that makes growth a deliberate change.
-    // Measured on 9 November 2026: topology 156.8 KiB raw / 32.7 KiB gzip, Explorer 428.9 KiB raw / 96.1 KiB gzip.
+    // Measured on 9 November 2026: topology 156.8 KiB raw / 32.7 KiB gzip, Explorer 427.9 KiB raw / 95.8 KiB gzip.
     // Node and edge hover text plus edge arrow shapes, middle arrows and hover/selection widths raised the Explorer from 422.5 / 93.9 KiB.
     [Theory]
     [InlineData("topology", 157 * 1024, 33 * 1024)]
