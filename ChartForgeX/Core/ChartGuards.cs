@@ -54,6 +54,8 @@ internal static partial class ChartGuards {
         ChartCategoryGroupPlan.ValidateChart(chart);
         chart.ValidatePlotRegions();
         ValidateAxisRuleCrossings(chart);
+        chart.Options.XAxis.ValidateTickPolicy("The X axis"); chart.Options.YAxis.ValidateTickPolicy("The Y axis");
+        chart.Options.SecondaryXAxis.ValidateTickPolicy("The secondary X axis"); chart.Options.SecondaryYAxis.ValidateTickPolicy("The secondary Y axis");
         if (chart.Options.MapColorDimension.HasOverrides && chart.Series.Any(series => series.Kind != ChartSeriesKind.RegionMap && series.Kind != ChartSeriesKind.TileMap && series.Kind != ChartSeriesKind.DottedMap))
             throw new InvalidOperationException("Map color presentation requires numeric region, tile or dotted maps.");
         if (chart.Options.HeatmapColorDimension.HasOverrides && chart.Series.Any(series => series.IsCategoricalHeatmapRow

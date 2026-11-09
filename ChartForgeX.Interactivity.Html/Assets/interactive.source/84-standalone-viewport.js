@@ -68,7 +68,7 @@
     });
     for (const name of standaloneAxisNames) {
       const role = name.replace('secondary', 'secondary-').toLowerCase();
-      const nodes = Array.from(svg.querySelectorAll('[data-cfx-role="axis-' + role + '-label"],[data-cfx-role="grid-' + role + '"]'));
+      const nodes = Array.from(svg.querySelectorAll('[data-cfx-role="axis-' + role + '-label"],[data-cfx-role="grid-' + role + '"],[data-cfx-role="grid-' + role + '-minor"]'));
       view.axes.push({ name, nodes, display: new Map(nodes.map(node => [node, standaloneStyle(node, 'display')])), layer: null });
     }
     view.stacks = captureStandaloneStacks(view);
@@ -195,15 +195,12 @@
         text.setAttribute('text-anchor', vertical ? secondary ? 'start' : 'end' : 'middle');
         text.setAttribute('dominant-baseline', vertical ? 'middle' : 'auto'); text.textContent = tick.text;
         text.dataset.cfxAxisValue = tick.value; layer.appendChild(text);
-        const gridTemplate = axis.nodes.find(node => node.dataset.cfxRole?.startsWith('grid-'));
-        if (gridTemplate) {
-          const line = gridTemplate.cloneNode(false);
-          line.style.removeProperty('display'); line.removeAttribute('id');
-          for (const [key, value] of Object.entries(vertical ? { x1: plot.x, x2: plot.x + plot.width, y1: position, y2: position }
-            : { x1: position, x2: position, y1: plot.y, y2: plot.y + plot.height })) line.setAttribute(key, value);
-          grid.appendChild(line);
-        }
+        const gridTemplate = axis.nodes.find(node => /^grid-[xy]$/.test(node.dataset.cfxRole));
+        if (gridTemplate) grid.appendChild(standaloneGridLine(gridTemplate, position, plot, vertical));
       }
+      const minorTemplate = axis.nodes.find(node => node.dataset.cfxRole.endsWith('-minor'));
+      if (minorTemplate) for (const value of standaloneMinorTicks(projection, ticks))
+        grid.prepend(standaloneGridLine(minorTemplate, standaloneCoordinate(projection, value, plot, vertical), plot, vertical));
     }
   };
   const paintStandaloneViewport = root => {

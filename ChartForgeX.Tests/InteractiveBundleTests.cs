@@ -18,9 +18,10 @@ public sealed class InteractiveBundleTests {
     // and by about 2.6 KiB raw (1 KiB gzip) when saved windows learned zoned and culture calendars, symmetric-log and
     // horizontal secondary axes. Dense-chart hover and zoom (a per-chart pointer model, incremental hover and the eased
     // zoom transform) added about 2.5 KiB raw (1.1 KiB gzip) to the core reader and 6.3 KiB raw (2.5 KiB gzip) to the others.
+    // Re-ticking saved windows with authored tick steps, explicit values, minor grids and spacing bounds added about 1.3 KiB raw (0.4 KiB gzip) to the report runtimes; with the saved-page hover model that left them about 0.2 KiB raw over, so both raw budgets moved up 1 KiB.
     [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.Tooltips, 102 * 1024, 33 * 1024)]
-    [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.ReportReview, 294 * 1024, 91 * 1024)]
-    [InlineData(HtmlChartRuntime.Full, ChartInteractionFeatures.ReportReview, 362 * 1024, 110 * 1024)]
+    [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.ReportReview, 296 * 1024, 91 * 1024)]
+    [InlineData(HtmlChartRuntime.Full, ChartInteractionFeatures.ReportReview, 364 * 1024, 110 * 1024)]
     public void EmittedRuntimeFitsRawAndGzipBudgets(HtmlChartRuntime runtime, ChartInteractionFeatures features, int rawBudget, int gzipBudget) {
         var asset = HtmlInteractiveAssetFiles.ChartScriptFor(runtime, features);
         var bytes = Encoding.UTF8.GetBytes(asset.Content);

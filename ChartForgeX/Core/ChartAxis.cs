@@ -26,7 +26,7 @@ public enum ChartScaleKind {
 /// <summary>
 /// Defines renderer-neutral bounds, scale, ticks, labels, and visibility for one chart axis.
 /// </summary>
-public sealed class ChartAxis {
+public sealed partial class ChartAxis {
     private double? _minimum;
     private double? _maximum;
     private ChartScaleKind _scale;
@@ -316,6 +316,7 @@ public sealed class ChartAxis {
     internal ChartAxis Clone() {
         var copy = (ChartAxis)MemberwiseClone();
         copy.Labels = new List<ChartAxisLabel>(Labels);
+        copy._grid = _grid?.Clone();
         return copy;
     }
 

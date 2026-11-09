@@ -70,8 +70,8 @@ bundle needs it. They exclude the drawing, font payloads and stylesheet:
 | Bundle | Raw budget | Gzip budget |
 | --- | ---: | ---: |
 | Core reader (tooltips, keyboard, crosshair) | 102 KiB | 33 KiB |
-| Standalone reader | 294 KiB | 91 KiB |
-| Full controller/native host | 362 KiB | 110 KiB |
+| Standalone reader | 296 KiB | 91 KiB |
+| Full controller/native host | 364 KiB | 110 KiB |
 
 Optional behaviour ships in separate feature bundles, so the runtimes above do
 not grow with it. A page carries only the bundles its options need, and the core
@@ -231,7 +231,15 @@ genitive month names. A zoomed window repeats the native calendar fit, so its
 dates, clock times and regular bar cadence read as a native preparation of that
 window would read.
 
+A numeric axis keeps its authored tick policy in a zoomed window: a fixed step,
+explicit tick values, minor grid lines and tick spacing bounds re-tick the window
+as native layout would (see [axis ticks and grids](axes.md)).
+
 These stay declined, each for a stated reason:
+
+- **Calendar tick steps, tick policies on a time axis, and alternating grid
+  bands.** The calendar fit above does not take an authored step, and bands are
+  painted between the prepared ticks; the page does not repaint either.
 
 - **Session and discretely spaced time axes.** Their positions come from the
   session closures or the ordinal/unit spacing of the source instants, and

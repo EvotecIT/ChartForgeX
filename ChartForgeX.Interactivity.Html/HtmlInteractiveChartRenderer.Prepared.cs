@@ -127,14 +127,15 @@ public sealed partial class HtmlInteractiveChartRenderer {
         json.Append(',').Append(HtmlJsonString.Encode(name)).Append(':');
         AppendViewportAxis(json, axis.FullMinimum, axis.FullMaximum, axis.Minimum, axis.Maximum,
             axis.TransformedFullMinimum, axis.TransformedFullMaximum, axis.TransformedMinimum, axis.TransformedMaximum,
-            axis.Scale, axis.Threshold, axis.Reversed, axis.PlotBounds, axis.TimeSessions, axis.LogarithmBase, axis.LogarithmicDomain, axis.TimeDomain, axis.MaximumInclusive);
+            axis.Scale, axis.Threshold, axis.Reversed, axis.PlotBounds, axis.TimeSessions, axis.LogarithmBase, axis.LogarithmicDomain, axis.TimeDomain, axis.MaximumInclusive,
+            ticks: axis.TickFacts);
     }
 
     private static void AppendViewportAxis(StringBuilder json, double fullMinimum, double fullMaximum, double minimum, double maximum,
         double transformedFullMinimum, double transformedFullMaximum, double transformedMinimum, double transformedMaximum,
         ChartScaleKind scale, double threshold, bool reversed, ChartForgeX.Primitives.ChartRect plot, ChartTimeSessionDomain? sessions,
         double logarithmBase = 10, ChartLogarithmicDomain logarithmicDomain = ChartLogarithmicDomain.Positive, ChartTimeSpacingDomain? timeDomain = null, bool maximumInclusive = true,
-        double? innerRadius = null, double? outerRadius = null) {
+        double? innerRadius = null, double? outerRadius = null, ChartAxisTickFacts? ticks = null) {
         json.Append("{\"fullMinimum\":").Append(fullMinimum.ToString("R", CultureInfo.InvariantCulture))
             .Append(",\"fullMaximum\":").Append(fullMaximum.ToString("R", CultureInfo.InvariantCulture))
             .Append(",\"minimum\":").Append(minimum.ToString("R", CultureInfo.InvariantCulture))
@@ -153,6 +154,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
         AppendLogarithmicPolicy(json, logarithmBase, logarithmicDomain);
         AppendTimeSessions(json, sessions);
         AppendTimeSpacing(json, timeDomain);
+        AppendTickFacts(json, ticks);
         json.Append(",\"plotBounds\":{\"x\":").Append(plot.X.ToString("R", CultureInfo.InvariantCulture))
             .Append(",\"y\":").Append(plot.Y.ToString("R", CultureInfo.InvariantCulture))
             .Append(",\"width\":").Append(plot.Width.ToString("R", CultureInfo.InvariantCulture))
@@ -179,6 +181,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
         AppendLogarithmicPolicy(json, axis.LogarithmBase, axis.LogarithmicDomain);
         AppendTimeSessions(json, axis.TimeSessions);
         AppendTimeSpacing(json, axis.TimeDomain);
+        AppendTickFacts(json, axis.TickFacts);
         json.Append(",\"displayTicks\":[");
         for (var index = 0; index < axis.DisplayTicks.Count; index++) {
             if (index > 0) json.Append(',');
@@ -198,6 +201,19 @@ public sealed partial class HtmlInteractiveChartRenderer {
             json.Append('}');
         }
         json.Append("]}");
+    }
+
+    // A saved window re-ticks with the axis's own step, values, minor ticks and spacing; static ticks decline zoom.
+    private static void AppendTickFacts(StringBuilder json, ChartAxisTickFacts? ticks) {
+        if (ticks == null) return;
+        string Number(double value) => value.ToString("R", CultureInfo.InvariantCulture);
+        if (ticks.Static) json.Append(",\"ticks\":\"static\"");
+        if (ticks.Step is double step) json.Append(",\"tickStep\":").Append(Number(step));
+        if (ticks.Values.Count > 0) json.Append(",\"tickValues\":[").Append(string.Join(",", System.Linq.Enumerable.Select(ticks.Values, Number))).Append(']');
+        if (ticks.MinorTicks > 0) json.Append(",\"minorTicks\":").Append(ticks.MinorTicks.ToString(CultureInfo.InvariantCulture));
+        if (ticks.MinimumSpacing.HasValue || ticks.MaximumSpacing.HasValue)
+            json.Append(",\"tickSpacing\":[").Append(ticks.MinimumSpacing is double low ? Number(low) : "null").Append(',')
+                .Append(ticks.MaximumSpacing is double high ? Number(high) : "null").Append(']');
     }
 
     // A zoned or culture-formatted calendar carries the facts its saved page needs to name the dates a native window would name.
