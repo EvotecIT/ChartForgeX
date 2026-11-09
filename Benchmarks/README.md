@@ -1,5 +1,7 @@
 # Rendering benchmarks
 
+The [performance page](../docs/performance/benchmarks.md) lists every runner's command, reference measurements and the size and scaling guards in the test suite.
+
 The rendering suite measures representative ChartForgeX SVG, direct RGBA, and encoded PNG work through PowerForge's reusable benchmark runner. It covers a three-series, 72-point, 1,200 x 675 report chart and a deterministic 128-node, 230-edge force topology. The RGBA cases isolate rendering from image encoding for composition-heavy hosts such as wallpaper and report generators.
 
 ```powershell

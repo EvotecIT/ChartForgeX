@@ -70,8 +70,8 @@ bundle needs it. They exclude the drawing, font payloads and stylesheet:
 | Bundle | Raw budget | Gzip budget |
 | --- | ---: | ---: |
 | Core reader (tooltips, keyboard, crosshair) | 99 KiB | 31 KiB |
-| Standalone reader | 280 KiB | 84 KiB |
-| Full controller/native host | 346 KiB | 103 KiB |
+| Standalone reader | 288 KiB | 88 KiB |
+| Full controller/native host | 356 KiB | 107 KiB |
 
 Optional behaviour ships in separate feature bundles, so the runtimes above do
 not grow with it. A page carries only the bundles its options need, and the core
@@ -83,6 +83,16 @@ tooltip reader never carries any:
 | `data` | `IncludeContextMenu`, `ContextMenuItems` or `Export` | 8 KiB | 4 KiB |
 | `isolate` | `LegendToggles` | 2 KiB | 1 KiB |
 | `hierarchy` | A Treemap or Sunburst series | 8 KiB | 3 KiB |
+
+Topology and graph Explorer pages inline their own runtimes, measured from
+`HtmlInteractiveTopologyRenderer.BuildInteractionScript()` and
+`HtmlGraphExplorerRenderer.BuildInteractionScript()`. Their stylesheets, which
+carry the owned font payloads, are not counted:
+
+| Runtime | Raw budget | Gzip budget |
+| --- | ---: | ---: |
+| Interactive topology | 157 KiB | 33 KiB |
+| Graph Explorer | 423 KiB | 95 KiB |
 
 Self-contained pages embed the declared bundles before the runtime. Pages with
 shared assets name each bundle's file on the runtime's script tag instead; the
