@@ -103,6 +103,46 @@ public sealed class AxisTickPolicyTests {
     }
 
     [Fact]
+    public void AutomaticRangesEndOnAuthoredTicksSoBothPlotEdgesCarryCaptions() {
+        // A logarithmic step of two powers around 0.8…72,000 ends on 0.01 and 1,000,000.
+        var log = Chart.Create().WithSize(640, 360).WithHeader(false).WithLegend(false)
+            .AddLine("Payload", new[] { new ChartPoint(1, .8), new ChartPoint(2, 72_000) })
+            .ConfigureYAxis(axis => axis.WithLogarithmicScale().WithTickStep(2));
+        Assert.Equal(new[] { .01, 1, 100, 10_000, 1_000_000 }, Ticks(log));
+        // Explicit values keep only their own captions: the zero baseline gets none, and the top ends on 80 without padding.
+        var values = Chart.Create().WithSize(640, 360).WithHeader(false).WithLegend(false)
+            .AddLine("Latency", new[] { new ChartPoint(0, 16), new ChartPoint(1, 73) })
+            .ConfigureYAxis(axis => axis.WithTickValues(20, 50, 80));
+        Assert.Equal(new double[] { 20, 50, 80 }, Ticks(values));
+        var prepared = values.Prepare(VisualExportRequest.ForChart(values).Context);
+        var top = prepared.Scene.Nodes.OfType<VisualSceneLine>().Single(node => node.Role == "grid-y" && node.Start.Y == prepared.Scene.Nodes.OfType<VisualSceneLine>()
+            .Where(line => line.Role == "grid-y").Min(line => line.Start.Y));
+        Assert.Equal(top.Start.Y, prepared.Scene.Nodes.OfType<VisualSceneLine>().Single(node => node.Role == "axis-y").Start.Y, 6);
+
+        static double[] Ticks(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context).Regions
+            .Where(region => region.Role == "axis-y-label").Select(region => double.Parse(region.Label!.Substring(region.Label.LastIndexOf('(') + 1).TrimEnd(')'),
+                System.Globalization.CultureInfo.InvariantCulture)).OrderBy(value => value).ToArray();
+    }
+
+    [Theory]
+    [InlineData(VisualThemeMode.Light)]
+    [InlineData(VisualThemeMode.Dark)]
+    public void MinorLinesKeepVisibleInkAndDefaultBandsTintTheThemeGrid(VisualThemeMode mode) {
+        var chart = Chart.Create().WithSize(640, 360).WithHeader(false).WithLegend(false).WithTheme(VisualTheme.Graphite(), mode)
+            .AddLine("Measured", new[] { new ChartPoint(0, 12), new ChartPoint(10, 96) })
+            .ConfigureYAxis(axis => axis.WithTickStep(25).WithMinorTicks(1).ConfigureGrid(grid => grid.WithBands()));
+        var nodes = chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes;
+        var major = nodes.OfType<VisualSceneLine>().First(node => node.Role == "grid-y").Stroke!.Value;
+        var minor = nodes.OfType<VisualSceneLine>().First(node => node.Role == "grid-y-minor").Stroke!.Value;
+        var band = nodes.OfType<VisualSceneRectangle>().First(node => node.Role == "grid-y-band").Fill!.Value;
+        Assert.Equal((major.R, major.G, major.B), (band.R, band.G, band.B));
+        Assert.Equal((major.R, major.G, major.B), (minor.R, minor.G, minor.B));
+        // The pale light grid keeps a visible floor above half its alpha; the darker grid keeps exactly half.
+        if (mode == VisualThemeMode.Dark) Assert.InRange(minor.A, major.A / 2 - 1, major.A / 2 + 1);
+        else Assert.InRange(minor.A, major.A / 2 + 20, major.A * .8 + 1);
+    }
+
+    [Fact]
     public void AxisGridStepMinorLinesAndBandsPaintTheSameGeometryInSvgAndNativePng() {
         var band = ChartColor.FromHex("#2F7D5B");
         var line = ChartColor.FromHex("#B04A3A");

@@ -17,7 +17,8 @@ chart.ConfigureXAxis(axis => axis.WithTickStep(6))     // 0, 6, 12, 18, 24
 
 Linear ticks sit on whole multiples of the step. An automatic value axis ends on the next multiple
 beyond its data, as it does for automatic steps. On a logarithmic axis the step counts whole powers
-of the base, so `WithTickStep(2)` marks 1, 100, 10,000. Time axes take a calendar interval:
+of the base, so `WithTickStep(2)` marks 1, 100, 10,000, and an automatic range ends on the stepped
+powers around the data (0.01 and 1,000,000 for data from 0.8 to 72,000), so both plot edges carry a tick. Time axes take a calendar interval:
 
 ```csharp
 chart.ConfigureXAxis(axis => axis.WithTimeScale()
@@ -34,8 +35,9 @@ prepared. A step that would place more than 1,000 ticks across the axis also thr
 chart.ConfigureYAxis(axis => axis.WithTickValues(0, 20, 50, 80));
 ```
 
-Ticks appear at exactly these values inside the visible domain. Captions still come from the axis
-formatter. Use `Labels` instead when each position needs its own authored text; labels take
+Only these values get ticks, captions and grid lines inside the visible domain. Captions still come
+from the axis formatter. An automatic range keeps its zero baseline, drawn as the axis rule without a
+caption unless 0 is listed, and ends on the nearest listed value beyond the data, without extra padding. Use `Labels` instead when each position needs its own authored text; labels take
 precedence over tick values. An axis accepts up to 1,000 values. Duplicates are merged, and
 non-finite values throw. A step and explicit values cannot be combined: call `WithAutomaticTicks()`
 to clear one before setting the other.
@@ -59,7 +61,9 @@ chart.ConfigureYAxis(axis => axis.WithTickStep(20).WithMinorTicks(4));
 ```
 
 Each major interval is divided evenly in data units, including the partial intervals at both ends of
-the domain. On a logarithmic decade this gives the familiar 2…9 lines. ChartForgeX axes draw no tick
+the domain. On a logarithmic decade this gives the familiar 2…9 lines. Minor ink keeps half the major
+line's lightness step from the background; a pale light-theme grid keeps a just-visible floor instead,
+so minor lines read in both themes. `ChartAxisGridStyle.MinorOpacity` sets an exact opacity. ChartForgeX axes draw no tick
 marks, so minor ticks appear as lighter grid lines (`grid-y-minor`, `grid-x-minor`) wherever the
 axis draws grid lines. The X axis draws no grid lines by default; call
 `ConfigureGrid(grid => grid.WithLines(true))` to show them.
@@ -70,13 +74,13 @@ axis draws grid lines. The X axis draws no grid lines by default; call
 var teal = ChartColor.FromHex("#2E8B8B");
 chart.ConfigureYAxis(axis => axis.ConfigureGrid(grid => grid
     .WithColor(teal).WithOpacity(.55).WithStrokeWidth(1).WithDash(5, 4)
-    .WithBands(teal, opacity: .07)));
+    .WithBands()));                       // neutral bands; WithBands(color, opacity) tints them
 ```
 
 `ChartAxisGridStyle` overrides the chart's `ChartGridLineStyle` for one Cartesian axis: line
-visibility, colour, opacity, width, dash and minor-line opacity (half the major opacity by default).
-Unset values inherit the chart style. `WithBands` fills every other interval between adjacent major
-ticks, starting with the first. The chart's `ShowGrid` switch still hides every grid.
+visibility, colour, opacity, width, dash and minor-line opacity. Unset values inherit the chart style.
+`WithBands()` fills every other interval between adjacent major ticks, starting with the first, with a
+neutral tint of the theme grid colour; `WithBands(color, opacity)` uses an authored colour instead. The chart's `ShowGrid` switch still hides every grid.
 
 ## Value lines and bands
 

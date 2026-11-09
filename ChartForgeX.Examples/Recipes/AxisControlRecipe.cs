@@ -20,9 +20,10 @@ public static class AxisControlRecipe {
                 chart.ConfigureXAxis(axis => axis.WithTickStep(6)).ConfigureYAxis(axis => axis.WithTickStep(15));
                 break;
             case "axis-values":
-                // Shift changes across, and the latency budget's own thresholds up.
+                // Shift changes across, and the latency budget's own thresholds up. The automatic value range starts at the zero
+                // baseline and ends on the nearest authored value above the data, 80.
                 chart.ConfigureXAxis(axis => axis.WithTickValues(0, 7, 15, 23))
-                    .ConfigureYAxis(axis => axis.WithBounds(0, 90).WithTickValues(0, 20, 50, 80));
+                    .ConfigureYAxis(axis => axis.WithTickValues(20, 50, 80));
                 break;
             case "axis-spacing":
                 // Ticks at most 45 drawing units apart across, and at least 90 apart up.
@@ -34,9 +35,9 @@ public static class AxisControlRecipe {
                     .ConfigureXAxis(axis => axis.WithTickStep(3).WithMinorTicks(2).ConfigureGrid(grid => grid.WithLines(true)));
                 break;
             case "axis-grid":
-                // Dashed teal value lines over alternating bands; solid, faint hour lines across.
+                // Dashed teal value lines over neutral alternating bands; solid, faint hour lines across.
                 var teal = ChartColor.FromHex("#2E8B8B");
-                chart.ConfigureYAxis(axis => axis.WithTickStep(20).ConfigureGrid(grid => grid.WithColor(teal).WithOpacity(.55).WithDash(5, 4).WithBands(teal, .07)))
+                chart.ConfigureYAxis(axis => axis.WithTickStep(20).ConfigureGrid(grid => grid.WithColor(teal).WithOpacity(.55).WithDash(5, 4).WithBands()))
                     .ConfigureXAxis(axis => axis.WithTickStep(4).ConfigureGrid(grid => grid.WithLines(true).WithOpacity(.25).WithStrokeWidth(.75)));
                 break;
         }
@@ -53,10 +54,11 @@ public static class AxisControlRecipe {
     }
 
     // Payload sizes across five orders of magnitude on a logarithmic axis, marked on every second power of ten.
+    // The automatic range ends on the stepped powers around the data: 0.01 and 1M.
     private static Chart Payloads() {
         var sizes = new[] { 0.8, 3.5, 12, 48, 260, 900, 4_100, 18_000, 72_000 };
         return Chart.Create().WithXAxis("Request").WithYAxis("Payload (KB)")
             .AddLine("Payload", sizes.Select((size, index) => new ChartPoint(index + 1, size)).ToArray())
-            .ConfigureYAxis(axis => axis.WithLogarithmicScale().WithBounds(.1, 100_000).WithTickStep(2));
+            .ConfigureYAxis(axis => axis.WithLogarithmicScale().WithTickStep(2));
     }
 }
