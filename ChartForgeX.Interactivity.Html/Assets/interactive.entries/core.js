@@ -6,8 +6,6 @@
     && (!root.dataset.cfxIsolatedSeries || node.dataset.cfxIsolated === 'true');
   // Hierarchy drilling selects the standalone reader, so core keyboard stops never meet a captured hierarchy.
   const capturedHierarchy = () => null;
-  // Saved readers keep no chart model, so the small runtime omits it: each read builds its facts afresh.
-  const chartModel = () => null;
   const hoverGroups = () => null;
   const repaintHoverChange = () => false;
   const readerRuntimeKey = Symbol.for('ChartForgeX.chartRuntime');
