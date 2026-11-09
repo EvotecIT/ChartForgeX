@@ -68,7 +68,7 @@ Cartesian axes reserve measured strips within that content rectangle. Side legen
 
 ## Theme ownership and schemas
 
-HtmlForgeX owns Evotec color values. The embedded chart export is copied from revision `c9154b0d9c798061ecb178add498cac3c035ddec`, repository-root path `Generated/Tokens/ChartForgeX/evotec.chartforgex.tokens.json`, Git blob `efe1fcf67d73cf0a8c6b21ffeb1023062698c24a`. Its canonical source is `HtmlForgeX/Resources/Tokens/evotec.tokens.json`, version 1.1.0, blob `af906aceb366249828fc91322ece98199e3145ae`. Core does not reference an HtmlForgeX assembly.
+HtmlForgeX owns Evotec color values. The embedded chart export is copied from revision `4d745ec39c3422c61cdd1c40af26b2a6d07990fe`, repository-root path `Generated/Tokens/ChartForgeX/evotec.chartforgex.tokens.json`, Git blob `88971f6e5fe45e330c0562e47de27daf14d94284`. Its canonical source is `HtmlForgeX/Resources/Tokens/evotec.tokens.json`, version 1.6.0, blob `9cc8aa23f6f1234ff9890d77fdfab0118bc0ce8f`. Core does not reference an HtmlForgeX assembly.
 
 The generated palette has `light` and `dark` objects and no numeric schema-version field. `VisualTheme.FromPaletteJson` imports this existing palette shape through the bounded shared parser. It supplies six series colors, surfaces, foregrounds, fill/ink status pairs and sequential/diverging ramps. It is not a full typography/layout schema.
 
