@@ -34,6 +34,9 @@ public sealed class GraphSceneOptions {
     /// <summary>Gets hierarchy navigation settings for adapters that support top-level and drill-down graph views.</summary>
     public GraphHierarchyOptions Hierarchy { get; } = new();
 
+    /// <summary>Gets the stroke width range that edge values map onto.</summary>
+    public GraphEdgeWidthScale EdgeWidthScale { get; } = new();
+
     /// <summary>
     /// Determines whether all bits in the requested feature set are enabled.
     /// </summary>

@@ -311,7 +311,7 @@ public sealed class VisNetworkEdge {
     /// <summary>Gets or sets whether the edge should show an arrow at the source side.</summary>
     public bool ArrowsFrom { get; set; }
 
-    /// <summary>Gets or sets whether the edge should show a middle arrow marker where adapters support it.</summary>
+    /// <summary>Gets or sets whether the edge should show a middle arrow pointing toward the target.</summary>
     public bool ArrowsMiddle { get; set; }
 
     /// <summary>Gets or sets whether the edge is dashed.</summary>
@@ -337,6 +337,7 @@ public sealed class VisNetworkEdge {
             LayoutDirected = true,
             SourceArrow = ArrowsFrom,
             TargetArrow = ArrowsTo,
+            MiddleArrow = ArrowsMiddle,
             Dashed = Dashes || !string.IsNullOrWhiteSpace(Style.DashPattern),
             Length = Length ?? 0,
             Shape = MapShape(Smooth)
@@ -347,6 +348,13 @@ public sealed class VisNetworkEdge {
         edge.Style.DashPattern = Style.DashPattern;
         edge.Style.Physics = Style.Physics;
         edge.Style.Hidden = Style.Hidden;
+        edge.Style.SourceArrowShape = Style.SourceArrowShape;
+        edge.Style.MiddleArrowShape = Style.MiddleArrowShape;
+        edge.Style.TargetArrowShape = Style.TargetArrowShape;
+        edge.Style.ArrowScale = Style.ArrowScale;
+        edge.Style.Value = Style.Value;
+        edge.Style.HoverWidth = Style.HoverWidth;
+        edge.Style.SelectionWidth = Style.SelectionWidth;
         edge.Metadata["vis.edge"] = "true";
         if (!string.Equals(edge.Id, Id, StringComparison.Ordinal) && !string.IsNullOrWhiteSpace(Id)) edge.Metadata["vis.id"] = Id;
         if (!string.Equals(edge.SourceNodeId, From, StringComparison.Ordinal)) edge.Metadata["vis.from"] = From;

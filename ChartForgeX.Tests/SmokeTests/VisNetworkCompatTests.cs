@@ -56,7 +56,7 @@ internal static partial class SmokeTests {
             .AddNode("b", "B")
             .AddEdge("middle", "a", "b", configure: edge => edge.ArrowsMiddle = true);
         var middleArrowScene = middleArrow.ToGraphScene("middle-arrow", "Middle arrow");
-        Assert(!middleArrowScene.Edges[0].Directed && !middleArrowScene.Edges[0].TargetArrow && middleArrowScene.Edges[0].Metadata["vis.arrows.middle"] == "true", "Vis-network middle-only arrows should remain metadata-only until the graph contract models middle markers explicitly.");
+        Assert(middleArrowScene.Edges[0].MiddleArrow && !middleArrowScene.Edges[0].Directed && !middleArrowScene.Edges[0].TargetArrow && middleArrowScene.Edges[0].Metadata["vis.arrows.middle"] == "true", "Vis-network middle-only arrows should map to a middle arrow without adding a target arrow.");
 
         var runtimeHierarchy = SampleVisNetworkCompatGraph();
         runtimeHierarchy.Options.Physics.Solver = GraphPhysicsSolver.HierarchicalRepulsion;
