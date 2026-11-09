@@ -86,6 +86,8 @@
     const refresh = () => {
       frame = 0; if (!root.isConnected || chartLifetimes.get(root)?.disposed !== false) return;
       refreshedSize = root.clientWidth + 'x' + root.clientHeight + 'x' + toolbar?.offsetHeight;
+      // The axes read the chart width before the heading and card writes, so painting them forces no second restyle.
+      const axes = { compact: root.getBoundingClientRect().width < 560 };
       // A narrow drawing or a flowing legend moves the heading into HTML, whatever the page width.
       const compact = stage.getBoundingClientRect().width < 560 || legend?.style.display === 'flex';
       const printing = printMedia?.matches === true || root._cfxStandaloneViewport?.printing === true;
@@ -96,7 +98,7 @@
       placeHeading(!printing && compact && !!title && headings.length > 0, !printing);
       headings.forEach(node => node.style.visibility = compact && !printing ? 'hidden' : visibility.get(node));
       const view = (hasFeature(root, 'Zoom') || hasFeature(root, 'LegendToggles')) && standaloneViewport(root);
-      if (view) paintStandaloneAxes(root, view);
+      if (view) paintStandaloneAxes(root, view, axes);
     };
     const queue = () => { if (!frame) frame = requestAnimationFrame(refresh); };
     // The toolbar matters only for its height; Reset zoom widening it must not repaint the axes. A chart that kept its

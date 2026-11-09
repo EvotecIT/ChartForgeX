@@ -34,12 +34,14 @@
     y: .001 * (Math.abs(matrix.b) + Math.abs(matrix.d)) + .0001
   });
 
+  // A 2D matrix maps a point as x * a + y * c + e and x * b + y * d + f, exactly as DOMPoint.matrixTransform does;
+  // the arithmetic spares four point objects per box, which dense charts measure for every observation.
+  const screenBounds = ({ x, y, width, height }, m) => {
+    const xs = [], ys = [];
+    for (const [px, py] of [[x, y], [x + width, y], [x, y + height], [x + width, y + height]]) { xs.push(px * m.a + py * m.c + m.e); ys.push(px * m.b + py * m.d + m.f); }
+    return { left: Math.min(...xs), right: Math.max(...xs), top: Math.min(...ys), bottom: Math.max(...ys) };
+  };
   const nativeRegionScreenBox = (node, region = node._cfxNativeRegion, projection) => {
     const matrix = region && svgScreenMatrix(node, projection);
-    if (!matrix) return null;
-    const corners = [[region.x, region.y], [region.x + region.width, region.y],
-      [region.x, region.y + region.height], [region.x + region.width, region.y + region.height]]
-      .map(([x, y]) => new DOMPoint(x, y).matrixTransform(matrix));
-    return { left: Math.min(...corners.map(point => point.x)), right: Math.max(...corners.map(point => point.x)),
-      top: Math.min(...corners.map(point => point.y)), bottom: Math.max(...corners.map(point => point.y)) };
+    return matrix ? screenBounds(region, matrix) : null;
   };
