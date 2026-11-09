@@ -148,7 +148,6 @@
   const paintStandaloneAxes = (root, view, measure = {}) => {
     if (view.printing) return;
     const plot = view.source.dataProjection.plotBounds, ns = view.svg.namespaceURI;
-    const scale = measure.scale ??= view.svg.getBoundingClientRect().width / view.svg.viewBox.baseVal.width || 1;
     const compact = measure.compact ??= root.getBoundingClientRect().width < 560;
     for (const axis of view.axes) {
       const projection = standaloneAxis(root, axis.name);
@@ -156,6 +155,8 @@
       if (!view.windows[axis.name] && !compact) {
         axis.nodes.forEach(node => restoreStandaloneStyle(node, 'display', axis.display.get(node))); axis.layer?.remove(); axis.grid?.remove(); axis.layer = null; axis.grid = null; continue;
       }
+      // Measured only when browser captions are drawn, so restoring native ones forces no layout.
+      const scale = measure.scale ??= view.svg.getBoundingClientRect().width / view.svg.viewBox.baseVal.width || 1;
       axis.nodes.forEach(node => node.style.display !== 'none' && (node.style.display = 'none'));
       axis.layer?.remove();
       axis.grid?.remove();
@@ -207,13 +208,15 @@
   };
   const paintStandaloneViewport = root => {
     const view = standaloneViewport(root); if (!view) return false;
+    // A glide's closing paint keeps its measure: the drawing's size did not change while it eased.
+    const measure = view.glideSettled && view.glideMeasure || {};
     settleStandaloneGlide(view);
     if (view.printing) return true;
     if (!Object.keys(view.windows).length && !view.stacks?.active) {
       restoreStandaloneGeometry(view);
       setStandaloneClip(view, false);
       root.dataset.cfxPreparedChart = JSON.stringify(view.source); root._cfxDataProjection = view.source.dataProjection;
-      paintStandaloneAxes(root, view); syncXNavigation(root); syncResetControl(root); refreshKeyboardNavigation(root);
+      paintStandaloneAxes(root, view, measure); syncXNavigation(root); syncResetControl(root); refreshKeyboardNavigation(root);
       hideCrosshair(root, root.querySelector('.cfx-crosshair')); refreshTooltipPosition(root);
       return true;
     }
@@ -223,7 +226,7 @@
       const source = standaloneSourceAxis(view, name);
       if (source) maps[name] = standaloneMap(source, standaloneAxis(root, name), plot, standaloneVertical(name));
     }
-    // A glide that nothing disturbed closes on the marks its opening paint already drew for these windows.
+    // A glide that nothing disturbed closes on the marks and observations its opening paint placed for these windows.
     if (!view.glideSettled) {
       view.geometry.forEach(entry => paintStandaloneGeometry(entry, maps[entry.xAxis] || maps.x, maps[entry.axis] || maps.y));
       view.labels.forEach(entry => {
@@ -263,7 +266,7 @@
       view.published = { key, json: JSON.stringify(metadata), projection: metadata.dataProjection };
     }
     root.dataset.cfxPreparedChart = view.published.json; root._cfxDataProjection = view.published.projection;
-    paintStandaloneAxes(root, view); syncXNavigation(root); syncResetControl(root); refreshKeyboardNavigation(root);
+    paintStandaloneAxes(root, view, measure); syncXNavigation(root); syncResetControl(root); refreshKeyboardNavigation(root);
     hideCrosshair(root, root.querySelector('.cfx-crosshair')); refreshTooltipPosition(root);
     return true;
   };
@@ -292,15 +295,13 @@
     if (Object.keys(to).every(name => from[name] && from[name].minimum === to[name].minimum && from[name].maximum === to[name].maximum)) {
       paintStandaloneViewport(root); return;
     }
+    // When only the category window moves, every mark maps from the final window to the displayed one by the same
+    // horizontal scale and shift. The marks are drawn once for the final window, with every observation, and only one
+    // transform eases them; the closing paint is the same as without motion.
+    const glide = !view.horizontal && !view.stacks?.active && Object.keys(to).every(name => name === 'x' || from[name].minimum === to[name].minimum && from[name].maximum === to[name].maximum);
     // Controls and keyboard reach follow the logical window at once: paint it once for its
     // keyboard stops, then show the starting frame before anything renders. Only the drawing eases.
     paintStandaloneViewport(root);
-    // When only the category window moves, every mark maps from the final window to a displayed one by the same
-    // horizontal scale and shift. The marks then keep their final geometry and only one transform eases, instead of
-    // rewriting every mark on every frame; the closing paint is the same as without motion.
-    const glide = !view.horizontal && !view.stacks?.active && !view.labels.length && view.geometry.every(entry => !entry.marker)
-      && view.frames.every(({ owner }) => !owner.hasAttribute('transform'))
-      && Object.keys(to).every(name => name === 'x' || from[name].minimum === to[name].minimum && from[name].maximum === to[name].maximum);
     const frame = progress => {
       view.windows = Object.fromEntries(Object.keys(to).map(name => [name, {
         minimum: from[name].minimum + (to[name].minimum - from[name].minimum) * progress,
@@ -315,25 +316,31 @@
     });
     view.cancelMotion = () => { cancel(); settleStandaloneGlide(view); };
   };
-  // Nodes a glide transforms; the keyboard watch ignores their transform changes, which move no target for good.
+  // Nodes a glide moves or hides; while it runs the keyboard watch ignores those changes, which move no target for good.
   const standaloneGlideNodes = new WeakSet();
   const glideStandaloneViewport = (root, view) => {
     const map = standaloneMap(standaloneAxis(root, 'x', true), standaloneAxis(root, 'x'), view.source.dataProjection.plotBounds, false);
-    const scale = map.scale, shift = map.at(0);
-    // Glide marks keep their strokes at the drawn width; the shared plot clip stays put by taking the inverse transform.
-    if (!view.glide) [...view.frames.map(({ owner }) => owner), view.clip.firstChild, ...view.geometry.map(({ node }) => node).filter(node => /^(path|line|polyline|polygon)$/.test(node.localName))]
-      .forEach(node => { node.dataset.cfxGlide = ''; standaloneGlideNodes.add(node); });
-    view.glide = true;
-    view.frames.forEach(({ owner }) => owner.setAttribute('transform', 'matrix(' + scale + ' 0 0 1 ' + shift + ' 0)'));
-    view.clip.firstChild.setAttribute('transform', 'matrix(' + 1 / scale + ' 0 0 1 ' + -shift / scale + ' 0)');
+    // Only the drawn marks move, inside the plot clip of their unmoved groups, so no clip shifts and leaves an empty strip.
+    // Markers and captions keep their drawn size and move by the shift of their own centre; hit areas wait at their final places.
+    if (!view.glide) {
+      const target = standaloneMap(standaloneSourceAxis(view, 'x'), standaloneAxis(root, 'x', true), view.source.dataProjection.plotBounds, false).at;
+      view.glideMarks = [...view.geometry.filter(entry => !entry.node.matches('[data-cfx-browser-hit-area],.cfx-prepared-point-marker'))
+        .map(entry => [entry.node, entry.marker && target((entry.currentMarker || entry.marker).x)]), ...view.labels.map(entry => [entry.node, target((entry.current || entry).x)])]
+        .map(([node, x]) => { node.dataset.cfxGlide = ''; standaloneGlideNodes.add(node); return [node, node.getAttribute('transform'), x]; });
+      // Browser markers of a hovered or selected observation wait at its final place, so they hide until the closing paint.
+      view.glideHidden = [...view.svg.querySelectorAll(':is(.cfx-hovered, .cfx-hover-column, .cfx-selected, .cfx-highlighted) > .cfx-prepared-point-marker')]
+        .map(node => { const style = standaloneStyle(node, 'visibility'); standaloneGlideNodes.add(node); node.style.visibility = 'hidden'; return [node, style]; });
+    }
+    // Marks drawn for the full window carry no plot clip; a glide always eases inside it.
+    view.glide = true; setStandaloneClip(view, true);
+    view.glideMarks.forEach(([node, own, x]) => node.setAttribute('transform', (typeof x !== 'number' ? 'matrix(' + map.scale + ' 0 0 1 ' + map.at(0) + ' 0)' : 'translate(' + (map.at(x) - x) + ' 0)') + (own ? ' ' + own : '')));
     paintStandaloneAxes(root, view, view.glideMeasure ||= {});
   };
   const settleStandaloneGlide = view => {
     if (!view.glide) return;
     view.glide = false; view.glideMeasure = null;
-    view.frames.forEach(({ owner }) => owner.removeAttribute('transform'));
-    view.clip.firstChild.removeAttribute('transform');
-    view.svg.querySelectorAll('[data-cfx-glide]').forEach(node => delete node.dataset.cfxGlide);
+    view.glideHidden.forEach(([node, style]) => { standaloneGlideNodes.delete(node); restoreStandaloneStyle(node, 'visibility', style); });
+    view.glideMarks.forEach(([node, own]) => { standaloneGlideNodes.delete(node); delete node.dataset.cfxGlide; own === null ? node.removeAttribute('transform') : node.setAttribute('transform', own); });
   };
   const requestStandaloneWindow = (root, windows, sync = true, accepted, emit = true, animate = false) => {
     if (chartLifetimes.get(root)?.preparationPending) return false;
