@@ -40,8 +40,10 @@ internal static partial class TopologyDenseRoutePlanner {
         var points = route.Points;
         for (var i = 0; i + 1 < points.Count; i++) {
             if (!scene.Region.Contains(points[i]) || !scene.Region.Contains(points[i + 1])) return true;
-            foreach (var obstacle in scene.Obstacles) {
-                if (obstacle.Box.Expand(1).Intersects(points[i], points[i + 1])) return true;
+            // A box touches the segment only when its left edge, one pixel out, is no further right than the segment.
+            var right = Math.Max(points[i].X, points[i + 1].X) + 1;
+            for (var index = scene.Strips.Across(Math.Min(points[i].X, points[i + 1].X) - 1, out var boxes, out var lefts); index < boxes.Length && lefts[index] <= right; index++) {
+                if (boxes[index].Expand(1).Intersects(points[i], points[i + 1])) return true;
             }
         }
 
@@ -216,21 +218,32 @@ internal static partial class TopologyDenseRoutePlanner {
         run.High = Math.Max(run.Position, (vertical ? scene.Region.Right : scene.Region.Bottom) - 1);
         var pinned = keepBoundaryRuns && (Math.Abs(run.Position - (vertical ? scene.Region.Left : scene.Region.Top)) < 0.01 ||
             Math.Abs(run.Position - (vertical ? scene.Region.Right : scene.Region.Bottom)) < 0.01);
-        foreach (var obstacle in scene.Obstacles) {
-            var box = obstacle.Box;
-            var near = vertical ? box.Left : box.Top;
-            var far = vertical ? box.Right : box.Bottom;
-            var from = vertical ? box.Top : box.Left;
-            var to = vertical ? box.Bottom : box.Right;
-            if (to < run.From - LaneClearance || from > run.To + LaneClearance) continue;
-            if (far <= run.Position) run.Low = Math.Max(run.Low, far + LaneClearance);
-            else if (near >= run.Position) run.High = Math.Min(run.High, near - LaneClearance);
-            else pinned = true;
+        // Only obstacles beside the run's stretch limit it, so the scan starts at the first that can reach it and ends
+        // past its end. An obstacle with an undefined edge can still pin a run, so its presence keeps the full scan.
+        var strips = scene.Strips;
+        if (strips.HasUndefined) {
+            foreach (var obstacle in scene.Obstacles) pinned |= Limit(run, obstacle.Box, vertical);
+        } else {
+            for (var index = strips.Along(vertical, run.From - LaneClearance, out var boxes, out var starts); index < boxes.Length && starts[index] <= run.To + LaneClearance; index++)
+                pinned |= Limit(run, boxes[index], vertical);
         }
 
         if (first) pinned |= Attach(route.Start, run, vertical);
         if (last) pinned |= Attach(route.End, run, vertical);
         if (pinned || run.Low > run.Position || run.High < run.Position) run.Low = run.High = run.Position;
+    }
+
+    /// <summary>Narrows a run's movement to clear one obstacle beside it; returns true when the obstacle straddles the run.</summary>
+    private static bool Limit(Run run, Box box, bool vertical) {
+        var near = vertical ? box.Left : box.Top;
+        var far = vertical ? box.Right : box.Bottom;
+        var from = vertical ? box.Top : box.Left;
+        var to = vertical ? box.Bottom : box.Right;
+        if (to < run.From - LaneClearance || from > run.To + LaneClearance) return false;
+        if (far <= run.Position) run.Low = Math.Max(run.Low, far + LaneClearance);
+        else if (near >= run.Position) run.High = Math.Min(run.High, near - LaneClearance);
+        else return true;
+        return false;
     }
 
     /// <summary>
@@ -262,17 +275,8 @@ internal static partial class TopologyDenseRoutePlanner {
         var from = Math.Max(first.From, second.From);
         var to = Math.Min(first.To, second.To);
         if (to - from < 2) return false;
-        if (second.Position - first.Position < 0.5) return true;
-        foreach (var obstacle in scene.Obstacles) {
-            var box = obstacle.Box;
-            var near = vertical ? box.Left : box.Top;
-            var far = vertical ? box.Right : box.Bottom;
-            var boxFrom = vertical ? box.Top : box.Left;
-            var boxTo = vertical ? box.Bottom : box.Right;
-            if (far > first.Position && near < second.Position && boxTo > from && boxFrom < to) return false;
-        }
+        return second.Position - first.Position < 0.5 || !scene.Strips.Between(vertical, first.Position, second.Position, from, to);
 
-        return true;
     }
 
     /// <summary>
