@@ -13,7 +13,7 @@ public sealed class DenseLineRasterBudgetTests {
     public DenseLineRasterBudgetTests(ITestOutputHelper output) => _output = output;
 
     // Tens of thousands of raw points squeeze about seventy segments into each device pixel column.
-    // Scanning that stroke outline as one shape grew with the square of its density (about 18 s here);
+    // Scanning that stroke outline as one shape grew with the square of its density (about 28 s here);
     // the PNG must stay a small multiple of the second it takes now.
     [Fact]
     public void DenseRawLinePngStaysWithinRasterBudget() {
