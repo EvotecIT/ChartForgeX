@@ -154,6 +154,8 @@ public static partial class LegacySceneBenchmarkCases {
                     foreach (var item in TreemapFacts(chart)) source.Append("|treemap:").Append(item.Label).Append(':').Append(Numeric(item.Value));
                 } else if (series.Kind == ChartSeriesKind.CalendarHeatmap) {
                     foreach (var item in CalendarFacts(chart)) source.Append('|').Append(Numeric(item.Date.ToOADate())).Append(',').Append(Numeric(item.Value)).Append(',').Append(false);
+                } else if (series.Kind == ChartSeriesKind.ProgressBar) {
+                    foreach (var value in ProgressFacts(chart)) source.Append('|').Append(Numeric(value.X)).Append(',').Append(Numeric(value.Y)).Append(',').Append(false);
                 } else if (series.Kind == ChartSeriesKind.DottedMap) {
                     foreach (var item in MapFacts(chart)) source.Append('|').Append(Numeric(item.Longitude)).Append(',').Append(Numeric(item.Latitude)).Append(',').Append(false);
                 } else foreach (var point in series.Points) source.Append('|').Append(Numeric(point.X)).Append(',').Append(Numeric(point.Y)).Append(',').Append(point.BreakBefore);
@@ -173,6 +175,16 @@ public static partial class LegacySceneBenchmarkCases {
 #endif
     }
 
+    /// <summary>Returns progress rows as the legacy one-based X/value points so both API profiles share one source digest.</summary>
+    private static IReadOnlyList<(double X, double Y)> ProgressFacts(Chart chart) {
+        var series = chart.Series[0];
+#if LEGACY_CHART_API
+        return series.Points.Select(point => (point.X, point.Y)).ToArray();
+#else
+        return series.ProgressItems.Select((item, index) => ((double)index + 1, item.Value)).ToArray();
+#endif
+    }
+
     private static IReadOnlyList<(string Label, double Longitude, double Latitude, double? Value)> MapFacts(Chart chart) {
         var series = chart.Series[0];
 #if LEGACY_CHART_API
@@ -180,7 +192,7 @@ public static partial class LegacySceneBenchmarkCases {
         Require(labels.Count == series.Points.Count && series.PointValues.Count == series.Points.Count, "Legacy map source metadata changed.");
         return series.Points.Select((point, index) => (labels[index + 1], point.X, point.Y, series.PointValues[index])).ToArray();
 #else
-        return series.MapPoints.Select(point => (point.Label, point.Longitude, point.Latitude, point.Value)).ToArray();
+        return series.MapPoints.Select(point => (point.Label, point.Longitude, point.Latitude, point.Weight)).ToArray();
 #endif
     }
 

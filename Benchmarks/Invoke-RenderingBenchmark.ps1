@@ -78,7 +78,7 @@ if ($Suite -eq 'XZoom') {
     $fixtureOutput = Join-Path ([IO.Path]::GetFullPath($OutputRoot)) 'fixtures'
     $fixtureName = if ($Suite -eq 'Topology') { 'TopologyBenchmarkFixtures' } else { 'ChartBenchmarkFixtures' }
     $fixtureFolder = if ($Suite -eq 'Scenes') { 'Charts' } else { $Suite }
-    $fixtureBuildOptions = if ($Suite -eq 'Scenes') { @("-p:BaseIntermediateOutputPath=$fixtureOutput/obj/", '-p:ChartApiProfile=Current') } else { @() }
+    $fixtureBuildOptions = @("-p:BaseIntermediateOutputPath=$fixtureOutput/obj/") + $(if ($Suite -eq 'Scenes') { @('-p:ChartApiProfile=Current') } else { @() })
     & dotnet build (Join-Path $PSScriptRoot "$fixtureFolder/$fixtureName.csproj") -c Release --nologo -o $fixtureOutput "-p:ProductDll=$assemblyPath" @fixtureBuildOptions
     if ($LASTEXITCODE -ne 0) { throw "The $Suite benchmark fixture build failed." }
     $variables.FixtureAssemblyPath = Join-Path $fixtureOutput "$fixtureName.dll"

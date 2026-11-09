@@ -3,6 +3,7 @@ using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
+using ChartForgeX.Topology;
 using HtmlTinkerX;
 using Microsoft.Playwright;
 using Xunit;
@@ -83,6 +84,25 @@ public sealed class InteractiveBundleTests {
         Assert.Contains(HtmlDiagramAssets.Script, FlowRecipe.Create().ToInteractiveHtmlPage());
         Assert.DoesNotContain("ChartForgeX.diagramInteraction", Chart.Create().AddLine("Requests", ChartPoints.FromValues(2, 7, 4)).ToInteractiveHtmlPage());
     }
+
+    // Topology and graph Explorer pages inline their own runtimes, so each gets a budget that makes growth a deliberate change.
+    // Measured on 9 November 2026: topology 156.8 KiB raw / 32.7 KiB gzip, Explorer 422.5 KiB raw / 93.9 KiB gzip.
+    [Theory]
+    [InlineData("topology", 157 * 1024, 33 * 1024)]
+    [InlineData("explorer", 423 * 1024, 95 * 1024)]
+    public void TopologyAndExplorerRuntimesFitRawAndGzipBudgetsAsShipped(string runtime, int rawBudget, int gzipBudget) {
+        var topology = TopologyChart.Create().WithId("budget").AddAutoNode("a", "Edge").AddAutoNode("b", "Core").AddEdge("a-b", "a", "b");
+        var (script, page) = runtime == "topology"
+            ? (HtmlInteractiveTopologyRenderer.BuildInteractionScript(), topology.ToInteractiveHtmlPage())
+            : (HtmlGraphExplorerRenderer.BuildInteractionScript(), topology.ToGraphExplorerHtmlPage());
+        var bytes = Encoding.UTF8.GetBytes(script);
+        using var output = new MemoryStream();
+        using (var gzip = new GZipStream(output, CompressionLevel.Optimal, leaveOpen: true)) gzip.Write(bytes);
+        Assert.True(bytes.Length <= rawBudget, $"{runtime}: {bytes.Length} raw bytes exceeds {rawBudget}.");
+        Assert.True(output.Length <= gzipBudget, $"{runtime}: {output.Length} gzip bytes exceeds {gzipBudget}.");
+        Assert.Contains(script, page);
+    }
+
     [Fact]
     public void ExternalPagesNameFeatureBundlesForLazyLoadingInsteadOfEmbeddingThem() {
         var page = Chart.Create().AddLine("Requests", ChartPoints.FromValues(2, 7, 4)).ToInteractiveHtmlPage(options => {
