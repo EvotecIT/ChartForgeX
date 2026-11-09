@@ -85,6 +85,7 @@
     let frame = 0;
     const refresh = () => {
       frame = 0; if (!root.isConnected || chartLifetimes.get(root)?.disposed !== false) return;
+      refreshedSize = root.clientWidth + 'x' + root.clientHeight + 'x' + toolbar?.offsetHeight;
       // A narrow drawing or a flowing legend moves the heading into HTML, whatever the page width.
       const compact = stage.getBoundingClientRect().width < 560 || legend?.style.display === 'flex';
       const printing = printMedia?.matches === true || root._cfxStandaloneViewport?.printing === true;
@@ -98,12 +99,11 @@
       if (view) paintStandaloneAxes(root, view);
     };
     const queue = () => { if (!frame) frame = requestAnimationFrame(refresh); };
-    // The toolbar matters only for its height; Reset zoom widening it must not repaint the axes.
-    let observedToolbarHeight = -1;
-    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(entries => {
-      let changed = false;
-      for (const entry of entries) changed = entry.target !== toolbar || observedToolbarHeight !== (observedToolbarHeight = entry.contentRect.height) || changed;
-      if (changed) queue();
+    // The toolbar matters only for its height; Reset zoom widening it must not repaint the axes. A chart that kept its
+    // size since the last refresh, such as at the first notification after binding, needs no refresh.
+    let refreshedSize;
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => {
+      if (refreshedSize !== root.clientWidth + 'x' + root.clientHeight + 'x' + toolbar?.offsetHeight) queue();
     });
     observer?.observe(root); listenChart(root, window, 'resize', queue);
     if (toolbar) observer?.observe(toolbar);

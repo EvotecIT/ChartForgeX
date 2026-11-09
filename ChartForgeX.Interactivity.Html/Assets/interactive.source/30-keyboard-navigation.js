@@ -5,6 +5,9 @@
   const keyboardNativeClasses = value => (value || '').split(/\s+/).filter(value => value && !keyboardPaintClasses.has(value)).sort().join(' ');
   const keyboardNativeStyle = value => (value || '').replace(/--cfx-highlight-(?:opacity|stroke|stroke-width)\s*:[^;]*(?:;|$)/g, '').trim();
   const keyboardAvailabilityMutation = (record, stage, ancestry) => {
+    // Browser axes and a glide's temporary transforms are not targets and leave every target where it was.
+    if (record.target.closest?.('[data-cfx-browser-axis],[data-cfx-browser-grid]')
+      || record.attributeName === 'transform' && standaloneGlideNodes.has(record.target)) return false;
     if (record.type === 'attributes' && record.attributeName === 'class'
       && keyboardNativeClasses(record.oldValue) === keyboardNativeClasses(record.target.getAttribute('class'))) return false;
     if (record.type === 'attributes' && record.target.closest('[data-cfx-highlight-outline],[data-cfx-keyboard-focus-outline],[data-cfx-state-outline]')) return false;
@@ -14,7 +17,7 @@
     const svg = stage.querySelector('svg');
     if (record.type === 'attributes') return record.target === stage || !!svg?.contains(record.target) || ancestry.nodes.includes(record.target);
     const changes = [...record.addedNodes, ...record.removedNodes];
-    const adapterPaint = node => node.nodeType === 1 && node.matches('[data-cfx-highlight-outline],[data-cfx-keyboard-focus-outline],[data-cfx-state-outline],.cfx-prepared-point-marker,[data-cfx-browser-hit-area]');
+    const adapterPaint = node => node.nodeType === 1 && node.matches('[data-cfx-highlight-outline],[data-cfx-keyboard-focus-outline],[data-cfx-state-outline],.cfx-prepared-point-marker,[data-cfx-browser-hit-area],[data-cfx-browser-axis],[data-cfx-browser-grid]');
     if (changes.length && changes.every(adapterPaint)) return false;
     return !!svg?.contains(record.target) || changes.some(node => node.contains(stage) || svg && node.contains(svg)
       || ancestry.nodes.some(boundary => node.contains(boundary)));
@@ -116,24 +119,31 @@
       placeKeyboardLegendBeforeData(root, state.data, state.legends);
       state.legends.forEach((node) => placed.add(node));
     }
-    state.owned.forEach((node) => node.setAttribute('tabindex', '-1'));
+    // The final attributes are settled first and only changed ones are written: a dense chart refreshes its stops often.
+    const stops = new Map(Array.from(state.owned, node => [node, { tabindex: '-1' }]));
     targets.forEach((node) => {
       const focusNode = targetFocusNode(node);
       state.owned.add(focusNode);
-      focusNode.setAttribute('data-cfx-keyboard-component', renderedTargetKind(node) === 'legend' ? 'legend' : 'data');
-      focusNode.setAttribute('tabindex', node === state.activeData || node === state.activeLegend ? '0' : '-1');
+      stops.set(focusNode, { ...stops.get(focusNode), 'data-cfx-keyboard-component': renderedTargetKind(node) === 'legend' ? 'legend' : 'data',
+        tabindex: node === state.activeData || node === state.activeLegend ? '0' : '-1' });
     });
+    stops.forEach((values, node) => Object.entries(values).forEach(([name, value]) => node.getAttribute(name) !== value && node.setAttribute(name, value)));
     return state;
   };
   const refreshKeyboardNavigation = (root, focused, passive = false) => {
+    // Viewport transition frames are not keyboard state: keep the targets of the final window. A glide that nothing
+    // disturbed ends on the drawing those targets were read from, so they stand too.
+    const view = root._cfxStandaloneViewport, reused = (view?.motionTarget || view?.glideSettled) && root._cfxKeyboardNavigation?.targets;
+    if (reused && view.glide) view.glideTouched = true;
+    // A full refresh reads every paint change made so far, so the availability watch need not queue another.
+    if (!reused) root._cfxSettleAvailability?.();
     refreshRootBranchHighlightAvailability(root);
     refreshSelectionCuePaint(root);
     const state = root._cfxKeyboardNavigation;
     if (!state || !hasFeature(root, 'KeyboardNavigation')) return null;
     const activeElement = root.getRootNode().activeElement;
     const activeOwned = root.contains(activeElement) && state.owned.has(activeElement);
-    // Viewport transition frames are not keyboard state: keep the targets of the final window.
-    assignKeyboardStops(root, state, root._cfxStandaloneViewport?.motionTarget && state.targets || keyboardTargets(root), focused);
+    assignKeyboardStops(root, state, reused || keyboardTargets(root), focused);
     const targets = state.targets;
     if (activeOwned && !targets.some((node) => targetFocusNode(node) === activeElement)) {
 
@@ -188,7 +198,9 @@
     listenChart(root, window, 'resize', queueRefresh);
     if (typeof ResizeObserver !== 'undefined') {
 
-      resizeObserver = new ResizeObserver(queueRefresh);
+      // Only a real size change can move targets; the first notification repeats the size binding already read.
+      let size = stage.clientWidth + 'x' + stage.clientHeight;
+      resizeObserver = new ResizeObserver(() => { if (size !== (size = stage.clientWidth + 'x' + stage.clientHeight)) queueRefresh(); });
       resizeObserver.observe(stage);
     }
 
@@ -199,9 +211,11 @@
       queueRefresh();
     });
     watchAncestry();
+    // Changes outside the chart may move its ancestry, which only the queued refresh re-watches.
+    root._cfxSettleAvailability = () => { if (paintObserver.takeRecords().some(record => !root.contains(record.target))) queueRefresh(); };
     ownChartWork(root, () => {
       if (frame) cancelAnimationFrame(frame);
-      resizeObserver?.disconnect(); paintObserver?.disconnect(); unwatchSlots();
+      resizeObserver?.disconnect(); paintObserver?.disconnect(); unwatchSlots(); delete root._cfxSettleAvailability;
     });
   };
   const prepareKeyboardNavigation = (root) => {

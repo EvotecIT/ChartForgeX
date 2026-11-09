@@ -71,7 +71,8 @@
     listenChart(root, stage, 'transitioncancel', finishViewport);
     listenChart(root, window, 'resize', queueRefresh);
     if (typeof ResizeObserver !== 'undefined') {
-      observer = new ResizeObserver(queueRefresh);
+      // The first notification repeats the size read at binding; only a change can move keyboard targets.
+      observer = new ResizeObserver(() => { if (width !== stage.clientWidth || height !== stage.clientHeight) queueRefresh(); });
       observer.observe(stage);
     }
     ownChartWork(root, () => { if (frame) cancelAnimationFrame(frame); observer?.disconnect(); });

@@ -340,6 +340,8 @@
 /* Opacity belongs to the series or paint owner once; hover never restores a muted mark. */
 .cfx-interactive-chart[data-cfx-export-probe] svg,
 .cfx-interactive-chart[data-cfx-export-probe] svg * { transition: none !important; }
+/* A zoom easing by one transform keeps strokes at their drawn width. */
+.cfx-interactive-chart [data-cfx-glide]:is(path, line, polyline, polygon) { vector-effect: non-scaling-stroke; }
 .cfx-interactive-chart :is(.cfx-prepared-point-marker, .cfx-responsive-legend__label) { transition: opacity 250ms ease-out, visibility 250ms ease-out; }
 .cfx-interactive-chart[data-cfx-hovering="true"] :is(.cfx-prepared-point-marker, .cfx-responsive-legend__label) { transition-duration: 150ms; }
 .cfx-interactive-chart:not([data-cfx-hover-continuous])[data-cfx-hover-mode="series"] :is([data-cfx-role="series"],[data-cfx-role="legend-item"]):not(.cfx-hover-series):not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-linked-series-active):not(.cfx-series-isolated-in):not(.cfx-selected):not(.cfx-highlighted) { opacity: .4; }

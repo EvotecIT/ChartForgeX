@@ -2,6 +2,8 @@
   // data ink moves: the frame, captions, marker sizes and stroke widths stay sharp.
   const standaloneStyle = (node, name) => ({ value: node.style.getPropertyValue(name), priority: node.style.getPropertyPriority(name) });
   const restoreStandaloneStyle = (node, name, style) => {
+    // Rewriting an unchanged inline style still reports a paint mutation to the keyboard watch.
+    if (node.style.getPropertyValue(name) === style.value && node.style.getPropertyPriority(name) === style.priority) return;
     if (style.value) node.style.setProperty(name, style.value, style.priority);
     else node.style.removeProperty(name);
   };
@@ -133,7 +135,8 @@
       const at = entry.currentMarker || entry.marker, dx = x.at(at.x) - entry.marker.x, dy = y.at(at.y) - entry.marker.y;
       x = { at: value => value + dx, scale: 1 }; y = { at: value => value + dy, scale: 1 };
     }
-    for (const [name, value] of Object.entries(projectStandaloneAttrs(entry.current || entry.attrs, x, y))) entry.node.setAttribute(name, value);
+    // Unchanged values are skipped: rewriting one still restyles the mark and reports a paint mutation.
+    for (const [name, value] of Object.entries(projectStandaloneAttrs(entry.current || entry.attrs, x, y))) if (entry.node.getAttribute(name) !== String(value)) entry.node.setAttribute(name, value);
   };
   let standaloneMeasure = null;
   const standaloneTextWidth = (font, text) => {
@@ -141,18 +144,19 @@
     if (!standaloneMeasure) return String(text).length * parseFloat(font) * .6;
     standaloneMeasure.font = font; return standaloneMeasure.measureText(String(text)).width;
   };
-  const paintStandaloneAxes = (root, view) => {
+  // A glide passes one measure for all its frames: the drawing's size and the caption templates do not change while it eases.
+  const paintStandaloneAxes = (root, view, measure = {}) => {
     if (view.printing) return;
     const plot = view.source.dataProjection.plotBounds, ns = view.svg.namespaceURI;
-    const scale = view.svg.getBoundingClientRect().width / view.svg.viewBox.baseVal.width || 1;
-    const compact = root.getBoundingClientRect().width < 560;
+    const scale = measure.scale ??= view.svg.getBoundingClientRect().width / view.svg.viewBox.baseVal.width || 1;
+    const compact = measure.compact ??= root.getBoundingClientRect().width < 560;
     for (const axis of view.axes) {
       const projection = standaloneAxis(root, axis.name);
       if (!projection || !axis.nodes.length) continue;
       if (!view.windows[axis.name] && !compact) {
         axis.nodes.forEach(node => restoreStandaloneStyle(node, 'display', axis.display.get(node))); axis.layer?.remove(); axis.grid?.remove(); axis.layer = null; axis.grid = null; continue;
       }
-      axis.nodes.forEach(node => node.style.display = 'none');
+      axis.nodes.forEach(node => node.style.display !== 'none' && (node.style.display = 'none'));
       axis.layer?.remove();
       axis.grid?.remove();
       const layer = document.createElementNS(ns, 'g'); axis.layer = layer;
@@ -164,7 +168,8 @@
       view.svg.insertBefore(grid, plotLayer || null);
       const vertical = standaloneVertical(axis.name), secondary = axis.name.startsWith('secondary');
       const template = axis.nodes.find(node => node.querySelector('text'))?.querySelector('text');
-      const box = template?.getBBox(), style = template && getComputedStyle(template);
+      const templates = measure.templates ||= new Map(), style = templates.get(axis) || templates.set(axis, template && (({ fill, fontFamily }) => ({ fill, fontFamily }))(getComputedStyle(template))).get(axis);
+      const box = (measure.boxes ||= new Map()).get(axis) || measure.boxes.set(axis, template?.getBBox()).get(axis);
       const size = Math.max(Number(template?.getAttribute('font-size')) || 12, compact ? 12 / scale : 0);
       // Measure with the face the axis captions actually paint (the delivered product font), so caption fitting
       // matches native on hosts without an installed copy; the chrome font stack is only the fallback.
@@ -202,6 +207,7 @@
   };
   const paintStandaloneViewport = root => {
     const view = standaloneViewport(root); if (!view) return false;
+    settleStandaloneGlide(view);
     if (view.printing) return true;
     if (!Object.keys(view.windows).length && !view.stacks?.active) {
       restoreStandaloneGeometry(view);
@@ -217,38 +223,46 @@
       const source = standaloneSourceAxis(view, name);
       if (source) maps[name] = standaloneMap(source, standaloneAxis(root, name), plot, standaloneVertical(name));
     }
-    view.geometry.forEach(entry => paintStandaloneGeometry(entry, maps[entry.xAxis] || maps.x, maps[entry.axis] || maps.y));
-    view.labels.forEach(entry => {
-      const x = maps[entry.xAxis] || maps.x, y = maps[entry.axis] || maps.y, at = entry.current || entry, px = x.at(at.x), py = y.at(at.y);
-      entry.node.setAttribute('transform', 'translate(' + (px - entry.x) + ' ' + (py - entry.y) + ') ' + (entry.transform || ''));
-      // The clip moves with a translated caption, so a caption whose anchor leaves the plot hides instead.
-      // A restacked total keeps its captured caption, so it hides until its stack is whole again.
-      const slack = entry.slack || .5, outside = px < plot.x - slack || px > plot.x + plot.width + slack || py < plot.y - slack || py > plot.y + plot.height + slack;
-      entry.node.style.visibility = outside || entry.hiddenTotal || entry.node.matches('.cfx-series-muted,.cfx-series-isolated-out') ? 'hidden' : '';
-    });
-    const region = (box, x, y) => box && Object.freeze({ x: x.at(box.x), y: y.at(box.y), width: box.width * Math.abs(x.scale), height: box.height * Math.abs(y.scale) });
-    for (const point of view.points) {
-      // A horizontal observation's category runs down the plot and its value across it.
-      const y = view.horizontal ? maps.y : maps[point.axis] || maps.y, x = view.horizontal ? maps[point.axis] || maps.x : maps.x;
-      const level = point.stack ? (point.stack.now || point.stack).end : point.y;
-      const px = view.horizontal ? standaloneCoordinate(standaloneAxis(root, point.axis), level, plot, false) : standaloneCoordinate(standaloneAxis(root, 'x'), point.x, plot, false);
-      const py = view.horizontal ? standaloneCoordinate(standaloneAxis(root, 'y'), point.x, plot, true) : standaloneCoordinate(standaloneAxis(root, point.axis), level, plot, true);
-      if (point.region) point.node._cfxNativeRegion = region(point.stackRegion || point.region, x, y);
-      if (point.paired) point.node._cfxPairedRegion = region(point.paired, x, y);
-      if (point.midline !== undefined) point.node.dataset.cfxMidlineY = y.at(Number(point.midline));
-      const bounds = point.node._cfxNativeRegion || { x: px, y: py, width: 0, height: 0 };
-      point.node.dataset.cfxVisible = String(point.visible !== 'false' && bounds.x + bounds.width >= plot.x - .01 && bounds.x <= plot.x + plot.width + .01
-        && bounds.y + bounds.height >= plot.y - .01 && bounds.y <= plot.y + plot.height + .01);
-      if (point.interiors) point.node._cfxFillInteriors = Object.freeze((point.stackInteriors || point.interiors).map(([px, py, radius]) =>
-        Object.freeze([x.at(px), y.at(py), radius * Math.min(Math.abs(x.scale), Math.abs(y.scale))])));
+    // A glide that nothing disturbed closes on the marks its opening paint already drew for these windows.
+    if (!view.glideSettled) {
+      view.geometry.forEach(entry => paintStandaloneGeometry(entry, maps[entry.xAxis] || maps.x, maps[entry.axis] || maps.y));
+      view.labels.forEach(entry => {
+        const x = maps[entry.xAxis] || maps.x, y = maps[entry.axis] || maps.y, at = entry.current || entry, px = x.at(at.x), py = y.at(at.y);
+        entry.node.setAttribute('transform', 'translate(' + (px - entry.x) + ' ' + (py - entry.y) + ') ' + (entry.transform || ''));
+        // The clip moves with a translated caption, so a caption whose anchor leaves the plot hides instead.
+        // A restacked total keeps its captured caption, so it hides until its stack is whole again.
+        const slack = entry.slack || .5, outside = px < plot.x - slack || px > plot.x + plot.width + slack || py < plot.y - slack || py > plot.y + plot.height + slack;
+        entry.node.style.visibility = outside || entry.hiddenTotal || entry.node.matches('.cfx-series-muted,.cfx-series-isolated-out') ? 'hidden' : '';
+      });
+      const region = (box, x, y) => box && Object.freeze({ x: x.at(box.x), y: y.at(box.y), width: box.width * Math.abs(x.scale), height: box.height * Math.abs(y.scale) });
+      for (const point of view.points) {
+        // A horizontal observation's category runs down the plot and its value across it.
+        const y = view.horizontal ? maps.y : maps[point.axis] || maps.y, x = view.horizontal ? maps[point.axis] || maps.x : maps.x;
+        const level = point.stack ? (point.stack.now || point.stack).end : point.y;
+        const px = view.horizontal ? standaloneCoordinate(standaloneAxis(root, point.axis), level, plot, false) : standaloneCoordinate(standaloneAxis(root, 'x'), point.x, plot, false);
+        const py = view.horizontal ? standaloneCoordinate(standaloneAxis(root, 'y'), point.x, plot, true) : standaloneCoordinate(standaloneAxis(root, point.axis), level, plot, true);
+        if (point.region) point.node._cfxNativeRegion = region(point.stackRegion || point.region, x, y);
+        if (point.paired) point.node._cfxPairedRegion = region(point.paired, x, y);
+        if (point.midline !== undefined) point.node.dataset.cfxMidlineY = y.at(Number(point.midline));
+        const bounds = point.node._cfxNativeRegion || { x: px, y: py, width: 0, height: 0 };
+        point.node.dataset.cfxVisible = String(point.visible !== 'false' && bounds.x + bounds.width >= plot.x - .01 && bounds.x <= plot.x + plot.width + .01
+          && bounds.y + bounds.height >= plot.y - .01 && bounds.y <= plot.y + plot.height + .01);
+        if (point.interiors) point.node._cfxFillInteriors = Object.freeze((point.stackInteriors || point.interiors).map(([px, py, radius]) =>
+          Object.freeze([x.at(px), y.at(py), radius * Math.min(Math.abs(x.scale), Math.abs(y.scale))])));
+      }
     }
-    const metadata = copyHostValue(view.source);
-    for (const name of standaloneAxisNames) {
-      const axis = standaloneAxis(root, name); if (!axis) continue;
-      metadata[name + 'Projection'] = axis;
-      if (metadata.dataProjection[name]) metadata.dataProjection[name] = axis;
+    // The published metadata depends only on the windows; a glide's closing paint republishes its opening one.
+    const key = JSON.stringify(view.windows);
+    if (view.published?.key !== key) {
+      const metadata = copyHostValue(view.source);
+      for (const name of standaloneAxisNames) {
+        const axis = standaloneAxis(root, name); if (!axis) continue;
+        metadata[name + 'Projection'] = axis;
+        if (metadata.dataProjection[name]) metadata.dataProjection[name] = axis;
+      }
+      view.published = { key, json: JSON.stringify(metadata), projection: metadata.dataProjection };
     }
-    root.dataset.cfxPreparedChart = JSON.stringify(metadata); root._cfxDataProjection = metadata.dataProjection;
+    root.dataset.cfxPreparedChart = view.published.json; root._cfxDataProjection = view.published.projection;
     paintStandaloneAxes(root, view); syncXNavigation(root); syncResetControl(root); refreshKeyboardNavigation(root);
     hideCrosshair(root, root.querySelector('.cfx-crosshair')); refreshTooltipPosition(root);
     return true;
@@ -281,15 +295,45 @@
     // Controls and keyboard reach follow the logical window at once: paint it once for its
     // keyboard stops, then show the starting frame before anything renders. Only the drawing eases.
     paintStandaloneViewport(root);
+    // When only the category window moves, every mark maps from the final window to a displayed one by the same
+    // horizontal scale and shift. The marks then keep their final geometry and only one transform eases, instead of
+    // rewriting every mark on every frame; the closing paint is the same as without motion.
+    const glide = !view.horizontal && !view.stacks?.active && !view.labels.length && view.geometry.every(entry => !entry.marker)
+      && view.frames.every(({ owner }) => !owner.hasAttribute('transform'))
+      && Object.keys(to).every(name => name === 'x' || from[name].minimum === to[name].minimum && from[name].maximum === to[name].maximum);
     const frame = progress => {
       view.windows = Object.fromEntries(Object.keys(to).map(name => [name, {
         minimum: from[name].minimum + (to[name].minimum - from[name].minimum) * progress,
         maximum: from[name].maximum + (to[name].maximum - from[name].maximum) * progress }]));
-      paintStandaloneViewport(root);
+      // A glide eases only the category window; the other axes keep their final windows and native captions.
+      if (glide) { view.windows = { ...target, x: view.windows.x }; glideStandaloneViewport(root, view); } else paintStandaloneViewport(root);
     };
-    view.motionTarget = target; frame(0);
-    view.cancelMotion = motion.tween(root, chartFeatureKernel, frame,
-      () => { view.cancelMotion = null; view.motionTarget = null; view.windows = target; paintStandaloneViewport(root); });
+    view.motionTarget = target; view.glideTouched = false; frame(0);
+    const cancel = motion.tween(root, chartFeatureKernel, frame, () => {
+      view.cancelMotion = null; view.motionTarget = null; view.windows = target;
+      view.glideSettled = glide && !view.glideTouched; paintStandaloneViewport(root); view.glideSettled = false;
+    });
+    view.cancelMotion = () => { cancel(); settleStandaloneGlide(view); };
+  };
+  // Nodes a glide transforms; the keyboard watch ignores their transform changes, which move no target for good.
+  const standaloneGlideNodes = new WeakSet();
+  const glideStandaloneViewport = (root, view) => {
+    const map = standaloneMap(standaloneAxis(root, 'x', true), standaloneAxis(root, 'x'), view.source.dataProjection.plotBounds, false);
+    const scale = map.scale, shift = map.at(0);
+    // Glide marks keep their strokes at the drawn width; the shared plot clip stays put by taking the inverse transform.
+    if (!view.glide) [...view.frames.map(({ owner }) => owner), view.clip.firstChild, ...view.geometry.map(({ node }) => node).filter(node => /^(path|line|polyline|polygon)$/.test(node.localName))]
+      .forEach(node => { node.dataset.cfxGlide = ''; standaloneGlideNodes.add(node); });
+    view.glide = true;
+    view.frames.forEach(({ owner }) => owner.setAttribute('transform', 'matrix(' + scale + ' 0 0 1 ' + shift + ' 0)'));
+    view.clip.firstChild.setAttribute('transform', 'matrix(' + 1 / scale + ' 0 0 1 ' + -shift / scale + ' 0)');
+    paintStandaloneAxes(root, view, view.glideMeasure ||= {});
+  };
+  const settleStandaloneGlide = view => {
+    if (!view.glide) return;
+    view.glide = false; view.glideMeasure = null;
+    view.frames.forEach(({ owner }) => owner.removeAttribute('transform'));
+    view.clip.firstChild.removeAttribute('transform');
+    view.svg.querySelectorAll('[data-cfx-glide]').forEach(node => delete node.dataset.cfxGlide);
   };
   const requestStandaloneWindow = (root, windows, sync = true, accepted, emit = true, animate = false) => {
     if (chartLifetimes.get(root)?.preparationPending) return false;
@@ -358,6 +402,7 @@
     view.windows = {}; presentStandaloneViewport(root, view, previous, true); return true;
   };
   const restoreStandaloneGeometry = view => {
+    settleStandaloneGlide(view); view.glideTouched = true;
     for (const entry of view.geometry) {
       for (const name of ['d', 'points', 'x', 'x1', 'x2', 'cx', 'y', 'y1', 'y2', 'cy', 'width', 'height'])
         // Rewriting an unchanged value still restyles the mark, which costs a full pass on dense charts.
@@ -382,7 +427,7 @@
   };
   const setStandaloneClip = (view, active) => {
     view.frames.forEach(({ owner, clip }) => {
-      if (active) owner.setAttribute('clip-path', 'url(#' + view.clip.id + ')');
+      if (active) owner.getAttribute('clip-path') !== 'url(#' + view.clip.id + ')' && owner.setAttribute('clip-path', 'url(#' + view.clip.id + ')');
       else if (clip === null) owner.removeAttribute('clip-path');
       else owner.setAttribute('clip-path', clip);
     });
