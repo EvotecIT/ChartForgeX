@@ -9,19 +9,20 @@ namespace ChartForgeX.Interactivity.Html;
 public sealed partial class HtmlGraphExplorerRenderer {
     private static void WriteEdges(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, IReadOnlyDictionary<string, string> clusterMembership, IReadOnlyDictionary<string, Point> collapsedNodePositions, IReadOnlyDictionary<string, double> collapsedNodeRadii, string markerId, HashSet<string> collapsedEdgeIds, bool focusableGraphItems, HtmlChartLocalization? text = null) {
         var nodesById = scene.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
+        var valueWidths = EdgeValueWidths(scene);
         foreach (var edge in scene.Edges) {
             if (!positions.TryGetValue(edge.SourceNodeId, out var source) || !positions.TryGetValue(edge.TargetNodeId, out var target)) continue;
             nodesById.TryGetValue(edge.SourceNodeId, out var sourceNode);
             nodesById.TryGetValue(edge.TargetNodeId, out var targetNode);
+            var width = ResolvedEdgeWidth(edge, valueWidths);
+            var customArrows = HasCustomArrows(edge);
             var renderSource = collapsedNodePositions.TryGetValue(edge.SourceNodeId, out var collapsedSource) ? collapsedSource : source;
             var renderTarget = collapsedNodePositions.TryGetValue(edge.TargetNodeId, out var collapsedTarget) ? collapsedTarget : target;
             var sourceBoundary = collapsedNodeRadii.TryGetValue(edge.SourceNodeId, out var sourceRadius) ? sourceRadius : (double?)null;
             var targetBoundary = collapsedNodeRadii.TryGetValue(edge.TargetNodeId, out var targetRadius) ? targetRadius : (double?)null;
             var path = EdgePath(edge, renderSource, renderTarget, sourceNode, targetNode, targetBoundary, sourceBoundary);
-            writer.Append("<path class=\"cfx-graph-edge");
-            if (collapsedEdgeIds.Contains(edge.Id)) writer.Append(" cfx-graph-cluster-collapsed-member");
-            if (edge.Style.Hidden) writer.Append(" cfx-graph-hidden");
-            writer.Append("\" tabindex=\"");
+            var edgeClass = "cfx-graph-edge" + (collapsedEdgeIds.Contains(edge.Id) ? " cfx-graph-cluster-collapsed-member" : string.Empty) + (edge.Style.Hidden ? " cfx-graph-hidden" : string.Empty);
+            writer.Append("<path class=\"").Append(edgeClass).Append("\" tabindex=\"");
             writer.Append("-1");
             writer.Append("\" data-cfx-role=\"graph-edge\"");
             if (focusableGraphItems) {
@@ -47,7 +48,11 @@ public sealed partial class HtmlGraphExplorerRenderer {
             Attribute(writer, "data-edge-dashed", edge.Dashed ? "true" : "false");
             Attribute(writer, "data-edge-dash-pattern", edge.Style.DashPattern);
             Attribute(writer, "data-edge-show-label", edge.ShowLabel ? "true" : "false");
-            Attribute(writer, "data-edge-width", edge.Style.Width.HasValue ? Number(edge.Style.Width.Value) : null);
+            Attribute(writer, "data-edge-width", width.HasValue ? Number(width.Value) : null);
+            Attribute(writer, "data-edge-arrows", ArrowStyleData(edge));
+            Attribute(writer, "data-edge-hover-width", edge.Style.HoverWidth.HasValue ? Number(edge.Style.HoverWidth.Value) : null);
+            Attribute(writer, "data-edge-selection-width", edge.Style.SelectionWidth.HasValue ? Number(edge.Style.SelectionWidth.Value) : null);
+            Attribute(writer, "data-cfx-hover-text", edge.Tooltip);
             Attribute(writer, "data-edge-color", edge.Style.Color);
             Attribute(writer, "data-edge-label-color", edge.Style.LabelColor);
             Attribute(writer, "data-edge-physics", edge.Style.Physics ? "true" : "false");
@@ -56,19 +61,20 @@ public sealed partial class HtmlGraphExplorerRenderer {
             Attribute(writer, "data-cfx-metadata", MetadataJson(edge.Metadata));
             Attribute(writer, "aria-label", EdgeAccessibleName(edge, sourceNode, targetNode, text));
             Attribute(writer, "d", path);
-            var edgeStyle = EdgeStyle(edge);
+            var edgeStyle = EdgeStyle(edge, width);
             if (!string.IsNullOrWhiteSpace(edgeStyle)) Attribute(writer, "style", edgeStyle);
             var edgeMarkerId = ArrowMarkerId(markerId, edge.Style.Color);
-            if (HasSourceArrow(edge)) Attribute(writer, "marker-start", "url(#" + edgeMarkerId + ")");
-            if (HasTargetArrow(edge)) Attribute(writer, "marker-end", "url(#" + edgeMarkerId + ")");
+            if (HasSourceArrow(edge) && !customArrows) Attribute(writer, "marker-start", "url(#" + edgeMarkerId + ")");
+            if (HasTargetArrow(edge) && !customArrows) Attribute(writer, "marker-end", "url(#" + edgeMarkerId + ")");
             writer.Append("></path>");
+            if (customArrows && !edge.Style.Hidden) WriteEdgeArrowMarks(writer, edge, edgeClass, renderSource, renderTarget, sourceNode, targetNode, targetBoundary, sourceBoundary);
         }
     }
 
     private static void WriteArrowMarkers(StringBuilder writer, GraphScene scene, string markerId) {
         writer.Append("<defs>");
         WriteArrowMarker(writer, markerId, null);
-        foreach (var color in scene.Edges.Where(edge => HasSourceArrow(edge) || HasTargetArrow(edge)).Select(edge => edge.Style.Color).Where(color => !string.IsNullOrWhiteSpace(color)).Distinct(StringComparer.Ordinal)) WriteArrowMarker(writer, ArrowMarkerId(markerId, color), color);
+        foreach (var color in scene.Edges.Where(edge => (HasSourceArrow(edge) || HasTargetArrow(edge)) && !HasCustomArrows(edge)).Select(edge => edge.Style.Color).Where(color => !string.IsNullOrWhiteSpace(color)).Distinct(StringComparer.Ordinal)) WriteArrowMarker(writer, ArrowMarkerId(markerId, color), color);
         writer.Append("</defs>");
     }
 

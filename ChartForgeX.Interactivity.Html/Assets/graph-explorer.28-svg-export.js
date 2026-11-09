@@ -130,25 +130,25 @@
     path.removeAttribute('marker-start'); path.removeAttribute('marker-end');
   };
   const appendExportedEdgeArrows = (document, group, edge, paint, existing) => {
-    if (!paint.arrows || !edge.sourceArrow && !edge.targetArrow && !edge.directed) { existing?.remove(); return; }
+    const marks = paint.arrows ? edgeArrowMarks(edge, paint) : [];
+    if (!marks.length) { existing?.remove(); return; }
     const arrows = existing || svgNode(document, 'g');
     Object.entries({
       class: attr(edge.el, 'class'), 'data-cfx-role': 'graph-edge-arrows',
       'data-cfx-runtime-overlay': 'true', 'data-edge-arrows-for': edge.id,
       style: `opacity:${paint.arrowAlpha};pointer-events:none`
     }).forEach(([key, value]) => arrows.setAttribute(key, value));
-    for (const side of ['source', 'target']) {
-      let polygon = arrows.querySelector(`[data-arrow-side="${side}"]`);
-      if (side === 'source' ? !edge.sourceArrow : !edge.targetArrow && !edge.directed) { polygon?.remove(); continue; }
-      const arrow = edgeArrowGeometry(paint.rendered, paint.control, side);
-      if (!polygon) {
-        polygon = svgNode(document, 'polygon', { 'data-arrow-side': side });
-        if (side === 'source' && arrows.firstElementChild) arrows.insertBefore(polygon, arrows.firstElementChild);
-        else arrows.appendChild(polygon);
-      }
-      polygon.setAttribute('points', [arrow.tip, arrow.left, arrow.right].map(point => `${point.x},${point.y}`).join(' '));
-      polygon.setAttribute('style', `fill:${paint.color};stroke:none`);
-    }
+    // Retain each side's polygons in source, middle, target order; a side may own several (an open triangle).
+    const previous = [...arrows.children], used = {};
+    const polygons = marks.map(mark => {
+      const index = used[mark.side] = (used[mark.side] ?? -1) + 1;
+      const polygon = previous.filter(node => attr(node, 'data-arrow-side') === mark.side)[index] || svgNode(document, 'polygon', { 'data-arrow-side': mark.side });
+      polygon.setAttribute('points', mark.points.map(point => `${point.x},${point.y}`).join(' '));
+      polygon.setAttribute('style', `fill:${mark.paper ? paint.paper : paint.color};stroke:none`);
+      return polygon;
+    });
+    previous.forEach(node => { if (!polygons.includes(node)) node.remove(); });
+    polygons.forEach((polygon, index) => { if (arrows.children[index] !== polygon) arrows.insertBefore(polygon, arrows.children[index] || null); });
     if (!existing) group.appendChild(arrows);
     return arrows;
   };
@@ -195,7 +195,7 @@
       const label = labels.get(edge.id);
       syncGraphEdgeGeometry(path, label, paint.rendered, paint.control, labelObstacles);
       const stamp = JSON.stringify([attr(path, 'd'), attr(edge.el, 'class'), paint.color, paint.width, paint.alpha, paint.arrowAlpha,
-        edge.sourceArrow, edge.targetArrow, edge.directed, edge.dashed && edge.dashPattern, edge.labelColor, palette.edgeLabel, palette.paper]);
+        edge.sourceArrow, edge.targetArrow, edge.directed, edge.arrowStyle, edge.dashed && edge.dashPattern, edge.labelColor, palette.edgeLabel, palette.paper]);
       if (path.__cfxSvgPaintStamp !== stamp || path.__cfxSvgPaintLabel !== label) {
         applySvgEdgePaint(path, edge, paint);
         const arrows = appendExportedEdgeArrows(scene.ownerDocument, path.parentNode, edge, paint, arrowGroups.get(edge.id));

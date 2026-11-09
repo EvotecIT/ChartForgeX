@@ -57,15 +57,20 @@ internal static class HtmlGraphExplorerAssets {
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.31-physics-configurator.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.32-manipulation.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.36-host-commands.js",
+        "ChartForgeX.Interactivity.Html.Assets.graph-explorer.37-hover-tip.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.39-patch-validation.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.40-api.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.30-bindings.js"
     };
 
     private static readonly Lazy<string> StyleResource = new Lazy<string>(() => ReadResources(StyleResourceNames));
+    private static readonly Lazy<string> RuntimeStyleResource = new Lazy<string>(() => ReadResource("ChartForgeX.Interactivity.Html.Assets.graph-explorer.runtime.css"));
     private static readonly Lazy<string> ScriptResource = new Lazy<string>(() => ReadResources(ScriptResourceNames));
 
-    internal static string Style => ChartForgeX.Typography.ChartFontAssets.StyleSheet + "\n" + StyleResource.Value;
+    internal static string Style => StaticStyle + RuntimeStyleResource.Value;
+
+    // Script-free SVG and PNG exports never contain runtime-created elements such as hover tooltips.
+    internal static string StaticStyle => ChartForgeX.Typography.ChartFontAssets.StyleSheet + "\n" + StyleResource.Value;
 
     internal static string Script => ScriptResource.Value;
 

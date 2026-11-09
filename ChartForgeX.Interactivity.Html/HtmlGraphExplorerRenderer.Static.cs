@@ -46,7 +46,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var clusterMembership = BuildClusterMembership(scene, clusters);
         var markerId = SafeId(scene.Id) + "-static-arrow";
         writer.Append("<style>");
-        writer.Append(Text(HtmlGraphExplorerAssets.Style));
+        writer.Append(Text(HtmlGraphExplorerAssets.StaticStyle));
         writer.Append("</style><g class=\"cfx-graph-explorer cfx-graph-svg cfx-graph-static-export");
         if (options.Theme == HtmlGraphExplorerTheme.Dark) writer.Append(" cfx-graph-theme-dark");
         writer.Append("\"");
@@ -185,7 +185,8 @@ public sealed partial class HtmlGraphExplorerRenderer {
         }
         foreach (var source in scene.Nodes.Where(node => visible.Contains(node.Id))) projected.Nodes.Add(CopyNode(source, visible, hiddenDescendants, retainedClusterIds));
         var visibleEdges = stage == null ? null : new HashSet<string>(stage.VisibleEdgeIds, StringComparer.Ordinal);
-        foreach (var source in scene.Edges.Where(edge => visible.Contains(edge.SourceNodeId) && visible.Contains(edge.TargetNodeId) && (visibleEdges == null || visibleEdges.Contains(edge.Id)))) projected.Edges.Add(CopyEdge(source));
+        var valueWidths = EdgeValueWidths(scene);
+        foreach (var source in scene.Edges.Where(edge => visible.Contains(edge.SourceNodeId) && visible.Contains(edge.TargetNodeId) && (visibleEdges == null || visibleEdges.Contains(edge.Id)))) projected.Edges.Add(CopyEdge(source, valueWidths));
         if (visibleEdges != null && projected.Edges.Count != visibleEdges.Count) throw new InvalidOperationException("Graph scene stage contains an unavailable relationship or an endpoint outside the view.");
         projected.Options.Layout.Mode = scene.Options.Layout.Mode;
         projected.Options.Layout.Direction = scene.Options.Layout.Direction;
@@ -302,7 +303,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var node = new GraphSceneNode {
             Id = source.Id, Label = source.Label, Kind = source.Kind, GroupId = source.GroupId, Status = source.Status, Shape = source.Shape, Level = source.Level,
             ImageUrl = source.ImageUrl, ImageAlt = source.ImageAlt, IconText = source.IconText, SecondaryLabel = source.SecondaryLabel, BadgeText = source.BadgeText,
-            Size = source.Size, Fixed = source.Fixed, Hidden = source.Hidden
+            Tooltip = source.Tooltip, Size = source.Size, Fixed = source.Fixed, Hidden = source.Hidden
         };
         if (!string.IsNullOrWhiteSpace(source.ClusterId) && retainedClusterIds.Contains(source.ClusterId!)) node.ClusterId = source.ClusterId;
         if (!string.IsNullOrWhiteSpace(source.ParentId) && visible.Contains(source.ParentId!)) node.ParentId = source.ParentId;
@@ -317,13 +318,16 @@ public sealed partial class HtmlGraphExplorerRenderer {
         return node;
     }
 
-    private static GraphSceneEdge CopyEdge(GraphSceneEdge source) {
+    // Values resolve against the complete source scene, so every stage draws an edge at the same width.
+    private static GraphSceneEdge CopyEdge(GraphSceneEdge source, IReadOnlyDictionary<string, double> valueWidths) {
         var edge = new GraphSceneEdge {
             Id = source.Id, SourceNodeId = source.SourceNodeId, TargetNodeId = source.TargetNodeId, Label = source.Label, Kind = source.Kind, Status = source.Status,
             Weight = source.Weight, Length = source.Length, Directed = source.Directed, LayoutDirected = source.LayoutDirected, SourceArrow = source.SourceArrow, TargetArrow = source.TargetArrow,
-            Shape = source.Shape, Curvature = source.Curvature, Dashed = source.Dashed, ShowLabel = source.ShowLabel
+            Shape = source.Shape, Curvature = source.Curvature, Dashed = source.Dashed, ShowLabel = source.ShowLabel, MiddleArrow = source.MiddleArrow, Tooltip = source.Tooltip
         };
-        edge.Style.Color = source.Style.Color; edge.Style.LabelColor = source.Style.LabelColor; edge.Style.Width = source.Style.Width; edge.Style.DashPattern = source.Style.DashPattern; edge.Style.Physics = source.Style.Physics; edge.Style.Hidden = source.Style.Hidden;
+        edge.Style.Color = source.Style.Color; edge.Style.LabelColor = source.Style.LabelColor; edge.Style.Width = ResolvedEdgeWidth(source, valueWidths); edge.Style.DashPattern = source.Style.DashPattern; edge.Style.Physics = source.Style.Physics; edge.Style.Hidden = source.Style.Hidden;
+        edge.Style.SourceArrowShape = source.Style.SourceArrowShape; edge.Style.MiddleArrowShape = source.Style.MiddleArrowShape; edge.Style.TargetArrowShape = source.Style.TargetArrowShape; edge.Style.ArrowScale = source.Style.ArrowScale;
+        edge.Style.HoverWidth = source.Style.HoverWidth; edge.Style.SelectionWidth = source.Style.SelectionWidth;
         edge.RoutePoints.AddRange(source.RoutePoints);
         CopyDictionary(source.Metadata, edge.Metadata);
         return edge;

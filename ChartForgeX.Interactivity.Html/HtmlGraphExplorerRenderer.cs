@@ -88,6 +88,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static string RenderGraph(GraphScene scene, HtmlGraphExplorerOptions options) {
         scene.Validate();
+        if (options.TooltipDelayMilliseconds < 0) throw new ArgumentOutOfRangeException(nameof(options), "Graph tooltip delay must not be negative.");
         var effectiveClusters = scene.GetEffectiveClusters();
         var positions = ComputePositions(scene);
         var graphId = SafeId(scene.Id);
@@ -132,6 +133,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         Attribute(writer, "data-cfx-graph-history-limit", scene.Options.Manipulation.MaximumHistoryEntries.ToString(CultureInfo.InvariantCulture));
         Attribute(writer, "data-cfx-graph-confirm-destructive", scene.Options.Manipulation.ConfirmDestructiveChanges ? "true" : "false");
         Attribute(writer, "data-cfx-graph-accelerated-markup", acceleratedMarkup ? "true" : "false");
+        if (options.TooltipDelayMilliseconds > 0) Attribute(writer, "data-cfx-tooltip-delay", options.TooltipDelayMilliseconds.ToString(CultureInfo.InvariantCulture));
         WriteScalabilityAttributes(writer, scene);
         WriteHierarchyAttributes(writer, scene);
         writer.Append('>');
@@ -332,6 +334,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             Attribute(writer, "data-node-icon", node.IconText);
             Attribute(writer, "data-node-secondary-label", node.SecondaryLabel);
             Attribute(writer, "data-node-badge", node.BadgeText);
+            Attribute(writer, "data-cfx-hover-text", node.Tooltip);
             Attribute(writer, "data-node-background-color", node.Style.BackgroundColor);
             Attribute(writer, "data-node-border-color", node.Style.BorderColor);
             Attribute(writer, "data-node-label-color", node.Style.LabelColor);

@@ -19,10 +19,12 @@ public sealed partial class HtmlGraphExplorerRenderer {
             writer.Append(JsonString(node.Id)); Value(writer, node.Label); Value(writer, node.Kind); Value(writer, node.GroupId); Value(writer, NodeClusterId(node, clusterMembership)); Value(writer, node.ParentId); Value(writer, node.Status);
             NumberValue(writer, SafeNodeSize(node)); BooleanValue(writer, node.Fixed); BooleanValue(writer, node.Hidden); NullableNumberValue(writer, node.Level); Value(writer, NodeShape(node)); Value(writer, node.ImageUrl); Value(writer, node.ImageAlt); Value(writer, node.IconText); Value(writer, node.SecondaryLabel); Value(writer, node.BadgeText);
             Value(writer, node.Style.BackgroundColor); Value(writer, node.Style.BorderColor); Value(writer, node.Style.LabelColor); Value(writer, node.Style.LabelBackgroundColor); BooleanValue(writer, node.Style.Shadow); Value(writer, SearchText(node.Metadata)); Value(writer, MetadataJson(node.Metadata)); NumberValue(writer, point.X); NumberValue(writer, point.Y); BooleanValue(writer, collapsedNodeIds.Contains(node.Id)); BooleanValue(writer, IsCardNode(node));
+            if (node.Tooltip != null) Value(writer, node.Tooltip);
             writer.Append(']');
         }
 
         writer.Append("],\"e\":[");
+        var valueWidths = EdgeValueWidths(scene);
         for (var index = 0; index < scene.Edges.Count; index++) {
             if (index > 0) writer.Append(',');
             var edge = scene.Edges[index];
@@ -32,8 +34,13 @@ public sealed partial class HtmlGraphExplorerRenderer {
             writer.Append('[');
             writer.Append(JsonString(edge.Id)); Value(writer, edge.Label); Value(writer, edge.Kind); Value(writer, edge.Status); Value(writer, edge.SourceNodeId); Value(writer, edge.TargetNodeId);
             Value(writer, sourceNode == null ? null : NodeClusterId(sourceNode, clusterMembership)); Value(writer, targetNode == null ? null : NodeClusterId(targetNode, clusterMembership));
-            NumberValue(writer, edge.Weight); NumberValue(writer, edge.Length); BooleanValue(writer, edge.Directed); BooleanValue(writer, HasSourceArrow(edge)); BooleanValue(writer, HasTargetArrow(edge)); Value(writer, EdgeShape(edge.Shape)); NumberValue(writer, edge.Curvature); Value(writer, RoutePointsData(edge)); BooleanValue(writer, edge.Dashed); Value(writer, edge.Style.DashPattern); BooleanValue(writer, edge.ShowLabel); NullableNumberValue(writer, edge.Style.Width); Value(writer, edge.Style.Color); Value(writer, edge.Style.LabelColor); BooleanValue(writer, edge.Style.Physics); BooleanValue(writer, edge.Style.Hidden); Value(writer, SearchText(edge.Metadata)); Value(writer, MetadataJson(edge.Metadata)); BooleanValue(writer, collapsedEdgeIds.Contains(edge.Id)); Value(writer, EdgeAccessibleName(edge, sourceNode, targetNode, text));
-            Value(writer, HasSourceArrow(edge) ? "url(#" + edgeMarkerId + ")" : null); Value(writer, HasTargetArrow(edge) ? "url(#" + edgeMarkerId + ")" : null);
+            NumberValue(writer, edge.Weight); NumberValue(writer, edge.Length); BooleanValue(writer, edge.Directed); BooleanValue(writer, HasSourceArrow(edge)); BooleanValue(writer, HasTargetArrow(edge)); Value(writer, EdgeShape(edge.Shape)); NumberValue(writer, edge.Curvature); Value(writer, RoutePointsData(edge)); BooleanValue(writer, edge.Dashed); Value(writer, edge.Style.DashPattern); BooleanValue(writer, edge.ShowLabel); NullableNumberValue(writer, ResolvedEdgeWidth(edge, valueWidths)); Value(writer, edge.Style.Color); Value(writer, edge.Style.LabelColor); BooleanValue(writer, edge.Style.Physics); BooleanValue(writer, edge.Style.Hidden); Value(writer, SearchText(edge.Metadata)); Value(writer, MetadataJson(edge.Metadata)); BooleanValue(writer, collapsedEdgeIds.Contains(edge.Id)); Value(writer, EdgeAccessibleName(edge, sourceNode, targetNode, text));
+            var customArrows = HasCustomArrows(edge);
+            Value(writer, HasSourceArrow(edge) && !customArrows ? "url(#" + edgeMarkerId + ")" : null); Value(writer, HasTargetArrow(edge) && !customArrows ? "url(#" + edgeMarkerId + ")" : null);
+            // Newer optional fields follow the original row so default documents keep their shape.
+            if (edge.Tooltip != null || customArrows || edge.Style.HoverWidth.HasValue || edge.Style.SelectionWidth.HasValue) {
+                Value(writer, edge.Tooltip); Value(writer, ArrowStyleData(edge)); NullableNumberValue(writer, edge.Style.HoverWidth); NullableNumberValue(writer, edge.Style.SelectionWidth);
+            }
             writer.Append(']');
         }
 
