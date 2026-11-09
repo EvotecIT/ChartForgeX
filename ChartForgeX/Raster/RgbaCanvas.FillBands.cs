@@ -12,6 +12,8 @@ internal sealed partial class RgbaCanvas {
     // A band also takes sub-scanlines only at its own edge ends, so its coverage can differ from
     // a whole-canvas scan by rounding, at most a couple of alpha levels on a few edge pixels.
     private const int BandedFillPoints = 4096;
+    // Only outlines this crowded, in points per pixel row they span, take far more sub-scanlines than the fixed samples.
+    private const int BandedRowPoints = 64;
     private const int FillBandWidth = 4;
     // Keeps a contour in a band its computed crossings could reach through rounding.
     private const double FillBandMargin = 0.01;
@@ -46,8 +48,17 @@ internal sealed partial class RgbaCanvas {
     private List<List<ChartPoint>>?[]? SplitIntoBands(IReadOnlyList<List<ChartPoint>> contours, int secondContourStart) {
         if (secondContourStart != int.MaxValue || _pixelWidth < FillBandWidth * 2) return null;
         long points = 0;
-        foreach (var contour in contours) points += contour.Count;
-        if (points < BandedFillPoints) return null;
+        var top = double.PositiveInfinity;
+        var bottom = double.NegativeInfinity;
+        foreach (var contour in contours) {
+            points += contour.Count;
+            foreach (var point in contour) {
+                top = Math.Min(top, point.Y);
+                bottom = Math.Max(bottom, point.Y);
+            }
+        }
+
+        if (points < BandedFillPoints || !(points > BandedRowPoints * Math.Max(1, bottom - top))) return null;
 
         var bandCount = (_pixelWidth + FillBandWidth - 1) / FillBandWidth;
         var members = new List<List<ChartPoint>>?[bandCount];

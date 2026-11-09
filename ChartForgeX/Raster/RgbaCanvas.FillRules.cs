@@ -39,8 +39,15 @@ internal sealed partial class RgbaCanvas {
         var coverage = _fillCoverage ??= new double[_pixelWidth];
         var spans = new FillSpans();
         var rowBoundaries = new List<double>();
+        // Bands join the scan at the row of their first edge and leave once every edge has ended, so a row only
+        // visits the bands that can cover it. Bands own disjoint columns, so their order within a row is free.
+        bands.Sort((left, right) => left.Edges[0].Top.CompareTo(right.Edges[0].Top));
+        var live = new List<FillBand>();
+        var nextBand = 0;
         for (var y = yStart; y <= yEnd; y++) {
-            foreach (var band in bands) ScanBandRow(band, y, samples, fillRule, coverage, spans, rowBoundaries);
+            while (nextBand < bands.Count && bands[nextBand].Edges[0].Top < y + 1) live.Add(bands[nextBand++]);
+            foreach (var band in live) ScanBandRow(band, y, samples, fillRule, coverage, spans, rowBoundaries);
+            live.RemoveAll(band => band.Count == 0 && band.Next >= band.Edges.Length);
             FlushRowSpans(y, spans, coverage, row);
         }
     }
