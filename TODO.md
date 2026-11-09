@@ -6,7 +6,7 @@ This is the active product roadmap, refreshed on 1 November 2026. The [README](R
 
 The chart catalogue is at parity with AG Charts or ahead of it: 54 native series kinds, plus Gantt, Timeline, Lollipop, Dumbbell, Slope, WordCloud, TileMap, CalendarHeatmap and topology, which AG Charts doesn't have. Every Mermaid 11/12 family parses and renders natively. Rendering is dependency-free and produces the same scene in SVG and native PNG.
 
-What holds us back is depth, not breadth: charts are less configurable than AG Charts, interactive line charts slow down sharply beyond about a thousand points, diagrams still look like engineering output, the three Evotec libraries have drifted apart visually, and the website undersells all of it. The five workstreams below close those gaps. Each item states the outcome and when it counts as done.
+What holds us back is depth, not breadth: charts are less configurable than AG Charts, diagrams still look like engineering output, the three Evotec libraries have drifted apart visually, and the website undersells all of it. The five workstreams below close those gaps. Each item states the outcome and when it counts as done.
 
 ## Delivery order
 

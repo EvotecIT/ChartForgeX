@@ -57,10 +57,11 @@ They are machine-specific and show orders of magnitude, not guarantees.
 | Section preparation | 3-point fixtures 9.8–16.3 ms; 1,000-point scatter 29–70 ms |
 | Sustained update | 32 points: about 67 ms per update; 1,000 per series with a secondary value: about 5.1 s per update |
 
-The sustained-update runner's 5,000-point case and interactive line charts above
-about a thousand raw points are limited by the browser runtime's binding cost,
-which grows faster than the point count. `AddAdaptiveLine` keeps static export of
-100,000 points near 200 ms by retaining about two points per pixel.
+Interactive line charts bind in time proportional to their points: in the same
+setup a 10,000-point line is ready in about 1.3 s, hovers in under 10 ms and
+settles a toolbar zoom in under a second. A raw 100,000-point line exports to
+PNG in about 2.5 s. `AddAdaptiveLine` keeps both near 200–400 ms by retaining
+about two points per pixel.
 
 ## Guards in the test suite
 
