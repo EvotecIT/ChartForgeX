@@ -3,7 +3,6 @@ param(
     [Parameter(Mandatory)][string] $ProductBinaryRoot,
     [Parameter(Mandatory)][string] $OutputRoot,
     [string] $BaselineBinaryRoot,
-    [string] $BaselineAcquisitionSourcePath,
     [ValidateRange(1, 1000)][int] $Queries = 16,
     [ValidateRange(0, 100)][int] $WarmupCount = 2,
     [ValidateRange(1, 1000)][int] $IterationCount = 5,
@@ -14,9 +13,6 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $binaries = (Resolve-Path -LiteralPath $ProductBinaryRoot).Path
-if ([string]::IsNullOrWhiteSpace($BaselineBinaryRoot) -ne [string]::IsNullOrWhiteSpace($BaselineAcquisitionSourcePath)) {
-    throw 'A paired comparison requires both BaselineBinaryRoot and BaselineAcquisitionSourcePath.'
-}
 $output = [IO.Path]::GetFullPath($OutputRoot)
 $fixtureOutput = Join-Path $output 'fixtures'
 $fixture = Join-Path $fixtureOutput 'InteractivityBenchmarkFixtures.dll'
@@ -29,11 +25,9 @@ try {
     $result = Invoke-BenchmarkSuite -Path (Join-Path $PSScriptRoot 'interactivity.benchmark.ps1') -OutputRoot $output -WarmupCount $WarmupCount -IterationCount $IterationCount -RunMode local -Plan:$Plan -Variable @{
         ProductBinaryRoot = $binaries
         FixtureAssemblyPath = $fixture
-        AcquisitionSourcePath = Join-Path $PSScriptRoot '../ChartForgeX.Interactivity.Html/Assets/interactive.source/45-crosshair-reveal.js'
         Queries = $Queries
         HostNoise = $HostNoise
         BaselineBinaryRoot = if ($BaselineBinaryRoot) { (Resolve-Path -LiteralPath $BaselineBinaryRoot).Path } else { '' }
-        BaselineAcquisitionSourcePath = if ($BaselineAcquisitionSourcePath) { (Resolve-Path -LiteralPath $BaselineAcquisitionSourcePath).Path } else { '' }
     }
     if (-not $Plan -and @($result.Summary | Where-Object { $_.FailureCount -gt 0 -or $_.Status -eq 'Failed' }).Count -gt 0) {
         throw "Interactivity benchmark run $($result.RunId) failed validation."
