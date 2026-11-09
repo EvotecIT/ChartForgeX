@@ -5,9 +5,9 @@
   const keyboardNativeClasses = value => (value || '').split(/\s+/).filter(value => value && !keyboardPaintClasses.has(value)).sort().join(' ');
   const keyboardNativeStyle = value => (value || '').replace(/--cfx-highlight-(?:opacity|stroke|stroke-width)\s*:[^;]*(?:;|$)/g, '').trim();
   const keyboardAvailabilityMutation = (record, stage, ancestry) => {
-    // Browser axes and a glide's temporary transforms are not targets and leave every target where it was.
+    // Browser axes and a running glide's transforms and hidden marks are not targets and leave every target where it was.
     if (record.target.closest?.('[data-cfx-browser-axis],[data-cfx-browser-grid]')
-      || record.attributeName === 'transform' && standaloneGlideNodes.has(record.target)) return false;
+      || /^(transform|style)$/.test(record.attributeName) && standaloneGlideNodes.has(record.target)) return false;
     if (record.type === 'attributes' && record.attributeName === 'class'
       && keyboardNativeClasses(record.oldValue) === keyboardNativeClasses(record.target.getAttribute('class'))) return false;
     if (record.type === 'attributes' && record.target.closest('[data-cfx-highlight-outline],[data-cfx-keyboard-focus-outline],[data-cfx-state-outline]')) return false;
@@ -135,8 +135,9 @@
     // disturbed ends on the drawing those targets were read from, so they stand too.
     const view = root._cfxStandaloneViewport, reused = (view?.motionTarget || view?.glideSettled) && root._cfxKeyboardNavigation?.targets;
     if (reused && view.glide) view.glideTouched = true;
-    // A full refresh reads every paint change made so far, so the availability watch need not queue another.
-    if (!reused) root._cfxSettleAvailability?.();
+    // A full refresh, or a glide's closing paint whose targets stand, accounts for every paint change made so far,
+    // so the availability watch need not queue another.
+    if (!reused || view.glideSettled) root._cfxSettleAvailability?.();
     refreshRootBranchHighlightAvailability(root);
     refreshSelectionCuePaint(root);
     const state = root._cfxKeyboardNavigation;

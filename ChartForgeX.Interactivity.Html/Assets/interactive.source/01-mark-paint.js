@@ -114,9 +114,8 @@
       const clips = nativePaintClips(node), projection = clips?.length && svgScreenProjection(node.ownerSVGElement, styles);
       cache.set(node, clips && [projection, clips.map(({ rect, matrix }) => {
         if (projection) matrix = projection.multiply(matrix);
-        const corners = [[rect.x, rect.y], [rect.x + rect.width, rect.y], [rect.x, rect.y + rect.height], [rect.x + rect.width, rect.y + rect.height]]
-          .map(([x, y]) => new DOMPoint(x, y).matrixTransform(matrix)), allowance = svgCoordinatePrecision(matrix);
-        return [Math.min(...corners.map(p => p.x)), Math.max(...corners.map(p => p.x)), Math.min(...corners.map(p => p.y)), Math.max(...corners.map(p => p.y)), Math.max(allowance.x, allowance.y)];
+        const { left, right, top, bottom } = screenBounds(rect, matrix), allowance = svgCoordinatePrecision(matrix);
+        return [left, right, top, bottom, Math.max(allowance.x, allowance.y)];
       })]);
     }
     const [projection, bounds] = cache.get(node) || [];

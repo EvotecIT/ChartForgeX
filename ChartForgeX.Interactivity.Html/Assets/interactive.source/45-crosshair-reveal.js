@@ -254,7 +254,7 @@
     crosshair.hidden = false;
     const label = crosshair.querySelector('[data-cfx-crosshair-label]');
     if (label) label.hidden = true;
-    paintCrosshairAxisLabels(root, crosshair, point.node, x, y, bounds);
+    paintCrosshairAxisLabels(root, crosshair, point.node, x, y, bounds, bounds.left - stage.scrollLeft);
     announceCrosshair(root, point.node, event, crosshairHoverMode(event, point.node, nativeTarget));
   };
   const announceCrosshair = (root, node, event, mode) => {
