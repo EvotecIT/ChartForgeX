@@ -173,16 +173,18 @@ internal static partial class VisualCartesianCompiler {
             var grid = chart.Options.ResolvePreparedGridLineStyle();
             var gridWidth = chart.Options.HasPreparedGridStrokeWidth ? grid.StrokeWidth : context.Theme.GridStrokeWidth;
             var dash = grid.Dash > 0 && grid.Gap > 0 ? new[] { grid.Dash, grid.Gap } : null;
+            var yGrid = new CartesianAxisGrid(chart.Options.YAxis, grid.ShowHorizontalLines, grid.HorizontalOpacity, gridWidth, dash, colors);
+            var xGrid = new CartesianAxisGrid(chart.Options.XAxis, grid.ShowVerticalLines, grid.VerticalOpacity, gridWidth, dash, colors);
+            if ((parts & AxisParts.YGrid) != 0) yGrid.Underlay(builder, yTicks, range.MinY, range.MaxY, map.Y, plot, true, "grid-y", false);
+            if ((parts & AxisParts.XGrid) != 0) xGrid.Underlay(builder, xTicks, range.MinX, range.MaxX, map.X, plot, false, "grid-x", zoom != null);
             foreach (var tick in yTicks) {
                 var y = map.Y(tick);
-                if ((parts & AxisParts.YGrid) != 0 && grid.ShowHorizontalLines) builder.Line(plot.Left, y, plot.Right, y, ChartColorMath.WithOpacity(colors.Grid, grid.HorizontalOpacity), gridWidth, role: "grid-y", dash: dash,
-                    paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.Grid, SvgColorRole.Grid).WithOpacity(ChartColorMath.WithOpacity(colors.Grid, grid.HorizontalOpacity), grid.HorizontalOpacity)));
+                if ((parts & AxisParts.YGrid) != 0 && yGrid.Lines) yGrid.Line(builder, plot.Left, y, plot.Right, y, "grid-y");
             }
             foreach (var tick in xTicks) {
                 using var sourcePaint = zoom == null ? null : builder.PushSourceX(CartesianXSourceAdmission.Point(tick));
                 var x = map.X(tick);
-                if ((parts & AxisParts.XGrid) != 0 && grid.ShowVerticalLines) builder.Line(x, plot.Top, x, plot.Bottom, ChartColorMath.WithOpacity(colors.Grid, grid.VerticalOpacity), gridWidth, role: "grid-x", dash: dash,
-                    paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.Grid, SvgColorRole.Grid).WithOpacity(ChartColorMath.WithOpacity(colors.Grid, grid.VerticalOpacity), grid.VerticalOpacity)));
+                if ((parts & AxisParts.XGrid) != 0 && xGrid.Lines) xGrid.Line(builder, x, plot.Top, x, plot.Bottom, "grid-x");
             }
         }
         if (!chart.Options.ShowAxes) {

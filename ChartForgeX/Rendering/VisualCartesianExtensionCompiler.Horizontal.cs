@@ -152,12 +152,12 @@ internal static partial class VisualCartesianCompiler {
             // Value gridlines are vertical here; the default style carries its value-line opacity across.
             var lines = ChartGridPolicy.Lines(grid, horizontalValues: true);
             var valueOpacity = grid.ShowVerticalLines ? grid.VerticalOpacity : grid.HorizontalOpacity;
-            if (lines.Vertical) foreach (var tick in xTicks) builder.Line(map.X(tick), plot.Top, map.X(tick), plot.Bottom,
-                ChartColorMath.WithOpacity(colors.Grid, valueOpacity), width, role: "grid-x", dash: dash,
-                paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.Grid, SvgColorRole.Grid).WithOpacity(ChartColorMath.WithOpacity(colors.Grid, valueOpacity), valueOpacity)));
-            if (lines.Horizontal) foreach (var category in categories) builder.Line(plot.Left, map.Y(category), plot.Right, map.Y(category),
-                ChartColorMath.WithOpacity(colors.Grid, grid.HorizontalOpacity), width, role: "grid-y", dash: dash,
-                paint: VisualChartPaint.Stroke(SvgPaint.Of(colors.Grid, SvgColorRole.Grid).WithOpacity(ChartColorMath.WithOpacity(colors.Grid, grid.HorizontalOpacity), grid.HorizontalOpacity)));
+            var valueGrid = new CartesianAxisGrid(axes.Value, lines.Vertical, valueOpacity, width, dash, colors);
+            var categoryGrid = new CartesianAxisGrid(axes.Category, lines.Horizontal, grid.HorizontalOpacity, width, dash, colors);
+            valueGrid.Underlay(builder, xTicks, range.MinX, range.MaxX, map.X, plot, false, "grid-x", false);
+            categoryGrid.Underlay(builder, categories, range.MinY, range.MaxY, map.Y, plot, true, "grid-y", false);
+            if (valueGrid.Lines) foreach (var tick in xTicks) valueGrid.Line(builder, map.X(tick), plot.Top, map.X(tick), plot.Bottom, "grid-x");
+            if (categoryGrid.Lines) foreach (var category in categories) categoryGrid.Line(builder, plot.Left, map.Y(category), plot.Right, map.Y(category), "grid-y");
         }
         if (!chart.Options.ShowAxes) {
             DrawCategoryGroups(chart, context, builder, cache, map.Y, range.MinY, range.MaxY, default, colors);

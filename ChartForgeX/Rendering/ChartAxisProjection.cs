@@ -14,11 +14,12 @@ public sealed class ChartAxisProjection {
         ChartRect plotBounds, ChartAxis axis, ChartAxisDimension dimension, ChartAxisSide side = ChartAxisSide.Primary, ChartRect? nativeTrack = null, double translation = 0) {
         _nativeTrack = nativeTrack; _translation = translation;
         PlotBounds = plotBounds; Dimension = dimension; Side = side;
-        PreparedValueTickStep = axis.PreparedValueTickStep;
+        PreparedValueTickStep = axis.PreparedValueTickStep; TickFacts = ChartAxisTickFacts.Capture(axis);
         _axis = new ChartViewportAxisProjection(fullMinimum, fullMaximum, minimum, maximum,
             dimension == ChartAxisDimension.X ? plotBounds.Left : plotBounds.Top,
             dimension == ChartAxisDimension.X ? plotBounds.Right : plotBounds.Bottom, axis, dimension == ChartAxisDimension.Y);
     }
+    internal ChartAxisTickFacts? TickFacts { get; }
     /// <summary>Gets the physical direction of the axis.</summary>
     public ChartAxisDimension Dimension { get; }
     /// <summary>Gets the primary or secondary slot.</summary>

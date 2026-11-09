@@ -7,11 +7,12 @@ namespace ChartForgeX.Rendering;
 /// <summary>
 /// Design rule 1, shared by every value axis: an automatic linear value axis ends on the next clean tick
 /// (1/2/2.5/5 × 10ⁿ, or whole numbers for count data) beyond its data, so no mark passes the outer gridline
-/// and every family reads its scale the same way. Authored bounds, authored ticks, time and logarithmic scales are kept.
+/// and every family reads its scale the same way. Authored bounds, authored ticks and tick values, time and logarithmic scales are kept;
+/// a fixed tick step extends each end to its next multiple of that step.
 /// </summary>
 internal static class ChartValueAxisRange {
     /// <summary>Whether the axis takes its automatic ends from its tick step.</summary>
-    internal static bool Applies(ChartAxis axis) => axis.Scale == ChartScaleKind.Linear && axis.Labels.Count == 0
+    internal static bool Applies(ChartAxis axis) => axis.Scale == ChartScaleKind.Linear && axis.Labels.Count == 0 && axis.TickValues.Count == 0
         && axis.PreparedTimeDomain == null && axis.TimeSessions == null;
 
     /// <summary>
