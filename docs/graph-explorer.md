@@ -119,6 +119,38 @@ var html = graph.ToGraphExplorerHtmlPage(options => {
 
 Unspecified messages use English. Set `Localization.Direction` to `HtmlChartTextDirection.RightToLeft` for right-to-left controls; `Automatic` inherits the embedding document. Graph labels, IDs, kinds, status values, metadata, and numeric facts remain authored. Localization does not change native SVG/PNG labels or the stable values used in host commands. Shared external assets carry the same message resolver as self-contained pages; each explorer keeps its own resolved bundle.
 
+## Hover text and edge styles
+
+Set `Tooltip` on a node or edge to show plain text when the pointer rests on it. Line breaks start new lines, and the text is never read as markup. SVG, Canvas and WebGL all show it beside the pointer. A node's text stays clear of the whole mark, and the text stays inside the window. Keyboard focus on an SVG item shows the same text and links it with `aria-describedby`. On Canvas and WebGL, the selection readout adds it for the item selected with the arrow keys. `HtmlGraphExplorerOptions.TooltipDelayMilliseconds` makes the pointer rest before the text appears. As for charts, the default is no delay and keyboard focus is always immediate.
+
+```csharp
+graph.AddNode("api", "API", node => node.Tooltip = "API gateway\nOwner: platform team");
+graph.AddEdge("api-db", "api", "db", configure: edge => {
+    edge.Tooltip = "Reads and writes\n42 calls per second";
+    edge.SourceArrow = true;
+    edge.MiddleArrow = true;
+    edge.TargetArrow = true;
+    edge.Style.SourceArrowShape = GraphEdgeArrowShape.Bar;
+    edge.Style.MiddleArrowShape = GraphEdgeArrowShape.Vee;
+    edge.Style.TargetArrowShape = GraphEdgeArrowShape.Diamond;
+    edge.Style.ArrowScale = 1.5;
+    edge.Dashed = true;
+    edge.Style.DashPattern = "10 4 2 4";
+    edge.Style.Value = 42;          // Mapped onto graph.Options.EdgeWidthScale.
+    edge.Style.HoverWidth = 6;
+    edge.Style.SelectionWidth = 8;
+});
+graph.Options.EdgeWidthScale.MinimumWidth = 1;
+graph.Options.EdgeWidthScale.MaximumWidth = 8;
+```
+
+- Arrows can sit at the source, halfway along the edge (pointing toward the target), and at the target. `Directed` still adds the target arrow.
+- `GraphEdgeArrowShape` offers `Arrow` (the default), `Vee`, `Triangle` (open), `Bar`, `Circle` and `Diamond`. `ArrowScale` resizes every mark on the edge.
+- `Style.Value` maps the scene's smallest value to `MinimumWidth` and its largest to `MaximumWidth`. When every value is equal, the edge takes the midpoint. An explicit `Style.Width` wins. Hierarchy stages and neighborhoods keep the widths of the complete scene.
+- `HoverWidth` replaces the width while the pointer rests on the edge. `SelectionWidth` replaces it while the edge is selected or highlighted.
+
+Edges that keep the default arrowheads at the default size render exactly as before. Any other arrow layout is drawn as the same polygons in every backend and in `ToGraphSvg`/`ToGraphPng`. Static output has no pointer or selection, so it shows the resting width. Runtime host patches keep the arrow and tooltip settings of an existing edge. The `graph-edge-styles-svg.html`, `-canvas.html` and `-webgl.html` examples, with `graph-edge-styles.svg` and `.png`, show every shape, position, dash pattern and value width.
+
 ## Large topology pipeline
 
 Small scenes remain SVG-first because SVG provides rich shapes, images, labels, keyboard targets, and inspectable metadata. As scenes cross their configured thresholds, the same document moves through Canvas and WebGL without changing the C# model.
