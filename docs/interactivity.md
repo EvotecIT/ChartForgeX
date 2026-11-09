@@ -92,7 +92,7 @@ carry the owned font payloads, are not counted:
 | Runtime | Raw budget | Gzip budget |
 | --- | ---: | ---: |
 | Interactive topology | 157 KiB | 33 KiB |
-| Graph Explorer | 423 KiB | 95 KiB |
+| Graph Explorer | 429 KiB | 97 KiB |
 
 Self-contained pages embed the declared bundles before the runtime. Pages with
 shared assets name each bundle's file on the runtime's script tag instead; the
