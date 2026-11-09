@@ -191,7 +191,15 @@
 .cfx-interactive-chart[data-cfx-prepared-chart] .cfx-series-isolated-out .cfx-series-isolated-out:not(:where([data-cfx-highlight-managed])),
 .cfx-interactive-chart:not([data-cfx-highlight-probe])[data-cfx-prepared-chart] .cfx-series-muted .cfx-series-muted[data-cfx-highlight-managed] > [data-cfx-highlight-paint],
 .cfx-interactive-chart:not([data-cfx-highlight-probe])[data-cfx-prepared-chart] .cfx-series-isolated-out .cfx-series-isolated-out[data-cfx-highlight-managed] > [data-cfx-highlight-paint] { opacity: 1; }
-.cfx-interactive-chart .cfx-prepared-point-marker { opacity: 0; }
+/* Hidden markers and point hit areas also leave paint, not just view: thousands of transparent shapes made every
+   frame of a dense chart re-layer its whole drawing. Visibility transitions with opacity, so markers still fade out. */
+.cfx-interactive-chart .cfx-prepared-point-marker { opacity: 0; visibility: hidden; }
+.cfx-interactive-chart [data-cfx-point]:not([data-cfx-role="legend-item"]) > [data-cfx-browser-hit-area] { visibility: hidden; }
+.cfx-interactive-chart [data-cfx-point].cfx-hovered > .cfx-prepared-point-marker,
+.cfx-interactive-chart [data-cfx-point].cfx-hover-column > .cfx-prepared-point-marker,
+.cfx-interactive-chart [data-cfx-point].cfx-selected > .cfx-prepared-point-marker,
+.cfx-interactive-chart [data-cfx-point].cfx-highlighted > .cfx-prepared-point-marker,
+.cfx-interactive-chart[data-cfx-export-probe] .cfx-prepared-point-marker { visibility: inherit; }
 .cfx-interactive-chart [data-cfx-point].cfx-hovered > .cfx-prepared-point-marker,
 .cfx-interactive-chart [data-cfx-point].cfx-hover-column > .cfx-prepared-point-marker,
 .cfx-interactive-chart [data-cfx-point].cfx-selected > .cfx-prepared-point-marker,
@@ -332,7 +340,7 @@
 /* Opacity belongs to the series or paint owner once; hover never restores a muted mark. */
 .cfx-interactive-chart[data-cfx-export-probe] svg,
 .cfx-interactive-chart[data-cfx-export-probe] svg * { transition: none !important; }
-.cfx-interactive-chart :is(.cfx-prepared-point-marker, .cfx-responsive-legend__label) { transition: opacity 250ms ease-out; }
+.cfx-interactive-chart :is(.cfx-prepared-point-marker, .cfx-responsive-legend__label) { transition: opacity 250ms ease-out, visibility 250ms ease-out; }
 .cfx-interactive-chart[data-cfx-hovering="true"] :is(.cfx-prepared-point-marker, .cfx-responsive-legend__label) { transition-duration: 150ms; }
 .cfx-interactive-chart:not([data-cfx-hover-continuous])[data-cfx-hover-mode="series"] :is([data-cfx-role="series"],[data-cfx-role="legend-item"]):not(.cfx-hover-series):not(.cfx-hovered):not(.cfx-hover-related):not(.cfx-linked-series-active):not(.cfx-series-isolated-in):not(.cfx-selected):not(.cfx-highlighted) { opacity: .4; }
 .cfx-interactive-chart:not([data-cfx-hover-continuous])[data-cfx-hover-mode="series"][data-cfx-hover-unit="point"] [data-cfx-point]:not(.cfx-hover-series):not(.cfx-linked-series-active):not(.cfx-series-isolated-in):not(.cfx-selected):not(.cfx-highlighted) { opacity: .4; }
@@ -422,7 +430,9 @@
 .cfx-interactive-chart [data-cfx-role="legend-item"]:hover > [data-cfx-browser-hit-area] {
   fill: color-mix(in srgb, var(--cfx-tooltip-text) 6%, transparent); rx: var(--cfx-control-radius, var(--hfx-radius-control, 6px));
 }
-.cfx-interactive-chart:has([data-cfx-role="legend-item"]:hover) :is(.cfx-prepared-point-marker, .cfx-responsive-legend__label) { transition-duration: 100ms; }
+/* The runtime marks a hovered legend item on the chart: a :has() rule here made every inline style or hidden
+   write in the chart restyle all of its markers. */
+.cfx-interactive-chart[data-cfx-legend-hover] :is(.cfx-prepared-point-marker, .cfx-responsive-legend__label) { transition-duration: 100ms; }
 
 /* Narrow readers move the heading into HTML so it can wrap beside the toolbar inside the card. */
 .cfx-responsive-heading {

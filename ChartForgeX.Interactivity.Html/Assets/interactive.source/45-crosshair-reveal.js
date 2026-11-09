@@ -1,5 +1,7 @@
+  // Searching a dense drawing for a layer that is usually absent costs more than the rest of a hover.
+  const revealLayerNode = root => chartNodes(root, '[data-cfx-reveal-layer]')[0];
   const revealLayer = (root) => {
-    let layer = root.querySelector('[data-cfx-reveal-layer]');
+    let layer = revealLayerNode(root);
     if (layer) return layer;
     const stage = root.querySelector('.cfx-stage');
     if (!stage) return null;
@@ -13,7 +15,7 @@
   };
   const clearReveals = (root, source) => {
     if (source && root.dataset.cfxRevealSource && root.dataset.cfxRevealSource !== source) return;
-    const layer = root.querySelector('[data-cfx-reveal-layer]');
+    const layer = revealLayerNode(root);
     if (layer) {
       layer.replaceChildren();
       layer.hidden = true;
@@ -138,7 +140,7 @@
   const categoricalPointerKind = node => ['line', 'stepline', 'area', 'steparea', 'stackedarea', 'bar', 'horizontalbar'].includes((node.dataset.cfxKind || '').toLowerCase());
   const eventCoarsePointer = root => root.ownerDocument.defaultView.matchMedia?.('(pointer: coarse)').matches === true;
   const radarPointerPoint = (root, event, styles) => {
-    const spoke = root.querySelector('[data-cfx-role="radar-spoke"]'), matrix = spoke && svgScreenMatrix(spoke);
+    const spoke = chartNodes(root, '[data-cfx-role="radar-spoke"]')[0], matrix = spoke && svgScreenMatrix(spoke);
     if (!matrix) return null;
     const center = new DOMPoint(Number(spoke.getAttribute('x1')), Number(spoke.getAttribute('y1'))).matrixTransform(matrix);
     const edge = new DOMPoint(Number(spoke.getAttribute('x2')), Number(spoke.getAttribute('y2'))).matrixTransform(matrix);
@@ -173,15 +175,16 @@
     const plotSurface = nativeTarget === stage || nativeTarget === svg || nativeTarget instanceof SVGElement
       && svg?.contains(nativeTarget) && !nativeTarget.closest('foreignObject')
       && (isPassiveTarget(nativeTarget) || inferredPlotSurfaceRoles.has(nativeTarget.dataset.cfxRole));
-    const radar = root.querySelector('[data-cfx-role="radar-spoke"]');
+    const radar = chartNodes(root, '[data-cfx-role="radar-spoke"]')[0];
     if (radar && (hit || plotSurface) && !hit?.closest('[data-cfx-role="legend-item"]') && nativeTarget instanceof SVGElement) {
       const point = radarPointerPoint(root, event, styles);
       if (point) return { native: point, observation: point };
     }
     // A painted bar owns its interior even when a line or a generous point hit
     // area sits above it in the SVG paint order.
-    const bar = Array.from(root.querySelectorAll('[data-cfx-point]')).find(node => {
-      if (!['bar', 'horizontalbar'].includes((node.dataset.cfxKind || '').toLowerCase()) || !pointerTargetPaint(node, styles)) return false;
+    const points = modelled(root, 'points', () => Array.from(root.querySelectorAll('[data-cfx-point]')));
+    const bar = modelled(root, 'bars', () => points.filter(node => ['bar', 'horizontalbar'].includes((node.dataset.cfxKind || '').toLowerCase()))).find(node => {
+      if (!pointerTargetPaint(node, styles)) return false;
       const box = node.querySelector('[data-cfx-role="bar"],[data-cfx-role="horizontal-bar"]')?.getBoundingClientRect() || nativeRegionScreenBox(node) || node.getBoundingClientRect();
       return event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom;
     });
@@ -201,24 +204,7 @@
 
 
     if (!searchNearest && !enlarged || !native && !plotSurface) return { native, observation: null };
-    const candidates = [];
-    root.querySelectorAll('[data-cfx-point]').forEach((node) => {
-      if (!isInteractiveTarget(node) || !usesCartesianCoordinates(node)
-        || withinSeries && !matchesLocalSeriesTarget(node, withinSeries)) return;
-      const box = node.getBoundingClientRect();
-      if (!box.width && !box.height) return;
-      const area = enlarged && node.querySelector('[data-cfx-browser-hit-area]')?.getBoundingClientRect();
-      const exact = area && event.clientX >= area.left && event.clientX <= area.right && event.clientY >= area.top && event.clientY <= area.bottom;
-      if (enlarged && !exact) return;
-      const x = box.left + box.width / 2, y = box.top + box.height / 2;
-      const distance = Math.hypot(x - event.clientX, y - event.clientY);
-      const category = !enlarged && root.dataset.cfxTooltipRange === 'auto' && categoricalPointerKind(node);
-      const rank = withinSeries || category ? Math.abs(root._cfxDataProjection?.horizontal ? y - event.clientY : x - event.clientX) : distance;
-      candidates.push({ node, x, y, distance, rank, category, order: candidates.length, exact: !!exact });
-    });
-
-    candidates.sort((first, second) => first.rank - second.rank || first.distance - second.distance || first.order - second.order);
-    return { native, observation: candidates.find(candidate => pointerTargetPaint(candidate.node, styles)) || null };
+    return { native, observation: nearestPlace(root, chartPlaces(root, svg, root._cfxDataProjection?.horizontal ? 'y' : 'x'), event, enlarged, withinSeries, styles) };
   };
   const pointerActivationTarget = (root, node, event) => {
     if (event instanceof MouseEvent && event.detail > 0 && isDataTarget(node)) {
