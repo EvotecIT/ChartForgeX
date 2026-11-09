@@ -32,8 +32,7 @@ internal sealed partial class VisualSceneBuilder {
                 : group.Role == ChartDomRoles.ScheduleRow ? series.RowOptions
                 : isRow ? series.RowOptions ?? series.MarkOptions : group.Role == "series" ? series.MarkOptions : null;
             if (options == null) continue;
-            var metadata = new Dictionary<string, string>(StringComparer.Ordinal);
-            foreach (var entry in group.Metadata) metadata.Add(entry.Key, entry.Value);
+            var metadata = group.CopyMetadata();
             if (options.CssClass != null) metadata["class"] = options.CssClass;
             foreach (var entry in options.DataAttributes) metadata[entry.Key] = entry.Value;
             // Linked views read record keys and defining field values; an item's fields extend its series' fields.
