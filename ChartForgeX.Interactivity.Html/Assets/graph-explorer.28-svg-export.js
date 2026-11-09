@@ -127,7 +127,6 @@
     path.style.strokeLinecap = 'round';
     path.style.strokeMiterlimit = '4';
     path.style.strokeDasharray = edge.dashed ? edge.dashPattern.join(' ') : 'none';
-    path.removeAttribute('marker-start'); path.removeAttribute('marker-end');
   };
   const appendExportedEdgeArrows = (document, group, edge, paint, existing) => {
     const marks = paint.arrows ? edgeArrowMarks(edge, paint) : [];

@@ -77,7 +77,7 @@ public sealed class GraphEdgeStyleBrowserTests {
 
         await using var session = await OpenAsync(graph.ToGraphExplorerHtmlPage(options => options.RenderBackend = HtmlGraphRenderBackend.Svg), 760, 520);
         var live = await session.Page.EvaluateAsync<JsonElement>("""
-            ()=>({runtimePainted:[...document.querySelectorAll('[data-cfx-role=graph-edge-arrows]')].every(group=>/opacity/.test(group.getAttribute('style'))),
+            ()=>({runtimePainted:[...document.querySelectorAll('[data-cfx-role=graph-edge-arrows]')].every(group=>[...group.querySelectorAll('polygon')].every(polygon=>!/var\(/.test(polygon.getAttribute('style')))),
               arrows:Object.fromEntries([...document.querySelectorAll('[data-cfx-role=graph-edge-arrows]')].map(group=>[group.dataset.edgeArrowsFor,
                 [...group.querySelectorAll('polygon')].map(polygon=>polygon.getAttribute('points'))])),
               widths:Object.fromEntries(['value-1','value-2','value-3'].map(id=>[id,document.querySelector(`[data-edge-id=${id}]`).style.strokeWidth]))})

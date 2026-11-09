@@ -145,11 +145,11 @@ graph.Options.EdgeWidthScale.MaximumWidth = 8;
 ```
 
 - Arrows can sit at the source, halfway along the edge (pointing toward the target), and at the target. `Directed` still adds the target arrow.
-- `GraphEdgeArrowShape` offers `Arrow` (the default), `Vee`, `Triangle` (open), `Bar`, `Circle` and `Diamond`. `ArrowScale` resizes every mark on the edge.
+- `GraphEdgeArrowShape` offers `Arrow` (the default), `Vee`, `Triangle` (open), `Bar`, `Circle` and `Diamond`. `ArrowScale` multiplies every mark on the edge.
 - `Style.Value` maps the scene's smallest value to `MinimumWidth` and its largest to `MaximumWidth`. When every value is equal, the edge takes the midpoint. An explicit `Style.Width` wins. Hierarchy stages and neighborhoods keep the widths of the complete scene.
 - `HoverWidth` replaces the width while the pointer rests on the edge. `SelectionWidth` replaces it while the edge is selected or highlighted.
 
-Edges that keep the default arrowheads at the default size render exactly as before. Any other arrow layout is drawn as the same polygons in every backend and in `ToGraphSvg`/`ToGraphPng`. Static output has no pointer or selection, so it shows the resting width. Runtime host patches keep the arrow and tooltip settings of an existing edge. The `graph-edge-styles-svg.html`, `-canvas.html` and `-webgl.html` examples, with `graph-edge-styles.svg` and `.png`, show every shape, position, dash pattern and value width.
+Every arrow, including the default arrowhead, is the same polygon in every backend and in `ToGraphSvg`/`ToGraphPng`, filled with the edge's own color. Its size is `ArrowScale × (6 + 1.7 × width)`, where width is the authored or value-mapped width (1.5 when unset), so heavier edges get gently larger arrows and selection or hover never resizes them. Static output has no pointer or selection, so it shows the resting width. Runtime host patches keep the arrow and tooltip settings of an existing edge. The `graph-edge-styles-svg.html`, `-canvas.html` and `-webgl.html` examples, with `graph-edge-styles.svg` and `.png`, show every shape, position, dash pattern and value width.
 
 ## Large topology pipeline
 

@@ -7,7 +7,7 @@ using ChartForgeX.Interactivity;
 namespace ChartForgeX.Interactivity.Html;
 
 public sealed partial class HtmlGraphExplorerRenderer {
-    private static void WriteEdges(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, IReadOnlyDictionary<string, string> clusterMembership, IReadOnlyDictionary<string, Point> collapsedNodePositions, IReadOnlyDictionary<string, double> collapsedNodeRadii, string markerId, HashSet<string> collapsedEdgeIds, bool focusableGraphItems, HtmlChartLocalization? text = null) {
+    private static void WriteEdges(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, IReadOnlyDictionary<string, string> clusterMembership, IReadOnlyDictionary<string, Point> collapsedNodePositions, IReadOnlyDictionary<string, double> collapsedNodeRadii, HashSet<string> collapsedEdgeIds, bool focusableGraphItems, HtmlChartLocalization? text = null) {
         var nodesById = scene.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         var valueWidths = EdgeValueWidths(scene);
         foreach (var edge in scene.Edges) {
@@ -15,7 +15,6 @@ public sealed partial class HtmlGraphExplorerRenderer {
             nodesById.TryGetValue(edge.SourceNodeId, out var sourceNode);
             nodesById.TryGetValue(edge.TargetNodeId, out var targetNode);
             var width = ResolvedEdgeWidth(edge, valueWidths);
-            var customArrows = HasCustomArrows(edge);
             var renderSource = collapsedNodePositions.TryGetValue(edge.SourceNodeId, out var collapsedSource) ? collapsedSource : source;
             var renderTarget = collapsedNodePositions.TryGetValue(edge.TargetNodeId, out var collapsedTarget) ? collapsedTarget : target;
             var sourceBoundary = collapsedNodeRadii.TryGetValue(edge.SourceNodeId, out var sourceRadius) ? sourceRadius : (double?)null;
@@ -63,30 +62,10 @@ public sealed partial class HtmlGraphExplorerRenderer {
             Attribute(writer, "d", path);
             var edgeStyle = EdgeStyle(edge, width);
             if (!string.IsNullOrWhiteSpace(edgeStyle)) Attribute(writer, "style", edgeStyle);
-            var edgeMarkerId = ArrowMarkerId(markerId, edge.Style.Color);
-            if (HasSourceArrow(edge) && !customArrows) Attribute(writer, "marker-start", "url(#" + edgeMarkerId + ")");
-            if (HasTargetArrow(edge) && !customArrows) Attribute(writer, "marker-end", "url(#" + edgeMarkerId + ")");
             writer.Append("></path>");
-            if (customArrows && !edge.Style.Hidden) WriteEdgeArrowMarks(writer, edge, edgeClass, renderSource, renderTarget, sourceNode, targetNode, targetBoundary, sourceBoundary);
+            if (!edge.Style.Hidden) WriteEdgeArrowMarks(writer, edge, edgeClass, width ?? DefaultArrowWidth, renderSource, renderTarget, sourceNode, targetNode, targetBoundary, sourceBoundary);
         }
     }
-
-    private static void WriteArrowMarkers(StringBuilder writer, GraphScene scene, string markerId) {
-        writer.Append("<defs>");
-        WriteArrowMarker(writer, markerId, null);
-        foreach (var color in scene.Edges.Where(edge => (HasSourceArrow(edge) || HasTargetArrow(edge)) && !HasCustomArrows(edge)).Select(edge => edge.Style.Color).Where(color => !string.IsNullOrWhiteSpace(color)).Distinct(StringComparer.Ordinal)) WriteArrowMarker(writer, ArrowMarkerId(markerId, color), color);
-        writer.Append("</defs>");
-    }
-
-    private static void WriteArrowMarker(StringBuilder writer, string markerId, string? color) {
-        writer.Append("<marker");
-        Attribute(writer, "id", markerId);
-        writer.Append(" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"6\" markerHeight=\"6\" orient=\"auto-start-reverse\"><path d=\"M 0 0 L 10 5 L 0 10 z\"");
-        if (!string.IsNullOrWhiteSpace(color)) Attribute(writer, "style", "fill:" + color + ";stroke:" + color);
-        writer.Append("></path></marker>");
-    }
-
-    private static string ArrowMarkerId(string markerId, string? color) => string.IsNullOrWhiteSpace(color) ? markerId : markerId + "-" + SafeId(color!);
 
     private static string[] ClusterMemberIds(GraphScene scene, GraphSceneCluster cluster, IReadOnlyDictionary<string, string> clusterMembership) {
         var members = new HashSet<string>(cluster.NodeIds, StringComparer.Ordinal);

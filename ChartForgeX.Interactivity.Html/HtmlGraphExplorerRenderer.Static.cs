@@ -44,7 +44,6 @@ public sealed partial class HtmlGraphExplorerRenderer {
         var labeledNodeIds = SelectStaticNodeLabels(scene, options.MaximumNodeLabels);
         var clusters = scene.GetEffectiveClusters();
         var clusterMembership = BuildClusterMembership(scene, clusters);
-        var markerId = SafeId(scene.Id) + "-static-arrow";
         writer.Append("<style>");
         writer.Append(Text(HtmlGraphExplorerAssets.StaticStyle));
         writer.Append("</style><g class=\"cfx-graph-explorer cfx-graph-svg cfx-graph-static-export");
@@ -54,14 +53,13 @@ public sealed partial class HtmlGraphExplorerRenderer {
         writer.Append("><title>");
         writer.Append(Text(scene.Title));
         writer.Append("</title>");
-        WriteArrowMarkers(writer, scene, markerId);
         writer.Append("<rect class=\"cfx-graph-bg\" width=\"960\" height=\"560\" style=\"fill:var(--cfx-color-paper,#ffffff)\"></rect><g data-cfx-role=\"graph-viewport\"");
         Attribute(writer, "transform", StaticViewportTransform(scene, positions, labeledNodeIds));
         writer.Append('>');
         if (clusters.Count > 0) WriteClusters(writer, scene, clusters, positions, clusterMembership, false, false);
         var emptyPositions = new Dictionary<string, Point>(StringComparer.Ordinal);
         var emptyIds = new HashSet<string>(StringComparer.Ordinal);
-        WriteEdges(writer, scene, positions, clusterMembership, emptyPositions, new Dictionary<string, double>(StringComparer.Ordinal), markerId, emptyIds, false);
+        WriteEdges(writer, scene, positions, clusterMembership, emptyPositions, new Dictionary<string, double>(StringComparer.Ordinal), emptyIds, false);
         WriteEdgeLabels(writer, scene, positions, emptyPositions, new Dictionary<string, double>(StringComparer.Ordinal), emptyIds);
         WriteNodes(writer, scene, positions, clusterMembership, emptyIds, false, false, labeledNodeIds);
         writer.Append("</g>");

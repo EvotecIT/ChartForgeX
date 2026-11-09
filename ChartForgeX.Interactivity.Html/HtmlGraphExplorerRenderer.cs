@@ -161,7 +161,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             ? new Dictionary<string, double>(StringComparer.Ordinal)
             : BuildCollapsedNodeRenderRadii(scene, clusters, positions, clusterMembership, collapseClustersOnLoad);
         var focusableGraphItems = scene.Options.HasFeature(GraphSceneFeatures.Selection);
-        if (acceleratedMarkup) WriteGraphDocument(writer, scene, positions, clusterMembership, collapsedNodeIds, collapsedEdgeIds, graphId + "-arrow", options.Localization);
+        if (acceleratedMarkup) WriteGraphDocument(writer, scene, positions, clusterMembership, collapsedNodeIds, collapsedEdgeIds, options.Localization);
         writer.Append("<div class=\"cfx-graph-stage\" data-cfx-role=\"graph-stage\" role=\"region\"");
         Attribute(writer, "aria-label", options.Localization.Format(HtmlChartText.GraphInteractiveName, ("title", scene.Title)));
         Attribute(writer, "aria-describedby", graphId + "-instructions");
@@ -187,12 +187,11 @@ public sealed partial class HtmlGraphExplorerRenderer {
         writer.Append('>');
         writer.Append(Text(scene.Title));
         writer.Append("</title>");
-        WriteArrowMarkers(writer, scene, graphId + "-arrow");
         writer.Append("<rect class=\"cfx-graph-bg\" width=\"960\" height=\"560\"></rect>");
         writer.Append("<g data-cfx-role=\"graph-viewport\">");
         if (clusteringEnabled) WriteClusters(writer, scene, clusters, positions, clusterMembership, collapseClustersOnLoad, focusableGraphItems, options.Localization);
         if (!acceleratedMarkup) {
-            WriteEdges(writer, scene, positions, clusterMembership, collapsedNodePositions, collapsedNodeRadii, graphId + "-arrow", collapsedEdgeIds, focusableGraphItems, options.Localization);
+            WriteEdges(writer, scene, positions, clusterMembership, collapsedNodePositions, collapsedNodeRadii, collapsedEdgeIds, focusableGraphItems, options.Localization);
             WriteEdgeLabels(writer, scene, positions, collapsedNodePositions, collapsedNodeRadii, collapsedEdgeIds);
             WriteNodes(writer, scene, positions, clusterMembership, collapsedNodeIds, focusableGraphItems, false);
         }

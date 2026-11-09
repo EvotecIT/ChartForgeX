@@ -68,11 +68,11 @@
   };
   // (back, across) pairs in arrow sizes from the tip; later polygons are paper. EdgeArrows.cs mirrors this table.
   const graphArrowShapes = { arrow: [[0, 0, .8660254, .5, .8660254, -.5]], vee: [[0, 0, 1.1, .6, .65, 0, 1.1, -.6]], triangle: [[0, 0, 1.2, .6, 1.2, -.6], [.4, 0, 1.02, .31, 1.02, -.31]],
-    bar: [[0, .7, .3, .7, .3, -.7, 0, -.7]], diamond: [[0, 0, .65, .42, 1.3, 0, .65, -.42]],
-    circle: [Array.from({ length: 16 }, (_, i) => [.55 - .55 * Math.cos(i * Math.PI / 8), .55 * Math.sin(i * Math.PI / 8)]).flat()] };
-  // Every renderer and export paints these marks in source, middle, target order.
+    bar: [[0, .7, .3, .7, .3, -.7, 0, -.7]], diamond: [[0, 0, .7, .5, 1.4, 0, .7, -.5]],
+    circle: [Array.from({ length: 16 }, (_, i) => [.65 - .65 * Math.cos(i * Math.PI / 8), .65 * Math.sin(i * Math.PI / 8)]).flat()] };
+  // Every renderer and export paints these marks in source, middle, target order, sized from the authored width.
   const edgeArrowMarks = (edge, { rendered, control }) => {
-    const [source = 'arrow', target = 'arrow', middle, scale] = edge.arrowStyle || [], size = 8 * (+scale || 1), marks = [];
+    const [source = 'arrow', target = 'arrow', middle, scale] = edge.arrowStyle || [], size = (+scale || 1) * (6 + 1.7 * (edge.strokeWidth || 1.5)), marks = [];
     [['source', edge.sourceArrow, source], ['middle', middle, middle], ['target', edge.targetArrow || edge.directed, target]].forEach(([side, on, shape]) => {
       if (!on) return;
       const end = side !== 'middle', polygons = graphArrowShapes[shape] || graphArrowShapes.arrow;

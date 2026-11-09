@@ -14,12 +14,16 @@ public sealed partial class HtmlGraphExplorerRenderer {
         [GraphEdgeArrowShape.Vee] = new[] { new[] { 0, 0, 1.1, .6, .65, 0, 1.1, -.6 } },
         [GraphEdgeArrowShape.Triangle] = new[] { new[] { 0, 0, 1.2, .6, 1.2, -.6 }, new[] { .4, 0, 1.02, .31, 1.02, -.31 } },
         [GraphEdgeArrowShape.Bar] = new[] { new[] { 0, .7, .3, .7, .3, -.7, 0, -.7 } },
-        [GraphEdgeArrowShape.Diamond] = new[] { new[] { 0, 0, .65, .42, 1.3, 0, .65, -.42 } },
-        [GraphEdgeArrowShape.Circle] = new[] { Enumerable.Range(0, 16).SelectMany(index => new[] { .55 - .55 * Math.Cos(index * Math.PI / 8), .55 * Math.Sin(index * Math.PI / 8) }).ToArray() }
+        [GraphEdgeArrowShape.Diamond] = new[] { new[] { 0, 0, .7, .5, 1.4, 0, .7, -.5 } },
+        [GraphEdgeArrowShape.Circle] = new[] { Enumerable.Range(0, 16).SelectMany(index => new[] { .65 - .65 * Math.Cos(index * Math.PI / 8), .65 * Math.Sin(index * Math.PI / 8) }).ToArray() }
     };
 
-    // The default target and source arrowheads keep their SVG markers; any other arrow layout is
-    // written as the same polygons the browser runtime paints, so static and live output agree.
+    // Arrows grow gently with the authored stroke width; the runtime uses the same rule (edgeArrowMarks).
+    private const double DefaultArrowWidth = 1.5;
+
+    private static double ArrowSize(GraphSceneEdge edge, double width) => edge.Style.ArrowScale * (6 + 1.7 * width);
+
+    // Shapes, a middle arrow or a scale travel to the runtime in data-edge-arrows; plain arrowheads need no attribute.
     private static bool HasCustomArrows(GraphSceneEdge edge) =>
         edge.MiddleArrow || Math.Abs(edge.Style.ArrowScale - 1) > 1e-9
         || (HasSourceArrow(edge) && edge.Style.SourceArrowShape != GraphEdgeArrowShape.Arrow)
@@ -48,13 +52,16 @@ public sealed partial class HtmlGraphExplorerRenderer {
     private static double? ResolvedEdgeWidth(GraphSceneEdge edge, IReadOnlyDictionary<string, double> valueWidths) =>
         edge.Style.Width ?? (valueWidths.TryGetValue(edge.Id, out var width) ? width : null);
 
-    private static void WriteEdgeArrowMarks(StringBuilder writer, GraphSceneEdge edge, string edgeClass, Point source, Point target, GraphSceneNode? sourceNode, GraphSceneNode? targetNode, double? targetBoundaryInset, double? sourceBoundaryInset) {
+    // Every arrow is written as the polygons the browser runtime paints, so static and live output agree.
+    private static void WriteEdgeArrowMarks(StringBuilder writer, GraphSceneEdge edge, string edgeClass, double width, Point source, Point target, GraphSceneNode? sourceNode, GraphSceneNode? targetNode, double? targetBoundaryInset, double? sourceBoundaryInset) {
+        if (!HasSourceArrow(edge) && !HasTargetArrow(edge) && !edge.MiddleArrow) return;
         writer.Append("<g");
         Attribute(writer, "class", edgeClass);
         writer.Append(" data-cfx-role=\"graph-edge-arrows\" data-cfx-runtime-overlay=\"true\"");
         Attribute(writer, "data-edge-arrows-for", edge.Id);
-        writer.Append(" style=\"pointer-events:none\">");
-        var size = 8 * edge.Style.ArrowScale;
+        // Arrowheads keep the edge's full color; the line's own translucency would wash them out.
+        writer.Append(" style=\"opacity:1;pointer-events:none\">");
+        var size = ArrowSize(edge, width);
         var color = "fill:" + (string.IsNullOrWhiteSpace(edge.Style.Color) ? "var(--cfx-color-edge)" : edge.Style.Color) + ";stroke:none";
         var geometry = new EdgeArrowGeometry(edge, source, target, sourceNode, targetNode, targetBoundaryInset, sourceBoundaryInset);
         if (HasSourceArrow(edge)) WriteArrowMark(writer, "source", edge.Style.SourceArrowShape, geometry.EndFrame(true), size, false, color);

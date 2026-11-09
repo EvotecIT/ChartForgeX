@@ -8,7 +8,7 @@ using ChartForgeX.Interactivity;
 namespace ChartForgeX.Interactivity.Html;
 
 public sealed partial class HtmlGraphExplorerRenderer {
-    private static void WriteGraphDocument(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, IReadOnlyDictionary<string, string> clusterMembership, ISet<string> collapsedNodeIds, ISet<string> collapsedEdgeIds, string markerId, HtmlChartLocalization? text = null) {
+    private static void WriteGraphDocument(StringBuilder writer, GraphScene scene, IReadOnlyDictionary<string, Point> positions, IReadOnlyDictionary<string, string> clusterMembership, ISet<string> collapsedNodeIds, ISet<string> collapsedEdgeIds, HtmlChartLocalization? text = null) {
         var nodesById = scene.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
         writer.Append("<script type=\"application/json\" data-cfx-role=\"graph-document\">{\"n\":[");
         for (var index = 0; index < scene.Nodes.Count; index++) {
@@ -30,14 +30,12 @@ public sealed partial class HtmlGraphExplorerRenderer {
             var edge = scene.Edges[index];
             nodesById.TryGetValue(edge.SourceNodeId, out var sourceNode);
             nodesById.TryGetValue(edge.TargetNodeId, out var targetNode);
-            var edgeMarkerId = ArrowMarkerId(markerId, edge.Style.Color);
             writer.Append('[');
             writer.Append(JsonString(edge.Id)); Value(writer, edge.Label); Value(writer, edge.Kind); Value(writer, edge.Status); Value(writer, edge.SourceNodeId); Value(writer, edge.TargetNodeId);
             Value(writer, sourceNode == null ? null : NodeClusterId(sourceNode, clusterMembership)); Value(writer, targetNode == null ? null : NodeClusterId(targetNode, clusterMembership));
             NumberValue(writer, edge.Weight); NumberValue(writer, edge.Length); BooleanValue(writer, edge.Directed); BooleanValue(writer, HasSourceArrow(edge)); BooleanValue(writer, HasTargetArrow(edge)); Value(writer, EdgeShape(edge.Shape)); NumberValue(writer, edge.Curvature); Value(writer, RoutePointsData(edge)); BooleanValue(writer, edge.Dashed); Value(writer, edge.Style.DashPattern); BooleanValue(writer, edge.ShowLabel); NullableNumberValue(writer, ResolvedEdgeWidth(edge, valueWidths)); Value(writer, edge.Style.Color); Value(writer, edge.Style.LabelColor); BooleanValue(writer, edge.Style.Physics); BooleanValue(writer, edge.Style.Hidden); Value(writer, SearchText(edge.Metadata)); Value(writer, MetadataJson(edge.Metadata)); BooleanValue(writer, collapsedEdgeIds.Contains(edge.Id)); Value(writer, EdgeAccessibleName(edge, sourceNode, targetNode, text));
             var customArrows = HasCustomArrows(edge);
-            Value(writer, HasSourceArrow(edge) && !customArrows ? "url(#" + edgeMarkerId + ")" : null); Value(writer, HasTargetArrow(edge) && !customArrows ? "url(#" + edgeMarkerId + ")" : null);
-            // Newer optional fields follow the original row so default documents keep their shape.
+            // Optional fields are written only when set, so plain edges keep a short row.
             if (edge.Tooltip != null || customArrows || edge.Style.HoverWidth.HasValue || edge.Style.SelectionWidth.HasValue) {
                 Value(writer, edge.Tooltip); Value(writer, ArrowStyleData(edge)); NullableNumberValue(writer, edge.Style.HoverWidth); NullableNumberValue(writer, edge.Style.SelectionWidth);
             }
