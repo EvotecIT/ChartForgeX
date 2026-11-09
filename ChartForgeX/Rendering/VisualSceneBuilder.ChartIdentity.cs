@@ -22,8 +22,7 @@ internal sealed partial class VisualSceneBuilder {
                 : series.ValueAxis == ChartAxisSide.Secondary ? axes.SecondaryY : axes.Y;
             var preciseValueTimeDomain = selectedValue != null ? selectedValue.Scale == ChartScaleKind.Time && selectedValue.Minimum >= 0
                 : valueProjection?.Scale == ChartScaleKind.Time && valueProjection.Minimum >= 0;
-            var metadata = new Dictionary<string, string>(StringComparer.Ordinal);
-            foreach (var entry in group.Metadata) metadata.Add(entry.Key, entry.Value);
+            var metadata = group.CopyMetadata();
             metadata["data-cfx-series-key"] = series.Id.Value;
             metadata["data-cfx-series-scope"] = series.Id.IsAutomatic ? "local" : "shared";
             if (metadata.TryGetValue("data-cfx-point", out var markIndex) && int.TryParse(markIndex, NumberStyles.None, CultureInfo.InvariantCulture, out var pointIndex)

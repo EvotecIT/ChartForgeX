@@ -29,60 +29,75 @@ internal sealed partial class RgbaCanvas {
     /// every scanline; vertical coverage comes from the sub-scanlines of each pixel row.
     /// </summary>
     private void ScanFillCoverage(IReadOnlyList<List<ChartPoint>> contours, RasterFillRule fillRule, FillCoverageRow row, int subScanlines = 0, int secondContourStart = int.MaxValue) {
-        var edges = BuildFillEdges(contours, fillRule, out var minY, out var maxY, secondContourStart);
-        if (edges.Length == 0) return;
+        var bands = CreateFillBands(contours, fillRule, secondContourStart, out var minY, out var maxY);
+        if (bands.Count == 0) return;
         var yStart = (int)Math.Max(0, Math.Min(_pixelHeight, Math.Floor(minY)));
         var yEnd = (int)Math.Max(-1, Math.Min(_pixelHeight - 1, Math.Ceiling(maxY)));
         if (yStart > yEnd) return;
 
         var samples = subScanlines > 0 ? subScanlines : _scale == 1 ? UnscaledFillSubScanlines : 1;
         var coverage = _fillCoverage ??= new double[_pixelWidth];
-        // The active edges and their crossings stay sorted by x from one scanline to the next, so
-        // each scanline only re-sorts the few edges that crossed and inserts the edges that start.
-        var active = new List<int>();
-        var intersections = new List<FillIntersection>();
-        var next = 0;
         var spans = new FillSpans();
         var rowBoundaries = new List<double>();
+        // Bands join the scan at the row of their first edge and leave once every edge has ended, so a row only
+        // visits the bands that can cover it. Bands own disjoint columns, so their order within a row is free.
+        bands.Sort((left, right) => left.Edges[0].Top.CompareTo(right.Edges[0].Top));
+        var live = new List<FillBand>();
+        var nextBand = 0;
         for (var y = yStart; y <= yEnd; y++) {
-            var rowSamples = samples > 1 && RowIsUniform(edges, active, next, y) ? 1 : samples;
-            rowBoundaries.Clear();
-            for (int sample = 0; sample <= rowSamples; sample++) rowBoundaries.Add(y + sample / (double)rowSamples);
-            foreach (int edgeIndex in active) {
-                if (edges[edgeIndex].Bottom > y && edges[edgeIndex].Bottom < y + 1) rowBoundaries.Add(edges[edgeIndex].Bottom);
-            }
-            for (int edgeIndex = next; edgeIndex < edges.Length && edges[edgeIndex].Top < y + 1; edgeIndex++) {
-                if (edges[edgeIndex].Top > y) rowBoundaries.Add(edges[edgeIndex].Top);
-                if (edges[edgeIndex].Bottom > y && edges[edgeIndex].Bottom < y + 1) rowBoundaries.Add(edges[edgeIndex].Bottom);
-            }
-            rowBoundaries.Sort();
-            for (var sample = 1; sample < rowBoundaries.Count; sample++) {
-                double weight = rowBoundaries[sample] - rowBoundaries[sample - 1];
-                if (weight <= 0) continue;
-                var scanY = (rowBoundaries[sample] + rowBoundaries[sample - 1]) / 2;
-                AdvanceActiveEdges(edges, active, intersections, ref next, scanY);
-                if (intersections.Count < 2) continue;
-                if (fillRule == RasterFillRule.EvenOdd) {
-                    for (var i = 0; i + 1 < intersections.Count; i += 2) AddSpanCoverage(coverage, intersections[i].X, intersections[i + 1].X, weight, spans);
-                } else {
-                    var winding = 0;
-                    var secondWinding = 0;
-                    var left = 0.0;
-                    for (var i = 0; i < intersections.Count; i++) {
-                        bool previous = winding != 0 || secondWinding != 0;
-                        if (intersections[i].SecondShape) secondWinding += intersections[i].Winding;
-                        else winding += intersections[i].Winding;
-                        bool inside = winding != 0 || secondWinding != 0;
-                        if (!previous && inside) left = intersections[i].X;
-                        else if (previous && !inside) AddSpanCoverage(coverage, left, intersections[i].X, weight, spans);
-                    }
-                }
-            }
-
+            while (nextBand < bands.Count && bands[nextBand].Edges[0].Top < y + 1) live.Add(bands[nextBand++]);
+            foreach (var band in live) ScanBandRow(band, y, samples, fillRule, coverage, spans, rowBoundaries);
+            live.RemoveAll(band => band.Count == 0 && band.Next >= band.Edges.Length);
             FlushRowSpans(y, spans, coverage, row);
         }
     }
 
+    /// <summary>
+    /// Adds one pixel row of one band's coverage. The sub-scanlines are the fixed samples plus every
+    /// edge end inside the row, so each slab between them is crossed by straight, unbroken edges.
+    /// </summary>
+    private static void ScanBandRow(FillBand band, int y, int samples, RasterFillRule fillRule, double[] coverage, FillSpans spans, List<double> rowBoundaries) {
+        var edges = band.Edges;
+        var active = band.Active;
+        // Nothing crosses the row and nothing starts in it, so every sub-scanline would find no crossings.
+        if (band.Count == 0 && (band.Next >= edges.Length || edges[band.Next].Top >= y + 1)) return;
+        var rowSamples = samples > 1 && RowIsUniform(band, y) ? 1 : samples;
+        rowBoundaries.Clear();
+        for (int sample = 0; sample <= rowSamples; sample++) rowBoundaries.Add(y + sample / (double)rowSamples);
+        for (var index = 0; index < band.Count; index++) {
+            var bottom = edges[active[index]].Bottom;
+            if (bottom > y && bottom < y + 1) rowBoundaries.Add(bottom);
+        }
+        for (int edgeIndex = band.Next; edgeIndex < edges.Length && edges[edgeIndex].Top < y + 1; edgeIndex++) {
+            if (edges[edgeIndex].Top > y) rowBoundaries.Add(edges[edgeIndex].Top);
+            if (edges[edgeIndex].Bottom > y && edges[edgeIndex].Bottom < y + 1) rowBoundaries.Add(edges[edgeIndex].Bottom);
+        }
+        rowBoundaries.Sort();
+        for (var sample = 1; sample < rowBoundaries.Count; sample++) {
+            double weight = rowBoundaries[sample] - rowBoundaries[sample - 1];
+            if (weight <= 0) continue;
+            var scanY = (rowBoundaries[sample] + rowBoundaries[sample - 1]) / 2;
+            AdvanceActiveEdges(band, scanY);
+            var count = band.Count;
+            if (count < 2) continue;
+            var intersections = band.Crossings;
+            if (fillRule == RasterFillRule.EvenOdd) {
+                for (var i = 0; i + 1 < count; i += 2) AddSpanCoverage(coverage, intersections[i].X, intersections[i + 1].X, weight, spans, band.Left, band.Right);
+            } else {
+                var winding = 0;
+                var secondWinding = 0;
+                var left = 0.0;
+                for (var i = 0; i < count; i++) {
+                    bool previous = winding != 0 || secondWinding != 0;
+                    if (intersections[i].SecondShape) secondWinding += intersections[i].Winding;
+                    else winding += intersections[i].Winding;
+                    bool inside = winding != 0 || secondWinding != 0;
+                    if (!previous && inside) left = intersections[i].X;
+                    else if (previous && !inside) AddSpanCoverage(coverage, left, intersections[i].X, weight, spans, band.Left, band.Right);
+                }
+            }
+        }
+    }
     /// <summary>Hands each run of covered pixels to <paramref name="row"/> and clears it, skipping the gaps between runs.</summary>
     private static void FlushRowSpans(int y, FillSpans spans, double[] coverage, FillCoverageRow row) {
         if (spans.Count == 0) return;
@@ -110,25 +125,25 @@ internal sealed partial class RgbaCanvas {
     /// crossings in their previous order and restores it with an insertion sort, then inserts the edges
     /// that start. The result is the crossings sorted by x and winding, as a full sort would give.
     /// </summary>
-    private static void AdvanceActiveEdges(FillEdge[] edges, List<int> active, List<FillIntersection> crossings, ref int next, double scanY) {
+    private static void AdvanceActiveEdges(FillBand band, double scanY) {
+        var edges = band.Edges;
+        var active = band.Active;
+        var crossings = band.Crossings;
         var kept = 0;
-        for (var index = 0; index < active.Count; index++) {
-            var edge = edges[active[index]];
-            if (edge.Bottom <= scanY) continue;
-            active[kept] = active[index];
-            crossings[kept] = new FillIntersection(edge.X + (scanY - edge.Top) * edge.Slope, edge.Winding, edge.SecondShape);
+        for (var index = 0; index < band.Count; index++) {
+            var edgeIndex = active[index];
+            if (edges[edgeIndex].Bottom <= scanY) continue;
+            active[kept] = edgeIndex;
+            crossings[kept] = Crossing(edges[edgeIndex], scanY);
             kept++;
         }
 
-        active.RemoveRange(kept, active.Count - kept);
-        crossings.RemoveRange(kept, crossings.Count - kept);
-        var comparer = FillIntersectionComparer.Instance;
-        for (var i = 1; i < crossings.Count; i++) {
+        for (var i = 1; i < kept; i++) {
             var crossing = crossings[i];
-            if (comparer.Compare(crossings[i - 1], crossing) <= 0) continue;
+            if (Compare(crossings[i - 1], crossing) <= 0) continue;
             var edgeIndex = active[i];
             var j = i - 1;
-            while (j >= 0 && comparer.Compare(crossings[j], crossing) > 0) {
+            while (j >= 0 && Compare(crossings[j], crossing) > 0) {
                 crossings[j + 1] = crossings[j];
                 active[j + 1] = active[j];
                 j--;
@@ -139,56 +154,66 @@ internal sealed partial class RgbaCanvas {
         }
 
         // The edges that start are sorted on their own and merged in from the back, one pass for all of them.
-        var existing = crossings.Count;
+        var next = band.Next;
+        var started = band.StartedCrossings;
+        var startedEdges = band.StartedEdges;
+        var added = 0;
         for (; next < edges.Length && edges[next].Top <= scanY; next++) {
-            var edge = edges[next];
-            if (edge.Bottom <= scanY) continue;
-            var crossing = new FillIntersection(edge.X + (scanY - edge.Top) * edge.Slope, edge.Winding, edge.SecondShape);
-            crossings.Add(crossing);
-            active.Add(next);
+            if (edges[next].Bottom <= scanY) continue;
+            if (added == started.Length) band.GrowStarted(out started, out startedEdges);
+            started[added] = Crossing(edges[next], scanY);
+            startedEdges[added++] = next;
         }
 
-        var added = crossings.Count - existing;
+        band.Next = next;
+        band.Count = kept + added;
         if (added == 0) return;
+        band.EnsureCapacity(kept + added);
+        active = band.Active;
+        crossings = band.Crossings;
         // Equal top-Y edges are not ordered by x. Sorting the batch once avoids quadratic
         // insertion work for dense caps while retaining the same x/winding ordering.
-        var startedCrossings = new FillIntersection[added];
-        var startedEdges = new int[added];
-        crossings.CopyTo(existing, startedCrossings, 0, added);
-        active.CopyTo(existing, startedEdges, 0, added);
-        Array.Sort(startedCrossings, startedEdges, comparer);
-        var left = existing - 1;
+        Array.Sort(started, startedEdges, 0, added, FillIntersectionComparer.Instance);
+        var left = kept - 1;
         var right = added - 1;
-        for (var write = crossings.Count - 1; right >= 0; write--) {
-            if (left >= 0 && comparer.Compare(crossings[left], startedCrossings[right]) > 0) {
+        for (var write = kept + added - 1; right >= 0; write--) {
+            if (left >= 0 && Compare(crossings[left], started[right]) > 0) {
                 crossings[write] = crossings[left];
                 active[write] = active[left];
                 left--;
             } else {
-                crossings[write] = startedCrossings[right];
+                crossings[write] = started[right];
                 active[write] = startedEdges[right];
                 right--;
             }
         }
     }
 
+    private static FillIntersection Crossing(in FillEdge edge, double scanY) =>
+        new(edge.X + (scanY - edge.Top) * edge.Slope, edge.Winding, edge.SecondShape);
+
+    private static int Compare(in FillIntersection left, in FillIntersection right) =>
+        left.X < right.X ? -1 : left.X > right.X ? 1 : left.Winding.CompareTo(right.Winding);
+
     /// <summary>True when every edge crossing the row is vertical and spans it, so one scanline describes the whole row.</summary>
-    private static bool RowIsUniform(FillEdge[] edges, List<int> active, int next, int y) {
-        if (next < edges.Length && edges[next].Top < y + 1) return false;
-        for (var index = 0; index < active.Count; index++) {
-            var edge = edges[active[index]];
+    private static bool RowIsUniform(FillBand band, int y) {
+        var edges = band.Edges;
+        if (band.Next < edges.Length && edges[band.Next].Top < y + 1) return false;
+        for (var index = 0; index < band.Count; index++) {
+            var edge = edges[band.Active[index]];
             if (edge.Slope != 0 || edge.Top > y || edge.Bottom < y + 1) return false;
         }
 
         return true;
     }
 
-    private void AddSpanCoverage(double[] coverage, double left, double right, double weight, FillSpans spans) {
-        if (left < 0) left = 0;
-        if (right > _pixelWidth) right = _pixelWidth;
+    /// <summary>Adds a covered span, clipped to the pixels from <paramref name="minX"/> up to <paramref name="maxX"/>.</summary>
+    private static void AddSpanCoverage(double[] coverage, double left, double right, double weight, FillSpans spans, int minX, int maxX) {
+        if (left < minX) left = minX;
+        if (right > maxX) right = maxX;
         if (right <= left) return;
         var first = (int)left;
-        var last = Math.Min(_pixelWidth - 1, (int)Math.Ceiling(right) - 1);
+        var last = Math.Min(maxX - 1, (int)Math.Ceiling(right) - 1);
         if (first >= last) {
             coverage[first] += (right - left) * weight;
             last = first;

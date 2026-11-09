@@ -70,8 +70,7 @@ internal static partial class VisualCartesianCompiler {
             for (var index = 0; index < _template.Length; index++) {
                 if (_points.TryGetValue(index, out var binding)) {
                     var series = _policy.Series[binding.Series]; var point = series.Points[binding.Point]; var y = values[binding.Reading]; var position = native[binding.Series][binding.Point];
-                    var group = (VisualSceneGroup)_template[index]; var metadata = new Dictionary<string, string>(StringComparer.Ordinal);
-                    foreach (var item in group.Metadata) metadata.Add(item.Key, item.Value);
+                    var group = (VisualSceneGroup)_template[index]; var metadata = group.CopyMetadata();
                     var caption = point.FixedDisplay == null ? _policy.Format.Format(y) : string.Empty; var rawCaption = point.FixedDisplay ?? caption;
                     var display = TextCaseTransformer.Apply(rawCaption, point.TextCase, CultureInfo.InvariantCulture);
                     var description = series.Name + ": " + display + " (" + ChartNumericFormatter.FormatCoordinate(point.Source.X) + ", " + ChartNumericFormatter.FormatCoordinate(y) + ")";

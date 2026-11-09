@@ -161,7 +161,7 @@ internal static partial class TopologyEdgeRouter {
             FallbackReason(strategy, obstacleHits, labelHits, routeOverlap));
     }
 
-    private static TopologyRoutePlan BuildPlan(string strategy, string corridor, List<ChartPoint> points, IReadOnlyList<RouteBox> obstacles, IReadOnlyList<RouteSegment> existingSegments, TopologyEdge edge, int candidateCount, TextMeasurementContext? measurement, bool includeLabels, double labelScale) {
+    private static TopologyRoutePlan BuildPlan(string strategy, string corridor, List<ChartPoint> points, IReadOnlyList<RouteBox> obstacles, RouteSegmentSet existingSegments, TopologyEdge edge, int candidateCount, TextMeasurementContext? measurement, bool includeLabels, double labelScale) {
         var obstacleHits = RouteObstacleHits(points, obstacles);
         var routeOverlap = RouteOverlapScore(points, existingSegments);
         var labelHits = LabelObstacleHits(points, edge, obstacles, measurement, includeLabels, labelScale);
@@ -292,8 +292,10 @@ internal static partial class TopologyEdgeRouter {
         // A route keeps out of a region that holds neither of its ends, rather than cutting through its shell.
         // An end drawn over a region it does not belong to (authored geometry) still has to reach inside it.
         var ends = chart.Nodes.Where(node => node.Id == sourceNodeId || node.Id == targetNodeId).ToArray();
+        var sourceGroups = GroupChain(chart, sourceNodeId);
+        var targetGroups = GroupChain(chart, targetNodeId);
         foreach (var group in chart.Groups) {
-            if (group.Width <= 0 || group.Height <= 0 || InsideGroup(chart, sourceNodeId, group.Id) || InsideGroup(chart, targetNodeId, group.Id)
+            if (group.Width <= 0 || group.Height <= 0 || sourceGroups.Contains(group.Id) || targetGroups.Contains(group.Id)
                 || ends.Any(node => node.X < group.X + group.Width && node.X + node.Width > group.X && node.Y < group.Y + group.Height && node.Y + node.Height > group.Y)) continue;
             obstacles.Add(new RouteBox(group.X, group.Y, group.X + group.Width, group.Y + group.Height));
         }
@@ -303,13 +305,15 @@ internal static partial class TopologyEdgeRouter {
         return obstacles;
     }
 
-    private static bool InsideGroup(TopologyChart chart, string endpointId, string groupId) {
+    /// <summary>The group an endpoint belongs to and every group around it; a group endpoint starts with itself.</summary>
+    private static List<string> GroupChain(TopologyChart chart, string endpointId) {
+        var chain = new List<string>();
         var current = chart.Nodes.FirstOrDefault(node => node.Id == endpointId) is { } node ? node.GroupId : endpointId;
         for (var depth = 0; current != null && depth <= chart.Groups.Count; depth++) {
-            if (current == groupId) return true;
+            chain.Add(current);
             current = chart.Groups.FirstOrDefault(group => group.Id == current)?.ParentGroupId;
         }
-        return false;
+        return chain;
     }
 
     internal static bool SpreadingIntroducesObstacle(TopologyChart chart, TopologyEdge edge, TopologyNode source,
@@ -351,7 +355,7 @@ internal static partial class TopologyEdgeRouter {
 
     private static IEnumerable<RouteBox> EstimatedLabelBoxes(TopologyChart chart, TopologyEdge routedEdge) {
         if (chart.RenderOptions?.IncludeEdgeLabels == false) yield break;
-        var nodes = TopologyGroupEndpoints.Resolve(chart);
+        var nodes = TopologyGroupEndpoints.ResolveShared(chart);
         foreach (var edge in chart.Edges) {
             if (ReferenceEquals(edge, routedEdge)) continue;
             if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) continue;
@@ -374,9 +378,9 @@ internal static partial class TopologyEdgeRouter {
 
     // Terminal legs that meet the routed edge at a shared card are fanned apart after routing, so they do not
     // make a straight approach look crowded when the corridor search compares candidates.
-    private static List<RouteSegment> RouteSegments(TopologyChart chart, TopologyEdge routedEdge, bool allowDensePlan = true, bool sharedTerminalsFanOut = false) {
-        var nodes = TopologyGroupEndpoints.Resolve(chart);
-        var segments = new List<RouteSegment>();
+    private static RouteSegmentSet RouteSegments(TopologyChart chart, TopologyEdge routedEdge, bool allowDensePlan = true, bool sharedTerminalsFanOut = false) {
+        var nodes = TopologyGroupEndpoints.ResolveShared(chart);
+        var segments = new RouteSegmentSet.Builder(chart.Edges.Count);
         var plan = allowDensePlan ? TopologyDenseRoutePlanner.Plan(chart) : null;
         foreach (var edge in chart.Edges) {
             if (ReferenceEquals(edge, routedEdge)) continue;
@@ -388,13 +392,10 @@ internal static partial class TopologyEdgeRouter {
             var fans = sharedTerminalsFanOut && !(SharesEndpoint(routedEdge, edge.SourceNodeId) && SharesEndpoint(routedEdge, edge.TargetNodeId));
             var skipFirst = fans && SharesEndpoint(routedEdge, edge.SourceNodeId);
             var skipLast = fans && SharesEndpoint(routedEdge, edge.TargetNodeId);
-            for (var i = 0; i < points.Count - 1; i++) {
-                if (i == 0 && skipFirst || i == points.Count - 2 && skipLast) continue;
-                segments.Add(new RouteSegment(points[i], points[i + 1]));
-            }
+            segments.Add(points, skipFirst, skipLast);
         }
 
-        return segments;
+        return segments.Build();
 
         static bool SharesEndpoint(TopologyEdge routed, string nodeId) =>
             string.Equals(routed.SourceNodeId, nodeId, StringComparison.Ordinal) || string.Equals(routed.TargetNodeId, nodeId, StringComparison.Ordinal);
@@ -426,12 +427,9 @@ internal static partial class TopologyEdgeRouter {
         return obstacles.Count(obstacle => label.OverlapArea(obstacle) > 0);
     }
 
-    private static double RouteOverlapScore(IReadOnlyList<ChartPoint> points, IReadOnlyList<RouteSegment> existingSegments) {
+    private static double RouteOverlapScore(IReadOnlyList<ChartPoint> points, RouteSegmentSet existingSegments) {
         var score = 0.0;
-        for (var i = 0; i < points.Count - 1; i++) {
-            var segment = new RouteSegment(points[i], points[i + 1]);
-            foreach (var existing in existingSegments) score += segment.OverlapScore(existing);
-        }
+        for (var i = 0; i < points.Count - 1; i++) score = existingSegments.AddOverlap(score, new RouteSegment(points[i], points[i + 1]));
 
         return score;
     }

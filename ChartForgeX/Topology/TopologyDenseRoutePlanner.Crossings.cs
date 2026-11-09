@@ -7,6 +7,7 @@ namespace ChartForgeX.Topology;
 
 internal static partial class TopologyDenseRoutePlanner {
     private const int MaximumReroutes = 64;
+    private const double SegmentReach = 3;
 
     // A boundary corridor can either keep its searched trunk or open inward lanes. Compare the completed native
     // plans, including bounded overlap repair: local lane clearance alone cannot predict the resulting crossings.
@@ -47,7 +48,10 @@ internal static partial class TopologyDenseRoutePlanner {
         var interaction = TotalInteraction(routes, fixedRoutes);
         var cost = routes.Sum(route => RouteLength(route.Points) + Math.Max(0, route.Points.Count - 2) * BendPenalty) +
             interaction.Crossings * CrossingCost + interaction.Shared * SharedRunCost;
-        return (routes.Sum(route => ResidualOverlap(route, routes, fixedRoutes)), cost);
+        var boxes = new PlanBoxes(routes, fixedRoutes);
+        var shared = 0.0;
+        for (var index = 0; index < routes.Count; index++) shared += ResidualOverlap(index, routes, fixedRoutes, boxes);
+        return (shared, cost);
     }
 
     // A different search can leave a tight corridor whose lane pass cannot separate every route. Repair only that
@@ -58,8 +62,9 @@ internal static partial class TopologyDenseRoutePlanner {
         var rejected = new HashSet<PlannedRoute>();
         var maximumAttempts = Math.Min(MaximumReroutes, routes.Count);
         for (var attempt = 0; attempt < maximumAttempts; attempt++) {
-            var selected = routes.Where(item => !rejected.Contains(item))
-                .Select(item => new { Route = item, Overlap = ResidualOverlap(item, routes, fixedRoutes) })
+            var boxes = new PlanBoxes(routes, fixedRoutes);
+            var selected = routes.Select((item, index) => (Route: item, Index: index)).Where(item => !rejected.Contains(item.Route))
+                .Select(item => new { item.Route, Overlap = ResidualOverlap(item.Index, routes, fixedRoutes, boxes) })
                 .Where(item => item.Overlap >= 6).OrderByDescending(item => item.Overlap).ThenBy(item => item.Route.Request.Order).FirstOrDefault();
             if (selected == null) break;
             var route = selected.Route;
@@ -85,21 +90,37 @@ internal static partial class TopologyDenseRoutePlanner {
         }
     }
 
-    private static double ResidualOverlap(PlannedRoute route, List<PlannedRoute> routes, List<List<ChartPoint>> fixedRoutes) =>
-        routes.Where(item => !ReferenceEquals(item, route)).Select(item => Interaction(route.Points, item.Points).Shared)
-            .Concat(fixedRoutes.Select(points => Interaction(route.Points, points).Shared)).Where(length => length >= 6).Sum();
+    /// <summary>The corridor length one route shares with the others in stretches of at least 6px.</summary>
+    private static double ResidualOverlap(int index, List<PlannedRoute> routes, List<List<ChartPoint>> fixedRoutes, PlanBoxes boxes) {
+        var route = routes[index];
+        var overlap = 0.0;
+        for (var other = 0; other < routes.Count; other++) {
+            if (ReferenceEquals(routes[other], route) || Apart(boxes.Routes[index], boxes.Routes[other])) continue;
+            var length = Overlap(route.Points, routes[other].Points).Shared;
+            if (length >= 6) overlap += length;
+        }
+        for (var other = 0; other < fixedRoutes.Count; other++) {
+            if (Apart(boxes.Routes[index], boxes.Fixed[other])) continue;
+            var length = Overlap(route.Points, fixedRoutes[other]).Shared;
+            if (length >= 6) overlap += length;
+        }
+        return overlap;
+    }
 
     private static (int Crossings, double Shared) TotalInteraction(List<PlannedRoute> routes, List<List<ChartPoint>> fixedRoutes) {
+        var boxes = new PlanBoxes(routes, fixedRoutes);
         var crossings = 0;
         var shared = 0.0;
         for (var i = 0; i < routes.Count; i++) {
             for (var j = i + 1; j < routes.Count; j++) {
-                var result = Interaction(routes[i].Points, routes[j].Points);
+                if (Apart(boxes.Routes[i], boxes.Routes[j])) continue;
+                var result = Overlap(routes[i].Points, routes[j].Points);
                 crossings += result.Crossings;
                 shared += result.Shared;
             }
-            foreach (var fixedRoute in fixedRoutes) {
-                var result = Interaction(routes[i].Points, fixedRoute);
+            for (var j = 0; j < fixedRoutes.Count; j++) {
+                if (Apart(boxes.Routes[i], boxes.Fixed[j])) continue;
+                var result = Overlap(routes[i].Points, fixedRoutes[j]);
                 crossings += result.Crossings;
                 shared += result.Shared;
             }
@@ -175,18 +196,27 @@ internal static partial class TopologyDenseRoutePlanner {
         return (crossings, shared, crossings * CrossingCost + shared * SharedRunCost);
     }
 
-    private static (int Crossings, double Shared) Interaction(IReadOnlyList<ChartPoint> first, IReadOnlyList<ChartPoint> second) {
+    private static (int Crossings, double Shared) Interaction(IReadOnlyList<ChartPoint> first, IReadOnlyList<ChartPoint> second) =>
         // Routes whose boxes are more than the 2 px sharing tolerance apart can neither cross nor share a corridor, and the
-        // pairwise loop below would add nothing but zeros; most pairs of a dense plan are like that.
-        if (Apart(first, second)) return (0, 0.0);
+        // pairwise loop would add nothing but zeros; most pairs of a dense plan are like that.
+        Apart(RouteBox.Of(first), RouteBox.Of(second)) ? (0, 0.0) : Overlap(first, second);
+
+    private static (int Crossings, double Shared) Overlap(IReadOnlyList<ChartPoint> first, IReadOnlyList<ChartPoint> second) {
         HashSet<(long X, long Y)>? crossings = null;
         var shared = 0.0;
         for (var i = 0; i + 1 < first.Count; i++) {
             var a = first[i];
             var b = first[i + 1];
+            // Segments more than the 2 px sharing tolerance apart neither share a corridor nor cross; the crossing
+            // tolerance below reaches only a millionth of a segment's length past its ends.
+            var left = Math.Min(a.X, b.X) - SegmentReach;
+            var right = Math.Max(a.X, b.X) + SegmentReach;
+            var top = Math.Min(a.Y, b.Y) - SegmentReach;
+            var bottom = Math.Max(a.Y, b.Y) + SegmentReach;
             for (var j = 0; j + 1 < second.Count; j++) {
                 var c = second[j];
                 var d = second[j + 1];
+                if (Math.Max(c.X, d.X) < left || Math.Min(c.X, d.X) > right || Math.Max(c.Y, d.Y) < top || Math.Min(c.Y, d.Y) > bottom) continue;
                 if (Math.Abs(a.Y - b.Y) < 0.01 && Math.Abs(c.Y - d.Y) < 0.01 && Math.Abs(a.Y - c.Y) < 2)
                     shared += AxisOverlap(a.X, b.X, c.X, d.X);
                 else if (Math.Abs(a.X - b.X) < 0.01 && Math.Abs(c.X - d.X) < 0.01 && Math.Abs(a.X - c.X) < 2)
@@ -205,24 +235,49 @@ internal static partial class TopologyDenseRoutePlanner {
         return (crossings?.Count ?? 0, shared);
     }
 
-    private static bool Apart(IReadOnlyList<ChartPoint> first, IReadOnlyList<ChartPoint> second) {
-        if (first.Count < 2 || second.Count < 2) return true;
-        Bounds(first, out var left, out var top, out var right, out var bottom);
-        Bounds(second, out var otherLeft, out var otherTop, out var otherRight, out var otherBottom);
+    private static bool Apart(in RouteBox first, in RouteBox second) {
+        if (first.Empty || second.Empty) return true;
         const double Margin = 4;
-        return otherLeft > right + Margin || otherRight < left - Margin || otherTop > bottom + Margin || otherBottom < top - Margin;
+        return second.Left > first.Right + Margin || second.Right < first.Left - Margin || second.Top > first.Bottom + Margin || second.Bottom < first.Top - Margin;
     }
 
-    private static void Bounds(IReadOnlyList<ChartPoint> points, out double left, out double top, out double right, out double bottom) {
-        left = top = double.PositiveInfinity;
-        right = bottom = double.NegativeInfinity;
-        for (var i = 0; i < points.Count; i++) {
-            var point = points[i];
-            if (point.X < left) left = point.X;
-            if (point.X > right) right = point.X;
-            if (point.Y < top) top = point.Y;
-            if (point.Y > bottom) bottom = point.Y;
+    /// <summary>The bounds of a route; a route of fewer than two points interacts with nothing.</summary>
+    private readonly struct RouteBox {
+        private RouteBox(double left, double top, double right, double bottom, bool empty) {
+            Left = left; Top = top; Right = right; Bottom = bottom; Empty = empty;
         }
+
+        public double Left { get; }
+        public double Top { get; }
+        public double Right { get; }
+        public double Bottom { get; }
+        public bool Empty { get; }
+
+        public static RouteBox Of(IReadOnlyList<ChartPoint> points) {
+            if (points.Count < 2) return new RouteBox(0, 0, 0, 0, true);
+            double left = double.PositiveInfinity, top = double.PositiveInfinity, right = double.NegativeInfinity, bottom = double.NegativeInfinity;
+            for (var i = 0; i < points.Count; i++) {
+                var point = points[i];
+                if (point.X < left) left = point.X;
+                if (point.X > right) right = point.X;
+                if (point.Y < top) top = point.Y;
+                if (point.Y > bottom) bottom = point.Y;
+            }
+            return new RouteBox(left, top, right, bottom, false);
+        }
+    }
+
+    /// <summary>The bounds of every route of a plan at one moment, so whole-plan comparisons measure each route once.</summary>
+    private sealed class PlanBoxes {
+        public PlanBoxes(List<PlannedRoute> routes, List<List<ChartPoint>> fixedRoutes) {
+            Routes = new RouteBox[routes.Count];
+            for (var i = 0; i < Routes.Length; i++) Routes[i] = RouteBox.Of(routes[i].Points);
+            Fixed = new RouteBox[fixedRoutes.Count];
+            for (var i = 0; i < Fixed.Length; i++) Fixed[i] = RouteBox.Of(fixedRoutes[i]);
+        }
+
+        public RouteBox[] Routes { get; }
+        public RouteBox[] Fixed { get; }
     }
 
     private static bool AtEnd(ChartPoint point, IReadOnlyList<ChartPoint> route) =>
