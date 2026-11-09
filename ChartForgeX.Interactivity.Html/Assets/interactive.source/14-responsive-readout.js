@@ -30,11 +30,15 @@
     // same card, followed by the flowing legend. The native heading and legend bands are
     // clipped away so no empty strip remains above the plot. At every width the frame then
     // paints the drawing's card behind its HTML chrome, so the toolbar and reset control sit inside it.
+    // Removing even an absent custom property restyles the whole drawing, so only set tokens are removed.
+    const clearCard = () => {
+      delete frameNode.dataset.cfxCardHead; delete frameNode.dataset.cfxHeadingCrop;
+      [...cardTokens, '--cfx-heading-crop'].forEach(name => frameNode.style.getPropertyValue(name) && frameNode.style.removeProperty(name));
+    };
     const placeHeading = (shown, framed) => {
-      heading.style.display = shown ? 'block' : 'none';
+      heading.style.display = shown ? 'block' : 'none'; heading.toggleAttribute('data-cfx-shown', shown);
       heading.style.removeProperty('padding-inline-end'); heading.style.removeProperty('padding-block-start');
-      delete frameNode.dataset.cfxCardHead; cardTokens.forEach(name => frameNode.style.removeProperty(name));
-      delete frameNode.dataset.cfxHeadingCrop; frameNode.style.removeProperty('--cfx-heading-crop');
+      clearCard();
       // Layout scale, independent of any legacy CSS zoom transform on the drawing.
       const scale = svg.clientWidth / (svg.viewBox.baseVal?.width || svg.clientWidth);
       if (!framed || !(scale > 0)) return;
@@ -104,6 +108,6 @@
     observer?.observe(root); listenChart(root, window, 'resize', queue);
     if (toolbar) observer?.observe(toolbar);
     if (printMedia?.addEventListener) listenChart(root, printMedia, 'change', refresh);
-    ownChartWork(root, () => { if (frame) cancelAnimationFrame(frame); observer?.disconnect(); heading.remove(); delete frameNode.dataset.cfxCardHead; delete frameNode.dataset.cfxHeadingCrop; [...cardTokens, '--cfx-heading-crop'].forEach(name => frameNode.style.removeProperty(name)); headings.forEach(node => node.style.visibility = visibility.get(node)); if (toolbarHeight) root.style.setProperty('--cfx-toolbar-height', toolbarHeight); else root.style.removeProperty('--cfx-toolbar-height'); });
+    ownChartWork(root, () => { if (frame) cancelAnimationFrame(frame); observer?.disconnect(); heading.remove(); clearCard(); headings.forEach(node => node.style.visibility = visibility.get(node)); if (toolbarHeight) root.style.setProperty('--cfx-toolbar-height', toolbarHeight); else root.style.removeProperty('--cfx-toolbar-height'); });
     refresh();
   };

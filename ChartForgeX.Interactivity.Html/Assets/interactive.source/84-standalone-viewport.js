@@ -360,7 +360,8 @@
   const restoreStandaloneGeometry = view => {
     for (const entry of view.geometry) {
       for (const name of ['d', 'points', 'x', 'x1', 'x2', 'cx', 'y', 'y1', 'y2', 'cy', 'width', 'height'])
-        if (entry.attrs[name] !== undefined) entry.node.setAttribute(name, entry.attrs[name]);
+        // Rewriting an unchanged value still restyles the mark, which costs a full pass on dense charts.
+        if (entry.attrs[name] !== undefined && entry.node.getAttribute(name) !== entry.attrs[name]) entry.node.setAttribute(name, entry.attrs[name]);
       if (entry.attrs.transform === undefined) entry.node.removeAttribute('transform'); else entry.node.setAttribute('transform', entry.attrs.transform);
       restoreStandaloneStyle(entry.node, 'visibility', entry.visibility);
     }
