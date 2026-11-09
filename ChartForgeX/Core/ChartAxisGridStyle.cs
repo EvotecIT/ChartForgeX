@@ -13,7 +13,7 @@ public sealed class ChartAxisGridStyle {
     private double? _dash;
     private double? _gap;
     private double? _minorOpacity;
-    private double _bandOpacity = .06;
+    private double? _bandOpacity;
 
     /// <summary>Gets or sets whether this axis draws grid lines, or null to follow the chart's horizontal and vertical line policy.</summary>
     public bool? ShowLines { get; set; }
@@ -43,12 +43,15 @@ public sealed class ChartAxisGridStyle {
     /// <summary>Gets or sets minor line opacity, or null for half the major line opacity.</summary>
     public double? MinorOpacity { get => _minorOpacity; set { if (value.HasValue) ChartGuards.UnitInterval(value.Value, nameof(value)); _minorOpacity = value; } }
 
-    /// <summary>Gets or sets the fill of every other interval between adjacent major ticks, or null for no bands.</summary>
+    /// <summary>Gets or sets whether every other interval between adjacent major ticks is filled.</summary>
     /// <remarks>The first interval after the lowest visible tick is filled, then every second one.</remarks>
+    public bool ShowBands { get; set; }
+
+    /// <summary>Gets or sets the band fill, or null for a neutral tint of the theme grid colour.</summary>
     public ChartColor? BandColor { get; set; }
 
-    /// <summary>Gets or sets band opacity from zero to one. Default: 0.06.</summary>
-    public double BandOpacity { get => _bandOpacity; set { ChartGuards.UnitInterval(value, nameof(value)); _bandOpacity = value; } }
+    /// <summary>Gets or sets band opacity from zero to one, or null for 0.5 of the theme grid colour or 0.08 of an authored colour.</summary>
+    public double? BandOpacity { get => _bandOpacity; set { if (value.HasValue) ChartGuards.UnitInterval(value.Value, nameof(value)); _bandOpacity = value; } }
 
     /// <summary>Shows or hides this axis's grid lines regardless of the chart's line policy; null restores that policy.</summary>
     public ChartAxisGridStyle WithLines(bool? visible = true) { ShowLines = visible; return this; }
@@ -75,8 +78,11 @@ public sealed class ChartAxisGridStyle {
     /// <summary>Sets minor line opacity; null uses half the major line opacity.</summary>
     public ChartAxisGridStyle WithMinorOpacity(double? opacity) { MinorOpacity = opacity; return this; }
 
-    /// <summary>Fills every other interval between adjacent major ticks; a null colour removes the bands.</summary>
-    public ChartAxisGridStyle WithBands(ChartColor? color, double opacity = .06) { BandOpacity = opacity; BandColor = color; return this; }
+    /// <summary>Fills every other interval between adjacent major ticks with a neutral tint of the theme grid colour, or removes the bands.</summary>
+    public ChartAxisGridStyle WithBands(bool visible = true) { ShowBands = visible; return this; }
+
+    /// <summary>Fills every other interval between adjacent major ticks with an authored colour; null opacity uses 0.08.</summary>
+    public ChartAxisGridStyle WithBands(ChartColor color, double? opacity = null) { BandOpacity = opacity; BandColor = color; ShowBands = true; return this; }
 
     /// <summary>Creates an independent copy.</summary>
     public ChartAxisGridStyle Clone() => (ChartAxisGridStyle)MemberwiseClone();

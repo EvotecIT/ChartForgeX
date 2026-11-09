@@ -53,6 +53,12 @@ internal static partial class ChartColorMath {
         return (Math.Max(a, b) + 0.05) / (Math.Min(a, b) + 0.05);
     }
 
+    /// <summary>Returns CIE L* lightness (0 to 100) of an opaque colour; alpha is ignored.</summary>
+    internal static double Lightness(ChartColor color) {
+        var luminance = WcagLuminance(color);
+        return luminance > 216d / 24389 ? 116 * Math.Pow(luminance, 1d / 3) - 16 : luminance * 24389 / 27;
+    }
+
     private static double WcagLuminance(ChartColor color) =>
         0.2126 * LinearChannel(color.R) + 0.7152 * LinearChannel(color.G) + 0.0722 * LinearChannel(color.B);
 

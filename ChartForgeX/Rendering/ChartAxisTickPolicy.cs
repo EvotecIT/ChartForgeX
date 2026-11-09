@@ -10,11 +10,11 @@ internal sealed class ChartAxisTickFacts {
         Step = axis.TickStep; Values = axis.TickValues; MinorTicks = axis.MinorTickCount;
         MinimumSpacing = axis.MinimumTickSpacing; MaximumSpacing = axis.MaximumTickSpacing;
         // Calendar steps and bands between ticks have no browser re-projection, so a saved page declines zoom for them.
-        Static = axis.TimeTickStep != null || axis.Grid?.BandColor != null;
+        Static = axis.TimeTickStep != null || axis.Grid?.ShowBands == true;
     }
 
     /// <summary>Captures an axis's tick policy, or null for automatic ticks without bands.</summary>
-    internal static ChartAxisTickFacts? Capture(ChartAxis axis) => axis.HasTickPolicy || axis.Grid?.BandColor != null ? new ChartAxisTickFacts(axis) : null;
+    internal static ChartAxisTickFacts? Capture(ChartAxis axis) => axis.HasTickPolicy || axis.Grid?.ShowBands == true ? new ChartAxisTickFacts(axis) : null;
     internal double? Step { get; }
     internal IReadOnlyList<double> Values { get; }
     internal int MinorTicks { get; }
