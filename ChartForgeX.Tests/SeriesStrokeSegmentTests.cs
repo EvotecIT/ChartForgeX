@@ -80,6 +80,14 @@ public sealed class SeriesStrokeSegmentTests {
         var reflowed = chart.PrepareVisibility(context, new ChartVisibilityView(new[] { ChartVisibilityTarget.Series(new ChartSeriesId("other")) },
             layout: ChartVisibilityLayout.Reflow));
         Assert.Equal(new[] { (IReadOnlyList<double>?)null, Dash }, Lines(reflowed).Select(line => line.Dash));
+
+        // A custom line key draws the same two parts.
+        chart.Options.Legend.KeyShape = ChartLegendKeyShape.Line;
+        var custom = Prepare(chart).Scene.Nodes.OfType<VisualSceneLine>().Where(line => line.Role == "legend-line").ToArray();
+        Assert.Equal(3, custom.Length);
+        Assert.Null(custom[0].Dash);
+        Assert.Equal(Dash, custom[1].Dash);
+        Assert.Equal(custom[0].End, custom[1].Start);
     }
 
     private static VisualScenePath[] Lines(PreparedVisual prepared) =>

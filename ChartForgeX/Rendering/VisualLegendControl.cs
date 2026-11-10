@@ -75,9 +75,17 @@ internal static class VisualLegendControl {
             },
             ChartLegendKeyShape.Line => (builder, bounds, context) => {
                 var y = bounds.Top + bounds.Height / 2;
-                if (series == null) builder.Line(bounds.Left, y, bounds.Right, y, entry.Color, VisualFrameLayout.LegendLineStroke, role: "legend-line", paint: VisualChartPaint.Stroke(paint));
-                else VisualSeriesStroke.DrawLine(builder, series, bounds.Left, y, bounds.Right, y, entry.Color,
-                    VisualSeriesStroke.Width(series, VisualFrameLayout.LegendLineStroke), "legend-line", VisualChartPaint.Stroke(paint), maximumWidth: bounds.Height / 2);
+                if (series == null) {
+                    builder.Line(bounds.Left, y, bounds.Right, y, entry.Color, VisualFrameLayout.LegendLineStroke, role: "legend-line", paint: VisualChartPaint.Stroke(paint));
+                    return;
+                }
+                // A segmented series keeps the default key's two parts: its own style, then its first segment's style.
+                var styles = VisualSeriesStroke.SegmentStyles(series);
+                var split = VisualSeriesStroke.LegendSplit(bounds, styles.Length);
+                var width = VisualSeriesStroke.Width(series, VisualFrameLayout.LegendLineStroke);
+                for (var index = 0; index < Math.Min(2, styles.Length); index++)
+                    VisualSeriesStroke.DrawLine(builder, styles[index].Style, index == 0 ? bounds.Left : split, y, index == 0 ? split : bounds.Right, y,
+                        entry.Color, width, "legend-line", VisualChartPaint.Stroke(paint), maximumWidth: bounds.Height / 2, startOnGap: index > 0);
             },
             _ => (builder, bounds, _) => {
                 var radius = Math.Min(bounds.Width, bounds.Height) * .45;

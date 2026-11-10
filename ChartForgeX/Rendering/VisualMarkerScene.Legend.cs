@@ -39,7 +39,7 @@ internal static partial class VisualMarkerScene {
                 // A segmented series shows its first two styles side by side, such as solid actuals then a dashed forecast.
                 // The second starts on a gap so its pattern reads even in a short key.
                 var styles = VisualSeriesStroke.SegmentStyles(series);
-                var split = styles.Length > 1 ? bounds.Left + bounds.Width * .4 : bounds.Right;
+                var split = VisualSeriesStroke.LegendSplit(bounds, styles.Length);
                 LegendLine(builder, series, styles[0].Style, color, paint, context, bounds.Left, split, y, bounds.Height);
                 if (styles.Length > 1) LegendLine(builder, series, styles[1].Style, color, paint, context, split, bounds.Right, y, bounds.Height, startOnGap: true);
                 // Segments alone keep the default key's plain line rather than adding a marker dot.

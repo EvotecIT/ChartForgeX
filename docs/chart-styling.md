@@ -87,8 +87,10 @@ stroke is cut exactly at `FromX`, including inside a spline curve or a step
 tread, so the solid and dashed pieces meet without a gap and the dash starts at
 the join. Line, step-line, area, step-area and stacked-area series support
 segments (area segments restyle the outline, not the fill); other kinds reject
-them during preparation. Markers, fills and labels are unchanged. The legend key
-shows the series style followed by the first segment's dash, and a saved
+them during preparation. Markers, fills and labels are unchanged. The legend key,
+including a custom `ChartLegendKeyShape.Line` key, draws the series style
+followed by the first segment's merged style (its colour, width, opacity and
+dash), and a saved
 interactive report keeps both pieces joined when it zooms or pans. The
 [actual-and-forecast example](../ChartForgeX.Examples/StatisticalExamples.cs)
 adds a widening interval band after the last actual.

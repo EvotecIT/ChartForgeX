@@ -83,12 +83,21 @@ internal static class VisualSeriesStroke {
 
     internal static void DrawLine(VisualSceneBuilder builder, ChartSeries series, double x1, double y1, double x2, double y2,
         ChartColor color, double width, string role, VisualScenePaintBinding? paint = null, double[]? dash = null,
-        double maximumWidth = double.PositiveInfinity) {
-        var style = Style(series);
+        double maximumWidth = double.PositiveInfinity) =>
+        DrawLine(builder, Style(series), x1, y1, x2, y2, color, width, role, paint, dash, maximumWidth);
+
+    /// <summary>Draws one line in a resolved stroke style; a piece that starts on a gap begins its dash pattern there.</summary>
+    internal static void DrawLine(VisualSceneBuilder builder, ChartStrokeStyle? style, double x1, double y1, double x2, double y2,
+        ChartColor color, double width, string role, VisualScenePaintBinding? paint = null, double[]? dash = null,
+        double maximumWidth = double.PositiveInfinity, bool startOnGap = false) {
         var actual = Resolve(style, color, paint?.Stroke ?? SvgPaint.Literal(color));
+        var resolved = style?.ResolveDash(dash ?? Array.Empty<double>()) ?? dash;
         builder.Line(x1, y1, x2, y2, actual.Color, Math.Min(style?.Width ?? width, maximumWidth), role: role,
-            dash: style?.ResolveDash(dash ?? Array.Empty<double>()) ?? dash, paint: VisualChartPaint.Stroke(actual.Paint));
+            dash: resolved, dashOffset: startOnGap && resolved is { Length: > 0 } ? resolved[0] : 0, paint: VisualChartPaint.Stroke(actual.Paint));
     }
+
+    /// <summary>Where a legend key hands over from the series style to its first segment's style.</summary>
+    internal static double LegendSplit(ChartRect bounds, int styles) => styles > 1 ? bounds.Left + bounds.Width * .4 : bounds.Right;
 
     internal static void DrawBox(VisualSceneBuilder builder, ChartSeries series, ChartRect bounds, double radius,
         ChartColor fill, ChartColor color, double width, string role, VisualScenePaintBinding paint) {
