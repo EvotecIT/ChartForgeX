@@ -10,7 +10,7 @@ internal static partial class VisualScheduleCompiler {
     internal static void FitNaturalHeight(Chart chart) {
         var context = VisualExportRequest.ForChart(chart).Context;
         var builder = new VisualSceneBuilder(context.Layout.Size, context.Font);
-        var plot = VisualFrameLayout.Build(builder, context, LegendEntries(chart, context.Theme.Resolve(context.ThemeMode)));
+        var plot = VisualFrameLayout.Build(builder, context, VisualChartCompiler.LegendEntries(VisualChartFamily.Schedule, chart, context.Theme.Resolve(context.ThemeMode)));
         var rows = chart.Series.Count(series => series.GanttItems.Count > 0 && !IsMarker(series));
         var frame = context.Layout.Size.Height - plot.Height;
         var style = VisualStateSceneTools.TickStyle(chart, context);

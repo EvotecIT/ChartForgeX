@@ -12,6 +12,7 @@ internal sealed partial class ChartVisibilitySource {
     private readonly VisualArtifactInterchangeWaterfallArtifact _presentation;
     private readonly ChartLineVisualStyle _line;
     private readonly ChartBoxPlotOptions _boxes;
+    private readonly ChartLegendOptions _legend;
     private readonly VisualAccessibility _accessibility;
     private readonly IReadOnlyList<Series> _series;
     private readonly IReadOnlyList<ChartVisibilityTarget> _targets;
@@ -34,6 +35,7 @@ internal sealed partial class ChartVisibilitySource {
         // Recompute the fixed category map from copied authored policy; never mutate the prepared source or retain a late mutable chart.
         if (componentValues && _presentation.XAxis.Scale == ChartScaleKind.Time) _presentation.XAxis.PreparedTimeDomain = null;
         _line = chart.Options.LineVisualStyle.Clone(); _boxes = chart.Options.BoxPlot.Clone(); _accessibility = chart.Accessibility.Clone();
+        _legend = chart.Options.Legend.Clone();
         _series = Array.AsReadOnly(chart.Series.Select(series => series.CaptureVisibilitySource()).ToArray());
         _categoryLabels = Array.AsReadOnly(ChartCartesianOrientation.CategoryLabels(chart).ToArray());
         BarMode = chart.Options.BarMode; ShowStackTotals = chart.Options.ShowStackTotals; MaximumBarWidth = chart.Options.MaximumBarWidth;
@@ -73,6 +75,7 @@ internal sealed partial class ChartVisibilitySource {
         var chart = Chart.Create().WithTitle(Title).WithSubtitle(Subtitle).WithSize(Width, Height);
         VisualArtifactInterchangeMapping.RestoreVisibilityPresentation(chart, _presentation);
         chart.Options.LineVisualStyle = _line.Clone(); chart.Options.BoxPlot = _boxes.Clone(); chart.Options.BarMode = BarMode;
+        chart.Options.Legend = _legend.Clone();
         chart.Options.ShowStackTotals = ShowStackTotals; chart.Options.MaximumBarWidth = MaximumBarWidth;
         chart.Options.LineOrientation = LineOrientation; chart.Options.LineMarkerMode = LineMarkers;
         var accessibility = _accessibility;
@@ -112,7 +115,7 @@ internal sealed partial class ChartVisibilitySource {
             throw new NotSupportedException("Native Reflow does not yet capture annotations, plot regions, compact-panel state, category highlights or chart SVG variable resolvers.");
         if (chart.Series.Any(series => series.DecimationMode.HasValue || series.HistogramBinLayout != null || series.ColorScale != null || series.ColorDimension.HasOverrides || series.HasOrdinalMarkerOverrides))
             throw new NotSupportedException("Native Reflow does not yet capture derived decimation/histograms, numeric color dimensions or per-point marker policies.");
-        if (options.Labels.AccessibleTextFormatter != null || options.Labels.DateFormatter != null || options.BoxPlot.StatisticLabelFormatter != null || options.PieSliceLabelFormatter != null)
+        if (options.Labels.AccessibleTextFormatter != null || options.Labels.DateFormatter != null || options.BoxPlot.StatisticLabelFormatter != null || options.PieSliceLabelFormatter != null || options.Legend.ItemFormatter != null)
             throw new NotSupportedException("Native Reflow requires static label words and captured built-in formats; custom callbacks remain available for ordinary rendering.");
         try { _ = options.ValueFormat.PortablePolicy();
         foreach (var axis in new[] { options.XAxis, options.YAxis, options.SecondaryXAxis, options.SecondaryYAxis }) {
