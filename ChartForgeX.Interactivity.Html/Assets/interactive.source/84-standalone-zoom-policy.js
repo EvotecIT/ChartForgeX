@@ -8,18 +8,19 @@
   const standaloneReprojects = (metadata, svg) => {
     const projection = metadata.dataProjection, horizontal = metadata.orientation === 'horizontal';
     const axes = standaloneAxisNames.filter(name => metadata[name + 'Projection'] || projection?.[name]);
-    const scale = name => (metadata[name + 'Projection'] || projection[name]).scale;
+    const axis = name => metadata[name + 'Projection'] || projection[name], scale = name => axis(name).scale;
     // A horizontal chart's second value axis runs along the top (secondaryX); a vertical chart's along the right.
     return !!projection && !!(projection.x || metadata.xProjection) && !!(projection.y || metadata.yProjection)
       && !(horizontal ? metadata.secondaryYProjection : metadata.secondaryXProjection)
-      && axes.every(name => ['linear', 'logarithmic', 'symmetriclogarithmic'].includes(scale(name))
-        || scale(name) === 'time' && name === 'x' && !horizontal && standaloneTimeCaptured(projection.x))
+      && axes.every(name => axis(name).ticks !== 'static' && (['linear', 'logarithmic', 'symmetriclogarithmic'].includes(scale(name))
+        || scale(name) === 'time' && name === 'x' && !horizontal && standaloneTimeCaptured(projection.x)))
       && !!metadata.series?.length && metadata.series.every(row => standaloneReprojectedKinds.includes(row.kind))
       && standaloneStacksAligned(metadata, svg);
   };
   // A saved report zooms only what it can re-project with native-consistent ticks. Matrices, maps,
   // polar, hierarchy, flow and diagram scenes, and Cartesian charts outside the families above
-  // (formatted, zoned, session or spaced time axes, symmetric-logarithmic axes, a secondary X axis,
+  // (formatted, zoned, session or spaced time axes, calendar tick steps or tick policies on time axes, alternating grid bands,
+  // symmetric-logarithmic axes, a secondary X axis,
   // stacked areas whose members miss each other's X, lollipop, dumbbell, range-bar and
   // timeline marks) have no window it can redraw faithfully. Scaling their whole drawing would only
   // enlarge text, so zoom and pan decline for them; a connected .NET host re-prepares every family natively instead.

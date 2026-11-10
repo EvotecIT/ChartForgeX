@@ -17,6 +17,7 @@ public sealed class GraphSceneNode {
     private string? _iconText;
     private string? _secondaryLabel;
     private string? _badgeText;
+    private string? _tooltip;
     private double _x;
     private double _y;
     private bool _hasExplicitPosition;
@@ -62,6 +63,9 @@ public sealed class GraphSceneNode {
 
     /// <summary>Gets or sets optional short badge text such as a count, role, or alert total.</summary>
     public string? BadgeText { get => _badgeText; set => _badgeText = ChartInteractionText.OptionalText(value, nameof(value), "Graph node badge text"); }
+
+    /// <summary>Gets or sets optional plain text shown when the pointer rests on or keyboard focus reaches the node. Line breaks start new lines.</summary>
+    public string? Tooltip { get => _tooltip; set => _tooltip = ChartInteractionText.OptionalText(value, nameof(value), "Graph node tooltips"); }
 
     /// <summary>Gets or sets the current x-coordinate in graph scene space.</summary>
     public double X {

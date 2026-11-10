@@ -51,11 +51,43 @@ public sealed class GraphEdgeStyle {
     /// <summary>Gets or sets whether the edge is hidden from visual output while remaining available in metadata.</summary>
     public bool Hidden { get; set; }
 
+    /// <summary>Gets or sets the mark drawn at the source when <see cref="GraphSceneEdge.SourceArrow"/> is set.</summary>
+    public GraphEdgeArrowShape SourceArrowShape { get; set; }
+
+    /// <summary>Gets or sets the mark drawn halfway along the edge when <see cref="GraphSceneEdge.MiddleArrow"/> is set.</summary>
+    public GraphEdgeArrowShape MiddleArrowShape { get; set; }
+
+    /// <summary>Gets or sets the mark drawn at the target when the edge has a target arrow.</summary>
+    public GraphEdgeArrowShape TargetArrowShape { get; set; }
+
+    /// <summary>Gets or sets the size multiplier for every arrow mark on the edge.</summary>
+    public double ArrowScale { get; set; } = 1;
+
+    /// <summary>Gets or sets a relationship value mapped onto the scene's <see cref="GraphSceneOptions.EdgeWidthScale"/>. An explicit <see cref="Width"/> wins.</summary>
+    public double? Value { get; set; }
+
+    /// <summary>Gets or sets the stroke width used while the pointer rests on the edge.</summary>
+    public double? HoverWidth { get; set; }
+
+    /// <summary>Gets or sets the stroke width used while the edge is selected or highlighted.</summary>
+    public double? SelectionWidth { get; set; }
+
     internal void Validate(string edgeId) {
         GraphStyleGuards.ValidateCssColor(Color, "edge color", edgeId);
         GraphStyleGuards.ValidateCssColor(LabelColor, "edge label color", edgeId);
         ValidateDashPattern(DashPattern, edgeId);
-        if (Width.HasValue && (double.IsNaN(Width.Value) || double.IsInfinity(Width.Value) || Width.Value <= 0)) throw new InvalidOperationException("Graph scene edge width must be finite and greater than zero: " + edgeId);
+        ValidatePositive(Width, "width", edgeId);
+        ValidatePositive(HoverWidth, "hover width", edgeId);
+        ValidatePositive(SelectionWidth, "selection width", edgeId);
+        ValidatePositive(ArrowScale, "arrow scale", edgeId);
+        if (Value.HasValue && (double.IsNaN(Value.Value) || double.IsInfinity(Value.Value))) throw new InvalidOperationException("Graph scene edge value must be finite: " + edgeId);
+        foreach (var shape in new[] { SourceArrowShape, MiddleArrowShape, TargetArrowShape }) {
+            if (!Enum.IsDefined(typeof(GraphEdgeArrowShape), shape)) throw new InvalidOperationException("Graph scene edge arrow shape is unsupported: " + edgeId);
+        }
+    }
+
+    private static void ValidatePositive(double? value, string name, string edgeId) {
+        if (value.HasValue && (double.IsNaN(value.Value) || double.IsInfinity(value.Value) || value.Value <= 0)) throw new InvalidOperationException("Graph scene edge " + name + " must be finite and greater than zero: " + edgeId);
     }
 
     private static void ValidateDashPattern(string? value, string edgeId) {

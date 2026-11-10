@@ -30,11 +30,15 @@
     // same card, followed by the flowing legend. The native heading and legend bands are
     // clipped away so no empty strip remains above the plot. At every width the frame then
     // paints the drawing's card behind its HTML chrome, so the toolbar and reset control sit inside it.
+    // Removing even an absent custom property restyles the whole drawing, so only set tokens are removed.
+    const clearCard = () => {
+      delete frameNode.dataset.cfxCardHead; delete frameNode.dataset.cfxHeadingCrop;
+      [...cardTokens, '--cfx-heading-crop'].forEach(name => frameNode.style.getPropertyValue(name) && frameNode.style.removeProperty(name));
+    };
     const placeHeading = (shown, framed) => {
-      heading.style.display = shown ? 'block' : 'none';
+      heading.style.display = shown ? 'block' : 'none'; heading.toggleAttribute('data-cfx-shown', shown);
       heading.style.removeProperty('padding-inline-end'); heading.style.removeProperty('padding-block-start');
-      delete frameNode.dataset.cfxCardHead; cardTokens.forEach(name => frameNode.style.removeProperty(name));
-      delete frameNode.dataset.cfxHeadingCrop; frameNode.style.removeProperty('--cfx-heading-crop');
+      clearCard();
       // Layout scale, independent of any legacy CSS zoom transform on the drawing.
       const scale = svg.clientWidth / (svg.viewBox.baseVal?.width || svg.clientWidth);
       if (!framed || !(scale > 0)) return;
@@ -81,6 +85,9 @@
     let frame = 0;
     const refresh = () => {
       frame = 0; if (!root.isConnected || chartLifetimes.get(root)?.disposed !== false) return;
+      refreshedSize = root.clientWidth + 'x' + root.clientHeight + 'x' + toolbar?.offsetHeight;
+      // The axes read the chart width before the heading and card writes, so painting them forces no second restyle.
+      const axes = { compact: root.getBoundingClientRect().width < 560 };
       // A narrow drawing or a flowing legend moves the heading into HTML, whatever the page width.
       const compact = stage.getBoundingClientRect().width < 560 || legend?.style.display === 'flex';
       const printing = printMedia?.matches === true || root._cfxStandaloneViewport?.printing === true;
@@ -91,19 +98,18 @@
       placeHeading(!printing && compact && !!title && headings.length > 0, !printing);
       headings.forEach(node => node.style.visibility = compact && !printing ? 'hidden' : visibility.get(node));
       const view = (hasFeature(root, 'Zoom') || hasFeature(root, 'LegendToggles')) && standaloneViewport(root);
-      if (view) paintStandaloneAxes(root, view);
+      if (view) paintStandaloneAxes(root, view, axes);
     };
     const queue = () => { if (!frame) frame = requestAnimationFrame(refresh); };
-    // The toolbar matters only for its height; Reset zoom widening it must not repaint the axes.
-    let observedToolbarHeight = -1;
-    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(entries => {
-      let changed = false;
-      for (const entry of entries) changed = entry.target !== toolbar || observedToolbarHeight !== (observedToolbarHeight = entry.contentRect.height) || changed;
-      if (changed) queue();
+    // The toolbar matters only for its height; Reset zoom widening it must not repaint the axes. A chart that kept its
+    // size since the last refresh, such as at the first notification after binding, needs no refresh.
+    let refreshedSize;
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => {
+      if (refreshedSize !== root.clientWidth + 'x' + root.clientHeight + 'x' + toolbar?.offsetHeight) queue();
     });
     observer?.observe(root); listenChart(root, window, 'resize', queue);
     if (toolbar) observer?.observe(toolbar);
     if (printMedia?.addEventListener) listenChart(root, printMedia, 'change', refresh);
-    ownChartWork(root, () => { if (frame) cancelAnimationFrame(frame); observer?.disconnect(); heading.remove(); delete frameNode.dataset.cfxCardHead; delete frameNode.dataset.cfxHeadingCrop; [...cardTokens, '--cfx-heading-crop'].forEach(name => frameNode.style.removeProperty(name)); headings.forEach(node => node.style.visibility = visibility.get(node)); if (toolbarHeight) root.style.setProperty('--cfx-toolbar-height', toolbarHeight); else root.style.removeProperty('--cfx-toolbar-height'); });
+    ownChartWork(root, () => { if (frame) cancelAnimationFrame(frame); observer?.disconnect(); heading.remove(); clearCard(); headings.forEach(node => node.style.visibility = visibility.get(node)); if (toolbarHeight) root.style.setProperty('--cfx-toolbar-height', toolbarHeight); else root.style.removeProperty('--cfx-toolbar-height'); });
     refresh();
   };

@@ -6,6 +6,8 @@
     && (!root.dataset.cfxIsolatedSeries || node.dataset.cfxIsolated === 'true');
   // Hierarchy drilling selects the standalone reader, so core keyboard stops never meet a captured hierarchy.
   const capturedHierarchy = () => null;
+  const hoverGroups = () => null;
+  const repaintHoverChange = () => false;
   const readerRuntimeKey = Symbol.for('ChartForgeX.chartRuntime');
   const mountCoreChart = root => {
     if (root.dataset.cfxRuntimeBound === 'true') return;
@@ -33,6 +35,7 @@
     root.dataset.cfxRuntimeBound = 'true';
     applyRenderedTargetContract(root);
     prepareRootBranchHighlights(root);
+    bindLegendHover(root);
     const crosshair = root.querySelector('.cfx-crosshair');
     const show = (node, event) => { setHover(root, node, true, false); showTip(root, tip, node, event); };
     const clear = (pointer) => { clearHover(root, true, false); hideCrosshair(root, crosshair); hideTip(root, tip, !pointer); };

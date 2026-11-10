@@ -86,7 +86,7 @@
   const bindGraphItemSelection = (root, item) => {
     if (attr(item, 'data-cfx-graph-selection-bound') === 'true') return;
     item.setAttribute('data-cfx-graph-selection-bound', 'true');
-    listenGraph(root, item, 'pointerenter', () => graphHover(root, item));
+    listenGraph(root, item, 'pointerenter', event => graphHover(root, item, event));
     listenGraph(root, item, 'pointerleave', () => graphHover(root, null));
     listenGraph(root, item, 'blur', () => graphHover(root, null));
     listenGraph(root, item, 'focus', () => {

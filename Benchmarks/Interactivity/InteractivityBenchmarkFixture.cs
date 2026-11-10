@@ -6,7 +6,7 @@ using ChartForgeX.Primitives;
 using HtmlTinkerX;
 using Microsoft.Playwright;
 
-/// <summary>Measures the actual private acquisition implementation through a benchmark-only HTML export.</summary>
+/// <summary>Measures public pointer-move hover acquisition in the shipped runtime, with its animation frames flushed in-page.</summary>
 public sealed class InteractivityBenchmarkFixture : IDisposable {
     private readonly HtmlBrowserSession _session;
     private readonly int _count;
@@ -16,7 +16,7 @@ public sealed class InteractivityBenchmarkFixture : IDisposable {
     private bool _publicHoverProven;
 
     /// <summary>Prepares the chart and persistent browser outside PowerForge's measured operation.</summary>
-    public InteractivityBenchmarkFixture(int count, int queries, string sourcePath) {
+    public InteractivityBenchmarkFixture(int count, int queries) {
         _count = count; _queries = queries;
         var chart = Chart.Create().WithSize(1000, 600).WithHeader(false).WithLegend(false).WithDataLabels(false)
             .AddScatter("Measurements", Enumerable.Range(0, count).Select(index => new ChartPoint(index, Math.Sin(index * .19) * 10 + index % 37)));
@@ -24,14 +24,7 @@ public sealed class InteractivityBenchmarkFixture : IDisposable {
             options.Interaction.Features = ChartInteractionFeatures.Tooltips;
             options.Tooltip.Range = HtmlChartTooltipRange.Nearest;
         });
-        const string marker = "  const pointerActivationTarget =";
-        var source = File.ReadAllText(sourcePath);
-        var acquisition = source[source.IndexOf("  const pointerCandidates =", StringComparison.Ordinal)..source.IndexOf(marker, StringComparison.Ordinal)];
-        if (!html.Contains(acquisition, StringComparison.Ordinal)) throw new InvalidOperationException("The embedded acquisition code differs from the recorded source file. Rebuild the product before benchmarking.");
-        if (html.IndexOf(marker, StringComparison.Ordinal) != html.LastIndexOf(marker, StringComparison.Ordinal))
-            throw new InvalidOperationException("The benchmark hook must have exactly one insertion point.");
-        // This hook exists only in the disposable benchmark page; the shipped runtime has no benchmark export.
-        html = html.Replace(marker, "  window.cfxBenchmarkAcquire = pointerCandidates;\n" + marker, StringComparison.Ordinal);
+        // The shipped runtime is minified and private; the page is measured unchanged through its public pointer events.
         _session = HtmlBrowser.OpenSessionAsync("about:blank", new HtmlBrowserLaunchOptions {
             Browser = HtmlBrowserEngine.Chromium, Headless = true, Timeout = 30000,
             ViewportWidth = 1100, ViewportHeight = 800
@@ -58,6 +51,7 @@ public sealed class InteractivityBenchmarkFixture : IDisposable {
                   }, null).source);
                   window.cfxBenchmark = { root, stage, probes, expected, points };
                   root.addEventListener('cfxhover', event => { window.cfxBenchmark.hover = event.detail.target; });
+                  root.addEventListener('cfxhoverclear', () => { window.cfxBenchmark.hover = null; });
                   return expected;
                 }
                 """, new { count, queries }).GetAwaiter().GetResult();
@@ -71,22 +65,38 @@ public sealed class InteractivityBenchmarkFixture : IDisposable {
     /// <summary>Resets only the result buffer; source data and browser startup remain outside timing.</summary>
     public void Reset() => _last = null;
 
-    /// <summary>Executes one deterministic in-page query batch without consumer-owned timers.</summary>
+    /// <summary>
+    /// Dispatches one deterministic pointer move per query on the plot stage, so the runtime searches for the nearest observation instead of
+    /// taking an exact marker hit, and runs the frames it requests synchronously. Each query covers acquisition and hover commit.
+    /// </summary>
     public void Execute() => _last = _session.Page.EvaluateAsync<int[]>("""
         () => {
-          const fixture = window.cfxBenchmark;
-          return fixture.probes.map(probe => {
-            const point = window.cfxBenchmarkAcquire(fixture.root,
-              { target: fixture.stage, clientX: probe.x, clientY: probe.y }, true, fixture.stage)?.observation?.node;
-            return point ? Number(point.dataset.cfxSourcePoint ?? point.dataset.cfxPoint) : -1;
-          });
+          const fixture = window.cfxBenchmark, request = window.requestAnimationFrame, cancel = window.cancelAnimationFrame;
+          const frames = new Map(); let next = 0;
+          window.requestAnimationFrame = callback => { frames.set(++next, callback); return next; };
+          window.cancelAnimationFrame = id => { frames.delete(id); };
+          try {
+            return fixture.probes.map(probe => {
+              fixture.stage.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, composed: true, cancelable: true,
+                clientX: probe.x, clientY: probe.y, pointerId: 1, pointerType: 'mouse', isPrimary: true }));
+              for (let pass = 0; pass < 8 && frames.size; pass++) {
+                const pending = [...frames.values()], time = performance.now();
+                frames.clear(); pending.forEach(callback => callback(time));
+              }
+              const hover = fixture.hover;
+              return hover ? Number(hover.sourcePoint) : -1;
+            });
+          } finally {
+            window.requestAnimationFrame = request; window.cancelAnimationFrame = cancel;
+          }
         }
         """).GetAwaiter().GetResult();
 
     /// <summary>Checks every inferred result against an independent geometry oracle and retains console failures.</summary>
     public void Validate() {
         if (_last == null || _last.Length != _queries || !_last.SequenceEqual(_expected))
-            throw new InvalidOperationException("Acquisition results differ from the independently prepared geometry oracle.");
+            throw new InvalidOperationException("Pointer hover results differ from the independently prepared geometry oracle: expected ["
+                + string.Join(",", _expected) + "], actual [" + string.Join(",", _last ?? Array.Empty<int>()) + "].");
         if (!_publicHoverProven) throw new InvalidOperationException("Public pointer hover was not proven.");
         var errors = _session.ConsoleLog.Where(message => message.Type == HtmlConsoleMessageType.Error).Select(message => message.Text).ToArray();
         if (errors.Length != 0) throw new InvalidOperationException(string.Join("\n", errors));

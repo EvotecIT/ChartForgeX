@@ -22,7 +22,7 @@ function fixture() {
   edge.setAttribute('data-source-node-id','shared'); edge.setAttribute('data-target-node-id','peer');
   const events=[],announcer={textContent:''};
   const root={getAttribute:name=>name==='data-cfx-graph-id'?'fixture':null,elements:[node,peer,edge],dataset:{},querySelector:selector=>selector.includes('announcer')?announcer:null,state:{nodes:[],edges:[],clusters:[]}};
-  const runtime=new Function('uiText','items','attr','visible','graphKeyboardItemKey','hasFeature','graphState','drawCanvas','syncSelectedEdgeLabels','emit', source(['10-layout','36-host-commands'])+'\nreturn {selectGraphItems,highlightGraphItems,graphHover,selectedItems};')(
+  const runtime=new Function('uiText','items','attr','visible','graphKeyboardItemKey','hasFeature','graphState','drawCanvas','syncSelectedEdgeLabels','emit', source(['10-layout','36-host-commands','37-hover-tip'])+'\nreturn {selectGraphItems,highlightGraphItems,graphHover,selectedItems};')(
     graphMessageHelpers().uiText,items,attr,visible,item=>`${attr(item,'data-cfx-role')}:${attr(item,'data-node-id') || attr(item,'data-edge-id')}`,()=>true,root=>root.state,()=>{},()=>{},(_root,name,detail)=>events.push({name,detail}));
   return {node,peer,edge,root,runtime,events,announcer};
 }

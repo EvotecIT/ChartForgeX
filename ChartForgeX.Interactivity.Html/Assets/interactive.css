@@ -106,6 +106,7 @@ body {
   width: 100%;
   min-width: min(var(--cfx-native-width, 640px), 38rem);
   max-width: none;
+  height: auto;
 }
 
 .cfx-toolbar {

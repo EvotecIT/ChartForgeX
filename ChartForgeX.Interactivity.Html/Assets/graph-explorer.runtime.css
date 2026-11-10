@@ -1,0 +1,32 @@
+/* Elements only the browser runtime creates. Static SVG and PNG exports do not embed these rules. */
+.cfx-graph-tooltip,
+.cfx-graph-hover-tip {
+  white-space: pre-line;
+}
+
+/* Authored node and edge text, placed beside its target by the runtime. */
+.cfx-graph-hover-tip {
+  position: fixed;
+  z-index: 20;
+  box-sizing: border-box;
+  max-width: min(320px, calc(100vw - 16px));
+  padding: 10px 12px;
+  border: 1px solid var(--cfx-color-border);
+  border-radius: var(--hfx-radius-overlay, 10px);
+  background: var(--cfx-color-surface-raised);
+  box-shadow: var(--hfx-elevation-2, 0 12px 32px rgba(0, 0, 0, .18));
+  color: var(--cfx-color-text);
+  font: 400 var(--hfx-type-small-size, 13px)/var(--hfx-type-small-line-height, 1.4) var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif);
+  overflow-wrap: anywhere;
+  pointer-events: none;
+}
+
+.cfx-graph-hover-tip[hidden] {
+  display: none;
+}
+
+@media print {
+  .cfx-graph-hover-tip {
+    display: none;
+  }
+}

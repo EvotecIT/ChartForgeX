@@ -248,7 +248,11 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
                 Assert.True(label.GetProperty("top").GetDouble() >= plot.GetProperty("bottom").GetDouble() - 1);
             } else {
                 Assert.Equal("y", label.GetProperty("axis").GetString());
-                Assert.True(label.GetProperty("right").GetDouble() <= plot.GetProperty("left").GetDouble() + 1);
+                // The value stays inside the visible card; it overlaps the plot edge only when pinned to the card edge.
+                var viewportLeft = guide.GetProperty("viewport").GetProperty("left").GetDouble();
+                Assert.True(label.GetProperty("left").GetDouble() >= viewportLeft - 1, guide.GetRawText());
+                Assert.True(label.GetProperty("right").GetDouble() <= plot.GetProperty("left").GetDouble() + 1
+                    || label.GetProperty("left").GetDouble() <= viewportLeft + 6, guide.GetRawText());
                 Assert.True(label.GetProperty("top").GetDouble() >= plot.GetProperty("top").GetDouble() - 1);
                 Assert.True(label.GetProperty("bottom").GetDouble() <= plot.GetProperty("bottom").GetDouble() + 1);
             }

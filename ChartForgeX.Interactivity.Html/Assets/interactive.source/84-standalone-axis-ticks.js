@@ -63,12 +63,58 @@
       texts = values.map(value => value === 0 ? '0' : String(Number(value.toPrecision(6))));
     return values.map((value, index) => exact(value) ?? texts[index]);
   };
+  // ChartAxisTickPolicy: explicit values inside the window, or whole multiples of a fixed step
+  // (whole powers of the base on a logarithmic axis, mirrored for a negative domain).
+  const standaloneFixedTicks = axis => {
+    if (axis.tickValues) return axis.tickValues.filter(value => value >= axis.minimum && value <= axis.maximum);
+    const step = axis.tickStep, log = axis.scale === 'logarithmic', sign = log && axis.logarithmicDomain === 'negative' ? -1 : 1, base = axis.logarithmBase ?? 10;
+    if (!step) return null;
+    const at = value => log ? Math.log(value * sign) / Math.log(base) : value, ends = [at(axis.minimum), at(axis.maximum)].sort((a, b) => a - b), ticks = [];
+    for (let index = Math.ceil(ends[0] / step - 1e-9); index <= ends[1] / step + 1e-9 && ticks.length < 1000; index++) {
+      const value = Number((index * step).toPrecision(12));
+      ticks.push(log ? sign * Math.pow(base, value) : value);
+    }
+    return ticks.sort((a, b) => a - b);
+  };
+  // ChartAxisTickPolicy.Minor: each major interval, and the partial ones at both ends, divided evenly in data units.
+  const standaloneMinorTicks = (axis, ticks) => {
+    const values = ticks.map(tick => tick.value), count = axis.minorTicks, result = [];
+    const outer = (end, next) => standaloneAxisValue(axis, 2 * projectedAxisRatio(axis, end) - projectedAxisRatio(axis, next));
+    const bounds = count && values.length > 1 ? [outer(values[0], values[1]), ...values, outer(values.at(-1), values.at(-2))] : [];
+    for (let index = 1; index < bounds.length; index++) for (let part = 1; part <= count; part++) {
+      const value = bounds[index - 1] + (bounds[index] - bounds[index - 1]) * part / (count + 1);
+      if (value >= axis.minimum && value <= axis.maximum) result.push(value);
+    }
+    return result;
+  };
+  const standaloneGridLine = (template, position, plot, vertical) => {
+    const line = template.cloneNode(false);
+    line.style.removeProperty('display'); line.removeAttribute('id');
+    for (const [key, value] of Object.entries(vertical ? { x1: plot.x, x2: plot.x + plot.width, y1: position, y2: position }
+      : { x1: position, x2: position, y1: plot.y, y2: plot.y + plot.height })) line.setAttribute(key, value);
+    return line;
+  };
   // Picks the static tick policy's densest layout whose labels keep their own room,
   // preferring at least three ticks wherever three fit along the axis.
   const standaloneTicks = (axis, length, room, desired, categories, whole) => {
-    const position = value => projectedAxisRatio(axis, value) * length;
-    const fits = ticks => ticks.every((tick, index) => !index
-      || Math.abs(position(tick.value) - position(ticks[index - 1].value)) >= (room(tick.text) + room(ticks[index - 1].text)) / 2);
+    const position = value => projectedAxisRatio(axis, value) * length, [narrowest, widest] = axis.tickSpacing || [];
+    // Authored spacing bounds steer the search like VisualCartesianCompiler.SpacingFittingCount and TickSpacingFits.
+    if (widest) desired = Math.max(desired, Math.ceil(length / widest) + 1);
+    if (narrowest) desired = Math.min(desired, Math.floor(length / narrowest) + 1);
+    const fits = ticks => ticks.every((tick, index) => !index || Math.abs(position(tick.value) - position(ticks[index - 1].value))
+      >= (room(tick.text) + room(ticks[index - 1].text)) / 2 && !(Math.abs(position(tick.value) - position(ticks[index - 1].value)) + 1e-6 < narrowest));
+    // Logarithmic captions are checked against their nearest neighbour, since steps vary along the axis.
+    const label = values => standaloneCaptions(axis, values, values.length > 1 ? Math.min(...values.slice(1).map((value, index) => Math.abs(value - values[index])))
+      : Math.abs(values[0]) || 1).map((text, index) => ({ value: values[index], text }));
+    // A fixed step or explicit values keep every tick and grid line; captions thin on a regular stride, as natively.
+    const fixed = standaloneFixedTicks(axis);
+    if (fixed?.length) {
+      const ticks = label(fixed);
+      for (let stride = 1; stride <= ticks.length; stride++) {
+        const thinned = ticks.map((tick, index) => index % stride ? { ...tick, text: '' } : tick);
+        if (fits(thinned.filter(tick => tick.text))) return thinned;
+      }
+    }
     if (categories) {
       const values = categories.filter(tick => tick.value >= axis.minimum && tick.value <= axis.maximum);
       for (let stride = 1; stride < values.length; stride++) {
@@ -77,9 +123,6 @@
       }
       return values.slice(0, 1);
     }
-    // Logarithmic captions are checked against their nearest neighbour, since steps vary along the axis.
-    const label = values => standaloneCaptions(axis, values, values.length > 1 ? Math.min(...values.slice(1).map((value, index) => Math.abs(value - values[index])))
-      : Math.abs(values[0]) || 1).map((text, index) => ({ value: values[index], text }));
     const target = Math.max(3, desired), candidates = [];
     const generated = axis.scale === 'logarithmic' ? standaloneLogarithmicTicks(axis)
       : axis.scale === 'symmetriclogarithmic' ? standaloneSymmetricTicks(axis, Math.min(40, Math.max(target * 2, 6)))

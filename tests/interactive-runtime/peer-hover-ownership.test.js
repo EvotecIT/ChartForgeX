@@ -25,6 +25,7 @@ function fixture() {
     targetKind: item.dataset.cfxTargetKind, targetId: item.dataset.cfxTargetId });
   const apply = new Function('interactiveTargets', 'seriesKey', 'renderedTargetKind', 'renderedTargetId',
     'targetIdentity', 'clearRootBranchHighlight', 'clearReveals', 'revealTargets', 'settleChartUpdateMotion',
+    'modelled', 'chartModel', 'hoverGroups',
     source + '\nreturn applySync;')(
       () => [node], item => item.dataset.cfxSeriesKey, item => item.dataset.cfxTargetKind,
       item => item.dataset.cfxTargetId, identity, () => {},
@@ -32,7 +33,8 @@ function fixture() {
         const represented = targets.filter(value => value.seriesKey === node.dataset.cfxSeriesKey
           && value.targetKind === node.dataset.cfxTargetKind && value.targetId === node.dataset.cfxTargetId);
         if (represented.length) owner.reveals = represented.map(value => value.targetId);
-      }, () => {}); // This receiver fixture has no optional motion; full-runtime tests own that lifecycle.
+      }, () => {}, // This receiver fixture has no optional motion; full-runtime tests own that lifecycle.
+      (_root, _name, build) => build(), () => null, () => null); // No chart model: the receiver scans its targets.
   const state = () => ({ hovered: classes.has('cfx-hovered'), related: classes.has('cfx-hover-related'),
     series: classes.has('cfx-hover-series'), reveals: root.reveals.slice(), hovering: root.dataset.cfxHovering });
   const present = identity(node);

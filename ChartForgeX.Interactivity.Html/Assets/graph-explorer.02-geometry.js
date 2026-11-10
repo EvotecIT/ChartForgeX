@@ -263,7 +263,7 @@
     const loop = selfLoopGeometry(node);
     return `M ${loop.start.x.toFixed(3)} ${loop.start.y.toFixed(3)} C ${loop.c1.x.toFixed(3)} ${loop.c1.y.toFixed(3)} ${loop.c2.x.toFixed(3)} ${loop.c2.y.toFixed(3)} ${loop.end.x.toFixed(3)} ${loop.end.y.toFixed(3)}`;
   };
-  const edgeArrowGeometry = (edge, control, side, size = 8) => {
+  const edgeArrowFrame = (edge, control, side) => {
     const loop = edge.source === edge.target ? selfLoopGeometry(edge.source) : null;
     const route = !loop && edgeHasRoute(edge) ? routeRenderPoints(edge) : null;
     const sourceSide = side === 'source';
@@ -274,23 +274,20 @@
     const length = Math.max(1, Math.sqrt(dx * dx + dy * dy));
     const unitX = dx / length;
     const unitY = dy / length;
-    const angle = Math.atan2(unitY, unitX);
+
     const inset = loop || route ? 0 : nodeBoundaryInset(sourceSide ? edge.source : edge.target, unitX, unitY);
-    const x = target.x - unitX * inset;
-    const y = target.y - unitY * inset;
-    return {
-      tip: { x, y },
-      left: { x: x - Math.cos(angle - Math.PI / 6) * size, y: y - Math.sin(angle - Math.PI / 6) * size },
-      right: { x: x - Math.cos(angle + Math.PI / 6) * size, y: y - Math.sin(angle + Math.PI / 6) * size }
-    };
+    return { x: target.x - unitX * inset, y: target.y - unitY * inset, ux: unitX, uy: unitY };
   };
-  const drawArrow = (context, edge, control, side, color) => {
-    const arrow = edgeArrowGeometry(edge, control, side);
-    context.beginPath();
-    context.moveTo(arrow.tip.x, arrow.tip.y);
-    context.lineTo(arrow.left.x, arrow.left.y);
-    context.lineTo(arrow.right.x, arrow.right.y);
-    context.closePath();
-    context.fillStyle = color || '#64748b';
-    context.fill();
+  // EdgeArrows.cs mirrors these middle-arrow samples.
+  const edgePointAt = (edge, control, t) => {
+    const u = 1 - t, loop = edge.source === edge.target && selfLoopGeometry(edge.source);
+    const at = k => u * u * u * loop.start[k] + 3 * u * u * t * loop.c1[k] + 3 * u * t * t * loop.c2[k] + t * t * t * loop.end[k];
+    if (loop) return { x: at('x'), y: at('y') };
+    if (edgeHasRoute(edge)) return routePointAt(routeRenderPoints(edge), t, 0);
+    const { source, target } = edgeRenderEndpoints(edge, control), c = control || { x: (source.x + target.x) / 2, y: (source.y + target.y) / 2 };
+    return { x: u * u * source.x + 2 * u * t * c.x + t * t * target.x, y: u * u * source.y + 2 * u * t * c.y + t * t * target.y };
+  };
+  const edgeMiddleFrame = (edge, control) => {
+    const a = edgePointAt(edge, control, .49), b = edgePointAt(edge, control, .51), m = edgePointAt(edge, control, .5), length = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+    return { x: m.x, y: m.y, ux: (b.x - a.x) / length, uy: (b.y - a.y) / length };
   };

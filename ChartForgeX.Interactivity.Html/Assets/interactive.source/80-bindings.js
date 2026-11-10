@@ -19,6 +19,7 @@
     bindHostCommands(root);
     bindAnnotationEditor(root);
     prepareRootBranchHighlights(root);
+    bindLegendHover(root);
     if (root._cfxBranchHighlights) listenChart(root, root, 'keydown', event => {
       if (event.key !== 'Escape') return;
       event.preventDefault();
@@ -70,11 +71,20 @@
     bindStageLayout(root, stage, crosshair);
     const targets = Array.from(new Set([...interactiveTargets(root),
       ...root.querySelectorAll('[data-cfx-role="legend-native"],[data-cfx-role="legend-proxy"]')]));
+    // A pointer moving straight onto another target hands the hover over: leaving keeps the chart's shared hover
+    // state for the entering target to settle, because clearing and re-adding it restyles every mark.
+    const hoverSurfaces = new WeakSet();
+    const handsOver = (from, to) => {
+      for (let node = to; node instanceof Element && root.contains(node); node = node.parentElement)
+        if (hoverSurfaces.has(node) && !node.contains(from)) return true;
+      return false;
+    };
     targets.forEach((node) => {
       const focusNode = targetFocusNode(node);
       const labels = pointLabelSurfaces(root, node);
       [node, ...labels].forEach(surface => {
-        listenChart(root, surface, 'pointerenter', (event) => {
+        hoverSurfaces.add(surface);
+        const enter = (event) => {
           if (pointerReadoutSuspended(root) || keyboardReadoutOwnsPointer(root)) return;
           if (!pointerTargetPaint(node)) { clearUnavailableHover(root, node); return; }
           if (renderedTargetKind(node) === 'legend' && !legendEntryShown(root, node)) {
@@ -83,6 +93,10 @@
           if (!ownsTooltipPointer(root, event)) hideCrosshair(root, crosshair);
           setHover(root, node, true, true);
           showTip(root, tip, node, event);
+        };
+        listenChart(root, surface, 'pointerenter', (event) => {
+          enter(event);
+          if (root._cfxHoverPending) clearHover(root, false, false);
         });
         listenChart(root, surface, 'pointermove', (event) => {
           if (renderedTargetKind(node) === 'legend' && !node.closest('svg') && ownsTooltipPointer(root, event)) {
@@ -96,7 +110,9 @@
         });
         listenChart(root, surface, 'pointerleave', (event) => {
           if (!ownsTooltipPointer(root, event)) return;
-          clearHover(root, true, true);
+          const handover = handsOver(surface, event.relatedTarget);
+          clearHover(root, true, true, handover);
+          if (handover) requestAnimationFrame(() => root._cfxHoverPending && clearHover(root, false, false));
           if (!retainPointerTip(root, event)) hideTip(root, tip, false);
         });
       });

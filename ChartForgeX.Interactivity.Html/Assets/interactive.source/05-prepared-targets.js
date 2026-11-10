@@ -112,6 +112,9 @@
         data.cfxLegendTargetKind = 'point'; data.cfxLegendTargetId = pointTargetId(node);
       }
     });
+    // Every target's attributes are written first, then every target is measured, then markers and hit areas are added:
+    // interleaving writes and measurements restyles or re-lays the chart out once per point.
+    const measures = [], appends = [], strokes = new Map();
     svg.querySelectorAll('[data-cfx-point],[data-cfx-series],[data-cfx-role="gauge"],[data-cfx-role="circle-chart"]').forEach((node) => {
       const data = node.dataset;
       if (data.cfxSeries === undefined) {
@@ -151,6 +154,7 @@
         && !node.hasAttribute('aria-label') && !node.hasAttribute('data-cfx-label'))
         node.setAttribute('aria-label', region.label || item.name);
       if (!region || (data.cfxPoint === undefined && data.cfxRegion === undefined)) return;
+      measures.push(() => {
       node._cfxNativeRegion = Object.freeze({ x: region.x, y: region.y, width: region.width, height: region.height });
       node._cfxFillInteriors = Object.freeze((region.fillInteriors || []).map(candidate => Object.freeze(candidate.slice())));
       if (pairedExtentObservation(node)) node._cfxPairedRegion = region;
@@ -162,9 +166,9 @@
         marker.setAttribute('r', '4'); marker.setAttribute('class', 'cfx-prepared-point-marker');
         marker.setAttribute('pointer-events', 'none');
         const owner = node.closest('[data-cfx-role="series"]');
-        const line = owner && owner.querySelector('[data-cfx-role="line"]');
-        marker.setAttribute('fill', line ? getComputedStyle(line).stroke : 'currentColor');
-        node.appendChild(marker);
+        if (!strokes.has(owner)) { const line = owner && owner.querySelector('[data-cfx-role="line"]'); strokes.set(owner, line ? getComputedStyle(line).stroke : 'currentColor'); }
+        marker.setAttribute('fill', strokes.get(owner));
+        appends.push(() => node.appendChild(marker));
       }
 
 
@@ -176,14 +180,17 @@
         && (coarsePoints ? /^(line|stepline|area|steparea|stackedarea|scatter|bubble|radar|bar|candlestick|ohlc)$/i : /^(line|stepline|area|steparea|stackedarea|scatter|bubble|radar)$/i).test(item.kind)) {
         const matrix = typeof node.getScreenCTM === 'function' ? svgScreenMatrix(node) : null;
         const scale = matrix && Math.min(Math.hypot(matrix.a, matrix.b), Math.hypot(matrix.c, matrix.d));
-        if (scale > 0) appendNativeBrowserHitArea(node, region, (coarsePoints ? 36 : 24) / scale);
+        if (scale > 0) appends.push(() => appendNativeBrowserHitArea(node, region, (coarsePoints ? 36 : 24) / scale));
       }
 
       const hollowCandle = data.cfxRole === 'point' && (data.cfxKind || '').toLowerCase() === 'candlestick'
         && node.querySelector('[data-cfx-role="candlestick-body"][fill="none"]');
       if (box.width > 0 && box.height > 0 && !hollowCandle) return;
-      appendNativeBrowserHitArea(node, region, 8);
+      appends.push(() => appendNativeBrowserHitArea(node, region, 8));
+      });
     });
+    measures.forEach(measure => measure());
+    appends.forEach(append => append());
     const marks = new Map(Array.from(svg.querySelectorAll('[data-cfx-source-id]')).map(node => [node.dataset.cfxSourceId, node]));
     svg.querySelectorAll('[data-cfx-label-for]').forEach(label => {
       const mark = marks.get(label.dataset.cfxLabelFor);

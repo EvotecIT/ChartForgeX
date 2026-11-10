@@ -69,9 +69,9 @@ bundle needs it. They exclude the drawing, font payloads and stylesheet:
 
 | Bundle | Raw budget | Gzip budget |
 | --- | ---: | ---: |
-| Core reader (tooltips, keyboard, crosshair) | 99 KiB | 31 KiB |
-| Standalone reader | 280 KiB | 84 KiB |
-| Full controller/native host | 346 KiB | 103 KiB |
+| Core reader (tooltips, keyboard, crosshair) | 102 KiB | 33 KiB |
+| Standalone reader | 296 KiB | 91 KiB |
+| Full controller/native host | 364 KiB | 111 KiB |
 
 Optional behaviour ships in separate feature bundles, so the runtimes above do
 not grow with it. A page carries only the bundles its options need, and the core
@@ -83,6 +83,16 @@ tooltip reader never carries any:
 | `data` | `IncludeContextMenu`, `ContextMenuItems` or `Export` | 8 KiB | 4 KiB |
 | `isolate` | `LegendToggles` | 2 KiB | 1 KiB |
 | `hierarchy` | A Treemap or Sunburst series | 8 KiB | 3 KiB |
+
+Topology and graph Explorer pages inline their own runtimes, measured from
+`HtmlInteractiveTopologyRenderer.BuildInteractionScript()` and
+`HtmlGraphExplorerRenderer.BuildInteractionScript()`. Their stylesheets, which
+carry the owned font payloads, are not counted:
+
+| Runtime | Raw budget | Gzip budget |
+| --- | ---: | ---: |
+| Interactive topology | 157 KiB | 33 KiB |
+| Graph Explorer | 429 KiB | 97 KiB |
 
 Self-contained pages embed the declared bundles before the runtime. Pages with
 shared assets name each bundle's file on the runtime's script tag instead; the
@@ -221,7 +231,15 @@ genitive month names. A zoomed window repeats the native calendar fit, so its
 dates, clock times and regular bar cadence read as a native preparation of that
 window would read.
 
+A numeric axis keeps its authored tick policy in a zoomed window: a fixed step,
+explicit tick values, minor grid lines and tick spacing bounds re-tick the window
+as native layout would (see [axis ticks and grids](axes.md)).
+
 These stay declined, each for a stated reason:
+
+- **Calendar tick steps, tick policies on a time axis, and alternating grid
+  bands.** The calendar fit above does not take an authored step, and bands are
+  painted between the prepared ticks; the page does not repaint either.
 
 - **Session and discretely spaced time axes.** Their positions come from the
   session closures or the ordinal/unit spacing of the source instants, and

@@ -136,6 +136,9 @@ if (window[Symbol.for('ChartForgeX.graphRuntime')]) {
         strokeColor: attr(el, 'data-edge-color'),
         labelColor: attr(el, 'data-edge-label-color'),
         strokeWidth: num(el, 'data-edge-width', 0),
+        hoverWidth: num(el, 'data-edge-hover-width', 0),
+        selectionWidth: num(el, 'data-edge-selection-width', 0),
+        arrowStyle: (attr(el, 'data-edge-arrows') || 'arrow,arrow,,1').split(','),
         physics: attr(el, 'data-edge-physics') !== 'false'
       };
     }).filter(edge => edge.source && edge.target);
@@ -194,10 +197,12 @@ if (window[Symbol.for('ChartForgeX.graphRuntime')]) {
     const fit = graphSurfaceFit(size, rect.width, rect.height), width = rect.width / fit.scale, height = rect.height / fit.scale;
     return root.__cfxGraphSurfaceFrame = { x: (size.width - width) / 2, y: (size.height - height) / 2, width, height, scale: fit.scale, pixelWidth: rect.width, pixelHeight: rect.height };
   };
-  const scenePoint = (root, event) => {
+  const graphPointerSurface = root => {
     const renderer = root.dataset.cfxGraphRendererActive || attr(root, 'data-cfx-graph-renderer');
-    const surface = root.querySelector(`[data-cfx-role="graph-${renderer === 'svg' ? 'scene' : renderer}"]`) || root.querySelector('.cfx-graph-stage') || root;
-    const rect = surface.getBoundingClientRect(), fit = graphSurfaceFit(sceneSize(root), rect.width, rect.height);
+    return root.querySelector(`[data-cfx-role="graph-${renderer === 'svg' ? 'scene' : renderer}"]`) || root.querySelector('.cfx-graph-stage') || root;
+  };
+  const scenePoint = (root, event) => {
+    const rect = graphPointerSurface(root).getBoundingClientRect(), fit = graphSurfaceFit(sceneSize(root), rect.width, rect.height);
     const sx = (event.clientX - rect.left - fit.offsetX) / fit.scale;
     const sy = (event.clientY - rect.top - fit.offsetY) / fit.scale;
     const current = viewport(root);

@@ -39,7 +39,8 @@
   const bindStageLayout = (root, stage, crosshair) => {
     bindResponsiveReadout(root);
     if (!stage || !hasFeature(root, 'Crosshair') && !hasFeature(root, 'KeyboardNavigation')) return;
-    let width = stage.clientWidth, height = stage.clientHeight;
+    // The first resize notification records the size, so binding reads no layout after the readout's card writes.
+    let width, height;
     let frame = 0;
     let observer;
     const hideGuide = () => hideCrosshair(root, crosshair);
@@ -71,7 +72,10 @@
     listenChart(root, stage, 'transitioncancel', finishViewport);
     listenChart(root, window, 'resize', queueRefresh);
     if (typeof ResizeObserver !== 'undefined') {
-      observer = new ResizeObserver(queueRefresh);
+      // The first notification repeats the size read at binding; only a change can move keyboard targets.
+      observer = new ResizeObserver(() => {
+        if (width === undefined) { width = stage.clientWidth; height = stage.clientHeight; } else if (width !== stage.clientWidth || height !== stage.clientHeight) queueRefresh();
+      });
       observer.observe(stage);
     }
     ownChartWork(root, () => { if (frame) cancelAnimationFrame(frame); observer?.disconnect(); });

@@ -26,8 +26,7 @@ internal sealed partial class VisualSceneBuilder {
                 || !int.TryParse(ordinal, NumberStyles.None, CultureInfo.InvariantCulture, out var seriesIndex)
                 || seriesIndex < 0 || seriesIndex >= chart.Series.Count) continue;
             var series = chart.Series[seriesIndex];
-            var metadata = new Dictionary<string, string>(StringComparer.Ordinal);
-            foreach (var entry in group.Metadata) metadata.Add(entry.Key, entry.Value);
+            var metadata = group.CopyMetadata();
             bool Number(string key, out double number) {
                 number = 0;
                 return metadata.TryGetValue(key, out var text) && double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out number)
