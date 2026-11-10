@@ -25,6 +25,11 @@ public sealed class AdditionalValueAxisTests {
         var context = VisualExportRequest.ForChart(chart).Context;
         var humidityColor = ChartSeriesColours.Resolve(chart.Series[2], 2, context.Theme.Resolve(context.ThemeMode));
         Assert.All(additional, text => Assert.Equal(humidityColor, text.Color));
+        // Every value axis on the stacked side reads alike: the secondary takes its own series colour; the left side stays neutral.
+        var supplyColor = ChartSeriesColours.Resolve(chart.Series[1], 1, context.Theme.Resolve(context.ThemeMode));
+        Assert.All(secondary, text => Assert.Equal(supplyColor, text.Color));
+        Assert.All(Texts(prepared, "axis-secondary-y-title"), text => Assert.Equal(supplyColor, text.Color));
+        Assert.DoesNotContain(Texts(prepared, "axis-y-label"), text => text.Color.Equals(supplyColor) || text.Color.Equals(humidityColor));
         Assert.Single(Texts(prepared, "axis-additional-y-title"));
 
         // 70 % is the authored top of the humidity axis and 30 % its bottom; the primary and secondary domains are far away.

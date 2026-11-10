@@ -96,7 +96,8 @@ internal static partial class VisualCartesianCompiler {
 
     /// <summary>Draws each shown additional axis in its stacked column and its coloured title in the side's title row.</summary>
     private static void DrawAdditionalAxes(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartRange range,
-        ChartRange? secondaryRange, bool secondaryShown, VisualThemeColors colors, ChartRect viewport, AxisLabelCache labels, ChartRect labelBounds, TextStyle style) {
+        ChartRange? secondaryRange, bool secondaryShown, VisualThemeColors colors, ChartRect viewport, AxisLabelCache labels, ChartRect labelBounds, TextStyle style,
+        ChartColor? primaryAccent, ChartColor? secondaryAccent) {
         if (labels.Additional.Count == 0) return;
         if (labels.Additional.Any(state => state.Axis.Visible && !state.Shown))
             builder.AddDiagnostic(new VisualDiagnostic("cartesian.additional-axis-omitted",
@@ -111,10 +112,10 @@ internal static partial class VisualCartesianCompiler {
             var offset = state.End ? rightOffset : leftOffset;
             if (offset > 0) offset += spacing;
             var edge = state.End ? plot.Right + offset : plot.Left - offset;
-            var axisStyle = style.Clone(); axisStyle.Color = state.Color;
-            var showLine = state.Axis.HasExplicitLine ? state.Axis.ShowLine : chart.Options.YAxis.ShowLine;
-            if (showLine) builder.Line(edge, plot.Top, edge, plot.Bottom, state.Color, context.Theme.AxisStrokeWidth,
-                role: "axis-additional-y", paint: VisualChartPaint.Stroke(state.Color, SvgColorRole.Axis));
+            var axisStyle = AccentStyle(style, state.Color);
+            // Every column on a stacked side follows the inner axis rule policy unless the added axis sets its own.
+            var showLine = state.Axis.HasExplicitLine ? state.Axis.ShowLine : state.End && secondaryShown ? chart.Options.SecondaryYAxis.ShowLine : chart.Options.YAxis.ShowLine;
+            if (showLine) DrawValueAxisRule(chart, context, builder, plot, range, state.Map!, state.Axis, edge, colors, "axis-additional-y", state.Color);
             var bounds = state.End ? new ChartRect(edge + spacing, viewport.Top, state.LabelWidth, viewport.Height)
                 : new ChartRect(edge - spacing - state.LabelWidth, viewport.Top, state.LabelWidth, viewport.Height);
             DrawAxisLabels(builder, chart.Options, state.Axis, labels.Ticks(state.Axis, state.Range.MinY, state.Range.MaxY), state.Map!.Y, false, state.End,
@@ -123,7 +124,7 @@ internal static partial class VisualCartesianCompiler {
             if (state.End) rightOffset = outer; else leftOffset = outer;
             columns.Add((state, offset, outer));
         }
-        DrawAdditionalTitles(chart, context, builder, plot, viewport, labelBounds, colors, columns, secondaryShown);
+        DrawAdditionalTitles(chart, context, builder, plot, viewport, labelBounds, colors, columns, secondaryShown, primaryAccent, secondaryAccent);
     }
 
     /// <summary>
@@ -131,7 +132,8 @@ internal static partial class VisualCartesianCompiler {
     /// the order of the columns. The primary or secondary title joins its side's row as the innermost entry.
     /// </summary>
     private static void DrawAdditionalTitles(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartRect viewport,
-        ChartRect labelBounds, VisualThemeColors colors, List<(AdditionalAxisState State, double Inner, double Outer)> columns, bool secondaryShown) {
+        ChartRect labelBounds, VisualThemeColors colors, List<(AdditionalAxisState State, double Inner, double Outer)> columns, bool secondaryShown,
+        ChartColor? primaryAccent, ChartColor? secondaryAccent) {
         var spacing = context.Theme.Spacing;
         var height = Math.Max(0, labelBounds.Top - viewport.Top - spacing);
         var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.FontWithWeight(context.Theme.Typography.AxisTitleWeight),
@@ -150,7 +152,7 @@ internal static partial class VisualCartesianCompiler {
             var entries = side.OrderByDescending(column => column.Outer)
                 .Select(column => (Text: column.State.Definition.Title, Color: (ChartColor?)column.State.Color, Role: "axis-additional-y-title")).ToList();
             var inner = end ? secondaryShown ? chart.SecondaryYAxisTitle : string.Empty : chart.Options.YAxis.Visible ? chart.YAxisTitle : string.Empty;
-            if (inner.Length > 0) entries.Add((inner, null, end ? "axis-secondary-y-title" : "axis-y-title"));
+            if (inner.Length > 0) entries.Add((inner, end ? secondaryAccent : primaryAccent, end ? "axis-secondary-y-title" : "axis-y-title"));
             var cursor = outerEdge;
             foreach (var entry in entries) {
                 var width = builder.MeasureText(entry.Text, titleStyle).Width;
@@ -161,6 +163,28 @@ internal static partial class VisualCartesianCompiler {
                 cursor = end ? cursor - width - spacing * 2 : cursor + width + spacing * 2;
             }
         }
+    }
+
+    /// <summary>The first series colour of the primary (start) or secondary (end) axis when its side also carries a shown added axis.</summary>
+    private static ChartColor? StackedSideAccent(Chart chart, AxisLabelCache labels, bool end, VisualThemeColors colors) {
+        if (!labels.Additional.Any(state => state.Shown && state.End == end)) return null;
+        var side = end ? ChartAxisSide.Secondary : ChartAxisSide.Primary;
+        for (var index = 0; index < chart.Series.Count; index++)
+            if (chart.Series[index].AdditionalValueAxis == null && chart.Series[index].ValueAxis == side) return Color(chart.Series[index], index, colors);
+        return null;
+    }
+
+    private static TextStyle AccentStyle(TextStyle style, ChartColor? accent) {
+        if (!accent.HasValue) return style;
+        var copy = style.Clone(); copy.Color = accent.Value;
+        return copy;
+    }
+
+    /// <summary>Draws a value-axis rule in its side accent; without one, the established neutral rule and crossing policy apply.</summary>
+    private static void DrawValueAxisRule(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartRange range,
+        ChartMapper map, ChartAxis axis, double edge, VisualThemeColors colors, string role, ChartColor? accent) {
+        if (!accent.HasValue || axis.RuleCrossAt.HasValue) { DrawAxisRule(chart, context, builder, plot, range, map, axis, false, edge, colors, role); return; }
+        builder.Line(edge, plot.Top, edge, plot.Bottom, accent.Value, context.Theme.AxisStrokeWidth, role: role, paint: VisualChartPaint.Stroke(accent.Value, SvgColorRole.Axis));
     }
 
     private static bool HasAdditionalTitles(AxisLabelCache labels, bool end) =>

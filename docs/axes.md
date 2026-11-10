@@ -109,7 +109,9 @@ value axis: bounds, scale, formatter, `WithTickStep`, `WithTickValues`, `WithTic
 ticks and `ConfigureGrid`. Only the primary axis draws grid lines by default; an additional axis
 draws its own grid, minor lines included, when its grid style asks for lines with
 `ConfigureGrid(grid => grid.WithLines(true))`. Captions, rule and title take the axis `Color`, or the
-colour of the first series bound to it, so a reader can match the axis to its line. Titles share the
+colour of the first series bound to it, so a reader can match the axis to its line. On a side that
+carries an added axis, the primary or secondary axis there takes its first series colour the same way,
+so every column on that side reads alike; a side without added axes stays neutral. Titles share the
 row above the plot in the same order as the columns, so the outermost title sits at the outer edge.
 
 Each column needs room. Columns are admitted inner to outer while their side stays within 35% of the
