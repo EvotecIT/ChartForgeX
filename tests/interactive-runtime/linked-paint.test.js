@@ -23,7 +23,7 @@ function element(classes = [], attributes = {}) {
 }
 function append(parent, child) { parent.children.push(child); child.parent = parent; return child; }
 const highlight = new Function(fragment('06-highlight-paint.js') + '\nreturn syncCartesianLinkedPaint;')();
-const availability = new Function(fragment('30-keyboard-navigation.js') + '\nreturn keyboardAvailabilityMutation;')();
+const availability = new Function('standaloneGlideNodes', fragment('30-keyboard-navigation.js') + '\nreturn keyboardAvailabilityMutation;')(new WeakSet());
 
 test('Cartesian legends follow foreground observations while only connected geometry gains series emphasis', () => {
   for (const kind of ['line', 'area', 'stepline', 'steparea', 'bar', 'scatter']) {
@@ -138,13 +138,14 @@ test('keyboard native availability changes coalesce to one frame and disposal ca
   root.isConnected = true; root.querySelector = () => stage;
   let changed, frame, refreshes = 0, cueRefreshes = 0, disconnected = 0, canceled = 0, cleanup;
   const window = { removeEventListener() {} };
-  class Observer { constructor(callback) { changed = callback; } observe() {} disconnect() { disconnected++; } }
+  class Observer { constructor(callback) { changed = callback; } observe() {} disconnect() { disconnected++; } takeRecords() { return []; } }
   const bind = new Function('MutationObserver', 'Element', 'window', 'chartLifetimes', 'composedAncestry', 'paintAvailabilityAttributes',
     'listenChart', 'ownChartWork', 'requestAnimationFrame', 'cancelAnimationFrame', 'refreshRootBranchHighlightAvailability', 'refreshSelectionCuePaint', 'hasFeature',
+    'standaloneGlideNodes',
     fragment('30-keyboard-navigation.js') + '\nreturn bindKeyboardNavigationAvailability;')(
       Observer, Object, window, { get: () => ({ disposed: false }) }, () => ({ ...ancestry, trees: [] }), ['class', 'width'],
       () => {}, (_root, release) => { cleanup = release; }, callback => { frame = callback; return 1; }, () => { canceled++; },
-      () => { refreshes++; }, () => { cueRefreshes++; }, () => false);
+      () => { refreshes++; }, () => { cueRefreshes++; }, () => false, new WeakSet());
   bind(root);
   const nativeChange = [{ type: 'attributes', target: mark, attributeName: 'width' }];
   changed(nativeChange); const firstFrame = frame;
