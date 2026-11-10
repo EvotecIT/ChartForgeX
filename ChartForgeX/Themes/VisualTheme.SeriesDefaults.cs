@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using ChartForgeX.Core;
 
@@ -9,19 +10,10 @@ public sealed partial class VisualTheme {
     private static readonly IReadOnlyDictionary<ChartSeriesKind, VisualSeriesDefaults> NoSeriesDefaults = new Dictionary<ChartSeriesKind, VisualSeriesDefaults>();
     private IReadOnlyDictionary<ChartSeriesKind, VisualSeriesDefaults> _seriesDefaults = NoSeriesDefaults;
 
-    /// <summary>Gets the series kinds this theme carries defaults for, in kind order.</summary>
-    public IReadOnlyList<ChartSeriesKind> SeriesDefaultKinds => _seriesDefaults.Keys.OrderBy(kind => kind).ToArray();
-
-    /// <summary>Gets an independent copy of the defaults for one series kind, or null when the theme has none.</summary>
-    /// <param name="kind">The series kind.</param>
-    public VisualSeriesDefaults? GetSeriesDefaults(ChartSeriesKind kind) => SeriesDefaultsSnapshot(kind)?.Clone();
-
-    /// <summary>Creates a theme whose defaults for one series kind are configured by <paramref name="configure"/>.</summary>
-    /// <param name="kind">The series kind, such as <see cref="ChartSeriesKind.Line"/>.</param>
-    /// <param name="configure">Edits a copy of the kind's current defaults.</param>
-    /// <exception cref="ArgumentException">A setting does not apply to the kind, such as markers on bars.</exception>
-    public VisualTheme WithSeriesDefaults(ChartSeriesKind kind, Action<VisualSeriesDefaults> configure) =>
-        Configure(builder => builder.ConfigureSeries(kind, configure));
+    /// <summary>Gets independent copies of the per-kind series defaults, keyed by series kind.</summary>
+    /// <remarks>Edit them through <see cref="Configure"/> and <see cref="VisualThemeBuilder.ConfigureSeries"/>; changing a copy does not change this theme.</remarks>
+    public IReadOnlyDictionary<ChartSeriesKind, VisualSeriesDefaults> SeriesDefaults =>
+        new ReadOnlyDictionary<ChartSeriesKind, VisualSeriesDefaults>(CopySeriesDefaults().ToDictionary(pair => pair.Key, pair => pair.Value));
 
     internal bool HasSeriesDefaults(ChartSeriesKind kind) => _seriesDefaults.ContainsKey(kind);
 

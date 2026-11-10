@@ -45,7 +45,7 @@ public sealed partial class VisualTheme {
     private void WriteSeriesDefaults(VisualArtifactInterchangeJsonWriter writer) {
         if (_seriesDefaults.Count == 0) return;
         writer.Property("series"); writer.StartObject();
-        foreach (var kind in SeriesDefaultKinds) {
+        foreach (var kind in _seriesDefaults.Keys.OrderBy(kind => kind)) {
             var defaults = _seriesDefaults[kind];
             writer.Property(CamelCase(kind.ToString())); writer.StartObject();
             if (defaults.StrokeWidth is { } width) WriteNumber(writer, "strokeWidth", width);

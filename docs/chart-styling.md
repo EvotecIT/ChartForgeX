@@ -76,9 +76,10 @@ precedence. Marker outlines remain independent.
 ## Theme defaults per series kind
 
 A theme can style every series of one kind, the way AG Charts `theme.overrides`
-does. Set them in code with `VisualTheme.WithSeriesDefaults` or
-`VisualThemeBuilder.ConfigureSeries`, or in the optional `series` object of a
-`schemaVersion: 1` theme file loaded with `VisualTheme.FromJson`:
+does. Set them in code with `VisualThemeBuilder.ConfigureSeries` inside
+`VisualTheme.Configure`, or in the optional `series` object of a
+`schemaVersion: 1` theme file loaded with `VisualTheme.FromJson`.
+`theme.SeriesDefaults` returns independent copies keyed by kind:
 
 ```json
 "series": {
@@ -94,11 +95,11 @@ does. Set them in code with `VisualTheme.WithSeriesDefaults` or
 ```
 
 ```csharp
-var theme = VisualTheme.Graphite().WithSeriesDefaults(ChartSeriesKind.Line, line => {
+var theme = VisualTheme.Graphite().Configure(builder => builder.ConfigureSeries(ChartSeriesKind.Line, line => {
     line.StrokeWidth = 3;
     line.Interpolation = ChartInterpolation.Smooth;
     line.ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Diamond; markers.Enabled = true; });
-});
+}));
 ```
 
 Keys are camel-case `ChartSeriesKind` names (`line`, `stepLine`, `area`,
