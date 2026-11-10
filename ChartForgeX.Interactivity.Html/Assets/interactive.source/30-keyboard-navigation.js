@@ -150,11 +150,14 @@
   const refreshKeyboardNavigation = (root, focused, passive = false, moved = null) => {
     // Viewport transition frames are not keyboard state: keep the targets of the final window. A glide that nothing
     // disturbed ends on the drawing those targets were read from, so they stand too.
-    const view = root._cfxStandaloneViewport, reused = (view?.motionTarget || view?.glideSettled) && root._cfxKeyboardNavigation?.targets;
+    const view = root._cfxStandaloneViewport;
+    let reused = (view?.motionTarget || view?.glideSettled) && root._cfxKeyboardNavigation?.targets;
     if (reused && view.glide) view.glideTouched = true;
     // A full refresh, or a glide's closing paint whose targets stand, accounts for every paint change made so far,
     // so the availability watch need not queue another.
     const viewportOnly = (!reused || view.glideSettled) && root._cfxSettleAvailability?.(moved) === true;
+    // A closing paint that took another pending change reads every target again, as the watch would have.
+    if (reused && view.glideSettled && !viewportOnly) reused = null;
     refreshRootBranchHighlightAvailability(root);
     refreshSelectionCuePaint(root);
     const state = root._cfxKeyboardNavigation;
