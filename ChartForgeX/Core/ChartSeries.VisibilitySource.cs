@@ -49,7 +49,7 @@ public sealed partial class ChartSeries {
             model.RestoreVisibilityFinancial(source, selected);
         }
         if (source.StrokeWidth.HasValue) model.StrokeWidth = source.StrokeWidth.Value;
-        model.StrokeStyle = source.StrokeStyle;
+        model.StrokeStyle = source.StrokeStyle; model.StrokeSegments.AddRange(source.StrokeSegments);
         model.StackGroup = source.StackGroup; model.NormalizedTo = source.NormalizedTo; model.StackedAreaMissingData = source.StackedAreaMissingData;
         model.RadialBand = source.RadialBand;
         if (source.Kind == ChartSeriesKind.BoxPlot) {

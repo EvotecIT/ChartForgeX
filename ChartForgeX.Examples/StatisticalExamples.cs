@@ -185,6 +185,31 @@ internal static class StatisticalExamples {
 
         SaveChart(forecastInterval, "forecast-interval-rangearea-light");
 
+        // One series carries actuals and forecast; its stroke turns dashed at the last actual month.
+        const double lastActual = 7;
+        var demand = ChartSeries.CreateLine(new ChartSeriesId("demand"), "Demand",
+                Points(412, 436, 451, 447, 472, 498, 506, 521, 538, 552, 570, 589), ChartColor.FromRgb(37, 99, 235))
+            .WithStrokeStyleFrom(lastActual, new ChartStrokeStyle(dash: new[] { 6d, 5d }));
+        var actualForecast = Chart.Create()
+            .WithTitle("Actual and Forecast")
+            .WithSubtitle("Demand is solid through July and dashed where the forecast takes over")
+            .WithXAxis("Month")
+            .WithYAxis("Orders")
+            .WithTheme(VisualTheme.Graphite())
+            .WithSize(800, 484)
+            .WithXLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+            .AddRangeArea("80% interval", new[] {
+                new ChartRangeBand(7, 506, 506),
+                new ChartRangeBand(8, 509, 533),
+                new ChartRangeBand(9, 517, 559),
+                new ChartRangeBand(10, 523, 581),
+                new ChartRangeBand(11, 533, 607),
+                new ChartRangeBand(12, 543, 635)
+            }, ChartColor.FromRgb(147, 197, 253))
+            .AddSeries(demand);
+
+        SaveChart(actualForecast, "actual-forecast-segmented-line-light");
+
         var remediationLift = Chart.Create()
             .WithTitle("Remediation Lift")
             .WithSubtitle("Dumbbells compare before and after values")

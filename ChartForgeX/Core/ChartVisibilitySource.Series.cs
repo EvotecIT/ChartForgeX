@@ -22,7 +22,7 @@ internal sealed partial class ChartVisibilitySource {
             PointFills = new System.Collections.ObjectModel.ReadOnlyDictionary<int, ChartFill>(new Dictionary<int, ChartFill>(source.PointFillOverrides));
             Id = source.Id; Name = source.Name; MarkOptions = source.MarkOptions; RowOptions = source.RowOptions; Kind = source.Kind; Color = source.Color; State = source.StateRole; Pattern = source.FillPattern;
             ValueAxis = source.ValueAxis; ShowInLegend = source.ShowInLegend; SemanticRole = source.SemanticRole; Labels = source.ShowDataLabels; Placement = source.DataLabelPlacement;
-            StrokeWidth = source.HasExplicitStrokeWidth ? source.StrokeWidth : null; StrokeStyle = source.StrokeStyle;
+            StrokeWidth = source.HasExplicitStrokeWidth ? source.StrokeWidth : null; StrokeStyle = source.StrokeStyle; StrokeSegments = Array.AsReadOnly(source.StrokeSegments.ToArray());
             Interpolation = source.Interpolation; Step = source.StepPosition;
             StackGroup = source.StackGroup; NormalizedTo = source.NormalizedTo; StackedAreaMissingData = source.StackedAreaMissingData;
             _labelStyle = source.DataLabelStyle.Clone(); _markers = source.Markers.Clone();
@@ -66,6 +66,7 @@ internal sealed partial class ChartVisibilitySource {
         internal ChartDataLabelPlacement? Placement { get; }
         internal double? StrokeWidth { get; }
         internal ChartStrokeStyle? StrokeStyle { get; }
+        internal IReadOnlyList<ChartStrokeSegment> StrokeSegments { get; }
         internal ChartInterpolation Interpolation { get; }
         internal ChartStepPosition Step { get; }
         internal string? StackGroup { get; }

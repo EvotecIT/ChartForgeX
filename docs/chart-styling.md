@@ -73,6 +73,26 @@ creates a dashed forecast. Stroke style width overrides `StrokeWidth`, then the
 family/theme width. Radar and polar family outlines retain their more specific
 precedence. Marker outlines remain independent.
 
+A series that holds actuals and forecast in one line changes its stroke from a
+source X onward:
+
+```csharp
+demand.WithStrokeStyleFrom(lastActualX, new ChartStrokeStyle(dash: new[] { 6d, 5d }));
+```
+
+Each `ChartStrokeSegment` in `StrokeSegments` runs from its `FromX` (numeric or
+`DateTime`) to the next one; stroke before the first uses `StrokeStyle`. Unset
+color, width and dash inherit the series style, and opacity multiplies it. The
+stroke is cut exactly at `FromX`, including inside a spline curve or a step
+tread, so the solid and dashed pieces meet without a gap and the dash starts at
+the join. Line, step-line, area, step-area and stacked-area series support
+segments (area segments restyle the outline, not the fill); other kinds reject
+them during preparation. Markers, fills and labels are unchanged. The legend key
+shows the series style followed by the first segment's dash, and a saved
+interactive report keeps both pieces joined when it zooms or pans. The
+[actual-and-forecast example](../ChartForgeX.Examples/StatisticalExamples.cs)
+adds a widening interval band after the last actual.
+
 ## Labels and tooltip text
 
 `ChartValueContext` exposes the scalar `Value`, category caption, series facts,

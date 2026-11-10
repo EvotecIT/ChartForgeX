@@ -208,6 +208,7 @@ internal static partial class ChartGuards {
     private static void ValidateSeriesShape(ChartSeries series, bool preparing, ChartOptions options) {
         series.ValidateWaterfall();
         series.ValidateInterpolation();
+        series.ValidateStrokeSegments();
         series.ValidateMarkerAndRadarOptions();
         series.ValidatePolarOptions();
         series.ValidateFinancialOptions();

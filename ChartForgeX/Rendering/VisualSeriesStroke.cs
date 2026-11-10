@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
@@ -28,8 +29,43 @@ internal static class VisualSeriesStroke {
     }
 
     internal static void DrawPath(Chart chart, VisualSceneBuilder builder, ChartSeries series, ChartPath path,
+        ChartColor color, SvgPaint paint, double fallbackWidth, string role, double[]? dash = null, bool close = false, bool layered = true) =>
+        DrawPath(chart, builder, Style(series), path, color, paint, fallbackWidth, role, dash, close, layered);
+
+    // Strokes a connected series path, restyling each stroke segment from its source X onward. sourceX projects a source X
+    // onto the physical category axis: X for vertical charts, Y for horizontal ones.
+    internal static void DrawSegmentedPath(Chart chart, VisualSceneBuilder builder, ChartSeries series, ChartPath path,
+        ChartColor color, SvgPaint paint, double fallbackWidth, string role, Func<double, double> sourceX, bool horizontal) {
+        var styles = SegmentStyles(series);
+        if (styles.Length == 1) { DrawPath(chart, builder, styles[0].Style, path, color, paint, fallbackWidth, role); return; }
+        var boundaries = new double[styles.Length - 1];
+        for (var index = 1; index < styles.Length; index++) boundaries[index - 1] = sourceX(styles[index].FromX);
+        var origin = styles[1].FromX;
+        var descending = sourceX(origin + 1) < sourceX(origin);
+        // Each piece is an independent path: its dash starts at the join and standalone zoom reprojects both ends identically.
+        var pieces = (horizontal ? path.Transpose() : path).PartitionX(boundaries, descending);
+        for (var index = 0; index < pieces.Length; index++)
+            if (pieces[index].Commands.Count > 0)
+                DrawPath(chart, builder, styles[index].Style, horizontal ? pieces[index].Transpose() : pieces[index], color, paint, fallbackWidth, role);
+    }
+
+    /// <summary>Returns the series style followed by each segment's merged style in source order.</summary>
+    internal static (double FromX, ChartStrokeStyle? Style)[] SegmentStyles(ChartSeries series) {
+        var general = Style(series);
+        var result = new (double, ChartStrokeStyle?)[series.StrokeSegments.Count + 1];
+        result[0] = (double.NegativeInfinity, general);
+        var ordered = series.StrokeSegments.Select((segment, order) => (segment, order))
+            .OrderBy(item => item.segment.FromX).ThenBy(item => item.order).ToArray();
+        for (var index = 0; index < ordered.Length; index++) {
+            var specific = ordered[index].segment.Style;
+            result[index + 1] = (ordered[index].segment.FromX, new ChartStrokeStyle(specific.Color ?? general?.Color, specific.Width ?? general?.Width,
+                specific.Opacity * (general?.Opacity ?? 1), specific.Dash ?? general?.Dash));
+        }
+        return result;
+    }
+
+    private static void DrawPath(Chart chart, VisualSceneBuilder builder, ChartStrokeStyle? style, ChartPath path,
         ChartColor color, SvgPaint paint, double fallbackWidth, string role, double[]? dash = null, bool close = false, bool layered = true) {
-        var style = Style(series);
         var width = style?.Width ?? fallbackWidth;
         if (width <= 0 || style?.Opacity == 0) return;
         var actual = Resolve(style, color, paint);
