@@ -420,6 +420,9 @@
 
 .cfx-responsive-legend { margin-block: 4px 8px; font-family: var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif)); }
 .cfx-responsive-legend__item { border-color: transparent; border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px)); }
+/* Tray rows flow as touch-sized flex rows; the extra class outranks the shared .cfx-tool box. */
+.cfx-interactive-chart .cfx-responsive-legend .cfx-responsive-legend__item { display: inline-flex; align-items: center; gap: 8px; box-sizing: border-box; min-width: 0; max-width: 100%; padding: 4px 6px; font: inherit; font-size: 12px; line-height: 18px; text-align: start; }
+.cfx-responsive-legend__item > svg { flex: 0 0 12px; }
 .cfx-responsive-legend__item > span { min-width: 0; overflow-wrap: anywhere; }
 .cfx-responsive-legend__value { margin-inline-start: auto; color: var(--cfx-tooltip-muted); font-variant-numeric: tabular-nums; }
 /* Every entry shares one unboxed style; a hidden series dims its label and hollows its marker. */

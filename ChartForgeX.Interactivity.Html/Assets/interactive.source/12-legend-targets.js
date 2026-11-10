@@ -109,9 +109,8 @@
     // Each tray row copies its source's key colour beside real HTML text, so labels stay crisp at any device scale.
     const trayItem = (source, tag, selector, text) => {
       const item = document.createElement(tag); item.className = 'cfx-responsive-legend__item';
-      item.style.cssText = 'display:inline-flex;align-items:center;gap:8px;box-sizing:border-box;min-width:0;max-width:100%;padding:4px 6px;font:inherit;font-size:12px;line-height:18px;text-align:start';
       const swatch = document.createElementNS(ns, 'svg'); swatch.setAttribute('width', '12'); swatch.setAttribute('height', '12');
-      swatch.setAttribute('viewBox', '0 0 12 12'); swatch.setAttribute('aria-hidden', 'true'); swatch.style.flex = '0 0 12px';
+      swatch.setAttribute('viewBox', '0 0 12 12'); swatch.setAttribute('aria-hidden', 'true');
       const mark = document.createElementNS(ns, 'rect'); mark.setAttribute('x', '1'); mark.setAttribute('y', '1');
       mark.setAttribute('width', '10'); mark.setAttribute('height', '10'); mark.setAttribute('data-cfx-role', 'legend-swatch');
       const nativeSwatch = source.querySelector(selector);
@@ -125,7 +124,7 @@
       swatch.appendChild(mark);
       const label = document.createElement('span'); label.className = 'cfx-responsive-legend__label';
       label.dataset.cfxRole = 'legend-label'; label.textContent = text;
-      label.style.overflowWrap = 'anywhere'; tray.appendChild(item).append(swatch, label);
+      tray.appendChild(item).append(swatch, label);
       return item;
     };
     const entries = sources.map(source => {
