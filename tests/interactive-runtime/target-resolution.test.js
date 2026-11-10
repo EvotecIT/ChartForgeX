@@ -45,7 +45,7 @@ function fixture() {
   const unchanged = () => JSON.stringify({ nodes: nodes.map(node => node.dataset), selected: nodes.map(node =>
     [node.classList.contains('cfx-selected'), node.classList.contains('cfx-highlighted')]), root: root.dataset });
   const runtime = ['00-bootstrap-targets', '00-bootstrap-tooltip', '02-tooltip-format', '02-tooltip-content', '40-selection-hover-sync', '42-host-commands', '90-chart-api']
-    .map(source).join('\n');
+    .map(name => source(name) + (name === '00-bootstrap-targets' ? '\nconst chartTargets = root => interactiveTargets(root);' : '')).join('\n'); // No chart model: callers scan their targets.
   new Function('window', 'document', 'chartLifetimes', 'mountedCharts', 'readChartSection', 'readAdaptiveLayout',
     'nextChartSceneRevision', 'prepareAdaptiveRoot', 'bindChart', 'bindAdaptiveLayout', 'watchChartLifetimes',
     'releaseChartLifetime', 'emitHostEvent', 'emitSync', 'rememberNativeDrawingSnapshot', 'enterChart', 'prefetchChartFeatures', runtime)(window, document, lifetimes, mounted,

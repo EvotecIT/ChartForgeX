@@ -20,12 +20,16 @@
     }
     return model.data;
   };
+  // A repaint that moves every mark drops the model first, so its observer records none of those writes.
+  const dropChartModel = root => { const model = chartModels.get(root); if (model?.data) { model.observer.disconnect(); model.data = null; } };
   // Without a live model (before binding or after disposal) every read builds its facts afresh.
   const modelled = (root, name, build) => {
     const model = chartModel(root);
     return model ? model[name] ||= build() : build();
   };
   // Chrome lookups outside the drawing would otherwise search every mark of a dense chart on each pointer move.
+  // Interactive targets, read once per drawing instead of once per caller: binding alone asks several times.
+  const chartTargets = root => modelled(root, 'targets', () => interactiveTargets(root));
   const chartNodes = (root, selector) => modelled(root, selector, () => Array.from(root.querySelectorAll(selector)));
   const modelGroups = (nodes, keys) => {
     const groups = new Map();
@@ -34,7 +38,7 @@
   };
   // Hover lookups by target identity, point and label: the only facts besides the series that relate a node to a target.
   const hoverGroups = root => modelled(root, 'hover', () => {
-    const nodes = modelled(root, 'targets', () => interactiveTargets(root));
+    const nodes = chartTargets(root);
     return {
       identity: modelGroups(nodes, node => { const kind = renderedTargetKind(node); return [kind + '\n' + renderedTargetId(node, kind)]; }),
       point: modelGroups(nodes, node => node.dataset.cfxPoint === undefined ? [] : [node.dataset.cfxPoint]),

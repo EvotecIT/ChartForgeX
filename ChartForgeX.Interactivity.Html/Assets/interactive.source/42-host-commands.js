@@ -1,7 +1,7 @@
 
   const isDataTarget = node => isInteractiveTarget(node) && renderedTargetKind(node) !== 'legend'
     && (renderedTargetKind(node) !== 'series' || node.dataset.cfxValue !== undefined);
-  const dataTargets = root => interactiveTargets(root).filter(isDataTarget);
+  const dataTargets = root => chartTargets(root).filter(isDataTarget);
   const targetCategory = node => {
     const data = node.dataset || {};
     return data.cfxXLabel ?? data.cfxCategoryLabel ?? data.cfxCategory

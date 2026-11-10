@@ -67,9 +67,11 @@
         applyInteractionState(root, detail.snapshot || detail.state || detail, true, detail.sync);
       });
     }
-    prepareKeyboardNavigation(root);
+    // The readout settles the card and toolbar first, so the keyboard watch starts from the laid-out chart rather than
+    // refreshing every stop for those writes in the next frame.
     bindStageLayout(root, stage, crosshair);
-    const targets = Array.from(new Set([...interactiveTargets(root),
+    prepareKeyboardNavigation(root);
+    const targets = Array.from(new Set([...chartTargets(root),
       ...root.querySelectorAll('[data-cfx-role="legend-native"],[data-cfx-role="legend-proxy"]')]));
     // A pointer moving straight onto another target hands the hover over: leaving keeps the chart's shared hover
     // state for the entering target to settle, because clearing and re-adding it restyles every mark.

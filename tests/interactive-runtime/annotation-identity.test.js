@@ -35,7 +35,8 @@ function fixture() {
     regions: nodes.map(node => ({ id: node.dataset.cfxSourceId, role: 'annotation' })) });
   const document = { querySelectorAll: () => [] }, window = {};
   const runtime = ['00-bootstrap-targets', '00-bootstrap-tooltip', '01-annotation-identity', '05-prepared-targets',
-    '40-selection-hover-sync', '42-host-commands', '60-scenarios', '85-chart-update'].map(source).join('\n');
+    '40-selection-hover-sync', '42-host-commands', '60-scenarios', '85-chart-update'].map(source).join('\n')
+    + '\nconst chartTargets = root => interactiveTargets(root);'; // No chart model: callers scan their targets.
   const api = new Function('window', 'document', 'return ' + runtime + `
     return { annotationCatalog, prepareChartTargets, targetIdentity, targetKey, matchesTargetIdentity,
       selectionTargetBatch, durableChartTarget, projectHostHighlight, resolveHostTargets, scenarioTargets };
