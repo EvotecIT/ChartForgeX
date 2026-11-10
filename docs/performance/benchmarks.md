@@ -74,16 +74,19 @@ Before and after pages ran interleaved in one browser; best of three loads.
 
 | Line | Ready before | Ready after | Hover p95 before | Hover p95 after | Zoom before | Zoom after |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1,000, zoom | 158 ms | 126 ms | 65 ms | 51 ms | 349 ms | 349 ms |
-| 1,000, review | 291 ms | 174 ms | 83 ms | 81 ms | 381 ms | 364 ms |
-| 10,000, zoom | 1,331 ms | 764 ms | 362 ms | 349 ms | 615 ms | 566 ms |
-| 10,000, review | 2,108 ms | 1,430 ms | 495 ms | 483 ms | 880 ms | 730 ms |
-| 50,000, zoom | 6,042 ms | 4,136 ms | 71 ms | 88 ms | 1,912 ms | 1,525 ms |
-| 50,000, review | 9,610 ms | 8,221 ms | 117 ms | 117 ms | 3,675 ms | 1,947 ms |
+| 1,000, zoom | 126 ms | 111 ms | 80 ms | 78 ms | 361 ms | 358 ms |
+| 1,000, review | 228 ms | 176 ms | 51 ms | 51 ms | 366 ms | 347 ms |
+| 10,000, zoom | 958 ms | 919 ms | 432 ms | 301 ms | 615 ms | 515 ms |
+| 10,000, review | 1,897 ms | 1,411 ms | 394 ms | 399 ms | 782 ms | 632 ms |
+| 50,000, zoom | 8,602 ms | 3,481 ms | 96 ms | 158 ms | 2,096 ms | 1,432 ms |
+| 50,000, review | 9,750 ms | 6,376 ms | 88 ms | 148 ms | 2,767 ms | 2,107 ms |
 
 Measured on 10 November 2026 on the machine above while other builds kept it
-75–100% busy, so the pairs compare and the absolute values run high. Ready
-includes parsing the saved page, 10 MB at 10,000 points and 45 MB at 50,000.
+65–100% busy, so the pairs compare and the absolute values run high; single
+loads vary by up to a third. Ready includes parsing the saved page, 10 MB at
+10,000 points and 45 MB at 50,000. Median hover at 10,000 points fell from
+232 ms to 83 ms (zoom) and from 249 ms to 130 ms (review); a repeat of the
+50,000-point zoom page measured hover p95 at 68 ms before and 84 ms after.
 
 Binding cost one style pass per readout write: the card and toolbar tokens were
 inherited custom properties, so each write restyled every mark. They no longer
@@ -93,7 +96,14 @@ pauses the change watches while it moves every mark. What remains at 50,000
 points is proportional to the marks the runtime adds per observation, a hit area
 and a hover marker: rewriting their geometry and restyling them take about
 0.7 s each, and refreshing tens of thousands of keyboard stops about 0.5 s.
-Hover on 10,000 points takes about 0.3 s per move, mostly restyling marks.
+
+Leaving a mark for the drawing now hands the hover to the stage readout instead
+of clearing the chart's hover state and setting it again, which restyled every
+hover marker. The hover tail at 10,000 points comes from crossing the line
+itself: entering the series target sets cfx-hovered on the series group, whose
+inherited stroke-width and descendant marker rules restyle all of its marks,
+and the hover mode then switches between series and shared, toggling
+cfx-hover-series on every observation. Each crossing costs about 0.1–0.2 s.
 
 ## Guards in the test suite
 
