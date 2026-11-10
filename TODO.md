@@ -21,7 +21,7 @@ Workstreams can run in parallel where they don't share owners. One coherent PR p
 
 AG Charts lets a caller style any datum, format any label and theme every series type. I want the same reach through our typed API.
 
-- [ ] **More secondary axes.** More than one secondary axis per side where the layout allows. Done when an example shows two value axes on one side and existing single-axis layouts are unchanged.
+Per-segment stroke styles for forecasts, theme defaults per series kind, legend control (custom entries, key shape and size, value formatting) and stacked value axes have landed; see [chart styling](docs/chart-styling.md), [legends](docs/legends.md) and [axes](docs/axes.md).
 
 ## 2. Standalone browser interactivity
 

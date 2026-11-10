@@ -158,6 +158,7 @@ internal static partial class VisualCartesianCompiler {
         if (chart.Options.YAxis.Visible) FitGeneratedAxisTicks(builder, chart.Options.YAxis, range.MinY, range.MaxY, plot.Height, false, style, spacing, chart.Options.ValueFormatter, labels);
         if (secondaryRange != null && chart.Options.SecondaryYAxis.Visible)
             FitGeneratedAxisTicks(builder, chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY, plot.Height, false, style, spacing, chart.Options.ValueFormatter, labels);
+        FitAdditionalAxisTicks(chart, builder, plot, style, spacing, labels);
     }
 
     /// <summary>
@@ -174,6 +175,7 @@ internal static partial class VisualCartesianCompiler {
         }
         SnapY(chart.Options.YAxis, range);
         if (secondaryRange != null) SnapY(chart.Options.SecondaryYAxis, secondaryRange);
+        foreach (var state in labels.Additional) SnapY(state.Axis, state.Range);
         if (chart.Series.Count > 0 && chart.Series.All(series => series.Kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble)) {
             SnapX(chart.Options.XAxis, range);
             if (secondaryRange != null) secondaryRange.SetXBounds(range.MinX, range.MaxX);
@@ -209,19 +211,24 @@ internal static partial class VisualCartesianCompiler {
         if (chart.Options.IsSparkline) return;
         if (horizontal) { labels.SnapAxes.Add(HorizontalAxes(chart, labels).Value); labels.SnapAxes.Add(chart.Options.SecondaryXAxis); return; }
         labels.SnapAxes.Add(chart.Options.YAxis); labels.SnapAxes.Add(chart.Options.SecondaryYAxis);
+        foreach (var state in labels.Additional) labels.SnapAxes.Add(state.Axis);
         if (chart.Series.Count > 0 && chart.Series.All(series => series.Kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble)) labels.SnapAxes.Add(chart.Options.XAxis);
     }
 
     /// <summary>Marks value axes whose observations are all whole numbers so their generated ticks stay whole.</summary>
     private static void CollectCountAxes(Chart chart, AxisLabelCache labels, bool horizontal) {
         foreach (var side in new[] { ChartAxisSide.Primary, ChartAxisSide.Secondary }) {
-            var series = chart.Series.Where(item => item.ValueAxis == side && item.RenderPoints.Count > 0).ToArray();
+            var series = chart.Series.Where(item => item.ValueAxis == side && item.AdditionalValueAxis == null && item.RenderPoints.Count > 0).ToArray();
             if (series.Length == 0) continue;
             var values = series.SelectMany(item => item.Kind == ChartSeriesKind.Bubble
                 ? item.RenderPoints.Where((_, index) => index % 2 == 0).Select(point => point.Y) : item.RenderPoints.Select(point => point.Y));
             if (!ChartValueAxisRange.IsCountData(values)) continue;
             labels.CountAxes.Add(horizontal ? side == ChartAxisSide.Primary ? HorizontalAxes(chart, labels).Value : chart.Options.SecondaryXAxis
                 : side == ChartAxisSide.Primary ? chart.Options.YAxis : chart.Options.SecondaryYAxis);
+        }
+        foreach (var state in labels.Additional) {
+            var values = chart.Series.Where(item => ReferenceEquals(item.AdditionalValueAxis, state.Definition)).SelectMany(item => item.RenderPoints.Select(point => point.Y)).ToArray();
+            if (values.Length > 0 && ChartValueAxisRange.IsCountData(values)) labels.CountAxes.Add(state.Axis);
         }
     }
 
