@@ -73,6 +73,69 @@ creates a dashed forecast. Stroke style width overrides `StrokeWidth`, then the
 family/theme width. Radar and polar family outlines retain their more specific
 precedence. Marker outlines remain independent.
 
+## Theme defaults per series kind
+
+A theme can style every series of one kind, the way AG Charts `theme.overrides`
+does. Set them in code with `VisualTheme.WithSeriesDefaults` or
+`VisualThemeBuilder.ConfigureSeries`, or in the optional `series` object of a
+`schemaVersion: 1` theme file loaded with `VisualTheme.FromJson`:
+
+```json
+"series": {
+  "line": {
+    "strokeWidth": 3,
+    "curve": "smooth",
+    "dash": [6, 3],
+    "marker": { "shape": "diamond", "radius": 4.5, "enabled": true, "strokeWidth": 1.5 },
+    "dataLabel": { "fontSize": 11, "fontWeight": "600", "color": "#334155" }
+  },
+  "bar": { "cornerRadius": 10, "dataLabel": { "fontWeight": "700" } }
+}
+```
+
+```csharp
+var theme = VisualTheme.Graphite().WithSeriesDefaults(ChartSeriesKind.Line, line => {
+    line.StrokeWidth = 3;
+    line.Interpolation = ChartInterpolation.Smooth;
+    line.ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Diamond; markers.Enabled = true; });
+});
+```
+
+Keys are camel-case `ChartSeriesKind` names (`line`, `stepLine`, `area`,
+`horizontalBar`, `rangeBar` and so on). Curves are `linear`, `smooth` or `step`;
+marker shapes are the `ChartMarkerShape` names. An unknown kind, curve or shape
+fails, and so does a setting the kind never draws: markers on bars, a curve on a
+scatter, or a corner radius on anything other than bar, horizontal bar, range bar
+and waterfall marks. Bubbles keep their size scale, so their marker radius is
+rejected too. `ToJson` writes the object only when the theme has defaults, so
+existing theme files and exports are unchanged.
+
+Precedence, from highest to lowest:
+
+1. An explicit series setting: `StrokeWidth`, `StrokeStyle` (width and dash),
+   `Markers` fields, `Interpolation` or a step position, and `DataLabelStyle`
+   fields. Each field wins on its own, so a series that only sets a marker radius
+   still takes the theme's marker shape.
+2. Explicit chart settings that already sit above the theme: chart-level
+   `DataLabelStyle` fields and an authored bar corner radius.
+3. The theme's defaults for the series kind.
+4. The global theme: `SeriesStrokeWidth`, `MarkerRadius`, `BarRadius` and the
+   typography scale.
+5. The family's built-in default.
+
+Per-kind defaults resolve once, when a chart is prepared, into a detached view of
+each affected series. Renderers read ordinary series settings, so SVG, native PNG
+and the HTML runtime agree. The authored series is never changed.
+
+These defaults live in the ChartForgeX theme format rather than the generated
+HtmlForgeX token document (`VisualTheme.FromPaletteJson`). That document carries
+shared brand colours, typography and radii for several products; series-kind
+styling is specific to ChartForgeX charts.
+
+`ConfigurabilityExamples.cs` loads
+[`series-defaults.theme.json`](../ChartForgeX.Examples/Assets/Themes/series-defaults.theme.json)
+and renders `theme-series-defaults-line-*` and `theme-series-defaults-bar-*`.
+
 ## Labels and tooltip text
 
 `ChartValueContext` exposes the scalar `Value`, category caption, series facts,
