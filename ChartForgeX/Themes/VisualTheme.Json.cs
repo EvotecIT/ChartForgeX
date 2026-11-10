@@ -21,6 +21,8 @@ public sealed partial class VisualTheme {
     /// Optional <c>geometry.gaugeStrokeWidth</c> and <c>geometry.gaugeBandWidth</c> default to 14 and 4 logical units.
     /// Optional <c>effects.cardShadowOpacity</c> and <c>effects.cardShadowColor</c> retain native card shadows;
     /// omitted effects keep the default flat frame. Shadows use available authored padding without moving content.
+    /// Optional <c>series</c> holds defaults per series kind, keyed by camel-case kind name such as <c>line</c> or
+    /// <c>bar</c>: <c>strokeWidth</c>, <c>dash</c>, <c>curve</c>, <c>cornerRadius</c>, <c>marker</c> and <c>dataLabel</c>.
     /// </remarks>
     /// <param name="json">The case-sensitive versioned theme document, at most one MiB of characters.</param>
     /// <returns>An immutable theme snapshot.</returns>
@@ -54,7 +56,7 @@ public sealed partial class VisualTheme {
             effects.TryGetValue("cardShadowColor", out var shadow) ? Hex(shadow.AsString("effects.cardShadowColor"), "cardShadowColor") : null,
             OptionalNumber(geometry, "gaugeStrokeWidth", "geometry", 14), OptionalNumber(geometry, "gaugeBandWidth", "geometry", 4),
             OptionalNumber(geometry, "plotRadius", "geometry", Number(geometry, "barRadius", "geometry")),
-            OptionalNumber(geometry, "maximumBarWidth", "geometry", 64));
+            OptionalNumber(geometry, "maximumBarWidth", "geometry", 64)).AttachSeriesDefaults(ReadSeriesDefaults(root));
     }
 
     /// <summary>Exports the complete paired color, typography and geometry theme using schemaVersion 1.</summary>
@@ -87,7 +89,9 @@ public sealed partial class VisualTheme {
         writer.EndObject();
         writer.Property("effects"); writer.StartObject();
         WriteNumber(writer, "cardShadowOpacity", CardShadowOpacity); WriteColor(writer, "cardShadowColor", CardShadowColor);
-        writer.EndObject(); writer.EndObject();
+        writer.EndObject();
+        WriteSeriesDefaults(writer);
+        writer.EndObject();
         string json = writer.ToString();
         if (json.Length > MaximumThemeJsonCharacters) throw new ArgumentException("Theme JSON exceeds the maximum supported size.");
         // Exported documents must obey the same aggregate, array and depth budgets as imported documents.

@@ -23,7 +23,7 @@ internal sealed partial class ChartVisibilitySource {
             Id = source.Id; Name = source.Name; MarkOptions = source.MarkOptions; RowOptions = source.RowOptions; Kind = source.Kind; Color = source.Color; State = source.StateRole; Pattern = source.FillPattern;
             ValueAxis = source.ValueAxis; ShowInLegend = source.ShowInLegend; SemanticRole = source.SemanticRole; Labels = source.ShowDataLabels; Placement = source.DataLabelPlacement;
             StrokeWidth = source.HasExplicitStrokeWidth ? source.StrokeWidth : null; StrokeStyle = source.StrokeStyle;
-            Interpolation = source.Interpolation; Step = source.StepPosition;
+            Interpolation = source.Interpolation; ExplicitInterpolation = source.HasExplicitInterpolation; Step = source.StepPosition;
             StackGroup = source.StackGroup; NormalizedTo = source.NormalizedTo; StackedAreaMissingData = source.StackedAreaMissingData;
             _labelStyle = source.DataLabelStyle.Clone(); _markers = source.Markers.Clone();
             CaptureHierarchy(source);
@@ -67,6 +67,7 @@ internal sealed partial class ChartVisibilitySource {
         internal double? StrokeWidth { get; }
         internal ChartStrokeStyle? StrokeStyle { get; }
         internal ChartInterpolation Interpolation { get; }
+        internal bool ExplicitInterpolation { get; }
         internal ChartStepPosition Step { get; }
         internal string? StackGroup { get; }
         internal double? NormalizedTo { get; }

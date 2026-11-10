@@ -87,10 +87,10 @@ public sealed partial class VisualTheme {
     public static VisualTheme Graphite() => Default.Value;
     /// <summary>Creates an independent paired theme with the supplied typography and the same colors, geometry and effects.</summary>
     /// <param name="typography">The complete font scale to use for the new theme.</param>
-    public VisualTheme WithTypography(VisualTypography typography) => new(_light.ToTokens(), _dark.ToTokens(),
+    public VisualTheme WithTypography(VisualTypography typography) => new VisualTheme(_light.ToTokens(), _dark.ToTokens(),
         typography ?? throw new ArgumentNullException(nameof(typography)), Spacing, SeriesStrokeWidth, MarkerRadius,
         AreaOpacity, BarRadius, GridStrokeWidth, AxisStrokeWidth, CardRadius, CardShadowOpacity, CardShadowColor,
-        GaugeStrokeWidth, GaugeBandWidth, PlotRadius, MaximumBarWidth);
+        GaugeStrokeWidth, GaugeBandWidth, PlotRadius, MaximumBarWidth).AttachSeriesDefaults(CopySeriesDefaults());
     /// <summary>Creates a new immutable theme by configuring an independent builder.</summary>
     /// <remarks>The callback cannot mutate this theme. Invalid or throwing callbacks leave the original snapshot intact.</remarks>
     public VisualTheme Configure(Action<VisualThemeBuilder> configure) {

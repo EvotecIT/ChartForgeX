@@ -219,6 +219,8 @@ internal static partial class SmokeTests {
         ("Typography uses a native font stack and escapes custom families", TypographyUsesNativeFontStackAndEscapesCustomFamilies),
         ("SVG font stacks end with a generic family", SvgFontStacksEndWithGenericFamily),
         ("Paired themes apply reusable presentation", PairedThemesApplyReusablePresentation),
+        ("Theme series defaults resolve below explicit series settings", ThemeSeriesDefaultsResolveBelowExplicitSeriesSettings),
+        ("Theme JSON loads series defaults per kind", ThemeJsonLoadsSeriesDefaultsPerKind),
         ("Rendering uses invariant culture", RenderingUsesInvariantCulture),
         ("Report themes expose visual quality tokens", ReportThemesExposeVisualTokens),
         ("Standalone HTML uses a visible page background", StandaloneHtmlUsesVisibleBackground),

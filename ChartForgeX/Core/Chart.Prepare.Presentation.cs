@@ -9,8 +9,10 @@ public sealed partial class Chart {
     private Chart PresentationView(VisualRenderContext context) {
         var view = (Chart)MemberwiseClone();
         view.Options = Options.PresentationView(context);
-        if (Series.Any(series => series.HasPresentationCallbacks))
-            view._preparationSeries = Array.AsReadOnly(Series.Select(series => series.PrepareItemStyles()).ToArray());
+        // Theme defaults per series kind resolve here, once, so every renderer reads ordinary series settings.
+        var theme = context.Theme;
+        if (Series.Any(series => series.HasPresentationCallbacks || theme.HasSeriesDefaults(series.Kind)))
+            view._preparationSeries = Array.AsReadOnly(Series.Select(series => series.PrepareItemStyles().WithThemeDefaults(theme, view.Options)).ToArray());
         return view;
     }
 
