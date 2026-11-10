@@ -1,8 +1,11 @@
   // Saved reports reuse the detached projection and original vector geometry. Only
   // data ink moves: the frame, captions, marker sizes and stroke widths stay sharp.
-  const standaloneStyle = (node, name) => ({ value: node.style.getPropertyValue(name), priority: node.style.getPropertyPriority(name) });
+  // Most marks carry no inline style; reading one through node.style builds a declaration object per mark.
+  const unstyled = { value: '', priority: '' };
+  const standaloneStyle = (node, name) => node.hasAttribute('style') ? { value: node.style.getPropertyValue(name), priority: node.style.getPropertyPriority(name) } : unstyled;
   const restoreStandaloneStyle = (node, name, style) => {
     // Rewriting an unchanged inline style still reports a paint mutation to the keyboard watch.
+    if (!style.value && !node.hasAttribute('style')) return;
     if (node.style.getPropertyValue(name) === style.value && node.style.getPropertyPriority(name) === style.priority) return;
     if (style.value) node.style.setProperty(name, style.value, style.priority);
     else node.style.removeProperty(name);

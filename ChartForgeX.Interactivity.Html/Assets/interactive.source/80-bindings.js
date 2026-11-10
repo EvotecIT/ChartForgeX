@@ -77,7 +77,7 @@
     // state for the entering target to settle, because clearing and re-adding it restyles every mark.
     const hoverSurfaces = new WeakSet();
     // The stage readout reports a pending frame; a hover handed over settles there, or in a later frame if none ran.
-    let stageFrame = () => false, pendingEnter = null;
+    let stageFrame = () => false;
     const settleHandover = () => root._cfxHoverPending && (stageFrame() ? requestAnimationFrame(settleHandover) : clearHover(root, false, false));
     const handsOver = (from, to) => {
       for (let node = to; node instanceof Element && root.contains(node); node = node.parentElement)
@@ -99,17 +99,9 @@
           setHover(root, node, true, true);
           showTip(root, tip, node, event);
         };
-        const entered = (event) => {
+        listenChart(root, surface, 'pointerenter', (event) => {
           enter(event);
           if (root._cfxHoverPending) clearHover(root, false, false);
-        };
-        listenChart(root, surface, 'pointerenter', (event) => {
-          // A real pointer entering a mark in the drawing also moves over the stage, whose readout settles the hover
-          // in its next frame. Hovering the mark here first would restyle a dense series twice per move, so the mark
-          // waits for that frame and takes the hover itself only when no stage readout runs.
-          if (!event.isTrusted || !stage?.contains(surface)) { entered(event); return; }
-          const token = pendingEnter = {};
-          requestAnimationFrame(() => pendingEnter === token && (pendingEnter = null, !stageFrame() && chartLifetimes.get(root)?.disposed === false && entered(event)));
         });
         listenChart(root, surface, 'pointermove', (event) => {
           if (renderedTargetKind(node) === 'legend' && !node.closest('svg') && ownsTooltipPointer(root, event)) {
@@ -122,7 +114,6 @@
           if (ownsTooltipPointer(root, event)) moveTip(tip, event, node);
         });
         listenChart(root, surface, 'pointerleave', (event) => {
-          pendingEnter = null;
           if (!ownsTooltipPointer(root, event)) return;
           // Moving off a mark onto the drawing hands the hover to the stage readout, which settles it in its next frame:
           // clearing the chart's hover state here and setting it again there restyles every marker of a dense chart.
