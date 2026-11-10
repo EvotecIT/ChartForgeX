@@ -114,6 +114,7 @@
     <EmbeddedResource Include="Assets\state-floating-notes.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.state-floating-notes.mmd" WithCulture="false" />
     <EmbeddedResource Include="Assets\styled-multilingual-text.svg" LogicalName="ChartForgeX.Examples.styled-multilingual-text.svg" WithCulture="false" />
     <EmbeddedResource Include="Assets\styled-multilingual-text.html" LogicalName="ChartForgeX.Examples.styled-multilingual-text.html" WithCulture="false" />
+    <EmbeddedResource Include="Assets\Themes\*.json" LogicalName="ChartForgeX.Examples.Themes.%(Filename)%(Extension)" WithCulture="false" />
     <EmbeddedResource Include="Assets\Gallery\*" LogicalName="ChartForgeX.Examples.Gallery.%(Filename)%(Extension)" WithCulture="false" />
     <!-- These are inert authored source fixtures, not JavaScript/plugin dependencies. -->
     <EmbeddedResource Include="..\tests\mermaid-conformance\fixtures\c4-config-typography-native.mmd" LogicalName="ChartForgeX.Examples.MermaidFixtures.%(Filename)%(Extension)" WithCulture="false" />
