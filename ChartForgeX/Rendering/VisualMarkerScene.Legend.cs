@@ -20,7 +20,7 @@ internal static partial class VisualMarkerScene {
         var polarArea = series.Kind == ChartSeriesKind.Polar && series.Polar.Form == ChartLineAreaForm.Area
             && ChartPolarPathGeometry.HasClosedArea(series);
         // Retain ordinary area/line swatches until their marker or radar paint is explicitly configured.
-        if (series.StrokeStyle == null && !series.Markers.IsConfigured && (connected || radarArea && !series.Radar.FillOpacity.HasValue && series.Radar.OutlineStroke == null)) return null;
+        if (series.StrokeStyle == null && series.StrokeSegments.Count == 0 && !series.Markers.IsConfigured && (connected || radarArea && !series.Radar.FillOpacity.HasValue && series.Radar.OutlineStroke == null)) return null;
         return (builder, bounds, context) => {
             var colors = context.Theme.Resolve(context.ThemeMode);
             var x = bounds.Left + bounds.Width / 2; var y = bounds.Top + bounds.Height / 2;
@@ -36,15 +36,14 @@ internal static partial class VisualMarkerScene {
                 VisualFrameLayout.DrawLegendPattern(builder, bounds, pattern, context, hatchOpacity, "legend-area-pattern");
             }
             if (line) {
-                var outline = VisualSeriesStroke.Style(series);
-                var width = VisualReferenceStroke.PaintedWidth(outline, color, VisualSeriesStroke.Width(series, context.Theme.SeriesStrokeWidth));
-                var source = outline?.Color ?? color;
-                var opacity = outline?.Opacity ?? 1;
-                var actual = ChartColorMath.WithOpacity(source, opacity);
-                var outlinePaint = outline?.Color != null ? SvgPaint.Literal(source) : paint;
-                if (width > 0) builder.Line(bounds.Left, y, bounds.Right, y, actual, outline == null ? width : Math.Min(width, bounds.Height),
-                    role: "legend-line", dash: outline?.ResolveDash(Array.Empty<double>()),
-                    paint: VisualChartPaint.Stroke(outlinePaint.WithOpacity(actual, opacity)));
+                // A segmented series shows its first two styles side by side, such as solid actuals then a dashed forecast.
+                // The second starts on a gap so its pattern reads even in a short key.
+                var styles = VisualSeriesStroke.SegmentStyles(series);
+                var split = styles.Length > 1 ? bounds.Left + bounds.Width * .4 : bounds.Right;
+                LegendLine(builder, series, styles[0].Style, color, paint, context, bounds.Left, split, y, bounds.Height);
+                if (styles.Length > 1) LegendLine(builder, series, styles[1].Style, color, paint, context, split, bounds.Right, y, bounds.Height, startOnGap: true);
+                // Segments alone keep the default key's plain line rather than adding a marker dot.
+                if (connected && series.StrokeStyle == null && !series.Markers.IsConfigured) return;
             }
             var familyDefault = connected ? !chart.Options.IsSparkline && chart.Options.LineMarkerMode != ChartLineMarkerMode.None : true;
             if (series.Kind is ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea)
@@ -70,6 +69,18 @@ internal static partial class VisualMarkerScene {
         };
     }
 
+    private static void LegendLine(VisualSceneBuilder builder, ChartSeries series, ChartStrokeStyle? outline, ChartColor color, SvgPaint paint,
+        VisualRenderContext context, double left, double right, double y, double height, bool startOnGap = false) {
+        var width = VisualReferenceStroke.PaintedWidth(outline, color, VisualSeriesStroke.Width(series, context.Theme.SeriesStrokeWidth));
+        var source = outline?.Color ?? color;
+        var opacity = outline?.Opacity ?? 1;
+        var actual = ChartColorMath.WithOpacity(source, opacity);
+        var outlinePaint = outline?.Color != null ? SvgPaint.Literal(source) : paint;
+        var dash = outline?.ResolveDash(Array.Empty<double>());
+        if (width > 0) builder.Line(left, y, right, y, actual, outline == null ? width : Math.Min(width, height),
+            role: "legend-line", dash: dash, dashOffset: startOnGap && dash is { Length: > 0 } ? dash[0] : 0,
+            paint: VisualChartPaint.Stroke(outlinePaint.WithOpacity(actual, opacity)));
+    }
     /// <summary>One boundary of a difference area: the shading where it leads, its line and its marker.</summary>
     internal static Action<VisualSceneBuilder, ChartRect, VisualRenderContext> DifferenceLegend(Chart chart, ChartSeries series,
         ChartColor color, SvgPaint paint, bool positive, double[]? dash = null) => (builder, bounds, context) => {
