@@ -252,35 +252,36 @@
     if (!view.glideSettled) {
       // Every mark moves: the chart model is dropped and the keyboard watch paused instead of each recording every write.
       const model = chartModels.get(root), resume = root._cfxPauseAvailability?.();
-      if (model?.data) { model.observer.disconnect(); model.data = null; }
-      view.geometry.forEach(entry => paintStandaloneGeometry(entry, maps[entry.xAxis] || maps.x, maps[entry.axis] || maps.y));
-      view.labels.forEach(entry => {
-        const x = maps[entry.xAxis] || maps.x, y = maps[entry.axis] || maps.y, at = entry.current || entry, px = x.at(at.x), py = y.at(at.y);
-        entry.node.setAttribute('transform', 'translate(' + (px - entry.x) + ' ' + (py - entry.y) + ') ' + (entry.transform || ''));
-        // The clip moves with a translated caption, so a caption whose anchor leaves the plot hides instead.
-        // A restacked total keeps its captured caption, so it hides until its stack is whole again.
-        const slack = entry.slack || .5, outside = px < plot.x - slack || px > plot.x + plot.width + slack || py < plot.y - slack || py > plot.y + plot.height + slack;
-        entry.node.style.visibility = outside || entry.hiddenTotal || entry.node.matches('.cfx-series-muted,.cfx-series-isolated-out') ? 'hidden' : '';
-      });
-      // Each axis is read once for the pass: reading it builds a fresh projection.
-      const axes = {}, axisOf = name => axes[name] ||= standaloneAxis(root, name);
-      const region = (box, x, y) => box && Object.freeze({ x: x.at(box.x), y: y.at(box.y), width: box.width * Math.abs(x.scale), height: box.height * Math.abs(y.scale) });
-      for (const point of view.points) {
-        // A horizontal observation's category runs down the plot and its value across it.
-        const y = view.horizontal ? maps.y : maps[point.axis] || maps.y, x = view.horizontal ? maps[point.axis] || maps.x : maps.x;
-        const level = point.stack ? (point.stack.now || point.stack).end : point.y;
-        const px = view.horizontal ? standaloneCoordinate(axisOf(point.axis), level, plot, false) : standaloneCoordinate(axisOf('x'), point.x, plot, false);
-        const py = view.horizontal ? standaloneCoordinate(axisOf('y'), point.x, plot, true) : standaloneCoordinate(axisOf(point.axis), level, plot, true);
-        if (point.region) point.node._cfxNativeRegion = region(point.stackRegion || point.region, x, y);
-        if (point.paired) point.node._cfxPairedRegion = region(point.paired, x, y);
-        if (point.midline !== undefined) point.node.dataset.cfxMidlineY = y.at(Number(point.midline));
-        const bounds = point.node._cfxNativeRegion || { x: px, y: py, width: 0, height: 0 };
-        point.node.dataset.cfxVisible = String(point.visible !== 'false' && bounds.x + bounds.width >= plot.x - .01 && bounds.x <= plot.x + plot.width + .01
-          && bounds.y + bounds.height >= plot.y - .01 && bounds.y <= plot.y + plot.height + .01);
-        if (point.interiors) point.node._cfxFillInteriors = Object.freeze((point.stackInteriors || point.interiors).map(([px, py, radius]) =>
-          Object.freeze([x.at(px), y.at(py), radius * Math.min(Math.abs(x.scale), Math.abs(y.scale))])));
-      }
-      resume?.();
+      try {
+        if (model?.data) { model.observer.disconnect(); model.data = null; }
+        view.geometry.forEach(entry => paintStandaloneGeometry(entry, maps[entry.xAxis] || maps.x, maps[entry.axis] || maps.y));
+        view.labels.forEach(entry => {
+          const x = maps[entry.xAxis] || maps.x, y = maps[entry.axis] || maps.y, at = entry.current || entry, px = x.at(at.x), py = y.at(at.y);
+          entry.node.setAttribute('transform', 'translate(' + (px - entry.x) + ' ' + (py - entry.y) + ') ' + (entry.transform || ''));
+          // The clip moves with a translated caption, so a caption whose anchor leaves the plot hides instead.
+          // A restacked total keeps its captured caption, so it hides until its stack is whole again.
+          const slack = entry.slack || .5, outside = px < plot.x - slack || px > plot.x + plot.width + slack || py < plot.y - slack || py > plot.y + plot.height + slack;
+          entry.node.style.visibility = outside || entry.hiddenTotal || entry.node.matches('.cfx-series-muted,.cfx-series-isolated-out') ? 'hidden' : '';
+        });
+        // Each axis is read once for the pass: reading it builds a fresh projection.
+        const axes = {}, axisOf = name => axes[name] ||= standaloneAxis(root, name);
+        const region = (box, x, y) => box && Object.freeze({ x: x.at(box.x), y: y.at(box.y), width: box.width * Math.abs(x.scale), height: box.height * Math.abs(y.scale) });
+        for (const point of view.points) {
+          // A horizontal observation's category runs down the plot and its value across it.
+          const y = view.horizontal ? maps.y : maps[point.axis] || maps.y, x = view.horizontal ? maps[point.axis] || maps.x : maps.x;
+          const level = point.stack ? (point.stack.now || point.stack).end : point.y;
+          const px = view.horizontal ? standaloneCoordinate(axisOf(point.axis), level, plot, false) : standaloneCoordinate(axisOf('x'), point.x, plot, false);
+          const py = view.horizontal ? standaloneCoordinate(axisOf('y'), point.x, plot, true) : standaloneCoordinate(axisOf(point.axis), level, plot, true);
+          if (point.region) point.node._cfxNativeRegion = region(point.stackRegion || point.region, x, y);
+          if (point.paired) point.node._cfxPairedRegion = region(point.paired, x, y);
+          if (point.midline !== undefined) point.node.dataset.cfxMidlineY = y.at(Number(point.midline));
+          const bounds = point.node._cfxNativeRegion || { x: px, y: py, width: 0, height: 0 };
+          point.node.dataset.cfxVisible = String(point.visible !== 'false' && bounds.x + bounds.width >= plot.x - .01 && bounds.x <= plot.x + plot.width + .01
+            && bounds.y + bounds.height >= plot.y - .01 && bounds.y <= plot.y + plot.height + .01);
+          if (point.interiors) point.node._cfxFillInteriors = Object.freeze((point.stackInteriors || point.interiors).map(([px, py, radius]) =>
+            Object.freeze([x.at(px), y.at(py), radius * Math.min(Math.abs(x.scale), Math.abs(y.scale))])));
+        }
+      } finally { resume?.(); }
     }
     // The published metadata depends only on the windows; a glide's closing paint republishes its opening one.
     const key = JSON.stringify(view.windows);
