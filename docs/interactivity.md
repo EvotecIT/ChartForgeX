@@ -257,6 +257,10 @@ These stay declined, each for a stated reason:
 - **Timeline and Gantt schedules.** Their axis is fitted by the schedule
   compiler together with lane and item captions, which a window would have to
   lay out again.
+- **Additional value axes.** A chart with more than one value axis on a side
+  (`AddValueAxis`, see [axes](axes.md)) captures no axis projection, so the page
+  has no single value domain to re-tick. Native viewport windows and prepared
+  X zoom reject these charts too.
 - Other Cartesian families and native annotation layout.
 
 They require a connected native preparation path. Mixing an unsupported series

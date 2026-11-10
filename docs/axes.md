@@ -82,6 +82,46 @@ visibility, colour, opacity, width, dash and minor-line opacity. Unset values in
 `WithBands()` fills every other interval between adjacent major ticks, starting with the first, with a
 neutral tint of the theme grid colour; `WithBands(color, opacity)` uses an authored colour instead. The chart's `ShowGrid` switch still hides every grid.
 
+## More value axes on one side
+
+A vertical chart has a primary value axis on the left and a secondary one on the right. When a chart
+needs more scales than that, add value axes that stack outward on either side:
+
+```csharp
+var chart = Chart.Create().WithYAxis("IT load (kW)").WithSecondaryYAxis("Supply air (°C)")
+    .AddArea("IT load", load)
+    .AddLine("Supply air", temperature);
+chart.Series[1].UseSecondaryValueAxis();
+
+var humidity = chart.AddValueAxis(ChartAxisPlacement.End, "Humidity (%)",
+    axis => axis.WithBounds(30, 70).WithTickStep(10));
+chart.AddLine("Humidity", readings);
+chart.Series[2].UseValueAxis(humidity);
+```
+
+`AddValueAxis` returns a `ChartAdditionalValueAxis`, the typed reference series bind to with
+`UseValueAxis`. `ChartAxisPlacement.Start` stacks the axis outside the primary axis, `End` outside
+the secondary one. Axes on one side stack in the order they were added, each in its own column with
+the same gap, rule and caption spacing. An axis that no series uses draws nothing.
+
+Each axis has its own `ChartAxis` (`Axis`, or `Configure`) and takes the same controls as any other
+value axis: bounds, scale, formatter, `WithTickStep`, `WithTickValues`, `WithTickSpacing`, minor
+ticks and `ConfigureGrid`. Only the primary axis draws grid lines by default; an additional axis
+draws its own grid, minor lines included, when its grid style asks for lines with
+`ConfigureGrid(grid => grid.WithLines(true))`. Captions, rule and title take the axis `Color`, or the
+colour of the first series bound to it, so a reader can match the axis to its line. Titles share the
+row above the plot in the same order as the columns, so the outermost title sits at the outer edge.
+
+Each column needs room. Columns are admitted inner to outer while their side stays within 35% of the
+chart width and both sides together within half of it. An axis that doesn't fit is left out, with a
+`cartesian.additional-axis-omitted` diagnostic, instead of crowding the plot; its series still keep
+their own scale. The gallery's compact stacked-axis example shows that fallback.
+
+Additional axes take line, step line, area, step area, scatter and unstacked bar series on vertical
+Cartesian charts. They support linear and logarithmic scales, but not time scales or axis crossings.
+Annotations and plot regions still target the primary or secondary axis. Viewport windows, prepared X
+zoom and saved-page zoom decline charts that use them; see [interactivity](interactivity.md).
+
 ## Value lines and bands
 
 Lines and ranges on an axis value already exist as annotations and plot regions, each with an
