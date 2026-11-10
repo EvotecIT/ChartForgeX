@@ -29,7 +29,8 @@ public sealed partial class Chart {
         return axis;
     }
 
-    internal bool UsesAdditionalValueAxes => _additionalValueAxes.Count > 0 && Series.Any(series => series.AdditionalValueAxis != null);
+    // A series bound to another chart's axis counts too, so validation reports it rather than drawing it off-scale.
+    internal bool UsesAdditionalValueAxes => Series.Any(series => series.AdditionalValueAxis != null);
 
     internal void ValidateAdditionalValueAxes() {
         if (!UsesAdditionalValueAxes) return;
