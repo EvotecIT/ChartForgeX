@@ -8,9 +8,8 @@
     // Browser axes and a running glide's transforms and hidden marks are not targets and leave every target where it was.
     if (record.target.closest?.('[data-cfx-browser-axis],[data-cfx-browser-grid]')
       || /^(transform|style)$/.test(record.attributeName) && standaloneGlideNodes.has(record.target)) return false;
-    // A rewrite of an unchanged value, or the owned-font swap between two drawings of the same text, moves no target.
-    if (record.type === 'attributes' && (record.oldValue === record.target.getAttribute(record.attributeName)
-      || record.target.matches('[data-cfx-owned-font-text],[data-cfx-owned-font-native]') && !record.target.matches(targetSelector) && !record.target.querySelector(targetSelector))) return false;
+    // A rewrite of an unchanged value moves no target.
+    if (record.type === 'attributes' && record.oldValue === record.target.getAttribute(record.attributeName)) return false;
     if (record.type === 'attributes' && record.attributeName === 'class'
       && keyboardNativeClasses(record.oldValue) === keyboardNativeClasses(record.target.getAttribute('class'))) return false;
     if (record.type === 'attributes' && record.target.closest('[data-cfx-highlight-outline],[data-cfx-keyboard-focus-outline],[data-cfx-state-outline]')) return false;
