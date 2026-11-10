@@ -1,7 +1,7 @@
-/// <summary>Builds one service-latency chart per axis option: fixed steps, explicit values, spacing, minor ticks and axis grids.</summary>
+/// <summary>Builds one service-latency chart per axis option: fixed steps, explicit values, spacing, minor ticks, axis grids and stacked value axes.</summary>
 public static class AxisControlRecipe {
     /// <summary>Gets the option variants this recipe draws; each also has a compact form.</summary>
-    public static readonly string[] Options = { "axis-step", "axis-values", "axis-spacing", "axis-minor", "axis-grid", "axis-time-step", "axis-log-step" };
+    public static readonly string[] Options = { "axis-step", "axis-values", "axis-spacing", "axis-minor", "axis-grid", "axis-time-step", "axis-log-step", "axis-stacked" };
 
     /// <summary>Creates the selected axis option example.</summary>
     public static Chart Create(string variant = "axis-step", VisualThemeMode mode = VisualThemeMode.Light) {
@@ -9,6 +9,7 @@ public static class AxisControlRecipe {
         if (!Options.Contains(option)) throw new ArgumentOutOfRangeException(nameof(variant));
         if (option == "axis-time-step") return Weekly();
         if (option == "axis-log-step") return Payloads();
+        if (option == "axis-stacked") return Climate();
         // Twenty-four hourly p95 latency readings against an 80 ms objective.
         var hours = Enumerable.Range(0, 25).ToArray();
         var chart = Chart.Create().WithXAxis("Hour").WithYAxis("p95 latency (ms)").WithXAxisBounds(0, 24)
@@ -60,5 +61,21 @@ public static class AxisControlRecipe {
         return Chart.Create().WithXAxis("Request").WithYAxis("Payload (KB)")
             .AddLine("Payload", sizes.Select((size, index) => new ChartPoint(index + 1, size)).ToArray())
             .ConfigureYAxis(axis => axis.WithLogarithmicScale().WithTickStep(2));
+    }
+
+    // Two days of hourly data-hall readings. IT load reads on the left; supply-air temperature on the secondary axis and
+    // relative humidity on an additional axis stack outward on the right, each coloured like its line.
+    private static Chart Climate() {
+        var hours = Enumerable.Range(0, 49).ToArray();
+        double Daily(int hour, double phase) => Math.Sin((hour - phase) / 24d * 2 * Math.PI);
+        var chart = Chart.Create().WithXAxis("Hour").WithYAxis("IT load (kW)").WithSecondaryYAxis("Supply air (°C)").WithXAxisBounds(0, 48)
+            .ConfigureXAxis(axis => axis.WithTickStep(6))
+            .AddArea("IT load", hours.Select(hour => new ChartPoint(hour, Math.Round(300 + 70 * Daily(hour, 8) + hour % 4 * 6))).ToArray())
+            .AddLine("Supply air", hours.Select(hour => new ChartPoint(hour, Math.Round(21.5 + 2.5 * Daily(hour, 10) + hour % 3 * .4, 1))).ToArray());
+        chart.Series[1].UseSecondaryValueAxis();
+        var humidity = chart.AddValueAxis(ChartAxisPlacement.End, "Humidity (%)", axis => axis.WithBounds(30, 70).WithTickStep(10));
+        chart.AddLine("Humidity", hours.Select(hour => new ChartPoint(hour, Math.Round(48 - 9 * Daily(hour, 12) + hour % 5, 1))).ToArray());
+        chart.Series[2].UseValueAxis(humidity);
+        return chart;
     }
 }
