@@ -1,8 +1,11 @@
   // Saved reports reuse the detached projection and original vector geometry. Only
   // data ink moves: the frame, captions, marker sizes and stroke widths stay sharp.
-  const standaloneStyle = (node, name) => ({ value: node.style.getPropertyValue(name), priority: node.style.getPropertyPriority(name) });
+  // Most marks carry no inline style; reading one through node.style builds a declaration object per mark.
+  const unstyled = { value: '', priority: '' };
+  const standaloneStyle = (node, name) => node.hasAttribute('style') ? { value: node.style.getPropertyValue(name), priority: node.style.getPropertyPriority(name) } : unstyled;
   const restoreStandaloneStyle = (node, name, style) => {
     // Rewriting an unchanged inline style still reports a paint mutation to the keyboard watch.
+    if (!style.value && !node.hasAttribute('style')) return;
     if (node.style.getPropertyValue(name) === style.value && node.style.getPropertyPriority(name) === style.priority) return;
     if (style.value) node.style.setProperty(name, style.value, style.priority);
     else node.style.removeProperty(name);
@@ -32,18 +35,22 @@
     clip.appendChild(rect); svg.querySelector('defs')?.appendChild(clip);
     if (!clip.parentNode) { const defs = document.createElementNS(ns, 'defs'); defs.appendChild(clip); svg.prepend(defs); view.defs = defs; }
     view.clip = clip;
-    const series = svg.querySelectorAll('[data-cfx-role="series"]');
+    const series = svg.querySelectorAll('[data-cfx-role="series"]'), scatter = metadata.series.some(row => row?.kind === 'scatter');
     series.forEach(owner => {
       // An outer clip remains in plot coordinates while individual marks reproject.
       view.frames.push({ owner, clip: owner.getAttribute('clip-path') });
       // Series-level paths (lines, areas, bands) carry no axis; their observations name it.
       const axes = seriesAxes(owner);
-      owner.querySelectorAll('path,line,rect,circle,ellipse,polygon,polyline,image').forEach(node => {
-        if (node.closest('defs,[data-cfx-native-text-ink]') || node.closest('[data-cfx-caption]') || node.closest('g')?.querySelector('text') && node.closest('[data-cfx-role$="label"]')) return;
-        const point = node.closest('[data-cfx-point]'), role = node.dataset.cfxRole || '';
+      // The selector engine excludes definitions, text ink and captions and finds marks inside labels: per-mark
+      // ancestor walks cost more than the rest of the capture on dense charts.
+      const marks = ':is(path,line,rect,circle,ellipse,polygon,polyline,image):not(defs *,[data-cfx-native-text-ink],[data-cfx-native-text-ink] *,[data-cfx-caption],[data-cfx-caption] *)';
+      const labelled = new Set(owner.querySelectorAll(marks + ':is([data-cfx-role$="label"],[data-cfx-role$="label"] *)'));
+      owner.querySelectorAll(marks).forEach(node => {
+        if (labelled.has(node) && node.closest('g')?.querySelector('text')) return;
+        const role = node.getAttribute('data-cfx-role') || '';
         // Markers and error-bar caps keep their drawn size; only their position follows the window.
         const marker = !node.hasAttribute('data-cfx-browser-hit-area') && (role.startsWith('marker') || role === 'error-cap'
-          || point && metadata.series[Number(point.dataset.cfxSeries)]?.kind === 'scatter');
+          || scatter && metadata.series[Number(node.closest('[data-cfx-point]')?.dataset.cfxSeries)]?.kind === 'scatter');
         const box = marker ? node.getBBox() : null;
         view.geometry.push({ node, attrs: Object.fromEntries(Array.from(node.attributes).map(attr => [attr.name, attr.value])),
           visibility: standaloneStyle(node, 'visibility'),
@@ -97,8 +104,9 @@
   // beyond it before clipping the requested window to the captured full domain.
   const standaloneAxisValue = (axis, ratio, bound) => projectedAxisValue({ ...axis, minimum: -Infinity, maximum: Infinity }, ratio, bound);
   const standaloneMap = (source, target, plot, vertical) => {
-    const first = vertical ? plot.y : plot.x, length = vertical ? plot.height : plot.width;
-    const map = value => standaloneCoordinate(target, standaloneAxisValue(source, vertical ? 1 - (value - first) / length : (value - first) / length), plot, vertical);
+    // The open source axis is built once per map, not once per coordinate of every mark.
+    const first = vertical ? plot.y : plot.x, length = vertical ? plot.height : plot.width, open = { ...source, minimum: -Infinity, maximum: Infinity };
+    const map = value => standaloneCoordinate(target, projectedAxisValue(open, vertical ? 1 - (value - first) / length : (value - first) / length), plot, vertical);
     return { at: map, scale: (map(first + length) - map(first)) / length };
   };
   const standalonePath = (path, x, y, pair) => {
@@ -121,13 +129,15 @@
     }
     return output.join(' ');
   };
+  const standaloneRound = value => Number(value.toFixed(4)), standaloneXAttrs = ['x', 'x1', 'x2', 'cx'], standaloneYAttrs = ['y', 'y1', 'y2', 'cy'];
   const projectStandaloneAttrs = (attrs, x, y, pair) => {
-    const out = {}, round = value => Number(value.toFixed(4));
+    const out = {};
     if (attrs.d) out.d = standalonePath(attrs.d, x, y, pair);
     if (attrs.points) out.points = attrs.points.trim().split(/[\s,]+/).map(Number).map((value, index) => (index % 2 ? y : x).at(value)).join(' ');
-    for (const name of ['x', 'x1', 'x2', 'cx']) if (attrs[name] !== undefined) out[name] = round(x.at(Number(attrs[name])));
-    for (const name of ['y', 'y1', 'y2', 'cy']) if (attrs[name] !== undefined) out[name] = round(y.at(Number(attrs[name])));
-    for (const [name, map] of [['width', x], ['height', y]]) if (attrs[name] !== undefined) out[name] = round(Number(attrs[name]) * Math.abs(map.scale));
+    for (const name of standaloneXAttrs) if (attrs[name] !== undefined) out[name] = standaloneRound(x.at(Number(attrs[name])));
+    for (const name of standaloneYAttrs) if (attrs[name] !== undefined) out[name] = standaloneRound(y.at(Number(attrs[name])));
+    if (attrs.width !== undefined) out.width = standaloneRound(Number(attrs.width) * Math.abs(x.scale));
+    if (attrs.height !== undefined) out.height = standaloneRound(Number(attrs.height) * Math.abs(y.scale));
     return out;
   };
   const paintStandaloneGeometry = (entry, x, y) => {
@@ -136,7 +146,8 @@
       x = { at: value => value + dx, scale: 1 }; y = { at: value => value + dy, scale: 1 };
     }
     // Unchanged values are skipped: rewriting one still restyles the mark and reports a paint mutation.
-    for (const [name, value] of Object.entries(projectStandaloneAttrs(entry.current || entry.attrs, x, y))) if (entry.node.getAttribute(name) !== String(value)) entry.node.setAttribute(name, value);
+    const out = projectStandaloneAttrs(entry.current || entry.attrs, x, y);
+    for (const name in out) if (entry.node.getAttribute(name) !== String(out[name])) entry.node.setAttribute(name, out[name]);
   };
   let standaloneMeasure = null;
   const standaloneTextWidth = (font, text) => {
@@ -203,6 +214,19 @@
         grid.prepend(standaloneGridLine(minorTemplate, standaloneCoordinate(projection, value, plot, vertical), plot, vertical));
     }
   };
+  // The changes a window repaint makes itself: mark geometry, caption shifts and visibility, plot clips and native axis captions.
+  const standaloneGeometryAttributes = ['d', 'points', 'x', 'x1', 'x2', 'cx', 'y', 'y1', 'y2', 'cy', 'width', 'height'];
+  const standaloneMovedAttributes = new Set([...standaloneGeometryAttributes, 'transform']);
+  const standaloneMoved = view => {
+    if (!view.moves) {
+      // Each moved node names the attributes the repaint writes on it.
+      const clips = new Set(['clip-path']), captions = new Set([...standaloneMovedAttributes, 'style', 'clip-path']), owners = new Map([
+        ...view.geometry.map(entry => [entry.node, standaloneMovedAttributes]), ...view.frames.map(frame => [frame.owner, clips]),
+        ...[...view.labels.map(entry => entry.node), ...view.axes.flatMap(axis => axis.nodes)].map(node => [node, captions])]);
+      view.moves = record => record.type === 'attributes' && !!owners.get(record.target)?.has(record.attributeName);
+    }
+    return view.moves;
+  };
   const paintStandaloneViewport = root => {
     const view = standaloneViewport(root); if (!view) return false;
     // A glide's closing paint keeps its measure: the drawing's size did not change while it eased.
@@ -210,14 +234,15 @@
     settleStandaloneGlide(view);
     if (view.printing) return true;
     if (!Object.keys(view.windows).length && !view.stacks?.active) {
-      restoreStandaloneGeometry(view);
+      // Drawn as captured (at binding or after a restore), the marks and published metadata are already the source's.
+      if (view.moved) { restoreStandaloneGeometry(view); root.dataset.cfxPreparedChart = JSON.stringify(view.source); }
       setStandaloneClip(view, false);
-      root.dataset.cfxPreparedChart = JSON.stringify(view.source); root._cfxDataProjection = view.source.dataProjection;
-      paintStandaloneAxes(root, view, measure); syncXNavigation(root); syncResetControl(root); refreshKeyboardNavigation(root);
+      root._cfxDataProjection = view.source.dataProjection;
+      paintStandaloneAxes(root, view, measure); syncXNavigation(root); syncResetControl(root); refreshKeyboardNavigation(root, undefined, false, standaloneMoved(view));
       hideCrosshair(root, root.querySelector('.cfx-crosshair')); refreshTooltipPosition(root);
       return true;
     }
-    setStandaloneClip(view, true);
+    setStandaloneClip(view, true); view.moved = true;
     const plot = view.source.dataProjection.plotBounds, maps = {};
     for (const name of standaloneAxisNames) {
       const source = standaloneSourceAxis(view, name);
@@ -225,31 +250,38 @@
     }
     // A glide that nothing disturbed closes on the marks and observations its opening paint placed for these windows.
     if (!view.glideSettled) {
-      view.geometry.forEach(entry => paintStandaloneGeometry(entry, maps[entry.xAxis] || maps.x, maps[entry.axis] || maps.y));
-      view.labels.forEach(entry => {
-        const x = maps[entry.xAxis] || maps.x, y = maps[entry.axis] || maps.y, at = entry.current || entry, px = x.at(at.x), py = y.at(at.y);
-        entry.node.setAttribute('transform', 'translate(' + (px - entry.x) + ' ' + (py - entry.y) + ') ' + (entry.transform || ''));
-        // The clip moves with a translated caption, so a caption whose anchor leaves the plot hides instead.
-        // A restacked total keeps its captured caption, so it hides until its stack is whole again.
-        const slack = entry.slack || .5, outside = px < plot.x - slack || px > plot.x + plot.width + slack || py < plot.y - slack || py > plot.y + plot.height + slack;
-        entry.node.style.visibility = outside || entry.hiddenTotal || entry.node.matches('.cfx-series-muted,.cfx-series-isolated-out') ? 'hidden' : '';
-      });
-      const region = (box, x, y) => box && Object.freeze({ x: x.at(box.x), y: y.at(box.y), width: box.width * Math.abs(x.scale), height: box.height * Math.abs(y.scale) });
-      for (const point of view.points) {
-        // A horizontal observation's category runs down the plot and its value across it.
-        const y = view.horizontal ? maps.y : maps[point.axis] || maps.y, x = view.horizontal ? maps[point.axis] || maps.x : maps.x;
-        const level = point.stack ? (point.stack.now || point.stack).end : point.y;
-        const px = view.horizontal ? standaloneCoordinate(standaloneAxis(root, point.axis), level, plot, false) : standaloneCoordinate(standaloneAxis(root, 'x'), point.x, plot, false);
-        const py = view.horizontal ? standaloneCoordinate(standaloneAxis(root, 'y'), point.x, plot, true) : standaloneCoordinate(standaloneAxis(root, point.axis), level, plot, true);
-        if (point.region) point.node._cfxNativeRegion = region(point.stackRegion || point.region, x, y);
-        if (point.paired) point.node._cfxPairedRegion = region(point.paired, x, y);
-        if (point.midline !== undefined) point.node.dataset.cfxMidlineY = y.at(Number(point.midline));
-        const bounds = point.node._cfxNativeRegion || { x: px, y: py, width: 0, height: 0 };
-        point.node.dataset.cfxVisible = String(point.visible !== 'false' && bounds.x + bounds.width >= plot.x - .01 && bounds.x <= plot.x + plot.width + .01
-          && bounds.y + bounds.height >= plot.y - .01 && bounds.y <= plot.y + plot.height + .01);
-        if (point.interiors) point.node._cfxFillInteriors = Object.freeze((point.stackInteriors || point.interiors).map(([px, py, radius]) =>
-          Object.freeze([x.at(px), y.at(py), radius * Math.min(Math.abs(x.scale), Math.abs(y.scale))])));
-      }
+      // Every mark moves: the chart model is dropped and the keyboard watch paused instead of each recording every write.
+      const model = chartModels.get(root), resume = root._cfxPauseAvailability?.();
+      try {
+        if (model?.data) { model.observer.disconnect(); model.data = null; }
+        view.geometry.forEach(entry => paintStandaloneGeometry(entry, maps[entry.xAxis] || maps.x, maps[entry.axis] || maps.y));
+        view.labels.forEach(entry => {
+          const x = maps[entry.xAxis] || maps.x, y = maps[entry.axis] || maps.y, at = entry.current || entry, px = x.at(at.x), py = y.at(at.y);
+          entry.node.setAttribute('transform', 'translate(' + (px - entry.x) + ' ' + (py - entry.y) + ') ' + (entry.transform || ''));
+          // The clip moves with a translated caption, so a caption whose anchor leaves the plot hides instead.
+          // A restacked total keeps its captured caption, so it hides until its stack is whole again.
+          const slack = entry.slack || .5, outside = px < plot.x - slack || px > plot.x + plot.width + slack || py < plot.y - slack || py > plot.y + plot.height + slack;
+          entry.node.style.visibility = outside || entry.hiddenTotal || entry.node.matches('.cfx-series-muted,.cfx-series-isolated-out') ? 'hidden' : '';
+        });
+        // Each axis is read once for the pass: reading it builds a fresh projection.
+        const axes = {}, axisOf = name => axes[name] ||= standaloneAxis(root, name);
+        const region = (box, x, y) => box && Object.freeze({ x: x.at(box.x), y: y.at(box.y), width: box.width * Math.abs(x.scale), height: box.height * Math.abs(y.scale) });
+        for (const point of view.points) {
+          // A horizontal observation's category runs down the plot and its value across it.
+          const y = view.horizontal ? maps.y : maps[point.axis] || maps.y, x = view.horizontal ? maps[point.axis] || maps.x : maps.x;
+          const level = point.stack ? (point.stack.now || point.stack).end : point.y;
+          const px = view.horizontal ? standaloneCoordinate(axisOf(point.axis), level, plot, false) : standaloneCoordinate(axisOf('x'), point.x, plot, false);
+          const py = view.horizontal ? standaloneCoordinate(axisOf('y'), point.x, plot, true) : standaloneCoordinate(axisOf(point.axis), level, plot, true);
+          if (point.region) point.node._cfxNativeRegion = region(point.stackRegion || point.region, x, y);
+          if (point.paired) point.node._cfxPairedRegion = region(point.paired, x, y);
+          if (point.midline !== undefined) point.node.dataset.cfxMidlineY = y.at(Number(point.midline));
+          const bounds = point.node._cfxNativeRegion || { x: px, y: py, width: 0, height: 0 };
+          point.node.dataset.cfxVisible = String(point.visible !== 'false' && bounds.x + bounds.width >= plot.x - .01 && bounds.x <= plot.x + plot.width + .01
+            && bounds.y + bounds.height >= plot.y - .01 && bounds.y <= plot.y + plot.height + .01);
+          if (point.interiors) point.node._cfxFillInteriors = Object.freeze((point.stackInteriors || point.interiors).map(([px, py, radius]) =>
+            Object.freeze([x.at(px), y.at(py), radius * Math.min(Math.abs(x.scale), Math.abs(y.scale))])));
+        }
+      } finally { resume?.(); }
     }
     // The published metadata depends only on the windows; a glide's closing paint republishes its opening one.
     const key = JSON.stringify(view.windows);
@@ -263,7 +295,7 @@
       view.published = { key, json: JSON.stringify(metadata), projection: metadata.dataProjection };
     }
     root.dataset.cfxPreparedChart = view.published.json; root._cfxDataProjection = view.published.projection;
-    paintStandaloneAxes(root, view, measure); syncXNavigation(root); syncResetControl(root); refreshKeyboardNavigation(root);
+    paintStandaloneAxes(root, view, measure); syncXNavigation(root); syncResetControl(root); refreshKeyboardNavigation(root, undefined, false, standaloneMoved(view));
     hideCrosshair(root, root.querySelector('.cfx-crosshair')); refreshTooltipPosition(root);
     return true;
   };
@@ -329,7 +361,7 @@
         .map(node => { const style = standaloneStyle(node, 'visibility'); standaloneGlideNodes.add(node); node.style.visibility = 'hidden'; return [node, style]; });
     }
     // Marks drawn for the full window carry no plot clip; a glide always eases inside it.
-    view.glide = true; setStandaloneClip(view, true);
+    view.glide = true; view.moved = true; setStandaloneClip(view, true);
     view.glideMarks.forEach(([node, own, x]) => node.setAttribute('transform', (typeof x !== 'number' ? 'matrix(' + map.scale + ' 0 0 1 ' + map.at(0) + ' 0)' : 'translate(' + (map.at(x) - x) + ' 0)') + (own ? ' ' + own : '')));
     paintStandaloneAxes(root, view, view.glideMeasure ||= {});
   };
@@ -406,9 +438,9 @@
     view.windows = {}; presentStandaloneViewport(root, view, previous, true); return true;
   };
   const restoreStandaloneGeometry = view => {
-    settleStandaloneGlide(view); view.glideTouched = true;
+    settleStandaloneGlide(view); view.glideTouched = true; view.moved = false;
     for (const entry of view.geometry) {
-      for (const name of ['d', 'points', 'x', 'x1', 'x2', 'cx', 'y', 'y1', 'y2', 'cy', 'width', 'height'])
+      for (const name of standaloneGeometryAttributes)
         // Rewriting an unchanged value still restyles the mark, which costs a full pass on dense charts.
         if (entry.attrs[name] !== undefined && entry.node.getAttribute(name) !== entry.attrs[name]) entry.node.setAttribute(name, entry.attrs[name]);
       if (entry.attrs.transform === undefined) entry.node.removeAttribute('transform'); else entry.node.setAttribute('transform', entry.attrs.transform);
@@ -470,6 +502,7 @@
       else if (!values.includes(0)) { const pad = (maximum - minimum) * .05; minimum -= pad; maximum += pad; }
       view.windows[name] = { minimum, maximum };
     }
+    view.moved = true;
     view.points.forEach(point => { point.node.style.visibility = point.node.closest('.cfx-series-muted,.cfx-series-isolated-out') ? 'hidden' : ''; });
     view.geometry.forEach(({ node }) => { node.style.visibility = node.closest('.cfx-series-muted,.cfx-series-isolated-out') ? 'hidden' : ''; });
     presentStandaloneViewport(root, view, previous, true);

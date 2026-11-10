@@ -51,6 +51,7 @@ public static partial class GalleryWriter {
             "detection-confidence-errorbar-dark",
             "forecast-envelope-rangeband-dark",
             "forecast-interval-rangearea-light",
+            "actual-forecast-segmented-line-light",
             "remediation-lift-dumbbell-light",
             "control-improvement-slope-light"),
         new(

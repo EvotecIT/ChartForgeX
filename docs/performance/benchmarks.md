@@ -57,11 +57,53 @@ They are machine-specific and show orders of magnitude, not guarantees.
 | Section preparation | 3-point fixtures 9.8–16.3 ms; 1,000-point scatter 29–70 ms |
 | Sustained update | 32 points: about 67 ms per update; 1,000 per series with a secondary value: about 5.1 s per update |
 
-Interactive line charts bind in time proportional to their points: in the same
-setup a 10,000-point line is ready in about 1.3 s, hovers in under 10 ms and
-settles a toolbar zoom in under a second. A raw 100,000-point line exports to
-PNG in about 2.5 s. `AddAdaptiveLine` keeps both near 200–400 ms by retaining
-about two points per pixel.
+Interactive line charts bind in time proportional to their points. A raw
+100,000-point line exports to PNG in about 2.5 s. `AddAdaptiveLine` keeps
+binding and export near 200–400 ms by retaining about two points per pixel.
+
+### Dense interactive lines
+
+The line from `InteractiveBindingScalingBrowserTests` (1200 × 600, no legend)
+saved with `ToInteractiveHtmlPage`, opened from disk in headless Chromium at
+1400 × 900. *Zoom* pages enable Tooltips, Zoom and Pan; *review* pages add the
+default report features (selection, keyboard, crosshair, compare). Ready is
+navigation to the bound marker plus the next frame. Hover is the time from a
+pointer move to the second painted frame, measured in the page over 40 moves.
+Zoom is one toolbar zoom-in from the click until the eased window settles.
+Before and after pages ran interleaved in one browser; best of three loads.
+
+| Line | Ready before | Ready after | Hover p95 before | Hover p95 after | Zoom before | Zoom after |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1,000, zoom | 126 ms | 111 ms | 80 ms | 78 ms | 361 ms | 358 ms |
+| 1,000, review | 228 ms | 176 ms | 51 ms | 51 ms | 366 ms | 347 ms |
+| 10,000, zoom | 958 ms | 919 ms | 432 ms | 301 ms | 615 ms | 515 ms |
+| 10,000, review | 1,897 ms | 1,411 ms | 394 ms | 399 ms | 782 ms | 632 ms |
+| 50,000, zoom | 8,602 ms | 3,481 ms | 96 ms | 158 ms | 2,096 ms | 1,432 ms |
+| 50,000, review | 9,750 ms | 6,376 ms | 88 ms | 148 ms | 2,767 ms | 2,107 ms |
+
+Measured on 10 November 2026 on the machine above while other builds kept it
+65–100% busy, so the pairs compare and the absolute values run high; single
+loads vary by up to a third. Ready includes parsing the saved page, 10 MB at
+10,000 points and 45 MB at 50,000. Median hover at 10,000 points fell from
+232 ms to 83 ms (zoom) and from 249 ms to 130 ms (review); a repeat of the
+50,000-point zoom page measured hover p95 at 68 ms before and 84 ms after.
+
+Binding cost one style pass per readout write: the card and toolbar tokens were
+inherited custom properties, so each write restyled every mark. They no longer
+inherit, which leaves one style pass for the first frame. The zoom repaint now
+reuses the keyboard availability of observations wholly inside the plot and
+pauses the change watches while it moves every mark. What remains at 50,000
+points is proportional to the marks the runtime adds per observation, a hit area
+and a hover marker: rewriting their geometry and restyling them take about
+0.7 s each, and refreshing tens of thousands of keyboard stops about 0.5 s.
+
+Leaving a mark for the drawing now hands the hover to the stage readout instead
+of clearing the chart's hover state and setting it again, which restyled every
+hover marker. The hover tail at 10,000 points comes from crossing the line
+itself: entering the series target sets cfx-hovered on the series group, whose
+inherited stroke-width and descendant marker rules restyle all of its marks,
+and the hover mode then switches between series and shared, toggling
+cfx-hover-series on every observation. Each crossing costs about 0.1–0.2 s.
 
 ## Guards in the test suite
 

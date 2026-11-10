@@ -59,6 +59,6 @@ internal static class ChartLegendVisibility {
             var series = chart.Series[0];
             count = System.Math.Max(count, series.AuthoredObservationCount);
         }
-        return ForEntries(chart, count);
+        return ForEntries(chart, count + chart.Options.Legend.Items.Count);
     }
 }

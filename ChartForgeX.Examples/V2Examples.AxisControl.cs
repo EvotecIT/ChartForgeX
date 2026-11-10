@@ -15,6 +15,7 @@ public static partial class V2Examples {
                         "axis-minor" => ("Latency with minor grid lines", "Four minor lines per 20 ms, two per three hours"),
                         "axis-grid" => ("Latency with styled axis grids", "Dashed value lines over neutral alternating bands"),
                         "axis-time-step" => ("Deployments on a calendar step", "A tick every second Monday, a minor line between"),
+                        "axis-stacked" => ("Data hall climate on stacked axes", "Temperature and humidity share the right side"),
                         _ => ("Payload sizes on a logarithmic step", "A tick on every second power of ten")
                     };
                     var id = "family-line-" + variant + "-" + mode.ToString().ToLowerInvariant();

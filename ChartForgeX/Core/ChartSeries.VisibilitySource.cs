@@ -23,8 +23,11 @@ public sealed partial class ChartSeries {
             _visibilityPreparation = true, Color = source.Color, Fill = source.Fill, StateRole = source.State, FillPattern = source.Pattern,
             ValueAxis = source.ValueAxis, ShowInLegend = source.ShowInLegend, SemanticRole = source.SemanticRole,
             ShowDataLabels = source.Labels, DataLabelPlacement = source.Placement, DataLabelStyle = source.CopyLabelStyle(), Markers = source.CopyMarkers(),
-            Interpolation = source.Interpolation, StepPosition = source.Step, MarkOptions = source.MarkOptions, RowOptions = source.RowOptions
+            MarkOptions = source.MarkOptions, RowOptions = source.RowOptions
         };
+        // Only an authored curve is restored as authored, so a theme curve default still applies to the rebuilt view.
+        if (source.ExplicitInterpolation) model.Interpolation = source.Interpolation;
+        model.StepPosition = source.Step;
         if (source.IsHierarchy) model.RestoreVisibilityHierarchy(source, values);
         if (source.Kind == ChartSeriesKind.Bubble) model.ReplaceBubbles(selected.Select(index => {
             var bubble = source.Bubbles[index];
@@ -49,7 +52,7 @@ public sealed partial class ChartSeries {
             model.RestoreVisibilityFinancial(source, selected);
         }
         if (source.StrokeWidth.HasValue) model.StrokeWidth = source.StrokeWidth.Value;
-        model.StrokeStyle = source.StrokeStyle;
+        model.StrokeStyle = source.StrokeStyle; model.StrokeSegments.AddRange(source.StrokeSegments);
         model.StackGroup = source.StackGroup; model.NormalizedTo = source.NormalizedTo; model.StackedAreaMissingData = source.StackedAreaMissingData;
         model.RadialBand = source.RadialBand;
         if (source.Kind == ChartSeriesKind.BoxPlot) {

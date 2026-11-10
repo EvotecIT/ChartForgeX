@@ -69,9 +69,9 @@ bundle needs it. They exclude the drawing, font payloads and stylesheet:
 
 | Bundle | Raw budget | Gzip budget |
 | --- | ---: | ---: |
-| Core reader (tooltips, keyboard, crosshair) | 102 KiB | 33 KiB |
-| Standalone reader | 296 KiB | 91 KiB |
-| Full controller/native host | 364 KiB | 111 KiB |
+| Core reader (tooltips, keyboard, crosshair) | 103 KiB | 33 KiB |
+| Standalone reader | 297 KiB | 92 KiB |
+| Full controller/native host | 365 KiB | 111 KiB |
 
 Optional behaviour ships in separate feature bundles, so the runtimes above do
 not grow with it. A page carries only the bundles its options need, and the core
@@ -257,6 +257,10 @@ These stay declined, each for a stated reason:
 - **Timeline and Gantt schedules.** Their axis is fitted by the schedule
   compiler together with lane and item captions, which a window would have to
   lay out again.
+- **Additional value axes.** A chart with more than one value axis on a side
+  (`AddValueAxis`, see [axes](axes.md)) captures no axis projection, so the page
+  has no single value domain to re-tick. Native viewport windows and prepared
+  X zoom reject these charts too.
 - Other Cartesian families and native annotation layout.
 
 They require a connected native preparation path. Mixing an unsupported series

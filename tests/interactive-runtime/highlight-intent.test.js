@@ -11,9 +11,10 @@ function fixture() {
   ] }) } };
   const source = fs.readFileSync(path.resolve(__dirname,
     '../../ChartForgeX.Interactivity.Html/Assets/interactive.source/42-host-commands.js'), 'utf8');
-  const runtime = new Function('interactiveTargets', 'isInteractiveTarget', 'renderedTargetKind', 'targetIdentity',
+  const targets = () => identities.map(identity => ({ dataset: {}, identity }));
+  const runtime = new Function('interactiveTargets', 'chartTargets', 'isInteractiveTarget', 'renderedTargetKind', 'targetIdentity',
     'matchesTargetIdentity', 'durableChartTarget', 'targetKey', source + '\nreturn { projectHostHighlight, resolveHostTargets };')(
-      () => identities.map(identity => ({ dataset: {}, identity })), () => true, () => 'point', node => node.identity,
+      targets, targets, () => true, () => 'point', node => node.identity,
       (node, target) => (!target.seriesKey || target.seriesKey === node.identity.seriesKey)
         && (target.observationId !== undefined
           ? node.identity.observationId === target.observationId || node.identity.observationIds?.includes(target.observationId)

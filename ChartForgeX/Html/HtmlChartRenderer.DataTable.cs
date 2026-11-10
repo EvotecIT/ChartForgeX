@@ -75,7 +75,8 @@ public sealed partial class HtmlChartRenderer {
     private static IEnumerable<string?[]> DataTableRows(Chart chart, ChartSeries series) {
         string Coordinate(double value) => ChartAxisValueFormatter.FindExplicitLabel(ChartCartesianOrientation.CategoryLabels(chart), value)
             ?? ChartAxisValueFormatter.Format(ChartCartesianOrientation.CategoryAxis(chart), value);
-        string Value(double value) => chart.Options.WithUnit(series.ValueAxis == ChartAxisSide.Secondary
+        string Value(double value) => chart.Options.WithUnit(series.AdditionalValueAxis?.Axis.LabelFormatter is { } additional ? additional(value)
+            : series.ValueAxis == ChartAxisSide.Secondary
             && ChartCartesianOrientation.ValueAxis(chart, series.ValueAxis).LabelFormatter is { } formatter ? formatter(value)
             : ChartNumericFormatter.FormatValue(chart.Options, value));
         string? Label(int index) => index < series.PointLabels.Count ? series.PointLabels[index] : null;
@@ -163,7 +164,8 @@ public sealed partial class HtmlChartRenderer {
     }
 
     private static string ValueHeader(Chart chart, ChartSeries series) {
-        var title = series.ValueAxis == ChartAxisSide.Secondary ? chart.SecondaryYAxisTitle
+        var title = series.AdditionalValueAxis != null ? series.AdditionalValueAxis.Title
+            : series.ValueAxis == ChartAxisSide.Secondary ? chart.SecondaryYAxisTitle
             : ChartCartesianOrientation.IsHorizontal(chart) ? chart.XAxisTitle : chart.YAxisTitle;
         return !string.IsNullOrWhiteSpace(title) ? title : chart.Options.Labels.Value;
     }

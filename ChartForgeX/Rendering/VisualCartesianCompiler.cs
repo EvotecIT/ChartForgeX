@@ -97,6 +97,7 @@ internal static partial class VisualCartesianCompiler {
         var hasSecondary = chart.Series.Any(series => series.ValueAxis == ChartAxisSide.Secondary && (!series.IsVisibilityPreparation || series.HasSourceData));
         var secondaryRange = hasSecondary ? ChartRange.FromSecondaryValueAxis(chart, range, stacks) : null;
         fullDomain?.Apply(chart, range, secondaryRange);
+        var additional = ResolveAdditionalAxes(chart, range, stacks, colors);
         var labels = new CartesianLabels();
         var categoryGroups = CategoryGroupSource.Create(chart, range);
         var completedDomain = sourceViewport != null && fullDomain != null;
@@ -105,21 +106,21 @@ internal static partial class VisualCartesianCompiler {
         CartesianAxisLayout? layout = null;
         if (!completedDomain) {
             layout = ResolveAxisLayout(chart, context, builder, plot, viewport, measureAxes, range, secondaryRange,
-                stacks, coordinates, bubbleScale, colors, categoryLabels, labels, categoryGroups, expandMarkers: true);
+                stacks, coordinates, bubbleScale, colors, categoryLabels, labels, categoryGroups, expandMarkers: true, additional);
             if (layout == null) {
                 if (sourceViewport != null) throw new InvalidOperationException("A Cartesian viewport requires a usable plot rectangle.");
                 return null;
             }
         }
         var fullRange = range.Copy(); var fullSecondaryRange = secondaryRange?.Copy();
-        var hasProjection = SupportsXViewport(chart) && chart.Series.Any(series => series.HasSourceData)
+        var hasProjection = SupportsXViewport(chart) && additional.Count == 0 && chart.Series.Any(series => series.HasSourceData)
             && ChartMath.IsFinite(range.MinX) && ChartMath.IsFinite(range.MaxX) && range.MaxX > range.MinX;
         if (sourceViewport != null) {
             if (!hasProjection) throw new InvalidOperationException("A Cartesian viewport requires finite increasing full domains.");
             range = range.Copy(); secondaryRange = secondaryRange?.Copy();
             ApplyViewport(chart, sourceViewport, range, secondaryRange, stacks, coordinates);
             layout = ResolveAxisLayout(chart, context, builder, plot, viewport, measureAxes, range, secondaryRange,
-                stacks, coordinates, bubbleScale, colors, categoryLabels, labels, categoryGroups, expandMarkers: false)
+                stacks, coordinates, bubbleScale, colors, categoryLabels, labels, categoryGroups, expandMarkers: false, additional)
                 ?? throw new InvalidOperationException("A Cartesian viewport requires a usable plot rectangle.");
         }
         var resolvedLayout = layout ?? throw new InvalidOperationException("A Cartesian viewport requires a usable plot rectangle.");
@@ -133,6 +134,10 @@ internal static partial class VisualCartesianCompiler {
         // Hosts project this logical rectangle; mark clipping remains an independent choice.
         builder.AddRegion(new VisualSemanticRegion("cartesian-plot", "cartesian-plot", plot));
         var map = horizontal ? ChartMapper.ForHorizontalBars(plot, range, chart.Options.XAxis, chart) : new ChartMapper(plot, range, chart.Options.XAxis, chart.Options.YAxis);
+        foreach (var state in additional) {
+            state.Range.SetXBounds(range.MinX, range.MaxX);
+            state.Map = new ChartMapper(plot, state.Range, chart.Options.XAxis, state.Axis);
+        }
         var hasPrimaryDomain = chart.Series.Any(series => series.ValueAxis == ChartAxisSide.Primary && series.HasSourceData)
             || chart.Annotations.Any(annotation => ChartCartesianOrientation.AnnotationKind(annotation, horizontal) is ChartAnnotationKind.HorizontalLine or ChartAnnotationKind.HorizontalBand)
             || chart.PlotRegions.Any(region => region.YAxis == ChartAxisSide.Primary && (region.YMinimum.HasValue || region.YMaximum.HasValue));
@@ -143,7 +148,7 @@ internal static partial class VisualCartesianCompiler {
         builder.DataProjection = ChartDataProjection.TryCreate(plot, secondaryOnly ? secondaryRange! : range,
             horizontal && secondaryOnly ? chart.Options.SecondaryXAxis : chart.Options.XAxis,
             horizontal ? ChartCartesianOrientation.HorizontalCategoryProjection(chart) : secondaryOnly ? chart.Options.SecondaryYAxis : chart.Options.YAxis, horizontal,
-            includeY: horizontal || !(hasPrimaryDomain && hasSecondaryDomain), includeX: !horizontal || !(hasPrimaryDomain && hasSecondaryDomain));
+            includeY: horizontal || !(hasPrimaryDomain && hasSecondaryDomain) && additional.Count == 0, includeX: !horizontal || !(hasPrimaryDomain && hasSecondaryDomain));
         var secondaryMap = secondaryRange == null ? null : horizontal
             ? ChartMapper.ForHorizontalBars(plot, secondaryRange, chart.Options.SecondaryXAxis, chart)
             : new ChartMapper(plot, secondaryRange, chart.Options.XAxis, chart.Options.SecondaryYAxis);
@@ -166,7 +171,7 @@ internal static partial class VisualCartesianCompiler {
         // The owned viewport starts after the measured frame and legend. Its upper
         // title strip can hold a complete guide caption without moving either axis.
         var annotationBounds = new ChartRect(plot.Left, viewport.Top,
-            hasSecondary ? plot.Width : Math.Max(plot.Width, viewport.Right - plot.Left), plot.Bottom - viewport.Top);
+            hasSecondary || additional.Any(state => state.End) ? plot.Width : Math.Max(plot.Width, viewport.Right - plot.Left), plot.Bottom - viewport.Top);
         // Caption placement needs the actual marks before the background band layer is
         // emitted. Collect those marks once; ordinary charts keep the direct builder path.
         var seriesBuilder = chart.Annotations.Any(annotation => annotation.IsBand && annotation.ShowLabel && annotation.Label.Length > 0)
@@ -180,7 +185,7 @@ internal static partial class VisualCartesianCompiler {
             foreach (var index in ChartSeriesColours.DrawingOrder(chart)) {
                 var series = chart.Series[index];
                 if (series.IsVisibilityPreparation && !series.HasSourceData) continue;
-                var seriesMap = series.ValueAxis == ChartAxisSide.Secondary ? secondaryMap! : map;
+                var seriesMap = AdditionalAxis(resolvedLayout.AxisLabels, series)?.Map ?? (series.ValueAxis == ChartAxisSide.Secondary ? secondaryMap! : map);
                 var pointSeries = IsPointSeries(series.Kind);
                 using (clipMarks && (!pointSeries || sourceViewport != null) ? seriesBuilder.PushClip(plot) : null)
                 using (SeriesGroup(seriesBuilder, chart, index)) {
@@ -272,7 +277,7 @@ internal static partial class VisualCartesianCompiler {
             ["data-cfx-series"] = Number(seriesIndex), ["data-cfx-point"] = Number(pointIndex),
             ["data-cfx-source-point"] = Number(pointIndex < series.SourcePointIndices.Count ? series.SourcePointIndices[pointIndex] : pointIndex),
             ["data-cfx-x"] = Number(point.X), ["data-cfx-y"] = Number(point.Y),
-            ["data-cfx-state"] = series.StateRole.ToString().ToLowerInvariant(), ["data-cfx-axis"] = series.ValueAxis.ToString().ToLowerInvariant(),
+            ["data-cfx-state"] = series.StateRole.ToString().ToLowerInvariant(), ["data-cfx-axis"] = series.AdditionalValueAxis != null ? "additional" : series.ValueAxis.ToString().ToLowerInvariant(),
             ["data-cfx-fill-pattern"] = (pointIndex < series.PointFillPatterns.Count && series.PointFillPatterns[pointIndex].HasValue
                 ? series.PointFillPatterns[pointIndex]!.Value : series.FillPattern).ToString(),
             ["data-cfx-semantic-role"] = series.SemanticRole ?? string.Empty,

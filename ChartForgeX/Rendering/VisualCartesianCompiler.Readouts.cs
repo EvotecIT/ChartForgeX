@@ -35,7 +35,9 @@ internal static partial class VisualCartesianCompiler {
                 categoryLabels: categoryLabels, xLabelGap: AxisLabelGap(displayX, spacing), yLabelGap: AxisLabelGap(displayY, spacing));
         }
         builder.CaptureChartReadouts(chart, (_, number) => horizontal ? Y(number) : X(number),
-            (series, number, caption) => series.ValueAxis == ChartAxisSide.Secondary ? Secondary(number, caption)
+            (series, number, caption) => AdditionalAxis(cache, series) is { } additional
+                ? cache.FormatReadout(additional.Axis, number, cache.Ticks(additional.Axis, additional.Range.MinY, additional.Range.MaxY), caption)
+                : series.ValueAxis == ChartAxisSide.Secondary ? Secondary(number, caption)
                 : horizontal ? X(number, caption) : Y(number, caption),
             (_, number) => horizontal ? cache.FormatDisplay(y, number, yTicks) : cache.FormatDisplay(x, number, xTicks));
         if (cache.CategoryGroups != null) builder.CaptureCategoryGroupReadouts(cache.CategoryGroups.Plan.Bindings);

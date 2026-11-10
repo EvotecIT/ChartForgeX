@@ -420,6 +420,9 @@
 
 .cfx-responsive-legend { margin-block: 4px 8px; font-family: var(--cfx-tooltip-font, var(--hfx-font-sans, Archivo, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif)); }
 .cfx-responsive-legend__item { border-color: transparent; border-radius: var(--cfx-control-radius, var(--hfx-radius-control, 6px)); }
+/* Tray rows flow as touch-sized flex rows; the extra class outranks the shared .cfx-tool box. */
+.cfx-interactive-chart .cfx-responsive-legend .cfx-responsive-legend__item { display: inline-flex; align-items: center; gap: 8px; box-sizing: border-box; min-width: 0; max-width: 100%; padding: 4px 6px; font: inherit; font-size: 12px; line-height: 18px; text-align: start; }
+.cfx-responsive-legend__item > svg { flex: 0 0 12px; }
 .cfx-responsive-legend__item > span { min-width: 0; overflow-wrap: anywhere; }
 .cfx-responsive-legend__value { margin-inline-start: auto; color: var(--cfx-tooltip-muted); font-variant-numeric: tabular-nums; }
 /* Every entry shares one unboxed style; a hidden series dims its label and hollows its marker. */
@@ -442,6 +445,27 @@
   color: var(--cfx-tooltip-text); font: 600 14px/20px var(--cfx-tooltip-font);
 }
 .cfx-frame:has(> .cfx-toolbar) > .cfx-responsive-heading { min-height: calc(var(--cfx-toolbar-height, 34px) + var(--cfx-toolbar-inset) * 2); }
+/* The readout writes these on the chart and frame. An inherited custom property would restyle every mark of a dense
+   drawing on each write, so they do not inherit; only the frame, its chrome and the drawing element take them. */
+@property --cfx-toolbar-height { syntax: "*"; inherits: false; }
+@property --cfx-heading-crop { syntax: "*"; inherits: false; }
+@property --cfx-card-fill { syntax: "*"; inherits: false; }
+@property --cfx-card-stroke { syntax: "*"; inherits: false; }
+@property --cfx-card-stroke-width { syntax: "*"; inherits: false; }
+@property --cfx-card-radius { syntax: "*"; inherits: false; }
+@property --cfx-card-inset { syntax: "*"; inherits: false; }
+@property --cfx-card-width { syntax: "*"; inherits: false; }
+@property --cfx-card-pad-x { syntax: "*"; inherits: false; }
+@property --cfx-card-pad-top { syntax: "*"; inherits: false; }
+@property --cfx-card-top { syntax: "*"; inherits: false; }
+@property --cfx-card-foot { syntax: "*"; inherits: false; }
+@property --cfx-card-bottom { syntax: "*"; inherits: false; }
+.cfx-frame { --cfx-toolbar-height: inherit; }
+.cfx-frame > *, .cfx-frame::before, .cfx-frame > .cfx-stage > svg {
+  --cfx-toolbar-height: inherit; --cfx-heading-crop: inherit; --cfx-card-fill: inherit; --cfx-card-stroke: inherit;
+  --cfx-card-stroke-width: inherit; --cfx-card-radius: inherit; --cfx-card-inset: inherit; --cfx-card-width: inherit;
+  --cfx-card-pad-x: inherit; --cfx-card-pad-top: inherit; --cfx-card-top: inherit; --cfx-card-foot: inherit; --cfx-card-bottom: inherit;
+}
 /* The drawing overlaps the band above it by one pixel so no seam shows between the surfaces. */
 .cfx-frame[data-cfx-heading-crop] > .cfx-stage > svg {
   margin-top: calc(1px - var(--cfx-heading-crop)); clip-path: inset(max(0px, calc(var(--cfx-heading-crop) - 1px)) 0 0 0);

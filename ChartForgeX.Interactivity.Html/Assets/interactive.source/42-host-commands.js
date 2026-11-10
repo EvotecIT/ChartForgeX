@@ -1,7 +1,8 @@
 
-  const isDataTarget = node => isInteractiveTarget(node) && renderedTargetKind(node) !== 'legend'
-    && (renderedTargetKind(node) !== 'series' || node.dataset.cfxValue !== undefined);
-  const dataTargets = root => interactiveTargets(root).filter(isDataTarget);
+  const dataKind = node => renderedTargetKind(node) !== 'legend' && (renderedTargetKind(node) !== 'series' || node.dataset.cfxValue !== undefined);
+  const isDataTarget = node => isInteractiveTarget(node) && dataKind(node);
+  // The chart's targets are already interactive; only their kind is checked again.
+  const dataTargets = root => chartTargets(root).filter(dataKind);
   const targetCategory = node => {
     const data = node.dataset || {};
     return data.cfxXLabel ?? data.cfxCategoryLabel ?? data.cfxCategory

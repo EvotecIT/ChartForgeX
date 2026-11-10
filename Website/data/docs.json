@@ -144,6 +144,7 @@
     {"from": "../ChartForgeX.Mermaid/MermaidParser.cs", "to": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Mermaid/MermaidParser.cs"},
     {"from": "../ChartForgeX.Mermaid/MermaidPresentation.cs", "to": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Mermaid/MermaidPresentation.cs"},
     {"from": "../ChartForgeX.Mermaid/MermaidRenderOptions.cs", "to": "https://github.com/EvotecIT/ChartForgeX/blob/main/ChartForgeX.Mermaid/MermaidRenderOptions.cs"},
+    {"from": "../chart-styling.md#theme-defaults-per-series-kind", "to": "https://github.com/EvotecIT/ChartForgeX/blob/main/docs/chart-styling.md#theme-defaults-per-series-kind"},
     {"from": "../chord.md", "to": "/docs/chord/"},
     {"from": "../hierarchy-views.md#sunburst-caption-size-and-sector-spacing", "to": "https://github.com/EvotecIT/ChartForgeX/blob/main/docs/hierarchy-views.md#sunburst-caption-size-and-sector-spacing"},
     {"from": "../interactivity.md#connected-native-x-windows", "to": "https://github.com/EvotecIT/ChartForgeX/blob/main/docs/interactivity.md#connected-native-x-windows"},

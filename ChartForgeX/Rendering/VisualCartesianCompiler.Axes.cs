@@ -33,6 +33,8 @@ internal static partial class VisualCartesianCompiler {
         internal ChartAxis? HorizontalCategoryAxis { get; set; }
         internal CategoryGroupSource? CategoryGroups { get; set; }
         internal double[]? HorizontalGroupBandSizes { get; set; }
+        /// <summary>The additional value axes of this preparation, inner to outer on each side.</summary>
+        internal IReadOnlyList<AdditionalAxisState> Additional { get; set; } = Array.Empty<AdditionalAxisState>();
         internal AxisLabelCache(ChartAxisValueFormatter.Cache labels) => _labels = labels;
         internal IReadOnlyList<double>? TimeBarObservations(Chart chart) {
             if (!_hasTimeBarObservations) { _regularTimeBarObservations = RegularTimeBarObservations(chart); _hasTimeBarObservations = true; }
@@ -125,6 +127,11 @@ internal static partial class VisualCartesianCompiler {
         if (chart.Options.YAxis.Visible && chart.YAxisTitle.Length > 0) top = builder.MeasureText(chart.YAxisTitle, titleStyle).Height + spacing;
         if (secondaryRange != null && chart.Options.SecondaryYAxis.Visible && chart.SecondaryYAxisTitle.Length > 0)
             top = Math.Max(top, builder.MeasureText(chart.SecondaryYAxisTitle, titleStyle).Height + spacing);
+        var additionalHalfHeight = 0d;
+        if (labels.Additional.Count > 0) {
+            var additional = MeasureAdditionalAxes(chart, builder, viewport, left, right, style, titleStyle, spacing, labels);
+            left = additional.Left; right = additional.Right; top = Math.Max(top, additional.TitleHeight); additionalHalfHeight = additional.HalfHeight;
+        }
         // Tick text is shortened in its reserved strip; it cannot consume the entire chart width.
         left = Math.Min(left, viewport.Width * .35);
         right = Math.Min(right, viewport.Width * .35);
@@ -135,7 +142,7 @@ internal static partial class VisualCartesianCompiler {
         var xOverhang = CategoryCaptionOverhang(builder, chart.Options.XAxis, range.MinX, range.MaxX, style, labels);
         left = Math.Max(left, Math.Min(xOverhang?.Left ?? xMetrics.Width / 2, viewport.Width * .35));
         right = Math.Max(right, Math.Min(xOverhang?.Right ?? xMetrics.Width / 2, viewport.Width * .35));
-        var halfHeight = Math.Max(yMetrics.Height, secondaryMetrics.Height) / 2;
+        var halfHeight = Math.Max(Math.Max(yMetrics.Height, secondaryMetrics.Height) / 2, additionalHalfHeight);
         top = Math.Max(top, Math.Min(halfHeight, viewport.Height * .25));
         bottom = Math.Max(bottom, Math.Min(halfHeight, viewport.Height * .45));
         return new ChartRect(viewport.Left + left, viewport.Top + top, Math.Max(0, viewport.Width - left - right), Math.Max(0, viewport.Height - top - bottom));
@@ -186,6 +193,8 @@ internal static partial class VisualCartesianCompiler {
                 var x = map.X(tick);
                 if ((parts & AxisParts.XGrid) != 0 && xGrid.Lines) xGrid.Line(builder, x, plot.Top, x, plot.Bottom, "grid-x");
             }
+            if ((parts & AxisParts.YGrid) != 0 && labels.Additional.Count > 0)
+                DrawAdditionalAxisGrids(builder, plot, labels, grid.HorizontalOpacity, gridWidth, dash, colors);
         }
         if (!chart.Options.ShowAxes) {
             if ((parts & AxisParts.XLabels) != 0) DrawCategoryGroups(chart, context, builder, labels, map.X, range.MinX, range.MaxX, default, colors);
@@ -219,30 +228,38 @@ internal static partial class VisualCartesianCompiler {
                 colors, TextAlignment.Center, "axis-x-title");
         } else if (!chart.Options.XAxis.Visible || !chart.Options.XAxis.CrossAt.HasValue)
             if ((parts & AxisParts.XLabels) != 0) DrawCategoryGroups(chart, context, builder, labels, map.X, range.MinX, range.MaxX, default, colors);
+        // A side that carries added axes colours every value axis on it by its first series, so each column reads alike.
+        var primaryAccent = StackedSideAccent(chart, labels, end: false, colors);
+        var secondaryAccent = StackedSideAccent(chart, labels, end: true, colors);
         if ((parts & AxisParts.YAxes) != 0 && chart.Options.YAxis.Visible && !chart.Options.YAxis.CrossAt.HasValue) {
-            if (chart.Options.YAxis.ShowLine) DrawAxisRule(chart, context, builder, plot, range, map, chart.Options.YAxis, false, plot.Left, colors, "axis-y");
+            if (chart.Options.YAxis.ShowLine) DrawValueAxisRule(chart, context, builder, plot, range, map, chart.Options.YAxis, plot.Left, colors, "axis-y", primaryAccent);
             var bounds = new ChartRect(viewport.Left, viewport.Top, Math.Max(0, plot.Left - viewport.Left - spacing), viewport.Height);
-            DrawAxisLabels(builder, chart.Options, chart.Options.YAxis, yTicks, map.Y, false, false, bounds, style, spacing, chart.Options.ValueFormatter, labels, plot.Height);
-            if (!string.IsNullOrEmpty(chart.YAxisTitle)) DrawAxisTitle(chart, context, builder, chart.YAxisTitle,
-                new ChartRect(plot.Left, viewport.Top, Math.Max(0, secondaryMap != null && chart.Options.SecondaryYAxis.Visible && chart.SecondaryYAxisTitle.Length > 0 ? plot.Width / 2 - spacing / 2 : plot.Width), Math.Max(0, labelBounds.Top - viewport.Top - spacing)),
-                colors, TextAlignment.Left, "axis-y-title");
+            DrawAxisLabels(builder, chart.Options, chart.Options.YAxis, yTicks, map.Y, false, false, bounds, AccentStyle(style, primaryAccent), spacing, chart.Options.ValueFormatter, labels, plot.Height);
+            var sharedTitleRow = secondaryMap != null && chart.Options.SecondaryYAxis.Visible && chart.SecondaryYAxisTitle.Length > 0 || HasAdditionalTitles(labels, end: true);
+            if (!string.IsNullOrEmpty(chart.YAxisTitle) && !HasAdditionalTitles(labels, end: false)) DrawAxisTitle(chart, context, builder, chart.YAxisTitle,
+                new ChartRect(plot.Left, viewport.Top, Math.Max(0, sharedTitleRow ? plot.Width / 2 - spacing / 2 : plot.Width), Math.Max(0, labelBounds.Top - viewport.Top - spacing)),
+                colors, TextAlignment.Left, "axis-y-title", color: primaryAccent);
         }
+        var secondaryShown = secondaryMap != null && secondaryRange != null && chart.Options.SecondaryYAxis.Visible && !chart.Options.SecondaryYAxis.CrossAt.HasValue;
         if ((parts & AxisParts.YAxes) != 0 && secondaryMap != null && secondaryRange != null && chart.Options.SecondaryYAxis.Visible && !chart.Options.SecondaryYAxis.CrossAt.HasValue) {
             var ticks = labels.Ticks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
-            if (chart.Options.SecondaryYAxis.ShowLine) DrawAxisRule(chart, context, builder, plot, range, map, chart.Options.SecondaryYAxis, false, plot.Right, colors, "axis-secondary-y");
+            if (chart.Options.SecondaryYAxis.ShowLine) DrawValueAxisRule(chart, context, builder, plot, range, map, chart.Options.SecondaryYAxis, plot.Right, colors, "axis-secondary-y", secondaryAccent);
             var bounds = new ChartRect(plot.Right + spacing, viewport.Top, Math.Max(0, viewport.Right - plot.Right - spacing), viewport.Height);
-            DrawAxisLabels(builder, chart.Options, chart.Options.SecondaryYAxis, ticks, secondaryMap.Y, false, true, bounds, style, spacing, chart.Options.ValueFormatter, labels, plot.Height);
-            if (!string.IsNullOrEmpty(chart.SecondaryYAxisTitle)) {
-                var width = chart.YAxisTitle.Length > 0 && chart.Options.YAxis.Visible ? plot.Width / 2 - spacing / 2 : plot.Width;
+            DrawAxisLabels(builder, chart.Options, chart.Options.SecondaryYAxis, ticks, secondaryMap.Y, false, true, bounds, AccentStyle(style, secondaryAccent), spacing, chart.Options.ValueFormatter, labels, plot.Height);
+            if (!string.IsNullOrEmpty(chart.SecondaryYAxisTitle) && !HasAdditionalTitles(labels, end: true)) {
+                var width = chart.YAxisTitle.Length > 0 && chart.Options.YAxis.Visible || HasAdditionalTitles(labels, end: false) ? plot.Width / 2 - spacing / 2 : plot.Width;
                 DrawAxisTitle(chart, context, builder, chart.SecondaryYAxisTitle,
                     new ChartRect(plot.Right - width, viewport.Top, Math.Max(0, width), Math.Max(0, labelBounds.Top - viewport.Top - spacing)),
-                    colors, TextAlignment.Right, "axis-secondary-y-title");
+                    colors, TextAlignment.Right, "axis-secondary-y-title", color: secondaryAccent);
             }
         }
+        if ((parts & AxisParts.YAxes) != 0 && labels.Additional.Count > 0)
+            DrawAdditionalAxes(chart, context, builder, plot, range, secondaryRange, secondaryShown, colors, viewport, labels, labelBounds, style,
+                primaryAccent, secondaryAccent);
     }
 
     private static void DrawAxisLabels(VisualSceneBuilder builder, ChartOptions options, ChartAxis axis, IReadOnlyList<double> ticks, Func<double, double> coordinate,
-        bool horizontal, bool secondary, ChartRect bounds, TextStyle style, double spacing, Func<double, string>? fallback, AxisLabelCache labels, double trackLength, List<LabelObstacle>? obstacles = null, CartesianXZoomLayers? zoom = null, ChartRect? outputPlot = null) {
+        bool horizontal, bool secondary, ChartRect bounds, TextStyle style, double spacing, Func<double, string>? fallback, AxisLabelCache labels, double trackLength, List<LabelObstacle>? obstacles = null, CartesianXZoomLayers? zoom = null, ChartRect? outputPlot = null, string? role = null, string? identityPrefix = null) {
         // An intentionally oversized style still fits its complete footprint.
         // Ordinary captions keep their font size and use a coarser scale/stride.
         var gap = AxisLabelGap(axis, spacing);
@@ -277,7 +294,7 @@ internal static partial class VisualCartesianCompiler {
             : SelectAxisLabelStride(builder, axis, ticks, coordinate, horizontal, style, gap, fallback, labels, Display);
         var requests = new List<LabelPlacementRequest>(); var complete = new List<string>();
         var sourceTicks = new List<(double Value, string Id)>();
-        var role = horizontal ? secondary ? "axis-secondary-x-label" : "axis-x-label" : secondary ? "axis-secondary-y-label" : "axis-y-label";
+        role ??= horizontal ? secondary ? "axis-secondary-x-label" : "axis-x-label" : secondary ? "axis-secondary-y-label" : "axis-y-label";
         var index = 0;
         foreach (var tick in labels.SemanticTicks(axis, ticks)) {
             var text = labels.Format(axis, tick, fallback, ticks);
@@ -285,7 +302,7 @@ internal static partial class VisualCartesianCompiler {
             var anchor = horizontal ? new ChartPoint(value, bounds.Top) : new ChartPoint(secondary ? bounds.Left : bounds.Right, value);
             // Regions describe source content, including text with no visible placement. They are not hit-test targets.
             var regionBounds = horizontal ? new ChartRect(value, bounds.Top, 0, bounds.Height) : new ChartRect(bounds.Left, value, bounds.Width, 0);
-            var identity = role + "-" + Number(index++);
+            var identity = (identityPrefix ?? role) + "-" + Number(index++);
             builder.AddRegion(new VisualSemanticRegion(identity, role, regionBounds,
                 TextCaseTransformer.Apply(text, style.TextCase, CultureInfo.InvariantCulture) + " (" + Number(tick) + ")"));
             if (text.Length == 0) continue;
@@ -329,9 +346,10 @@ internal static partial class VisualCartesianCompiler {
         ticks + title <= available || title == 0 ? title : available * title / (ticks + title);
 
     private static void DrawAxisTitle(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, string text, ChartRect bounds,
-        VisualThemeColors colors, TextAlignment alignment, string role, List<LabelObstacle>? obstacles = null) {
+        VisualThemeColors colors, TextAlignment alignment, string role, List<LabelObstacle>? obstacles = null, ChartColor? color = null) {
         var style = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.FontWithWeight(context.Theme.Typography.AxisTitleWeight), FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.MutedForeground, Alignment = alignment });
         style.Alignment = alignment;
+        if (color.HasValue) style.Color = color.Value;
         style = VisualAxisText.FitOversized(builder, style, bounds, new[] { text });
         VisualAxisText.Title(builder, text, bounds, style, role, null,
             "cartesian.axis-title-overflow", "An axis title was shortened or omitted within its measured frame.", obstacles);
