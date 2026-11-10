@@ -47,7 +47,8 @@ public sealed class AdditionalValueAxisTests {
     public void ACompactChartOmitsAnAdditionalColumnWithoutRoomInsteadOfOverlapping() {
         var (chart, _) = Climate(300);
         var pressure = chart.AddValueAxis(ChartAxisPlacement.End, "Pressure (Pa)",
-            axis => axis.WithBounds(0, 12000).WithLabelFormatter(value => value.ToString("N0", CultureInfo.InvariantCulture) + " Pa"));
+            axis => axis.WithBounds(0, 12000).WithLabelFormatter(value => value.ToString("N0", CultureInfo.InvariantCulture) + " Pa")
+                .ConfigureGrid(grid => grid.WithLines(true)));
         chart.AddLine("Pressure", new[] { new ChartPoint(0, 9000), new ChartPoint(1, 11000) });
         chart.Series[3].UseValueAxis(pressure);
         var prepared = Prepare(chart);
@@ -59,6 +60,8 @@ public sealed class AdditionalValueAxisTests {
         foreach (var text in columns)
             Assert.DoesNotContain(columns, other => !ReferenceEquals(text, other) && Overlaps(text, other));
         Assert.DoesNotContain(Texts(prepared, "axis-additional-y-label"), text => Caption(text).Contains("000", StringComparison.Ordinal));
+        // The omitted axis asks for grid lines, but without its captions it draws none.
+        Assert.DoesNotContain(prepared.Scene.Nodes, node => node.Role == "grid-additional-y");
     }
 
     [Fact]

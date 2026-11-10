@@ -86,7 +86,8 @@ internal static partial class VisualCartesianCompiler {
         double[]? dash, VisualThemeColors colors) {
         foreach (var state in labels.Additional) {
             // Only the primary axis draws grid lines by default; an additional axis opts in through its own grid style.
-            if (state.Axis.Grid?.ShowLines != true || state.Map == null) continue;
+            // An axis omitted for lack of room leaves no grid behind without its captions.
+            if (state.Axis.Grid?.ShowLines != true || state.Map == null || state.Axis.Visible && !state.Shown) continue;
             var grid = new CartesianAxisGrid(state.Axis, false, opacity, width, dash, colors);
             var ticks = labels.Ticks(state.Axis, state.Range.MinY, state.Range.MaxY);
             grid.Underlay(builder, ticks, state.Range.MinY, state.Range.MaxY, state.Map.Y, plot, true, "grid-additional-y", false);
