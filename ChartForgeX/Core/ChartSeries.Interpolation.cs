@@ -16,10 +16,13 @@ public sealed partial class ChartSeries {
         get => _interpolation;
         set {
             if (!Enum.IsDefined(typeof(ChartInterpolation), value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown interpolation.");
-            _interpolation = value;
+            _interpolation = value; HasExplicitInterpolation = true;
             if (value != ChartInterpolation.Step) _stepPosition = ChartStepPosition.End;
         }
     }
+
+    /// <summary>Gets whether the interpolation was authored, so a theme curve default leaves it unchanged.</summary>
+    internal bool HasExplicitInterpolation { get; private set; }
 
     /// <summary>
     /// Gets or sets where step interpolation changes value. The default is End.
@@ -52,9 +55,7 @@ public sealed partial class ChartSeries {
             throw new InvalidOperationException("Series '" + Name + "' requires step interpolation for its step position.");
         ValidatePairedBoundaries();
         if (Interpolation == ChartInterpolation.Linear) return;
-        if (Kind != ChartSeriesKind.Line && Kind != ChartSeriesKind.StepLine && Kind != ChartSeriesKind.Area
-            && Kind != ChartSeriesKind.StepArea && Kind != ChartSeriesKind.StackedArea
-            && Kind != ChartSeriesKind.RangeBand && Kind != ChartSeriesKind.RangeArea && Kind != ChartSeriesKind.DifferenceArea)
+        if (!ChartSeriesKindTraits.SupportsInterpolation(Kind))
             throw new InvalidOperationException("Series '" + Name + "' does not support connected-path interpolation.");
     }
 }

@@ -71,6 +71,13 @@ internal static class ChartSeriesKindTraits {
         kind == ChartSeriesKind.RadialColumn ||
         kind == ChartSeriesKind.Lollipop;
 
+    public static bool SupportsInterpolation(ChartSeriesKind kind) => kind is ChartSeriesKind.Line or ChartSeriesKind.StepLine
+        or ChartSeriesKind.Area or ChartSeriesKind.StepArea or ChartSeriesKind.StackedArea or ChartSeriesKind.RangeBand
+        or ChartSeriesKind.RangeArea or ChartSeriesKind.DifferenceArea;
+
+    public static bool UsesBarSurface(ChartSeriesKind kind) => kind is ChartSeriesKind.Bar or ChartSeriesKind.HorizontalBar
+        or ChartSeriesKind.RangeBar or ChartSeriesKind.Waterfall;
+
     public static bool SupportsMarkers(ChartSeriesKind kind) => kind is ChartSeriesKind.Line or ChartSeriesKind.StepLine
         or ChartSeriesKind.Area or ChartSeriesKind.StepArea or ChartSeriesKind.StackedArea or ChartSeriesKind.Scatter
         or ChartSeriesKind.Bubble or ChartSeriesKind.ErrorBar or ChartSeriesKind.Dumbbell or ChartSeriesKind.Lollipop

@@ -22,7 +22,6 @@ Workstreams can run in parallel where they don't share owners. One coherent PR p
 AG Charts lets a caller style any datum, format any label and theme every series type. I want the same reach through our typed API.
 
 - [ ] **More secondary axes.** More than one secondary axis per side where the layout allows. Done when an example shows two value axes on one side and existing single-axis layouts are unchanged.
-- [ ] **Theme defaults per series type.** `VisualDesignTokens` can carry defaults per series kind (line width, marker, bar radius, label style), like AG `theme.overrides`. Done when a theme file restyles every line chart without per-chart code.
 
 ## 2. Standalone browser interactivity
 

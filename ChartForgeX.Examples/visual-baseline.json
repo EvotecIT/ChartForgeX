@@ -18977,6 +18977,106 @@
       }
     },
     {
+      "name": "theme-series-defaults-bar-dark",
+      "layout": {
+        "heightMode": "fixed",
+        "widthMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 760,
+      "height": 420,
+      "logicalWidth": 760.0,
+      "logicalHeight": 420.0,
+      "svg": {
+        "minVisualNodes": 18,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 638244,
+        "minTransparentPixels": 156,
+        "minDistinctColors": 637,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "theme-series-defaults-bar-light",
+      "layout": {
+        "heightMode": "fixed",
+        "widthMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 760,
+      "height": 420,
+      "logicalWidth": 760.0,
+      "logicalHeight": 420.0,
+      "svg": {
+        "minVisualNodes": 18,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 638244,
+        "minTransparentPixels": 156,
+        "minDistinctColors": 680,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "theme-series-defaults-line-dark",
+      "layout": {
+        "heightMode": "fixed",
+        "widthMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 760,
+      "height": 420,
+      "logicalWidth": 760.0,
+      "logicalHeight": 420.0,
+      "svg": {
+        "minVisualNodes": 30,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 638244,
+        "minTransparentPixels": 156,
+        "minDistinctColors": 948,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
+      "name": "theme-series-defaults-line-light",
+      "layout": {
+        "heightMode": "fixed",
+        "widthMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 760,
+      "height": 420,
+      "logicalWidth": 760.0,
+      "logicalHeight": 420.0,
+      "svg": {
+        "minVisualNodes": 30,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 638244,
+        "minTransparentPixels": 156,
+        "minDistinctColors": 1049,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "timing-hierarchy-1440-light",
       "layout": {
         "heightMode": "natural",
