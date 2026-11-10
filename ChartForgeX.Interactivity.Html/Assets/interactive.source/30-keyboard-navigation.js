@@ -45,13 +45,6 @@
     const viewport = svg.getBoundingClientRect();
     return viewport.width > 0 && viewport.height > 0;
   };
-  // An observation wholly inside the plot keeps its availability while only the window moves: the plot clip, its
-  // series paint and its styles stay as they were. Observations at the plot edges are measured again.
-  const interiorObservation = (root, node) => {
-    const plot = root._cfxDataProjection?.plotBounds, region = node._cfxNativeRegion;
-    return !!(plot && region && node.dataset.cfxPoint !== undefined && region.x > plot.x + 1 && region.y > plot.y + 1
-      && region.x + region.width < plot.x + plot.width - 1 && region.y + region.height < plot.y + plot.height - 1);
-  };
   const keyboardTargets = (root, viewportOnly = false) => withNativeHighlightPaint(root, () => {
     const hierarchy = hasFeature(root, 'HierarchyNavigation') ? capturedHierarchy(root) : null;
     // Discovery only reads, so one pass shares computed styles, series paint layers and shown ancestors across every target.
@@ -59,9 +52,13 @@
     // After a repaint that only moved the window, a dense chart re-measures only the observations it cannot reuse.
     const kept = viewportOnly && root._cfxKeyboardAvailability || new Map();
     root._cfxKeyboardAvailability = kept;
+    const plot = root._cfxDataProjection?.plotBounds;
     const candidates = chartTargets(root).filter(node => {
       if (node.dataset.cfxVisible === 'false') return false;
-      const interior = interiorObservation(root, node);
+      // An observation wholly inside the plot keeps its availability while only the window moves: the plot clip, its
+      // series paint and its styles stay as they were. Observations at the plot edges are measured again.
+      const region = node._cfxNativeRegion, interior = plot && region && node.dataset.cfxPoint !== undefined && region.x > plot.x + 1 && region.y > plot.y + 1
+        && region.x + region.width < plot.x + plot.width - 1 && region.y + region.height < plot.y + plot.height - 1;
       if (interior && kept.has(node)) return kept.get(node);
       const available = keyboardTargetAvailable(node, styles);
       if (interior) kept.set(node, available);

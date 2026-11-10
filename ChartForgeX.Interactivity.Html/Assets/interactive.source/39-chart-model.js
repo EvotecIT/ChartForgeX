@@ -20,8 +20,6 @@
     }
     return model.data;
   };
-  // A repaint that moves every mark drops the model first, so its observer records none of those writes.
-  const dropChartModel = root => { const model = chartModels.get(root); if (model?.data) { model.observer.disconnect(); model.data = null; } };
   // Without a live model (before binding or after disposal) every read builds its facts afresh.
   const modelled = (root, name, build) => {
     const model = chartModel(root);
