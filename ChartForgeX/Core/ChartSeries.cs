@@ -161,14 +161,21 @@ public sealed partial class ChartSeries {
 
     /// <summary>
     /// Gets or sets the primary or secondary value axis. Horizontal charts use the X axis; vertical and radial charts use the Y axis.
+    /// Setting it releases any <see cref="AdditionalValueAxis"/> binding.
     /// </summary>
     public ChartAxisSide ValueAxis {
         get => _valueAxis;
         set {
             if (!Enum.IsDefined(typeof(ChartAxisSide), value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown value-axis side.");
             _valueAxis = value;
+            AdditionalValueAxis = null;
         }
     }
+
+    /// <summary>
+    /// Gets the additional value axis this series is drawn against, or null when it uses <see cref="ValueAxis"/>.
+    /// </summary>
+    public ChartAdditionalValueAxis? AdditionalValueAxis { get; private set; }
 
     /// <summary>
     /// Gets or sets the stroke width for line/area series and explicitly colored Treemap/Sunburst node borders.
@@ -512,6 +519,19 @@ public sealed partial class ChartSeries {
     /// <returns>The current series.</returns>
     public ChartSeries UseSecondaryValueAxis() {
         ValueAxis = ChartAxisSide.Secondary;
+        return this;
+    }
+
+    /// <summary>
+    /// Draws the series against an additional value axis created by <see cref="Chart.AddValueAxis"/>.
+    /// </summary>
+    /// <param name="axis">The additional axis of the chart this series belongs to.</param>
+    /// <returns>The current series.</returns>
+    public ChartSeries UseValueAxis(ChartAdditionalValueAxis axis) {
+        if (axis == null) throw new ArgumentNullException(nameof(axis));
+        if (Owner != null && !ReferenceEquals(axis.Owner, Owner)) throw new ArgumentException("The axis belongs to another chart.", nameof(axis));
+        _valueAxis = ChartAxisSide.Primary;
+        AdditionalValueAxis = axis;
         return this;
     }
 

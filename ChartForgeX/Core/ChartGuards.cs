@@ -53,6 +53,7 @@ internal static partial class ChartGuards {
         ValidateRadialValueEncoding(chart);
         ChartCategoryGroupPlan.ValidateChart(chart);
         chart.ValidatePlotRegions();
+        chart.ValidateAdditionalValueAxes();
         ValidateAxisRuleCrossings(chart);
         chart.Options.XAxis.ValidateTickPolicy("The X axis"); chart.Options.YAxis.ValidateTickPolicy("The Y axis");
         chart.Options.SecondaryXAxis.ValidateTickPolicy("The secondary X axis"); chart.Options.SecondaryYAxis.ValidateTickPolicy("The secondary Y axis");

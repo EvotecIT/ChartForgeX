@@ -81,7 +81,7 @@ internal sealed partial class ChartRange {
                 }
                 continue;
             }
-            if (series.ValueAxis == ChartAxisSide.Secondary && !ChartSeriesKindTraits.UsesHorizontalBaseline(series.Kind)) {
+            if ((series.ValueAxis == ChartAxisSide.Secondary || series.AdditionalValueAxis != null) && !ChartSeriesKindTraits.UsesHorizontalBaseline(series.Kind)) {
                 IncludeSeriesX(range, series);
                 if (RequiresMarkWidth(series.Kind) && series.HistogramBinLayout == null) {
                     var categories = series.Kind == ChartSeriesKind.Bar ? scalarBarXValues : barXValues;
@@ -248,29 +248,39 @@ internal sealed partial class ChartRange {
 
     internal static ChartRange FromSecondaryValueAxis(Chart chart, ChartRange primaryRange, ChartStackLayout stacks, bool applyOptionBounds = true) {
         if (ChartCartesianOrientation.IsHorizontal(chart)) return FromSecondaryHorizontalAxis(chart, primaryRange, stacks, applyOptionBounds);
+        return FromVerticalValueAxis(chart, primaryRange, stacks, applyOptionBounds, chart.Options.SecondaryYAxis,
+            series => series.ValueAxis == ChartAxisSide.Secondary);
+    }
+
+    /// <summary>Resolves the value domain of one additional axis from the series bound to it; X follows the primary range.</summary>
+    internal static ChartRange FromAdditionalValueAxis(Chart chart, ChartAdditionalValueAxis axis, ChartRange primaryRange, ChartStackLayout stacks) =>
+        FromVerticalValueAxis(chart, primaryRange, stacks, true, axis.Axis, series => ReferenceEquals(series.AdditionalValueAxis, axis));
+
+    private static ChartRange FromVerticalValueAxis(Chart chart, ChartRange primaryRange, ChartStackLayout stacks, bool applyOptionBounds,
+        ChartAxis axis, Func<ChartSeries, bool> owns) {
         var range = new ChartRange();
-        var hasObservations = chart.Series.Any(series => series.ValueAxis == ChartAxisSide.Secondary && series.RenderPoints.Count > 0);
+        var hasObservations = chart.Series.Any(series => owns(series) && series.RenderPoints.Count > 0);
         var usesVerticalBaseline = false;
         for (var index = 0; index < chart.Series.Count; index++) {
             var series = chart.Series[index];
-            if (series.ValueAxis != ChartAxisSide.Secondary) continue;
+            if (!owns(series)) continue;
             if (series.RenderPoints.Count == 0 && hasObservations) continue;
             if (series.Kind == ChartSeriesKind.Bar || series.Kind == ChartSeriesKind.StackedArea) {
                 for (var pointIndex = 0; pointIndex < series.RenderPoints.Count; pointIndex++) range.IncludeY(stacks.Point(index, pointIndex).End);
-                if (UsesZeroBaseline(chart.Options.SecondaryYAxis)) range.IncludeY(0);
-            } else IncludeSeriesY(range, series, chart.Options.SecondaryYAxis);
+                if (UsesZeroBaseline(axis)) range.IncludeY(0);
+            } else IncludeSeriesY(range, series, axis);
             if (ChartSeriesKindTraits.UsesVerticalBaseline(series.Kind)) usesVerticalBaseline = true;
         }
         range.MinX = primaryRange.MinX;
         range.MaxX = primaryRange.MaxX;
-        ValidateLogarithmicObservations(range.MinY, range.MaxY, chart.Options.SecondaryYAxis);
-        range.InitializeEmptyY(chart.Options.SecondaryYAxis);
+        ValidateLogarithmicObservations(range.MinY, range.MaxY, axis);
+        range.InitializeEmptyY(axis);
 
-        if (Math.Abs(range.MaxY - range.MinY) < double.Epsilon) (range.MinY, range.MaxY) = ExpandedSingleton(range.MinY, chart.Options.SecondaryYAxis);
-        if (usesVerticalBaseline) range.ApplyLogarithmicYBaseline(chart.Options.SecondaryYAxis);
-        range.ApplyVerticalPadding(chart.Options.SecondaryYAxis, HasOnlyFinancialSeries(chart, ChartAxisSide.Secondary));
-        if (applyOptionBounds) range.ApplySecondaryYAxisOptions(chart);
-        range.ApplyTimeSpacingBounds(chart.Options.SecondaryYAxis, horizontal: false, applyOptionBounds);
+        if (Math.Abs(range.MaxY - range.MinY) < double.Epsilon) (range.MinY, range.MaxY) = ExpandedSingleton(range.MinY, axis);
+        if (usesVerticalBaseline) range.ApplyLogarithmicYBaseline(axis);
+        range.ApplyVerticalPadding(axis, HasOnlyFinancialSeries(chart, owns));
+        if (applyOptionBounds) range.ApplyYAxisBounds(axis);
+        range.ApplyTimeSpacingBounds(axis, horizontal: false, applyOptionBounds);
         return range;
     }
 
@@ -344,10 +354,10 @@ internal sealed partial class ChartRange {
         if (MaxY <= MinY) (MinY, MaxY) = ResolveClippedBounds(MinY, MaxY, chart.Options.YAxis);
     }
 
-    private void ApplySecondaryYAxisOptions(Chart chart) {
-        if (chart.Options.SecondaryYAxisMinimum.HasValue) MinY = chart.Options.SecondaryYAxisMinimum.Value;
-        if (chart.Options.SecondaryYAxisMaximum.HasValue) MaxY = chart.Options.SecondaryYAxisMaximum.Value;
-        if (MaxY <= MinY) (MinY, MaxY) = ResolveClippedBounds(MinY, MaxY, chart.Options.SecondaryYAxis);
+    private void ApplyYAxisBounds(ChartAxis axis) {
+        if (axis.Minimum.HasValue) MinY = axis.Minimum.Value;
+        if (axis.Maximum.HasValue) MaxY = axis.Maximum.Value;
+        if (MaxY <= MinY) (MinY, MaxY) = ResolveClippedBounds(MinY, MaxY, axis);
     }
 
     private static void IncludeSeriesX(ChartRange range, ChartSeries series) {
@@ -399,8 +409,11 @@ internal sealed partial class ChartRange {
         || kind == ChartSeriesKind.Candlestick || kind == ChartSeriesKind.Ohlc || kind == ChartSeriesKind.Dumbbell
         || kind == ChartSeriesKind.RangeBar || kind == ChartSeriesKind.BoxPlot || kind == ChartSeriesKind.Lollipop || kind == ChartSeriesKind.Slope;
 
-    private static bool HasOnlyFinancialSeries(Chart chart, ChartAxisSide axis) {
-        var series = chart.Series.Where(item => item.ValueAxis == axis && item.HasSourceData).ToArray();
+    private static bool HasOnlyFinancialSeries(Chart chart, ChartAxisSide axis) =>
+        HasOnlyFinancialSeries(chart, item => item.ValueAxis == axis && item.AdditionalValueAxis == null);
+
+    private static bool HasOnlyFinancialSeries(Chart chart, Func<ChartSeries, bool> owns) {
+        var series = chart.Series.Where(item => owns(item) && item.HasSourceData).ToArray();
         return series.Length > 0 && series.All(item => item.Kind is ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc);
     }
 

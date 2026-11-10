@@ -93,6 +93,7 @@ internal sealed partial class ChartVisibilitySource {
     }
 
     private static void Validate(Chart chart, bool completeCartesianValues = false, bool componentValues = false) {
+        if (chart.UsesAdditionalValueAxes) throw new NotSupportedException("Native Reflow does not capture additional value axes.");
         if (chart.Series.Count == 0 || chart.Series.Any(series => (componentValues ? series.Kind is not (ChartSeriesKind.Bubble or ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea or ChartSeriesKind.ErrorBar or ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc) : completeCartesianValues
             ? !VisualCartesianCompiler.SupportsCompleteValueKind(series.Kind)
             : series.Kind is not (ChartSeriesKind.Line or ChartSeriesKind.Bar or ChartSeriesKind.BoxPlot or ChartSeriesKind.Pie or ChartSeriesKind.Donut or ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst)) || series.Id.IsAutomatic))

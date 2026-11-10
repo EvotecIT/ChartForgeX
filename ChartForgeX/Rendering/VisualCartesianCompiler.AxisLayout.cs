@@ -31,11 +31,12 @@ internal static partial class VisualCartesianCompiler {
     private static CartesianAxisLayout? ResolveAxisLayout(Chart chart, VisualRenderContext context, VisualSceneBuilder builder,
         ChartRect plot, ChartRect viewport, bool measureAxes, ChartRange range, ChartRange? secondaryRange,
         ChartStackLayout stacks, ChartBarCoordinateMap coordinates, ChartBubbleSizeScale? bubbleScale, VisualThemeColors colors,
-        ChartAxisValueFormatter.Cache? categoryLabels, CartesianLabels labels, CategoryGroupSource? categoryGroups, bool expandMarkers) {
+        ChartAxisValueFormatter.Cache? categoryLabels, CartesianLabels labels, CategoryGroupSource? categoryGroups, bool expandMarkers,
+        IReadOnlyList<AdditionalAxisState>? additional = null) {
         var dataRange = range.Copy();
         var secondaryDataRange = secondaryRange?.Copy();
         categoryLabels ??= new ChartAxisValueFormatter.Cache();
-        var axisLabels = new AxisLabelCache(categoryLabels) { CategoryGroups = categoryGroups };
+        var axisLabels = new AxisLabelCache(categoryLabels) { CategoryGroups = categoryGroups, Additional = additional ?? Array.Empty<AdditionalAxisState>() };
         var horizontal = ChartCartesianOrientation.IsHorizontal(chart);
         CollectCountAxes(chart, axisLabels, horizontal);
         CollectSnapAxes(chart, axisLabels, horizontal);
@@ -44,6 +45,7 @@ internal static partial class VisualCartesianCompiler {
         if (!horizontal) {
             axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
             if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
+            IncludeAdditionalValueTicks(axisLabels);
         }
         IReadOnlyDictionary<double, string>? categoryCaptions = null;
         if (chart.Series.Count == 1 && chart.Series[0].Kind == ChartSeriesKind.Waterfall) {
@@ -103,10 +105,12 @@ internal static partial class VisualCartesianCompiler {
                     secondaryRange.SetXBounds(secondaryDataRange.MinX, secondaryDataRange.MaxX);
                     secondaryRange.SetYBounds(secondaryDataRange.MinY, secondaryDataRange.MaxY);
                 }
+                ResetAdditionalRanges(axisLabels);
                 ExpandMarkerRanges(chart, context, plot, range, secondaryRange, stacks, bubbleScale);
                 if (!horizontal) {
                     axisLabels.IncludeValueTicks(chart.Options.YAxis, range.MinY, range.MaxY);
                     if (secondaryRange != null) axisLabels.IncludeValueTicks(chart.Options.SecondaryYAxis, secondaryRange.MinY, secondaryRange.MaxY);
+                    IncludeAdditionalValueTicks(axisLabels);
                 }
             }
             RefreshCategoryDisplay(chart, context, builder, plot, viewport, range, colors, axisLabels);
@@ -155,6 +159,8 @@ internal static partial class VisualCartesianCompiler {
 
     internal static void ValidateXViewport(Chart chart) {
         if (!SupportsXViewport(chart)) throw new NotSupportedException("A Cartesian viewport requires supported non-sparkline Cartesian series.");
+        // Additional value axes capture no axis projection, so windows and prepared X zoom decline them like saved pages do.
+        if (chart.UsesAdditionalValueAxes) throw new NotSupportedException("A Cartesian viewport does not support additional value axes.");
         if (!chart.Series.Any(series => series.HasSourceData)) throw new InvalidOperationException("A Cartesian viewport requires source observations.");
     }
 }
