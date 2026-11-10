@@ -219,10 +219,11 @@
   const standaloneMovedAttributes = new Set([...standaloneGeometryAttributes, 'transform']);
   const standaloneMoved = view => {
     if (!view.moves) {
-      const shapes = new Set(view.geometry.map(entry => entry.node)), captions = new Set([...view.labels.map(entry => entry.node), ...view.axes.flatMap(axis => axis.nodes)]);
-      const frames = new Set(view.frames.map(frame => frame.owner));
-      view.moves = record => record.type === 'attributes' && (standaloneMovedAttributes.has(record.attributeName) && (shapes.has(record.target) || captions.has(record.target))
-        || record.attributeName === 'style' && captions.has(record.target) || record.attributeName === 'clip-path' && frames.has(record.target));
+      // Each moved node names the attributes the repaint writes on it.
+      const clips = new Set(['clip-path']), captions = new Set([...standaloneMovedAttributes, 'style', 'clip-path']), owners = new Map([
+        ...view.geometry.map(entry => [entry.node, standaloneMovedAttributes]), ...view.frames.map(frame => [frame.owner, clips]),
+        ...[...view.labels.map(entry => entry.node), ...view.axes.flatMap(axis => axis.nodes)].map(node => [node, captions])]);
+      view.moves = record => record.type === 'attributes' && !!owners.get(record.target)?.has(record.attributeName);
     }
     return view.moves;
   };

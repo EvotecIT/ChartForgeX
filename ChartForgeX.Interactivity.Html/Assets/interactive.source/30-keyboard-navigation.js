@@ -125,10 +125,8 @@
   // Roving stops shared by the full runtime and the core reader: one Tab stop per component.
   const assignKeyboardStops = (root, state, targets, focused) => {
     state.targets = targets;
-    // Each target's kind is read once: a dense chart has tens of thousands of stops.
-    const legends = new Set(targets.filter((node) => renderedTargetKind(node) === 'legend'));
-    state.legends = [...legends];
-    state.groups = keyboardDataGroups(targets.filter((node) => !legends.has(node)));
+    state.legends = targets.filter((node) => renderedTargetKind(node) === 'legend');
+    state.groups = keyboardDataGroups(targets.filter((node) => renderedTargetKind(node) !== 'legend'));
     state.data = state.groups.flatMap((group) => group.nodes);
 
     if (state.data.length && !state.data.includes(state.activeData)) state.activeData = state.data[0];
@@ -146,7 +144,7 @@
     targets.forEach((node) => {
       const focusNode = targetFocusNode(node);
       state.owned.add(focusNode);
-      stops.set(focusNode, { ...stops.get(focusNode), 'data-cfx-keyboard-component': legends.has(node) ? 'legend' : 'data',
+      stops.set(focusNode, { ...stops.get(focusNode), 'data-cfx-keyboard-component': renderedTargetKind(node) === 'legend' ? 'legend' : 'data',
         tabindex: node === state.activeData || node === state.activeLegend ? '0' : '-1' });
     });
     stops.forEach((values, node) => Object.entries(values).forEach(([name, value]) => node.getAttribute(name) !== value && node.setAttribute(name, value)));
