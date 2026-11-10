@@ -33,7 +33,7 @@ public static partial class V2Examples {
         "x-zoom" => "Prepared X zoom", "compact-x-zoom" => "Compact X zoom",
         "step-x-zoom" => "Reversed X zoom", "compact-step-x-zoom" => "Compact reversed X zoom",
         "axis-step" => "Axis tick step", "axis-values" => "Axis tick values", "axis-spacing" => "Axis tick spacing",
-        "axis-minor" => "Minor grid lines", "axis-grid" => "Axis grid style", "axis-time-step" => "Calendar tick step", "axis-log-step" => "Logarithmic tick step",
+        "axis-minor" => "Minor grid lines", "axis-grid" => "Axis grid style", "axis-time-step" => "Calendar tick step", "axis-log-step" => "Logarithmic tick step", "axis-stacked" => "Stacked value axes",
         _ when variant.StartsWith("compact-axis-", StringComparison.Ordinal) => "Compact " + VariantLabel(variant.Substring(8)).ToLowerInvariant(),
         "legend-reference" => "Reference legend entries", "legend-values" => "Legend entry totals", "legend-keys" => "Legend marker keys",
         _ when variant.StartsWith("compact-legend-", StringComparison.Ordinal) => "Compact " + VariantLabel(variant.Substring(8)).ToLowerInvariant(),
