@@ -2,6 +2,31 @@
   "version": 1,
   "charts": [
     {
+      "name": "actual-forecast-segmented-line-light",
+      "layout": {
+        "heightMode": "fixed",
+        "widthMode": "fixed",
+        "frameFontRequest": "",
+        "frameFontFingerprint": ""
+      },
+      "width": 800,
+      "height": 484,
+      "logicalWidth": 800.0,
+      "logicalHeight": 484.0,
+      "svg": {
+        "minVisualNodes": 23,
+        "maxClippedTextNodes": 0,
+        "maxNearEdgeTextNodes": 0
+      },
+      "png": {
+        "outputScale": 2,
+        "minVisiblePixels": 774244,
+        "minTransparentPixels": 156,
+        "minDistinctColors": 1023,
+        "maxEdgeInkPixels": 0
+      }
+    },
+    {
       "name": "advanced-topology",
       "layout": {
         "heightMode": "natural",
@@ -2873,31 +2898,6 @@
         "minVisiblePixels": 774244,
         "minTransparentPixels": 156,
         "minDistinctColors": 1172,
-        "maxEdgeInkPixels": 0
-      }
-    },
-    {
-      "name": "actual-forecast-segmented-line-light",
-      "layout": {
-        "heightMode": "fixed",
-        "widthMode": "fixed",
-        "frameFontRequest": "",
-        "frameFontFingerprint": ""
-      },
-      "width": 800,
-      "height": 484,
-      "logicalWidth": 800.0,
-      "logicalHeight": 484.0,
-      "svg": {
-        "minVisualNodes": 23,
-        "maxClippedTextNodes": 0,
-        "maxNearEdgeTextNodes": 0
-      },
-      "png": {
-        "outputScale": 2,
-        "minVisiblePixels": 774244,
-        "minTransparentPixels": 156,
-        "minDistinctColors": 1023,
         "maxEdgeInkPixels": 0
       }
     },
