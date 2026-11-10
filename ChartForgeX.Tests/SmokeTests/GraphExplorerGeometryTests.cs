@@ -56,7 +56,7 @@ internal static partial class SmokeTests {
             })
             .ToGraphExplorerHtmlFragment();
 
-        Assert(bidirectionalHtml.Contains("data-edge-id=\"both\" data-edge-label=\"Both\"", StringComparison.Ordinal) && bidirectionalHtml.Contains("data-edge-source-arrow=\"true\" data-edge-target-arrow=\"true\"", StringComparison.Ordinal) && bidirectionalHtml.Contains("marker-start=\"url(#bidirectional-edge-", StringComparison.Ordinal) && bidirectionalHtml.Contains("marker-end=\"url(#bidirectional-edge-", StringComparison.Ordinal), "Graph explorer SVG should keep the compatibility target arrow when direct callers add a source arrow to a directed edge.");
+        Assert(bidirectionalHtml.Contains("data-edge-id=\"both\" data-edge-label=\"Both\"", StringComparison.Ordinal) && bidirectionalHtml.Contains("data-edge-source-arrow=\"true\" data-edge-target-arrow=\"true\"", StringComparison.Ordinal) && bidirectionalHtml.Contains("data-arrow-side=\"source\"", StringComparison.Ordinal) && bidirectionalHtml.Contains("data-arrow-side=\"target\"", StringComparison.Ordinal), "Graph explorer SVG should keep the compatibility target arrow when direct callers add a source arrow to a directed edge.");
         Assert(Math.Abs(ExtractGraphEdgeLabelPoint(bidirectionalHtml, "both").X - 290) < 0.001, "Graph explorer SVG should place labels from shape-trimmed source and target endpoints when arrows are rendered at both ends.");
 
         var computedRouteHtml = GraphScene.Create("computed-route", "Computed route")

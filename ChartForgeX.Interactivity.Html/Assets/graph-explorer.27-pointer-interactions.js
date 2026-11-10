@@ -65,7 +65,7 @@
     listenGraph(root, stage, 'pointermove', event => {
       if (!active && (root.classList.contains('cfx-graph-render-canvas') || root.dataset.cfxGraphRendererActive === 'webgl' || attr(root, 'data-cfx-graph-accelerated-markup') === 'true')) {
         const hit = hitGraphItemAt(root, scenePoint(root, event));
-        graphHover(root, hit?.el || null);
+        graphHover(root, hit?.el || null, event);
       }
       if (!active || active.pointerId !== event.pointerId) return;
       const point = scenePoint(root, event);

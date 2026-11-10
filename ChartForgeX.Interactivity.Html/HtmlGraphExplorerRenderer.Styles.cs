@@ -132,10 +132,10 @@ public sealed partial class HtmlGraphExplorerRenderer {
         return "--cfx-node-icon-light:" + Foreground(false) + ";--cfx-node-icon-dark:" + Foreground(true);
     }
 
-    private static string EdgeStyle(GraphSceneEdge edge) {
+    private static string EdgeStyle(GraphSceneEdge edge, double? width) {
         var parts = new List<string>();
         if (!string.IsNullOrWhiteSpace(edge.Style.Color)) parts.Add("--cfx-edge-stroke:" + edge.Style.Color);
-        if (edge.Style.Width.HasValue) parts.Add("--cfx-edge-width:" + Number(edge.Style.Width.Value));
+        if (width.HasValue) parts.Add("--cfx-edge-width:" + Number(width.Value));
         if (edge.Dashed) parts.Add("stroke-dasharray:" + (string.IsNullOrWhiteSpace(edge.Style.DashPattern) ? "8 6" : edge.Style.DashPattern));
         if (edge.Style.Hidden) parts.Add("display:none");
         return string.Join(";", parts);

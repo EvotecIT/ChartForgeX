@@ -59,12 +59,11 @@
       });
       if (paint.arrows) {
         const start = mesh.positions.length / 2;
-        const arrowColor = webGlColor(paint.color, paint.arrowAlpha);
-        for (const side of ['source', 'target']) {
-          if (side === 'source' ? !edge.sourceArrow : !edge.targetArrow && !edge.directed) continue;
-          const arrow = edgeArrowGeometry(paint.rendered, paint.control, side, 8);
-          webGlTriangle(mesh, arrow.tip, arrow.left, arrow.right, arrowColor);
-        }
+        const arrowColor = webGlColor(paint.color, paint.arrowAlpha), paperColor = webGlColor(paint.paper, paint.arrowAlpha);
+        // Every arrow polygon is convex or star-shaped from its first point, so a fan covers it.
+        edgeArrowMarks(edge, paint).forEach(({ points, paper }) => {
+          for (let i = 1; i < points.length - 1; i++) webGlTriangle(mesh, points[0], points[i], points[i + 1], paper ? paperColor : arrowColor);
+        });
         batch('TRIANGLES', start, mesh.positions.length / 2 - start);
       }
     });

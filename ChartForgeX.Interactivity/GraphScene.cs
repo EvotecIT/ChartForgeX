@@ -132,6 +132,7 @@ public sealed class GraphScene {
         if (Options.HasFeature(GraphSceneFeatures.BoxSelection) && !Options.HasFeature(GraphSceneFeatures.Selection)) throw new InvalidOperationException("Graph scene box selection requires selection.");
         Options.Physics.Validate();
         Options.Interaction.Validate();
+        Options.EdgeWidthScale.Validate();
         if (Options.LevelOfDetail.ClusterNodeThreshold < 0 || Options.LevelOfDetail.HideEdgeLabelsThreshold < 0 || Options.LevelOfDetail.CompactNodeThreshold < 0 || Options.LevelOfDetail.CanvasPreferredNodeThreshold < 0 || Options.LevelOfDetail.WebGlPreferredNodeThreshold < 0) throw new InvalidOperationException("Graph scene level-of-detail thresholds must not be negative.");
         ValidatePositiveFinite(Options.LevelOfDetail.OverviewScaleThreshold, "level-of-detail overview scale threshold");
         ValidatePositiveFinite(Options.LevelOfDetail.DetailScaleThreshold, "level-of-detail detail scale threshold");

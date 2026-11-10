@@ -145,6 +145,7 @@
       status: attr(node, 'data-cfx-status'),
       role: attr(node, 'data-cfx-role'),
       metadata: metadataDetail(node),
+      ...(attr(node, 'data-cfx-hover-text') ? { tooltip: attr(node, 'data-cfx-hover-text') } : {}),
       ...(attr(node, 'data-cfx-role') === 'graph-edge' ? { sourceNodeId: attr(node, 'data-source-node-id'), targetNodeId: attr(node, 'data-target-node-id') } : {})
     });
   // Raw selection labels remain authored facts; chrome uses the current canonical name.

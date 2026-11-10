@@ -60,12 +60,21 @@
     redrawGraphLinkedState(root);
     return matches.map(item => selectionDetail(root, item));
   };
-  const graphHover = (root, item) => {
+  const graphHover = (root, item, event) => {
     const key = item ? graphKeyboardItemKey(item) : '';
     if (root.__cfxGraphHoverKey === key || !key && !root.__cfxGraphHoverKey) return;
-    const previous = root.__cfxGraphHoverDetail;
+    const previous = root.__cfxGraphHoverDetail, before = root.__cfxGraphHoverItem;
     root.__cfxGraphHoverKey = key;
+    root.__cfxGraphHoverItem = item;
     root.__cfxGraphHoverDetail = item ? selectionDetail(root, item) : null;
+    syncGraphHoverTip(root, item, event);
+    // Only edges with a hover width repaint, so hovering keeps retained GPU meshes.
+    const widened = element => element && attr(element, 'data-edge-hover-width');
+    if (widened(before) || widened(item)) {
+      before?.classList.remove('cfx-graph-hovered');
+      if (widened(item)) item.classList.add('cfx-graph-hovered');
+      if (graphLifetime(root)?.active) drawCanvas(root, root.__cfxGraphState || graphState(root));
+    }
     if (item) emit(root, 'cfxgraphhover', selectionDetail(root, item));
     else emit(root, 'cfxgraphhoverclear', previous || { graphId: attr(root, 'data-cfx-graph-id') });
   };

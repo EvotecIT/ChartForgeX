@@ -6,7 +6,7 @@ const vm = require('node:vm');
 const { adapterLifetimes } = require('../helpers/adapter-lifetime');
 const assets = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets');
 const { graphRuntimeSource } = require('../helpers/graph-runtime-source');
-const source = graphRuntimeSource('this.api = { graphVirtualElement, graphThemePalette, graphReadableNodeColors, graphNodeIconColor, graphBadgeGeometry, graphColorContrast, graphEdgePaint, edgeArrowGeometry, webGlEdgePoints, webGlDashedPaths, webGlStrokePath, webGlEdgeMesh, webGlColor, webGlNodePoints, drawCanvasNodes, drawCanvasEdge, drawNodeMark, syncGraphThemeState, setGraphRenderer, graphVirtualMatches, appendExportedNodeDetails, drawAcceleratedSvgRuntime, materializeAcceleratedSvg };');
+const source = graphRuntimeSource('this.api = { graphVirtualElement, graphThemePalette, graphReadableNodeColors, graphNodeIconColor, graphBadgeGeometry, graphColorContrast, graphEdgePaint, edgeArrowFrame, webGlEdgePoints, webGlDashedPaths, webGlStrokePath, webGlEdgeMesh, webGlColor, webGlNodePoints, drawCanvasNodes, drawCanvasEdge, drawNodeMark, syncGraphThemeState, setGraphRenderer, graphVirtualMatches, appendExportedNodeDetails, drawAcceleratedSvgRuntime, materializeAcceleratedSvg };');
 function runtime() {
   const host = { document: { readyState: 'loading', addEventListener() {}, querySelectorAll: () => [] }, window: {}, setTimeout, clearTimeout };
   vm.runInNewContext(source, host);
@@ -68,10 +68,10 @@ test('GPU routes use trimmed endpoints, curved samples and nondegenerate self lo
   const loop = api.webGlEdgePoints(edge, null, 2);
   assert.ok(loop.some(point => point.y < a.y - 20));
   assert.notEqual(loop[0].x, loop.at(-1).x);
-  const loopArrows = ['source', 'target'].map(side => api.edgeArrowGeometry(edge, null, side));
+  const loopArrows = ['source', 'target'].map(side => api.edgeArrowFrame(edge, null, side));
   edge.routePoints = [{ x: 100, y: 100 }, { x: 900, y: 900 }, { x: 100, y: 100 }];
   assert.deepEqual(api.webGlEdgePoints(edge, null, 2), loop, 'self-loop geometry precedes prepared routes on every renderer');
-  assert.deepEqual(['source', 'target'].map(side => api.edgeArrowGeometry(edge, null, side)), loopArrows);
+  assert.deepEqual(['source', 'target'].map(side => api.edgeArrowFrame(edge, null, side)), loopArrows);
   edge.target = { ...a, x: 300 };
   edge.routePoints = [{ x: 120, y: 100 }, { x: 120, y: 150 }, { x: 280, y: 150 }, { x: 280, y: 100 }];
   const route = api.webGlEdgePoints(edge, null, 1);

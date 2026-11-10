@@ -88,10 +88,11 @@ public sealed class InteractiveBundleTests {
     }
 
     // Topology and graph Explorer pages inline their own runtimes, so each gets a budget that makes growth a deliberate change.
-    // Measured on 9 November 2026: topology 156.8 KiB raw / 32.7 KiB gzip, Explorer 422.5 KiB raw / 93.9 KiB gzip.
+    // Measured on 9 November 2026: topology 156.8 KiB raw / 32.7 KiB gzip, Explorer 427.9 KiB raw / 95.8 KiB gzip.
+    // Node and edge hover text plus edge arrow shapes, middle arrows and hover/selection widths raised the Explorer from 422.5 / 93.9 KiB.
     [Theory]
     [InlineData("topology", 157 * 1024, 33 * 1024)]
-    [InlineData("explorer", 423 * 1024, 95 * 1024)]
+    [InlineData("explorer", 429 * 1024, 97 * 1024)]
     public void TopologyAndExplorerRuntimesFitRawAndGzipBudgetsAsShipped(string runtime, int rawBudget, int gzipBudget) {
         var topology = TopologyChart.Create().WithId("budget").AddAutoNode("a", "Edge").AddAutoNode("b", "Core").AddEdge("a-b", "a", "b");
         var (script, page) = runtime == "topology"
