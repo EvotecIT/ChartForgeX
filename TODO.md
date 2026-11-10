@@ -24,7 +24,6 @@ AG Charts lets a caller style any datum, format any label and theme every series
 - [ ] **Per-segment line dash.** Series dash (`WithStrokeStyle`) has landed; a forecast still needs a dash per segment after the last actual. Done when legend keys show the dash and a forecast example ships.
 - [ ] **More secondary axes.** More than one secondary axis per side where the layout allows. Done when an example shows two value axes on one side and existing single-axis layouts are unchanged.
 - [ ] **Theme defaults per series type.** `VisualDesignTokens` can carry defaults per series kind (line width, marker, bar radius, label style), like AG `theme.overrides`. Done when a theme file restyles every line chart without per-chart code.
-- [ ] **Legend control.** Custom legend items, marker shape/size config and an item formatter, alongside the existing eight positions. Done when a chart can show a legend entry for a reference line and format entries with values.
 
 ## 2. Standalone browser interactivity
 
