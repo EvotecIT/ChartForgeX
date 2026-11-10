@@ -259,7 +259,7 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static void DrawAxisLabels(VisualSceneBuilder builder, ChartOptions options, ChartAxis axis, IReadOnlyList<double> ticks, Func<double, double> coordinate,
-        bool horizontal, bool secondary, ChartRect bounds, TextStyle style, double spacing, Func<double, string>? fallback, AxisLabelCache labels, double trackLength, List<LabelObstacle>? obstacles = null, CartesianXZoomLayers? zoom = null, ChartRect? outputPlot = null, string? role = null) {
+        bool horizontal, bool secondary, ChartRect bounds, TextStyle style, double spacing, Func<double, string>? fallback, AxisLabelCache labels, double trackLength, List<LabelObstacle>? obstacles = null, CartesianXZoomLayers? zoom = null, ChartRect? outputPlot = null, string? role = null, string? identityPrefix = null) {
         // An intentionally oversized style still fits its complete footprint.
         // Ordinary captions keep their font size and use a coarser scale/stride.
         var gap = AxisLabelGap(axis, spacing);
@@ -302,7 +302,7 @@ internal static partial class VisualCartesianCompiler {
             var anchor = horizontal ? new ChartPoint(value, bounds.Top) : new ChartPoint(secondary ? bounds.Left : bounds.Right, value);
             // Regions describe source content, including text with no visible placement. They are not hit-test targets.
             var regionBounds = horizontal ? new ChartRect(value, bounds.Top, 0, bounds.Height) : new ChartRect(bounds.Left, value, bounds.Width, 0);
-            var identity = role + "-" + Number(index++);
+            var identity = (identityPrefix ?? role) + "-" + Number(index++);
             builder.AddRegion(new VisualSemanticRegion(identity, role, regionBounds,
                 TextCaseTransformer.Apply(text, style.TextCase, CultureInfo.InvariantCulture) + " (" + Number(tick) + ")"));
             if (text.Length == 0) continue;

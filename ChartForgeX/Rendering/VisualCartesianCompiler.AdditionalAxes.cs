@@ -119,7 +119,8 @@ internal static partial class VisualCartesianCompiler {
             var bounds = state.End ? new ChartRect(edge + spacing, viewport.Top, state.LabelWidth, viewport.Height)
                 : new ChartRect(edge - spacing - state.LabelWidth, viewport.Top, state.LabelWidth, viewport.Height);
             DrawAxisLabels(builder, chart.Options, state.Axis, labels.Ticks(state.Axis, state.Range.MinY, state.Range.MaxY), state.Map!.Y, false, state.End,
-                bounds, axisStyle, spacing, chart.Options.ValueFormatter, labels, plot.Height, role: "axis-additional-y-label");
+                bounds, axisStyle, spacing, chart.Options.ValueFormatter, labels, plot.Height, role: "axis-additional-y-label",
+                identityPrefix: "axis-additional-y-label-" + (state.End ? "end-" : "start-") + Number(state.Definition.SideIndex));
             var outer = offset + spacing + state.LabelWidth;
             if (state.End) rightOffset = outer; else leftOffset = outer;
             columns.Add((state, offset, outer));
