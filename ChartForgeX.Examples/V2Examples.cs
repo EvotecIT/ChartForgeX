@@ -44,6 +44,7 @@ public static partial class V2Examples {
         WriteHistograms(output, artifacts);
         WriteViewports(output, artifacts);
         WriteXZoom(output, artifacts);
+        WriteAxisControl(output, artifacts);
         WriteLayeredData(output, artifacts);
         WriteNativeDepth(output, artifacts);
         WriteTableContentDepth(output, artifacts);

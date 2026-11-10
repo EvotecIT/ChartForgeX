@@ -220,7 +220,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("<image href=\"data:image/svg+xml", StringComparison.Ordinal), "Graph explorer SVG should render image-backed nodes without external dependencies.");
         Assert(html.Contains("data-cfx-role=\"graph-edge\"", StringComparison.Ordinal) && html.Contains("data-source-node-id=\"api\"", StringComparison.Ordinal) && html.Contains("data-target-node-id=\"db\"", StringComparison.Ordinal), "Graph explorer SVG should expose graph edge metadata.");
         Assert(html.Contains("data-edge-weight=\"2\"", StringComparison.Ordinal) && html.Contains("data-edge-length=\"140\"", StringComparison.Ordinal), "Graph explorer SVG should expose edge physics hints.");
-        Assert(html.Contains("data-edge-directed=\"true\"", StringComparison.Ordinal) && html.Contains("data-edge-shape=\"curve\"", StringComparison.Ordinal) && html.Contains("marker-end=\"url(#service-map-", StringComparison.Ordinal), "Graph explorer SVG should render directional curved edge contracts with scoped markers.");
+        Assert(html.Contains("data-edge-directed=\"true\"", StringComparison.Ordinal) && html.Contains("data-edge-shape=\"curve\"", StringComparison.Ordinal) && html.Contains("data-cfx-role=\"graph-edge-arrows\" data-cfx-runtime-overlay=\"true\" data-edge-arrows-for=", StringComparison.Ordinal), "Graph explorer SVG should render directional curved edge contracts with their arrowheads.");
         Assert(html.Contains("aria-label=\"queries\"", StringComparison.Ordinal) && html.Contains("data-source-cluster-id=\"core\"", StringComparison.Ordinal) && html.Contains("data-target-cluster-id=\"core\"", StringComparison.Ordinal), "Graph explorer edge paths should be accessible and carry endpoint cluster ids for aggregate collapsed-edge rendering.");
         Assert(html.Contains("aria-label=\"API\"", StringComparison.Ordinal) && html.Contains("aria-label=\"Core services, 2 objects", StringComparison.Ordinal), "Graph explorer focusable SVG nodes and collapsed cluster summaries should expose accessible names and cluster cardinality.");
         var rendererSource = System.IO.File.ReadAllText(System.IO.Path.Combine(FindRepositoryRoot(), "ChartForgeX.Interactivity.Html", "HtmlGraphExplorerRenderer.cs"));
@@ -356,7 +356,7 @@ internal static partial class SmokeTests {
         Assert(fragment.Contains("data-cfx-graph-assets=\"true\"", StringComparison.Ordinal), "Graph explorer fragments should include embeddable CSS assets.");
         Assert(fragment.Contains("<script nonce=\"fragment-nonce\">", StringComparison.Ordinal), "Graph explorer fragments should support CSP nonces.");
         var scopedFragment = scene.ToGraphExplorerHtmlFragment(options => options.IdScope = "host-scope");
-        Assert(scopedFragment.Contains("id=\"host-scope-title\"", StringComparison.Ordinal) && scopedFragment.Contains("marker-end=\"url(#host-scope-arrow)\"", StringComparison.Ordinal), "Graph explorer fragments should let hosts provide a deterministic SVG id scope for repeated embeds.");
+        Assert(scopedFragment.Contains("id=\"host-scope-title\"", StringComparison.Ordinal), "Graph explorer fragments should let hosts provide a deterministic SVG id scope for repeated embeds.");
         var repeatedScene = GraphScene.Create("graph", "Repeated graph").AddNode("a", "A");
         var firstRepeatedFragment = repeatedScene.ToGraphExplorerHtmlFragment();
         var secondRepeatedFragment = repeatedScene.ToGraphExplorerHtmlFragment();
@@ -665,8 +665,8 @@ internal static partial class SmokeTests {
 
         var dottedIdHtml = GraphScene.Create("graph.with.dot", "Graph with dot").AddNode("a", "A").ToGraphExplorerHtmlFragment();
         var dashedIdHtml = GraphScene.Create("graph-with-dot", "Graph with dash").AddNode("a", "A").ToGraphExplorerHtmlFragment();
-        Assert(dottedIdHtml.Contains("id=\"graph.with.dot-", StringComparison.Ordinal) && dottedIdHtml.Contains("-arrow\"", StringComparison.Ordinal), "Graph explorer SVG ids should preserve valid dots in scoped scene ids.");
-        Assert(dashedIdHtml.Contains("id=\"graph-with-dot-", StringComparison.Ordinal) && dashedIdHtml.Contains("-arrow\"", StringComparison.Ordinal), "Graph explorer SVG ids should keep dashed scoped scene ids distinct from dotted scene ids.");
+        Assert(dottedIdHtml.Contains("id=\"graph.with.dot-", StringComparison.Ordinal) && dottedIdHtml.Contains("-title\"", StringComparison.Ordinal), "Graph explorer SVG ids should preserve valid dots in scoped scene ids.");
+        Assert(dashedIdHtml.Contains("id=\"graph-with-dot-", StringComparison.Ordinal) && dashedIdHtml.Contains("-title\"", StringComparison.Ordinal), "Graph explorer SVG ids should keep dashed scoped scene ids distinct from dotted scene ids.");
 
         var scaleScene = BuildScaleConfidenceScene(1000, 1800);
         scaleScene.Options.LevelOfDetail.CanvasPreferredNodeThreshold = 500;

@@ -88,6 +88,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static string RenderGraph(GraphScene scene, HtmlGraphExplorerOptions options) {
         scene.Validate();
+        if (options.TooltipDelayMilliseconds < 0) throw new ArgumentOutOfRangeException(nameof(options), "Graph tooltip delay must not be negative.");
         var effectiveClusters = scene.GetEffectiveClusters();
         var positions = ComputePositions(scene);
         var graphId = SafeId(scene.Id);
@@ -132,6 +133,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         Attribute(writer, "data-cfx-graph-history-limit", scene.Options.Manipulation.MaximumHistoryEntries.ToString(CultureInfo.InvariantCulture));
         Attribute(writer, "data-cfx-graph-confirm-destructive", scene.Options.Manipulation.ConfirmDestructiveChanges ? "true" : "false");
         Attribute(writer, "data-cfx-graph-accelerated-markup", acceleratedMarkup ? "true" : "false");
+        if (options.TooltipDelayMilliseconds > 0) Attribute(writer, "data-cfx-tooltip-delay", options.TooltipDelayMilliseconds.ToString(CultureInfo.InvariantCulture));
         WriteScalabilityAttributes(writer, scene);
         WriteHierarchyAttributes(writer, scene);
         writer.Append('>');
@@ -159,7 +161,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             ? new Dictionary<string, double>(StringComparer.Ordinal)
             : BuildCollapsedNodeRenderRadii(scene, clusters, positions, clusterMembership, collapseClustersOnLoad);
         var focusableGraphItems = scene.Options.HasFeature(GraphSceneFeatures.Selection);
-        if (acceleratedMarkup) WriteGraphDocument(writer, scene, positions, clusterMembership, collapsedNodeIds, collapsedEdgeIds, graphId + "-arrow", options.Localization);
+        if (acceleratedMarkup) WriteGraphDocument(writer, scene, positions, clusterMembership, collapsedNodeIds, collapsedEdgeIds, options.Localization);
         writer.Append("<div class=\"cfx-graph-stage\" data-cfx-role=\"graph-stage\" role=\"region\"");
         Attribute(writer, "aria-label", options.Localization.Format(HtmlChartText.GraphInteractiveName, ("title", scene.Title)));
         Attribute(writer, "aria-describedby", graphId + "-instructions");
@@ -185,12 +187,11 @@ public sealed partial class HtmlGraphExplorerRenderer {
         writer.Append('>');
         writer.Append(Text(scene.Title));
         writer.Append("</title>");
-        WriteArrowMarkers(writer, scene, graphId + "-arrow");
         writer.Append("<rect class=\"cfx-graph-bg\" width=\"960\" height=\"560\"></rect>");
         writer.Append("<g data-cfx-role=\"graph-viewport\">");
         if (clusteringEnabled) WriteClusters(writer, scene, clusters, positions, clusterMembership, collapseClustersOnLoad, focusableGraphItems, options.Localization);
         if (!acceleratedMarkup) {
-            WriteEdges(writer, scene, positions, clusterMembership, collapsedNodePositions, collapsedNodeRadii, graphId + "-arrow", collapsedEdgeIds, focusableGraphItems, options.Localization);
+            WriteEdges(writer, scene, positions, clusterMembership, collapsedNodePositions, collapsedNodeRadii, collapsedEdgeIds, focusableGraphItems, options.Localization);
             WriteEdgeLabels(writer, scene, positions, collapsedNodePositions, collapsedNodeRadii, collapsedEdgeIds);
             WriteNodes(writer, scene, positions, clusterMembership, collapsedNodeIds, focusableGraphItems, false);
         }
@@ -332,6 +333,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             Attribute(writer, "data-node-icon", node.IconText);
             Attribute(writer, "data-node-secondary-label", node.SecondaryLabel);
             Attribute(writer, "data-node-badge", node.BadgeText);
+            Attribute(writer, "data-cfx-hover-text", node.Tooltip);
             Attribute(writer, "data-node-background-color", node.Style.BackgroundColor);
             Attribute(writer, "data-node-border-color", node.Style.BorderColor);
             Attribute(writer, "data-node-label-color", node.Style.LabelColor);

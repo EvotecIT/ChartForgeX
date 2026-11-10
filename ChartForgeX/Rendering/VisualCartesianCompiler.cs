@@ -268,7 +268,7 @@ internal static partial class VisualCartesianCompiler {
         var label = series.Name + ": " + resolvedLabel.DisplayedText + " (" + ChartNumericFormatter.FormatCoordinate(point.X) + ", " + ChartNumericFormatter.FormatCoordinate(point.Y) + ")";
         if (series.HistogramBinLayout != null) label = HistogramPointDescription(series, pointIndex, resolvedLabel.DisplayedText);
 
-        var metadata = new Dictionary<string, string> {
+        var metadata = new Dictionary<string, string>(24) {
             ["data-cfx-series"] = Number(seriesIndex), ["data-cfx-point"] = Number(pointIndex),
             ["data-cfx-source-point"] = Number(pointIndex < series.SourcePointIndices.Count ? series.SourcePointIndices[pointIndex] : pointIndex),
             ["data-cfx-x"] = Number(point.X), ["data-cfx-y"] = Number(point.Y),

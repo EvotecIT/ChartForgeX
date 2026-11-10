@@ -6,7 +6,7 @@ This is the active product roadmap, refreshed on 1 November 2026. The [README](R
 
 The chart catalogue is at parity with AG Charts or ahead of it: 54 native series kinds, plus Gantt, Timeline, Lollipop, Dumbbell, Slope, WordCloud, TileMap, CalendarHeatmap and topology, which AG Charts doesn't have. Every Mermaid 11/12 family parses and renders natively. Rendering is dependency-free and produces the same scene in SVG and native PNG.
 
-What holds us back is depth, not breadth: charts are less configurable than AG Charts, standalone HTML interactivity is thin, diagrams still look like engineering output, the three Evotec libraries have drifted apart visually, and the website undersells all of it. The five workstreams below close those gaps. Each item states the outcome and when it counts as done.
+What holds us back is depth, not breadth: charts are less configurable than AG Charts, diagrams still look like engineering output, the three Evotec libraries have drifted apart visually, and the website undersells all of it. The five workstreams below close those gaps. Each item states the outcome and when it counts as done.
 
 ## Delivery order
 
@@ -21,9 +21,8 @@ Workstreams can run in parallel where they don't share owners. One coherent PR p
 
 AG Charts lets a caller style any datum, format any label and theme every series type. I want the same reach through our typed API.
 
-- [ ] **Per-datum style callback.** A series accepts a callback that receives the datum, its index and series context and returns fill, stroke, marker and label overrides, replacing index-based `WithPoint*` for conditional styling. Done when it works on every Cartesian and radial family, SVG and PNG agree, and an example colours bars by threshold.
 - [ ] **Per-segment line dash.** Series dash (`WithStrokeStyle`) has landed; a forecast still needs a dash per segment after the last actual. Done when legend keys show the dash and a forecast example ships.
-- [ ] **Axis control.** Numeric axes accept a step/interval and explicit tick values, minor ticks, per-axis grid style and alternating bands; more than one secondary axis per side where the layout allows. Done when examples show each option and existing tick selection is unchanged when none is set.
+- [ ] **More secondary axes.** More than one secondary axis per side where the layout allows. Done when an example shows two value axes on one side and existing single-axis layouts are unchanged.
 - [ ] **Theme defaults per series type.** `VisualDesignTokens` can carry defaults per series kind (line width, marker, bar radius, label style), like AG `theme.overrides`. Done when a theme file restyles every line chart without per-chart code.
 - [ ] **Legend control.** Custom legend items, marker shape/size config and an item formatter, alongside the existing eight positions. Done when a chart can show a legend entry for a reference line and format entries with values.
 
@@ -39,7 +38,7 @@ Charts already look professional; topology-laid-out diagrams don't yet. The defe
 
 ## 4. One look across HtmlForgeX, ChartForgeX and CanopyX
 
-HtmlForgeX's `evotec.tokens.json` is the source of truth, but our embedded copy is older (1.1.0 vs 1.1.2), fonts differ in every product, and tokens carry colours only.
+HtmlForgeX's `evotec.tokens.json` is the source of truth. Our embedded chart export comes from its token version 1.6.0, but nothing checks that the copy stays current, and fonts differ in every product.
 
 Token contract v2 has landed: ChartForgeX reads its font stack, typography roles, radius, elevation and interactive chrome from the shared export, and interactive CSS resolves `--hfx-*` roles before its literal fallbacks.
 

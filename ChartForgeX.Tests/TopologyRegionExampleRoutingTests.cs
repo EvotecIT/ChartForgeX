@@ -4,6 +4,9 @@ using Xunit;
 
 namespace ChartForgeX.Tests;
 
+// The region example registers its reference font family for the whole process, and registered families take part in
+// every stack's glyph fallback, so it runs apart from tests that render in parallel.
+[Collection(nameof(FontRegistryCollection))]
 public sealed class TopologyRegionExampleRoutingTests {
     [Theory]
     [InlineData(1440, false)]

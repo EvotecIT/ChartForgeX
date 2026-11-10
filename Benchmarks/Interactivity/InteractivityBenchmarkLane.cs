@@ -17,9 +17,9 @@ public sealed class InteractivityBenchmarkLane : IDisposable {
     private readonly bool _sustainedUpdate;
 
     /// <summary>Loads the fixture without launching a browser, so PowerForge Plan remains read-only.</summary>
-    public InteractivityBenchmarkLane(string fixturePath, string binaries, string source, int points, int queries)
+    public InteractivityBenchmarkLane(string fixturePath, string binaries, int points, int queries)
         : this(fixturePath, binaries, "InteractivityBenchmarkFixture") {
-        _points = points; _arguments = new object[] { points, queries, source };
+        _points = points; _arguments = new object[] { points, queries };
     }
 
     /// <summary>Loads a shared or current typed section fixture without preparing a chart or launching a browser.</summary>

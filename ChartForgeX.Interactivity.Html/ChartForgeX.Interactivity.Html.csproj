@@ -84,6 +84,7 @@
     <EmbeddedResource Include="Assets\graph-explorer.chrome.css" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.chrome.css" />
     <EmbeddedResource Include="Assets\graph-explorer.editor.css" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.editor.css" />
     <EmbeddedResource Include="Assets\graph-explorer.print.css" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.print.css" />
+    <EmbeddedResource Include="Assets\graph-explorer.runtime.css" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.runtime.css" />
     <EmbeddedResource Include="Assets\graph-explorer.00-core.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.00-core.js" />
     <EmbeddedResource Include="Assets\graph-explorer.01-document.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.01-document.js" />
     <EmbeddedResource Include="Assets\graph-explorer.02-geometry.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.02-geometry.js" />
@@ -128,6 +129,7 @@
     <EmbeddedResource Include="Assets\graph-explorer.31-physics-configurator.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.31-physics-configurator.js" />
     <EmbeddedResource Include="Assets\graph-explorer.32-manipulation.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.32-manipulation.js" />
     <EmbeddedResource Include="Assets\graph-explorer.36-host-commands.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.36-host-commands.js" />
+    <EmbeddedResource Include="Assets\graph-explorer.37-hover-tip.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.37-hover-tip.js" />
     <EmbeddedResource Include="Assets\graph-explorer.39-patch-validation.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.39-patch-validation.js" />
     <EmbeddedResource Include="Assets\graph-explorer.40-api.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.40-api.js" />
   </ItemGroup>

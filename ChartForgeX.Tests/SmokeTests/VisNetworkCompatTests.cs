@@ -56,7 +56,7 @@ internal static partial class SmokeTests {
             .AddNode("b", "B")
             .AddEdge("middle", "a", "b", configure: edge => edge.ArrowsMiddle = true);
         var middleArrowScene = middleArrow.ToGraphScene("middle-arrow", "Middle arrow");
-        Assert(!middleArrowScene.Edges[0].Directed && !middleArrowScene.Edges[0].TargetArrow && middleArrowScene.Edges[0].Metadata["vis.arrows.middle"] == "true", "Vis-network middle-only arrows should remain metadata-only until the graph contract models middle markers explicitly.");
+        Assert(middleArrowScene.Edges[0].MiddleArrow && !middleArrowScene.Edges[0].Directed && !middleArrowScene.Edges[0].TargetArrow && middleArrowScene.Edges[0].Metadata["vis.arrows.middle"] == "true", "Vis-network middle-only arrows should map to a middle arrow without adding a target arrow.");
 
         var runtimeHierarchy = SampleVisNetworkCompatGraph();
         runtimeHierarchy.Options.Physics.Solver = GraphPhysicsSolver.HierarchicalRepulsion;
@@ -114,7 +114,7 @@ internal static partial class SmokeTests {
         Assert(html.Contains("data-edge-source-arrow=\"true\"", StringComparison.Ordinal) && html.Contains("data-edge-target-arrow=\"false\"", StringComparison.Ordinal), "Graph explorer output should preserve source-side vis-network arrow direction.");
         Assert(html.Contains("data-edge-width=\"3\"", StringComparison.Ordinal) && html.Contains("data-edge-color=\"#DC2626\"", StringComparison.Ordinal) && html.Contains("data-edge-label-color=\"#7F1D1D\"", StringComparison.Ordinal) && html.Contains("data-edge-physics=\"false\"", StringComparison.Ordinal), "Graph explorer output should expose vis-network edge width, color, label color, and physics flags.");
         Assert(html.Contains("style=\"--cfx-edge-stroke:#DC2626;--cfx-edge-width:3\"", StringComparison.Ordinal), "Graph explorer SVG should visibly render vis-network-style edge color and width while preserving selected-edge CSS feedback.");
-        Assert(html.Contains("style=\"fill:#DC2626;stroke:#DC2626\"", StringComparison.Ordinal), "Graph explorer SVG should render arrow markers with the matching vis-network edge color.");
+        Assert(html.Contains("data-cfx-role=\"graph-edge-arrows\"", StringComparison.Ordinal) && html.Contains("style=\"fill:#DC2626;stroke:none\"", StringComparison.Ordinal), "Graph explorer SVG should render arrowheads with the matching vis-network edge color.");
         Assert(html.Contains("style=\"--cfx-edge-label-explicit:#7F1D1D\">issues</text>", StringComparison.Ordinal), "Graph explorer SVG should preserve vis-network-style edge label colors through theme-aware contrast resolution.");
         Assert(html.Contains("data-edge-hidden=\"true\"", StringComparison.Ordinal) && html.Contains("cfx-graph-edge cfx-graph-hidden", StringComparison.Ordinal) && !html.Contains(">queries</text>", StringComparison.Ordinal), "Graph explorer SVG and Canvas state should suppress hidden vis-network-style edges.");
         Assert(html.Contains("physics: attr(edge, 'data-edge-physics') !== 'false'", StringComparison.Ordinal) && html.Contains("edges.filter(edge => edge.physics !== false).forEach(edge =>", StringComparison.Ordinal) && html.Contains("state.edges.filter(edge => edge.physics !== false)", StringComparison.Ordinal), "Graph explorer runtime physics should exclude edges that opt out of physics from spring, worker, and degree-derived forces.");

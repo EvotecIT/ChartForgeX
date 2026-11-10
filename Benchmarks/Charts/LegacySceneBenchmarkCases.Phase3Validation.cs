@@ -36,10 +36,11 @@ public static partial class LegacySceneBenchmarkCases {
             case "progress":
                 var rows = Role(root, "progress-fill", "progress-row").Where(element => element.Attribute("data-cfx-value") != null)
                     .ToDictionary(element => Index(element, "data-cfx-point"));
-                Require(rows.Count == chart.Series[0].Points.Count, "Progress source-row count changed.");
-                for (var index = 0; index < chart.Series[0].Points.Count; index++) {
+                var progress = ProgressFacts(chart);
+                Require(rows.Count == progress.Count, "Progress source-row count changed.");
+                for (var index = 0; index < progress.Count; index++) {
                     Require(rows.TryGetValue(index, out var row), "A progress source row was lost.");
-                    var value = chart.Series[0].Points[index].Y;
+                    var value = progress[index].Y;
                     Require(Near(Parse(row!, "data-cfx-value"), value), "Progress source value changed.");
                     // A zero-width legacy fill is the correct zero-value mark; prepared rows also contain a visible track.
                     RequireDrawing(row!, allowZeroWidth: value == 0);

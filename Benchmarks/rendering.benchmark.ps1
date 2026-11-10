@@ -76,8 +76,6 @@ New-BenchmarkSuite 'chartforgex-rendering' {
 
         if ($case.Fixture -eq 'Chart') {
             $run.Model = New-ChartForgeXBenchmarkChart
-            $run.SvgRenderer = [ChartForgeX.Svg.SvgChartRenderer]::new()
-            $run.PngRenderer = [ChartForgeX.Raster.PngChartRenderer]::new()
         } else {
             $run.Model = New-ChartForgeXBenchmarkTopology
             $run.Options = [ChartForgeX.Topology.TopologyRenderOptions]::new()
@@ -92,11 +90,11 @@ New-BenchmarkSuite 'chartforgex-rendering' {
             param($case, $run)
 
             if ($case.Fixture -eq 'Chart' -and $case.Format -eq 'Svg') {
-                $run.OutputLength = [Text.Encoding]::UTF8.GetByteCount($run.SvgRenderer.Render($run.Model))
+                $run.OutputLength = [Text.Encoding]::UTF8.GetByteCount([ChartForgeX.ChartExtensions]::ToSvg($run.Model))
             } elseif ($case.Fixture -eq 'Chart' -and $case.Format -eq 'Rgba') {
                 $run.OutputLength = [ChartForgeX.ChartExtensions]::ToRgbaImage($run.Model).Pixels.Length
             } elseif ($case.Fixture -eq 'Chart') {
-                $run.OutputLength = $run.PngRenderer.Render($run.Model).Length
+                $run.OutputLength = [ChartForgeX.ChartExtensions]::ToPng($run.Model).Length
             } elseif ($case.Format -eq 'Svg') {
                 $run.OutputLength = [Text.Encoding]::UTF8.GetByteCount($run.SvgRenderer.Render($run.Model, $run.Options))
             } elseif ($case.Format -eq 'Rgba') {

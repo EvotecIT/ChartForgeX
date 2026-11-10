@@ -286,6 +286,9 @@ internal static partial class TopologyDenseRoutePlanner {
         }
 
         public List<Obstacle> Obstacles { get; }
+        private ObstacleStrips? _strips;
+        /// <summary>The obstacles indexed for strip questions; the list does not change once the scene exists.</summary>
+        public ObstacleStrips Strips => _strips ??= new ObstacleStrips(Obstacles);
         /// <summary>Drawn group panels; routes may cross their borders but should not run along them.</summary>
         public List<Box> Groups { get; }
         public Box Region { get; }

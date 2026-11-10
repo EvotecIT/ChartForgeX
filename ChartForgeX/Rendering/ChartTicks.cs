@@ -17,6 +17,7 @@ internal static class ChartTicks {
     /// <summary>Uses the canonical anchored numeric interval across an entire prepared magnified track.</summary>
     internal static IReadOnlyList<double> ForXTrack(ChartAxis axis, double minimum, double maximum, double magnification) {
         if (axis.Labels.Count > 0) return ForAxis(axis, minimum, maximum);
+        if (ChartAxisTickPolicy.Generate(axis, minimum, maximum, inside: true) is { } authored) return authored;
         var count = Math.Ceiling(Math.Max(1, axis.TickCount - 1) * magnification) + 1;
         if (!ChartMath.IsFinite(count) || count > MaximumGeneratedTicks)
             throw new ArgumentOutOfRangeException(nameof(magnification), "The full X tick track exceeds the native tick-generation limit.");
@@ -39,6 +40,7 @@ internal static class ChartTicks {
 
     public static IReadOnlyList<double> Generate(ChartAxis axis, double min, double max) {
         if (axis == null) throw new ArgumentNullException(nameof(axis));
+        if (ChartAxisTickPolicy.Generate(axis, min, max, inside: false) is { } authored) return authored;
         if (axis.Scale == ChartScaleKind.Linear && axis.IntegerTicks) return GenerateInteger(min, max, axis.TickCount, axis.Minimum.HasValue || axis.Maximum.HasValue);
         if (axis.Scale == ChartScaleKind.Time) return ChartTimeScale.Generate(axis, min, max, false) ?? new NumericTimeTicks(Generate(min, max, axis.TickCount));
         if (axis.Scale == ChartScaleKind.Logarithmic) return GenerateLogarithmic(axis, min, max, axis.TickCount, false);
@@ -48,6 +50,7 @@ internal static class ChartTicks {
 
     public static IReadOnlyList<double> GenerateInside(ChartAxis axis, double min, double max) {
         if (axis == null) throw new ArgumentNullException(nameof(axis));
+        if (ChartAxisTickPolicy.Generate(axis, min, max, inside: true) is { } authored) return authored;
         if (axis.Scale == ChartScaleKind.Linear && axis.IntegerTicks) return GenerateInteger(min, max, axis.TickCount, true);
         if (axis.Scale == ChartScaleKind.Time) return GenerateTimeInside(axis, min, max);
         if (axis.Scale == ChartScaleKind.Logarithmic) return GenerateLogarithmic(axis, min, max, axis.TickCount, true);
@@ -57,7 +60,7 @@ internal static class ChartTicks {
 
     /// <summary>Uses a schedule axis's complete authored policy while retaining numeric time fallback identity.</summary>
     internal static IReadOnlyList<double> GenerateTimeInside(ChartAxis axis, double min, double max) =>
-        ChartTimeScale.Generate(axis, min, max, true) ?? new NumericTimeTicks(GenerateInside(min, max, axis.TickCount));
+        ChartAxisTickPolicy.Generate(axis, min, max, inside: true) ?? ChartTimeScale.Generate(axis, min, max, true) ?? new NumericTimeTicks(GenerateInside(min, max, axis.TickCount));
 
     public static IReadOnlyList<double> Generate(double min, double max, int desiredCount, bool integerTicks = false) {
         desiredCount = Math.Min(MaximumGeneratedTicks, Math.Max(2, desiredCount));

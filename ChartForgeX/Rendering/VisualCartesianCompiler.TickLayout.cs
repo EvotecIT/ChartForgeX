@@ -17,7 +17,8 @@ internal static partial class VisualCartesianCompiler {
         double length, bool horizontal, TextStyle style, double spacing, Func<double, string>? fallback, AxisLabelCache labels,
         IReadOnlyList<double>? regularObservations = null) {
         labels.ResetFittedTicks(axis);
-        if (labels.HasAuthoredTicks(axis) || axis.LabelDensity == ChartLabelDensity.All || length <= 0) return;
+        // Authored positions, a fixed step and explicit values decide the ticks; the value-domain snap still applies.
+        if (labels.HasAuthoredTicks(axis) || axis.HasFixedTicks || axis.LabelDensity == ChartLabelDensity.All || length <= 0) return;
         // Authored oversized type can fit down to the established readable floor.
         // Select a scale that fits at that floor before its final pitch fits the type;
         // otherwise stride thinning can discard the last tick of the generated scale.
@@ -32,9 +33,9 @@ internal static partial class VisualCartesianCompiler {
         if (axis.Scale == ChartScaleKind.Time && ChartTimeScale.GenerateFitting(axis, minimum, maximum,
             candidates => ChartTimeScale.HasDistinctAdjacentLabels(candidates.Select(tick => labels.Format(axis, tick, fallback, candidates)))
                 && AxisLabelSequenceFits(builder, axis, candidates, Position, horizontal, style, gap, fallback, labels,
-                    comfortable: axis.LabelDensity != ChartLabelDensity.Dense && !axis.HasExplicitTickCount),
+                    comfortable: axis.LabelDensity != ChartLabelDensity.Dense && !axis.HasExplicitTickCount) && TickSpacingFits(axis, candidates, Position),
             allowCompactDates: axis.ValueFormat == null && fallback == null, regularObservations: regularObservations,
-            automaticTickCount: ChartTimeScale.AutomaticTickCount(axis), retainFinalDay: true) is { } timeTicks) {
+            automaticTickCount: SpacingFittingCount(axis, ChartTimeScale.AutomaticTickCount(axis), length), retainFinalDay: true) is { } timeTicks) {
             labels.SetFittedTicks(axis, timeTicks);
             return;
         }
@@ -51,12 +52,14 @@ internal static partial class VisualCartesianCompiler {
             if (frozen.Count >= 2) { labels.SetFittedTicks(axis, frozen); return; }
         }
         var first = NumericFittingCount(axis, minimum, maximum, length, horizontal, style);
+        if (axis.MaximumTickSpacing is double widest) first = WidestSpacingCount(policy, minimum, maximum, widest, Position);
+        first = SpacingFittingCount(axis, first, length, raise: false);
         if (snap && !labels.FreezeDomains) axis.PreparedValueTickStep = null;
         for (var count = first; count >= 2; count--) {
             policy.TickCount = count;
             ticks = ChartTicks.GenerateInside(policy, minimum, maximum);
             if (!snap) {
-                if (AxisLabelSequenceFits(builder, axis, ticks, Position, horizontal, style, gap, fallback, labels)) break;
+                if (TickSpacingFits(axis, ticks, Position) && AxisLabelSequenceFits(builder, axis, ticks, Position, horizontal, style, gap, fallback, labels)) break;
                 continue;
             }
             var low = minimum; var high = maximum;
@@ -66,7 +69,8 @@ internal static partial class VisualCartesianCompiler {
             if (labels.FreezeDomains && (Math.Abs(low - minimum) > tolerance || Math.Abs(high - maximum) > tolerance)) continue;
             ticks = snapped;
             if (!labels.FreezeDomains) { labels.SnappedDomains[axis] = (low, high); axis.PreparedValueTickStep = snapped.Count >= 2 ? snapped[1] - snapped[0] : null; }
-            if (AxisLabelSequenceFits(builder, axis, snapped, value => ChartScaleTransform.Normalize(value, low, high, axis) * length,
+            double SnappedPosition(double value) => ChartScaleTransform.Normalize(value, low, high, axis) * length;
+            if (TickSpacingFits(axis, snapped, SnappedPosition) && AxisLabelSequenceFits(builder, axis, snapped, SnappedPosition,
                 horizontal, style, gap, fallback, labels)) break;
         }
         labels.SetFittedTicks(axis, ticks);
@@ -85,6 +89,33 @@ internal static partial class VisualCartesianCompiler {
         if (horizontal) return count <= MaximumUnitTicks ? count : Math.Min(count, Math.Max(MinimumDensityTicks, (int)Math.Floor(length / HorizontalTickPitch) + 1));
         // Tall axes may start above the default count; short ones keep it, because a lower start can select a coarser nice step.
         return Math.Max(count, Math.Min(MaximumDensityTicks, (int)Math.Round(length / VerticalTickPitch) + 1));
+    }
+
+    /// <summary>Starts the numeric search at the sparsest nice step whose adjacent ticks sit no farther apart than the authored maximum.</summary>
+    private static int WidestSpacingCount(ChartAxis policy, double minimum, double maximum, double widest, Func<double, double> position) {
+        for (var count = 2; count < 100; count++) {
+            policy.TickCount = count;
+            var ticks = ChartTicks.GenerateInside(policy, minimum, maximum);
+            var fits = ticks.Count >= 2;
+            for (var index = 1; fits && index < ticks.Count; index++) fits = Math.Abs(position(ticks[index]) - position(ticks[index - 1])) <= widest + 1e-6;
+            if (fits) return count;
+        }
+        return 100;
+    }
+
+    /// <summary>Lets an authored minimum spacing lower the automatic search start; a calendar search also raises it for a maximum.</summary>
+    private static int SpacingFittingCount(ChartAxis axis, int count, double length, bool raise = true) {
+        if (raise && axis.MaximumTickSpacing is double widest) count = Math.Max(count, (int)Math.Min(100, Math.Ceiling(length / widest) + 1));
+        if (axis.MinimumTickSpacing is double narrowest) count = Math.Min(count, (int)Math.Max(2, Math.Min(100, Math.Floor(length / narrowest) + 1)));
+        return count;
+    }
+
+    /// <summary>Rejects a candidate whose adjacent ticks sit closer than the axis's authored minimum spacing.</summary>
+    private static bool TickSpacingFits(ChartAxis axis, IReadOnlyList<double> ticks, Func<double, double> position) {
+        if (axis.MinimumTickSpacing is not double minimum) return true;
+        for (var index = 1; index < ticks.Count; index++)
+            if (Math.Abs(position(ticks[index]) - position(ticks[index - 1])) + 1e-6 < minimum) return false;
+        return true;
     }
 
     private const double MinimumDensityAxisLength = 160, HorizontalTickPitch = 80, VerticalTickPitch = 50;

@@ -1,5 +1,7 @@
 # Rendering benchmarks
 
+The [performance page](../docs/performance/benchmarks.md) lists every runner's command, reference measurements and the size and scaling guards in the test suite.
+
 The rendering suite measures representative ChartForgeX SVG, direct RGBA, and encoded PNG work through PowerForge's reusable benchmark runner. It covers a three-series, 72-point, 1,200 x 675 report chart and a deterministic 128-node, 230-edge force topology. The RGBA cases isolate rendering from image encoding for composition-heavy hosts such as wallpaper and report generators.
 
 ```powershell
@@ -78,9 +80,9 @@ Qualify a stable candidate by first inspecting `-Plan`, then running a zero-warm
 
 PowerForge rejects measurements when source provenance changes during a run. Freeze the participating worktree and binaries before qualification. An immutable copy of the same suite/helper and hashed product, fixture, token and font inputs can exercise validation while other development continues, but a zero-warmup, one-sample smoke run establishes no performance result. Record source revisions, input hashes, SDK/runtime, CPU/OS, power policy and quality settings with paired results. Keep raw samples; investigate any requested complete-operation regression above 10% rather than treating the separate history noise allowance as that proof.
 
-## Browser acquisition
+## Browser pointer hover
 
-`Invoke-InteractivityBenchmark.ps1` measures nearest-observation lookup on 1,000-point and 5,000-point Scatter charts. Each timed operation executes 16 deterministic queries in a persistent Chromium session owned by HtmlTinkerX. PowerForge owns warmups, rotated engine order, timing and result files. Chart preparation, browser startup, an independent geometry oracle and a real pointer-hover check run outside timing; every measured query must return the expected source observation.
+`Invoke-InteractivityBenchmark.ps1` measures pointer hover on 1,000-point and 5,000-point Scatter charts with nearest tooltips. Each timed operation dispatches 16 deterministic `pointermove` events on the plot stage of the unchanged page in a persistent Chromium session owned by HtmlTinkerX. The animation frames those moves request run synchronously inside the batch, so each query covers nearest-observation acquisition, hover state and tooltip commit without waiting for display refresh. PowerForge owns warmups, rotated engine order, timing and result files. Chart preparation, browser startup, an independent geometry oracle and a real mouse hover check run outside timing; every measured query must hover the expected source observation.
 
 After building the Release test dependencies, supply their binary directory and an explicit scratch output directory:
 
@@ -91,9 +93,9 @@ After building the Release test dependencies, supply their binary directory and 
     -WarmupCount 2 -IterationCount 9
 ```
 
-Use `-Plan` to inspect the matrix without opening browsers. The wrapper builds only its isolated benchmark fixture. `-SkipFixtureBuild` reuses that fixture. A paired comparison also takes `-BaselineBinaryRoot` and `-BaselineAcquisitionSourcePath`, pointing to frozen baseline DLLs and their matching `45-crosshair-reveal.js` source. The fixture verifies that the recorded acquisition implementation is present in each binary's embedded runtime before adding a disposable page hook. The shipped runtime exposes no benchmark API.
+Use `-Plan` to inspect the matrix without opening browsers. The wrapper builds only its isolated benchmark fixture. `-SkipFixtureBuild` reuses that fixture. A paired comparison also takes `-BaselineBinaryRoot`, pointing to frozen baseline DLLs; both lanes run their own shipped runtime through the same public events. The page is not modified, and the shipped runtime exposes no benchmark API.
 
-Compare `Baseline` and `Candidate` rows for the same scenario in PowerForge's `comparison.md` and `summary.json`. `MedianMs` measures the complete query batch, including the Playwright round trip and serialization. Dividing by the query count gives an amortized lookup cost, not a per-event latency percentile. Hover styling, tooltip rendering and application event handlers have separate costs.
+Compare `Baseline` and `Candidate` rows for the same scenario in PowerForge's `comparison.md` and `summary.json`. `MedianMs` measures the complete query batch, including the Playwright round trip and serialization. Dividing by the query count gives an amortized hover cost, not a per-event latency percentile. Browser paint after the hover and application event handlers are not included.
 
 Keep both source and adapter hashes, fixture hash, actual browser versions, policy flags, host activity and raw samples with the result. Freeze inputs during measurement; an immutable scratch copy lets ordinary implementation continue elsewhere. The suite is optional and adds no timing threshold to correctness CI.
 

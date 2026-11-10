@@ -15,13 +15,13 @@
   const targetSelector = '.cfx-interactive-region,[data-cfx-target-kind],[data-cfx-label],[data-cfx-point],[data-cfx-series],[data-cfx-region],[data-cfx-node],[data-cfx-role="legend-item"]';
   const renderedTargetSelector = '.cfx-interactive-region,[data-cfx-label],[data-cfx-series],[data-cfx-point],[data-cfx-region],[data-cfx-node],[data-cfx-source][data-cfx-target],[data-cfx-role="legend-item"],[data-cfx-role^="annotation"]';
 
-  const isPassiveTarget = (node) => !!node.closest('[data-cfx-passive="true"],[data-cfx-role="word-cloud-source"],[data-cfx-positioning="absolute"][data-cfx-stop-count]');
+  const passiveTargetSelector = '[data-cfx-passive="true"],[data-cfx-role="word-cloud-source"],[data-cfx-positioning="absolute"][data-cfx-stop-count]';
+  const isPassiveTarget = (node) => !!node.closest(passiveTargetSelector);
   const isInteractiveTarget = (node) => {
-    if (isPassiveTarget(node)) return false;
-    if (node.closest('[data-cfx-visible="false"]')) return false;
+    // One ancestor search covers every excluding ancestor: passive, hidden, or a native or proxy legend copy.
+    if (node.closest(passiveTargetSelector + ',[data-cfx-visible="false"],[data-cfx-role="legend-native"],[data-cfx-role="legend-proxy"]')) return false;
     const role = (node.dataset || {}).cfxRole;
     if (role === 'legend-entry-omitted') return false;
-    if (node.closest('[data-cfx-role="legend-native"],[data-cfx-role="legend-proxy"]')) return false;
     if (role === 'legend-item') return true;
     if (node.closest('[data-cfx-role="legend-item"]')) return false;
 
@@ -37,7 +37,7 @@
     const link = node.parentElement;
     if (link && link.matches('a[data-cfx-role="heatmap-cell-link"][href]')) return link;
 
-    return Array.from(node.children).find((child) => child.matches('a[data-cfx-role="heatmap-cell-link"][href]')) || node;
+    return node.querySelector(':scope > a[data-cfx-role="heatmap-cell-link"][href]') || node;
   };
 
   const legendTarget = (node) => {

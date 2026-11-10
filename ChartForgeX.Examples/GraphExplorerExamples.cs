@@ -29,6 +29,7 @@ internal static class GraphExplorerExamples {
         GraphNeighborhoodExample.Write(output);
         GraphStateReplayExample.Write(output);
         GraphRichRenderingExample.Write(output);
+        GraphEdgeStylesExample.Write(output);
     }
 
     private static GraphScene BuildEnterpriseAccessBenchmark() {

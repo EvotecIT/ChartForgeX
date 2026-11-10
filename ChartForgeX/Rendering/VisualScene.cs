@@ -79,9 +79,7 @@ internal sealed class VisualSceneGroup : VisualSceneNode {
         Clip = clip; SourceX = sourceX;
         PathClip = pathClip; Rotation = rotation; Href = href; Tooltip = tooltip; Translation = translation; ImageResource = imageResource;
         ColorScope = colorScope;
-        var copy = new SortedDictionary<string, string>(StringComparer.Ordinal);
-        if (metadata != null) foreach (var item in metadata) copy.Add(item.Key, item.Value);
-        Metadata = new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(copy);
+        Metadata = VisualSceneMetadata.Create(metadata);
     }
     internal VisualSceneSurfaceShadow? SurfaceShadow { get; }
     internal VisualSceneRetainedEffect? RetainedEffect { get; }
@@ -89,6 +87,14 @@ internal sealed class VisualSceneGroup : VisualSceneNode {
     internal ChartRect? Clip { get; }
     internal CartesianXSourceAdmission? SourceX { get; }
     internal IReadOnlyDictionary<string, string> Metadata { get; }
+
+    /// <summary>A mutable copy of the metadata with room for the entries a capture pass adds, so long series do not regrow it per point.</summary>
+    internal Dictionary<string, string> CopyMetadata() {
+        var copy = new Dictionary<string, string>(Metadata.Count + 16, StringComparer.Ordinal);
+        foreach (var item in Metadata) copy.Add(item.Key, item.Value);
+        return copy;
+    }
+
     internal VisualScenePath? PathClip { get; }
     internal VisualRotation? Rotation { get; }
     internal ChartPoint? Translation { get; }

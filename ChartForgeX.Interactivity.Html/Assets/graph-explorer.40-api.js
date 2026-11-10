@@ -41,21 +41,6 @@
     style.labelColor ? `--cfx-edge-label-explicit:${style.labelColor}` : '',
     style.hidden === true || edge.hidden === true ? 'display:none' : ''
   ].filter(Boolean).join(';');
-  const graphPatchArrowMarker = (root, edgeId, color) => {
-    const scene = root.querySelector('[data-cfx-role="graph-scene"]');
-    const template = scene?.querySelector('defs marker[id]');
-    if (!template || !color) return template?.id || '';
-    const markerId = `${template.id}-patch-${String(edgeId).replace(/[^a-zA-Z0-9_-]/g, '-')}`;
-    let marker = scene.querySelector(`marker[id="${markerId}"]`);
-    if (!marker) {
-      marker = template.cloneNode(true);
-      marker.id = markerId;
-      template.parentNode?.appendChild(marker);
-    }
-    const path = marker.querySelector('path');
-    if (path) path.setAttribute('style', `fill:${color};stroke:${color}`);
-    return markerId;
-  };
   const graphPatchNodeMark = (root, element, node) => {
     element.classList.toggle('cfx-graph-node-shadow', node.style?.shadow === true);
     if (element.__cfxVirtual) return;
@@ -183,9 +168,6 @@
     }
     const sourceArrow = edge.sourceArrow === true, targetArrow = edge.targetArrow === true || edge.directed === true;
     setGraphAttribute(element, 'data-edge-id', edge.id); setGraphAttribute(element, 'data-source-node-id', edge.sourceNodeId || edge.source); setGraphAttribute(element, 'data-target-node-id', edge.targetNodeId || edge.target); setGraphAttribute(element, 'data-edge-label', edge.label); setGraphAttribute(element, 'data-edge-kind', edge.kind); setGraphAttribute(element, 'data-cfx-status', edge.status); setGraphAttribute(element, 'data-edge-weight', Number(edge.weight) || 1); setGraphAttribute(element, 'data-edge-length', Number(edge.length) || 0); setGraphAttribute(element, 'data-edge-shape', edge.shape || 'line'); setGraphAttribute(element, 'data-edge-curvature', Number(edge.curvature) || 0); setGraphAttribute(element, 'data-edge-route-points', graphPatchRoutePoints(edge.routePoints)); setGraphAttribute(element, 'data-edge-dashed', edge.dashed === true ? 'true' : 'false'); setGraphAttribute(element, 'data-edge-dash-pattern', style.dashPattern || edge.dashPattern); setGraphAttribute(element, 'data-edge-show-label', edge.showLabel === false ? 'false' : 'true'); setGraphAttribute(element, 'data-edge-directed', edge.directed === true ? 'true' : 'false'); setGraphAttribute(element, 'data-edge-source-arrow', sourceArrow ? 'true' : 'false'); setGraphAttribute(element, 'data-edge-target-arrow', targetArrow ? 'true' : 'false'); setGraphAttribute(element, 'data-edge-physics', style.physics === false || edge.physics === false ? 'false' : 'true'); setGraphAttribute(element, 'data-edge-color', style.color); setGraphAttribute(element, 'data-edge-label-color', style.labelColor); setGraphAttribute(element, 'data-edge-width', style.width); setGraphAttribute(element, 'data-edge-hidden', style.hidden === true || edge.hidden === true ? 'true' : 'false'); setGraphAttribute(element, 'data-cfx-search', graphSearchText(edge.metadata)); setGraphAttribute(element, 'data-cfx-metadata', graphMetadata(edge.metadata)); setGraphAttribute(element, 'role', 'button'); setGraphAttribute(element, 'aria-pressed', element.classList.contains('cfx-graph-selected') ? 'true' : 'false'); setGraphAttribute(element, 'aria-label', graphLabelText(edge.label) || uiText(root, 'GraphEndpoints', '{source} to {target}', { source: edge.sourceNodeId || edge.source, target: edge.targetNodeId || edge.target })); setGraphAttribute(element, 'tabindex', '-1'); setGraphAttribute(element, 'style', graphPatchEdgeStyle(edge, style));
-    const markerId = graphPatchArrowMarker(root, edge.id, style.color);
-    setGraphAttribute(element, 'marker-start', sourceArrow && markerId ? `url(#${markerId})` : null);
-    setGraphAttribute(element, 'marker-end', targetArrow && markerId ? `url(#${markerId})` : null);
     element.classList.toggle('cfx-graph-hidden', style.hidden === true || edge.hidden === true);
     let label = items(root, '[data-cfx-role="graph-edge-label"]').find(item => attr(item, 'data-edge-label-for') === edge.id);
     label?.removeAttribute('data-cfx-bundle-generated');

@@ -7,11 +7,12 @@
   const ease = t => 1 - Math.pow(1 - t, 3);
   // Calls step with an eased 0..1 progress on each frame, then done. Returns a cancel function that skips done.
   // A no-op document animation is the clock, so anything awaiting the page's animations
-  // (print, export, tests) also awaits the transition.
+  // (print, export, tests) also awaits the transition. It animates no property: an animated custom property on the
+  // chart restyled every mark of a dense chart on every frame.
   const tween = (root, k, step, done) => {
     const duration = k.motionDuration(root);
     if (!duration || typeof root.animate !== 'function') { done(); return () => {}; }
-    const clock = root.animate([{ '--cfx-motion-progress': '0' }, { '--cfx-motion-progress': '1' }], { duration, id: 'cfx-window' });
+    const clock = root.animate([], { duration, id: 'cfx-window' });
     let frame = 0, active = true;
     const tick = () => {
       if (!active) return;

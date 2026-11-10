@@ -34,7 +34,7 @@ internal static partial class TopologyEdgeRouter {
         // Curve repair runs while other curves can still be sampled. Their labels and sampled routes cannot
         // be queried recursively here; node/caption/header obstacles remain authoritative.
         var obstacles = RouteObstacles(chart, source.Id, target.Id, edge, includeCaptions: true, includeLabels: !avoidOwnerReentries);
-        var segments = avoidOwnerReentries ? new List<RouteSegment>() : RouteSegments(chart, edge);
+        var segments = avoidOwnerReentries ? RouteSegmentSet.Empty : RouteSegments(chart, edge);
         var sourceCaption = CaptionBox(chart, source); var targetCaption = CaptionBox(chart, target);
         var candidates = new List<RouteCandidate> { new("existing-final", original) };
         foreach (var corridor in RouteXCandidates(chart, source, target, obstacles, routeLane)) {

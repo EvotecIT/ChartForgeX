@@ -3,6 +3,7 @@ using System.Text;
 using ChartForgeX.Core;
 using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
+using ChartForgeX.Topology;
 using HtmlTinkerX;
 using Microsoft.Playwright;
 using Xunit;
@@ -15,10 +16,12 @@ public sealed class InteractiveBundleTests {
     [Theory]
     // The report runtimes grew by about 7.5 KiB raw (2.5 KiB gzip) when saved stacks learned to restack on legend toggles,
     // and by about 2.6 KiB raw (1 KiB gzip) when saved windows learned zoned and culture calendars, symmetric-log and
-    // horizontal secondary axes.
-    [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.Tooltips, 99 * 1024, 31 * 1024)]
-    [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.ReportReview, 288 * 1024, 88 * 1024)]
-    [InlineData(HtmlChartRuntime.Full, ChartInteractionFeatures.ReportReview, 356 * 1024, 107 * 1024)]
+    // horizontal secondary axes. Dense-chart hover and zoom (a per-chart pointer model, incremental hover and the eased
+    // zoom transform) added about 2.5 KiB raw (1.1 KiB gzip) to the core reader and 6.3 KiB raw (2.5 KiB gzip) to the others.
+    // Re-ticking saved windows with authored tick steps, explicit values, minor grids and spacing bounds added about 1.3 KiB raw (0.4 KiB gzip) to the report runtimes; with the saved-page hover model that left them about 0.2 KiB raw over, so both raw budgets moved up 1 KiB, and the full gzip budget moved up 1 KiB for the same 0.1 KiB overlap.
+    [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.Tooltips, 102 * 1024, 33 * 1024)]
+    [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.ReportReview, 296 * 1024, 91 * 1024)]
+    [InlineData(HtmlChartRuntime.Full, ChartInteractionFeatures.ReportReview, 364 * 1024, 111 * 1024)]
     public void EmittedRuntimeFitsRawAndGzipBudgets(HtmlChartRuntime runtime, ChartInteractionFeatures features, int rawBudget, int gzipBudget) {
         var asset = HtmlInteractiveAssetFiles.ChartScriptFor(runtime, features);
         var bytes = Encoding.UTF8.GetBytes(asset.Content);
@@ -83,6 +86,26 @@ public sealed class InteractiveBundleTests {
         Assert.Contains(HtmlDiagramAssets.Script, FlowRecipe.Create().ToInteractiveHtmlPage());
         Assert.DoesNotContain("ChartForgeX.diagramInteraction", Chart.Create().AddLine("Requests", ChartPoints.FromValues(2, 7, 4)).ToInteractiveHtmlPage());
     }
+
+    // Topology and graph Explorer pages inline their own runtimes, so each gets a budget that makes growth a deliberate change.
+    // Measured on 9 November 2026: topology 156.8 KiB raw / 32.7 KiB gzip, Explorer 427.9 KiB raw / 95.8 KiB gzip.
+    // Node and edge hover text plus edge arrow shapes, middle arrows and hover/selection widths raised the Explorer from 422.5 / 93.9 KiB.
+    [Theory]
+    [InlineData("topology", 157 * 1024, 33 * 1024)]
+    [InlineData("explorer", 429 * 1024, 97 * 1024)]
+    public void TopologyAndExplorerRuntimesFitRawAndGzipBudgetsAsShipped(string runtime, int rawBudget, int gzipBudget) {
+        var topology = TopologyChart.Create().WithId("budget").AddAutoNode("a", "Edge").AddAutoNode("b", "Core").AddEdge("a-b", "a", "b");
+        var (script, page) = runtime == "topology"
+            ? (HtmlInteractiveTopologyRenderer.BuildInteractionScript(), topology.ToInteractiveHtmlPage())
+            : (HtmlGraphExplorerRenderer.BuildInteractionScript(), topology.ToGraphExplorerHtmlPage());
+        var bytes = Encoding.UTF8.GetBytes(script);
+        using var output = new MemoryStream();
+        using (var gzip = new GZipStream(output, CompressionLevel.Optimal, leaveOpen: true)) gzip.Write(bytes);
+        Assert.True(bytes.Length <= rawBudget, $"{runtime}: {bytes.Length} raw bytes exceeds {rawBudget}.");
+        Assert.True(output.Length <= gzipBudget, $"{runtime}: {output.Length} gzip bytes exceeds {gzipBudget}.");
+        Assert.Contains(script, page);
+    }
+
     [Fact]
     public void ExternalPagesNameFeatureBundlesForLazyLoadingInsteadOfEmbeddingThem() {
         var page = Chart.Create().AddLine("Requests", ChartPoints.FromValues(2, 7, 4)).ToInteractiveHtmlPage(options => {

@@ -20,13 +20,16 @@
     if (styles.has(node)) return styles.get(node);
     const style = getComputedStyle(node); styles.set(node, style); return style;
   };
+  // A read-only pass may give its styles map a _cfxShown set, so each shown ancestor is checked once per pass.
   const paintAncestorsVisible = (node, styles) => {
     if (!node || node.closest('defs,[hidden]')) return false;
-    for (let ancestor = node; ancestor; ancestor = composedParent(ancestor)) {
+    const shown = styles._cfxShown, path = [];
+    for (let ancestor = node; ancestor && !shown?.has(ancestor); ancestor = composedParent(ancestor)) {
       const style = paintStyle(ancestor, styles);
       if (style.display === 'none' || Number(style.opacity) === 0) return false;
+      path.push(ancestor);
     }
-
+    path.forEach(ancestor => shown?.add(ancestor));
     return true;
   };
   const paintNodeVisible = (node, styles) => {
@@ -97,20 +100,28 @@
     return clips;
   };
 
+  // A layer tested against each of its observations measures its own clipped box once per pass: the box of a long
+  // path costs as much as the path.
   const paintWithinNativeClips = (node, subject = node, styles) => {
+    const own = subject === node && (styles._cfxOwnClips ||= new Map());
+    return own ? own.has(node) ? own.get(node) : own.set(node, clippedPaint(node, node, styles)).get(node) : clippedPaint(node, subject, styles);
+  };
+  const clippedPaint = (node, subject, styles) => {
     const paired = subject !== node && pairedExtentObservation(subject);
-    const clips = nativePaintClips(node);
-    if (!clips) return false;
-    const projection = clips.length && svgScreenProjection(node.ownerSVGElement, styles);
-    if (projection) for (const clip of clips) clip.matrix = projection.multiply(clip.matrix);
+    // A node's clip bounds do not depend on the observation, so a pass measures them once per node.
+    const cache = styles._cfxClipBounds ||= new Map();
+    if (!cache.has(node)) {
+      const clips = nativePaintClips(node), projection = clips?.length && svgScreenProjection(node.ownerSVGElement, styles);
+      cache.set(node, clips && [projection, clips.map(({ rect, matrix }) => {
+        if (projection) matrix = projection.multiply(matrix);
+        const { left, right, top, bottom } = screenBounds(rect, matrix), allowance = svgCoordinatePrecision(matrix);
+        return [left, right, top, bottom, Math.max(allowance.x, allowance.y)];
+      })]);
+    }
+    const [projection, bounds] = cache.get(node) || [];
+    if (!bounds) return false;
     let box;
-    for (const { rect, matrix } of clips) {
-      const corners = [[rect.x, rect.y], [rect.x + rect.width, rect.y], [rect.x, rect.y + rect.height], [rect.x + rect.width, rect.y + rect.height]]
-        .map(([x, y]) => new DOMPoint(x, y).matrixTransform(matrix));
-      const left = Math.min(...corners.map(p => p.x)), right = Math.max(...corners.map(p => p.x));
-      const top = Math.min(...corners.map(p => p.y)), bottom = Math.max(...corners.map(p => p.y));
-
-      const allowance = svgCoordinatePrecision(matrix), precision = Math.max(allowance.x, allowance.y);
+    for (const [left, right, top, bottom, precision] of bounds) {
       box ||= paired ? nativeRegionScreenBox(subject, subject._cfxPairedRegion, projection)
         : subject !== node ? nativeRegionScreenBox(subject, subject._cfxNativeRegion, projection) || subject.getBoundingClientRect() : subject.getBoundingClientRect();
       if (!box) return false;
@@ -256,12 +267,18 @@
   };
   const childPaint = (node, decoration, styles, subject) => {
     if (!node) return null;
-    const shapes = node.matches(paintShapes) ? [node] : Array.from(node.querySelectorAll(paintShapes));
-    const primary = shapes.filter((shape) => shape.matches('[data-cfx-role^="circle-value"],[data-cfx-role^="gauge-value"],[data-cfx-role="gauge-needle"],[data-cfx-role="bullet-value"]'));
     const authoredPattern = (shape) => /-pattern$/.test(shape.dataset.cfxRole || '');
-    const patterns = shapes.filter(authoredPattern);
-    for (const shape of primary.concat(shapes.filter((shape) => !authoredPattern(shape)))) {
-      if (shape.closest('[data-cfx-native-text-ink]') || !decoration && shape.closest('[data-cfx-label-decoration]')) continue;
+    // A series target holds every mark of the series; its shape lists are kept with the chart model.
+    const build = () => {
+      const shapes = node.matches(paintShapes) ? [node] : Array.from(node.querySelectorAll(paintShapes));
+      return { shapes, patterns: shapes.filter(authoredPattern),
+        primary: shapes.filter((shape) => shape.matches('[data-cfx-role^="circle-value"],[data-cfx-role^="gauge-value"],[data-cfx-role="gauge-needle"],[data-cfx-role="bullet-value"]')) };
+    };
+    const lists = chartModel(node.closest('.cfx-interactive-chart'))?.shapes, { shapes, primary, patterns } = lists ? lists.get(node) || lists.set(node, build()).get(node) : build();
+    const skipped = (shape) => shape.closest('[data-cfx-native-text-ink]') || !decoration && shape.closest('[data-cfx-label-decoration]');
+    // Primary value shapes first, then every non-pattern shape, stopping at the first that paints.
+    for (const list of [primary, shapes]) for (const shape of list) {
+      if (list === shapes && authoredPattern(shape) || skipped(shape)) continue;
       const paint = shapePaint(shape, styles, subject || shape);
       if (paint) return paint;
     }
@@ -269,12 +286,15 @@
     if (text) return text;
 
     for (const shape of patterns) {
-      if (shape.closest('[data-cfx-native-text-ink]') || !decoration && shape.closest('[data-cfx-label-decoration]')) continue;
+      if (skipped(shape)) continue;
       const paint = shapePaint(shape, styles, subject || shape);
       if (paint) return paint;
     }
     return null;
   };
+  const roleSelector = roles => roles.split(' ').map(role => '[data-cfx-role="' + role + '"]').join();
+  const seriesPaintLayers = roleSelector('line trend-line slope-line area range-area range-band range-upper range-lower range-midline difference-positive difference-negative difference-first difference-second radar-outline radar-area polar-line');
+  const seriesPatternLayers = roleSelector('area-pattern range-area-pattern range-band-pattern difference-positive-pattern difference-negative-pattern radar-pattern');
   const seriesPaint = (node, styles) => {
     const owner = node.closest('[data-cfx-role="series"],[data-cfx-role="radar-series"],[data-cfx-role="polar-series"]');
     if (!owner) return null;
@@ -289,12 +309,10 @@
       if (role === 'difference-negative' || role === 'difference-negative-pattern') return Number(data.cfxFirst) < Number(data.cfxSecond);
       return true;
     };
-    for (const layer of owner.querySelectorAll('[data-cfx-role="line"],[data-cfx-role="trend-line"],[data-cfx-role="slope-line"],[data-cfx-role="area"],[data-cfx-role="range-area"],[data-cfx-role="range-band"],[data-cfx-role="range-upper"],[data-cfx-role="range-lower"],[data-cfx-role="range-midline"],[data-cfx-role="difference-positive"],[data-cfx-role="difference-negative"],[data-cfx-role="difference-first"],[data-cfx-role="difference-second"],[data-cfx-role="radar-outline"],[data-cfx-role="radar-area"],[data-cfx-role="polar-line"]')) {
-      if (!relevant(layer)) continue;
-      const paint = childPaint(layer, false, styles, node.hasAttribute('data-cfx-point') ? node : undefined);
-      if (paint) return paint;
-    }
-    for (const layer of owner.querySelectorAll('[data-cfx-role="area-pattern"],[data-cfx-role="range-area-pattern"],[data-cfx-role="range-band-pattern"],[data-cfx-role="difference-positive-pattern"],[data-cfx-role="difference-negative-pattern"],[data-cfx-role="radar-pattern"]')) {
+    // Each series is searched for its paint layers once per pass, or once per chart model while the chart is unchanged.
+    const layers = styles._cfxLayers ||= chartModel(owner.closest('.cfx-interactive-chart'))?.layers || new Map();
+    if (!layers.has(owner)) layers.set(owner, [...owner.querySelectorAll(seriesPaintLayers), ...owner.querySelectorAll(seriesPatternLayers)]);
+    for (const layer of layers.get(owner)) {
       if (!relevant(layer)) continue;
       const paint = childPaint(layer, false, styles, node.hasAttribute('data-cfx-point') ? node : undefined);
       if (paint) return paint;

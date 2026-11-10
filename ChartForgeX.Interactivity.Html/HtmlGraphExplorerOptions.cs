@@ -70,6 +70,9 @@ public sealed class HtmlGraphExplorerOptions {
 
     /// <summary>Gets or sets an optional browser storage key used when <see cref="PersistInteractionState"/> is enabled.</summary>
     public string? InteractionStateStorageKey { get; set; }
+
+    /// <summary>Gets or sets how long the pointer must rest on a node or edge before its tooltip appears, in milliseconds. The default is zero (immediate); keyboard focus is always immediate.</summary>
+    public int TooltipDelayMilliseconds { get; set; }
 }
 
 /// <summary>

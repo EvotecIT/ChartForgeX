@@ -182,6 +182,7 @@ public static class GraphScenePatchExtensions {
             IconText = source.IconText,
             SecondaryLabel = source.SecondaryLabel,
             BadgeText = source.BadgeText,
+            Tooltip = source.Tooltip,
             Size = source.Size,
             Fixed = source.Fixed,
             Hidden = source.Hidden

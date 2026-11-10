@@ -10,6 +10,7 @@ public sealed class GraphSceneEdge {
     private string _sourceNodeId = string.Empty;
     private string _targetNodeId = string.Empty;
     private string? _kind;
+    private string? _tooltip;
 
     /// <summary>Gets or sets the stable edge identifier.</summary>
     public string Id { get => _id; set => _id = ChartInteractionText.RequiredToken(value, nameof(value), "Graph edge ids"); }
@@ -46,6 +47,12 @@ public sealed class GraphSceneEdge {
 
     /// <summary>Gets or sets whether adapters should render a directional arrow at the target node. When unset, <see cref="Directed"/> keeps its target-arrow compatibility behavior.</summary>
     public bool TargetArrow { get; set; }
+
+    /// <summary>Gets or sets whether adapters should render a directional arrow halfway along the edge, pointing toward the target.</summary>
+    public bool MiddleArrow { get; set; }
+
+    /// <summary>Gets or sets optional plain text shown when the pointer rests on the edge. Line breaks start new lines.</summary>
+    public string? Tooltip { get => _tooltip; set => _tooltip = ChartInteractionText.OptionalText(value, nameof(value), "Graph edge tooltips"); }
 
     /// <summary>Gets or sets the preferred edge geometry used by adapters that support richer graph lines.</summary>
     public GraphEdgeShape Shape { get; set; } = GraphEdgeShape.Line;
