@@ -23,7 +23,7 @@ internal sealed class VisualLegendEntry {
             Metadata = snapshot;
         }
     }
-    internal string Label { get; }
+    internal string Label { get; private set; }
     internal string? Value { get; }
     internal string? Percentage { get; }
     internal string Description => string.IsNullOrEmpty(Value) ? Label : Label + ": " + Value + (string.IsNullOrEmpty(Percentage) ? "" : " (" + Percentage + ")");
@@ -35,8 +35,20 @@ internal sealed class VisualLegendEntry {
     internal string? SeriesKey { get; }
     internal ChartStateCategory? State { get; }
     internal bool PinStateColors { get; }
-    internal Action<VisualSceneBuilder, ChartRect, VisualRenderContext>? Marker { get; }
+    internal Action<VisualSceneBuilder, ChartRect, VisualRenderContext>? Marker { get; private set; }
     internal SvgPaint? Paint { get; }
+    /// <summary>The authored key shape; Auto keeps the family glyph.</summary>
+    internal ChartLegendKeyShape KeyShape { get; private set; }
+    internal double? KeySize { get; private set; }
+    internal double[]? KeyDash { get; private set; }
+
+    /// <summary>Copies the entry with authored text and key; identity, targets and metadata are unchanged.</summary>
+    internal VisualLegendEntry WithKey(string label, ChartLegendKeyShape shape, double? size, double[]? dash,
+        Action<VisualSceneBuilder, ChartRect, VisualRenderContext>? marker) {
+        var copy = (VisualLegendEntry)MemberwiseClone();
+        copy.Label = label; copy.KeyShape = shape; copy.KeySize = size; copy.KeyDash = dash; copy.Marker = marker;
+        return copy;
+    }
     // A legend describes a native target independently of its own rendered legend identity.
     internal string? TargetKind { get; }
     internal string? TargetId { get; }
@@ -143,7 +155,9 @@ internal static class VisualFrameLayout {
             var above = position is ChartLegendPosition.Top or ChartLegendPosition.TopLeft or ChartLegendPosition.TopRight;
             var legendWidth = side ? Math.Min((right - left) * 0.32, 180) : right - left;
             var available = Math.Max(0, Math.Min(bottom - top, size.Height * context.Frame.LegendMaximumHeightFraction));
-            var requestedLineHeight = Math.Max(legendStyle.EffectiveFontSize * 1.5, builder.MeasureText("Mg", legendStyle).Height);
+            // A key larger than the default needs its own clearance between rows.
+            var keyLineHeight = entries.Max(entry => entry.KeySize ?? 0) + LegendKeyRowClearance;
+            var requestedLineHeight = Math.Max(Math.Max(legendStyle.EffectiveFontSize * 1.5, builder.MeasureText("Mg", legendStyle).Height), keyLineHeight);
             double LegendWidthScale(TextStyle candidate) {
                 var scale = 1d;
                 foreach (var entry in entries) {
@@ -257,7 +271,7 @@ internal static class VisualFrameLayout {
                 numericWidths = null;
                 rows = PlanRows();
             }
-            var lineHeight = Math.Max(legendStyle.EffectiveFontSize * 1.5, builder.MeasureText("Mg", legendStyle).Height);
+            var lineHeight = Math.Max(Math.Max(legendStyle.EffectiveFontSize * 1.5, builder.MeasureText("Mg", legendStyle).Height), keyLineHeight);
             var legendGap = Math.Min(gap, Math.Max(0, available - lineHeight));
             var legendTitle = context.Frame.LegendTitle;
             var legendTitleStyle = legendStyle.Clone(); legendTitleStyle.Font.Weight = 600;
@@ -319,7 +333,9 @@ internal static class VisualFrameLayout {
                         var width = EntryWidth(entry, isSummary);
                         var baseline = y + titleHeight + r * lineHeight + builder.TextAscent(legendStyle);
                         var glyph = Glyph(entry);
-                        var swatch = new ChartRect(cursor, baseline - legendStyle.EffectiveFontSize * 0.65, glyph == LegendGlyph.Line ? LegendLineWidth : LegendSwatchSize, LegendSwatchSize);
+                        // Every key shares the default key's centre, so mixed key sizes stay on one text line.
+                        var keyHeight = KeyHeight(entry);
+                        var swatch = new ChartRect(cursor, baseline - legendStyle.EffectiveFontSize * 0.65 + (LegendSwatchSize - keyHeight) / 2, KeyWidth(entry), keyHeight);
                         using (builder.PushGroup("legend-" + entry.Id, "legend-entry", entry.SceneMetadata())) {
                             if (!ReferenceEquals(entry, overflow)) using (builder.PushClip(swatch)) {
                             if (entry.Marker != null) entry.Marker(builder, swatch, context);
@@ -330,7 +346,7 @@ internal static class VisualFrameLayout {
                             } else if (glyph == LegendGlyph.Line)
                                 builder.Line(swatch.Left, swatch.Top + swatch.Height / 2, swatch.Right, swatch.Top + swatch.Height / 2, entry.Color, LegendLineStroke, role: "legend-swatch", paint: VisualChartPaint.Stroke(entry.Paint ?? SvgPaint.Literal(entry.Color)));
                             else if (glyph == LegendGlyph.Dot)
-                                builder.Ellipse(swatch.Left + swatch.Width / 2, swatch.Top + swatch.Height / 2, LegendDotDiameter / 2, LegendDotDiameter / 2, entry.Color, role: "legend-swatch", paint: VisualChartPaint.Fill(entry.Paint ?? SvgPaint.Literal(entry.Color)));
+                                builder.Ellipse(swatch.Left + swatch.Width / 2, swatch.Top + swatch.Height / 2, LegendDotDiameter * keyHeight / LegendSwatchSize / 2, LegendDotDiameter * keyHeight / LegendSwatchSize / 2, entry.Color, role: "legend-swatch", paint: VisualChartPaint.Fill(entry.Paint ?? SvgPaint.Literal(entry.Color)));
                             else {
                                 builder.Rect(swatch, entry.Color, radius: LegendSwatchRadius, role: "legend-swatch", paint: VisualChartPaint.Fill(entry.Paint ?? SvgPaint.Literal(entry.Color)));
                                 DrawLegendPattern(builder, swatch, entry.Pattern, context);
@@ -510,6 +526,7 @@ internal static class VisualFrameLayout {
     internal const double LegendDotDiameter = 8;
     internal const double LegendLineMarkerDiameter = 6;
     internal const double LegendLabelGap = 6;
+    private const double LegendKeyRowClearance = 8;
     private const double LegendTrailingSlack = 4;
     private const double LegendTrailingSpace = 10;
     /// <summary>An automatic top or bottom legend keeps at most this many wrapped rows before it moves or forms columns.</summary>
@@ -522,14 +539,29 @@ internal static class VisualFrameLayout {
     /// <summary>The visible gap between a pie and its value list; the pie's own inset (the theme spacing) counts toward it.</summary>
     internal const double LegendValueListGap = 32;
 
-    internal static LegendGlyph Glyph(VisualLegendEntry entry) => entry.State != null ? LegendGlyph.Square : entry.Kind switch {
-        ChartSeriesKind.Line or ChartSeriesKind.StepLine or ChartSeriesKind.TrendLine or ChartSeriesKind.Slope
-            or ChartSeriesKind.Radar or ChartSeriesKind.Polar => LegendGlyph.Line,
-        ChartSeriesKind.Scatter or ChartSeriesKind.Bubble => LegendGlyph.Dot,
-        _ => LegendGlyph.Square
+    internal static LegendGlyph Glyph(VisualLegendEntry entry) => entry.KeyShape switch {
+        ChartLegendKeyShape.Line => LegendGlyph.Line,
+        ChartLegendKeyShape.Circle => LegendGlyph.Dot,
+        ChartLegendKeyShape.Square or ChartLegendKeyShape.Marker => LegendGlyph.Square,
+        _ => entry.State != null ? LegendGlyph.Square : entry.Kind switch {
+            ChartSeriesKind.Line or ChartSeriesKind.StepLine or ChartSeriesKind.TrendLine or ChartSeriesKind.Slope
+                or ChartSeriesKind.Radar or ChartSeriesKind.Polar => LegendGlyph.Line,
+            ChartSeriesKind.Scatter or ChartSeriesKind.Bubble => LegendGlyph.Dot,
+            _ => LegendGlyph.Square
+        }
     };
 
+    /// <summary>The key's height: the authored key size or the ten-pixel default.</summary>
+    internal static double KeyHeight(VisualLegendEntry entry) => entry.KeySize ?? LegendSwatchSize;
+
+    /// <summary>A line key is 1.4 times its height, and long enough to show a dash, its gap and a second dash.</summary>
+    internal static double KeyWidth(VisualLegendEntry entry) {
+        if (Glyph(entry) != LegendGlyph.Line) return KeyHeight(entry);
+        var width = LegendLineWidth * KeyHeight(entry) / LegendSwatchSize;
+        var dash = entry.KeyDash;
+        return dash is { Length: > 0 } ? Math.Max(width, Math.Min(dash[0] * 2 + (dash.Length > 1 ? dash[1] : dash[0]), width * 2)) : width;
+    }
+
     /// <summary>The fixed width an entry needs besides its text: glyph, glyph-to-label gap and trailing space.</summary>
-    private static double Overhead(VisualLegendEntry entry) =>
-        (Glyph(entry) == LegendGlyph.Line ? LegendLineWidth : LegendSwatchSize) + LegendLabelGap + LegendTrailingSpace;
+    private static double Overhead(VisualLegendEntry entry) => KeyWidth(entry) + LegendLabelGap + LegendTrailingSpace;
 }

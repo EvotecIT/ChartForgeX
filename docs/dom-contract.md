@@ -73,7 +73,7 @@ These attributes identify data marks in every family and carry the display text 
 | `state-timeline-segment-shape` | Painted shape inside a segment | |
 | `gantt-lane-item` | `<g>` or linked `<a>` Gantt-lane item target | Carries the same identity attributes as a segment. |
 | `point` | Cartesian data point target | |
-| `legend-entry` | `<g>` chart legend entry | Carries `data-cfx-series-key` (the series identifier). Static entries carry `data-cfx-description`; labelled explorable entries carry `aria-label` instead. |
+| `legend-entry` | `<g>` chart legend entry | Carries `data-cfx-series-key` (the series identifier). Static entries carry `data-cfx-description`; labelled explorable entries carry `aria-label` instead. A custom entry (`ChartLegendItem`) carries `data-cfx-legend-custom="true"` and an empty series key, and never toggles a series. |
 | `axis-y-label` | Primary value-axis tick label | |
 | `topology-node` | Topology node | |
 | `topology-edge` | Topology edge | |

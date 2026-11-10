@@ -27,4 +27,7 @@ public sealed partial class ChartOptions {
         }
     }
     internal bool HasExplicitLegendBudget { get; private set; }
+
+    /// <summary>Gets legend key, entry text and custom entry configuration.</summary>
+    public ChartLegendOptions Legend { get; internal set; } = new();
 }

@@ -111,6 +111,7 @@ public static partial class ExampleRecipes {
         ["findings"] = new(nameof(FindingsRecipe), FindingsRecipe.Create),
         ["x-zoom"] = new(nameof(XZoomRecipe), XZoomRecipe.Create),
         ["axis-control"] = new(nameof(AxisControlRecipe), AxisControlRecipe.Create),
+        ["legend-control"] = new(nameof(LegendControlRecipe), LegendControlRecipe.Create),
         ["line-viewport"] = new(nameof(LineViewportRecipe), LineViewportRecipe.Create),
         ["step-line-viewport"] = new(nameof(StepLineViewportRecipe), StepLineViewportRecipe.Create),
         ["keyed-point-changes"] = new(nameof(KeyedPointChangesRecipe), KeyedPointChangesRecipe.Create),
