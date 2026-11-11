@@ -117,10 +117,10 @@
   // Hover moving within one series keeps every node's series relation and series unit, so only nodes that match
   // either target by identity, point or label can change; the rest keep the classes the previous hover gave them.
   // A series unit marks no observation, so switching between series and shared hover repaints only the summaries.
-  const repaintHoverChange = (previous, next, paint) => {
+  const repaintHoverChange = (previous, next, paint, nodes) => {
     if (!next || previous?.groups !== next.groups || previous.look !== next.look
       || previous.target.seriesKey !== next.target.seriesKey) return false;
-    const changed = new Set(previous.mode === next.mode ? [] : next.groups.summary);
+    const changed = new Set(previous.mode === next.mode ? [] : next.groups.summary ||= nodes.filter(node => node.dataset.cfxPoint === undefined));
     for (const { targetKind, targetId, point, label } of [previous.target, next.target])
       [next.groups.identity.get(targetKind + '\n' + targetId), point !== undefined && next.groups.point.get(String(point)), label && next.groups.label.get(label)]
         .forEach(list => list && list.forEach(node => changed.add(node)));
@@ -176,7 +176,7 @@
     };
     const snapshot = groups && !hierarchyView && !pointUnits && !itemUnit && keyed(localTarget) && localTarget.seriesKey
       && { groups, mode: hoverMode, look: root.dataset.cfxLook, target: localTarget };
-    if (!repaintHoverChange(previous, snapshot, paint)) nodes.forEach(paint);
+    if (!repaintHoverChange(previous, snapshot, paint, nodes)) nodes.forEach(paint);
     if (snapshot) root._cfxHoverPaint = snapshot;
     if (matched) {
       root.dataset.cfxHovering = 'true';
