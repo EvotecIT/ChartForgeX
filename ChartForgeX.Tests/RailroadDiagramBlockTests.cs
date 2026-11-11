@@ -98,17 +98,25 @@ public sealed class RailroadDiagramBlockTests {
 
     [Fact]
     public void OrderedChoicePrioritiesSitAboveStraightBranchEntriesClearOfEveryCurve() {
-        var choice = RailroadExpression.Choice(new[] { RailroadExpression.Terminal("a"), RailroadExpression.Terminal("b"), RailroadExpression.Terminal("any character") }, ordered: true);
+        var empty = RailroadExpression.Empty();
+        var choice = RailroadExpression.Choice(new[] { empty, RailroadExpression.Sequence(empty, empty, empty), empty, RailroadExpression.Terminal("any character") }, ordered: true);
         var xml = XDocument.Parse(RailroadDiagramBlock.Create().AddRule("letter", choice).WithNaturalSize().ToSvg());
-        var entries = Roles(xml, "railroad-rail").Select(path => path.Attribute("d")!.Value.Split(' '))
-            .Where(parts => parts.Length == 13 && parts[3] == "C" && parts[10] == "L")
+        var rails = Roles(xml, "railroad-rail").Select(path => path.Attribute("d")!.Value.Split(' ')).ToArray();
+        var entries = rails.Where(parts => parts.Length == 13 && parts[3] == "C" && parts[10] == "L")
             .Select(parts => (Start: Number(parts[8]), End: Number(parts[11]), Y: Number(parts[12]))).ToArray();
+        // A cubic stays inside the box of its control points, so a label outside every such box is clear of every curve.
+        var curves = rails.SelectMany(parts => Enumerable.Range(0, parts.Length).Where(index => parts[index] == "C").Select(index => {
+            var xs = new[] { Number(parts[index - 2]), Number(parts[index + 1]), Number(parts[index + 3]), Number(parts[index + 5]) };
+            var ys = new[] { Number(parts[index - 1]), Number(parts[index + 2]), Number(parts[index + 4]), Number(parts[index + 6]) };
+            return (Left: xs.Min(), Right: xs.Max(), Top: ys.Min(), Bottom: ys.Max());
+        })).ToArray();
         var labels = Roles(xml, "railroad-choice-priority");
-        Assert.Equal(new[] { "1", "2", "3" }, labels.Select(label => label.Value));
+        Assert.Equal(new[] { "1", "2", "3", "4" }, labels.Select(label => label.Value));
         foreach (var label in labels) {
             var left = Number(label.Attribute("data-cfx-label-x")!.Value); var right = left + Number(label.Attribute("data-cfx-label-width")!.Value);
-            var bottom = Number(label.Attribute("data-cfx-label-y")!.Value) + Number(label.Attribute("data-cfx-label-height")!.Value);
+            var top = Number(label.Attribute("data-cfx-label-y")!.Value); var bottom = top + Number(label.Attribute("data-cfx-label-height")!.Value);
             Assert.Contains(entries, entry => entry.End > entry.Start && left >= entry.Start && right <= entry.End && bottom <= entry.Y + 1);
+            Assert.DoesNotContain(curves, curve => left < curve.Right && right > curve.Left && top < curve.Bottom && bottom > curve.Top);
         }
     }
 

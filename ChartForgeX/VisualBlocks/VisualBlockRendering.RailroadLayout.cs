@@ -54,7 +54,10 @@ internal static partial class VisualBlockRendering {
                 break;
             case RailroadExpressionKind.Choice:
                 // Ordered choices number each branch on a straight lead-in, clear of every branch curve.
-                if (expression.OrderedChoice) plan.Lead = Math.Ceiling(TextLayoutEngine.Measure(children.Length.ToString(CultureInfo.InvariantCulture), RailroadPriorityStyle(style)).Width) + 10;
+                if (expression.OrderedChoice) {
+                    var priority = RailroadPriorityStyle(style);
+                    plan.Lead = Math.Ceiling(Enumerable.Range(1, children.Length).Max(number => TextLayoutEngine.Measure(number.ToString(CultureInfo.InvariantCulture), priority).Width)) + 10;
+                }
                 plan.Width = children.Max(child => child.Width) + 4 * bend + 2 * plan.Lead;
                 plan.Above = children[0].Above; var baseline = 0.0; var previousBelow = 0.0;
                 for (var index = 0; index < children.Length; index++) {

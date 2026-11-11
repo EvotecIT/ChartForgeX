@@ -99,7 +99,8 @@ public sealed partial class SvgVisualBlockRenderer {
         writer.EndElement().Line();
 
         void Branch(VisualBlockRendering.RailroadChildPlan child) {
-            var cy = baseline + child.Baseline; var cx = x + child.X; var entry = cx - plan.Lead; var exit = cx + child.Node.Width + plan.Lead;
+            // Each branch turns inside the outer 2 * Bend columns and then runs straight, so no curve sweeps across a sibling node or priority label.
+            var cy = baseline + child.Baseline; var cx = x + child.X; var entry = x + 2 * plan.Bend; var exit = x + plan.Width - 2 * plan.Bend;
             RailroadRail(writer, new SvgPathDataBuilder().MoveTo(x, baseline).CubicTo(x + plan.Bend, baseline, entry - plan.Bend, cy, entry, cy).LineTo(cx, cy).Build(), theme);
             RailroadNode(writer, child.Node, cx, cy, block, id, style);
             RailroadRail(writer, new SvgPathDataBuilder().MoveTo(cx + child.Node.Width, cy).LineTo(exit, cy).CubicTo(exit + plan.Bend, cy, x + plan.Width - plan.Bend, baseline, x + plan.Width, baseline).Build(), theme);
