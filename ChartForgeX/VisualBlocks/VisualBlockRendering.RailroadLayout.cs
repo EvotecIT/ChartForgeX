@@ -53,7 +53,9 @@ internal static partial class VisualBlockRendering {
                 if (children.Length == 0) plan.Width = 28;
                 break;
             case RailroadExpressionKind.Choice:
-                plan.Width = children.Max(child => child.Width) + 4 * bend;
+                // Ordered choices number each branch on a straight lead-in, clear of every branch curve.
+                if (expression.OrderedChoice) plan.Lead = Math.Ceiling(TextLayoutEngine.Measure(children.Length.ToString(CultureInfo.InvariantCulture), RailroadPriorityStyle(style)).Width) + 10;
+                plan.Width = children.Max(child => child.Width) + 4 * bend + 2 * plan.Lead;
                 plan.Above = children[0].Above; var baseline = 0.0; var previousBelow = 0.0;
                 for (var index = 0; index < children.Length; index++) {
                     var child = children[index]; if (index > 0) baseline += previousBelow + gap + child.Above;
@@ -87,6 +89,7 @@ internal static partial class VisualBlockRendering {
     }
 
     internal static TextStyle RailroadTextStyle(ResolvedVisualTheme theme, int weight = 500) => new() { Font = new FontSpec { Family = theme.FontFamily, Weight = weight }, FontSize = BodyFontSize(theme, 13), LineHeight = 1 };
+    internal static TextStyle RailroadPriorityStyle(TextStyle style) => new() { Font = new FontSpec { Family = style.Font.Family, Weight = 600 }, FontSize = Math.Max(8, style.FontSize * .7), LineHeight = 1 };
     private static int RailroadDimension(double value) {
         if (double.IsNaN(value) || double.IsInfinity(value) || value > int.MaxValue - 1) throw new InvalidOperationException("The measured railroad frame exceeds supported dimensions.");
         return Math.Max(1, (int)Math.Ceiling(value));
@@ -139,7 +142,7 @@ internal static partial class VisualBlockRendering {
         public RailroadNodePlan(RailroadExpression expression, string label) { Expression = expression; Label = label; }
         public RailroadExpression Expression { get; } public string Label { get; }
         public double Width { get; set; } public double Above { get; set; } public double Below { get; set; }
-        public double Gap { get; set; } public double Bend { get; set; } public int Occurrences { get; set; }
+        public double Gap { get; set; } public double Bend { get; set; } public double Lead { get; set; } public int Occurrences { get; set; }
         public List<RailroadChildPlan> Children { get; } = new();
     }
     internal readonly struct RailroadChildPlan {

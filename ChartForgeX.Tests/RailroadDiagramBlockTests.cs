@@ -96,5 +96,22 @@ public sealed class RailroadDiagramBlockTests {
         Assert.Throws<InvalidOperationException>(() => RailroadDiagramBlock.Create().AddRule("entry", wide).WithNaturalSize());
     }
 
+    [Fact]
+    public void OrderedChoicePrioritiesSitAboveStraightBranchEntriesClearOfEveryCurve() {
+        var choice = RailroadExpression.Choice(new[] { RailroadExpression.Terminal("a"), RailroadExpression.Terminal("b"), RailroadExpression.Terminal("any character") }, ordered: true);
+        var xml = XDocument.Parse(RailroadDiagramBlock.Create().AddRule("letter", choice).WithNaturalSize().ToSvg());
+        var entries = Roles(xml, "railroad-rail").Select(path => path.Attribute("d")!.Value.Split(' '))
+            .Where(parts => parts.Length == 13 && parts[3] == "C" && parts[10] == "L")
+            .Select(parts => (Start: Number(parts[8]), End: Number(parts[11]), Y: Number(parts[12]))).ToArray();
+        var labels = Roles(xml, "railroad-choice-priority");
+        Assert.Equal(new[] { "1", "2", "3" }, labels.Select(label => label.Value));
+        foreach (var label in labels) {
+            var left = Number(label.Attribute("data-cfx-label-x")!.Value); var right = left + Number(label.Attribute("data-cfx-label-width")!.Value);
+            var bottom = Number(label.Attribute("data-cfx-label-y")!.Value) + Number(label.Attribute("data-cfx-label-height")!.Value);
+            Assert.Contains(entries, entry => entry.End > entry.Start && left >= entry.Start && right <= entry.End && bottom <= entry.Y + 1);
+        }
+    }
+
+    private static double Number(string value) => double.Parse(value, CultureInfo.InvariantCulture);
     private static XElement[] Roles(XDocument xml, string role) => xml.Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == role).ToArray();
 }
