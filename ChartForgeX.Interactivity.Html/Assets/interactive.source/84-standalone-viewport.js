@@ -50,11 +50,13 @@
         // An observation drawn only by its hit area and hover marker, with no fill of its own, moves as one translation and
         // keeps its drawn size, as markers do: rewriting both marks restyled twice as many nodes on a dense line. Its region
         // stays in its own coordinates, which the translation carries to the screen.
-        const point = node.parentNode, region = point._cfxNativeRegion;
-        if (region && !point._cfxFillInteriors?.length && !point._cfxPairedRegion && point.matches('[data-cfx-point]:not([transform],[data-cfx-stack-end]):has(> .cfx-prepared-point-marker)')
+        const point = node.parentNode;
+        if (anchored.has(point)) return;
+        const region = point._cfxNativeRegion;
+        if (region && !point._cfxFillInteriors?.length && point.matches('[data-cfx-point]:not([transform],[data-cfx-stack-end]):has(> .cfx-prepared-point-marker)')
           && [...point.children].every(child => child.matches('[data-cfx-browser-hit-area],.cfx-prepared-point-marker'))) {
-          if (!anchored.has(point)) { anchored.add(point); view.geometry.push({ node: point, attrs: {}, visibility: standaloneStyle(point, 'visibility'),
-            anchor: { x: region.x + region.width / 2, y: region.y + region.height / 2 }, ...axes }); }
+          anchored.add(point); view.geometry.push({ node: point, attrs: {}, visibility: standaloneStyle(point, 'visibility'),
+            anchor: { x: region.x + region.width / 2, y: region.y + region.height / 2 }, ...axes });
           return;
         }
         const role = node.getAttribute('data-cfx-role') || '';
