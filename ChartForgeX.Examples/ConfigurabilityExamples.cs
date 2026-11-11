@@ -15,6 +15,45 @@ internal static class ConfigurabilityExamples {
                 var name = "configurable-sales-" + (compact ? "compact" : "wide") + "-" + mode.ToString().ToLowerInvariant();
                 ExampleArtifactWriter.SaveChart(chart, output, name, scale);
             }
+        // One theme file restyles every line and bar series; the charts below carry no per-kind styling code.
+        var theme = VisualTheme.FromJson(ReadTheme("series-defaults.theme.json"));
+        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+            var suffix = "-" + mode.ToString().ToLowerInvariant();
+            ExampleArtifactWriter.SaveChart(ThemedTrend(theme, mode), output, "theme-series-defaults-line" + suffix, scale);
+            ExampleArtifactWriter.SaveChart(ThemedRegions(theme, mode), output, "theme-series-defaults-bar" + suffix, scale);
+        }
+    }
+
+    private static Chart ThemedTrend(VisualTheme theme, VisualThemeMode mode) {
+        var weeks = new[] { "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8" };
+        var signups = ChartSeries.CreateLine(new ChartSeriesId("signups"), "Sign-ups",
+            new[] { 42d, 51, 48, 63, 58, 72, 69, 81 }.Select((value, index) => new ChartPoint(index + 1, value)));
+        var trials = ChartSeries.CreateLine(new ChartSeriesId("trials"), "Trials",
+            new[] { 28d, 33, 39, 36, 44, 47, 53, 57 }.Select((value, index) => new ChartPoint(index + 1, value)));
+        // An explicit series setting still wins over the theme's line defaults.
+        var goal = ChartSeries.CreateLine(new ChartSeriesId("goal"), "Goal",
+            weeks.Select((_, index) => new ChartPoint(index + 1, 60))).WithColor(ChartColor.FromHex("#94A3B8"))
+            .WithStrokeStyle(new ChartStrokeStyle(width: 1.5, dash: new[] { 5d, 4d })).WithInterpolation(ChartInterpolation.Linear);
+        goal.ConfigureMarkers(markers => markers.Enabled = false);
+        return Chart.Create().WithTitle("Weekly sign-ups").WithSubtitle("Line width, curve and markers come from the theme file")
+            .WithTheme(theme, mode).WithSize(760, 420).WithXLabels(weeks).WithYAxis("Accounts").WithYAxisBounds(0, 100)
+            .AddSeries(signups).AddSeries(trials).AddSeries(goal);
+    }
+
+    private static Chart ThemedRegions(VisualTheme theme, VisualThemeMode mode) {
+        var regions = new[] { "North", "South", "East", "West", "Central" };
+        var revenue = ChartSeries.CreateBar(new ChartSeriesId("revenue"), "Revenue",
+            new[] { 84d, 62, 97, 71, 55 }.Select((value, index) => new ChartPoint(index + 1, value)));
+        return Chart.Create().WithTitle("Revenue by region").WithSubtitle("Corner radius and label weight come from the theme file")
+            .WithTheme(theme, mode).WithSize(760, 420).WithXLabels(regions).WithYAxis("Revenue (k)").WithYAxisBounds(0, 125)
+            .WithDataLabels(true).AddSeries(revenue);
+    }
+
+    private static string ReadTheme(string name) {
+        using var stream = typeof(ConfigurabilityExamples).Assembly.GetManifestResourceStream("ChartForgeX.Examples.Themes." + name)
+            ?? throw new InvalidOperationException("Missing embedded theme " + name + ".");
+        using var reader = new StreamReader(stream);
+        return reader.ReadToEnd();
     }
 
     private static Chart Sales(VisualThemeMode mode, bool compact) {

@@ -26,6 +26,8 @@
     return model ? model[name] ||= build() : build();
   };
   // Chrome lookups outside the drawing would otherwise search every mark of a dense chart on each pointer move.
+  // Interactive targets, read once per drawing instead of once per caller: binding alone asks several times.
+  const chartTargets = root => modelled(root, 'targets', () => interactiveTargets(root));
   const chartNodes = (root, selector) => modelled(root, selector, () => Array.from(root.querySelectorAll(selector)));
   const modelGroups = (nodes, keys) => {
     const groups = new Map();
@@ -34,7 +36,7 @@
   };
   // Hover lookups by target identity, point and label: the only facts besides the series that relate a node to a target.
   const hoverGroups = root => modelled(root, 'hover', () => {
-    const nodes = modelled(root, 'targets', () => interactiveTargets(root));
+    const nodes = chartTargets(root);
     return {
       identity: modelGroups(nodes, node => { const kind = renderedTargetKind(node); return [kind + '\n' + renderedTargetId(node, kind)]; }),
       point: modelGroups(nodes, node => node.dataset.cfxPoint === undefined ? [] : [node.dataset.cfxPoint]),

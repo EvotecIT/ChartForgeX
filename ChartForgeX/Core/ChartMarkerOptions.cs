@@ -74,6 +74,7 @@ public sealed class ChartMarkerOptions {
     }
 
     internal bool IsConfigured { get; private set; }
+    internal bool HasShape => _hasShape;
     internal bool HasNonRadiusConfiguration { get; private set; }
 
     /// <summary>Copies fields directly so configuration tracking remains unchanged.</summary>

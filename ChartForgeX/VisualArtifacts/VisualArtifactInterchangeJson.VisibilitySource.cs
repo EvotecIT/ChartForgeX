@@ -53,6 +53,7 @@ internal static partial class VisualArtifactInterchangeJson {
         String(writer, "valueAxis", source.ValueAxis.ToString()); Boolean(writer, "showInLegend", source.ShowInLegend); OptionalString(writer, "semanticRole", source.SemanticRole);
         if (source.Labels.HasValue) Boolean(writer, "labels", source.Labels.Value); OptionalString(writer, "placement", source.Placement?.ToString());
         OptionalNumber(writer, "strokeWidth", source.StrokeWidth); VisibilitySourceStroke(writer, "stroke", source.StrokeStyle);
+        if (source.StrokeSegments.Count > 0) { writer.Property("strokeSegments"); writer.StartArray(); foreach (var segment in source.StrokeSegments) { writer.StartObject(); Number(writer, "fromX", segment.FromX); VisibilitySourceStroke(writer, "stroke", segment.Style); writer.EndObject(); } writer.EndArray(); }
         String(writer, "interpolation", source.Interpolation.ToString()); String(writer, "step", source.Step.ToString());
         OptionalString(writer, "stackGroup", source.StackGroup); OptionalNumber(writer, "normalizedTo", source.NormalizedTo); DetailTextStyle(writer, source.CopyLabelStyle());
         if (source.Kind == ChartSeriesKind.StackedArea) String(writer, "stackedAreaMissingData", source.StackedAreaMissingData.ToString());

@@ -130,7 +130,7 @@
     if (!target) { clearHover(root, false, false); return false; }
     const previous = root._cfxHoverPaint;
     delete root._cfxHoverPaint;
-    const nodes = modelled(root, 'targets', () => interactiveTargets(root)), groups = chartModel(root) && hoverGroups(root);
+    const nodes = chartTargets(root), groups = chartModel(root) && hoverGroups(root);
     const keyed = target => target.targetKind && target.targetId && target.annotationId === undefined;
     const hierarchyView = root._cfxStandaloneHierarchy?.overlay;
     // A target with a kind and id can only match nodes rendered with that identity.

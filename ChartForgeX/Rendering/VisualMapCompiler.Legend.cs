@@ -9,7 +9,7 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualMapCompiler {
     /// <summary>Counts authored entries without evaluating point captions or numeric color formatters at the export boundary.</summary>
     internal static int LegendEntryCount(Chart chart) => chart.Series.Where(series => series.ShowInLegend)
-        .Sum(series => series.Kind == ChartSeriesKind.DottedMap && chart.Options.ShowPointLegend ? series.MapPoints.Count : 1);
+        .Sum(series => series.Kind == ChartSeriesKind.DottedMap && chart.Options.ShowPointLegend ? series.MapPoints.Count : 1) + chart.Options.Legend.Items.Count;
 
     internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors, ChartColorPresentationSet? colorScales = null) {
         colorScales ??= new ChartColorPresentationSet(chart);

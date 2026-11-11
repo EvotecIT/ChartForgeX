@@ -32,6 +32,8 @@ internal static partial class VisualCartesianCompiler {
             ? new ChartAxis { Minimum = chart.Options.YAxis.Minimum, Maximum = chart.Options.YAxis.Maximum } : chart.Options.YAxis;
         for (var index = 0; index < chart.Series.Count; index++) {
             var series = chart.Series[index];
+            // An additional axis snaps its own domain; its marks must not widen the primary extents.
+            if (series.AdditionalValueAxis != null) continue;
             if (series.Kind is ChartSeriesKind.RangeBar or ChartSeriesKind.BoxPlot) {
                 if (plot.Width <= 0 || plot.Height <= 0) continue;
                 var secondary = series.ValueAxis == ChartAxisSide.Secondary;

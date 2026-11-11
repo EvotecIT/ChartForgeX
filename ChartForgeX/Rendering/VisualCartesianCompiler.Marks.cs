@@ -69,7 +69,8 @@ internal static partial class VisualCartesianCompiler {
                     ? ChartPathBuilder.FromPoints(points.Select(point => new ChartPoint(point.Y, point.X, point.BreakBefore)).ToArray(),
                         series.Interpolation, series.StepPosition, false, (plot.Top, plot.Bottom)).Transpose()
                     : ChartPathBuilder.FromPoints(contour, series.Interpolation, series.StepPosition, false, treads);
-                VisualSeriesStroke.DrawPath(chart, builder, series, linePath, color, VisualChartPaint.Series(series, color), stroke, "line");
+                VisualSeriesStroke.DrawSegmentedPath(chart, builder, series, linePath, color, VisualChartPaint.Series(series, color), stroke, "line",
+                    horizontal ? map.Y : map.X, horizontal);
                 if (chart.Series.Any(item => item.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false))
                     || chart.Annotations.Any(annotation => annotation.ShowLabel && annotation.Label.Length > 0)) {
                     var contours = ChartPointSegments.Split(linePath.Flatten(12)).Select(segment => segment.ToList()).ToArray();

@@ -36,7 +36,11 @@ internal static class VisualChartCompiler {
     }
 
     internal static IReadOnlyList<VisualLegendEntry> LegendEntries(VisualChartFamily family, Chart chart, VisualThemeColors colors,
-        ChartAxisValueFormatter.Cache? axisLabels = null, ChartBubbleSizeScale? bubbleScale = null, ChartColorPresentationSet? colorScales = null) => family switch {
+        ChartAxisValueFormatter.Cache? axisLabels = null, ChartBubbleSizeScale? bubbleScale = null, ChartColorPresentationSet? colorScales = null) =>
+        VisualLegendControl.Apply(chart, FamilyLegendEntries(family, chart, colors, axisLabels, bubbleScale, colorScales));
+
+    private static IReadOnlyList<VisualLegendEntry> FamilyLegendEntries(VisualChartFamily family, Chart chart, VisualThemeColors colors,
+        ChartAxisValueFormatter.Cache? axisLabels, ChartBubbleSizeScale? bubbleScale, ChartColorPresentationSet? colorScales) => family switch {
         VisualChartFamily.Cartesian => VisualCartesianCompiler.LegendEntries(chart, colors, axisLabels, bubbleScale, colorScales),
         VisualChartFamily.Radial => VisualRadialCompiler.LegendEntries(chart, colors),
         VisualChartFamily.Gauge => VisualGaugeCompiler.LegendEntries(chart, colors),

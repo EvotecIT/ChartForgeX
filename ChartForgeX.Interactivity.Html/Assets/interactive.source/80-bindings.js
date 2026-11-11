@@ -67,13 +67,18 @@
         applyInteractionState(root, detail.snapshot || detail.state || detail, true, detail.sync);
       });
     }
-    prepareKeyboardNavigation(root);
+    // The readout settles the card and toolbar first, so the keyboard watch starts from the laid-out chart rather than
+    // refreshing every stop for those writes in the next frame.
     bindStageLayout(root, stage, crosshair);
-    const targets = Array.from(new Set([...interactiveTargets(root),
+    prepareKeyboardNavigation(root);
+    const targets = Array.from(new Set([...chartTargets(root),
       ...root.querySelectorAll('[data-cfx-role="legend-native"],[data-cfx-role="legend-proxy"]')]));
     // A pointer moving straight onto another target hands the hover over: leaving keeps the chart's shared hover
     // state for the entering target to settle, because clearing and re-adding it restyles every mark.
     const hoverSurfaces = new WeakSet();
+    // The stage readout reports a pending frame; a hover handed over settles there, or in a later frame if none ran.
+    let stageFrame = () => false;
+    const settleHandover = () => root._cfxHoverPending && (stageFrame() ? requestAnimationFrame(settleHandover) : clearHover(root, false, false));
     const handsOver = (from, to) => {
       for (let node = to; node instanceof Element && root.contains(node); node = node.parentElement)
         if (hoverSurfaces.has(node) && !node.contains(from)) return true;
@@ -110,9 +115,11 @@
         });
         listenChart(root, surface, 'pointerleave', (event) => {
           if (!ownsTooltipPointer(root, event)) return;
-          const handover = handsOver(surface, event.relatedTarget);
-          clearHover(root, true, true, handover);
-          if (handover) requestAnimationFrame(() => root._cfxHoverPending && clearHover(root, false, false));
+          // Moving off a mark onto the drawing hands the hover to the stage readout, which settles it in its next frame:
+          // clearing the chart's hover state here and setting it again there restyles every marker of a dense chart.
+          const handover = handsOver(surface, event.relatedTarget), staged = !handover && stage?.contains(event.relatedTarget);
+          clearHover(root, true, true, handover || staged);
+          if (handover || staged) requestAnimationFrame(settleHandover);
           if (!retainPointerTip(root, event)) hideTip(root, tip, false);
         });
       });
@@ -381,6 +388,7 @@
         if (pointerFrame) cancelAnimationFrame(pointerFrame);
         pointerFrame = 0; pendingPointerMove = null;
       };
+      stageFrame = () => pointerFrame !== 0;
 
 
       root._cfxCancelPointerHover = () => { if (!drag) cancelPointerMove(); };
@@ -479,6 +487,7 @@
           pointerFrame = 0;
           const pending = pendingPointerMove; pendingPointerMove = null;
           if (pending && root.isConnected && chartLifetimes.get(root)?.disposed === false) applyPointerMove(pending.event, pending.nativeTarget);
+          if (root._cfxHoverPending) clearHover(root, false, false);
         });
       });
       listenChart(root, stage, 'pointerup', (event) => {

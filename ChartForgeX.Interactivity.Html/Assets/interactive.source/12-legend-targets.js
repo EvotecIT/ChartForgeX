@@ -45,8 +45,7 @@
     return node.dataset.cfxMuted !== 'true' && (!root.dataset.cfxIsolatedSeries || node.dataset.cfxIsolated === 'true');
   };
   const syncLegendButtons = root => {
-    root.querySelectorAll('[data-cfx-role="legend-item"]').forEach(node => {
-      if (!hasFeature(root, 'LegendToggles')) return;
+    if (hasFeature(root, 'LegendToggles')) root.querySelectorAll('[data-cfx-role="legend-item"]').forEach(node => {
       node.setAttribute('role', 'button');
       node.setAttribute('aria-pressed', String(legendEntryShown(root, node)));
     });
@@ -99,7 +98,7 @@
     if (typeof svg?.getScreenCTM !== 'function' || typeof svg?.getBBox !== 'function') return;
     // Specification-driven drawings own their native legend geometry on every resize.
     if (svg.closest('[data-cfx-responsive-chart]')) { syncLegendButtons(root); return; }
-    const sources = Array.from(svg?.querySelectorAll('[data-cfx-role="legend-item"]') || []).filter(isInteractiveTarget);
+    const sources = Array.from(svg.querySelectorAll('[data-cfx-role="legend-item"]')).filter(isInteractiveTarget);
     if (!sources.length) return;
     const ns = 'http://www.w3.org/2000/svg';
     const tray = document.createElement('div');
@@ -107,6 +106,27 @@
     // Flow layout is essential here: scaling the scene cannot create touch-sized labels.
     tray.style.cssText = 'display:none;flex-wrap:wrap;gap:2px;align-items:center';
     stage.before(tray);
+    // Each tray row copies its source's key colour beside real HTML text, so labels stay crisp at any device scale.
+    const trayItem = (source, tag, selector, text) => {
+      const item = document.createElement(tag); item.className = 'cfx-responsive-legend__item';
+      const swatch = document.createElementNS(ns, 'svg'); swatch.setAttribute('width', '12'); swatch.setAttribute('height', '12');
+      swatch.setAttribute('viewBox', '0 0 12 12'); swatch.setAttribute('aria-hidden', 'true');
+      const mark = document.createElementNS(ns, 'rect'); mark.setAttribute('x', '1'); mark.setAttribute('y', '1');
+      mark.setAttribute('width', '10'); mark.setAttribute('height', '10'); mark.setAttribute('data-cfx-role', 'legend-swatch');
+      const nativeSwatch = source.querySelector(selector);
+      const painted = nativeSwatch?.matches('[fill],[stroke]') ? nativeSwatch : nativeSwatch?.querySelector('[fill],[stroke]');
+      const style = painted && getComputedStyle(painted);
+      const fill = painted?.style.fill || painted?.getAttribute('fill'), stroke = painted?.style.stroke || painted?.getAttribute('stroke');
+      mark.setAttribute('fill', fill && fill !== 'none' && solidPaintColour(style.fill, style.fillOpacity) ? fill
+        : stroke && stroke !== 'none' && solidPaintColour(style.stroke, style.strokeOpacity) ? stroke : paintColour(source) || 'currentColor');
+      // The outline keeps a hidden series' marker visible once the stylesheet hollows it.
+      mark.setAttribute('stroke', mark.getAttribute('fill')); mark.setAttribute('stroke-width', '1.5');
+      swatch.appendChild(mark);
+      const label = document.createElement('span'); label.className = 'cfx-responsive-legend__label';
+      label.dataset.cfxRole = 'legend-label'; label.textContent = text;
+      tray.appendChild(item).append(swatch, label);
+      return item;
+    };
     const entries = sources.map(source => {
       source.querySelectorAll('[data-cfx-browser-hit-area]').forEach(hit => hit.remove());
       const bounds = legendInkBounds(source) || source.getBBox();
@@ -117,37 +137,22 @@
       const hit = document.createElementNS(ns, 'rect');
       hit.setAttribute('data-cfx-browser-hit-area', 'true'); hit.setAttribute('fill', 'transparent');
       hit.setAttribute('pointer-events', 'all'); source.appendChild(hit);
-      const button = document.createElement('button'); button.type = 'button';
+      const button = trayItem(source, 'button', '[data-cfx-role="legend-swatch"],[data-cfx-role="legend-symbol"],[data-cfx-role="legend-marker"]',
+        source.dataset.cfxLabel || seriesLabel(source));
+      button.type = 'button'; button.classList.add('cfx-tool');
       for (const [key, value] of Object.entries(source.dataset)) button.dataset[key] = value;
-      button.className = 'cfx-tool cfx-responsive-legend__item';
-      button.style.cssText = 'display:inline-flex;align-items:center;gap:8px;box-sizing:border-box;min-width:0;max-width:100%;padding:4px 6px;font:inherit;font-size:12px;line-height:18px;text-align:start';
       button.setAttribute('aria-label', source.dataset.cfxLabel || source.getAttribute('aria-label') || seriesLabel(source));
-      const swatch = document.createElementNS(ns, 'svg'); swatch.setAttribute('width', '12'); swatch.setAttribute('height', '12');
-      swatch.setAttribute('viewBox', '0 0 12 12'); swatch.setAttribute('aria-hidden', 'true'); swatch.style.flex = '0 0 12px';
-      const mark = document.createElementNS(ns, 'rect'); mark.setAttribute('x', '1'); mark.setAttribute('y', '1');
-      mark.setAttribute('width', '10'); mark.setAttribute('height', '10'); mark.setAttribute('data-cfx-role', 'legend-swatch');
-      const nativeSwatch = source.querySelector('[data-cfx-role="legend-swatch"],[data-cfx-role="legend-symbol"],[data-cfx-role="legend-marker"]');
-      const painted = nativeSwatch?.matches('[fill],[stroke]') ? nativeSwatch : nativeSwatch?.querySelector('[fill],[stroke]');
-      const style = painted && getComputedStyle(painted);
-      const fill = painted?.style.fill || painted?.getAttribute('fill'), stroke = painted?.style.stroke || painted?.getAttribute('stroke');
-      mark.setAttribute('fill', fill && fill !== 'none' && solidPaintColour(style.fill, style.fillOpacity) ? fill
-        : stroke && stroke !== 'none' && solidPaintColour(style.stroke, style.strokeOpacity) ? stroke : paintColour(source) || 'currentColor');
-      // The outline keeps a hidden series' marker visible once the stylesheet hollows it.
-      mark.setAttribute('stroke', mark.getAttribute('fill')); mark.setAttribute('stroke-width', '1.5');
-      swatch.appendChild(mark);
-      const label = document.createElement('span'); label.className = 'cfx-responsive-legend__label';
-      label.dataset.cfxRole = 'legend-label';
-      // Flowing rows use real HTML text so labels stay crisp at any device scale.
-      label.textContent = source.dataset.cfxLabel || seriesLabel(source);
-      label.style.overflowWrap = 'anywhere'; button.append(swatch, label);
       for (const role of ['legend-value', 'legend-percentage']) {
         const detail = source.querySelector('[data-cfx-role="' + role + '"]');
         const value = detail?.dataset.cfxCaption || detail?.textContent.trim();
         if (value) { const caption = document.createElement('span'); caption.className = 'cfx-responsive-legend__value'; caption.dataset.cfxRole = role; caption.textContent = value; button.appendChild(caption); }
       }
-      tray.appendChild(button);
       return { source, button, hit, bounds, relative, display, ariaHidden, nativeRegion, pointerStyles };
     });
+    // Custom entries describe the chart rather than a series, so they follow the toggles as plain, non-interactive rows.
+    // Their first child is the clipped key, ahead of the label.
+    const statics = Array.from(svg.querySelectorAll('[data-cfx-legend-custom]'), source =>
+      trayItem(source, 'span', '*', source.getAttribute('aria-label')) && [source, source.style.display]);
     let frame = 0, compact = false;
     const refresh = () => {
       frame = 0;
@@ -195,6 +200,7 @@
         else if (entry.ariaHidden === null) entry.source.removeAttribute('aria-hidden');
         else entry.source.setAttribute('aria-hidden', entry.ariaHidden);
       });
+      statics.forEach(([source, display]) => source.style.display = next ? 'none' : display);
       syncLegendButtons(root);
       if (compact !== next) { compact = next; refreshKeyboardNavigation(root, undefined, true); }
     };
@@ -204,6 +210,7 @@
     ownChartWork(root, () => {
       if (frame) cancelAnimationFrame(frame); observer?.disconnect();
       tray.remove();
+      statics.forEach(([source, display]) => source.style.display = display);
       delete root._cfxLegendActivation; delete root._cfxLegendTouch;
       entries.forEach(entry => {
         entry.hit.remove(); entry.source.style.display = entry.display;

@@ -1,0 +1,339 @@
+{
+  "schemaVersion": 1,
+  "light": {
+    "other": "#737373FF",
+    "surface": {
+      "page": "#F2F3F4FF",
+      "card": "#FFFFFFFF",
+      "cardAlt": "#F7F8F9FF",
+      "line": "#E2E4E7FF"
+    },
+    "text": {
+      "primary": "#16181CFF",
+      "secondary": "#4D525BFF"
+    },
+    "chrome": {
+      "accent": "#11776FFF",
+      "tooltipSurface": "#FFFFFFFF",
+      "tooltipText": "#16181CFF",
+      "tooltipMuted": "#626770FF",
+      "tooltipLine": "#CDD0D5FF",
+      "focusRing": "#02726AFF",
+      "tooltipShadow": "0 1px 2px rgba(22, 24, 28, .05), 0 6px 18px -10px rgba(22, 24, 28, .20)",
+      "tooltipRadius": 10,
+      "controlRadius": 6
+    },
+    "accent": {
+      "base": "#11776FFF"
+    },
+    "series": [
+      "#2A78D6FF",
+      "#0F9F8CFF",
+      "#D9711FFF",
+      "#8055C4FF",
+      "#C24FA8FF",
+      "#CC4048FF",
+      "#A97800FF",
+      "#37813EFF",
+      "#00739BFF",
+      "#5F5F5FFF"
+    ],
+    "severity": {
+      "critical": {
+        "fill": "#D4302FFF",
+        "ink": "#B8292AFF"
+      },
+      "high": {
+        "fill": "#DD5A17FF",
+        "ink": "#B4480FFF"
+      },
+      "medium": {
+        "fill": "#C78404FF",
+        "ink": "#8C5C05FF"
+      },
+      "low": {
+        "fill": "#0C8AA8FF",
+        "ink": "#0A728BFF"
+      },
+      "info": {
+        "fill": "#2F6BD9FF",
+        "ink": "#2B5FC0FF"
+      }
+    },
+    "outcome": {
+      "pass": {
+        "fill": "#1D8A52FF",
+        "ink": "#177345FF"
+      },
+      "neutral": {
+        "fill": "#7C818AFF",
+        "ink": "#5B6069FF"
+      }
+    },
+    "state": {
+      "maintenance": {
+        "fill": "#6B5BD2FF",
+        "ink": "#5A4BC0FF"
+      }
+    },
+    "ramps": {
+      "sequential": [
+        "#9AB8DCFF",
+        "#5598E7FF",
+        "#2171CEFF",
+        "#1C5CABFF",
+        "#104281FF"
+      ],
+      "diverging": {
+        "negative": [
+          "#D7AD87FF",
+          "#EAA363FF",
+          "#D9711FFF"
+        ],
+        "neutral": "#ECEEF0FF",
+        "positive": [
+          "#9AB8DCFF",
+          "#2171CEFF",
+          "#1C5CABFF"
+        ]
+      }
+    },
+    "roles": {
+      "positive": "#1D8A52FF",
+      "warning": "#C78404FF",
+      "negative": "#D4302FFF",
+      "disabled": "#7C818AFF",
+      "plotBorder": null,
+      "muted": null,
+      "grid": null,
+      "axis": null,
+      "info": null,
+      "quiet": null,
+      "quietLine": null,
+      "neutral": null,
+      "neutral2": null,
+      "neutral3": null,
+      "childLightnessOffset": 0.1
+    }
+  },
+  "dark": {
+    "other": "#929292FF",
+    "surface": {
+      "page": "#0C0D10FF",
+      "card": "#16181CFF",
+      "cardAlt": "#111317FF",
+      "line": "#272A30FF"
+    },
+    "text": {
+      "primary": "#F2F3F5FF",
+      "secondary": "#B0B4BCFF"
+    },
+    "chrome": {
+      "accent": "#37C9B8FF",
+      "tooltipSurface": "#16181CFF",
+      "tooltipText": "#F2F3F5FF",
+      "tooltipMuted": "#8F949DFF",
+      "tooltipLine": "#363A42FF",
+      "focusRing": "#37C9B8FF",
+      "tooltipShadow": "0 1px 2px rgba(0, 0, 0, .40), 0 10px 26px -14px rgba(0, 0, 0, .70)",
+      "tooltipRadius": 10,
+      "controlRadius": 6
+    },
+    "accent": {
+      "base": "#37C9B8FF"
+    },
+    "series": [
+      "#4A90EAFF",
+      "#22B39EFF",
+      "#EE8A3AFF",
+      "#AD86EBFF",
+      "#E479C4FF",
+      "#E15F55FF",
+      "#E8B83EFF",
+      "#73BE79FF",
+      "#55BED9FF",
+      "#B1B1B1FF"
+    ],
+    "severity": {
+      "critical": {
+        "fill": "#F47171FF",
+        "ink": "#F47171FF"
+      },
+      "high": {
+        "fill": "#F7924FFF",
+        "ink": "#F7924FFF"
+      },
+      "medium": {
+        "fill": "#EEB640FF",
+        "ink": "#EEB640FF"
+      },
+      "low": {
+        "fill": "#3EC3DDFF",
+        "ink": "#3EC3DDFF"
+      },
+      "info": {
+        "fill": "#74A2F7FF",
+        "ink": "#74A2F7FF"
+      }
+    },
+    "outcome": {
+      "pass": {
+        "fill": "#4CC78AFF",
+        "ink": "#4CC78AFF"
+      },
+      "neutral": {
+        "fill": "#8A8F98FF",
+        "ink": "#A0A5AEFF"
+      }
+    },
+    "state": {
+      "maintenance": {
+        "fill": "#A497F2FF",
+        "ink": "#A497F2FF"
+      }
+    },
+    "ramps": {
+      "sequential": [
+        "#324C6EFF",
+        "#2A78D6FF",
+        "#5598E7FF",
+        "#86B6EFFF",
+        "#B7D3F6FF"
+      ],
+      "diverging": {
+        "negative": [
+          "#6A442AFF",
+          "#9B5C29FF",
+          "#EE8A3AFF"
+        ],
+        "neutral": "#2B2E34FF",
+        "positive": [
+          "#324C6EFF",
+          "#509EFEFF",
+          "#9EC5F4FF"
+        ]
+      }
+    },
+    "roles": {
+      "positive": "#4CC78AFF",
+      "warning": "#EEB640FF",
+      "negative": "#F47171FF",
+      "disabled": "#8A8F98FF",
+      "plotBorder": null,
+      "muted": null,
+      "grid": null,
+      "axis": null,
+      "info": null,
+      "quiet": null,
+      "quietLine": null,
+      "neutral": null,
+      "neutral2": null,
+      "neutral3": null,
+      "childLightnessOffset": 0.1
+    }
+  },
+  "typography": {
+    "family": "Archivo, \"Segoe UI Variable Text\", \"Segoe UI\", system-ui, -apple-system, sans-serif",
+    "monospaceFamily": "\"JetBrains Mono\", \"Cascadia Mono\", Consolas, monospace",
+    "axisTitleSize": 12,
+    "titleSize": 17,
+    "subtitleSize": 13,
+    "axisSize": 12,
+    "legendSize": 12.5,
+    "dataLabelSize": 12,
+    "scalarValueSize": 34,
+    "centerValueSize": 20,
+    "tileLabelSize": 15,
+    "tileValueSize": 22,
+    "tileDetailSize": 13,
+    "chart": {
+      "resolvedSize": "wide",
+      "minimumSize": "10px",
+      "compactBreakpoint": "480px",
+      "title": {
+        "size": "17px",
+        "compactSize": "15px",
+        "weight": "600"
+      },
+      "subtitle": {
+        "size": "13px",
+        "compactSize": "12px",
+        "weight": "400"
+      },
+      "panelTitle": {
+        "size": "15px",
+        "compactSize": "14px",
+        "weight": "600"
+      },
+      "axisTitle": {
+        "size": "12px",
+        "compactSize": "11px",
+        "weight": "500"
+      },
+      "tick": {
+        "size": "12px",
+        "compactSize": "11px",
+        "weight": "400"
+      },
+      "legend": {
+        "size": "12.5px",
+        "compactSize": "12px",
+        "weight": "400",
+        "valueWeight": "500"
+      },
+      "dataLabel": {
+        "size": "12px",
+        "compactSize": "11px",
+        "weight": "500"
+      },
+      "centerValue": {
+        "minimumSize": "20px",
+        "maximumSize": "40px",
+        "radiusFactor": "0.16",
+        "weight": "700",
+        "captionSize": "12px",
+        "captionGap": "4px"
+      }
+    }
+  },
+  "geometry": {
+    "spacing": 12,
+    "seriesStrokeWidth": 2,
+    "markerRadius": 4,
+    "areaOpacity": 0.12,
+    "barRadius": 4,
+    "maximumBarWidth": 64,
+    "gridStrokeWidth": 1,
+    "axisStrokeWidth": 1,
+    "cardRadius": 10,
+    "plotRadius": 6,
+    "gaugeStrokeWidth": 14,
+    "gaugeBandWidth": 4
+  },
+  "effects": {
+    "cardShadowOpacity": 0,
+    "cardShadowColor": "#0F172AFF"
+  },
+  "series": {
+    "line": {
+      "strokeWidth": 3,
+      "curve": "smooth",
+      "marker": {
+        "shape": "diamond",
+        "radius": 4.5,
+        "enabled": true,
+        "strokeWidth": 1.5
+      },
+      "dataLabel": {
+        "fontSize": 11,
+        "fontWeight": "600"
+      }
+    },
+    "bar": {
+      "cornerRadius": 10,
+      "dataLabel": {
+        "fontWeight": "700"
+      }
+    }
+  }
+}

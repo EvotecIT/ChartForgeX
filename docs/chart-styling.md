@@ -73,6 +73,92 @@ creates a dashed forecast. Stroke style width overrides `StrokeWidth`, then the
 family/theme width. Radar and polar family outlines retain their more specific
 precedence. Marker outlines remain independent.
 
+A series that holds actuals and forecast in one line changes its stroke from a
+source X onward:
+
+```csharp
+demand.WithStrokeStyleFrom(lastActualX, new ChartStrokeStyle(dash: new[] { 6d, 5d }));
+```
+
+Each `ChartStrokeSegment` in `StrokeSegments` runs from its `FromX` (numeric or
+`DateTime`) to the next one; stroke before the first uses `StrokeStyle`. Unset
+color, width and dash inherit the series style, and opacity multiplies it. The
+stroke is cut exactly at `FromX`, including inside a spline curve or a step
+tread, so the solid and dashed pieces meet without a gap and the dash starts at
+the join. Line, step-line, area, step-area and stacked-area series support
+segments (area segments restyle the outline, not the fill); other kinds reject
+them during preparation. Markers, fills and labels are unchanged. The legend key,
+including a custom `ChartLegendKeyShape.Line` key, draws the series style
+followed by the first segment's merged style (its colour, width, opacity and
+dash), and a saved
+interactive report keeps both pieces joined when it zooms or pans. The
+[actual-and-forecast example](../ChartForgeX.Examples/StatisticalExamples.cs)
+adds a widening interval band after the last actual.
+
+## Theme defaults per series kind
+
+A theme can style every series of one kind, the way AG Charts `theme.overrides`
+does. Set them in code with `VisualThemeBuilder.ConfigureSeries` inside
+`VisualTheme.Configure`, or in the optional `series` object of a
+`schemaVersion: 1` theme file loaded with `VisualTheme.FromJson`.
+`theme.SeriesDefaults` returns independent copies keyed by kind:
+
+```json
+"series": {
+  "line": {
+    "strokeWidth": 3,
+    "curve": "smooth",
+    "dash": [6, 3],
+    "marker": { "shape": "diamond", "radius": 4.5, "enabled": true, "strokeWidth": 1.5 },
+    "dataLabel": { "fontSize": 11, "fontWeight": "600", "color": "#334155" }
+  },
+  "bar": { "cornerRadius": 10, "dataLabel": { "fontWeight": "700" } }
+}
+```
+
+```csharp
+var theme = VisualTheme.Graphite().Configure(builder => builder.ConfigureSeries(ChartSeriesKind.Line, line => {
+    line.StrokeWidth = 3;
+    line.Interpolation = ChartInterpolation.Smooth;
+    line.ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Diamond; markers.Enabled = true; });
+}));
+```
+
+Keys are camel-case `ChartSeriesKind` names (`line`, `stepLine`, `area`,
+`horizontalBar`, `rangeBar` and so on). Curves are `linear`, `smooth` or `step`;
+marker shapes are the `ChartMarkerShape` names. An unknown kind, curve or shape
+fails, and so does a setting the kind never draws: markers on bars, a curve on a
+scatter, or a corner radius on anything other than bar, horizontal bar, range bar
+and waterfall marks. Bubbles keep their size scale, so their marker radius is
+rejected too. `ToJson` writes the object only when the theme has defaults, so
+existing theme files and exports are unchanged.
+
+Precedence, from highest to lowest:
+
+1. An explicit series setting: `StrokeWidth`, `StrokeStyle` (width and dash),
+   `Markers` fields, `Interpolation` or a step position, and `DataLabelStyle`
+   fields. Each field wins on its own, so a series that only sets a marker radius
+   still takes the theme's marker shape.
+2. Explicit chart settings that already sit above the theme: chart-level
+   `DataLabelStyle` fields and an authored bar corner radius.
+3. The theme's defaults for the series kind.
+4. The global theme: `SeriesStrokeWidth`, `MarkerRadius`, `BarRadius` and the
+   typography scale.
+5. The family's built-in default.
+
+Per-kind defaults resolve once, when a chart is prepared, into a detached view of
+each affected series. Renderers read ordinary series settings, so SVG, native PNG
+and the HTML runtime agree. The authored series is never changed.
+
+These defaults live in the ChartForgeX theme format rather than the generated
+HtmlForgeX token document (`VisualTheme.FromPaletteJson`). That document carries
+shared brand colours, typography and radii for several products; series-kind
+styling is specific to ChartForgeX charts.
+
+`ConfigurabilityExamples.cs` loads
+[`series-defaults.theme.json`](../ChartForgeX.Examples/Assets/Themes/series-defaults.theme.json)
+and renders `theme-series-defaults-line-*` and `theme-series-defaults-bar-*`.
+
 ## Labels and tooltip text
 
 `ChartValueContext` exposes the scalar `Value`, category caption, series facts,

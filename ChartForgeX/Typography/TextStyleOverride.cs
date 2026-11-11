@@ -176,6 +176,23 @@ public sealed class TextStyleOverride {
     internal bool? UnderlineOverride => _hasUnderline ? _underline : null;
     internal bool? StrikethroughOverride => _hasStrikethrough ? _strikethrough : null;
 
+    /// <summary>Returns a copy in which every value set on <paramref name="overrides"/> replaces this one.</summary>
+    internal TextStyleOverride Overlay(TextStyleOverride overrides) {
+        var copy = Clone();
+        if (overrides.Color.HasValue) copy.Color = overrides.Color;
+        copy._fontFamily = overrides._fontFamily ?? _fontFamily; copy._fontWeight = overrides._fontWeight ?? _fontWeight;
+        copy._fontSize = overrides._fontSize ?? _fontSize; copy._letterSpacing = overrides._letterSpacing ?? _letterSpacing;
+        copy._underlineStyle = overrides._underlineStyle ?? _underlineStyle; copy._strikethroughStyle = overrides._strikethroughStyle ?? _strikethroughStyle;
+        copy._baseline = overrides._baseline ?? _baseline; copy._textCase = overrides._textCase ?? _textCase;
+        copy._openTypeLanguageTag = overrides._openTypeLanguageTag ?? _openTypeLanguageTag;
+        copy._colorPaletteIndex = overrides._colorPaletteIndex ?? _colorPaletteIndex;
+        copy.Variations = overrides.Variations ?? Variations;
+        if (overrides._hasItalic) { copy._italic = overrides._italic; copy._hasItalic = true; }
+        if (overrides._hasUnderline) { copy._underline = overrides._underline; copy._hasUnderline = true; }
+        if (overrides._hasStrikethrough) { copy._strikethrough = overrides._strikethrough; copy._hasStrikethrough = true; }
+        return copy;
+    }
+
     internal int ResolveFontWeight(int fallback) => FontWeight == null ? fallback : ResolveEmphasisWeight(FontWeight, fallback);
 
     internal TextStyleOverride WithDefaultFontWeight(int weight) {

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 
 namespace ChartForgeX.Themes;
@@ -18,7 +20,28 @@ public sealed class VisualThemeBuilder {
         PlotRadius = theme.PlotRadius; CardShadowOpacity = theme.CardShadowOpacity; CardShadowColor = theme.CardShadowColor;
         GaugeStrokeWidth = theme.GaugeStrokeWidth; GaugeBandWidth = theme.GaugeBandWidth;
         MaximumBarWidth = theme.MaximumBarWidth;
+        foreach (var pair in theme.CopySeriesDefaults()) _series[pair.Key] = pair.Value;
     }
+
+    private readonly Dictionary<ChartSeriesKind, VisualSeriesDefaults> _series = new();
+
+    /// <summary>Configures the defaults for one series kind, such as the width and markers of every line.</summary>
+    /// <param name="kind">The series kind.</param>
+    /// <param name="configure">Edits the kind's defaults; settings that do not apply to the kind fail in <see cref="Build"/>.</param>
+    /// <returns>The current builder.</returns>
+    public VisualThemeBuilder ConfigureSeries(ChartSeriesKind kind, Action<VisualSeriesDefaults> configure) {
+        if (!Enum.IsDefined(typeof(ChartSeriesKind), kind)) throw new ArgumentOutOfRangeException(nameof(kind));
+        if (configure == null) throw new ArgumentNullException(nameof(configure));
+        var defaults = _series.TryGetValue(kind, out var current) ? current.Clone() : new VisualSeriesDefaults();
+        configure(defaults);
+        _series[kind] = defaults;
+        return this;
+    }
+
+    /// <summary>Removes the defaults for one series kind, restoring the global theme values for it.</summary>
+    /// <param name="kind">The series kind.</param>
+    /// <returns>The current builder.</returns>
+    public VisualThemeBuilder ClearSeries(ChartSeriesKind kind) { _series.Remove(kind); return this; }
 
     /// <summary>Gets the independently editable light color palette.</summary>
     public VisualDesignTokens Light { get; }
@@ -61,8 +84,9 @@ public sealed class VisualThemeBuilder {
         _ => throw new ArgumentOutOfRangeException(nameof(mode))
     };
 
-    /// <summary>Validates and snapshots all colors, typography, geometry and effects.</summary>
-    public VisualTheme Build() => new(Light, Dark, Typography ?? throw new ArgumentNullException(nameof(Typography)),
+    /// <summary>Validates and snapshots all colors, typography, geometry, effects and per-kind series defaults.</summary>
+    public VisualTheme Build() => new VisualTheme(Light, Dark, Typography ?? throw new ArgumentNullException(nameof(Typography)),
         Spacing, SeriesStrokeWidth, MarkerRadius, AreaOpacity, BarRadius, GridStrokeWidth, AxisStrokeWidth,
-        CardRadius, CardShadowOpacity, CardShadowColor, GaugeStrokeWidth, GaugeBandWidth, PlotRadius, MaximumBarWidth);
+        CardRadius, CardShadowOpacity, CardShadowColor, GaugeStrokeWidth, GaugeBandWidth, PlotRadius, MaximumBarWidth)
+        .AttachSeriesDefaults(_series);
 }

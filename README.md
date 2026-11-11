@@ -89,6 +89,8 @@ For count charts, use `WithYAxisIntegerTicks()` or `WithXAxisIntegerTicks()` for
 
 To control the ticks themselves, set a fixed step (WithTickStep(25), or a calendar interval on time axes), explicit values (WithTickValues(0, 50, 80)), spacing bounds in drawing units (WithTickSpacing(null, 45)) or minor grid lines (WithMinorTicks(4)) on the axis. Style one axis's grid with ConfigureGrid, including alternating bands. See [axis ticks and grids](docs/axes.md).
 
+Legends take entries that do not come from a series (AddLegendItem(ChartLegendItem.Line("Target", color, ChartLegendItem.ReferenceDash))), a key shape and size for every entry (WithLegendKey) and a formatter that rewrites entry text from the series and its values (WithLegendFormatter). See [legend entries and keys](docs/legends.md).
+
 ## Visual Tour
 
 Charts and diagrams share the same theme, typography and chart area. These 400 × 280 previews are generated from the current examples. Open an example to switch between light and dark, compare SVG with native PNG, or copy its C# source.

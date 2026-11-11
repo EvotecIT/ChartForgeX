@@ -8,6 +8,8 @@
     // Browser axes and a running glide's transforms and hidden marks are not targets and leave every target where it was.
     if (record.target.closest?.('[data-cfx-browser-axis],[data-cfx-browser-grid]')
       || /^(transform|style)$/.test(record.attributeName) && standaloneGlideNodes.has(record.target)) return false;
+    // A rewrite of an unchanged value moves no target.
+    if (record.type === 'attributes' && record.oldValue === record.target.getAttribute(record.attributeName)) return false;
     if (record.type === 'attributes' && record.attributeName === 'class'
       && keyboardNativeClasses(record.oldValue) === keyboardNativeClasses(record.target.getAttribute('class'))) return false;
     if (record.type === 'attributes' && record.target.closest('[data-cfx-highlight-outline],[data-cfx-keyboard-focus-outline],[data-cfx-state-outline]')) return false;
@@ -28,7 +30,7 @@
     if (node.closest('[aria-hidden="true"]') || !paintAncestorsVisible(node, styles)) return false;
 
     if (renderedTargetKind(node) !== 'legend' && node.closest('.cfx-series-muted,.cfx-series-isolated-out')) return false;
-    const style = getComputedStyle(node);
+    const style = paintStyle(node, styles);
     if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') return false;
     if (pointerTargetPaint(node, styles)) return true;
 
@@ -43,11 +45,25 @@
     const viewport = svg.getBoundingClientRect();
     return viewport.width > 0 && viewport.height > 0;
   };
-  const keyboardTargets = (root) => withNativeHighlightPaint(root, () => {
+  const keyboardTargets = (root, viewportOnly = false) => withNativeHighlightPaint(root, () => {
     const hierarchy = hasFeature(root, 'HierarchyNavigation') ? capturedHierarchy(root) : null;
     // Discovery only reads, so one pass shares computed styles, series paint layers and shown ancestors across every target.
     const styles = Object.assign(new Map(), { _cfxShown: new Set() });
-    const candidates = interactiveTargets(root).filter(node => keyboardTargetAvailable(node, styles));
+    // After a repaint that only moved the window, a dense chart re-measures only the observations it cannot reuse.
+    const kept = viewportOnly && root._cfxKeyboardAvailability || new Map();
+    root._cfxKeyboardAvailability = kept;
+    const plot = root._cfxDataProjection?.plotBounds;
+    const candidates = chartTargets(root).filter(node => {
+      if (node.dataset.cfxVisible === 'false') return false;
+      // An observation wholly inside the plot keeps its availability while only the window moves: the plot clip, its
+      // series paint and its styles stay as they were. Observations at the plot edges are measured again.
+      const region = node._cfxNativeRegion, interior = plot && region && node.dataset.cfxPoint !== undefined && region.x > plot.x + 1 && region.y > plot.y + 1
+        && region.x + region.width < plot.x + plot.width - 1 && region.y + region.height < plot.y + plot.height - 1;
+      if (interior && kept.has(node)) return kept.get(node);
+      const available = keyboardTargetAvailable(node, styles);
+      if (interior) kept.set(node, available);
+      return available;
+    });
     const candidateSet = new Set(candidates);
     const containers = new Set();
     candidates.forEach((node) => {
@@ -130,21 +146,26 @@
     stops.forEach((values, node) => Object.entries(values).forEach(([name, value]) => node.getAttribute(name) !== value && node.setAttribute(name, value)));
     return state;
   };
-  const refreshKeyboardNavigation = (root, focused, passive = false) => {
+  // A viewport repaint passes the changes it made itself; when nothing else changed, its targets reuse earlier measures.
+  const refreshKeyboardNavigation = (root, focused, passive = false, moved = null) => {
     // Viewport transition frames are not keyboard state: keep the targets of the final window. A glide that nothing
     // disturbed ends on the drawing those targets were read from, so they stand too.
-    const view = root._cfxStandaloneViewport, reused = (view?.motionTarget || view?.glideSettled) && root._cfxKeyboardNavigation?.targets;
+    const view = root._cfxStandaloneViewport;
+    let reused = (view?.motionTarget || view?.glideSettled) && root._cfxKeyboardNavigation?.targets;
     if (reused && view.glide) view.glideTouched = true;
     // A full refresh, or a glide's closing paint whose targets stand, accounts for every paint change made so far,
     // so the availability watch need not queue another.
-    if (!reused || view.glideSettled) root._cfxSettleAvailability?.();
+    const viewportOnly = (!reused || view.glideSettled) && root._cfxSettleAvailability?.(moved) === true;
+    // A closing paint that took another pending change reads every target again, as the watch would have.
+    if (reused && view.glideSettled && !viewportOnly) reused = null;
     refreshRootBranchHighlightAvailability(root);
     refreshSelectionCuePaint(root);
     const state = root._cfxKeyboardNavigation;
     if (!state || !hasFeature(root, 'KeyboardNavigation')) return null;
     const activeElement = root.getRootNode().activeElement;
     const activeOwned = root.contains(activeElement) && state.owned.has(activeElement);
-    assignKeyboardStops(root, state, reused || keyboardTargets(root), focused);
+    // Reused targets with no newly focused one keep the stops they were given.
+    if (!reused || focused !== undefined) assignKeyboardStops(root, state, reused || keyboardTargets(root, viewportOnly), focused);
     const targets = state.targets;
     if (activeOwned && !targets.some((node) => targetFocusNode(node) === activeElement)) {
 
@@ -174,12 +195,15 @@
       const next = composedAncestry(root);
       if (next.nodes.length === ancestry.nodes.length && next.nodes.every((node, index) => node === ancestry.nodes[index])) return;
       paintObserver.disconnect(); unwatchSlots(); ancestry = next;
+      observePaint();
+      ancestry.trees.forEach(tree => tree.addEventListener('slotchange', queueRefresh, true));
+    };
+    const observePaint = () => {
       paintObserver.observe(root, { childList: true, subtree: true, attributes: true, attributeOldValue: true, attributeFilter: paintAvailabilityAttributes });
       for (const node of new Set([...ancestry.nodes.slice(1), ...ancestry.trees])) {
         paintObserver.observe(node, { childList: true,
           ...(node instanceof Element ? { attributes: true, attributeOldValue: true, attributeFilter: paintAvailabilityAttributes } : {}) });
       }
-      ancestry.trees.forEach(tree => tree.addEventListener('slotchange', queueRefresh, true));
     };
     const queueRefresh = () => {
       if (chartLifetimes.get(root)?.disposed !== false) return;
@@ -199,9 +223,10 @@
     listenChart(root, window, 'resize', queueRefresh);
     if (typeof ResizeObserver !== 'undefined') {
 
-      // Only a real size change can move targets; the first notification repeats the size binding already read.
-      let size = stage.clientWidth + 'x' + stage.clientHeight;
-      resizeObserver = new ResizeObserver(() => { if (size !== (size = stage.clientWidth + 'x' + stage.clientHeight)) queueRefresh(); });
+      // Only a real size change can move targets. The first notification records the laid-out size, so binding reads
+      // no layout and the chrome settling around the drawing does not refresh every stop.
+      let size;
+      resizeObserver = new ResizeObserver(() => { const next = stage.clientWidth + 'x' + stage.clientHeight; if (size !== undefined && size !== next) queueRefresh(); size = next; });
       resizeObserver.observe(stage);
     }
 
@@ -209,14 +234,23 @@
       if (chartLifetimes.get(root)?.disposed !== false) return;
       if (!root.isConnected) { queueRefresh(); return; }
       if (!records.some(record => keyboardAvailabilityMutation(record, stage, ancestry))) return;
-      queueRefresh();
+      delete root._cfxKeyboardAvailability; queueRefresh();
     });
     watchAncestry();
+    // A window repaint moves every mark and accounts for those writes itself: the watch pauses rather than queue a
+    // record per attribute, keeping what it already held for the repaint's own refresh.
+    let held = [];
+    root._cfxPauseAvailability = () => { held = held.concat(paintObserver.takeRecords()); paintObserver.disconnect(); return observePaint; };
     // Changes outside the chart may move its ancestry, which only the queued refresh re-watches.
-    root._cfxSettleAvailability = () => { if (paintObserver.takeRecords().some(record => !root.contains(record.target))) queueRefresh(); };
+    // Reports whether every pending change is either one the caller made (moved) or one that moves no target.
+    root._cfxSettleAvailability = moved => {
+      const records = held.concat(paintObserver.takeRecords()); held = [];
+      if (records.some(record => !root.contains(record.target))) queueRefresh();
+      return !!moved && records.every(record => moved(record) || !keyboardAvailabilityMutation(record, stage, ancestry));
+    };
     ownChartWork(root, () => {
       if (frame) cancelAnimationFrame(frame);
-      resizeObserver?.disconnect(); paintObserver?.disconnect(); unwatchSlots(); delete root._cfxSettleAvailability;
+      resizeObserver?.disconnect(); paintObserver?.disconnect(); unwatchSlots(); delete root._cfxSettleAvailability; delete root._cfxPauseAvailability;
     });
   };
   const prepareKeyboardNavigation = (root) => {
@@ -232,7 +266,7 @@
       ownChartWork(root, () => { if (stage.getAttribute('tabindex') === '-1') stage.removeAttribute('tabindex'); });
     }
 
-    interactiveTargets(root).forEach((node) => root._cfxKeyboardNavigation.owned.add(targetFocusNode(node)));
+    chartTargets(root).forEach((node) => root._cfxKeyboardNavigation.owned.add(targetFocusNode(node)));
     refreshKeyboardNavigation(root);
     bindKeyboardNavigationAvailability(root);
   };

@@ -7,6 +7,7 @@
   // Hierarchy drilling selects the standalone reader, so core keyboard stops never meet a captured hierarchy.
   const capturedHierarchy = () => null;
   const hoverGroups = () => null;
+  const chartTargets = root => interactiveTargets(root);
   const repaintHoverChange = () => false;
   const readerRuntimeKey = Symbol.for('ChartForgeX.chartRuntime');
   const mountCoreChart = root => {
