@@ -70,8 +70,8 @@ bundle needs it. They exclude the drawing, font payloads and stylesheet:
 | Bundle | Raw budget | Gzip budget |
 | --- | ---: | ---: |
 | Core reader (tooltips, keyboard, crosshair) | 103 KiB | 33 KiB |
-| Standalone reader | 297 KiB | 92 KiB |
-| Full controller/native host | 365 KiB | 111 KiB |
+| Standalone reader | 298 KiB | 92 KiB |
+| Full controller/native host | 366 KiB | 111 KiB |
 
 Optional behaviour ships in separate feature bundles, so the runtimes above do
 not grow with it. A page carries only the bundles its options need, and the core

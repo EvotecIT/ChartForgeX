@@ -432,7 +432,9 @@
 .cfx-responsive-legend__item:is([data-cfx-muted="true"], [aria-pressed="false"]) [data-cfx-role="legend-swatch"] { fill-opacity: 0; stroke-opacity: .6; }
 .cfx-interactive-chart .cfx-responsive-legend__item:hover { background: color-mix(in srgb, var(--cfx-tooltip-text) 6%, transparent); }
 
-.cfx-interactive-chart [data-cfx-role="legend-item"]:hover > [data-cfx-browser-hit-area] {
+/* The hit area takes every pointer over its legend item. Hovering it, rather than the item, keeps hover on any
+   ancestor (the chart, a series) from restyling every observation's hit area. */
+.cfx-interactive-chart [data-cfx-role="legend-item"] > [data-cfx-browser-hit-area]:hover {
   fill: color-mix(in srgb, var(--cfx-tooltip-text) 6%, transparent); rx: var(--cfx-control-radius, var(--hfx-radius-control, 6px));
 }
 /* The runtime marks a hovered legend item on the chart: a :has() rule here made every inline style or hidden

@@ -40,7 +40,8 @@
     return {
       identity: modelGroups(nodes, node => { const kind = renderedTargetKind(node); return [kind + '\n' + renderedTargetId(node, kind)]; }),
       point: modelGroups(nodes, node => node.dataset.cfxPoint === undefined ? [] : [node.dataset.cfxPoint]),
-      label: modelGroups(nodes, node => [node.dataset.cfxLabel, node.dataset.cfxText, node.getAttribute('aria-label')].filter(Boolean))
+      label: modelGroups(nodes, node => [node.dataset.cfxLabel, node.dataset.cfxText, node.getAttribute('aria-label')].filter(Boolean)),
+      summary: nodes.filter(node => node.dataset.cfxPoint === undefined)
     };
   });
   // Cartesian observations measured once per drawing size, relative to the drawing so that scrolling keeps them,

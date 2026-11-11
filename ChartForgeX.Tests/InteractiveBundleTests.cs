@@ -22,9 +22,12 @@ public sealed class InteractiveBundleTests {
     // Dense-chart binding and zoom speed (shared interactive targets, keyboard availability reused across window repaints,
     // paused change watches while a window repaint moves every mark) added about 0.4 KiB raw to the core reader and 1.8 KiB raw
     // (0.6 KiB gzip) to the others; the three raw budgets and the standalone gzip budget moved up 1 KiB.
+    // Crossing a dense line and zooming it now touch only the observations they read (10,000-point hover p95 about 300 ms to
+    // 55 ms, 50,000-point zoom about 45% faster); the series hand-off, summary-only hover repaint and translated observations
+    // added about 0.9 KiB raw to the report runtimes, so both report raw budgets moved up 1 KiB.
     [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.Tooltips, 103 * 1024, 33 * 1024)]
-    [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.ReportReview, 297 * 1024, 92 * 1024)]
-    [InlineData(HtmlChartRuntime.Full, ChartInteractionFeatures.ReportReview, 365 * 1024, 111 * 1024)]
+    [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.ReportReview, 298 * 1024, 92 * 1024)]
+    [InlineData(HtmlChartRuntime.Full, ChartInteractionFeatures.ReportReview, 366 * 1024, 111 * 1024)]
     public void EmittedRuntimeFitsRawAndGzipBudgets(HtmlChartRuntime runtime, ChartInteractionFeatures features, int rawBudget, int gzipBudget) {
         var asset = HtmlInteractiveAssetFiles.ChartScriptFor(runtime, features);
         var bytes = Encoding.UTF8.GetBytes(asset.Content);
