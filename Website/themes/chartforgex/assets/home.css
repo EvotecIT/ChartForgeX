@@ -82,7 +82,7 @@
   color: transparent;
 }
 
-.cfx-hero__lede { color: var(--cfx-hero-ink-2); font-size: clamp(1.0625rem, 1rem + .3vw, 1.1875rem); line-height: 1.6; max-width: 46ch; }
+.cfx-hero__lede { color: var(--cfx-hero-ink-2); font-size: clamp(1.0625rem, 1rem + .3vw, 1.1875rem); line-height: 1.6; max-width: 26.36em; /* 46ch of Archivo; ch would follow the fallback face while Archivo loads. */ }
 .cfx-hero__actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
 .cfx-hero__badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 22px 0 0; padding: 0; list-style: none; }
 .cfx-hero__badges li {
