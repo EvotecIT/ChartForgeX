@@ -68,43 +68,48 @@ saved with `ToInteractiveHtmlPage`, opened from disk in headless Chromium at
 1400 × 900. *Zoom* pages enable Tooltips, Zoom and Pan; *review* pages add the
 default report features (selection, keyboard, crosshair, compare). Ready is
 navigation to the bound marker plus the next frame. Hover is the time from a
-pointer move to the second painted frame, measured in the page over 40 moves.
-Zoom is one toolbar zoom-in from the click until the eased window settles.
+pointer move to the second painted frame, measured in the page over 40 moves
+that alternate between the line and the empty plot, so each one crosses the
+line. Zoom is one toolbar zoom-in from the click until the eased window settles.
 Before and after pages ran interleaved in one browser; best of three loads.
 
 | Line | Ready before | Ready after | Hover p95 before | Hover p95 after | Zoom before | Zoom after |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1,000, zoom | 126 ms | 111 ms | 80 ms | 78 ms | 361 ms | 358 ms |
-| 1,000, review | 228 ms | 176 ms | 51 ms | 51 ms | 366 ms | 347 ms |
-| 10,000, zoom | 958 ms | 919 ms | 432 ms | 301 ms | 615 ms | 515 ms |
-| 10,000, review | 1,897 ms | 1,411 ms | 394 ms | 399 ms | 782 ms | 632 ms |
-| 50,000, zoom | 8,602 ms | 3,481 ms | 96 ms | 158 ms | 2,096 ms | 1,432 ms |
-| 50,000, review | 9,750 ms | 6,376 ms | 88 ms | 148 ms | 2,767 ms | 2,107 ms |
+| 1,000, zoom | 132 ms | 132 ms | 42 ms | 33 ms | 344 ms | 333 ms |
+| 1,000, review | 199 ms | 198 ms | 46 ms | 33 ms | 359 ms | 333 ms |
+| 10,000, zoom | 733 ms | 698 ms | 256 ms | 51 ms | 543 ms | 424 ms |
+| 10,000, review | 1,433 ms | 1,254 ms | 280 ms | 51 ms | 637 ms | 513 ms |
+| 50,000, zoom | 3,449 ms | 3,232 ms | 37 ms | 49 ms | 1,375 ms | 926 ms |
+| 50,000, review | 6,169 ms | 6,200 ms | 59 ms | 69 ms | 1,965 ms | 1,434 ms |
 
-Measured on 10 November 2026 on the machine above while other builds kept it
-65–100% busy, so the pairs compare and the absolute values run high; single
-loads vary by up to a third. Ready includes parsing the saved page, 10 MB at
-10,000 points and 45 MB at 50,000. Median hover at 10,000 points fell from
-232 ms to 83 ms (zoom) and from 249 ms to 130 ms (review); a repeat of the
-50,000-point zoom page measured hover p95 at 68 ms before and 84 ms after.
+Measured on 11 November 2026 on the machine above; single loads vary by up to a
+third, so the pairs compare and the ready times are within noise. Ready
+includes parsing the saved page, 10 MB at 10,000 points and 45 MB at 50,000.
+Median hover at 10,000 points fell from 158 ms to 37 ms (zoom) and from 193 ms
+to 41 ms (review). At 50,000 points the pointer never leaves the series band,
+so the series hover and the mode switch never ran there; hover stays within
+run-to-run variation, and repeats of the review page measured its
+p95 at 54–69 ms before and 61–82 ms after.
 
-Binding cost one style pass per readout write: the card and toolbar tokens were
-inherited custom properties, so each write restyled every mark. They no longer
-inherit, which leaves one style pass for the first frame. The zoom repaint now
-reuses the keyboard availability of observations wholly inside the plot and
-pauses the change watches while it moves every mark. What remains at 50,000
-points is proportional to the marks the runtime adds per observation, a hit area
-and a hover marker: rewriting their geometry and restyling them take about
-0.7 s each, and refreshing tens of thousands of keyboard stops about 0.5 s.
+Crossing a dense line no longer restyles the whole series. Entering a line,
+area or bar series used to hover the series group, whose inherited stroke width
+and descendant marker rules restyled every mark, and the stage readout then
+moved the hover to the nearest observation in its next frame, restyling them
+all again. Unless only exact hits read out, the stage readout now takes that
+pointer directly. Switching between series and shared hover used to toggle
+cfx-hover-series on every observation; a series hover unit now marks only the
+series, its legend items and other summaries, and an observation carries
+cfx-hover-series only when the hover unit is the point. The legend's hover tint
+now follows its hit area's own `:hover`, so the pointer entering the chart or a
+series no longer restyles every observation's hit area.
 
-Leaving a mark for the drawing now hands the hover to the stage readout instead
-of clearing the chart's hover state and setting it again, which restyled every
-hover marker. The hover tail at 10,000 points comes from crossing the line
-itself: entering the series target sets cfx-hovered on the series group, whose
-inherited stroke-width and descendant marker rules restyle all of its marks,
-and the hover mode then switches between series and shared, toggling
-cfx-hover-series on every observation. Each crossing costs about 0.1–0.2 s.
-
+Zooming used to rewrite the geometry of the hit area and hover marker that the
+runtime adds to each observation. An observation drawn by nothing else now
+moves by one translation, and both marks keep their drawn size, as markers
+already did. Its region stays in its own coordinates, which the translation
+carries to the screen. What remains at 50,000 points is restyling the moved
+observations (about 0.2 s), laying out and painting the drawing, and the
+keyboard and axis refresh.
 ## Guards in the test suite
 
 | Guard | Test | Fails when |
@@ -112,6 +117,7 @@ cfx-hover-series on every observation. Each crossing costs about 0.1–0.2 s.
 | Runtime size | `InteractiveBundleTests` | A chart, feature, diagram, topology or graph Explorer runtime exceeds its raw or gzip budget (see [interactivity](../interactivity.md#selecting-an-offline-runtime)) |
 | Static export scaling | `StaticExportScalingTests` | Four times the points of a raw line chart costs more than eight times the SVG or PNG time, or more than six times the allocation |
 | Interactive binding scaling | `InteractiveBindingScalingBrowserTests` | Four times the points of an interactive line chart takes more than eight times as long to bind in Chromium |
+| Dense line locality | `DenseLineInteractionBrowserTests` | Crossing a 2,000-point line hovers the whole series or repaints more than a few observations, or a zoom rewrites the observations' hit areas and hover markers |
 | Release budgets | The release-budget smoke test, `GraphiteRenderingBudgetTests`, `TopologyReplicationBudgetTests` | Representative renders exceed generous time or allocation ceilings |
 
 The scaling guards compare two sizes on the same machine and take the best of

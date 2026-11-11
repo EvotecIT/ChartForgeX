@@ -99,7 +99,12 @@
           setHover(root, node, true, true);
           showTip(root, tip, node, event);
         };
+        // Unless only exact hits read out, the stage readout resolves a pointer on a line, area or bar series to its
+        // observation in its next frame. Hovering the whole series first restyled every mark of a dense series twice.
+        const staged = stage?.contains(surface) && renderedTargetKind(node) === 'series' && categoricalPointerKind(node) && !node.matches('[data-cfx-point],[data-cfx-value]')
+          && root.dataset.cfxTooltipRange !== 'exact' && (hasFeature(root, 'Tooltips') || hasFeature(root, 'Crosshair'));
         listenChart(root, surface, 'pointerenter', (event) => {
+          if (staged && event instanceof PointerEvent) return;
           enter(event);
           if (root._cfxHoverPending) clearHover(root, false, false);
         });

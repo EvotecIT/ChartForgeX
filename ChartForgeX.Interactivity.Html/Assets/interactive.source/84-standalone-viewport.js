@@ -35,7 +35,7 @@
     clip.appendChild(rect); svg.querySelector('defs')?.appendChild(clip);
     if (!clip.parentNode) { const defs = document.createElementNS(ns, 'defs'); defs.appendChild(clip); svg.prepend(defs); view.defs = defs; }
     view.clip = clip;
-    const series = svg.querySelectorAll('[data-cfx-role="series"]'), scatter = metadata.series.some(row => row?.kind === 'scatter');
+    const anchored = new Set(), series = svg.querySelectorAll('[data-cfx-role="series"]'), scatter = metadata.series.some(row => row?.kind === 'scatter');
     series.forEach(owner => {
       // An outer clip remains in plot coordinates while individual marks reproject.
       view.frames.push({ owner, clip: owner.getAttribute('clip-path') });
@@ -47,6 +47,18 @@
       const labelled = new Set(owner.querySelectorAll(marks + ':is([data-cfx-role$="label"],[data-cfx-role$="label"] *)'));
       owner.querySelectorAll(marks).forEach(node => {
         if (labelled.has(node) && node.closest('g')?.querySelector('text')) return;
+        // An observation drawn only by its hit area and hover marker, with no fill of its own, moves as one translation and
+        // keeps its drawn size, as markers do: rewriting both marks restyled twice as many nodes on a dense line. Its region
+        // stays in its own coordinates, which the translation carries to the screen.
+        const point = node.parentNode;
+        if (anchored.has(point)) return;
+        const region = point._cfxNativeRegion;
+        if (region && !point._cfxFillInteriors?.length && point.matches('[data-cfx-point]:not([transform],[data-cfx-stack-end]):has(> .cfx-prepared-point-marker)')
+          && [...point.children].every(child => child.matches('[data-cfx-browser-hit-area],.cfx-prepared-point-marker'))) {
+          anchored.add(point); view.geometry.push({ node: point, attrs: {}, visibility: standaloneStyle(point, 'visibility'),
+            anchor: { x: region.x + region.width / 2, y: region.y + region.height / 2 }, ...axes });
+          return;
+        }
         const role = node.getAttribute('data-cfx-role') || '';
         // Markers and error-bar caps keep their drawn size; only their position follows the window.
         const marker = !node.hasAttribute('data-cfx-browser-hit-area') && (role.startsWith('marker') || role === 'error-cap'
@@ -68,7 +80,7 @@
     svg.querySelectorAll('[data-cfx-point][data-cfx-x]').forEach(node => {
       if (node.closest('[data-cfx-role="legend-item"]')) return;
       view.points.push({ node, region: node._cfxNativeRegion, paired: node._cfxPairedRegion, interiors: node._cfxFillInteriors,
-        midline: node.dataset.cfxMidlineY, x: Number(node.dataset.cfxX), y: Number(node.dataset.cfxY ?? node.dataset.cfxEnd),
+        midline: node.dataset.cfxMidlineY, anchored: anchored.has(node), x: Number(node.dataset.cfxX), y: Number(node.dataset.cfxY ?? node.dataset.cfxEnd),
         visibility: standaloneStyle(node, 'visibility'),
         series: Number(node.dataset.cfxSeries), axis: valueAxis(node.dataset.cfxAxis === 'secondary'),
         visible: node.getAttribute('data-cfx-visible') });
@@ -141,6 +153,12 @@
     return out;
   };
   const paintStandaloneGeometry = (entry, x, y) => {
+    const at = entry.anchor;
+    if (at) {
+      const shift = 'translate(' + standaloneRound(x.at(at.x) - at.x) + ' ' + standaloneRound(y.at(at.y) - at.y) + ')';
+      if (entry.node.getAttribute('transform') !== shift) entry.node.setAttribute('transform', shift);
+      return;
+    }
     if (entry.marker) {
       const at = entry.currentMarker || entry.marker, dx = x.at(at.x) - entry.marker.x, dy = y.at(at.y) - entry.marker.y;
       x = { at: value => value + dx, scale: 1 }; y = { at: value => value + dy, scale: 1 };
@@ -272,10 +290,11 @@
           const level = point.stack ? (point.stack.now || point.stack).end : point.y;
           const px = view.horizontal ? standaloneCoordinate(axisOf(point.axis), level, plot, false) : standaloneCoordinate(axisOf('x'), point.x, plot, false);
           const py = view.horizontal ? standaloneCoordinate(axisOf('y'), point.x, plot, true) : standaloneCoordinate(axisOf(point.axis), level, plot, true);
-          if (point.region) point.node._cfxNativeRegion = region(point.stackRegion || point.region, x, y);
+          if (point.region && !point.anchored) point.node._cfxNativeRegion = region(point.stackRegion || point.region, x, y);
           if (point.paired) point.node._cfxPairedRegion = region(point.paired, x, y);
           if (point.midline !== undefined) point.node.dataset.cfxMidlineY = y.at(Number(point.midline));
-          const bounds = point.node._cfxNativeRegion || { x: px, y: py, width: 0, height: 0 };
+          const { width = 0, height = 0 } = point.region || {}, bounds = point.anchored ? { x: px - width / 2, y: py - height / 2, width, height }
+            : point.node._cfxNativeRegion || { x: px, y: py, width: 0, height: 0 };
           point.node.dataset.cfxVisible = String(point.visible !== 'false' && bounds.x + bounds.width >= plot.x - .01 && bounds.x <= plot.x + plot.width + .01
             && bounds.y + bounds.height >= plot.y - .01 && bounds.y <= plot.y + plot.height + .01);
           if (point.interiors) point.node._cfxFillInteriors = Object.freeze((point.stackInteriors || point.interiors).map(([px, py, radius]) =>
@@ -353,7 +372,7 @@
     // Markers and captions keep their drawn size and move by the shift of their own centre; hit areas wait at their final places.
     if (!view.glide) {
       const target = standaloneMap(standaloneSourceAxis(view, 'x'), standaloneAxis(root, 'x', true), view.source.dataProjection.plotBounds, false).at;
-      view.glideMarks = [...view.geometry.filter(entry => !entry.node.matches('[data-cfx-browser-hit-area],.cfx-prepared-point-marker'))
+      view.glideMarks = [...view.geometry.filter(entry => !entry.anchor && !entry.node.matches('[data-cfx-browser-hit-area],.cfx-prepared-point-marker'))
         .map(entry => [entry.node, entry.marker && target((entry.currentMarker || entry.marker).x)]), ...view.labels.map(entry => [entry.node, target((entry.current || entry).x)])]
         .map(([node, x]) => { node.dataset.cfxGlide = ''; standaloneGlideNodes.add(node); return [node, node.getAttribute('transform'), x]; });
       // Browser markers of a hovered or selected observation wait at its final place, so they hide until the closing paint.
