@@ -50,6 +50,7 @@ public sealed class DenseLineInteractionBrowserTests {
 
         Assert.False(await page.EvaluateAsync<bool>("() => window.denseLine.series"), "Crossing the line hovered the whole series.");
         var touched = await page.EvaluateAsync<int>("() => window.denseLine.observations.size");
+        // The two moves take eight pointer steps and each step reads at most one observation; the old runtime restyled all of them.
         Assert.True(touched <= 8, $"Crossing the line changed the classes of {touched} of {Points} observations.");
         AssertNoConsoleErrors(session);
     }
