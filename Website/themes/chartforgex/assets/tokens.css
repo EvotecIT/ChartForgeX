@@ -65,7 +65,7 @@
   /* Type */
   --cfx-max: 1240px;
   --cfx-gutter: clamp(16px, 4vw, 40px);
-  --cfx-font: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --cfx-font: "Archivo", "Archivo Fallback", system-ui, -apple-system, "Segoe UI", sans-serif;
   --cfx-mono: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
   --cfx-t-display: clamp(2.25rem, 1.45rem + 2.6vw, 3.5rem);
   --cfx-t-h2: clamp(1.5rem, 1.25rem + .8vw, 1.875rem);
