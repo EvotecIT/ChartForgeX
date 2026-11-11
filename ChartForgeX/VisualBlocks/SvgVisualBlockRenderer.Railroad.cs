@@ -54,7 +54,7 @@ public sealed partial class SvgVisualBlockRenderer {
             case RailroadExpressionKind.Choice:
                 for (var index = 0; index < plan.Children.Count; index++) {
                     var child = plan.Children[index]; Branch(child);
-                    if (expression.OrderedChoice) WriteText(writer, (index + 1).ToString(CultureInfo.InvariantCulture), x + plan.Bend / 2, baseline + child.Baseline - 4, plan.Bend, TextAlignment.Center, theme.MutedText, theme.FontFamily, Math.Max(8, style.FontSize * .7), "600", "railroad-choice-priority");
+                    if (expression.OrderedChoice) WriteText(writer, (index + 1).ToString(CultureInfo.InvariantCulture), x + child.X - plan.Lead, baseline + child.Baseline - 4, plan.Lead - 8, TextAlignment.Center, theme.MutedText, theme.FontFamily, VisualBlockRendering.RailroadPriorityStyle(style).FontSize, "600", "railroad-choice-priority");
                 }
                 break;
             case RailroadExpressionKind.Optional:
@@ -99,10 +99,11 @@ public sealed partial class SvgVisualBlockRenderer {
         writer.EndElement().Line();
 
         void Branch(VisualBlockRendering.RailroadChildPlan child) {
-            var cy = baseline + child.Baseline; var cx = x + child.X;
-            RailroadRail(writer, new SvgPathDataBuilder().MoveTo(x, baseline).CubicTo(x + plan.Bend, baseline, cx - plan.Bend, cy, cx, cy).Build(), theme);
+            // Each branch turns inside the outer 2 * Bend columns and then runs straight, so no curve sweeps across a sibling node or priority label.
+            var cy = baseline + child.Baseline; var cx = x + child.X; var entry = x + 2 * plan.Bend; var exit = x + plan.Width - 2 * plan.Bend;
+            RailroadRail(writer, new SvgPathDataBuilder().MoveTo(x, baseline).CubicTo(x + plan.Bend, baseline, entry - plan.Bend, cy, entry, cy).LineTo(cx, cy).Build(), theme);
             RailroadNode(writer, child.Node, cx, cy, block, id, style);
-            RailroadRail(writer, new SvgPathDataBuilder().MoveTo(cx + child.Node.Width, cy).CubicTo(cx + child.Node.Width + plan.Bend, cy, x + plan.Width - plan.Bend, baseline, x + plan.Width, baseline).Build(), theme);
+            RailroadRail(writer, new SvgPathDataBuilder().MoveTo(cx + child.Node.Width, cy).LineTo(exit, cy).CubicTo(exit + plan.Bend, cy, x + plan.Width - plan.Bend, baseline, x + plan.Width, baseline).Build(), theme);
             RailroadArrow(writer, cx - 4, cy, 1, theme);
         }
     }

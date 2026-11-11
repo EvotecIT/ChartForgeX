@@ -11509,9 +11509,9 @@
         "frameFontRequest": "",
         "frameFontFingerprint": ""
       },
-      "width": 855,
+      "width": 889,
       "height": 903,
-      "logicalWidth": 855.0,
+      "logicalWidth": 889.0,
       "logicalHeight": 903.0,
       "svg": {
         "minVisualNodes": 57,
@@ -11520,9 +11520,9 @@
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 385998,
+        "minVisiblePixels": 401349,
         "minTransparentPixels": 34,
-        "minDistinctColors": 550,
+        "minDistinctColors": 543,
         "maxEdgeInkPixels": 0
       }
     },
@@ -11534,9 +11534,9 @@
         "frameFontRequest": "",
         "frameFontFingerprint": ""
       },
-      "width": 855,
+      "width": 889,
       "height": 903,
-      "logicalWidth": 855.0,
+      "logicalWidth": 889.0,
       "logicalHeight": 903.0,
       "svg": {
         "minVisualNodes": 57,
@@ -11545,9 +11545,9 @@
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 385998,
+        "minVisiblePixels": 401349,
         "minTransparentPixels": 34,
-        "minDistinctColors": 595,
+        "minDistinctColors": 593,
         "maxEdgeInkPixels": 0
       }
     },
