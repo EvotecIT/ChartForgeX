@@ -447,26 +447,13 @@
   color: var(--cfx-tooltip-text); font: 600 14px/20px var(--cfx-tooltip-font);
 }
 .cfx-frame:has(> .cfx-toolbar) > .cfx-responsive-heading { min-height: calc(var(--cfx-toolbar-height, 34px) + var(--cfx-toolbar-inset) * 2); }
-/* The readout writes these on the chart and frame. An inherited custom property would restyle every mark of a dense
-   drawing on each write, so they do not inherit; only the frame, its chrome and the drawing element take them. */
-@property --cfx-toolbar-height { syntax: "*"; inherits: false; }
-@property --cfx-heading-crop { syntax: "*"; inherits: false; }
-@property --cfx-card-fill { syntax: "*"; inherits: false; }
-@property --cfx-card-stroke { syntax: "*"; inherits: false; }
-@property --cfx-card-stroke-width { syntax: "*"; inherits: false; }
-@property --cfx-card-radius { syntax: "*"; inherits: false; }
-@property --cfx-card-inset { syntax: "*"; inherits: false; }
-@property --cfx-card-width { syntax: "*"; inherits: false; }
-@property --cfx-card-pad-x { syntax: "*"; inherits: false; }
-@property --cfx-card-pad-top { syntax: "*"; inherits: false; }
-@property --cfx-card-top { syntax: "*"; inherits: false; }
-@property --cfx-card-foot { syntax: "*"; inherits: false; }
-@property --cfx-card-bottom { syntax: "*"; inherits: false; }
-.cfx-frame { --cfx-toolbar-height: inherit; }
-.cfx-frame > *, .cfx-frame::before, .cfx-frame > .cfx-stage > svg {
-  --cfx-toolbar-height: inherit; --cfx-heading-crop: inherit; --cfx-card-fill: inherit; --cfx-card-stroke: inherit;
-  --cfx-card-stroke-width: inherit; --cfx-card-radius: inherit; --cfx-card-inset: inherit; --cfx-card-width: inherit;
-  --cfx-card-pad-x: inherit; --cfx-card-pad-top: inherit; --cfx-card-top: inherit; --cfx-card-foot: inherit; --cfx-card-bottom: inherit;
+/* The readout writes these on the chart and frame. Inherited as ordinary custom properties they would restyle every
+   mark of a dense drawing on each write, so the drawing's own children reset them: the restyle stops at the drawing
+   element. Registered non-inherited tokens with explicit inherit do not refresh their dependants in WebKit. */
+.cfx-frame > .cfx-stage > svg > * {
+  --cfx-toolbar-height: initial; --cfx-heading-crop: initial; --cfx-card-fill: initial; --cfx-card-stroke: initial;
+  --cfx-card-stroke-width: initial; --cfx-card-radius: initial; --cfx-card-inset: initial; --cfx-card-width: initial;
+  --cfx-card-pad-x: initial; --cfx-card-pad-top: initial; --cfx-card-top: initial; --cfx-card-foot: initial; --cfx-card-bottom: initial;
 }
 /* The drawing overlaps the band above it by one pixel so no seam shows between the surfaces. */
 .cfx-frame[data-cfx-heading-crop] > .cfx-stage > svg {
