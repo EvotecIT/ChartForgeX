@@ -16,6 +16,7 @@ public sealed class TopologyOwnedContextFontCausalTests {
         chart.Nodes[0].DisplayMode=TopologyNodeDisplayMode.CompactCard;chart.Nodes[0].PreserveDisplayModeSize=true;chart.Nodes[0].ShowStatusBadge=false;
         var path=Path.Combine(Path.GetTempPath(),"cfx-owned-context-font-"+Guid.NewGuid().ToString("N")+".ttf");
         try {
+            OpenTypeTestFonts.RegisterPortableLatinFallback();
             if(file)File.Copy(Path.Combine(TestRepository.Root,"ChartForgeX.Tests","Fixtures","OpenType","fallback-weight-regular.ttf"),path);
             var font=file?FontSpec.FromFile(path):FontSpec.FromFamily(BrowserProofFonts.Family);font.Family=BrowserProofFonts.Family;
             var context=new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640,400),24),chart.Theme,chart.ThemeMode,new VisualFrame("","",showLegend:false),font);
@@ -24,7 +25,7 @@ public sealed class TopologyOwnedContextFontCausalTests {
             if(file)File.Delete(path);
             var restored=VisualArtifactInterchangeEnvelope.FromJson(json).ToTopologyChart().Prepare();Capture("owned-font-before-restored-"+file,restored.ToSvg(),restored.ToPng(),restored.ToInterchangeEnvelope().ToJson());
             Assert.Equal(png,restored.ToPng());Assert.Equal(svg,prepared.ToSvg());Assert.Equal(png,prepared.ToPng());Assert.DoesNotContain(path,json,StringComparison.Ordinal);
-        } finally {if(File.Exists(path))File.Delete(path);}
+        } finally {FontRegistry.Clear();if(File.Exists(path))File.Delete(path);}
     }
     private static void Capture(string name,string svg,byte[] png,string json) {
         if(Environment.GetEnvironmentVariable("CFX_TOPOLOGY_THEME_CAPTURE_DIRECTORY") is not {Length:>0} output)return;
