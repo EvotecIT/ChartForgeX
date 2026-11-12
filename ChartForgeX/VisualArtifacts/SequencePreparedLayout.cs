@@ -224,20 +224,34 @@ internal sealed partial class SequencePreparedLayout {
                 if (Measure(paragraph) > width + 1e-8) throw new NotSupportedException("An unwrapped sequence line exceeds the explicit native allocation; enlarge its viewport or minima.");
                 lines.Add(paragraph); continue;
             }
-            string line = string.Empty;
-            var elements = StringInfo.GetTextElementEnumerator(paragraph);
-            while (elements.MoveNext()) {
-                string element = elements.GetTextElement();
-                // The lane is the widest glyph plus padding minus padding; compare with a sub-pixel tolerance so the
-                // glyph that sized it still fits after the arithmetic loses a few ulps.
-                if (Measure(line + element) > width + GlyphFitTolerance && line.Length > 0) { lines.Add(line); line = string.Empty; }
-                if (Measure(element) > width + GlyphFitTolerance) throw new NotSupportedException("A sequence text glyph exceeds the available lane width.");
-                line += element;
+            // Break at word boundaries; only a run wider than the whole line falls back to text elements. Spaces at a
+            // break hang past the line end, so they are neither measured nor painted.
+            string line = string.Empty; var broke = false;
+            foreach (var run in TextLineBreak.Runs(paragraph)) {
+                if (Fits(line + run)) { line += run; continue; }
+                if (line.Length > 0) { lines.Add(Hang(line)); line = string.Empty; broke = true; }
+                if (Fits(run)) { line = run; continue; }
+                var elements = StringInfo.GetTextElementEnumerator(run);
+                while (elements.MoveNext()) {
+                    string element = elements.GetTextElement();
+                    // The lane is the widest glyph plus padding minus padding; compare with a sub-pixel tolerance so the
+                    // glyph that sized it still fits after the arithmetic loses a few ulps.
+                    if (!TextLineBreak.IsBreakingSpace(element) && !Fits(line + element) && line.Length > 0) { lines.Add(Hang(line)); line = string.Empty; broke = true; }
+                    if (!Fits(element)) throw new NotSupportedException("A sequence text glyph exceeds the available lane width.");
+                    line += element;
+                }
             }
-            lines.Add(line);
+            lines.Add(broke ? Hang(line) : line);
         }
         return string.Join("\n", lines);
+        bool Fits(string value) => Measure(Hang(value)) <= width + GlyphFitTolerance;
         double Measure(string value) => style == null ? builder.MeasureText(value, size).Width : builder.MeasureText(value, style).Width;
+    }
+
+    private static string Hang(string line) {
+        var length = line.Length;
+        while (length > 0 && TextLineBreak.IsBreakingSpace(line[length - 1].ToString())) length--;
+        return line.Substring(0, length);
     }
 
     private void LayoutActivations(SequenceArtifact model, VisualArtifactInterchangeEnvelope envelope) {

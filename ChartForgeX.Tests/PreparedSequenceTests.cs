@@ -236,4 +236,27 @@ public sealed class PreparedSequenceTests {
         Assert.DoesNotContain(xml.Descendants(), e => ((string?)e.Attribute("data-cfx-role"))?.EndsWith("-arrow", StringComparison.Ordinal) == true);
         Assert.Contains(xml.Descendants(), e => (string?)e.Attribute("data-cfx-role") == "sequence-message-line");
     }
+
+    [Fact]
+    public void CompactCaptionsWrapAtWordBoundariesAndSplitOnlyAWordWiderThanTheLine() {
+        var model = SequenceArtifact.Create("compact-wrap")
+            .AddParticipant("a", "Review").AddParticipant("b", "Archive").AddParticipant("c", "Audit")
+            .AddMessage("a", "b", "Persist reconciled ledger entries").AddMessage("b", "c", "Well-known checkpoint")
+            .AddMessage("b", "a", "Antidisestablishmentarianism")
+            .AddNote(SequenceArtifactNotePlacement.Over, new[] { "a", "b" }, "検索結果を保存しました。次の処理へ進みます");
+        var captions = model.Prepare(Context(390, 700)).Scene.Nodes.OfType<VisualSceneText>()
+            .Select(text => text.Text.Lines.Select(line => line.Text).ToArray()).ToArray();
+        string[] Wrapped(string source) {
+            var lines = Assert.Single(captions, item => string.Concat(item).Replace(" ", string.Empty) == source.Replace(" ", string.Empty));
+            Assert.True(lines.Length > 1, source + " should wrap in a compact lane.");
+            return lines;
+        }
+
+        foreach (var source in new[] { "Persist reconciled ledger entries", "Well-known checkpoint" }) {
+            var words = source.Split(' ').SelectMany(word => new[] { word, word.Split('-')[0] + "-" }.Concat(word.Split('-').Skip(1))).ToHashSet();
+            Assert.All(Wrapped(source), line => Assert.All(line.Split(' '), token => Assert.Contains(token, words)));
+        }
+        Assert.All(Wrapped("Antidisestablishmentarianism"), line => Assert.NotEmpty(line));
+        Assert.All(Wrapped("検索結果を保存しました。次の処理へ進みます").Skip(1), line => Assert.DoesNotMatch("^[。、ー]", line));
+    }
 }
