@@ -18,7 +18,7 @@ internal static partial class VisualArtifactInterchangeJson {
     }
     private static void CapturedFontView(VisualArtifactInterchangeJsonWriter writer, TrueTypeFont font, OwnedFontResources roots) {
         if (font.PaletteContext != null) throw new NotSupportedException("Captured portable font views require the existing finite palette-index contract.");
-        writer.StartObject(); String(writer, "root", roots.Reference(font)); OptionalNumber(writer, "collection", font.CollectionIndex);
+        writer.StartObject(); String(writer, "root", roots.Reference(font)); OptionalNumber(writer, "collection", roots.CollectionIndex(font));
         OptionalString(writer, "faceName", font.DisplayName); OptionalString(writer, "selectedFamily", font.SelectedFamily);
         OptionalString(writer, "language", font.LanguageTag);
         if (font.TabularNumerals) Boolean(writer, "tabularNumerals", true);

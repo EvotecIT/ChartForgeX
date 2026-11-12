@@ -73,7 +73,6 @@ public sealed class TopologyPreparedFrameRequestTests {
         var path=Path.Combine(Path.GetTempPath(),"cfx-frame-owned-"+Guid.NewGuid().ToString("N")+".ttf");
         using(var file=File.Create(path))resource.CopyTo(file);
         try {
-        OpenTypeTestFonts.RegisterPortableLatinFallback();
         var chart=Source();
         var frame=new VisualFrame(title:"ChartForgeX",showLegend:false,titleStyle:new TextStyle{Font=FontSpec.FromFile(path),FontSize=20});
         var before=chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(760,520),24),chart.Theme,frame:frame),new TopologyRenderOptions{IncludeLegend=false});var wrapped=before.ToArtifact();var svg=wrapped.ToSvg();var png=wrapped.ToPng();
@@ -82,7 +81,7 @@ public sealed class TopologyPreparedFrameRequestTests {
         Capture("file-owned-restored",restored.Visual);
         Assert.NotEmpty(svg);Assert.NotEmpty(png);Assert.DoesNotContain(path,json,StringComparison.Ordinal);Assert.Equal(png,restored.ToPng());
         Assert.Equal(TopologyStaticPaintObservation.Paint(svg),TopologyStaticPaintObservation.Paint(restored.ToSvg()));Assert.Equal(svg,wrapped.ToSvg());Assert.Equal(png,wrapped.ToPng());
-        } finally {FontRegistry.Clear();File.Delete(path);}
+        } finally {File.Delete(path);}
     }
     private static TopologyChart Source() {
         var chart=TopologyChart.Create().WithId("finite-frame-request").WithTitle("Model heading").WithSubtitle("Model subtitle").WithViewport(760,520,24).WithLayout(TopologyLayoutMode.Manual)
