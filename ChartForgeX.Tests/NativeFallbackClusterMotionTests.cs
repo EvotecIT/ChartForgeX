@@ -56,6 +56,25 @@ public sealed class NativeFallbackClusterMotionTests : IDisposable {
         Assert.Throws<InvalidOperationException>(() => snapshot.Bind(style));
     }
     [Fact]
+    public void IdenticalFallbackBytesReRegisteredDuringPreparationRetainNativeReplay() {
+        NativeFallbackClusterBeforeControls.Register();
+        var style = Style();
+        var scope = new VisualSceneTextCapture();
+        var builder = new VisualSceneBuilder(new VisualSize(240, 100), style.Font, scope);
+        var text = "H" + char.ConvertFromUtf32(OpenTypeTestFonts.PrivateUseCharacter);
+        _ = builder.MeasureText(text, style);
+        FontRegistry.Register(NativeFallbackClusterBeforeControls.Fallback, NativeFallbackClusterBeforeControls.FallbackBytes());
+        builder.Text(text, 10, 50, style);
+        var expected = new PreparedVisual(builder.Build());
+        var replay = scope.Freeze().ReplayCapturedClusters();
+        var target = new VisualSceneBuilder(new VisualSize(240, 100), style.Font, replay);
+        target.Text(text, 10, 50, style);
+        var actual = new PreparedVisual(target.Build());
+        Assert.Equal(expected.ToSvg(), actual.ToSvg());
+        Assert.Equal(expected.ToPng(), actual.ToPng());
+    }
+
+    [Fact]
     public void ConflictingActualFallbackFacesDisableReplayWithoutChangingOrdinaryRendering() {
         NativeFallbackClusterBeforeControls.Register(); var style = Style(); var scope = new VisualSceneTextCapture(); var builder = new VisualSceneBuilder(new VisualSize(240, 100), style.Font, scope);
         var text = "H" + char.ConvertFromUtf32(OpenTypeTestFonts.PrivateUseCharacter); _ = builder.MeasureText(text, style);

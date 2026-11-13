@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Security.Cryptography;
 
 namespace ChartForgeX.Raster;
@@ -18,4 +19,18 @@ internal sealed partial class TrueTypeFont {
 
     /// <summary>Names the outlines this face draws by content, so separately loaded or viewed copies of one face are interchangeable.</summary>
     internal string OutlineIdentity => CapturedByteIdentity + "#" + _head.ToString(System.Globalization.CultureInfo.InvariantCulture) + "#" + _variationSettings.Key;
+
+    /// <summary>Compares the captured rendering policy when bounded caches recreate an equivalent face view.</summary>
+    internal bool SameCapturedFace(TrueTypeFont other) => ReferenceEquals(this, other)
+        || OutlineIdentity == other.OutlineIdentity
+        && CollectionIndex == other.CollectionIndex
+        && SelectedFamily == other.SelectedFamily
+        && LanguageTag == other.LanguageTag
+        && FallbackWeight == other.FallbackWeight
+        && FallbackItalic == other.FallbackItalic
+        && ColorPaletteIndex == other.ColorPaletteIndex
+        && ReferenceEquals(PaletteContext, other.PaletteContext)
+        && TabularNumerals == other.TabularNumerals
+        && FallbackFamilies.SequenceEqual(other.FallbackFamilies)
+        && SameCapturedBytes(other);
 }
