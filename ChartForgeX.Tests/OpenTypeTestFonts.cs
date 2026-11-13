@@ -34,17 +34,6 @@ internal static class OpenTypeTestFonts {
     private static readonly byte[] FlexCharstring = Cs(100, 100, Op(21), 100, 0, 100, 0, 100, 0, 100, 0, 100, 0, 100, 0, 50, Op(12), (byte)35, 0, 100, Op(5), -600, 0, Op(5), Op(14));
     private static readonly byte[] BoxCharstring = Cs(50, 0, Op(21), 400, Op(6), 700, Op(7), -400, Op(6), Op(14));
 
-    /// <summary>
-    /// Registers bundled Archivo under a test family, so letters a synthetic face lacks fall back to a face that
-    /// fits the portable owned-font budget instead of the host's first platform face (macOS: a 4.4 MB collection).
-    /// </summary>
-    internal static void RegisterPortableLatinFallback() {
-        using var stream = typeof(ChartForgeX.Typography.ChartFontAssets).Assembly.GetManifestResourceStream("ChartForgeX.Typography.Fonts.Archivo.ttf")!;
-        using var bytes = new MemoryStream();
-        stream.CopyTo(bytes);
-        ChartForgeX.Typography.FontRegistry.Register("CFX Test Latin Fallback", bytes.ToArray());
-    }
-
     internal static byte[] NameKeyed(bool includePrivateUse = true, IReadOnlyDictionary<int, int>? extraGlyphs = null, int weight = 400, bool italic = false) {
         var charStrings = new[] { Cs(Op(14)), HCharstring, OCharstring, XCharstring, ECharstring, AcuteCharstring, EAcuteCharstring, FlexCharstring, BoxCharstring };
         // Custom charset (format 0): SIDs of H, O, x, e, acute, eacute, F, and one more.

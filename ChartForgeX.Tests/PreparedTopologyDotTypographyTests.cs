@@ -48,7 +48,6 @@ public sealed class PreparedTopologyDotTypographyTests {
             FontRegistry.Register(family, OpenTypeTestFonts.NameKeyed(extraGlyphs: new Dictionary<int, int> {
                 ['D'] = OpenTypeTestFonts.Flex, ['C'] = OpenTypeTestFonts.Flex
             }, weight: 700), weight: 700);
-            OpenTypeTestFonts.RegisterPortableLatinFallback();
             var font = new FontSpec { Family = family };
             var chart = TopologyChart.Create().WithViewport(240, 160, 20).WithLegend(null)
                 .AddNode("dc", "Directory server", 90, 70, TopologyNodeKind.Server, TopologyHealthStatus.Healthy,

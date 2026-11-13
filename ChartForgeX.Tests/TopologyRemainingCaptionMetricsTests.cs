@@ -21,7 +21,7 @@ public sealed class TopologyRemainingCaptionMetricsTests : IDisposable {
     [InlineData("edge", TextInlineEmphasis.Bold, true)]
     [InlineData("edge", TextInlineEmphasis.Italic, true)]
     public void TallerSiblingFacesSurviveHeaderAndRelationshipAllocationAndDetachedCapture(string role, TextInlineEmphasis emphasis, bool tallFirst) {
-        FontRegistry.Register(Family, OpenTypeTestFonts.NameKeyed()); OpenTypeTestFonts.RegisterPortableLatinFallback();
+        FontRegistry.Register(Family, OpenTypeTestFonts.NameKeyed());
         var weight = emphasis == TextInlineEmphasis.Bold ? 700 : 400;
         var tall = WithAscent(OpenTypeTestFonts.NameKeyed(weight: weight, italic: emphasis == TextInlineEmphasis.Italic), 1100);
         FontRegistry.Register(Family, tall, weight, italic: emphasis == TextInlineEmphasis.Italic);
