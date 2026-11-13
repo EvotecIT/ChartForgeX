@@ -53,7 +53,7 @@ internal sealed class OwnedFontResources {
         var root = font.Root;
         if (root.CapturedByteLength <= MaximumRootBytes || root.IsSingleCapturedFace) return root;
         var key = root.CapturedByteIdentity + "#" + root.CollectionIndex.GetValueOrDefault().ToString(System.Globalization.CultureInfo.InvariantCulture);
-        if (!_members.TryGetValue(key, out var member)) _members.Add(key, member = root.CopyCollectionMember() ?? root);
+        if (!_members.TryGetValue(key, out var member)) _members.Add(key, member = root.CopyCollectionMember(MaximumRootBytes) ?? root);
         return member;
     }
 }
