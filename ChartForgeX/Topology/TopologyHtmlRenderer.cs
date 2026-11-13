@@ -122,6 +122,7 @@ public sealed partial class TopologyHtmlRenderer {
             .Attribute("data-cfx-selection-panel", enableSelectionPanel)
             .Attribute("data-cfx-controls-placement", ControlPlacementValue(options.HtmlControlPlacement))
             .Attribute("data-cfx-opening-view", options.HtmlOpeningView == TopologyHtmlOpeningView.Fit ? "fit" : null)
+            .Attribute("data-cfx-wheel-zoom", options.HtmlWheelZoom == TopologyHtmlWheelZoom.WithModifier ? "modifier" : null)
             .Attribute("data-cfx-scenario-url-state", enableScenarioUrlState)
             .Attribute("data-cfx-active-scenario", string.IsNullOrWhiteSpace(activeScenarioId) ? null : activeScenarioId)
             .Attribute("data-cfx-sync-enabled", enableSync)

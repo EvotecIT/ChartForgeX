@@ -517,6 +517,19 @@ public static class TopologyRenderOptionsExtensions {
     }
 
     /// <summary>
+    /// Chooses how the mouse wheel acts on an interactive HTML topology with viewport controls.
+    /// </summary>
+    /// <param name="options">The render options.</param>
+    /// <param name="wheelZoom">The wheel behavior.</param>
+    /// <returns>The current render options.</returns>
+    public static TopologyRenderOptions WithHtmlWheelZoom(this TopologyRenderOptions options, TopologyHtmlWheelZoom wheelZoom) {
+        if (options == null) throw new ArgumentNullException(nameof(options));
+        TopologyModelGuards.EnumDefined(wheelZoom, nameof(wheelZoom));
+        options.HtmlWheelZoom = wheelZoom;
+        return options;
+    }
+
+    /// <summary>
     /// Enables or disables query-string scenario state in interactive HTML output.
     /// </summary>
     /// <param name="options">The render options.</param>

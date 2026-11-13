@@ -168,6 +168,16 @@ public enum TopologyHtmlOpeningView {
 }
 
 /// <summary>
+/// Defines how the mouse wheel acts on an interactive HTML topology with viewport controls.
+/// </summary>
+public enum TopologyHtmlWheelZoom {
+    /// <summary>The wheel always zooms the diagram.</summary>
+    Always,
+    /// <summary>The wheel scrolls the page; Ctrl or Command with the wheel, a trackpad pinch, or fullscreen zooms the diagram. Suits diagrams placed in long pages.</summary>
+    WithModifier
+}
+
+/// <summary>
 /// Defines how interactive HTML topology scenarios are exposed to users.
 /// </summary>
 public enum TopologyHtmlScenarioControlMode {

@@ -124,6 +124,38 @@ public sealed class TopologyLargeNavigationBrowserTests {
     }
 
     [BrowserFact]
+    public async Task ModifierWheelZoomLetsAPlainWheelScrollThePage() {
+        if (!InteractiveChartBrowser.Enabled) return;
+        var options = new TopologyRenderOptions { ReadableDenseLayout = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile, EnableHtmlViewportControls = true }
+            .WithHtmlOpeningView(TopologyHtmlOpeningView.Fit)
+            .WithHtmlWheelZoom(TopologyHtmlWheelZoom.WithModifier);
+        // A diagram in the middle of a long page: reading past it must not get stuck zooming it.
+        var html = "<!doctype html><html><body><div style=\"height:600px\"></div>" + new HtmlInteractiveTopologyRenderer().RenderFragment(DenseEstate(), options)
+            + "<div style=\"height:2000px\"></div></body></html>";
+        await using var session = await InteractiveChartBrowser.OpenAsync(html, 1024, 700);
+        var page = session.Page;
+        await page.WaitForFunctionAsync("() => document.querySelector('.cfx-topology-wrapper').hasAttribute('data-cfx-runtime-bound')");
+        await Settle(page);
+        var wrapper = page.Locator(".cfx-topology-wrapper");
+        string? fitted = await wrapper.GetAttributeAsync("data-cfx-topology-zoom");
+        await page.EvaluateAsync("() => window.scrollTo(0, 400)");
+        var box = (await page.Locator(".cfx-topology-viewport").BoundingBoxAsync())!;
+        await page.Mouse.MoveAsync(box.X + box.Width / 2, box.Y + Math.Min(box.Height / 2, 100));
+
+        await page.Mouse.WheelAsync(0, 300);
+        // Page scrolling eases, so wait for it rather than reading the first frame.
+        await page.WaitForFunctionAsync("() => window.scrollY > 400", null, new Microsoft.Playwright.PageWaitForFunctionOptions { Timeout = 3000 });
+        Assert.Equal(fitted, await wrapper.GetAttributeAsync("data-cfx-topology-zoom"));
+
+        await page.Keyboard.DownAsync("Control");
+        await page.Mouse.WheelAsync(0, -120);
+        await page.Keyboard.UpAsync("Control");
+        await Settle(page);
+        Assert.NotEqual(fitted, await wrapper.GetAttributeAsync("data-cfx-topology-zoom"));
+        InteractiveChartBrowser.AssertNoConsoleErrors(session);
+    }
+
+    [BrowserFact]
     public async Task ThemeAdaptiveCardLeavesTheSurfaceToItsHost() {
         if (!InteractiveChartBrowser.Enabled) return;
         // A host that supplies the colour roles owns the surface; the card must not paint the drawing's literal canvas.
