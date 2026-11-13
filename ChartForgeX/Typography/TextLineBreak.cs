@@ -27,21 +27,31 @@ internal static class TextLineBreak {
     internal static bool IsBreakingSpace(string element) {
         if (element.Length != 1) return false;
         var c = element[0];
-        return c != ' ' && c != ' ' && c != ' ' && char.IsWhiteSpace(c);
+        return c != '\u00A0' && c != '\u2007' && c != '\u202F' && char.IsWhiteSpace(c);
     }
 
     private static bool BreaksBefore(List<string> elements, int index) {
         string before = elements[index - 1], after = elements[index];
         if (IsBreakingSpace(after)) return false;
         if (IsBreakingSpace(before)) return true;
+        if (IsGlue(before) || IsGlue(after)) return false;
         if (IsHyphen(before)) return index > 1 && IsWordCharacter(elements[index - 2]) && IsWordCharacter(after);
-        if (!IsIdeographic(before) && !IsIdeographic(after)) return false;
+        if (!IsCjk(before) && !IsCjk(after)) return false;
         return !ForbidsLineStart(after) && !ForbidsLineEnd(before);
     }
 
-    private static bool IsHyphen(string element) => element == "-" || element == "‐" || element == "–";
+    // No-break spaces, the word joiner and the zero-width no-break space keep both neighbours on one line.
+    private static bool IsGlue(string element) => element.Length == 1 && "\u00A0\u2007\u202F\u2060\uFEFF".IndexOf(element[0]) >= 0;
+
+    private static bool IsHyphen(string element) => element == "-" || element == "\u2010" || element == "\u2013";
 
     private static bool IsWordCharacter(string element) => char.IsLetterOrDigit(element, 0);
+
+    // CJK punctuation and fullwidth forms take part in CJK breaking, so text after "。" or "」" may start a new line.
+    private static bool IsCjk(string element) {
+        var value = char.ConvertToUtf32(element, 0);
+        return IsIdeographic(element) || value is >= 0x3000 and <= 0x303F or >= 0xFE30 and <= 0xFE4F or >= 0xFF01 and <= 0xFF60;
+    }
 
     private static bool IsIdeographic(string element) {
         var value = char.ConvertToUtf32(element, 0);
@@ -55,7 +65,7 @@ internal static class TextLineBreak {
         switch (CharUnicodeInfo.GetUnicodeCategory(element, 0)) {
             case UnicodeCategory.ClosePunctuation: case UnicodeCategory.FinalQuotePunctuation: case UnicodeCategory.OtherPunctuation: return true;
         }
-        return "々〻ゝゞーヽヾぁぃぅぇぉっゃゅょゎゕゖァィゥェォッャュョヮヵヶ".IndexOf(element[0]) >= 0;
+        return "\u3005\u303B\u309D\u309E\u30FC\u30FD\u30FEぁぃぅぇぉっゃゅょゎゕゖァィゥェォッャュョヮヵヶ".IndexOf(element[0]) >= 0;
     }
 
     private static bool ForbidsLineEnd(string element) {
