@@ -1983,8 +1983,10 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       };
       lifetime.own(() => endViewportDrag(null, true, false));
       const isViewportChrome = target => target instanceof Element && target.closest('.cfx-topology-controls,.cfx-topology-scenarios,.cfx-topology-scenario-panel,.cfx-topology-selection-panel,.cfx-topology-force-controls');
+      const wheelMod = wrapper.getAttribute('data-cfx-wheel-zoom') === 'modifier';
       listen(viewport, 'wheel', event => {
         if (isViewportChrome(event.target)) return;
+        if (wheelMod && !event.ctrlKey && !event.metaKey && document.fullscreenElement !== wrapper) return;
         event.preventDefault();
         zoomBy(event.deltaY < 0 ? 1.08 : 0.92, event);
       }, { passive: false });

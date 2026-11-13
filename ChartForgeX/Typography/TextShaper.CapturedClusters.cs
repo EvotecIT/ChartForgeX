@@ -40,7 +40,7 @@ internal static partial class TextShaper {
             if (count > MaximumScalars || output.Count > MaximumScalars || count > MaximumScalars - output.Count) { _supported = false; return; }
             var key = Key(points, start, count);
             if (_decisions.TryGetValue(key, out var previous)) {
-                if (!ReferenceEquals(previous.Face, face) || !previous.Output.SequenceEqual(output)) _supported = false;
+                if (!previous.Face.SameCapturedFace(face) || !previous.Output.SequenceEqual(output)) _supported = false;
                 return;
             }
             if (_decisions.Count >= MaximumClusters || _scalars + count + output.Count > MaximumScalars
