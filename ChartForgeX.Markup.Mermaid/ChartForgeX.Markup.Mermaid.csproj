@@ -20,7 +20,7 @@
     <Version>$(ChartForgeXProductVersion)</Version>
     <Authors>Evotec</Authors>
     <Description>Mermaid fenced-block adapter for ChartForgeX markup visual artifact pipelines.</Description>
-    <PackageReleaseNotes>Optional browser data charts with native layout policy, responsive updates, keyboard selection and deterministic disposal. Coordinated ChartForgeX 4.0.1 release.</PackageReleaseNotes>
+    <PackageReleaseNotes>Optional browser data charts with native layout policy, responsive updates, keyboard selection and deterministic disposal. Coordinated ChartForgeX 4.0.2 release with opt-in topology wheel modifiers and stable captured-font replay.</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>charts;markdown;markup;mermaid;diagrams;svg;png;html;topology;reports;dashboard;aot;nativeaot;trimming</PackageTags>

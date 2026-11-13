@@ -20,7 +20,7 @@
     <Version>$(ChartForgeXProductVersion)</Version>
     <Authors>Evotec</Authors>
     <Description>Self-contained HTML, SVG, and graph explorer interaction adapter for ChartForgeX charts and graph scenes.</Description>
-    <PackageReleaseNotes>Optional browser data charts with native layout policy, responsive updates, keyboard selection and deterministic disposal. Coordinated ChartForgeX 4.0.1 release.</PackageReleaseNotes>
+    <PackageReleaseNotes>Optional browser data charts with native layout policy, responsive updates, keyboard selection and deterministic disposal. Coordinated ChartForgeX 4.0.2 release with opt-in topology wheel modifiers and stable captured-font replay.</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>ChartForgeX.png</PackageIcon>
