@@ -18,8 +18,13 @@ internal static partial class TopologyRenderPrimitives {
 
     internal static void AttachEndpointsToSurfaces(TopologyEdge edge, TopologyNode source, TopologyNode target, List<ChartPoint> points) {
         if (points.Count < 2) return;
-        AttachEndpoint(source, edge.SourcePort, edge.SourcePortId, points, 0, 1);
-        AttachEndpoint(target, edge.TargetPort, edge.TargetPortId, points, points.Count - 1, points.Count - 2);
+        // The obstacle-avoiding router may leave through another side than a port the layout only inferred, for a
+        // single-bend route. Its terminal then attaches to the side it actually reaches.
+        var routed = edge.Routing == TopologyEdgeRouting.ObstacleAvoidingOrthogonal && edge.Waypoints.Count == 0;
+        var sourcePort = routed && (edge.LayoutInference & TopologyEdgeLayoutInference.SourcePort) != 0 ? TopologyEdgePort.Auto : edge.SourcePort;
+        var targetPort = routed && (edge.LayoutInference & TopologyEdgeLayoutInference.TargetPort) != 0 ? TopologyEdgePort.Auto : edge.TargetPort;
+        AttachEndpoint(source, sourcePort, edge.SourcePortId, points, 0, 1);
+        AttachEndpoint(target, targetPort, edge.TargetPortId, points, points.Count - 1, points.Count - 2);
     }
 
     internal static void AttachEndpoint(TopologyNode node, TopologyEdgePort port, string? portId, List<ChartPoint> points, int endpointIndex, int adjacentIndex) {

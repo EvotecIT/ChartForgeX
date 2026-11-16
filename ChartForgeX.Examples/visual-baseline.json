@@ -17064,7 +17064,7 @@
       "logicalWidth": 1200.0,
       "logicalHeight": 800.0,
       "svg": {
-        "minVisualNodes": 86,
+        "minVisualNodes": 42,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },

@@ -71,7 +71,14 @@ internal sealed partial class VisualTopologyCompiler {
                     else if (mode != TopologyNodeDisplayMode.Dot && (node.Shape.HasValue || node.CornerRadius.HasValue) && !hasGlyph && !caption
                         && string.IsNullOrWhiteSpace(node.Subtitle) && node.Details.Count == 0 && string.IsNullOrWhiteSpace(node.Badge))
                         BuildShapeCaption(node, active);
-                    else if (mode != TopologyNodeDisplayMode.Dot) BuildNodeText(node, textBounds, accent, active, caption);
+                    else if (mode != TopologyNodeDisplayMode.Dot) {
+                        // A card without details centres its heading beside the glyph instead of leaving the lower half
+                        // empty. A heading set above its glyph (left == 10) keeps the top row.
+                        var centered = !caption && mode is TopologyNodeDisplayMode.Card or TopologyNodeDisplayMode.CompactCard
+                            && node.Details.Count == 0 && !node.Shape.HasValue && !(hasGlyph && left == 10)
+                            && _options.CardSubtitleMode != TopologyCardSubtitleMode.Chip;
+                        BuildNodeText(node, textBounds, accent, active, caption, centered);
+                    }
                 }
             }
             BuildHealthRing(node, bounds, active);
@@ -96,7 +103,7 @@ internal sealed partial class VisualTopologyCompiler {
         _builder.AddRegion(new VisualSemanticRegion(node.Id, "topology-node", bounds, node.Label));
     }
 
-    private void BuildNodeText(TopologyNode node, ChartRect bounds, ChartColor accent, bool active, bool caption) {
+    private void BuildNodeText(TopologyNode node, ChartRect bounds, ChartColor accent, bool active, bool caption, bool centerVertically = false) {
         var size = TextPolicySize(_context.Theme.Typography.DataLabelSize);
         var label = node.MaximumLabelCharacters.HasValue ? TrimTo(node.Label, node.MaximumLabelCharacters.Value) : node.Label;
         if (node.Details.Count > 0 || !string.IsNullOrWhiteSpace(node.Subtitle) && (!caption || _options.IncludeTileSubtitles))
@@ -105,6 +112,13 @@ internal sealed partial class VisualTopologyCompiler {
         var titleLines = node.LabelContent.IsStructured ? CaptionRowCount(NodeCaptionContent(node), bounds.Width, size * _scale, _options.MaxNodeLabelLines)
             : TextLineCount(label, bounds.Width, size, 600, _options.MaxNodeLabelLines);
         var height = Math.Min(bounds.Height, CaptionLineHeight(NodeCaptionContent(node), size * _scale) * titleLines);
+        if (centerVertically) {
+            var content = height + (string.IsNullOrWhiteSpace(node.Subtitle) ? 0
+                : MeasureRoleText("Ag", RoleTextSize(size * .85, node.SubtitleTextStyle) * _scale, 400, node.SubtitleTextStyle).LineHeight
+                    * TextLineCount(node.Subtitle!, bounds.Width, size * .85, 400, _options.MaxNodeSubtitleLines, node.SubtitleTextStyle));
+            var shift = (bounds.Height - content) / 2;
+            if (shift > 0) bounds = new ChartRect(bounds.X, bounds.Y + shift, bounds.Width, bounds.Height - shift);
+        }
         var fitSingleLine = TopologyCaptionPresentation.ResolveSingleLineFitting(_options)
             || MeasurePolicyText("Ag", size * _scale, 600).LineHeight > height;
         var labelColor = string.IsNullOrWhiteSpace(node.LabelColor) ? _colors.Foreground : Color(node.LabelColor, _colors.Foreground);
