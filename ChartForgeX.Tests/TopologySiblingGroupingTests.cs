@@ -71,6 +71,11 @@ public sealed class TopologySiblingGroupingTests {
         Assert.Equal(new[] { "3", "3" }, split.Descendants().Where(element => element.Attribute("data-sibling-count") != null).Select(element => (string?)element.Attribute("data-sibling-count")));
         Assert.Contains(split.Descendants(), element => Role(element) == "topology-edge" && (string?)element.Attribute("data-target-node-id") == "hub");
 
+        var highlighted = new TopologyRenderOptions { FitContentToViewport = false }; highlighted.HighlightEdgeIds.Add("e2");
+        Assert.Equal(5, Site(3).WithSiblingGrouping().Prepare(highlighted).NodeCount);
+        var selected = new TopologyRenderOptions { FitContentToViewport = false }; selected.SelectedNodeIds.Add("dc3");
+        Assert.Equal(5, Site(3).WithSiblingGrouping().Prepare(selected).NodeCount);
+
         var both = Site(3).WithSiblingGrouping();
         foreach (var index in new[] { 1, 2, 3 }) both.AddEdge("back" + index, "dc" + index, "hub", kind: TopologyEdgeKind.Replication);
         var bothWays = XDocument.Parse(both.Prepare(Options()).ToSvg());

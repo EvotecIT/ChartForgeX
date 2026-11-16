@@ -85,11 +85,11 @@ internal sealed class TopologySiblingCard {
 }
 
 internal static class TopologySiblingGroupingLayout {
-    internal static void Apply(TopologyChart chart, TopologyView? view = null) {
+    internal static void Apply(TopologyChart chart, TopologyView? view = null, TopologyRenderOptions? options = null) {
         var policy = chart.SiblingGrouping;
         if (policy == null || chart.LayoutMode is TopologyLayoutMode.Regions or TopologyLayoutMode.Manual or TopologyLayoutMode.Geographic) return;
         var nodes = chart.Nodes.GroupBy(node => node.Id, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
-        var pinned = PinnedIds(chart, view);
+        var pinned = PinnedIds(chart, view, options);
         // Leaves whose links differ in direction or kind keep separate cards, so no relationship is lost to the aggregate edge.
         var buckets = new Dictionary<(string Parent, TopologyNodeKind Kind, string? Group, string Links), List<TopologyNode>>();
         foreach (var leaf in Leaves(chart, nodes, pinned)) {
@@ -171,7 +171,7 @@ internal static class TopologySiblingGroupingLayout {
         }
     }
 
-    private static HashSet<string> PinnedIds(TopologyChart chart, TopologyView? view = null) {
+    private static HashSet<string> PinnedIds(TopologyChart chart, TopologyView? view = null, TopologyRenderOptions? options = null) {
         var pinned = new HashSet<string>(StringComparer.Ordinal);
         // An edge step needs its edge to survive, so both of its ends stay out of any card.
         var edges = chart.Edges.GroupBy(edge => edge.Id, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
@@ -186,6 +186,12 @@ internal static class TopologySiblingGroupingLayout {
         if (view != null) {
             foreach (var id in view.NodeIds.Concat(view.FocusNodeIds)) pinned.Add(id);
             foreach (var id in view.EdgeIds) if (edges.TryGetValue(id, out var edge)) { pinned.Add(edge.SourceNodeId); pinned.Add(edge.TargetNodeId); }
+        }
+        // Highlighted and selected identities are read back against the prepared chart, so they stay as authored.
+        if (options != null) {
+            foreach (var id in options.HighlightNodeIds.Concat(options.SelectedNodeIds)) pinned.Add(id);
+            foreach (var id in options.HighlightEdgeIds.Concat(options.SelectedEdgeIds))
+                if (edges.TryGetValue(id, out var edge)) { pinned.Add(edge.SourceNodeId); pinned.Add(edge.TargetNodeId); }
         }
         return pinned;
     }
