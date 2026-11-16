@@ -84,6 +84,12 @@ test('a collapsed card keeps every attached link end on its surface', () => {
     assert.equal(bottom.surface.getAttribute('height'), '36');
     assert.equal(bottom.surface.getAttribute('y'), '174');
     assert.equal(bottom.header.getAttribute('transform'), 'translate(0 74)');
+    bottom.header.dispatchEvent(new bottom.window.MouseEvent('click', { bubbles: true }));
+    assert.equal(bottom.surface.getAttribute('y'), '100');
+    assert.equal(bottom.surface.getAttribute('height'), '110');
+    assert.equal(bottom.header.hasAttribute('transform'), false);
+    bottom.header.dispatchEvent(new bottom.window.MouseEvent('click', { bubbles: true }));
+    assert.equal(bottom.surface.getAttribute('y'), '174');
   } finally { bottom.close(); }
 });
 

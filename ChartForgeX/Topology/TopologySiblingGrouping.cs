@@ -165,7 +165,12 @@ internal static class TopologySiblingGroupingLayout {
 
     private static HashSet<string> PinnedIds(TopologyChart chart) {
         var pinned = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var scenario in chart.Scenarios) foreach (var step in scenario.Steps) pinned.Add(step.Id);
+        // An edge step needs its edge to survive, so both of its ends stay out of any card.
+        var edges = chart.Edges.GroupBy(edge => edge.Id, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
+        foreach (var scenario in chart.Scenarios) foreach (var step in scenario.Steps) {
+            pinned.Add(step.Id);
+            if (step.Kind == TopologyScenarioStepKind.Edge && edges.TryGetValue(step.Id, out var edge)) { pinned.Add(edge.SourceNodeId); pinned.Add(edge.TargetNodeId); }
+        }
         foreach (var alignment in chart.Alignments) foreach (var id in alignment.NodeIds) pinned.Add(id);
         foreach (var note in chart.Annotations) if (note.TargetId != null) pinned.Add(note.TargetId);
         foreach (var edge in chart.Edges) if (edge.LabelAnchorNodeId != null) pinned.Add(edge.LabelAnchorNodeId);

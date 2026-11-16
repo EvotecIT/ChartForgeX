@@ -53,6 +53,13 @@ public sealed class TopologySiblingGroupingTests {
         named.Scenarios[0].Steps.Add(new TopologyScenarioStep { Id = "dc1", Kind = TopologyScenarioStepKind.Node });
         Assert.Equal(5, named.Prepare(Options()).NodeCount);
 
+        var routed = Site(3).WithSiblingGrouping();
+        routed.Scenarios.Add(new TopologyScenario { Id = "replication", Label = "Replication" });
+        routed.Scenarios[0].Steps.Add(new TopologyScenarioStep { Id = "e1", Kind = TopologyScenarioStepKind.Edge });
+        var kept = routed.Prepare(Options());
+        Assert.Equal(5, kept.NodeCount);
+        Assert.Contains(XDocument.Parse(kept.ToSvg()).Descendants(), element => Role(element) == "topology-edge" && (string?)element.Attribute("data-edge-id") == "e1");
+
         var linked = Site(3).WithSiblingGrouping().AddEdge("peer", "dc1", "dc2");
         Assert.Equal(5, linked.Prepare(Options()).NodeCount);
     }

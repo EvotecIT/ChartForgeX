@@ -3,7 +3,9 @@
     const siblingCardLayout = card => {
       const surface = card.querySelector(':scope > [data-cfx-role="topology-node-surface"]');
       if (!surface || surface.tagName.toLowerCase() !== 'rect') return null;
-      const top = parseFloat(surface.getAttribute('y')) || 0;
+      // The expanded top is captured once: a bottom-anchored collapse moves the surface, and expanding must return it.
+      if (!surface.hasAttribute('data-sibling-top')) surface.setAttribute('data-sibling-top', surface.getAttribute('y') || '0');
+      const top = parseFloat(surface.getAttribute('data-sibling-top')) || 0;
       const full = parseFloat(attr(card, 'data-sibling-expanded-height')) || parseFloat(surface.getAttribute('height')) || 0;
       const header = parseFloat(attr(card, 'data-sibling-collapsed-height')) || full;
       const id = attr(card, 'data-node-id');

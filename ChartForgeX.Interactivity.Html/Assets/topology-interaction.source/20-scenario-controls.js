@@ -172,7 +172,7 @@
     // request flowing back) mirrors the drawn arrowhead onto the route's source end; edges drawn with arrows at both
     // ends, or none, already read either way.
     const routeEnd = (edge, last) => {
-      const tokens = edge.querySelector('[data-cfx-role="topology-edge-line"]')?.getAttribute('d')?.match(/[a-zA-Z]|[-+]?(?:\d*\.\d+|\d+\.?\d*)(?:[eE][-+]?\d+)?/g) || [];
+      const tokens = edge.querySelector('[data-cfx-role="topology-edge-line"],[data-cfx-role="topology-edge-stripe"]')?.getAttribute('d')?.match(/[a-zA-Z]|[-+]?(?:\d*\.\d+|\d+\.?\d*)(?:[eE][-+]?\d+)?/g) || [];
       const arity = { M: 2, L: 2, Q: 4, C: 6, A: 7, H: 1, V: 1, Z: 0 }, points = [];
       for (let index = 0, command = ''; index < tokens.length;) {
         if (/^[a-zA-Z]$/.test(tokens[index])) { command = tokens[index++].toUpperCase(); if (command === 'Z') continue; }

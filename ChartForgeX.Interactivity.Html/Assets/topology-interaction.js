@@ -411,7 +411,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     // request flowing back) mirrors the drawn arrowhead onto the route's source end; edges drawn with arrows at both
     // ends, or none, already read either way.
     const routeEnd = (edge, last) => {
-      const tokens = edge.querySelector('[data-cfx-role="topology-edge-line"]')?.getAttribute('d')?.match(/[a-zA-Z]|[-+]?(?:\d*\.\d+|\d+\.?\d*)(?:[eE][-+]?\d+)?/g) || [];
+      const tokens = edge.querySelector('[data-cfx-role="topology-edge-line"],[data-cfx-role="topology-edge-stripe"]')?.getAttribute('d')?.match(/[a-zA-Z]|[-+]?(?:\d*\.\d+|\d+\.?\d*)(?:[eE][-+]?\d+)?/g) || [];
       const arity = { M: 2, L: 2, Q: 4, C: 6, A: 7, H: 1, V: 1, Z: 0 }, points = [];
       for (let index = 0, command = ''; index < tokens.length;) {
         if (/^[a-zA-Z]$/.test(tokens[index])) { command = tokens[index++].toUpperCase(); if (command === 'Z') continue; }
@@ -1432,7 +1432,9 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     const siblingCardLayout = card => {
       const surface = card.querySelector(':scope > [data-cfx-role="topology-node-surface"]');
       if (!surface || surface.tagName.toLowerCase() !== 'rect') return null;
-      const top = parseFloat(surface.getAttribute('y')) || 0;
+      // The expanded top is captured once: a bottom-anchored collapse moves the surface, and expanding must return it.
+      if (!surface.hasAttribute('data-sibling-top')) surface.setAttribute('data-sibling-top', surface.getAttribute('y') || '0');
+      const top = parseFloat(surface.getAttribute('data-sibling-top')) || 0;
       const full = parseFloat(attr(card, 'data-sibling-expanded-height')) || parseFloat(surface.getAttribute('height')) || 0;
       const header = parseFloat(attr(card, 'data-sibling-collapsed-height')) || full;
       const id = attr(card, 'data-node-id');
