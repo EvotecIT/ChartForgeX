@@ -17,7 +17,7 @@ test('Qualified diagram-selection, lexical and grammar errors remain documented 
   const grammarEof = Object.assign(new Error("Parse error on line 5:\nExpecting 'end', got '1'"), {
     hash: {text: '', token: 1, line: 4, loc: {first_line: 5}, expected: ["'end'"]}
   });
-  for (const version of ['10.9.8', '11.17.2', '12.2.0']) {
+  for (const version of ['10.9.8', '11.17.2', '12.3.0']) {
     for (const error of [unknown, lexical, grammar, grammarEof]) assert.equal(Boolean(isReferenceRejection(error, version)), true);
   }
 });
@@ -31,7 +31,7 @@ test('Runtime, initialization and unqualified errors cannot count as expected sy
   for (const [token, text, message] of [[2, '', "Parse error on line 5:\ngot '2'"],
     [1, 'unexpected', "Parse error on line 5:\ngot '1'"], [1, '', 'Internal parser failure']]) {
     const error = Object.assign(new Error(message), {hash: {text, token, line: 4, loc: {first_line: 5}, expected: ["'end'"]}});
-    assert.equal(Boolean(isReferenceRejection(error, '12.2.0')), false);
+    assert.equal(Boolean(isReferenceRejection(error, '12.3.0')), false);
   }
 });
 
@@ -40,7 +40,7 @@ test('Forward linkStyle bounds failures require the qualified family, version an
   const missingEdge = new TypeError("Cannot set properties of undefined (setting 'style')");
   assert.equal(isReferenceRejection(bounds, '10.9.8', 'flowchart'), true);
   assert.equal(isReferenceRejection(bounds, '11.17.2', 'flowchart'), false);
-  for (const version of ['11.17.2', '12.2.0']) {
+  for (const version of ['11.17.2', '12.3.0']) {
     assert.equal(isReferenceRejection(missingEdge, version, 'flowchart'), true);
     assert.equal(isReferenceRejection(missingEdge, version, 'gitGraph'), false);
     assert.equal(isReferenceRejection(missingEdge, version), false);
@@ -56,7 +56,7 @@ test('Forward linkStyle bounds failures require the qualified family, version an
 
 test('Pinned GitGraph grammar and semantic failures are scoped to their source family', () => {
   const semantic = new Error('Incorrect usage of "merge". Both branches have same head');
-  for (const version of ['10.9.8', '11.17.2', '12.2.0']) {
+  for (const version of ['10.9.8', '11.17.2', '12.3.0']) {
     assert.equal(isReferenceRejection(semantic, version, 'gitGraph'), true);
     assert.equal(isReferenceRejection(semantic, version, 'flowchart'), false);
     assert.equal(isReferenceRejection(new TypeError(semantic.message), version, 'gitGraph'), false);
@@ -64,15 +64,15 @@ test('Pinned GitGraph grammar and semantic failures are scoped to their source f
   }
   class MermaidParseError extends Error {}
   const grammar = new MermaidParseError('Parsing failed:  Parse error on line 3, column 10: Expecting: one token');
-  assert.equal(isReferenceRejection(grammar, '12.2.0', 'gitGraph'), true);
+  assert.equal(isReferenceRejection(grammar, '12.3.0', 'gitGraph'), true);
   assert.equal(isReferenceRejection(grammar, '10.9.8', 'gitGraph'), false);
-  assert.equal(isReferenceRejection(grammar, '12.2.0', 'flowchart'), false);
+  assert.equal(isReferenceRejection(grammar, '12.3.0', 'flowchart'), false);
   assert.equal(isReferenceRejection(grammar, '13.0.0', 'gitGraph'), false);
 });
 
 test('Packet contiguity failures remain scoped semantic rejection evidence', () => {
   const message = 'Packet block 8 - 10 is not contiguous. It should start from 4.';
-  for (const version of ['11.17.2', '12.2.0']) {
+  for (const version of ['11.17.2', '12.3.0']) {
     assert.equal(isReferenceRejection(new Error(message), version, 'packet'), true);
     assert.equal(isReferenceRejection(new TypeError(message), version, 'packet'), false);
     assert.equal(isReferenceRejection(new Error(message), version, 'flowchart'), false);

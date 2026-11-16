@@ -11,7 +11,7 @@
     },
     "12": {
       "package": "mermaid",
-      "version": "12.2.0"
+      "version": "12.3.0"
     }
   },
   "fixtures": {
@@ -21,7 +21,7 @@
         "11": "rejected",
         "12": "rejected"
       },
-      "provenance": "Authored negative regression using the flowchart edge grammar exercised by fixtures/flowchart-basic.mmd: remove C from a final B --> C statement. Qualified against the pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0 parsers."
+      "provenance": "Authored negative regression using the flowchart edge grammar exercised by fixtures/flowchart-basic.mmd: remove C from a final B --> C statement. Qualified against the pinned official Mermaid 10.9.8, 11.17.2 and 12.3.0 parsers."
     },
     "invalid/flowchart-unclosed-subgraph.mmd": {
       "syntax": {
@@ -29,7 +29,7 @@
         "11": "rejected",
         "12": "rejected"
       },
-      "provenance": "Authored negative regression using the subgraph grammar exercised by fixtures/flowchart-basic.mmd: omit the closing end after a supported edge. Qualified against the pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0 parsers."
+      "provenance": "Authored negative regression using the subgraph grammar exercised by fixtures/flowchart-basic.mmd: omit the closing end after a supported edge. Qualified against the pinned official Mermaid 10.9.8, 11.17.2 and 12.3.0 parsers."
     },
     "invalid/sequence-orphan-branch.mmd": {
       "syntax": {
@@ -37,7 +37,7 @@
         "11": "rejected",
         "12": "rejected"
       },
-      "provenance": "Authored negative regression using the sequence message grammar exercised by fixtures/sequence-basic.mmd: place else fallback after a message without opening an alt block. Qualified against the pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0 parsers."
+      "provenance": "Authored negative regression using the sequence message grammar exercised by fixtures/sequence-basic.mmd: place else fallback after a message without opening an alt block. Qualified against the pinned official Mermaid 10.9.8, 11.17.2 and 12.3.0 parsers."
     },
     "fixtures/accessibility-dark.mmd": {
       "syntax": {
@@ -117,7 +117,7 @@
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored Cynefin quoted-string, repeated-domain and self-loop contract from the pinned 12.2.0 grammar/database. The installed 11.17.2 database/parser sources are identical. Proposed outcomes require execution; no reference result is claimed by the scratch packet."
+      "provenance": "Authored Cynefin quoted-string, repeated-domain and self-loop contract from the pinned 12.3.0 grammar/database. The installed 11.17.2 database/parser sources are identical. Proposed outcomes require execution; no reference result is claimed by the scratch packet."
     },
     "fixtures/cynefin-basic.mmd": {
       "syntax": {
@@ -515,7 +515,7 @@
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Pinned Mermaid 10.9.8, 11.17.2 and 12.2.0 parse outcomes observed on the retained exact source. Kanban metadata is adjacent to its node, preserving every card and authored property. Syntax observations do not establish rendered pixel parity."
+      "provenance": "Pinned Mermaid 10.9.8, 11.17.2 and 12.3.0 parse outcomes observed on the retained exact source. Kanban metadata is adjacent to its node, preserving every card and authored property. Syntax observations do not establish rendered pixel parity."
     },
     "fixtures/kanban-basic.mmd": {
       "syntax": {
@@ -545,7 +545,7 @@
       "notes": {
         "10": "Mermaid 10 exposes the parsed hierarchy but assigns color sections only while rendering; this parser/model fixture checks labels and parents without claiming section rendering."
       },
-      "provenance": "Authored uneven-indentation branch-color fixture based on the documented mindmap hierarchy contract and upstream regression https://github.com/mermaid-js/mermaid/pull/8394; selected model facts verified with pinned Mermaid 10.9.8, 11.17.2 and 12.2.0."
+      "provenance": "Authored uneven-indentation branch-color fixture based on the documented mindmap hierarchy contract and upstream regression https://github.com/mermaid-js/mermaid/pull/8394; selected model facts verified with pinned Mermaid 10.9.8, 11.17.2 and 12.3.0."
     },
     "fixtures/mindmap-depth-uneven.mmd": {
       "syntax": {
@@ -561,7 +561,7 @@
         "10": "Mermaid 10 accepts the source configuration without depth-color semantics. Its parsed hierarchy exposes labels and parents; color sections are assigned only while rendering and are not asserted by this fixture.",
         "11": "Mermaid 11 accepts but ignores mindmap.colorBy: depth; its model retains branch sections. Mermaid 12.2 assigns sections by structural parent depth."
       },
-      "provenance": "Authored structural-depth color fixture based on https://mermaid.js.org/syntax/mindmap.html#coloring-by-depth-v12-2-0 and upstream regression https://github.com/mermaid-js/mermaid/pull/8394; selected model facts verified with pinned Mermaid 10.9.8, 11.17.2 and 12.2.0."
+      "provenance": "Authored structural-depth color fixture based on https://mermaid.js.org/syntax/mindmap.html#coloring-by-depth-v12-2-0 and upstream regression https://github.com/mermaid-js/mermaid/pull/8394; selected model facts verified with pinned Mermaid 10.9.8, 11.17.2 and 12.3.0."
     },
     "fixtures/packet-basic.mmd": {
       "syntax": {
@@ -773,7 +773,7 @@
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Pinned Mermaid 10.9.8, 11.17.2 and 12.2.0 parse outcomes observed on the retained exact source. All sixteen authored half-arrow forms are retained; 11.17.2 and 12.2.0 accept them. Syntax observations do not establish rendered pixel parity."
+      "provenance": "Pinned Mermaid 10.9.8, 11.17.2 and 12.3.0 parse outcomes observed on the retained exact source. All sixteen authored half-arrow forms are retained; 11.17.2 and 12.3.0 accept them. Syntax observations do not establish rendered pixel parity."
     },
     "fixtures/sequence-presentation.mmd": {
       "syntax": {
@@ -989,7 +989,7 @@
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored regression from documented flowchart class and style precedence; acceptance and semantic facts qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0."
+      "provenance": "Authored regression from documented flowchart class and style precedence; acceptance and semantic facts qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.3.0."
     },
     "fixtures/gitgraph-cherry-pick-parent.mmd": {
       "syntax": {
@@ -997,7 +997,7 @@
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored regression from documented GitGraph command and immediate-parent rules; acceptance and semantic facts qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0."
+      "provenance": "Authored regression from documented GitGraph command and immediate-parent rules; acceptance and semantic facts qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.3.0."
     },
     "invalid/flowchart-empty-class.mmd": {
       "syntax": {
@@ -1005,7 +1005,7 @@
         "11": "rejected",
         "12": "rejected"
       },
-      "provenance": "Authored regression from documented flowchart class and style precedence; acceptance and semantic facts qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0."
+      "provenance": "Authored regression from documented flowchart class and style precedence; acceptance and semantic facts qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.3.0."
     },
     "invalid/flowchart-repeated-class.mmd": {
       "syntax": {
@@ -1013,7 +1013,7 @@
         "11": "rejected",
         "12": "rejected"
       },
-      "provenance": "Authored regression from documented flowchart class and style precedence; acceptance and semantic facts qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0."
+      "provenance": "Authored regression from documented flowchart class and style precedence; acceptance and semantic facts qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.3.0."
     },
     "invalid/gitgraph-missing-merge-parent.mmd": {
       "syntax": {
@@ -1021,7 +1021,7 @@
         "11": "rejected",
         "12": "rejected"
       },
-      "provenance": "Authored regression from documented GitGraph command and immediate-parent rules; acceptance and semantic facts qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0."
+      "provenance": "Authored regression from documented GitGraph command and immediate-parent rules; acceptance and semantic facts qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.3.0."
     },
     "invalid/gitgraph-invalid-merge-parent.mmd": {
       "syntax": {
@@ -1029,7 +1029,7 @@
         "11": "rejected",
         "12": "rejected"
       },
-      "provenance": "Authored regression from documented GitGraph command and immediate-parent rules; acceptance and semantic facts qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0."
+      "provenance": "Authored regression from documented GitGraph command and immediate-parent rules; acceptance and semantic facts qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.3.0."
     },
     "invalid/gitgraph-same-head-merge.mmd": {
       "syntax": {
@@ -1037,7 +1037,7 @@
         "11": "rejected",
         "12": "rejected"
       },
-      "provenance": "Authored regression from documented GitGraph command and immediate-parent rules; acceptance and semantic facts qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0."
+      "provenance": "Authored regression from documented GitGraph command and immediate-parent rules; acceptance and semantic facts qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.3.0."
     },
     "invalid/gitgraph-empty-merge-destination.mmd": {
       "syntax": {
@@ -1045,7 +1045,7 @@
         "11": "rejected",
         "12": "rejected"
       },
-      "provenance": "Authored regression from documented GitGraph command and immediate-parent rules; acceptance and semantic facts qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0."
+      "provenance": "Authored regression from documented GitGraph command and immediate-parent rules; acceptance and semantic facts qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.3.0."
     },
     "invalid/gitgraph-unknown-attribute.mmd": {
       "syntax": {
@@ -1053,7 +1053,7 @@
         "11": "rejected",
         "12": "rejected"
       },
-      "provenance": "Authored regression from documented GitGraph command and immediate-parent rules; acceptance and semantic facts qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0."
+      "provenance": "Authored regression from documented GitGraph command and immediate-parent rules; acceptance and semantic facts qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.3.0."
     },
     "invalid/gitgraph-invalid-order.mmd": {
       "syntax": {
@@ -1061,7 +1061,7 @@
         "11": "rejected",
         "12": "rejected"
       },
-      "provenance": "Authored regression from documented GitGraph command and immediate-parent rules; acceptance and semantic facts qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0."
+      "provenance": "Authored regression from documented GitGraph command and immediate-parent rules; acceptance and semantic facts qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.3.0."
     },
     "invalid/flowchart-forward-link-style.mmd": {
       "syntax": {
@@ -1069,7 +1069,7 @@
         "11": "rejected",
         "12": "rejected"
       },
-      "provenance": "Authored invalid-source regression applying linkStyle 0 before its edge declaration. Qualified against pinned official Mermaid 10.9.8 (explicit edge-bounds error), 11.17.2 and 12.2.0 (exact missing-edge style assignment error). Numeric selectors must refer to existing edges at declaration time; default remains valid before edges."
+      "provenance": "Authored invalid-source regression applying linkStyle 0 before its edge declaration. Qualified against pinned official Mermaid 10.9.8 (explicit edge-bounds error), 11.17.2 and 12.3.0 (exact missing-edge style assignment error). Numeric selectors must refer to existing edges at declaration time; default remains valid before edges."
     },
     "fixtures/flowchart-multiline-markdown.mmd": {
       "syntax": {
@@ -1109,7 +1109,7 @@
         "11": "rejected",
         "12": "rejected"
       },
-      "provenance": "Pinned Mermaid 10.9.8/11.17.2/12.2.0 rejection probe; missing block closure or noncontiguous packet range",
+      "provenance": "Pinned Mermaid 10.9.8/11.17.2/12.3.0 rejection probe; missing block closure or noncontiguous packet range",
       "notes": {
         "10": "Packet family is unavailable; this version establishes family rejection, not range validation.",
         "11": "Accepted packet family rejects a gap after bits 0-3.",
@@ -1122,7 +1122,7 @@
         "11": "rejected",
         "12": "rejected"
       },
-      "provenance": "Pinned Mermaid 10.9.8/11.17.2/12.2.0 rejection probe; missing block closure or noncontiguous packet range"
+      "provenance": "Pinned Mermaid 10.9.8/11.17.2/12.3.0 rejection probe; missing block closure or noncontiguous packet range"
     },
     "invalid/state-unclosed-composite.mmd": {
       "syntax": {
@@ -1130,7 +1130,7 @@
         "11": "rejected",
         "12": "rejected"
       },
-      "provenance": "Pinned Mermaid 10.9.8/11.17.2/12.2.0 rejection probe; missing block closure or noncontiguous packet range"
+      "provenance": "Pinned Mermaid 10.9.8/11.17.2/12.3.0 rejection probe; missing block closure or noncontiguous packet range"
     },
     "invalid/er-unclosed-attributes.mmd": {
       "syntax": {
@@ -1138,7 +1138,7 @@
         "11": "rejected",
         "12": "rejected"
       },
-      "provenance": "Pinned Mermaid 10.9.8/11.17.2/12.2.0 rejection probe; missing block closure or noncontiguous packet range"
+      "provenance": "Pinned Mermaid 10.9.8/11.17.2/12.3.0 rejection probe; missing block closure or noncontiguous packet range"
     },
     "fixtures/class-native-notes-generics.mmd": {
       "syntax": {
@@ -1146,7 +1146,7 @@
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored bounded fixture from https://mermaid.js.org/syntax/classDiagram.html; independently qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0 semantic databases."
+      "provenance": "Authored bounded fixture from https://mermaid.js.org/syntax/classDiagram.html; independently qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.3.0 semantic databases."
     },
     "fixtures/class-two-way.mmd": {
       "syntax": {
@@ -1154,7 +1154,7 @@
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored bounded fixture from https://mermaid.js.org/syntax/classDiagram.html; independently qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0 semantic databases."
+      "provenance": "Authored bounded fixture from https://mermaid.js.org/syntax/classDiagram.html; independently qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.3.0 semantic databases."
     },
     "fixtures/class-lollipop-retained.mmd": {
       "syntax": {
@@ -1162,7 +1162,7 @@
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored bounded fixture from https://mermaid.js.org/syntax/classDiagram.html; independently qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0 semantic databases.",
+      "provenance": "Authored bounded fixture from https://mermaid.js.org/syntax/classDiagram.html; independently qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.3.0 semantic databases.",
       "expectedByReference": {
         "10": "class-lollipop-retained.expected.10.json"
       },
@@ -1176,7 +1176,7 @@
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored bounded fixture from https://mermaid.js.org/syntax/stateDiagram.html; independently qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0 semantic databases."
+      "provenance": "Authored bounded fixture from https://mermaid.js.org/syntax/stateDiagram.html; independently qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.3.0 semantic databases."
     },
     "fixtures/state-nested-directions.mmd": {
       "syntax": {
@@ -1184,7 +1184,7 @@
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored bounded fixture from https://mermaid.js.org/syntax/stateDiagram.html; independently qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0 semantic databases."
+      "provenance": "Authored bounded fixture from https://mermaid.js.org/syntax/stateDiagram.html; independently qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.3.0 semantic databases."
     },
     "fixtures/er-alias-attributes.mmd": {
       "syntax": {
@@ -1192,7 +1192,7 @@
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored bounded fixture from https://mermaid.js.org/syntax/entityRelationshipDiagram.html; independently qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.2.0 semantic databases."
+      "provenance": "Authored bounded fixture from https://mermaid.js.org/syntax/entityRelationshipDiagram.html; independently qualified against pinned official Mermaid 10.9.8, 11.17.2 and 12.3.0 semantic databases."
     },
     "fixtures/sequence-lifetimes-boxes.mmd": {
       "syntax": {
@@ -1200,7 +1200,7 @@
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored participant boxes and creation/destruction lifecycle from https://mermaid.js.org/syntax/sequenceDiagram.html#actor-creation-and-destruction-v10-3-0; message-index and box membership facts qualified against pinned official 10.9.8, 11.17.2 and 12.2.0 engines."
+      "provenance": "Authored participant boxes and creation/destruction lifecycle from https://mermaid.js.org/syntax/sequenceDiagram.html#actor-creation-and-destruction-v10-3-0; message-index and box membership facts qualified against pinned official 10.9.8, 11.17.2 and 12.3.0 engines."
     },
     "fixtures/class-native-styles.mmd": {
       "syntax": {
@@ -1208,9 +1208,9 @@
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored Class style regression; pinned 10.9.8 syntax rejection and 11.17.2/12.2.0 syntax acceptance observed independently. Syntax acceptance does not establish rendered paint fidelity.",
+      "provenance": "Authored Class style regression; pinned 10.9.8 syntax rejection and 11.17.2/12.3.0 syntax acceptance observed independently. Syntax acceptance does not establish rendered paint fidelity.",
       "notes": {
-        "10": "Mermaid 10.9.8 rejects classDef on source line 3; its Class grammar has no classDef production. Versions 11.17.2/12.2.0 accept the source. Strict declarations for named, default and direct styles remain enforced; rendering is qualified separately."
+        "10": "Mermaid 10.9.8 rejects classDef on source line 3; its Class grammar has no classDef production. Versions 11.17.2/12.3.0 accept the source. Strict declarations for named, default and direct styles remain enforced; rendering is qualified separately."
       }
     },
     "fixtures/er-native-styles.mmd": {
@@ -1235,12 +1235,12 @@
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored Class lollipop regression; syntax and per-version node identities observed with pinned 10.9.8, 11.17.2 and 12.2.0.",
+      "provenance": "Authored Class lollipop regression; syntax and per-version node identities observed with pinned 10.9.8, 11.17.2 and 12.3.0.",
       "expectedByReference": {
         "10": "class-native-lollipops.expected.10.json"
       },
       "notes": {
-        "10": "Mermaid 10.9.8 exposes Port and Clock as classes; versions 11.17.2/12.2.0 retain internal interface endpoints. The 10 variant preserves the same three relationship facts and the shared native expectations."
+        "10": "Mermaid 10.9.8 exposes Port and Clock as classes; versions 11.17.2/12.3.0 retain internal interface endpoints. The 10 variant preserves the same three relationship facts and the shared native expectations."
       }
     },
     "fixtures/er-native-groups.mmd": {
@@ -1249,7 +1249,7 @@
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored ER group regression; pinned 10.9.8 rejects the source, 11.17.2 accepts it, and 12.2.0 matches the shared strict group facts.",
+      "provenance": "Authored ER group regression; pinned 10.9.8 rejects the source, 11.17.2 accepts it, and 12.3.0 matches the shared strict group facts.",
       "notes": {
         "11": "Mermaid 11.17.2 accepts this source and uses the shared strict group, entity and style expectation."
       }
@@ -1420,17 +1420,17 @@
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored State class, inline-class, composite and direct-style regression; pinned 10.9.8 rejects direct style, while 11.17.2/12.2.0 accept the source. Paints target top-level states; the composite is unstyled.",
+      "provenance": "Authored State class, inline-class, composite and direct-style regression; pinned 10.9.8 rejects direct style, while 11.17.2/12.3.0 accept the source. Paints target top-level states; the composite is unstyled.",
       "qualification": {
-        "syntax": "Observed 10.9.8 rejection; 11.17.2/12.2.0 acceptance.",
-        "structuralSemantics": "12.2.0 matches strict shared stateFacts; 11.17.2 is parser-only.",
+        "syntax": "Observed 10.9.8 rejection; 11.17.2/12.3.0 acceptance.",
+        "structuralSemantics": "12.3.0 matches strict shared stateFacts; 11.17.2 is parser-only.",
         "renderedStyleSemantics": "stateFacts does not project paints; rendered style fidelity is unqualified.",
         "legacyReferences": "10 syntax rejection; 11 parser-only, with no structural or style assertion."
       },
       "notes": {
         "10": "Mermaid 10.9.8 rejects direct style on source line 6. No structural or style equivalence is claimed.",
         "11": "Mermaid 11.17.2 accepts syntax. The explicit empty expectation is parser-only and asserts no structural, style or paint equivalence.",
-        "12": "Mermaid 12.2.0 matches the shared six-state, four-edge and direction stateFacts. This structural projection does not establish rendered style fidelity."
+        "12": "Mermaid 12.3.0 matches the shared six-state, four-edge and direction stateFacts. This structural projection does not establish rendered style fidelity."
       },
       "expectedByReference": {
         "11": "state-native-safe-styles.expected.11.json"
@@ -1490,7 +1490,7 @@
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored C4 configuration and typography regression using quoted named layout operands, matching c4-layout-config-native.mmd. Syntax checked with pinned Mermaid 10.9.8, 11.17.2 and 12.2.0; no rendering or pixel-equivalence result is claimed."
+      "provenance": "Authored C4 configuration and typography regression using quoted named layout operands, matching c4-layout-config-native.mmd. Syntax checked with pinned Mermaid 10.9.8, 11.17.2 and 12.3.0; no rendering or pixel-equivalence result is claimed."
     },
     "fixtures/wardley-native-overlays.mmd": {
       "syntax": {
@@ -1498,7 +1498,7 @@
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Pinned Mermaid 10.9.8, 11.17.2 and 12.2.0 parse outcomes observed on the retained exact source. The final boundary uses the decimal number required by the pinned Wardley lexer; all overlays and numeric values remain. Syntax observations do not establish rendered pixel parity."
+      "provenance": "Pinned Mermaid 10.9.8, 11.17.2 and 12.3.0 parse outcomes observed on the retained exact source. The final boundary uses the decimal number required by the pinned Wardley lexer; all overlays and numeric values remain. Syntax observations do not establish rendered pixel parity."
     },
     "fixtures/agentflow-family-shapes.mmd": {
       "syntax": {
@@ -1506,7 +1506,7 @@
         "11": "rejected",
         "12": "accepted"
       },
-      "provenance": "Authored native shape and style regression. Syntax checked with pinned Mermaid 10.9.8, 11.17.2 and 12.2.0; expectations record their actual parse results. No semantic or render comparison is implied."
+      "provenance": "Authored native shape and style regression. Syntax checked with pinned Mermaid 10.9.8, 11.17.2 and 12.3.0; expectations record their actual parse results. No semantic or render comparison is implied."
     },
     "fixtures/agentflow-native-surface-paints.mmd": {
       "syntax": {
@@ -1514,7 +1514,7 @@
         "11": "rejected",
         "12": "accepted"
       },
-      "provenance": "Authored native shape and style regression. Syntax checked with pinned Mermaid 10.9.8, 11.17.2 and 12.2.0; expectations record their actual parse results. No semantic or render comparison is implied."
+      "provenance": "Authored native shape and style regression. Syntax checked with pinned Mermaid 10.9.8, 11.17.2 and 12.3.0; expectations record their actual parse results. No semantic or render comparison is implied."
     },
     "fixtures/agentflow-style-settings.mmd": {
       "syntax": {
@@ -1522,7 +1522,7 @@
         "11": "rejected",
         "12": "accepted"
       },
-      "provenance": "Authored native shape and style regression. Syntax checked with pinned Mermaid 10.9.8, 11.17.2 and 12.2.0; expectations record their actual parse results. No semantic or render comparison is implied."
+      "provenance": "Authored native shape and style regression. Syntax checked with pinned Mermaid 10.9.8, 11.17.2 and 12.3.0; expectations record their actual parse results. No semantic or render comparison is implied."
     },
     "fixtures/flowchart-native-shape-catalog-a.mmd": {
       "syntax": {
@@ -1530,7 +1530,7 @@
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored native shape and style regression. Syntax checked with pinned Mermaid 10.9.8, 11.17.2 and 12.2.0; expectations record their actual parse results. No semantic or render comparison is implied."
+      "provenance": "Authored native shape and style regression. Syntax checked with pinned Mermaid 10.9.8, 11.17.2 and 12.3.0; expectations record their actual parse results. No semantic or render comparison is implied."
     },
     "fixtures/flowchart-native-shape-catalog-b.mmd": {
       "syntax": {
@@ -1538,7 +1538,7 @@
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored native shape and style regression. Syntax checked with pinned Mermaid 10.9.8, 11.17.2 and 12.2.0; expectations record their actual parse results. No semantic or render comparison is implied."
+      "provenance": "Authored native shape and style regression. Syntax checked with pinned Mermaid 10.9.8, 11.17.2 and 12.3.0; expectations record their actual parse results. No semantic or render comparison is implied."
     },
     "fixtures/flowchart-native-shape-catalog-c.mmd": {
       "syntax": {
@@ -1546,7 +1546,7 @@
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored native shape and style regression. Syntax checked with pinned Mermaid 10.9.8, 11.17.2 and 12.2.0; expectations record their actual parse results. No semantic or render comparison is implied."
+      "provenance": "Authored native shape and style regression. Syntax checked with pinned Mermaid 10.9.8, 11.17.2 and 12.3.0; expectations record their actual parse results. No semantic or render comparison is implied."
     },
     "fixtures/flowchart-native-shape-catalog-d.mmd": {
       "syntax": {
@@ -1554,7 +1554,7 @@
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored native shape and style regression. Syntax checked with pinned Mermaid 10.9.8, 11.17.2 and 12.2.0; expectations record their actual parse results. No semantic or render comparison is implied."
+      "provenance": "Authored native shape and style regression. Syntax checked with pinned Mermaid 10.9.8, 11.17.2 and 12.3.0; expectations record their actual parse results. No semantic or render comparison is implied."
     },
     "fixtures/flowchart-native-surface-paints.mmd": {
       "syntax": {
@@ -1562,7 +1562,7 @@
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored native shape and style regression. Syntax checked with pinned Mermaid 10.9.8, 11.17.2 and 12.2.0; expectations record their actual parse results. No semantic or render comparison is implied."
+      "provenance": "Authored native shape and style regression. Syntax checked with pinned Mermaid 10.9.8, 11.17.2 and 12.3.0; expectations record their actual parse results. No semantic or render comparison is implied."
     },
     "fixtures/flowchart-style-settings.mmd": {
       "syntax": {
@@ -1570,7 +1570,7 @@
         "11": "accepted",
         "12": "accepted"
       },
-      "provenance": "Authored native shape and style regression. Syntax checked with pinned Mermaid 10.9.8, 11.17.2 and 12.2.0; expectations record their actual parse results. No semantic or render comparison is implied."
+      "provenance": "Authored native shape and style regression. Syntax checked with pinned Mermaid 10.9.8, 11.17.2 and 12.3.0; expectations record their actual parse results. No semantic or render comparison is implied."
     }
   }
 }
