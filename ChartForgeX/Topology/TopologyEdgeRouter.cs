@@ -86,17 +86,73 @@ internal static partial class TopologyEdgeRouter {
             if (ported != null) candidates.Add(new RouteCandidate(corridor.Name + "-ported", ported));
         }
 
+        // Ports the layout inferred are a preference, not an authored side, so single-bend routes may replace them.
+        var unported = TopologyLayoutEngine.Clone(edge);
+        if ((edge.LayoutInference & TopologyEdgeLayoutInference.SourcePort) != 0) unported.SourcePort = TopologyEdgePort.Auto;
+        if ((edge.LayoutInference & TopologyEdgeLayoutInference.TargetPort) != 0) unported.TargetPort = TopologyEdgePort.Auto;
+        candidates.AddRange(SingleBendCandidates(chart, source, target, unported, routingUnits));
+
         return candidates
             .GroupBy(candidate => RouteKey(candidate.Points), StringComparer.Ordinal)
             .Select(group => group.OrderBy(candidate => candidate.Corridor, StringComparer.Ordinal).First())
             .Select(candidate => BuildPlan("ObstacleAvoidingOrthogonal", candidate.Corridor, candidate.Points, obstacles, existingSegments, edge, candidates.Count, chart.TextMeasurement, includeLabels, chart.RenderOptions?.ResolvedEdgeLabelScale ?? 1))
             // Best-effort obstacle clearance must not prefer a route that runs beside either endpoint.
             .OrderBy(plan => EndpointAttachmentFailures(plan.Points, source, target))
-            .ThenBy(plan => RouteScore(plan, portedEdge, readable, sourceCaption, targetCaption, routingUnits))
+            .ThenBy(plan => RouteScore(plan, IsSingleBend(plan.Diagnostics.Corridor) ? unported : portedEdge, readable, sourceCaption, targetCaption, routingUnits))
             .ThenBy(plan => RouteLength(plan.Points))
             .ThenBy(plan => RouteKey(plan.Points), StringComparer.Ordinal)
             .First();
     }
+
+    private const string SingleBendCorridor = "single-bend-";
+
+    private static bool IsSingleBend(string corridor) => corridor.StartsWith(SingleBendCorridor, StringComparison.Ordinal);
+
+    // Diagonal neighbours read best as one corner: leave the facing top or bottom and enter the facing side, or the
+    // reverse. The corridor candidates all leave through the side the centre ray hits, which adds a second bend and
+    // can share that side with another edge's terminal. Only unported edges get these candidates; scoring still
+    // rejects any that cross a node, a caption or a label.
+    private static IEnumerable<RouteCandidate> SingleBendCandidates(TopologyChart chart, TopologyNode source, TopologyNode target, TopologyEdge edge, double routingUnits) {
+        if (edge.SourcePort != TopologyEdgePort.Auto || edge.TargetPort != TopologyEdgePort.Auto ||
+            !string.IsNullOrWhiteSpace(edge.SourcePortId) || !string.IsNullOrWhiteSpace(edge.TargetPortId)) yield break;
+        var below = target.Y > source.Y + source.Height; var above = target.Y + target.Height < source.Y;
+        var right = target.X > source.X + source.Width; var left = target.X + target.Width < source.X;
+        if (!(below || above) || !(right || left)) yield break;
+        var sourceVertical = below ? TopologyEdgePort.Bottom : TopologyEdgePort.Top;
+        var sourceHorizontal = right ? TopologyEdgePort.Right : TopologyEdgePort.Left;
+        var targetVertical = below ? TopologyEdgePort.Top : TopologyEdgePort.Bottom;
+        var targetHorizontal = right ? TopologyEdgePort.Left : TopologyEdgePort.Right;
+        // A caption under an actor or tile owns that node's bottom side, so a leg may not leave or enter through it.
+        var sourceBottomFree = !CaptionBelow(source); var targetBottomFree = !CaptionBelow(target);
+        var start = BoundaryPoint(source, CenterX(target), CenterY(target), sourceVertical, routingUnits);
+        var end = BoundaryPoint(target, CenterX(source), CenterY(source), targetHorizontal, routingUnits);
+        if ((below ? end.Y > start.Y : end.Y < start.Y) && (right ? start.X < end.X : start.X > end.X) && (above || sourceBottomFree) && Clear(new(start.X, end.Y)))
+            yield return new RouteCandidate(SingleBendCorridor + "vertical", new List<ChartPoint> { start, new(start.X, end.Y), end });
+        start = BoundaryPoint(source, CenterX(target), CenterY(target), sourceHorizontal, routingUnits);
+        end = BoundaryPoint(target, CenterX(source), CenterY(source), targetVertical, routingUnits);
+        if ((right ? end.X > start.X : end.X < start.X) && (below ? start.Y < end.Y : start.Y > end.Y) && (below || targetBottomFree) && Clear(new(end.X, start.Y)))
+            yield return new RouteCandidate(SingleBendCorridor + "horizontal", new List<ChartPoint> { start, new(end.X, start.Y), end });
+
+        // Obstacle scoring accepts a leg that grazes a card's border; a single-bend route must keep a lane's clearance
+        // from every other card, or it reads as part of that card's outline.
+        bool Clear(ChartPoint corner) {
+            var clearance = EdgePortClearance * routingUnits;
+            foreach (var node in chart.Nodes) {
+                if (ReferenceEquals(node, source) || ReferenceEquals(node, target) || node.Id == source.Id || node.Id == target.Id
+                    || IsRouteBackdropArtwork(node) || EffectiveNodeDisplayMode(node, chart.RenderOptions ?? new TopologyRenderOptions()) == TopologyNodeDisplayMode.Hidden) continue;
+                var box = NodeRouteBox(chart, node).Expand(clearance);
+                if (SegmentEnters(start, corner, box) || SegmentEnters(corner, end, box)) return false;
+            }
+            return true;
+        }
+
+        bool CaptionBelow(TopologyNode node) => TopologyNodeShapeGeometry.IsActor(node) || CaptionBox(chart, node).Height > .5;
+    }
+
+    private const double EdgePortClearance = 10;
+
+    private static bool SegmentEnters(ChartPoint a, ChartPoint b, RouteBox box) =>
+        Math.Max(a.X, b.X) > box.Left && Math.Min(a.X, b.X) < box.Right && Math.Max(a.Y, b.Y) > box.Top && Math.Min(a.Y, b.Y) < box.Bottom;
 
     private static TopologyEdgePort BoundarySide(TopologyNode node, ChartPoint point, double routingUnits = 1) {
         var horizontal = Math.Abs(point.X - CenterX(node)) / (node.Width / 2 + 7 * routingUnits);

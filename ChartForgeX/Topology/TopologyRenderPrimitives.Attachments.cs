@@ -18,8 +18,21 @@ internal static partial class TopologyRenderPrimitives {
 
     internal static void AttachEndpointsToSurfaces(TopologyEdge edge, TopologyNode source, TopologyNode target, List<ChartPoint> points) {
         if (points.Count < 2) return;
-        AttachEndpoint(source, edge.SourcePort, edge.SourcePortId, points, 0, 1);
-        AttachEndpoint(target, edge.TargetPort, edge.TargetPortId, points, points.Count - 1, points.Count - 2);
+        // A port the layout only inferred yields to a route that reaches the node square-on through another side, such
+        // as a single-bend route from the obstacle router, which orthogonal edges can be promoted to. Diagonal and
+        // curved legs keep the inferred side.
+        var sourcePort = (edge.LayoutInference & TopologyEdgeLayoutInference.SourcePort) != 0 && CrossesPortAxis(edge.SourcePort, points[0], points[1])
+            ? TopologyEdgePort.Auto : edge.SourcePort;
+        var targetPort = (edge.LayoutInference & TopologyEdgeLayoutInference.TargetPort) != 0 && CrossesPortAxis(edge.TargetPort, points[points.Count - 1], points[points.Count - 2])
+            ? TopologyEdgePort.Auto : edge.TargetPort;
+        AttachEndpoint(source, sourcePort, edge.SourcePortId, points, 0, 1);
+        AttachEndpoint(target, targetPort, edge.TargetPortId, points, points.Count - 1, points.Count - 2);
+    }
+
+    private static bool CrossesPortAxis(TopologyEdgePort port, ChartPoint end, ChartPoint next) {
+        var vertical = Math.Abs(end.X - next.X) < .01 && Math.Abs(end.Y - next.Y) >= .01;
+        var horizontal = Math.Abs(end.Y - next.Y) < .01 && Math.Abs(end.X - next.X) >= .01;
+        return port is TopologyEdgePort.Left or TopologyEdgePort.Right ? vertical : port is TopologyEdgePort.Top or TopologyEdgePort.Bottom && horizontal;
     }
 
     internal static void AttachEndpoint(TopologyNode node, TopologyEdgePort port, string? portId, List<ChartPoint> points, int endpointIndex, int adjacentIndex) {

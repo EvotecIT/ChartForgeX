@@ -194,6 +194,8 @@ internal static partial class VisualMatrixCompiler {
             bounds = new ChartRect(bounds.Left, bounds.Top + heading, bounds.Width, Math.Max(0, bounds.Height - heading));
         }
         var textHeight = builder.MeasureText("Mg", style).Height; var swatch = Math.Min(12, Math.Max(0, bounds.Height - textHeight));
+        // Captions sit a little below the strip when the key has room, so they read as labels, not as its edge.
+        var captionTop = bounds.Top + swatch + Math.Min(context.Theme.Spacing / 4, Math.Max(0, bounds.Height - textHeight - swatch));
         var values = chart.Series.SelectMany(series => series.RenderPoints).Select(point => point.Y).ToArray();
         var zero = min >= 0 && values.Any(value => value == 0);
         var nonZero = values.Where(value => value != 0).ToArray();
@@ -219,7 +221,7 @@ internal static partial class VisualMatrixCompiler {
                 var box = new ChartRect(missingLeft + (missingWidth - context.Theme.Spacing / 2 - Math.Min(12, missingWidth)) / 2, bounds.Top, Math.Min(12, missingWidth), swatch);
                 using (VisualStateSceneTools.Mark(builder, "matrix-scale-missing", "heatmap-scale-missing", box, noData, new Dictionary<string, string> { ["data-cfx-empty"] = "true" }))
                     ChartMissingData.Paint(builder, box, 1, ChartMissingData.Look(chart.Options.HeatmapColorScale, colors), "heatmap-scale-missing-swatch", "heatmap-scale-missing-swatch");
-                VisualStateSceneTools.Text(builder, noData, new ChartRect(missingLeft, bounds.Top + swatch, Math.Max(0, missingWidth - context.Theme.Spacing / 2), textHeight),
+                VisualStateSceneTools.Text(builder, noData, new ChartRect(missingLeft, captionTop, Math.Max(0, missingWidth - context.Theme.Spacing / 2), textHeight),
                     style, "heatmap-scale-missing-label", "matrix-scale-missing-label", TextAlignment.Center);
             }
             if (zero) {
@@ -227,7 +229,7 @@ internal static partial class VisualMatrixCompiler {
                 var box = new ChartRect(scaleLeft + (zeroWidth - Math.Min(12, zeroWidth)) / 2, bounds.Top, Math.Min(12, zeroWidth), swatch);
                 using (VisualStateSceneTools.Mark(builder, "matrix-scale-zero", "heatmap-scale-zero", box, zeroLabel,
                     ScaleMetadata(0, ChartHeatmapSurface.Ratio(chart, 0, min, max)))) builder.Rect(box, blend.Color, radius: 1, paint: VisualChartPaint.Fill(blend.Paint));
-                VisualStateSceneTools.Text(builder, zeroLabel, new ChartRect(scaleLeft, bounds.Top + swatch, zeroWidth, textHeight),
+                VisualStateSceneTools.Text(builder, zeroLabel, new ChartRect(scaleLeft, captionTop, zeroWidth, textHeight),
                     style, "heatmap-scale-zero-label", "matrix-scale-zero-label", TextAlignment.Center);
             }
             if (nonZero.Length == 0) return;
@@ -244,12 +246,12 @@ internal static partial class VisualMatrixCompiler {
                 using (VisualStateSceneTools.Mark(builder, "matrix-scale-" + index, "heatmap-scale-step", box, label,
                     ScaleMetadata(value, ChartHeatmapSurface.Ratio(chart, value, min, max)))) builder.Rect(box, blend.Color, radius: 1, paint: VisualChartPaint.Fill(blend.Paint));
             }
-            VisualStateSceneTools.Text(builder, captions[0], new ChartRect(area.Left, bounds.Top + swatch, area.Width / 2, textHeight), style, "heatmap-scale-label", "matrix-scale-low");
-            VisualStateSceneTools.Text(builder, captions[captions.Length - 1], new ChartRect(area.Left + area.Width / 2, bounds.Top + swatch, area.Width / 2, textHeight), style, "heatmap-scale-label", "matrix-scale-high", TextAlignment.Right);
+            VisualStateSceneTools.Text(builder, captions[0], new ChartRect(area.Left, captionTop, area.Width / 2, textHeight), style, "heatmap-scale-label", "matrix-scale-low");
+            VisualStateSceneTools.Text(builder, captions[captions.Length - 1], new ChartRect(area.Left + area.Width / 2, captionTop, area.Width / 2, textHeight), style, "heatmap-scale-label", "matrix-scale-high", TextAlignment.Right);
             if (chart.Options.ShowHeatmapScaleStepLabels && floor != max)
                 VisualColorScaleLegendScene.StepLabels(builder, steps.Select(value => area.Left + area.Width * ChartMath.Normalize(value, floor, max)).ToArray(), captions, style,
-                    new ChartRect(area.Left, bounds.Top + swatch, area.Width, textHeight), builder.MeasureText(captions[0], style).Width,
-                    builder.MeasureText(captions[captions.Length - 1], style).Width, context.Theme.Spacing / 2, "heatmap-scale");
+                    new ChartRect(area.Left, captionTop, area.Width, textHeight), builder.MeasureText(captions[0], style).Width,
+                    builder.MeasureText(captions[captions.Length - 1], style).Width, context.Theme.Spacing, "heatmap-scale");
         }
         Dictionary<string, string> ScaleMetadata(double value, double ratio) {
             var metadata = new Dictionary<string, string> { ["data-cfx-value"] = VisualStateSceneTools.Number(value) };

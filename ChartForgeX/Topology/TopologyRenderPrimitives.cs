@@ -92,11 +92,12 @@ internal static partial class TopologyRenderPrimitives {
         return kind == TopologyLegendItemKind.Edge ? "edge" : kind == TopologyLegendItemKind.Node ? "node" : "status";
     }
 
+    // Edges are solid unless their status reports a problem or a muted link. Unknown is the default edge status and
+    // the neutral colour hosts use for configured links, so it stays solid; dashes are kept for states worth noticing.
     public static string EdgeDash(TopologyHealthStatus status) {
         return status switch {
             TopologyHealthStatus.Warning => "8 5",
             TopologyHealthStatus.Critical => "8 5",
-            TopologyHealthStatus.Unknown => "5 6",
             TopologyHealthStatus.Disabled => "3 6",
             _ => "none"
         };
@@ -110,7 +111,6 @@ internal static partial class TopologyRenderPrimitives {
             _ => edge.Status switch {
                 TopologyHealthStatus.Warning => (true, 8, 5),
                 TopologyHealthStatus.Critical => (true, 8, 5),
-                TopologyHealthStatus.Unknown => (true, 5, 6),
                 TopologyHealthStatus.Disabled => (true, 3, 6),
                 _ => (false, 0, 0)
             }
