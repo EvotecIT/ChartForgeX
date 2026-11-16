@@ -1,0 +1,16 @@
+{{~ ## Before/after shortcode (cfx-compare) stacks two renders of one input, before above after.
+     name="topology-edges" reads static/whats-new/<name>-{before,after}-{light,dark}.png; dark=false uses the light
+     files in both themes. w and h are the render size; caption describes the change. ## ~}}
+{{~ a = shortcode.attrs; base = "/whats-new/" + a.name; modes = a.dark == "false" ? ["light"] : ["light", "dark"] ~}}
+<figure class="cfx-figure cfx-figure--compare">
+<div class="cfx-figure__plate">
+{{~ for side in ["before", "after"] ~}}
+<div class="cfx-compare__side"><span class="cfx-compare__label">{{ side == "before" ? "Before" : "After" }}</span>
+{{~ for mode in modes; src = base + "-" + side + "-" + mode + ".png"; cls = modes.size > 1 ? " cfx-only-" + mode : "" ~}}
+<a class="cfx-figure__open{{ cls }}" href="{{ src }}" aria-label="Open the {{ side }} render full size"><img src="{{ src }}" width="{{ a.w }}" height="{{ a.h }}" loading="lazy" decoding="async" alt="{{ side == "before" ? "Before" : "After" }}: {{ a.alt ?? a.caption }}" /></a>
+{{~ end ~}}
+</div>
+{{~ end ~}}
+</div>
+<figcaption>{{ a.caption }}</figcaption>
+</figure>

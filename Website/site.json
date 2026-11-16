@@ -335,6 +335,13 @@
         ]
       },
       {
+        "Match": "/whats-new/**",
+        "Bundles": [
+          "docs",
+          "pages"
+        ]
+      },
+      {
         "Match": "/playground/**",
         "Bundles": [
           "docs",
@@ -511,6 +518,10 @@
           {
             "Title": "PowerShell",
             "Url": "/powershell/"
+          },
+          {
+            "Title": "What's new",
+            "Url": "/whats-new/"
           }
         ]
       },

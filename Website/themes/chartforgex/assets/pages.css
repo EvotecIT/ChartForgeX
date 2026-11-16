@@ -230,6 +230,11 @@
 .cfx-figure figcaption::before { content: ""; flex: none; width: 2px; margin-block: 3px; background: var(--cfx-accent); }
 .cfx-figure--strip .cfx-figure__plate { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .cfx-figure--strip .cfx-figure__plate img { border: 1px solid var(--cfx-line); border-radius: 6px; }
+.cfx-figure--compare .cfx-figure__plate { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+.cfx-figure--compare .cfx-figure__plate img { border: 1px solid var(--cfx-line); border-radius: 6px; }
+.cfx-compare__side { display: grid; gap: 6px; min-width: 0; }
+.cfx-compare__label { color: var(--cfx-ink-3); font-size: .8125rem; font-weight: 640; }
+.cfx-compare__side:last-child .cfx-compare__label { color: var(--cfx-accent); }
 
 @media (max-width: 900px) {
   .cfx-atlas__head { grid-template-columns: minmax(0, 1fr); }
