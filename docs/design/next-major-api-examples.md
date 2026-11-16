@@ -39,7 +39,7 @@ After:
 var chart = Chart.Line("Weekly orders", c => c
     .Subtitle("Completed orders across the working week")
     .Size(800, 440)
-    .X("Day", x => x.Labels("Mon", "Tue", "Wed", "Thu", "Fri"))
+    .X("Day", x => x.Labels(new[] { "Mon", "Tue", "Wed", "Thu", "Fri" }))
     .Y("Orders")
     .Series("Completed", new double[] { 28, 34, 41, 48, 32 })
     .Series("Target", new double[] { 30, 35, 40, 45, 50 }));
@@ -129,7 +129,7 @@ After:
 
 ```csharp
 var chart = Chart.Bar("Orders by region", c => c
-    .X(x => x.Labels("North", "South", "East", "West"))
+    .X(x => x.Labels(new[] { "North", "South", "East", "West" }))
     .Series("Orders", new double[] { 28, 34, 41, 48 }));
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(800, 440)),
@@ -163,7 +163,7 @@ var report = Chart.Grid("Order summary", g => {
     g.Panel(Chart.Line("Orders over time", c =>
         c.Series("Orders", new double[] { 28, 34, 41, 48, 32 })));
     g.Panel(Chart.Bar("Orders by region", c => c
-        .X(x => x.Labels("North", "South", "East"))
+        .X(x => x.Labels(new[] { "North", "South", "East" }))
         .Series("Orders", new double[] { 52, 38, 46 })));
 });
 report.Save("summary.html");
@@ -226,7 +226,7 @@ After:
 
 ```csharp
 var chart = Chart.Line("Weekly orders", c => c
-    .X(x => x.Labels("Mon", "Tue", "Wed", "Thu", "Fri"))
+    .X(x => x.Labels(new[] { "Mon", "Tue", "Wed", "Thu", "Fri" }))
     .Series("Orders", new double[] { 28, 34, 41, 48, 32 }));
 chart.SaveInteractiveHtml("explore.html", html => html
     .Interaction(i => i.Tooltips(true).Selection(true).KeyboardNavigation(true).Export(true)));
@@ -278,7 +278,7 @@ After:
 ```csharp
 return Chart.Heatmap("Control Coverage Matrix", c => c
     .Subtitle("Heatmap rows for comparing domain groups across security controls")
-    .X("Control", x => x.Labels("SPF", "DMARC", "DNSSEC", "MTA-STS", "TLS-RPT", "CT"))
+    .X("Control", x => x.Labels(new[] { "SPF", "DMARC", "DNSSEC", "MTA-STS", "TLS-RPT", "CT" }))
     .Y("Domain group").Theme(VisualTheme.Report()).Mode(mode).Size(980, 560)
     .Legend(l => l.Visible(false)).Labels(l => l.Visible(true))
     .ColorScale(scale => scale.Kind(ColorScaleKind.Semantic))
@@ -526,7 +526,7 @@ After, preserving the wide recipe's values totaling 1,000:
 
 ```csharp
 var chart = Chart.Donut("Services contributing to revenue", c => c
-    .X(x => x.Labels("Subscriptions", "Consulting", "Support", "Licenses", "Training", "Other"))
+    .X(x => x.Labels(new[] { "Subscriptions", "Consulting", "Support", "Licenses", "Training", "Other" }))
     .Values(v => v.Format(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture)))
     .Series("Revenue", new double[] { 312, 241, 187, 133, 79, 48 }, s => s.Id("revenue")));
 ```

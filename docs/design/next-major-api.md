@@ -9,7 +9,7 @@ The [before/after examples](next-major-api-examples.md) are part of this design.
 ## Decisions
 
 1. `Chart.Line("Title", chart => ...)` is the normal entry point. `ChartForgeX.Chart` becomes the factory facade; typed models replace the current all-family `Core.Chart` model. Every supported family has a discoverable factory; `Chart.Mixed` accepts compatible typed series. `ChartForgeX.Diagram` supplies `Topology`, `Flow` and `Sequence` for native diagrams.
-2. Model properties are the source of truth. Generated extension methods on the models provide `Title`, `Size`, `X`, `Series`, `Legend` and `Labels`. There are no `With*`, `Configure*`, or `Add*` methods on mutable models; `With*` remains only on immutable values.
+2. Model properties are the source of truth. Fluent methods on the models provide `Title`, `Size`, `X`, `Series`, `Legend` and `Labels`: generated from the properties, with handwritten compound conveniences such as `Size(width, height)`. There are no `With*`, `Configure*`, or `Add*` methods on mutable models; `With*` remains only on immutable values.
 3. Typed observations, IDs, detached preparation, and keyed updates survive. I am changing authoring, not replacing the prepared rendering architecture or flattening specialized data into X/Y points.
 4. Themes consume the shared visual-token contract. ChartForgeX stays free of runtime package dependencies and has no runtime dependency on another engine.
 5. Browser behavior stays in `ChartForgeX.Interactivity.Html`. Static HTML remains script-free unless an adapter is explicitly selected.
@@ -29,7 +29,7 @@ I settled these three choices on 2 November 2026:
 var chart = Chart.Line("Weekly orders", c => c
     .Subtitle("Completed orders across the working week")
     .Size(800, 440)
-    .X("Day", x => x.Labels("Mon", "Tue", "Wed", "Thu", "Fri"))
+    .X("Day", x => x.Labels(new[] { "Mon", "Tue", "Wed", "Thu", "Fri" }))
     .Y("Orders", y => y.Bounds(0, 60))
     .Series("Completed", new double[] { 28, 34, 41, 48, 32 },
         s => s.Id("completed-orders"))
@@ -106,7 +106,7 @@ Explicit IDs are required for live replacement, linking and cross-view state. St
 
 ```csharp
 var mixed = Chart.Mixed("Orders and latency", c => {
-    c.X("Day", x => x.Labels("Mon", "Tue", "Wed"));
+    c.X("Day", x => x.Labels(new[] { "Mon", "Tue", "Wed" }));
     c.Y("Orders", y => y.Id("orders").Ticks(t => t.Integer(true)));
     c.Axis("latency", a => a.Side(AxisSide.Right).Title("Latency (ms)")
         .Bounds(0, 100).Ticks(t => t.Values(0, 25, 50, 75, 100)));
@@ -127,7 +127,7 @@ Legend controls use `Items`, `Symbol`, `SymbolSize`, `Formatter`, `MaximumRows`,
 
 ```csharp
 var sales = Chart.Bar("Monthly orders", c => {
-    c.X("Month", x => x.Labels("Jan", "Feb", "Mar", "Apr"));
+    c.X("Month", x => x.Labels(new[] { "Jan", "Feb", "Mar", "Apr" }));
     c.Series("Sales", new double[] { 62, 78, 71, 91 }, s => s
         .Id("sales")
         .ItemStyle(item => item.Datum.Y >= 90
@@ -472,7 +472,7 @@ Future acceptance checks belong to implementation, not this documentation change
 
 ### Short migration note to ship
 
-> I replaced prefix-based chart configuration with typed property models and generated fluent methods on those models. Start with `Chart.Line("Title", c => ...)` instead of `Chart.Create().WithTitle(...).AddLine(...)`; use `X`/`Y`, nested `Legend`/`Labels` settings, and `Series` children. Keep explicit IDs for updates and linked views. Build diagrams with `Diagram.Topology`, `Flow` or `Sequence`, and pass a shared `VisualTheme` with an explicit `ThemeMode`. Existing prepared-output and file-export operations keep their purpose. Update the ChartForgeX packages and consumers together; the old authoring methods have been removed.
+> I replaced prefix-based chart configuration with typed property models and generated fluent methods on those models. Start with `Chart.Line("Title", c => ...)` instead of `Chart.Create().WithTitle(...).AddLine(...)`; use `X`/`Y`, nested `Legend`/`Labels` settings, and `Series` children. Keep explicit IDs for updates and linked views. Build diagrams with `Diagram.Topology`, `Flow` or `Sequence`, and pass a shared `Theme` (`Theme.Default` replaces `VisualTheme.Graphite()`) with an explicit `ThemeMode`. Existing prepared-output and file-export operations keep their purpose. Update the ChartForgeX packages and consumers together; the old authoring methods have been removed.
 
 A one-off migration script may rename mechanical settings, but it must leave mixed-chart binding, sequence indexes, per-item IDs, callbacks and theme intake for explicit review. It is a development aid, not a runtime bridge.
 
