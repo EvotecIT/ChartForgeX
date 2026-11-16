@@ -49,6 +49,11 @@ public sealed class TopologySiblingGrouping {
 
 /// <summary>One member row of a sibling group card, captured before the member is removed from the layout.</summary>
 internal sealed class TopologySiblingMember {
+    internal TopologySiblingMember(string id, string label, string? subtitle, string? badge, TopologyHealthStatus status, TopologyNodeKind kind,
+        string? iconId, string? symbol, string? color, string? href, string? tooltip) {
+        Id = id; Label = label; Subtitle = subtitle; Badge = badge; Status = status; Kind = kind;
+        IconId = iconId; Symbol = symbol; Color = color; Href = href; Tooltip = tooltip;
+    }
     internal TopologySiblingMember(TopologyNode node) {
         Id = node.Id; Label = node.Label; Subtitle = node.Subtitle; Badge = node.Badge; Status = node.Status;
         Kind = node.Kind; IconId = node.IconId; Symbol = node.Symbol; Color = node.Color; Href = node.Href; Tooltip = node.Tooltip;
@@ -73,6 +78,9 @@ internal sealed class TopologySiblingCard {
         ParentId = parentId; Members = members; Collapsed = collapseCount > 0 && members.Count >= collapseCount;
         VisibleCount = members.Count <= maximumRows ? members.Count : maximumRows - 1;
     }
+    internal TopologySiblingCard(string parentId, IReadOnlyList<TopologySiblingMember> members, int visibleCount, bool collapsed) {
+        ParentId = parentId; Members = members; VisibleCount = visibleCount; Collapsed = collapsed;
+    }
     internal string ParentId { get; }
     internal IReadOnlyList<TopologySiblingMember> Members { get; }
     /// <summary>Whether the card starts collapsed: only its header is laid out and painted.</summary>
@@ -92,7 +100,7 @@ internal static class TopologySiblingGroupingLayout {
         var pinned = PinnedIds(chart, view, options);
         // Leaves whose links differ in direction or kind keep separate cards, so no relationship is lost to the aggregate edge.
         var buckets = new Dictionary<(string Parent, TopologyNodeKind Kind, string? Group, string Links), List<TopologyNode>>();
-        foreach (var leaf in Leaves(chart, nodes, pinned)) {
+        foreach (var leaf in Leaves(chart, nodes, pinned, node => (node.DisplayMode ?? options?.NodeDisplayMode) == TopologyNodeDisplayMode.Hidden)) {
             // A view that filters by health judges every member by its own status, so only same-status leaves may share a card.
             var byStatus = view?.HealthStatuses.Count > 0;
             var links = string.Join(";", leaf.Edges.Select(edge => (edge.SourceNodeId == leaf.Parent ? "out" : "in") + ":" + edge.Direction + ":" + edge.Kind
@@ -164,7 +172,7 @@ internal static class TopologySiblingGroupingLayout {
     }
 
     // A leaf has at least one edge and every edge goes to the same other node, which is its parent.
-    private static IEnumerable<(TopologyNode Node, string Parent, IReadOnlyList<TopologyEdge> Edges)> Leaves(TopologyChart chart, IReadOnlyDictionary<string, TopologyNode> nodes, ISet<string> pinned) {
+    private static IEnumerable<(TopologyNode Node, string Parent, IReadOnlyList<TopologyEdge> Edges)> Leaves(TopologyChart chart, IReadOnlyDictionary<string, TopologyNode> nodes, ISet<string> pinned, Func<TopologyNode, bool>? hidden = null) {
         var incident = new Dictionary<string, List<TopologyEdge>>(StringComparer.Ordinal);
         foreach (var edge in chart.Edges) {
             foreach (var end in new[] { edge.SourceNodeId, edge.TargetNodeId }.Distinct(StringComparer.Ordinal)) {
@@ -173,6 +181,8 @@ internal static class TopologySiblingGroupingLayout {
             }
         }
         foreach (var node in chart.Nodes) {
+            // A hidden leaf is an authored routing anchor; grouping must not turn it into a visible row.
+            if (hidden != null && hidden(node)) continue;
             if (pinned.Contains(node.Id) || node.TableContent != null || node.SiblingGroup != null || !incident.TryGetValue(node.Id, out var edges)) continue;
             if (chart.Groups.Any(group => string.Equals(group.Id, node.Id, StringComparison.Ordinal))) continue;
             var parents = edges.Select(edge => edge.SourceNodeId == node.Id ? edge.TargetNodeId : edge.SourceNodeId).Distinct(StringComparer.Ordinal).ToArray();
@@ -222,7 +232,7 @@ internal static class TopologySiblingGroupingLayout {
         void Place(TopologyNode node, double along, double rank) { if (vertical) { node.X = along; node.Y = rank; } else { node.Y = along; node.X = rank; } }
         var nodes = chart.Nodes.GroupBy(node => node.Id, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
         var pinned = PinnedIds(chart);
-        foreach (var family in Leaves(chart, nodes, pinned).GroupBy(leaf => leaf.Parent, StringComparer.Ordinal).ToArray()) {
+        foreach (var family in Leaves(chart, nodes, pinned, node => (node.DisplayMode ?? chart.RenderOptions?.NodeDisplayMode) == TopologyNodeDisplayMode.Hidden).GroupBy(leaf => leaf.Parent, StringComparer.Ordinal).ToArray()) {
             var parent = nodes[family.Key];
             var children = family.Select(leaf => leaf.Node).Where(node => sign * (Rank(node) - Rank(parent)) > 0)
                 .OrderBy(node => sign * Rank(node)).ThenBy(Along).ToArray();
