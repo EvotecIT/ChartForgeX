@@ -94,7 +94,7 @@ public sealed class EnhanceCanopyXBrowserTests {
         Assert.All(filters, f => Assert.Equal("week", f.GetProperty("source").GetString()));
         Assert.Equal("2026-10-29T00:00:00.000Z", filters[0].GetProperty("values")[0].GetString());
         Assert.Equal("Update", filters[1].GetProperty("values")[0].GetString());
-        Assert.Equal("Filtered by Changes this week: Thu 29; Updates", Assert.Single(Strings(state.GetProperty("chips"))));
+        Assert.Equal("Filtered by Changes this week: Thu 29 · Updates", Assert.Single(Strings(state.GetProperty("chips"))));
         Assert.Equal(keys.OrderBy(k => k, StringComparer.Ordinal), Strings(state.GetProperty("rows")).OrderBy(k => k, StringComparer.Ordinal));
         Assert.Equal(1, state.GetProperty("week").GetProperty("selected").GetInt32());
 
