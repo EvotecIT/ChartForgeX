@@ -40,7 +40,7 @@ Diagnostics carry stable codes and point at the exact source location. Invalid n
 | Tree view | `treeView-beta`, `treeView` | Indented and box-drawing trees, labels, descriptions, directory markers, classes, icons and `showIcons`. | `TreeViewBlock` | External classes, icon packs and file-extension icon maps. |
 | Event modeling | `eventmodeling` | Frames and resets, sources, namespaces, JSON and schema facts and data references, laid out in swimlanes. `ToDataTable` gives a table view. | `TopologyChart` | Additional entity, note and given-when-then forms; theme variables. |
 | Kanban | `kanban` | Columns and tasks with assignee, ticket, priority, label, ticket links, padding and section width. | `TopologyChart` | Arbitrary CSS and external icons. A column can grow wider than requested to fit its cards. |
-| Pie | `pie` | Title, `showData` and slices. | `Chart` pie | Source styling and label placement options. |
+| Pie | `pie` | Title, `showData`, slices and the `pie1`..`pie12` and `pieTitleTextColor` theme variables. | `Chart` pie | `pieStrokeColor`, `pieOuterStrokeColor`, `pieSectionTextColor` and the other pie style variables, and label placement options. |
 | Journey | `journey` | Sections, tasks, one-to-five scores and actors. | `JourneyDiagramBlock` | Very dense journeys can crowd the fixed frame. |
 | Timeline | `timeline` | Sections, periods, multiline events and direction. Date-like labels stay text. | `TimelineDiagramBlock` | Custom theming. Long captions are shortened, with the full text kept in the SVG title. |
 | Quadrant | `quadrantChart` | Title, axis labels, quadrant labels, points, point and class styles, dimensions and theme colours. Render options add borders, caption anchors and full axes. | `Chart` scatter with quadrants | Some compact layouts and remaining settings. |
@@ -64,12 +64,34 @@ Agentflow instructions, models and connector data never run. ZenUML has its own 
 | --- | --- | --- |
 | Titles | An explicit title wins, then the diagram's `title` statement, then the front-matter title. Subtitles are opt-in. | Some additional title syntax. |
 | Versions | Examples are checked against Mermaid 10.9.8, 11.17.2 and 12.2.0, including older Gantt calendars and Mermaid 10's ER directions. | Complete compatibility with every release. |
-| Configuration and themes | Front matter and `%%{init}%%` directives, with directives winning. `dark` and `default` themes, font stacks, `themeVariables.fontFamily` and `fontSize` apply to charts, topology, sequence and blocks; Radar also maps its colours. | Broader YAML, more theme variables and family options. |
+| Configuration and themes | Front matter and `%%{init}%%` directives, with directives winning. `dark` and `default` select the native light and dark themes. Font stacks, `themeVariables.fontFamily` and `fontSize` apply to charts, topology, sequence and blocks. See [theme mapping](#theme-mapping) for the presets and colour variables. | Broader YAML, more theme variables and family options. |
 | Mermaid 12 appearance | ChartForgeX draws its own layout. It doesn't run ELK or copy Mermaid's default browser look. | Mapping `layout`, `look` and `defaultRenderer`. |
 | Labels and styles | Flowchart, Class, State, ER and Requirement share `fill`, `stroke` and `color` styles and classes, and draw **bold**, *italic* and line breaks. Repeated `linkStyle` replaces the earlier one, as in Mermaid. | Rich text in the other families. HTML, math and unsupported CSS stay literal or are ignored with a warning. |
 | Layout | Shared topology layout draws markers, groups and routing for the graph families. | Some ports, loops, parallel edges and dense label routing. |
 | Safety | Static output contains no script. `MermaidRenderOptions` sets presentation defaults, warning handling, size and depth limits, and cancellation for direct and Markdown-fence rendering. | Cancellation can't stop a layout that is already running. |
 | Outputs | Every rendering family produces SVG, PNG, Markdown fences and portable JSON, and works with Native AOT on every supported framework. | |
+
+## Theme mapping
+
+Mermaid themes and `themeVariables` map onto the ChartForgeX theme where there is a clear equivalent. Anything else stays in the source, is reported as a warning and is drawn with the native theme.
+
+| Source | Where it applies | How it maps |
+| --- | --- | --- |
+| `default`, `dark` | Every family | The native Graphite theme in light or dark mode. |
+| `base`, `forest`, `neutral`, `neo`, `neo-dark`, `redux`, `redux-dark`, `redux-color`, `redux-dark-color` | Flowchart, Swimlane, Agentflow, Class, State, ER and Sequence | The preset's resolved colours replace the theme's canvas, surfaces, borders, lines and text. Other families take the preset's canvas and text but keep their native series colours. Outside Sequence, a preset reports one warning that it is a static approximation of Mermaid's look. |
+| `background`, `primaryColor`, `primaryTextColor`, `primaryBorderColor`, `secondaryColor`, `tertiaryColor`, `lineColor`, `textColor` | Every family | Canvas, node surface, secondary surface, text, border, and axis and connector colours. |
+| `nodeBorder`, `nodeTextColor`, `clusterBkg`, `clusterBorder`, `titleColor`, `edgeLabelBackground`, `mainBkg`, `darkMode` | Flowchart, Swimlane, Agentflow | Node, subgraph, heading and edge-label colours. |
+| Actor, signal, note, activation, label-box and sequence-number colours | Sequence | The matching participant, message, note and block colours. |
+| `cScale0`..`cScale11`, `titleColor` | Radar | Series and title colours. |
+| `pie1`..`pie12`, `pieTitleTextColor` | Pie | Slice and title colours. |
+| Quadrant, XY chart, Requirement and Cynefin colour variables | Their family | Their family's own colours. |
+
+Not mapped yet, so they warn and keep the native look:
+
+- Mindmap section colours (`cScale*` on mindmaps) and the presets' mindmap palettes.
+- Gantt `taskBkgColor`, `taskBorderColor`, `sectionBkgColor`, `critBkgColor`, `doneTaskBkgColor`, `activeTaskBkgColor` and grid colours.
+- Journey, Timeline, Git graph, Kanban, Treemap, Sankey and Packet colour variables beyond the shared ones above.
+- `fontWeight`, gradients, shadows other than Sequence's, and the `look`-specific surface effects outside Sequence.
 
 ## Shared Owners
 

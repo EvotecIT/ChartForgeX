@@ -163,6 +163,8 @@ public sealed partial class MermaidParser {
             configuration.RadarTheme = MermaidRadarThemeSettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
             configuration.ChartColors = MermaidChartColorSettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
         }
+        if (kind == MermaidDiagramKind.Pie)
+            configuration.ChartColors = MermaidChartColorSettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message), pie: true);
         if (kind == MermaidDiagramKind.XYChart)
             configuration.XYChart = MermaidXYChartSettings.Read(configuration, (setting, message) => ConfigurationError(result, setting.Span, message));
         if (kind == MermaidDiagramKind.Sankey)
