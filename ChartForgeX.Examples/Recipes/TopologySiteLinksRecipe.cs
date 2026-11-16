@@ -7,7 +7,8 @@ using ChartForgeX.Topology;
 public static class TopologySiteLinksRecipe {
     /// <summary>Creates the site map in either theme mode.</summary>
     public static TopologyChart Create(string variant = "sites", VisualThemeMode mode = VisualThemeMode.Light) {
-        if (variant != "sites") throw new ArgumentOutOfRangeException(nameof(variant));
+        // "wide" is the shared recipe registry default; this example has a single wide site map.
+        if (variant is not ("sites" or "wide")) throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = TopologyChart.Create().WithId("ad-site-links").WithTitle("Contoso replication sites")
             .WithSubtitle("Domain controllers grouped per site; links show transports, cost and evidence")
             .WithTheme(VisualTheme.Graphite(), mode).WithViewport(1360, 720, 24)

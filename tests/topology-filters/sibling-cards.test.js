@@ -7,8 +7,8 @@ const { JSDOM } = require('../mermaid-conformance/node_modules/jsdom');
 const assets = path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets/topology-interaction.source');
 const lifetimeSource = fs.readFileSync(path.resolve(assets, '../adapter-lifetime.js'), 'utf8');
 
-function fixture(edges, collapsed = false) {
-  const dom = new JSDOM(`<div id="chart"><svg>
+function fixture(edges, collapsed = false, clip = null) {
+  const dom = new JSDOM(`<div id="chart"><svg>${clip ? `<clipPath id="clip"><rect x="0" y="0" width="400" height="${clip}"/></clipPath>` : ''}<g ${clip ? 'clip-path="url(#clip)"' : ''}>
     <g data-cfx-role="topology-node" data-node-id="card" data-node-label="Domain controllers" data-sibling-count="3"
        data-sibling-expanded="${collapsed ? 'false' : 'true'}" data-sibling-collapsed-height="36" data-sibling-expanded-height="110">
       <rect x="10" y="100" width="210" height="${collapsed ? 36 : 110}" data-cfx-role="topology-node-surface"/>
@@ -19,7 +19,7 @@ function fixture(edges, collapsed = false) {
     </g>
     <g data-cfx-role="topology-node" data-node-id="neighbour"></g>
     ${edges.map((edge, index) => `<g data-cfx-role="topology-edge" data-edge-id="e${index}" data-source-node-id="hub" data-target-node-id="card" data-route-end-y="${edge}"></g>`).join('')}
-  </svg></div>`, { runScripts: 'outside-only' });
+  </g></svg></div>`, { runScripts: 'outside-only' });
   const wrapper = dom.window.document.querySelector('#chart');
   dom.window.eval(lifetimeSource);
   installUiText(dom.window);
@@ -103,5 +103,15 @@ test('a card that starts collapsed opens over its neighbours on demand', () => {
     assert.equal(view.rows.hasAttribute('opacity'), false);
     assert.equal(view.rows.style.display, '');
     assert.equal(view.card.parentNode.lastElementChild, view.card);
+  } finally { view.close(); }
+});
+
+test('an opened card near the bottom of the clip is lifted so every row stays visible', () => {
+  const view = fixture([100], true, 180);
+  try {
+    view.header.dispatchEvent(new view.window.MouseEvent('click', { bubbles: true }));
+    assert.equal(view.card.getAttribute('transform'), 'translate(0 -30)');
+    view.header.dispatchEvent(new view.window.MouseEvent('click', { bubbles: true }));
+    assert.equal(view.card.hasAttribute('transform'), false);
   } finally { view.close(); }
 });

@@ -394,14 +394,6 @@ public enum HtmlChartText {
     ExplorerRelatedNodes,
     /// <summary>UI text: Related edges</summary>
     ExplorerRelatedEdges,
-    /// <summary>UI text: Evidence</summary>
-    ExplorerEvidence,
-    /// <summary>UI text: Values</summary>
-    ExplorerValues,
-    /// <summary>UI text: Collapse {label}</summary>
-    TopologyCollapseGroup,
-    /// <summary>UI text: Expand {label}</summary>
-    TopologyExpandGroup,
     /// <summary>UI text: Topology controls</summary>
     TopologyControls,
     /// <summary>UI text: Fit topology</summary>
@@ -657,4 +649,12 @@ public enum HtmlChartText {
     TopologyFindNodesPlaceholder,
     /// <summary>UI text: Find nodes by name, kind or group</summary>
     TopologyFindNodes,
+    /// <summary>UI text: Evidence</summary>
+    ExplorerEvidence,
+    /// <summary>UI text: Values</summary>
+    ExplorerValues,
+    /// <summary>UI text: Collapse {label}</summary>
+    TopologyCollapseGroup,
+    /// <summary>UI text: Expand {label}</summary>
+    TopologyExpandGroup,
 }

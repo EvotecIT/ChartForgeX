@@ -20,12 +20,31 @@
       if (finite.length && highest >= full - 6) return { surface, top, full, height: header, shift: full - header };
       return { surface, top, full, height: Math.min(full, Math.max(header, lowest + 6)), shift: 0 };
     };
+    const siblingClip = card => {
+      for (let element = card.parentElement; element; element = element.parentElement) {
+        const reference = element.getAttribute && element.getAttribute('clip-path');
+        const id = reference && (reference.match(/url\(#?["']?#?([^"')]+)["']?\)/) || [])[1];
+        const rect = id && element.ownerDocument.getElementById(id)?.querySelector('rect');
+        if (rect) return { top: parseFloat(rect.getAttribute('y')) || 0, bottom: (parseFloat(rect.getAttribute('y')) || 0) + (parseFloat(rect.getAttribute('height')) || 0) };
+        if (element.tagName && element.tagName.toLowerCase() === 'svg') {
+          const box = element.viewBox && element.viewBox.baseVal;
+          if (box && box.height > 0) return { top: box.y, bottom: box.y + box.height };
+        }
+      }
+      return { top: -Infinity, bottom: Infinity };
+    };
+    const siblingClipTop = card => siblingClip(card).top;
+    const siblingClipBottom = card => siblingClip(card).bottom;
     const setSiblingCardExpanded = (card, expanded, emit) => {
       const layout = siblingCardLayout(card);
       const rows = card.querySelector('[data-cfx-role="topology-sibling-rows"]');
       const header = card.querySelector('[data-cfx-role="topology-sibling-header"]');
       if (rows) { rows.style.display = expanded ? '' : 'none'; if (expanded) rows.removeAttribute('opacity'); }
       // A card that started collapsed opens over its neighbours, so it is drawn last while open.
+      // An open card must stay inside the clipped diagram: lift it by however far its rows would reach past the clip.
+      const clipBottom = siblingClipBottom(card);
+      const overflow = expanded && layout && Number.isFinite(clipBottom) ? Math.max(0, Math.min(layout.top + layout.full - clipBottom, layout.top - siblingClipTop(card))) : 0;
+      overflow > 0 ? card.setAttribute('transform', 'translate(0 ' + (-overflow) + ')') : card.removeAttribute('transform');
       const front = card.closest('[data-cfx-role="topology-node-host"]') || card;
       if (expanded && emit && front.parentNode && front.parentNode.lastElementChild !== front) front.parentNode.appendChild(front);
       if (layout) {

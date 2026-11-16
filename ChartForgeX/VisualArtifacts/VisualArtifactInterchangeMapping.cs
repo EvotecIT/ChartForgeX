@@ -464,6 +464,7 @@ public static partial class VisualArtifactInterchangeMapping {
         if (mapped.Topology?.LabelContent is { } content && !string.Equals(content.PlainText, mapped.Label, StringComparison.Ordinal))
             mapped.Topology.LabelContent = null;
         Copy(edge.Metadata, mapped.Extensions);
+        ChartForgeX.Topology.TopologyEdgePresentationInterchange.Write(edge, mapped.Extensions);
         CopyMetrics(edge.Metrics, mapped.Metrics);
         return mapped;
     }

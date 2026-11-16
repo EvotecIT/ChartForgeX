@@ -85,14 +85,16 @@ internal sealed class TopologySiblingCard {
 }
 
 internal static class TopologySiblingGroupingLayout {
-    internal static void Apply(TopologyChart chart) {
+    internal static void Apply(TopologyChart chart, TopologyView? view = null) {
         var policy = chart.SiblingGrouping;
         if (policy == null || chart.LayoutMode is TopologyLayoutMode.Regions or TopologyLayoutMode.Manual or TopologyLayoutMode.Geographic) return;
         var nodes = chart.Nodes.GroupBy(node => node.Id, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
-        var pinned = PinnedIds(chart);
-        var buckets = new Dictionary<(string Parent, TopologyNodeKind Kind, string? Group), List<TopologyNode>>();
+        var pinned = PinnedIds(chart, view);
+        // Leaves whose links differ in direction or kind keep separate cards, so no relationship is lost to the aggregate edge.
+        var buckets = new Dictionary<(string Parent, TopologyNodeKind Kind, string? Group, string Links), List<TopologyNode>>();
         foreach (var leaf in Leaves(chart, nodes, pinned)) {
-            var key = (leaf.Parent, leaf.Node.Kind, leaf.Node.GroupId);
+            var links = string.Join(";", leaf.Edges.Select(edge => (edge.SourceNodeId == leaf.Parent ? "out" : "in") + ":" + edge.Direction + ":" + edge.Kind).OrderBy(text => text, StringComparer.Ordinal));
+            var key = (leaf.Parent, leaf.Node.Kind, leaf.Node.GroupId, links);
             if (!buckets.TryGetValue(key, out var list)) buckets.Add(key, list = new List<TopologyNode>());
             list.Add(leaf.Node);
         }
@@ -145,7 +147,7 @@ internal static class TopologySiblingGroupingLayout {
     }
 
     // A leaf has at least one edge and every edge goes to the same other node, which is its parent.
-    private static IEnumerable<(TopologyNode Node, string Parent)> Leaves(TopologyChart chart, IReadOnlyDictionary<string, TopologyNode> nodes, ISet<string> pinned) {
+    private static IEnumerable<(TopologyNode Node, string Parent, IReadOnlyList<TopologyEdge> Edges)> Leaves(TopologyChart chart, IReadOnlyDictionary<string, TopologyNode> nodes, ISet<string> pinned) {
         var incident = new Dictionary<string, List<TopologyEdge>>(StringComparer.Ordinal);
         foreach (var edge in chart.Edges) {
             foreach (var end in new[] { edge.SourceNodeId, edge.TargetNodeId }.Distinct(StringComparer.Ordinal)) {
@@ -159,11 +161,11 @@ internal static class TopologySiblingGroupingLayout {
             var parents = edges.Select(edge => edge.SourceNodeId == node.Id ? edge.TargetNodeId : edge.SourceNodeId).Distinct(StringComparer.Ordinal).ToArray();
             if (parents.Length != 1 || parents[0] == node.Id || !nodes.ContainsKey(parents[0])) continue;
             if (edges.Any(edge => edge.Waypoints.Count > 0 || edge.PathGeometry != null)) continue;
-            yield return (node, parents[0]);
+            yield return (node, parents[0], edges);
         }
     }
 
-    private static HashSet<string> PinnedIds(TopologyChart chart) {
+    private static HashSet<string> PinnedIds(TopologyChart chart, TopologyView? view = null) {
         var pinned = new HashSet<string>(StringComparer.Ordinal);
         // An edge step needs its edge to survive, so both of its ends stay out of any card.
         var edges = chart.Edges.GroupBy(edge => edge.Id, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
@@ -174,6 +176,11 @@ internal static class TopologySiblingGroupingLayout {
         foreach (var alignment in chart.Alignments) foreach (var id in alignment.NodeIds) pinned.Add(id);
         foreach (var note in chart.Annotations) if (note.TargetId != null) pinned.Add(note.TargetId);
         foreach (var edge in chart.Edges) if (edge.LabelAnchorNodeId != null) pinned.Add(edge.LabelAnchorNodeId);
+        // A view selects authored identities, so the nodes it names, focuses on or reaches through named edges stay as they are.
+        if (view != null) {
+            foreach (var id in view.NodeIds.Concat(view.FocusNodeIds)) pinned.Add(id);
+            foreach (var id in view.EdgeIds) if (edges.TryGetValue(id, out var edge)) { pinned.Add(edge.SourceNodeId); pinned.Add(edge.TargetNodeId); }
+        }
         return pinned;
     }
 

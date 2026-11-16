@@ -6,6 +6,7 @@ using System.Xml.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Topology;
+using ChartForgeX.VisualArtifacts;
 using Xunit;
 
 namespace ChartForgeX.Tests;
@@ -144,6 +145,23 @@ public sealed class TopologyEdgePresentationTests {
 
         var bare = Sites().WithEdgeUplink("link", TopologyEdgeEnd.Source);
         Assert.Equal("↑", (string?)Edge(XDocument.Parse(bare.Prepare(Options()).ToSvg()), "link").Attribute("data-source-label"));
+    }
+
+    [Fact]
+    public void EdgePresentationSurvivesAnInterchangeRoundTrip() {
+        var chart = Sites().AddEdgeStripe("link", "#2563EB", "IP, primary").AddEdgeStripe("link", "rgb(249, 115, 22)")
+            .AddEdgeChip("link", "cost 100|a", TopologyTone.Warn, "server").WithEdgeEvidence("link", TopologyEdgeEvidence.Assumed, "KCC, inferred")
+            .WithEdgeUplink("link", TopologyEdgeEnd.Target);
+        chart.Edges[0].Metadata["owner"] = "ops";
+        var restored = VisualArtifactInterchangeEnvelope.FromJson(chart.Prepare(Options()).ToInterchangeEnvelope().ToJson()).ToTopologyChart();
+        var edge = restored.Edges.Single(item => item.Id == "link");
+        Assert.Equal(TopologyEdgeEvidence.Assumed, edge.Evidence);
+        Assert.Equal("KCC, inferred", edge.EvidenceText);
+        Assert.Equal(TopologyEdgeEnd.Target, edge.UplinkEnd);
+        Assert.Equal(new[] { "#2563EB|IP, primary", "rgb(249, 115, 22)|" }, edge.Stripes.Select(stripe => stripe.Color + "|" + stripe.Label));
+        var chip = Assert.Single(edge.Chips);
+        Assert.Equal(("cost 100|a", TopologyTone.Warn, "server"), (chip.Text, chip.Tone, chip.IconId));
+        Assert.Equal(new[] { "owner" }, edge.Metadata.Keys.Where(key => !key.StartsWith("layout.", StringComparison.Ordinal)));
     }
 
     internal static TopologyChart Sites() => TopologyChart.Create().WithId("sites").WithViewport(900, 420, 30)

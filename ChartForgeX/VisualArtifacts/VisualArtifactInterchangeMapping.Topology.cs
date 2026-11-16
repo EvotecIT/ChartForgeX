@@ -172,6 +172,7 @@ public static partial class VisualArtifactInterchangeMapping {
         edge.DashPattern.AddRange(native.DashPattern);
         foreach (var point in native.Waypoints) edge.Waypoints.Add(new ChartPoint(point.X, point.Y));
         RestoreTopologyMetadata(source.Extensions, edge.Metadata);
+        TopologyEdgePresentationInterchange.Read(edge);
         foreach (var metric in source.Metrics) edge.Metrics.Add(metric.Name, metric.Value);
         return edge;
     }

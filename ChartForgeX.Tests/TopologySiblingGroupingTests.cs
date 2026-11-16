@@ -60,6 +60,17 @@ public sealed class TopologySiblingGroupingTests {
         Assert.Equal(5, kept.NodeCount);
         Assert.Contains(XDocument.Parse(kept.ToSvg()).Descendants(), element => Role(element) == "topology-edge" && (string?)element.Attribute("data-edge-id") == "e1");
 
+        var viewed = Site(3).WithSiblingGrouping();
+        var view = new TopologyView(); view.FocusNodeIds.Add("dc1"); view.NeighborDepth = 1;
+        var focused = viewed.Prepare(new TopologyRenderOptions { FitContentToViewport = false, View = view });
+        Assert.Contains(XDocument.Parse(focused.ToSvg()).Descendants(), element => Role(element) == "topology-node" && (string?)element.Attribute("data-node-id") == "dc1");
+
+        var mixed2 = Site(6).WithSiblingGrouping();
+        foreach (var edge in mixed2.Edges.Where(edge => edge.Id is "e4" or "e5" or "e6")) { edge.SourceNodeId = edge.TargetNodeId; edge.TargetNodeId = "hub"; }
+        var split = XDocument.Parse(mixed2.Prepare(Options()).ToSvg());
+        Assert.Equal(new[] { "3", "3" }, split.Descendants().Where(element => element.Attribute("data-sibling-count") != null).Select(element => (string?)element.Attribute("data-sibling-count")));
+        Assert.Contains(split.Descendants(), element => Role(element) == "topology-edge" && (string?)element.Attribute("data-target-node-id") == "hub");
+
         var linked = Site(3).WithSiblingGrouping().AddEdge("peer", "dc1", "dc2");
         Assert.Equal(5, linked.Prepare(Options()).NodeCount);
     }

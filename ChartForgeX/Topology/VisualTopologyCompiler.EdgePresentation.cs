@@ -27,9 +27,9 @@ internal sealed partial class VisualTopologyCompiler {
         var length = EdgeStripeLength * units * _scale;
         var period = length * edge.Stripes.Count;
         var gap = dash is { Length: > 1 } ? Math.Min(length * .45, dash[1]) : 0;
-        var highlighted = _highlight.IsEdgeHighlighted(edge);
         for (var index = 0; index < edge.Stripes.Count; index++) {
-            var color = Highlight(Color(edge.Stripes[index].Color, _colors.Border), highlighted);
+            // The caller's opacity already carries highlight dimming and edge opacity; apply it once.
+            var color = Color(edge.Stripes[index].Color, _colors.Border);
             color = color.WithOpacity(color.A / 255d * opacity);
             _builder.Path(path, stroke: color, strokeWidth: width, role: "topology-edge-stripe",
                 dash: new[] { length - gap, period - length + gap }, cap: VisualStrokeCap.Butt,
@@ -91,8 +91,9 @@ internal sealed partial class VisualTopologyCompiler {
             ["data-chip-x"] = Number(box.X + box.Width / 2), ["data-chip-y"] = Number(box.Y + box.Height / 2)
         });
         var fill = ChartColorMath.WithOpacity(_colors.Surface, opacity);
-        _builder.Rect(box, fill, tone, _context.Theme.AxisStrokeWidth * units * _scale, box.Height / 2, "topology-edge-chip-surface",
-            paint: new VisualScenePaintBinding(CardPaint(fill, opacity), SvgPaint.Of(tone, SvgColorRole.Status)));
+        var outline = ChartColorMath.WithOpacity(tone, opacity);
+        _builder.Rect(box, fill, outline, _context.Theme.AxisStrokeWidth * units * _scale, box.Height / 2, "topology-edge-chip-surface",
+            paint: new VisualScenePaintBinding(CardPaint(fill, opacity), BorderPaint(tone, opacity, SvgColorRole.Status)));
         var left = box.X + EdgeChipPadding * units * _scale;
         if (HasChipIcon(chip)) {
             var size = EdgeChipIconSize * units * _scale;
@@ -113,6 +114,9 @@ internal sealed partial class VisualTopologyCompiler {
         var obstacles = _chart.Nodes.Select(node => Bounds(node.X - 3, node.Y - 3, node.Width + 6, node.Height + 6)).ToList();
         obstacles.AddRange(_edgeLabels.Select(label => Bounds(label.CenterX - label.Width / 2, label.CenterY - label.Height / 2, label.Width, label.Height)));
         if (_options.IncludeEndpointLabels) obstacles.AddRange(_chart.Edges.SelectMany(EndpointLabelBounds));
+        if (_options.IncludeGroups && _options.IncludeGroupLabels)
+            obstacles.AddRange(_chart.Groups.SelectMany(group => TopologyGroupHeader.PaintedParts(_chart, group, _options))
+                .Select(part => Bounds(part.X - 3, part.Y - 3, part.Width + 6, part.Height + 6)));
         return obstacles;
     }
 

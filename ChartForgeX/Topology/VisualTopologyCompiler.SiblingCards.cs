@@ -63,6 +63,8 @@ internal sealed partial class VisualTopologyCompiler {
 
     private void BuildSiblingRow(TopologyNode card, TopologySiblingMember member, int index, double top, bool active) {
         var height = TopologySiblingCard.RowHeight;
+        // A member's own link and tooltip survive grouping on its row.
+        using var link = Host(member.Href, member.Tooltip, card.Id + "-sibling-link-" + index.ToString(CultureInfo.InvariantCulture), "topology-sibling-row-host");
         using var row = _builder.PushGroup(card.Id + "-sibling-" + index.ToString(CultureInfo.InvariantCulture), "topology-sibling-row", new Dictionary<string, string> {
             ["data-node-id"] = member.Id, ["data-node-label"] = member.Label, ["data-node-subtitle"] = member.Subtitle ?? string.Empty,
             ["data-cfx-status"] = member.Status.ToString(), ["data-sibling-card-id"] = card.Id

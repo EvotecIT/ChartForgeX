@@ -19,7 +19,8 @@ internal sealed partial class VisualTopologyCompiler {
         var fallback = item.Status.HasValue ? Status(item.Status.Value) : item.Evidence != TopologyEdgeEvidence.Unspecified ? Status(TopologyHealthStatus.Unknown) : _colors.Accent;
         var color = Color(item.Color, fallback);
         var colorRole = !string.IsNullOrWhiteSpace(item.Color) ? SvgColorRole.Any : item.Status.HasValue ? SvgColorRole.Status : SvgColorRole.Series;
-        var sourceColor = !string.IsNullOrWhiteSpace(item.Color) ? item.Color : item.Status.HasValue ? _svgTheme?.StatusColor(item.Status.Value) : _svgTheme?.Accent;
+        var sourceColor = !string.IsNullOrWhiteSpace(item.Color) ? item.Color : item.Status.HasValue ? _svgTheme?.StatusColor(item.Status.Value)
+            : item.Evidence != TopologyEdgeEvidence.Unspecified ? _svgTheme?.StatusColor(TopologyHealthStatus.Unknown) : _svgTheme?.Accent;
         var colorPaint = SourcePaint(sourceColor, color, colorRole, fallback: fallback);
         var centerX = bounds.X + bounds.Width / 2; var centerY = bounds.Y + bounds.Height / 2;
         if (item.Kind == TopologyLegendItemKind.Node) {

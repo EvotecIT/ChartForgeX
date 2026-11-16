@@ -28,7 +28,7 @@ internal static partial class TopologyLayoutEngine {
     /// <summary>Reserves a complete automatic edge badge between ranks before label placement.</summary>
     private static double LayeredRankGap(TopologyChart chart, TopologyRenderOptions? options, bool horizontal) {
         if (options?.LayeredRankSpacing is { } authored) return authored;
-        var chips = EdgeChipRankGap(chart, horizontal, options?.IncludeEdgeLabels != false ? options ?? new TopologyRenderOptions() : null);
+        var chips = EdgeChipRankGap(chart, horizontal, options ?? new TopologyRenderOptions());
         if (options?.IncludeEdgeLabels == false) return Math.Max(42, chips);
         var gap = Math.Max(42d, chips);
         var labelOptions = options ?? new TopologyRenderOptions();
@@ -53,7 +53,7 @@ internal static partial class TopologyLayoutEngine {
     }
 
     // A link carrying value chips needs room for one chip row beside its caption, plus the usual endpoint clearance.
-    private static double EdgeChipRankGap(TopologyChart chart, bool horizontal, TopologyRenderOptions? labelOptions) {
+    private static double EdgeChipRankGap(TopologyChart chart, bool horizontal, TopologyRenderOptions options) {
         var gap = 0d;
         var nodesById = chart.Nodes.GroupBy(node => node.Id, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
         foreach (var edge in chart.Edges) {
@@ -62,10 +62,9 @@ internal static partial class TopologyLayoutEngine {
             var widths = edge.Chips.Select(chip => Math.Max(EstimateTextWidth(chip.Text, EdgeChipFontSize, true, chart.TextMeasurement), chip.Text.Length * EdgeChipFontSize * .62)
                 + EdgeChipPadding * 2 + 2 + (string.IsNullOrWhiteSpace(chip.IconId) ? 0 : EdgeChipIconSize + 3)).ToArray();
             var extent = horizontal ? widths.Sum() + EdgeChipGap * (widths.Length - 1) : EdgeChipHeight;
-            if (labelOptions != null && EdgeLabelBadge(chart, edge, labelOptions) is { } label) extent += (horizontal ? label.Width : label.Height) + 8;
-            var endpointOptions = labelOptions ?? new TopologyRenderOptions();
-            if (endpointOptions.IncludeEndpointLabels) foreach (var text in new[] { edge.SourceLabel, edge.TargetLabel }.Where(text => !string.IsNullOrWhiteSpace(text))) {
-                var metrics = EndpointLabelMetrics(endpointOptions, text!, 1);
+            if (options.IncludeEdgeLabels && EdgeLabelBadge(chart, edge, options) is { } label) extent += (horizontal ? label.Width : label.Height) + 8;
+            if (options.IncludeEndpointLabels) foreach (var text in new[] { edge.SourceLabel, edge.TargetLabel }.Where(text => !string.IsNullOrWhiteSpace(text))) {
+                var metrics = EndpointLabelMetrics(options, text!, 1);
                 extent += (horizontal ? metrics.Width : metrics.Height) + 16;
             }
             gap = Math.Max(gap, extent * TopologyPreparedEdgePlan.Units(edge) + EdgeEndpointGap * 2 + 32);

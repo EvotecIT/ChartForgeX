@@ -49,7 +49,7 @@ internal static partial class TopologyLayoutEngine {
         if (options?.HierarchyView != null) TopologyHierarchyPreparation.Apply(copy, hierarchySource ?? chart, options.HierarchyView, options);
         ApplyNamedPortSides(copy);
         TopologyRenderPrimitives.ApplyUplinkMarkers(copy);
-        TopologySiblingGroupingLayout.Apply(copy);
+        TopologySiblingGroupingLayout.Apply(copy, view);
         if (options != null) {
             ApplyNodeDisplayMode(copy, options, copy.LayoutMode == TopologyLayoutMode.MindMap);
         }
