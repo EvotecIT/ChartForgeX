@@ -22,9 +22,14 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         await page.Locator("[data-cfx-role=legend-item][data-cfx-series-key=reference]").ClickAsync();
         if (brushSelection) {
             await page.Locator("[data-cfx-mode-button=brush]").ClickAsync();
+            var stage = page.Locator(".cfx-stage");
+            await stage.ScrollIntoViewIfNeededAsync();
             var mark = await BoxAsync(page, North);
             var centerX = mark.X + mark.Width / 2; var centerY = mark.Y + mark.Height / 2;
-            await page.Mouse.MoveAsync((float)(centerX - 18), (float)(centerY - 18));
+            var stageBox = await stage.BoundingBoxAsync() ?? throw new InvalidOperationException("The brush stage has no layout box.");
+            await stage.HoverAsync(new LocatorHoverOptions {
+                Position = new Position { X = (float)(centerX - 18 - stageBox.X), Y = (float)(centerY - 18 - stageBox.Y) }
+            });
             await page.Mouse.DownAsync();
             await page.Mouse.MoveAsync((float)(centerX + 18), (float)(centerY + 18), new MouseMoveOptions { Steps = 6 });
             await page.Mouse.UpAsync();
