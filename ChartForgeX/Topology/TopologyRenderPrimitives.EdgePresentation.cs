@@ -11,7 +11,8 @@ internal static partial class TopologyRenderPrimitives {
         if (edge.Evidence == TopologyEdgeEvidence.Unspecified) return edge.Tooltip;
         var evidence = edge.Evidence == TopologyEdgeEvidence.Assumed ? "Assumed link" : "Confirmed link";
         if (!string.IsNullOrWhiteSpace(edge.EvidenceText)) evidence += ": " + edge.EvidenceText!.Trim();
-        return string.IsNullOrWhiteSpace(edge.Tooltip) ? evidence : edge.Tooltip + Environment.NewLine + evidence;
+        // A fixed line feed keeps static output identical on every platform.
+        return string.IsNullOrWhiteSpace(edge.Tooltip) ? evidence : edge.Tooltip + "\n" + evidence;
     }
 
     /// <summary>Prefixes the child endpoint label with the uplink marker. Applied once to the prepared layout copy.</summary>

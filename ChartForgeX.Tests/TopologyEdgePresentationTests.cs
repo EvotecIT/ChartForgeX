@@ -47,7 +47,7 @@ public sealed class TopologyEdgePresentationTests {
         Assert.All(edge.Descendants().Where(element => Role(element) == "topology-edge-line"),
             line => Assert.Equal("4 4", (string?)line.Attribute("stroke-dasharray")));
         Assert.Contains(document.Descendants(), element => element.Name.LocalName == "title"
-            && element.Value == "London to Paris" + Environment.NewLine + "Assumed link: Inferred from KCC connection objects");
+            && element.Value == "London to Paris\nAssumed link: Inferred from KCC connection objects");
         var legend = TopologyLegend.Resolve(chart, TopologyLegendMode.Explicit)!;
         var assumed = Assert.Single(legend.Items, item => item.Evidence == TopologyEdgeEvidence.Assumed);
         Assert.Equal("Assumed link", assumed.Label);
