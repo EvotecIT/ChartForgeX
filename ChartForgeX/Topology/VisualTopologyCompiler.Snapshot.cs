@@ -13,7 +13,7 @@ internal sealed partial class VisualTopologyCompiler {
             entry => (IReadOnlyList<ChartRect>)Array.AsReadOnly(entry.Value.ToArray()), StringComparer.Ordinal));
 
     internal string[]? CellAutomaticEdgesSnapshot() {
-        if (_source.LayoutMode == TopologyLayoutMode.Manual || _source.Alignments.Count > 0 || _options.View != null || _options.HierarchyView != null
+        if (_source.LayoutMode == TopologyLayoutMode.Manual || _source.Alignments.Count > 0 || _options.View != null || _options.HierarchyView != null || _source.SiblingGrouping != null
             || _source.Groups.Any(group => group.HasPositionOverride || group.X != 0 || group.Y != 0 || group.Width > 0 || group.Height > 0)
             || _source.Nodes.Any(node => node.HasPositionOverride || node.X != 0 || node.Y != 0)) return null;
         return _source.Edges.Where(edge => edge.Waypoints.Count == 0 && edge.PathGeometry == null
@@ -24,7 +24,7 @@ internal sealed partial class VisualTopologyCompiler {
     internal TopologyChart? CellLayoutSourceSnapshot() {
         // Only automatic grouped layouts can be repacked for a terminal. Authored positions,
         // views and alignments retain their prepared geometry.
-        if (_source.LayoutMode != TopologyLayoutMode.Layered || _source.Groups.Count == 0 || _options.View != null
+        if (_source.LayoutMode != TopologyLayoutMode.Layered || _source.Groups.Count == 0 || _options.View != null || _source.SiblingGrouping != null
             || _options.HierarchyView != null || _source.Alignments.Count > 0
             || _source.Edges.Any(edge => edge.Waypoints.Count > 0 || edge.PathGeometry != null || edge.SourcePort != TopologyEdgePort.Auto || edge.TargetPort != TopologyEdgePort.Auto || edge.SourcePortId != null || edge.TargetPortId != null)
             || _source.Nodes.Any(node => node.HasPositionOverride || node.X != 0 || node.Y != 0)

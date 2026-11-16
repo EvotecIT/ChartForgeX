@@ -49,6 +49,7 @@ public static partial class V2Examples {
         WriteLayeredData(output, artifacts);
         WriteNativeDepth(output, artifacts);
         WriteTableContentDepth(output, artifacts);
+        WriteSiteLinks(output, artifacts);
         WriteSequenceLayoutTypography(output, artifacts);
         WriteSequenceParticipantViews(output, artifacts);
         WriteSequenceMessagePresentation(output, artifacts);

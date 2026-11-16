@@ -58,6 +58,7 @@ const tests = [
   'tests/graph-quality/overlaps.test.js',
   'tests/topology-report/navigation.test.js',
   'tests/topology-filters/composition.test.js',
+  'tests/topology-filters/sibling-cards.test.js',
   'tests/topology-filters/shared-trunks.test.js'
 ];
 

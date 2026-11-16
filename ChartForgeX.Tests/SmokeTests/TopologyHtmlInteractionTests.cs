@@ -89,7 +89,8 @@ internal static partial class SmokeTests {
         Assert(html.Contains("const initialScenarioStep = scenarioUrlParam('scenarioStep')", StringComparison.Ordinal), "Interactive topology HTML should read the initial legacy route step before normalizing query parameters.");
         Assert(html.Contains("setScenario(initialScenario, false, false)", StringComparison.Ordinal) && html.Contains("setScenarioStep(initialScenarioStep, false, false, false)", StringComparison.Ordinal), "Interactive topology HTML should restore initial scenario state without emitting startup sync or host events.");
         Assert(html.Contains("if (!scenarioId) return null", StringComparison.Ordinal), "Scenario step controls should disable when All routes are visible.");
-        Assert(html.Contains("querySelectorAll('[data-cfx-role=\"topology-edge-label\"]')", StringComparison.Ordinal), "Scenario interactions should dim edge labels with their route edges.");
+        Assert(html.Contains("const edgeAnnotationSelector = '[data-cfx-role=\"topology-edge-label\"],[data-cfx-role=\"topology-edge-chip\"]'", StringComparison.Ordinal)
+            && html.Contains("querySelectorAll(edgeAnnotationSelector)", StringComparison.Ordinal), "Scenario interactions should dim edge labels and chips with their route edges.");
         Assert(html.Contains("querySelectorAll('[data-cfx-role=\"topology-node-status\"]')", StringComparison.Ordinal), "Scenario interactions should dim node status badges with their route nodes.");
         Assert(html.Contains("querySelectorAll('[data-cfx-role=\"topology-group\"]')", StringComparison.Ordinal), "Scenario interactions should dim group shells outside the active route.");
         Assert(html.Contains("emitSync('scenario-step'", StringComparison.Ordinal) && html.Contains("detail.action === 'scenario-step'", StringComparison.Ordinal), "Topology scenario steps should synchronize across grouped wrappers.");

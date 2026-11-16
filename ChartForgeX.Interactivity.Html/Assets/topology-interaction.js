@@ -164,6 +164,8 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     }
     const uiText = (message, fallback, values) => window[Symbol.for('ChartForgeX.uiText')](wrapper, message, fallback, values);
     const selectables = '[data-cfx-role="topology-node"],[data-cfx-role="topology-edge"],[data-cfx-role="topology-group"]';
+    // Edge labels and value chips are painted apart from their route but follow its visibility and emphasis.
+    const edgeAnnotationSelector = '[data-cfx-role="topology-edge-label"],[data-cfx-role="topology-edge-chip"]';
     const viewportControls = wrapper.getAttribute('data-cfx-viewport-controls') === 'true';
     const exportControls = wrapper.getAttribute('data-cfx-export-controls') === 'true';
     const fullscreenControl = wrapper.getAttribute('data-cfx-fullscreen-control') === 'true';
@@ -376,7 +378,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
         edge.classList.toggle('cfx-topology-html-scenario-preview', active);
         edge.classList.toggle('cfx-topology-html-scenario-preview-muted', !active);
       });
-      wrapper.querySelectorAll('[data-cfx-role="topology-edge-label"]').forEach(label => {
+      wrapper.querySelectorAll(edgeAnnotationSelector).forEach(label => {
         const active = route.edgeIds.has(attr(label, 'data-edge-id'));
         label.classList.toggle('cfx-topology-html-scenario-preview', active);
         label.classList.toggle('cfx-topology-html-scenario-preview-muted', !active);
@@ -758,7 +760,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
         node.classList.toggle('cfx-topology-html-scenario-muted', !active && routes.some(route => route.focusMode === 'spotlight'));
         if (active && routes.length === 1) node.setAttribute('data-cfx-active-scenario-step-indices', scenarioStepIndices(node, routes[0].scenarioId).join(' '));
       });
-      wrapper.querySelectorAll('[data-cfx-role="topology-edge-label"]').forEach(label => {
+      wrapper.querySelectorAll(edgeAnnotationSelector).forEach(label => {
         const active = edgeIds.has(attr(label, 'data-edge-id'));
         label.classList.toggle('cfx-topology-html-scenario-active', active);
         label.classList.toggle('cfx-topology-html-scenario-muted', !active && routes.some(route => route.focusMode === 'spotlight'));
@@ -814,7 +816,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
         node.classList.toggle('cfx-topology-html-scenario-muted', !active && route.focusMode === 'spotlight');
         if (active) node.setAttribute('data-cfx-active-scenario-step-indices', scenarioStepIndices(node, scenarioId).join(' '));
       });
-      wrapper.querySelectorAll('[data-cfx-role="topology-edge-label"]').forEach(label => {
+      wrapper.querySelectorAll(edgeAnnotationSelector).forEach(label => {
         const active = route.edgeIds.has(attr(label, 'data-edge-id'));
         label.classList.toggle('cfx-topology-html-scenario-active', active);
         label.classList.toggle('cfx-topology-html-scenario-muted', !active && route.focusMode === 'spotlight');
@@ -1032,6 +1034,8 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
         [uiText('ExplorerId', 'ID'), detail.id],
         [uiText('ExplorerStatus', 'Status'), detail.status],
         [uiText('ExplorerGroup', 'Group'), detail.groupId || detail.sourceGroupId || detail.targetGroupId],
+        [uiText('ExplorerEvidence', 'Evidence'), [detail.evidence, detail.evidenceText].filter(Boolean).join(': ')],
+        [uiText('ExplorerValues', 'Values'), detail.chips],
         [uiText('ExplorerRelatedNodes', 'Related nodes'), (detail.related && detail.related.nodeIds || []).length],
         [uiText('ExplorerRelatedEdges', 'Related edges'), (detail.related && detail.related.edgeIds || []).length]
       ]);
@@ -1101,6 +1105,9 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
           accessibleName: attr(element, 'aria-label') || attr(element, 'data-cfx-description'),
           healthRing: attr(element, 'data-node-health-ring') === 'true',
           nodeKind: attr(element, 'data-node-kind'),
+          siblingCount: attr(element, 'data-sibling-count'),
+          siblingMemberIds: attr(element, 'data-sibling-member-ids').split(' ').filter(Boolean),
+          siblingExpanded: attr(element, 'data-sibling-expanded'),
           groupId: attr(element, 'data-group-id'),
           displayMode: attr(element, 'data-node-display-mode'),
           badge: attr(element, 'data-node-badge'),
@@ -1133,6 +1140,11 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
           layoutInference: attr(element, 'data-edge-layout-inference'),
           muted: attr(element, 'data-edge-muted') === 'true',
           lineStyle: attr(element, 'data-edge-line-style'),
+          evidence: attr(element, 'data-edge-evidence'),
+          evidenceText: attr(element, 'data-edge-evidence-text'),
+          stripes: attr(element, 'data-edge-stripes').split(';').filter(Boolean),
+          chips: attr(element, 'data-edge-chips'),
+          uplink: attr(element, 'data-edge-uplink'),
           route: {
             strategy: attr(element, 'data-route-strategy'),
             curve: attr(element, 'data-route-curve'),
@@ -1249,7 +1261,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
         if (classPrefix === 'cfx-topology-html-') setTopologyMuted(edge, 'selection', !isRelated);
         else edge.classList.toggle(mutedClass, !isRelated);
       });
-      wrapper.querySelectorAll('[data-cfx-role="topology-edge-label"]').forEach(label => {
+      wrapper.querySelectorAll(edgeAnnotationSelector).forEach(label => {
         const isSelf = detail.kind === 'edge' && attr(label, 'data-edge-id') === detail.id;
         const isRelated = isSelf || relatedEdges.has(attr(label, 'data-edge-id'));
         label.classList.toggle(relatedClass, isRelated);
@@ -1314,7 +1326,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
         relatedSets[item.kind + 'Ids'].add(item.id);
         Object.keys(relatedSets).forEach(key => (item.related[key] || []).forEach(id => relatedSets[key].add(id)));
       });
-      wrapper.querySelectorAll('[data-cfx-role="topology-node"],[data-cfx-role="topology-edge"],[data-cfx-role="topology-edge-label"]').forEach(element => {
+      wrapper.querySelectorAll('[data-cfx-role="topology-node"],[data-cfx-role="topology-edge"],' + edgeAnnotationSelector).forEach(element => {
         const role = attr(element, 'data-cfx-role'); const key = role === 'topology-node' ? 'nodeIds' : 'edgeIds';
         const id = attr(element, role === 'topology-node' ? 'data-node-id' : 'data-edge-id');
         setTopologyMuted(element, 'selection', !relatedSets[key].has(id));
@@ -1329,7 +1341,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     const syncTopologyHighlightAppearance = () => {
       const detail = topologyHighlightState;
       const nodeIds = new Set((detail.nodeIds || []).map(String)), edgeIds = new Set((detail.edgeIds || []).map(String));
-      const elements = Array.from(wrapper.querySelectorAll('[data-cfx-role="topology-node"],[data-cfx-role="topology-edge"],[data-cfx-role="topology-edge-label"]'));
+      const elements = Array.from(wrapper.querySelectorAll('[data-cfx-role="topology-node"],[data-cfx-role="topology-edge"],' + edgeAnnotationSelector));
       const matches = new Set(elements.filter(element => {
         const node = attr(element, 'data-cfx-role') === 'topology-node';
         return (node ? nodeIds : edgeIds).has(attr(element, node ? 'data-node-id' : 'data-edge-id'));
@@ -1415,6 +1427,70 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       lifetime.own(() => { sharedTrunkObserver.disconnect(); if (sharedTrunkFrame) lifetime.cancelFrame(sharedTrunkFrame); });
       updateSharedTrunks();
     }
+    // Sibling group cards collapse to their header and expand back to the member rows. A card shrinks only as far as
+    // the links attached to it allow, so a link entering its side never ends in empty space.
+    const siblingCardLayout = card => {
+      const surface = card.querySelector(':scope > [data-cfx-role="topology-node-surface"]');
+      if (!surface || surface.tagName.toLowerCase() !== 'rect') return null;
+      const top = parseFloat(surface.getAttribute('y')) || 0;
+      const full = parseFloat(attr(card, 'data-sibling-expanded-height')) || parseFloat(surface.getAttribute('height')) || 0;
+      const header = parseFloat(attr(card, 'data-sibling-collapsed-height')) || full;
+      const id = attr(card, 'data-node-id');
+      const ends = [];
+      wrapper.querySelectorAll('[data-cfx-role="topology-edge"]').forEach(edge => {
+        if (attr(edge, 'data-source-node-id') === id) ends.push(parseFloat(attr(edge, 'data-route-start-y')) - top);
+        if (attr(edge, 'data-target-node-id') === id) ends.push(parseFloat(attr(edge, 'data-route-end-y')) - top);
+      });
+      const finite = ends.filter(Number.isFinite);
+      const lowest = finite.length ? Math.max(...finite) : 0;
+      const highest = finite.length ? Math.min(...finite) : 0;
+      if (finite.length && highest >= full - 6) return { surface, top, full, height: header, shift: full - header };
+      return { surface, top, full, height: Math.min(full, Math.max(header, lowest + 6)), shift: 0 };
+    };
+    const setSiblingCardExpanded = (card, expanded, emit) => {
+      const layout = siblingCardLayout(card);
+      const rows = card.querySelector('[data-cfx-role="topology-sibling-rows"]');
+      const header = card.querySelector('[data-cfx-role="topology-sibling-header"]');
+      if (rows) { rows.style.display = expanded ? '' : 'none'; if (expanded) rows.removeAttribute('opacity'); }
+      // A card that started collapsed opens over its neighbours, so it is drawn last while open.
+      const front = card.closest('[data-cfx-role="topology-node-host"]') || card;
+      if (expanded && emit && front.parentNode && front.parentNode.lastElementChild !== front) front.parentNode.appendChild(front);
+      if (layout) {
+        layout.surface.setAttribute('height', String(expanded ? layout.full : layout.height));
+        layout.surface.setAttribute('y', String(expanded ? layout.top : layout.top + layout.shift));
+        if (header) expanded || !layout.shift ? header.removeAttribute('transform') : header.setAttribute('transform', 'translate(0 ' + layout.shift + ')');
+      }
+      const chevron = card.querySelector('[data-cfx-role="topology-sibling-toggle"]');
+      if (chevron && typeof chevron.getBBox === 'function') {
+        const box = chevron.getBBox();
+        expanded ? chevron.removeAttribute('transform') : chevron.setAttribute('transform', 'rotate(-90 ' + (box.x + box.width / 2) + ' ' + (box.y + box.height / 2) + ')');
+      }
+      card.setAttribute('data-sibling-expanded', expanded ? 'true' : 'false');
+      if (header) {
+        header.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        const label = attr(card, 'data-node-label');
+        header.setAttribute('aria-label', expanded ? uiText('TopologyCollapseGroup', 'Collapse {label}', { label }) : uiText('TopologyExpandGroup', 'Expand {label}', { label }));
+      }
+      if (emit) wrapper.dispatchEvent(new CustomEvent('cfx-topology-sibling-toggle', { bubbles: true, composed: true, detail: { id: attr(card, 'data-node-id'), expanded } }));
+    };
+    wrapper.querySelectorAll('[data-cfx-role="topology-node"][data-sibling-count]').forEach(card => {
+      const header = card.querySelector('[data-cfx-role="topology-sibling-header"]');
+      if (!header) return;
+      header.setAttribute('role', 'button');
+      header.setAttribute('tabindex', '0');
+      header.style.cursor = 'pointer';
+      setSiblingCardExpanded(card, attr(card, 'data-sibling-expanded') !== 'false', false);
+      const toggle = event => {
+        event.stopPropagation();
+        setSiblingCardExpanded(card, attr(card, 'data-sibling-expanded') === 'false', true);
+      };
+      listen(header, 'click', toggle);
+      listen(header, 'keydown', event => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        toggle(event);
+      });
+    });
     const topologyFilterSearchText = element => [
       attr(element, 'data-node-id'), attr(element, 'data-node-label'), attr(element, 'data-node-kind'), attr(element, 'data-group-id'),
       attr(element, 'data-edge-id'), attr(element, 'data-edge-label'), attr(element, 'data-edge-secondary-label'), attr(element, 'data-edge-tertiary-label'), attr(element, 'data-edge-kind'), attr(element, 'data-source-node-id'), attr(element, 'data-target-node-id'),
@@ -1488,7 +1564,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
         const edgeStatusOk = !status || attr(edge, 'data-cfx-status') === status || (source && attr(source, 'data-cfx-status') === status) || (target && attr(target, 'data-cfx-status') === status);
         return !showEdges || !endpointsVisible || !edgeQueryOk || !edgeStatusOk;
       });
-      setTopologyFilterHidden('[data-cfx-role="topology-edge-label"]', label => !showLabels || !showEdges || !wrapper.querySelector('[data-cfx-role="topology-edge"][data-edge-id="' + topologyFilterEscape(attr(label, 'data-edge-id')) + '"]:not(.cfx-topology-html-filter-hidden)'));
+      setTopologyFilterHidden(edgeAnnotationSelector, label => !showLabels || !showEdges || !wrapper.querySelector('[data-cfx-role="topology-edge"][data-edge-id="' + topologyFilterEscape(attr(label, 'data-edge-id')) + '"]:not(.cfx-topology-html-filter-hidden)'));
       syncTopologyGroupVisibility();
       syncTopologyHighlightAppearance();
       const detail = publishTopologyFilterSummary();
@@ -1886,7 +1962,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
         const edgeStatusOk = !state.status || attr(edge, 'data-cfx-status') === state.status || (source && attr(source, 'data-cfx-status') === state.status) || (target && attr(target, 'data-cfx-status') === state.status);
         return !state.edges || !endpointsVisible || !edgeQueryOk || !edgeStatusOk;
       });
-      setForceHidden('[data-cfx-role="topology-edge-label"]', label => !state.labels || !state.edges || !wrapper.querySelector('[data-cfx-role="topology-edge"][data-edge-id="' + cssEscape(attr(label, 'data-edge-id')) + '"]:not(.cfx-topology-html-force-hidden)'));
+      setForceHidden(edgeAnnotationSelector, label => !state.labels || !state.edges || !wrapper.querySelector('[data-cfx-role="topology-edge"][data-edge-id="' + cssEscape(attr(label, 'data-edge-id')) + '"]:not(.cfx-topology-html-force-hidden)'));
       syncTopologyGroupVisibility();
       syncTopologyHighlightAppearance();
       const detail = publishTopologyFilterSummary();
@@ -1922,7 +1998,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
       detail.related = detail.related || related(detail);
       const edgeIds = new Set(detail.related.edgeIds || []);
       if (detail.kind === 'edge') edgeIds.add(detail.id);
-      wrapper.querySelectorAll('[data-cfx-role="topology-edge-label"]').forEach(label => {
+      wrapper.querySelectorAll(edgeAnnotationSelector).forEach(label => {
         const edgeId = attr(label, 'data-edge-id');
         const edge = wrapper.querySelector('[data-cfx-role="topology-edge"][data-edge-id="' + cssEscape(edgeId) + '"]:not(.cfx-topology-html-force-hidden)');
         const active = edgeIds.has(edgeId) && !!edge;

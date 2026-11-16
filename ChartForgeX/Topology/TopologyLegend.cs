@@ -42,13 +42,55 @@ public sealed class TopologyLegend {
     /// <returns>The resolved legend, if any.</returns>
     public static TopologyLegend? Resolve(TopologyChart chart, TopologyLegendMode mode) {
         if (chart == null) return null;
-        return mode switch {
+        var legend = mode switch {
             TopologyLegendMode.Auto => Infer(chart),
             TopologyLegendMode.AutoWhenMissing => chart.Legend ?? Infer(chart),
             TopologyLegendMode.Enrich => Enrich(chart.Legend, Infer(chart)),
             TopologyLegendMode.Merge => Merge(chart.Legend, Infer(chart)),
             _ => chart.Legend
         };
+        return legend == null ? null : WithPresentationItems(chart, legend);
+    }
+
+    /// <summary>
+    /// Adds an edge legend item for one colour, such as a stripe on multi-colour edges.
+    /// </summary>
+    /// <param name="label">The item label.</param>
+    /// <param name="color">The represented colour.</param>
+    /// <returns>The current legend.</returns>
+    public TopologyLegend AddEdgeColor(string label, string color) {
+        Items.Add(new TopologyLegendItem { Label = label, Kind = TopologyLegendItemKind.Edge, Color = color, LineStyle = TopologyEdgeLineStyle.Solid });
+        return this;
+    }
+
+    /// <summary>
+    /// Adds an edge legend item for link evidence. Assumed links are drawn with the same short dash as the edges.
+    /// </summary>
+    /// <param name="label">The item label.</param>
+    /// <param name="evidence">The represented evidence.</param>
+    /// <returns>The current legend.</returns>
+    public TopologyLegend AddEvidence(string label, TopologyEdgeEvidence evidence) {
+        Items.Add(new TopologyLegendItem { Label = label, Kind = TopologyLegendItemKind.Edge, Evidence = evidence,
+            LineStyle = evidence == TopologyEdgeEvidence.Assumed ? TopologyEdgeLineStyle.Auto : TopologyEdgeLineStyle.Solid });
+        return this;
+    }
+
+    // Stripes and assumed links change how an edge looks, so a shown legend always explains them. Items the caller
+    // already listed (same colour, or same evidence) are not repeated.
+    private static TopologyLegend WithPresentationItems(TopologyChart chart, TopologyLegend legend) {
+        var stripes = chart.Edges.Where(edge => edge.Stripes.Count > 1).SelectMany(edge => edge.Stripes)
+            .Where(stripe => !string.IsNullOrWhiteSpace(stripe.Label)).ToArray();
+        var assumed = chart.Edges.Any(edge => edge.Evidence == TopologyEdgeEvidence.Assumed);
+        var confirmed = assumed && chart.Edges.Any(edge => edge.Evidence == TopologyEdgeEvidence.Confirmed);
+        if (stripes.Length == 0 && !assumed) return legend;
+        var copy = ReferenceEquals(legend, chart.Legend) ? Clone(legend) : legend;
+        foreach (var stripe in stripes) {
+            if (copy.Items.Any(item => item.Kind == TopologyLegendItemKind.Edge && item.EdgeKind == null && string.Equals(item.Color, stripe.Color, StringComparison.OrdinalIgnoreCase))) continue;
+            copy.AddEdgeColor(stripe.Label!, stripe.Color);
+        }
+        if (confirmed && !copy.Items.Any(item => item.Evidence == TopologyEdgeEvidence.Confirmed)) copy.AddEvidence("Confirmed link", TopologyEdgeEvidence.Confirmed);
+        if (assumed && !copy.Items.Any(item => item.Evidence == TopologyEdgeEvidence.Assumed)) copy.AddEvidence("Assumed link", TopologyEdgeEvidence.Assumed);
+        return copy;
     }
 
     /// <summary>
@@ -161,7 +203,8 @@ public sealed class TopologyLegend {
             IconId = item.IconId,
             Color = item.Color,
             BackgroundColor = item.BackgroundColor,
-            LineStyle = item.LineStyle
+            LineStyle = item.LineStyle,
+            Evidence = item.Evidence
         };
     }
 
@@ -170,6 +213,7 @@ public sealed class TopologyLegend {
             && left.Status == right.Status
             && left.NodeKind == right.NodeKind
             && left.EdgeKind == right.EdgeKind
+            && left.Evidence == right.Evidence
             && CompatibleText(left.Symbol, right.Symbol)
             && CompatibleText(left.IconId, right.IconId);
     }
@@ -299,4 +343,7 @@ public sealed class TopologyLegendItem {
 
     /// <summary>Gets or sets the optional line style used when rendering edge legend items.</summary>
     public TopologyEdgeLineStyle LineStyle { get; set; } = TopologyEdgeLineStyle.Auto;
+
+    /// <summary>Gets or sets the link evidence this edge item explains. Unspecified items are not about evidence.</summary>
+    public TopologyEdgeEvidence Evidence { get; set; }
 }

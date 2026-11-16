@@ -227,7 +227,7 @@
         node.classList.toggle('cfx-topology-html-scenario-muted', !active && routes.some(route => route.focusMode === 'spotlight'));
         if (active && routes.length === 1) node.setAttribute('data-cfx-active-scenario-step-indices', scenarioStepIndices(node, routes[0].scenarioId).join(' '));
       });
-      wrapper.querySelectorAll('[data-cfx-role="topology-edge-label"]').forEach(label => {
+      wrapper.querySelectorAll(edgeAnnotationSelector).forEach(label => {
         const active = edgeIds.has(attr(label, 'data-edge-id'));
         label.classList.toggle('cfx-topology-html-scenario-active', active);
         label.classList.toggle('cfx-topology-html-scenario-muted', !active && routes.some(route => route.focusMode === 'spotlight'));
@@ -283,7 +283,7 @@
         node.classList.toggle('cfx-topology-html-scenario-muted', !active && route.focusMode === 'spotlight');
         if (active) node.setAttribute('data-cfx-active-scenario-step-indices', scenarioStepIndices(node, scenarioId).join(' '));
       });
-      wrapper.querySelectorAll('[data-cfx-role="topology-edge-label"]').forEach(label => {
+      wrapper.querySelectorAll(edgeAnnotationSelector).forEach(label => {
         const active = route.edgeIds.has(attr(label, 'data-edge-id'));
         label.classList.toggle('cfx-topology-html-scenario-active', active);
         label.classList.toggle('cfx-topology-html-scenario-muted', !active && route.focusMode === 'spotlight');

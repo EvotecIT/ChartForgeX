@@ -16,7 +16,7 @@ internal static partial class TopologyRenderPrimitives {
         return (new ChartRect(center.X - metrics.Width / 2, center.Y - metrics.Height / 2, metrics.Width, metrics.Height), metrics.FontSize);
     }
 
-    private static (double FontSize, double Width, double Height) EndpointLabelMetrics(TopologyRenderOptions options, string text, double defaultUnits) {
+    internal static (double FontSize, double Width, double Height) EndpointLabelMetrics(TopologyRenderOptions options, string text, double defaultUnits) {
         var metrics = options.ResolvedEndpointLabelMetrics?.Invoke(text) ??
             (EndpointLabelFontSize, EstimateTextWidth(text, EndpointLabelFontSize, true, options.TextMeasurement) + 6, EndpointLabelFontSize + 6);
         return (metrics.Item1 * defaultUnits, metrics.Item2 * defaultUnits, metrics.Item3 * defaultUnits);
@@ -33,25 +33,7 @@ internal static partial class TopologyRenderPrimitives {
         var width = metrics.Width;
         var height = metrics.Height;
         var normalOffset = Math.Max(14 * defaultUnits, Math.Abs(uy) * width / 2 + Math.Abs(ux) * height / 2 + 4 * defaultUnits);
-        var obstacles = chart.Nodes.Where(node => EffectiveNodeDisplayMode(node, options) != TopologyNodeDisplayMode.Hidden)
-            .Select(node => EdgeLabelNodeObstacle(node, options, 4 * defaultUnits)).ToList();
-        if (options.IncludeEdgeLabels) obstacles.AddRange(EdgeLabelLayouts(chart, options)
-            .Select(label => LabelBox.FromCenter(label.CenterX, label.CenterY, label.Width, label.Height)));
-        if (options.IncludeGroups && options.IncludeGroupLabels)
-            obstacles.AddRange(chart.Groups.SelectMany(group => TopologyGroupHeader.PaintedParts(chart, group, options))
-                .Select(header => LabelBox.FromBounds(header.Left - 4 * defaultUnits, header.Top - 4 * defaultUnits, header.Right + 4 * defaultUnits, header.Bottom + 4 * defaultUnits)));
-        var nodes = TopologyGroupEndpoints.Resolve(chart);
-        var segments = new List<(ChartPoint Start, ChartPoint End)>();
-        foreach (var edge in chart.Edges) {
-            if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) continue;
-            var route = EdgePoints(chart, edge, nodes);
-            var painted = RenderedEdgeSamplePoints(chart, edge, nodes, route);
-            for (var i = 1; i < painted.Count; i++) segments.Add((painted[i - 1], painted[i]));
-            if (RenderedSourceMarker(edge, options.IncludeDirectionMarkers) != TopologyMarkerKind.None)
-                obstacles.Add(LabelBox.FromCenter(route[0].X, route[0].Y, 30, 30));
-            if (RenderedTargetMarker(edge, options.IncludeDirectionMarkers) != TopologyMarkerKind.None)
-                obstacles.Add(LabelBox.FromCenter(route[route.Count - 1].X, route[route.Count - 1].Y, 30, 30));
-        }
+        var (obstacles, segments) = EndpointLabelSurroundings(chart, options, defaultUnits);
         var best = endpoint;
         var bestScore = double.PositiveInfinity;
         for (var step = 0; step < 6; step++) {
@@ -74,13 +56,75 @@ internal static partial class TopologyRenderPrimitives {
         return best;
     }
 
+    // Every endpoint label is placed against the same nodes, labels, headers and routes. Rebuilding them per label made
+    // placement cost grow with labels times edges times routing, so one set is kept per chart geometry and options.
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<TopologyChart, EndpointLabelSurroundingsCache> EndpointLabelCaches = new();
+
+    private sealed class EndpointLabelSurroundingsCache {
+        internal long Key;
+        internal TopologyRenderOptions? Options;
+        internal List<LabelBox>? Obstacles;
+        internal List<(ChartPoint Start, ChartPoint End)>? Segments;
+    }
+
+    private static (List<LabelBox> Obstacles, List<(ChartPoint Start, ChartPoint End)> Segments) EndpointLabelSurroundings(TopologyChart chart, TopologyRenderOptions options, double defaultUnits) {
+        var key = EndpointLabelGeometryKey(chart, options, defaultUnits);
+        var cache = EndpointLabelCaches.GetValue(chart, _ => new EndpointLabelSurroundingsCache());
+        lock (cache) {
+            if (cache.Obstacles != null && cache.Segments != null && cache.Key == key && ReferenceEquals(cache.Options, options)) return (cache.Obstacles, cache.Segments);
+            var obstacles = chart.Nodes.Where(node => EffectiveNodeDisplayMode(node, options) != TopologyNodeDisplayMode.Hidden)
+                .Select(node => EdgeLabelNodeObstacle(node, options, 4 * defaultUnits)).ToList();
+            if (options.IncludeEdgeLabels) obstacles.AddRange(EdgeLabelLayouts(chart, options)
+                .Select(label => LabelBox.FromCenter(label.CenterX, label.CenterY, label.Width, label.Height)));
+            if (options.IncludeGroups && options.IncludeGroupLabels)
+                obstacles.AddRange(chart.Groups.SelectMany(group => TopologyGroupHeader.PaintedParts(chart, group, options))
+                    .Select(header => LabelBox.FromBounds(header.Left - 4 * defaultUnits, header.Top - 4 * defaultUnits, header.Right + 4 * defaultUnits, header.Bottom + 4 * defaultUnits)));
+            var nodes = TopologyGroupEndpoints.Resolve(chart);
+            var segments = new List<(ChartPoint Start, ChartPoint End)>();
+            foreach (var edge in chart.Edges) {
+                if (!nodes.ContainsKey(edge.SourceNodeId) || !nodes.ContainsKey(edge.TargetNodeId)) continue;
+                var route = EdgePoints(chart, edge, nodes);
+                var painted = RenderedEdgeSamplePoints(chart, edge, nodes, route);
+                for (var i = 1; i < painted.Count; i++) segments.Add((painted[i - 1], painted[i]));
+                if (RenderedSourceMarker(edge, options.IncludeDirectionMarkers) != TopologyMarkerKind.None)
+                    obstacles.Add(LabelBox.FromCenter(route[0].X, route[0].Y, 30, 30));
+                if (RenderedTargetMarker(edge, options.IncludeDirectionMarkers) != TopologyMarkerKind.None)
+                    obstacles.Add(LabelBox.FromCenter(route[route.Count - 1].X, route[route.Count - 1].Y, 30, 30));
+            }
+            cache.Key = key; cache.Options = options; cache.Obstacles = obstacles; cache.Segments = segments;
+            return (obstacles, segments);
+        }
+    }
+
+    // Everything the surroundings read: node, group and edge geometry, routing inputs, captions and the relevant switches.
+    private static long EndpointLabelGeometryKey(TopologyChart chart, TopologyRenderOptions options, double defaultUnits) {
+        unchecked {
+            long hash = 1469598103934665603;
+            void Add(double value) => hash = (hash ^ BitConverter.DoubleToInt64Bits(value)) * 1099511628211;
+            void Text(string? value) => Add(value == null ? -1 : StringComparer.Ordinal.GetHashCode(value));
+            Add(defaultUnits); Add(options.IncludeEdgeLabels ? 1 : 0); Add(options.IncludeGroups ? 1 : 0); Add(options.IncludeGroupLabels ? 1 : 0);
+            Add(options.IncludeDirectionMarkers ? 1 : 0); Add((int)options.NodeDisplayMode);
+            foreach (var node in chart.Nodes) { Text(node.Id); Add(node.X); Add(node.Y); Add(node.Width); Add(node.Height); Add((int)(node.DisplayMode ?? options.NodeDisplayMode)); Text(node.Label); Text(node.Subtitle); Add(node.Shape.HasValue ? (int)node.Shape.Value : -1); Add(node.ShowLabel ? 1 : 0); }
+            foreach (var group in chart.Groups) { Text(group.Id); Add(group.X); Add(group.Y); Add(group.Width); Add(group.Height); Text(group.Label); }
+            foreach (var edge in chart.Edges) {
+                Text(edge.Id); Text(edge.SourceNodeId); Text(edge.TargetNodeId); Add((int)edge.Routing); Add((int)edge.SourcePort); Add((int)edge.TargetPort);
+                Add(edge.RouteLane); Text(edge.Label); Text(edge.SecondaryLabel); Text(edge.TertiaryLabel); Add((int)edge.Direction);
+                Add(edge.SourceMarker.HasValue ? (int)edge.SourceMarker.Value : -1); Add(edge.TargetMarker.HasValue ? (int)edge.TargetMarker.Value : -1);
+                Text(edge.SourcePortId); Text(edge.TargetPortId); Add(edge.Interpolation.HasValue ? (int)edge.Interpolation.Value : -1);
+                Add(edge.PathGeometry == null ? 0 : System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(edge.PathGeometry));
+                foreach (var point in edge.Waypoints) { Add(point.X); Add(point.Y); }
+            }
+            return hash;
+        }
+    }
+
     public static string EdgeDash(TopologyEdge edge) {
         if (edge.DashPattern.Count > 0) return string.Join(" ", edge.DashPattern.Select(ChartStrokeDashes.FormatNumber));
         return edge.LineStyle switch {
             TopologyEdgeLineStyle.Solid => "none",
             TopologyEdgeLineStyle.Dashed => "8 5",
             TopologyEdgeLineStyle.Dotted => "2 5",
-            _ => EdgeDash(edge.Status)
+            _ => AssumedDashApplies(edge) ? "4 4" : EdgeDash(edge.Status)
         };
     }
 
@@ -91,13 +135,13 @@ internal static partial class TopologyRenderPrimitives {
     }
 
     public static string EffectiveEdgeDash(TopologyEdge edge) {
-        return edge.IsMuted && edge.DashPattern.Count == 0 && edge.LineStyle == TopologyEdgeLineStyle.Auto
+        return edge.IsMuted && edge.Evidence != TopologyEdgeEvidence.Assumed && edge.DashPattern.Count == 0 && edge.LineStyle == TopologyEdgeLineStyle.Auto
             ? "none"
             : EdgeDash(edge);
     }
 
     public static double[]? EffectiveEdgePngDashArray(TopologyEdge edge) {
-        return edge.IsMuted && edge.DashPattern.Count == 0 && edge.LineStyle == TopologyEdgeLineStyle.Auto
+        return edge.IsMuted && edge.Evidence != TopologyEdgeEvidence.Assumed && edge.DashPattern.Count == 0 && edge.LineStyle == TopologyEdgeLineStyle.Auto
             ? null
             : EdgePngDashArray(edge);
     }

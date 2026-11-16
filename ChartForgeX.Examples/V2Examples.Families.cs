@@ -200,7 +200,7 @@ public static partial class V2Examples {
         WriteRecipe(output, id, recipe, variant, title, subtitle, mode, width, height, legend, artifactKind);
         var interactive = !compact && (model is Chart && (id.Contains("-wide-") || IsScenarioVariant(variant))
             || model is ChartGrid && id.Contains("-wide-")
-            || model is TopologyChart && (family == "org-chart" || variant == "expanded")
+            || model is TopologyChart && (family == "org-chart" || variant is "expanded" or "sites")
             || model is FlowArtifact or SequenceArtifact && variant == "expanded");
         if (interactive && model is Chart chart) WriteInteractive(output, chart, id, title, subtitle, mode, width, height, legend);
         else if (interactive && model is ChartGrid grid) WriteInteractiveGrid(output, grid, id, title, mode, width);

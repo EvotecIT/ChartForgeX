@@ -103,12 +103,17 @@ internal static partial class TopologyRenderPrimitives {
         };
     }
 
+    // Assumed links use a short even dash so they read apart from the longer status dash. A disabled link keeps its
+    // dotted pattern: being switched off matters more than how the link is known.
+    internal const double AssumedDash = 4, AssumedGap = 4;
+    internal static bool AssumedDashApplies(TopologyEdge edge) => edge.Evidence == TopologyEdgeEvidence.Assumed && edge.Status != TopologyHealthStatus.Disabled;
+
     public static (bool Dashed, double Dash, double Gap) EdgePngDash(TopologyEdge edge) {
         return edge.LineStyle switch {
             TopologyEdgeLineStyle.Solid => (false, 0, 0),
             TopologyEdgeLineStyle.Dashed => (true, 8, 5),
             TopologyEdgeLineStyle.Dotted => (true, 2, 5),
-            _ => edge.Status switch {
+            _ => AssumedDashApplies(edge) ? (true, AssumedDash, AssumedGap) : edge.Status switch {
                 TopologyHealthStatus.Warning => (true, 8, 5),
                 TopologyHealthStatus.Critical => (true, 8, 5),
                 TopologyHealthStatus.Disabled => (true, 3, 6),

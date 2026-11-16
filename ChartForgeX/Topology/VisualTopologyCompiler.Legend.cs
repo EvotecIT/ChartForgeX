@@ -16,7 +16,7 @@ internal sealed partial class VisualTopologyCompiler {
             if (resolved != null) metadata["data-legend-icon-shape"] = resolved.Shape.ToString();
         }
         using var markerGroup = _builder.PushGroup(null, "topology-legend-item", metadata);
-        var fallback = item.Status.HasValue ? Status(item.Status.Value) : _colors.Accent;
+        var fallback = item.Status.HasValue ? Status(item.Status.Value) : item.Evidence != TopologyEdgeEvidence.Unspecified ? Status(TopologyHealthStatus.Unknown) : _colors.Accent;
         var color = Color(item.Color, fallback);
         var colorRole = !string.IsNullOrWhiteSpace(item.Color) ? SvgColorRole.Any : item.Status.HasValue ? SvgColorRole.Status : SvgColorRole.Series;
         var sourceColor = !string.IsNullOrWhiteSpace(item.Color) ? item.Color : item.Status.HasValue ? _svgTheme?.StatusColor(item.Status.Value) : _svgTheme?.Accent;
@@ -32,7 +32,9 @@ internal sealed partial class VisualTopologyCompiler {
         } else {
             using (PinnedState()) {
                 if (item.Kind == TopologyLegendItemKind.Edge) {
-                    var edge = new TopologyEdge { Kind = item.EdgeKind ?? TopologyEdgeKind.Generic, LineStyle = TopologyRenderPrimitives.LegendLineStyle(_source, item) };
+                    var edge = item.Evidence != TopologyEdgeEvidence.Unspecified && item.LineStyle == TopologyEdgeLineStyle.Auto
+                        ? new TopologyEdge { Evidence = item.Evidence }
+                        : new TopologyEdge { Kind = item.EdgeKind ?? TopologyEdgeKind.Generic, LineStyle = TopologyRenderPrimitives.LegendLineStyle(_source, item) };
                     _builder.Line(bounds.X, centerY, bounds.Right, centerY, color, _context.Theme.SeriesStrokeWidth,
                         "topology-legend-edge", dash: TopologyRenderPrimitives.EffectiveEdgePngDashArray(edge), paint: new VisualScenePaintBinding(stroke: colorPaint));
                 } else _builder.Ellipse(centerX, centerY, bounds.Width / 2, bounds.Height / 2, color, role: "topology-legend-status", paint: new VisualScenePaintBinding(colorPaint));

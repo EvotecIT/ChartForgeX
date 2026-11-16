@@ -110,6 +110,8 @@
         [uiText('ExplorerId', 'ID'), detail.id],
         [uiText('ExplorerStatus', 'Status'), detail.status],
         [uiText('ExplorerGroup', 'Group'), detail.groupId || detail.sourceGroupId || detail.targetGroupId],
+        [uiText('ExplorerEvidence', 'Evidence'), [detail.evidence, detail.evidenceText].filter(Boolean).join(': ')],
+        [uiText('ExplorerValues', 'Values'), detail.chips],
         [uiText('ExplorerRelatedNodes', 'Related nodes'), (detail.related && detail.related.nodeIds || []).length],
         [uiText('ExplorerRelatedEdges', 'Related edges'), (detail.related && detail.related.edgeIds || []).length]
       ]);
@@ -179,6 +181,9 @@
           accessibleName: attr(element, 'aria-label') || attr(element, 'data-cfx-description'),
           healthRing: attr(element, 'data-node-health-ring') === 'true',
           nodeKind: attr(element, 'data-node-kind'),
+          siblingCount: attr(element, 'data-sibling-count'),
+          siblingMemberIds: attr(element, 'data-sibling-member-ids').split(' ').filter(Boolean),
+          siblingExpanded: attr(element, 'data-sibling-expanded'),
           groupId: attr(element, 'data-group-id'),
           displayMode: attr(element, 'data-node-display-mode'),
           badge: attr(element, 'data-node-badge'),
@@ -211,6 +216,11 @@
           layoutInference: attr(element, 'data-edge-layout-inference'),
           muted: attr(element, 'data-edge-muted') === 'true',
           lineStyle: attr(element, 'data-edge-line-style'),
+          evidence: attr(element, 'data-edge-evidence'),
+          evidenceText: attr(element, 'data-edge-evidence-text'),
+          stripes: attr(element, 'data-edge-stripes').split(';').filter(Boolean),
+          chips: attr(element, 'data-edge-chips'),
+          uplink: attr(element, 'data-edge-uplink'),
           route: {
             strategy: attr(element, 'data-route-strategy'),
             curve: attr(element, 'data-route-curve'),
@@ -327,7 +337,7 @@
         if (classPrefix === 'cfx-topology-html-') setTopologyMuted(edge, 'selection', !isRelated);
         else edge.classList.toggle(mutedClass, !isRelated);
       });
-      wrapper.querySelectorAll('[data-cfx-role="topology-edge-label"]').forEach(label => {
+      wrapper.querySelectorAll(edgeAnnotationSelector).forEach(label => {
         const isSelf = detail.kind === 'edge' && attr(label, 'data-edge-id') === detail.id;
         const isRelated = isSelf || relatedEdges.has(attr(label, 'data-edge-id'));
         label.classList.toggle(relatedClass, isRelated);
@@ -392,7 +402,7 @@
         relatedSets[item.kind + 'Ids'].add(item.id);
         Object.keys(relatedSets).forEach(key => (item.related[key] || []).forEach(id => relatedSets[key].add(id)));
       });
-      wrapper.querySelectorAll('[data-cfx-role="topology-node"],[data-cfx-role="topology-edge"],[data-cfx-role="topology-edge-label"]').forEach(element => {
+      wrapper.querySelectorAll('[data-cfx-role="topology-node"],[data-cfx-role="topology-edge"],' + edgeAnnotationSelector).forEach(element => {
         const role = attr(element, 'data-cfx-role'); const key = role === 'topology-node' ? 'nodeIds' : 'edgeIds';
         const id = attr(element, role === 'topology-node' ? 'data-node-id' : 'data-edge-id');
         setTopologyMuted(element, 'selection', !relatedSets[key].has(id));
@@ -407,7 +417,7 @@
     const syncTopologyHighlightAppearance = () => {
       const detail = topologyHighlightState;
       const nodeIds = new Set((detail.nodeIds || []).map(String)), edgeIds = new Set((detail.edgeIds || []).map(String));
-      const elements = Array.from(wrapper.querySelectorAll('[data-cfx-role="topology-node"],[data-cfx-role="topology-edge"],[data-cfx-role="topology-edge-label"]'));
+      const elements = Array.from(wrapper.querySelectorAll('[data-cfx-role="topology-node"],[data-cfx-role="topology-edge"],' + edgeAnnotationSelector));
       const matches = new Set(elements.filter(element => {
         const node = attr(element, 'data-cfx-role') === 'topology-node';
         return (node ? nodeIds : edgeIds).has(attr(element, node ? 'data-node-id' : 'data-edge-id'));

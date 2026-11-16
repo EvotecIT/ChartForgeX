@@ -139,7 +139,7 @@
         edge.classList.toggle('cfx-topology-html-scenario-preview', active);
         edge.classList.toggle('cfx-topology-html-scenario-preview-muted', !active);
       });
-      wrapper.querySelectorAll('[data-cfx-role="topology-edge-label"]').forEach(label => {
+      wrapper.querySelectorAll(edgeAnnotationSelector).forEach(label => {
         const active = route.edgeIds.has(attr(label, 'data-edge-id'));
         label.classList.toggle('cfx-topology-html-scenario-preview', active);
         label.classList.toggle('cfx-topology-html-scenario-preview-muted', !active);

@@ -50,6 +50,7 @@ internal sealed partial class VisualTopologyCompiler {
         if (!string.IsNullOrWhiteSpace(node.Color)) data["data-node-color"] = node.Color!;
         if (node.PaletteIndex.HasValue) data["data-node-palette-index"] = node.PaletteIndex.Value.ToString(CultureInfo.InvariantCulture);
         if (!string.IsNullOrWhiteSpace(node.BackgroundColor)) data["data-node-background-color"] = node.BackgroundColor!;
+        SiblingCardMetadata(data, node);
         return data;
     }
 
@@ -93,6 +94,7 @@ internal sealed partial class VisualTopologyCompiler {
         data["data-edge-dash-pattern"] = string.Join(" ", edge.DashPattern.Select(length => Number(length * _scale)));
         data["data-source-marker"] = EffectiveSourceMarker(edge).ToString(); data["data-target-marker"] = EffectiveTargetMarker(edge).ToString();
         data["data-source-label"] = edge.SourceLabel ?? string.Empty; data["data-target-label"] = edge.TargetLabel ?? string.Empty;
+        EdgePresentationMetadata(data, edge);
         data["data-edge-render-order"] = _edgeRenderOrders[edge].ToString(CultureInfo.InvariantCulture);
         if (edge.PreferredLength.HasValue) data["data-edge-preferred-length"] = Number(edge.PreferredLength.Value);
         data["data-edge-minimum-rank-span"] = edge.MinimumRankSpan.ToString(CultureInfo.InvariantCulture);
