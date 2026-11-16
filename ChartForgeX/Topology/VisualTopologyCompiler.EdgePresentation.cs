@@ -39,6 +39,14 @@ internal sealed partial class VisualTopologyCompiler {
         return true;
     }
 
+    // A dashed striped edge keeps its ends attached with a short solid stub in its first band colour.
+    private void StripeConnector(TopologyEdge edge, ChartPath connector, double width, double opacity) {
+        var color = Color(edge.Stripes[0].Color, _colors.Border);
+        color = color.WithOpacity(color.A / 255d * opacity);
+        _builder.Path(connector, stroke: color, strokeWidth: width, role: "topology-edge-endpoint-connector", cap: VisualStrokeCap.Butt,
+            paint: new VisualScenePaintBinding(stroke: SvgPaint.Of(color, SvgColorRole.Any)));
+    }
+
     private void BuildEdgeChips() {
         var edges = _chart.Edges.Where(edge => edge.Chips.Count > 0 && _paintRoutes.ContainsKey(edge)).OrderBy(edge => _edgeRenderOrders[edge]).ToArray();
         if (edges.Length == 0) return;

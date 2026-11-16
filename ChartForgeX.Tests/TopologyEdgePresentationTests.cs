@@ -86,6 +86,9 @@ public sealed class TopologyEdgePresentationTests {
         var document = XDocument.Parse(chart.Prepare(Options()).ToSvg());
         Assert.All(Edge(document, "link").Descendants().Where(element => Role(element) == "topology-edge-stripe"),
             stripe => Assert.Equal("8 16", (string?)stripe.Attribute("stroke-dasharray")));
+        var stubs = Edge(document, "link").Descendants().Where(element => Role(element) == "topology-edge-endpoint-connector").ToArray();
+        Assert.Equal(2, stubs.Length);
+        Assert.All(stubs, stub => Assert.Equal("#2563EB", ((string?)stub.Attribute("stroke"))!.ToUpperInvariant()));
     }
 
     [Fact]

@@ -77,8 +77,8 @@ internal sealed partial class VisualTopologyCompiler {
                     _builder.Path(path, stroke: halo, strokeWidth: width + RouteHaloStrokeExtra(geographic) * units * _scale,
                         role: "topology-edge-route-halo", dash: dash, paint: new VisualScenePaintBinding(stroke: BackgroundPaint(halo, RouteHaloOpacity(geographic) * HighlightFactor(_highlight.IsEdgeHighlighted(edge)))));
                 }
-                if (DrawStripes(edge, path, width, dash, units, paintOpacity)) return;
-                foreach (var layer in ChartLineVisualLayers.Build(color, width, style, units * _scale)) {
+                var striped = DrawStripes(edge, path, width, dash, units, paintOpacity);
+                if (!striped) foreach (var layer in ChartLineVisualLayers.Build(color, width, style, units * _scale)) {
                     if (layer.IsVisible) _builder.Path(path, stroke: layer.ColorWithOpacity(), strokeWidth: layer.StrokeWidth,
                         role: "topology-edge-line" + layer.RoleSuffix, dash: dash,
                         paint: new VisualScenePaintBinding(stroke: layer.IsHighlight ? SvgPaint.Literal(layer.ColorWithOpacity())
@@ -99,6 +99,7 @@ internal sealed partial class VisualTopologyCompiler {
                         var length = Math.Min(7 * units * _scale, distance);
                         var inner = new ChartPoint(endpoint.X + dx / distance * length, endpoint.Y + dy / distance * length);
                         var connector = new ChartPath(new[] { ChartPathCommand.MoveTo(endpoint.X, endpoint.Y), ChartPathCommand.LineTo(inner.X, inner.Y) });
+                        if (striped) { StripeConnector(edge, connector, width, paintOpacity); return; }
                         foreach (var layer in layers) {
                             if (!layer.IsVisible) continue;
                             _builder.Path(connector, stroke: layer.ColorWithOpacity(), strokeWidth: layer.StrokeWidth,

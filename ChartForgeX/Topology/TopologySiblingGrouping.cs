@@ -123,17 +123,23 @@ internal static class TopologySiblingGroupingLayout {
         var index = chart.Nodes.IndexOf(first);
         chart.Nodes.RemoveAll(candidate => memberIds.Contains(candidate.Id));
         chart.Nodes.Insert(Math.Min(index, chart.Nodes.Count), node);
-        var template = edges[0];
-        var outward = template.SourceNodeId == parentId;
-        var edge = new TopologyEdge {
-            Id = UniqueEdgeId(chart, id + "~edge"), SourceNodeId = outward ? parentId : id, TargetNodeId = outward ? id : parentId,
-            Kind = template.Kind, Direction = template.Direction, Routing = template.Routing, LineStyle = template.LineStyle,
-            Status = Worst(edges.Select(candidate => candidate.Status)), Color = Shared(edges, candidate => candidate.Color),
-            IsMuted = edges.All(candidate => candidate.IsMuted),
-            Evidence = edges.All(candidate => candidate.Evidence == template.Evidence) ? template.Evidence : TopologyEdgeEvidence.Unspecified,
-            UplinkEnd = edges.All(candidate => candidate.UplinkEnd == template.UplinkEnd) ? template.UplinkEnd : TopologyEdgeEnd.None
-        };
-        chart.Edges.Insert(chart.Edges.IndexOf(template), edge);
+        // One aggregate edge per direction and kind the members use, so a leaf linked both ways keeps both relationships.
+        var families = edges.GroupBy(edge => (Outward: edge.SourceNodeId == parentId, edge.Direction, edge.Kind)).ToArray();
+        var insertAt = edges.Min(edge => chart.Edges.IndexOf(edge));
+        foreach (var family in families) {
+            var template = family.First();
+            var outward = family.Key.Outward;
+            var aggregate = new TopologyEdge {
+                Id = UniqueEdgeId(chart, id + "~edge" + (families.Length > 1 ? "-" + (outward ? "out" : "in") + "-" + template.Kind.ToString().ToLowerInvariant() + "-" + template.Direction.ToString().ToLowerInvariant() : string.Empty)),
+                SourceNodeId = outward ? parentId : id, TargetNodeId = outward ? id : parentId,
+                Kind = template.Kind, Direction = template.Direction, Routing = template.Routing, LineStyle = template.LineStyle,
+                Status = Worst(family.Select(candidate => candidate.Status)), Color = Shared(family, candidate => candidate.Color),
+                IsMuted = family.All(candidate => candidate.IsMuted),
+                Evidence = family.All(candidate => candidate.Evidence == template.Evidence) ? template.Evidence : TopologyEdgeEvidence.Unspecified,
+                UplinkEnd = family.All(candidate => candidate.UplinkEnd == template.UplinkEnd) ? template.UplinkEnd : TopologyEdgeEnd.None
+            };
+            chart.Edges.Insert(insertAt++, aggregate);
+        }
         chart.Edges.RemoveAll(candidate => edges.Contains(candidate));
     }
 
