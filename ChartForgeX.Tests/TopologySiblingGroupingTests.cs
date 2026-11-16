@@ -96,6 +96,13 @@ public sealed class TopologySiblingGroupingTests {
         foreach (var node in hidden.Nodes.Where(node => node.Kind == TopologyNodeKind.Server)) node.DisplayMode = TopologyNodeDisplayMode.Hidden;
         Assert.DoesNotContain(XDocument.Parse(hidden.Prepare(Options()).ToSvg()).Descendants(), element => element.Attribute("data-sibling-count") != null);
 
+        var styled = Site(3).WithSiblingGrouping();
+        foreach (var index in new[] { 1, 2, 3 }) styled.WithEdgeStroke("e" + index, 3, .6, 6, 2).WithEdgeMarkers("e" + index, null, TopologyMarkerKind.Arrow);
+        var styledEdge = XDocument.Parse(styled.Prepare(Options()).ToSvg()).Descendants().Single(element => Role(element) == "topology-edge"
+            && ((string?)element.Attribute("data-target-node-id"))!.EndsWith("~siblings", StringComparison.Ordinal));
+        Assert.Equal(("3", "0.6", "6 2", "Arrow"), ((string?)styledEdge.Attribute("data-edge-stroke-width"), (string?)styledEdge.Attribute("data-edge-opacity"),
+            (string?)styledEdge.Attribute("data-edge-dash-pattern"), (string?)styledEdge.Attribute("data-target-marker")));
+
         var both = Site(3).WithSiblingGrouping();
         foreach (var index in new[] { 1, 2, 3 }) both.AddEdge("back" + index, "dc" + index, "hub", kind: TopologyEdgeKind.Replication);
         var bothWays = XDocument.Parse(both.Prepare(Options()).ToSvg());
@@ -120,6 +127,7 @@ public sealed class TopologySiblingGroupingTests {
     public void SavedGroupedChartsReopenWithTheirCardMembers() {
         var chart = Site(14).WithSiblingGrouping(titleFormatter: (kind, members) => "Domain controllers");
         chart.Nodes.Single(node => node.Id == "dc2").Href = "https://example.test/dc2";
+        chart.Nodes.Single(node => node.Id == "dc4").Subtitle = "~ops~";
         chart.Nodes.Single(node => node.Id == "dc3").Status = TopologyHealthStatus.Warning;
         var prepared = chart.Prepare(Options());
         var restored = VisualArtifactInterchangeEnvelope.FromJson(prepared.ToInterchangeEnvelope().ToJson()).ToTopologyChart();
@@ -130,6 +138,7 @@ public sealed class TopologySiblingGroupingTests {
         Assert.Equal("https://example.test/dc2", card.SiblingGroup.Members[1].Href);
         Assert.Equal(TopologyHealthStatus.Warning, card.SiblingGroup.Members[2].Status);
         Assert.Null(card.SiblingGroup.Members[0].Badge);
+        Assert.Equal("~ops~", card.SiblingGroup.Members[3].Subtitle);
         Assert.DoesNotContain(card.Metadata.Keys, key => key.StartsWith("chartforgex.siblings.", StringComparison.Ordinal));
         var original = XDocument.Parse(prepared.ToSvg()).Descendants().Single(element => element.Attribute("data-sibling-count") != null);
         var reopened = XDocument.Parse(restored.Prepare(Options()).ToSvg()).Descendants().Single(element => element.Attribute("data-sibling-count") != null);

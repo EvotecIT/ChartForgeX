@@ -63,7 +63,8 @@ internal static class TopologySiblingCardInterchange {
     }
 
     // A missing value is written as "~" so it stays apart from an empty string.
-    private static string Escape(string? value) => value == null ? "~" : Uri.EscapeDataString(value);
+    // EscapeDataString leaves "~" alone (it is unreserved), so a literal "~" is written as %7E to stay apart from null.
+    private static string Escape(string? value) => value == null ? "~" : Uri.EscapeDataString(value).Replace("~", "%7E");
     private static string? Unescape(string value) => value == "~" ? null : Uri.UnescapeDataString(value);
 
     private static T Parse<T>(string? value) where T : struct =>

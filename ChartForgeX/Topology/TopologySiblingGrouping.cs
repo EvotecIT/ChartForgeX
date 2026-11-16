@@ -117,6 +117,7 @@ internal static class TopologySiblingGroupingLayout {
     private static void Collapse(TopologyChart chart, TopologySiblingGrouping policy, string parentId, TopologyNodeKind kind, List<TopologyNode> members) {
         var memberIds = new HashSet<string>(members.Select(member => member.Id), StringComparer.Ordinal);
         var edges = chart.Edges.Where(edge => memberIds.Contains(edge.SourceNodeId) || memberIds.Contains(edge.TargetNodeId)).ToArray();
+        var edgeSet = new HashSet<TopologyEdge>(edges);
         var first = members[0];
         var title = policy.TitleFormatter?.Invoke(kind, members.AsReadOnly()) ?? Shared(members, node => node.Symbol) ?? kind.ToString();
         var card = new TopologySiblingCard(parentId, members.Select(member => new TopologySiblingMember(member)).ToArray(), policy.MaximumRows, policy.CollapseCount);
@@ -136,7 +137,7 @@ internal static class TopologySiblingGroupingLayout {
         chart.Nodes.Insert(Math.Min(index, chart.Nodes.Count), node);
         // One aggregate edge per direction and kind the members use, so a leaf linked both ways keeps both relationships.
         var families = edges.GroupBy(edge => (Outward: edge.SourceNodeId == parentId, edge.Direction, edge.Kind)).ToArray();
-        var insertAt = edges.Min(edge => chart.Edges.IndexOf(edge));
+        var insertAt = chart.Edges.FindIndex(edgeSet.Contains);
         foreach (var family in families) {
             var template = family.First();
             var outward = family.Key.Outward;
@@ -153,13 +154,36 @@ internal static class TopologySiblingGroupingLayout {
                 SecondaryLabel = Shared(family, candidate => candidate.SecondaryLabel), Tooltip = Shared(family, candidate => candidate.Tooltip),
                 SourceLabel = Shared(family, candidate => candidate.SourceLabel), TargetLabel = Shared(family, candidate => candidate.TargetLabel)
             };
+            // Authored styling every member link agrees on carries over; values that differ fall back to the defaults.
+            if (SharedValue(family, candidate => candidate.StrokeWidth) is { } strokeWidth) aggregate.StrokeWidth = strokeWidth;
+            if (SharedValue(family, candidate => candidate.Opacity) is { } opacity) aggregate.Opacity = opacity;
+            if (SharedValue(family, candidate => candidate.SourceMarker) is { } sourceMarker) aggregate.SourceMarker = sourceMarker;
+            if (SharedValue(family, candidate => candidate.TargetMarker) is { } targetMarker) aggregate.TargetMarker = targetMarker;
+            if (SharedValue(family, candidate => (TopologyEdgeEmphasis?)candidate.Emphasis) is { } emphasis) aggregate.Emphasis = emphasis;
+            if (SharedValue(family, candidate => (TopologyEdgePort?)candidate.SourcePort) is { } sourcePort) aggregate.SourcePort = sourcePort;
+            if (SharedValue(family, candidate => (TopologyEdgePort?)candidate.TargetPort) is { } targetPort) aggregate.TargetPort = targetPort;
+            if (SharedValue(family, candidate => candidate.PreferredLength) is { } preferredLength) aggregate.PreferredLength = preferredLength;
+            if (SharedValue(family, candidate => (int?)candidate.MinimumRankSpan) is { } rankSpan) aggregate.MinimumRankSpan = rankSpan;
+            if (SharedValue(family, candidate => (int?)candidate.RoutingPriority) is { } priority) aggregate.RoutingPriority = priority;
+            aggregate.LabelColor = Shared(family, candidate => candidate.LabelColor);
+            aggregate.LabelBackgroundColor = Shared(family, candidate => candidate.LabelBackgroundColor);
+            aggregate.Href = Shared(family, candidate => candidate.Href);
+            aggregate.CssClass = Shared(family, candidate => candidate.CssClass);
+            if (Shared(family, candidate => Signature(candidate.DashPattern.Select(length => length.ToString("R", System.Globalization.CultureInfo.InvariantCulture)))) != null)
+                aggregate.DashPattern.AddRange(template.DashPattern);
+            if (template.SourceMarkerStyle != null && Shared(family, candidate => MarkerKey(candidate.SourceMarkerStyle)) != null) aggregate.SourceMarkerStyle = template.SourceMarkerStyle.Clone();
+            if (template.TargetMarkerStyle != null && Shared(family, candidate => MarkerKey(candidate.TargetMarkerStyle)) != null) aggregate.TargetMarkerStyle = template.TargetMarkerStyle.Clone();
+            foreach (var entry in template.Metadata)
+                if (family.All(candidate => candidate.Metadata.TryGetValue(entry.Key, out var value) && value == entry.Value)) aggregate.Metadata[entry.Key] = entry.Value;
+            foreach (var entry in template.Metrics)
+                if (family.All(candidate => candidate.Metrics.TryGetValue(entry.Key, out var value) && value == entry.Value)) aggregate.Metrics[entry.Key] = entry.Value;
             if (Shared(family, candidate => Signature(candidate.Stripes.Select(stripe => stripe.Color + "\u001f" + stripe.Label))) != null)
                 foreach (var stripe in template.Stripes) aggregate.Stripes.Add(stripe.Clone());
             if (Shared(family, candidate => Signature(candidate.Chips.Select(chip => chip.Text + "\u001f" + chip.Tone + "\u001f" + chip.IconId))) != null)
                 foreach (var chip in template.Chips) aggregate.Chips.Add(chip.Clone());
             chart.Edges.Insert(insertAt++, aggregate);
         }
-        chart.Edges.RemoveAll(candidate => edges.Contains(candidate));
+        chart.Edges.RemoveAll(edgeSet.Contains);
     }
 
     private static double CardWidth(TopologyChart chart, TopologySiblingCard card) {
@@ -273,6 +297,15 @@ internal static class TopologySiblingGroupingLayout {
         foreach (var status in new[] { TopologyHealthStatus.Critical, TopologyHealthStatus.Warning, TopologyHealthStatus.Healthy })
             if (all.Contains(status)) return status;
         return all.All(status => status == TopologyHealthStatus.Disabled) && all.Length > 0 ? TopologyHealthStatus.Disabled : TopologyHealthStatus.Unknown;
+    }
+
+    private static string? MarkerKey(TopologyMarkerStyle? style) => style == null ? null
+        : string.Join(":", style.Scale.ToString("R", System.Globalization.CultureInfo.InvariantCulture), style.Offset.ToString("R", System.Globalization.CultureInfo.InvariantCulture),
+            style.StrokeWidth?.ToString("R", System.Globalization.CultureInfo.InvariantCulture) ?? "-");
+
+    private static T? SharedValue<T>(IEnumerable<TopologyEdge> edges, Func<TopologyEdge, T?> value) where T : struct {
+        var values = edges.Select(value).Distinct().ToArray();
+        return values.Length == 1 ? values[0] : null;
     }
 
     private static string? Signature(IEnumerable<string> parts) { var text = string.Join("\u001e", parts); return text.Length == 0 ? null : text; }
