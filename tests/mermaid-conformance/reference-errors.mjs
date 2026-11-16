@@ -1,6 +1,6 @@
 // These signatures are qualified against the pinned packages, rather than treating any
 // rejection from mermaid.parse as unavailable syntax. New error shapes fail closed.
-const qualifiedVersions = new Set(['10.9.8', '11.17.2', '12.2.0']);
+const qualifiedVersions = new Set(['10.9.8', '11.17.2', '12.3.0']);
 
 export function isReferenceRejection(error, version, family = '') {
   if (!qualifiedVersions.has(version)) return false;
