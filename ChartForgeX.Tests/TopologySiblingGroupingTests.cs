@@ -76,6 +76,21 @@ public sealed class TopologySiblingGroupingTests {
         var selected = new TopologyRenderOptions { FitContentToViewport = false }; selected.SelectedNodeIds.Add("dc3");
         Assert.Equal(5, Site(3).WithSiblingGrouping().Prepare(selected).NodeCount);
 
+        var health = Site(3).WithSiblingGrouping();
+        health.Nodes.Single(node => node.Id == "dc3").Status = TopologyHealthStatus.Critical;
+        var healthy = new TopologyView(); healthy.HealthStatuses.Add(TopologyHealthStatus.Healthy);
+        Assert.Contains(XDocument.Parse(health.Prepare(new TopologyRenderOptions { FitContentToViewport = false, View = healthy }).ToSvg()).Descendants(),
+            element => Role(element) == "topology-node" && (string?)element.Attribute("data-node-id") == "dc1");
+
+        var shared = Site(3).WithSiblingGrouping();
+        foreach (var index in new[] { 1, 2, 3 }) shared.AddEdgeStripe("e" + index, "#2563EB", "IP").AddEdgeStripe("e" + index, "#F97316", "SMTP").AddEdgeChip("e" + index, "cost 100")
+            .WithEdgeEndpointLabels("e" + index, null, "bridgehead").WithEdgeUplink("e" + index, TopologyEdgeEnd.Target);
+        var aggregate = XDocument.Parse(shared.Prepare(Options()).ToSvg()).Descendants().Single(element => Role(element) == "topology-edge"
+            && ((string?)element.Attribute("data-target-node-id"))!.EndsWith("~siblings", StringComparison.Ordinal));
+        Assert.Equal("#2563EB;#F97316", (string?)aggregate.Attribute("data-edge-stripes"));
+        Assert.Equal("cost 100", (string?)aggregate.Attribute("data-edge-chips"));
+        Assert.Equal("↑ bridgehead", (string?)aggregate.Attribute("data-target-label"));
+
         var both = Site(3).WithSiblingGrouping();
         foreach (var index in new[] { 1, 2, 3 }) both.AddEdge("back" + index, "dc" + index, "hub", kind: TopologyEdgeKind.Replication);
         var bothWays = XDocument.Parse(both.Prepare(Options()).ToSvg());
@@ -106,6 +121,7 @@ public sealed class TopologySiblingGroupingTests {
         var rows = card.Descendants().Single(element => Role(element) == "topology-sibling-rows");
         Assert.Equal("0", (string?)rows.Attribute("opacity"));
         Assert.Equal(7, rows.Descendants().Count(element => Role(element) == "topology-sibling-row"));
+        Assert.DoesNotContain(rows.Descendants(), element => element.Name.LocalName is "a" or "title");
         Assert.Equal(TopologySiblingCard.HeaderHeight + 8 * TopologySiblingCard.RowHeight + TopologySiblingCard.BottomPadding,
             double.Parse((string)card.Attribute("data-sibling-expanded-height")!, System.Globalization.CultureInfo.InvariantCulture), 3);
         Assert.Equal("true", (string?)XDocument.Parse(Site(40).WithSiblingGrouping(collapseCount: 0).Prepare(Options()).ToSvg()).Descendants()

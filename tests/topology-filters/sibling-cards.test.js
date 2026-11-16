@@ -14,7 +14,7 @@ function fixture(edges, collapsed = false, clip = null) {
       <rect x="10" y="100" width="210" height="${collapsed ? 36 : 110}" data-cfx-role="topology-node-surface"/>
       <g data-cfx-role="topology-sibling-header" data-node-id="card"><path data-cfx-role="topology-sibling-toggle" d="M 0 0 L 1 1"/></g>
       <g data-cfx-role="topology-sibling-rows" data-node-id="card"${collapsed ? ' opacity="0"' : ''}>
-        ${['dc1', 'dc2', 'dc3'].map(id => `<g data-cfx-role="topology-sibling-row" data-node-id="${id}"></g>`).join('')}
+        ${['dc1', 'dc2', 'dc3'].map(id => `<g data-cfx-role="topology-sibling-row" data-node-id="${id}"${collapsed && id === 'dc1' ? ' data-sibling-href="https://example.test/dc1" data-sibling-tooltip="DC one"' : ''}></g>`).join('')}
       </g>
     </g>
     <g data-cfx-role="topology-node" data-node-id="neighbour"></g>
@@ -103,6 +103,11 @@ test('a card that starts collapsed opens over its neighbours on demand', () => {
     assert.equal(view.rows.hasAttribute('opacity'), false);
     assert.equal(view.rows.style.display, '');
     assert.equal(view.card.parentNode.lastElementChild, view.card);
+    const link = view.rows.querySelector('[data-cfx-role="topology-sibling-row-host"]');
+    assert.equal(link.tagName.toLowerCase(), 'a');
+    assert.equal(link.getAttribute('href'), 'https://example.test/dc1');
+    assert.equal(link.querySelector('title').textContent, 'DC one');
+    assert.equal(link.querySelector('[data-cfx-role="topology-sibling-row"]').getAttribute('data-node-id'), 'dc1');
   } finally { view.close(); }
 });
 

@@ -52,7 +52,7 @@ internal sealed partial class VisualTopologyCompiler {
         var top = node.Y + TopologySiblingCard.HeaderHeight;
         var from = Point(new ChartPoint(node.X + 8, top - 2)); var to = Point(new ChartPoint(node.X + node.Width - 8, top - 2));
         _builder.Line(from.X, from.Y, to.X, to.Y, divider, _context.Theme.AxisStrokeWidth * _scale, "topology-sibling-divider", paint: new VisualScenePaintBinding(stroke: BorderPaint(divider)));
-        for (var index = 0; index < card.VisibleCount; index++) BuildSiblingRow(node, card.Members[index], index, top + index * TopologySiblingCard.RowHeight, active);
+        for (var index = 0; index < card.VisibleCount; index++) BuildSiblingRow(node, card, card.Members[index], index, top + index * TopologySiblingCard.RowHeight, active);
         if (card.VisibleCount < card.Members.Count) {
             var more = (card.Members.Count - card.VisibleCount).ToString(CultureInfo.InvariantCulture);
             var muted = Highlight(_colors.MutedForeground, active);
@@ -61,14 +61,21 @@ internal sealed partial class VisualTopologyCompiler {
         }
     }
 
-    private void BuildSiblingRow(TopologyNode card, TopologySiblingMember member, int index, double top, bool active) {
+    private void BuildSiblingRow(TopologyNode card, TopologySiblingCard siblings, TopologySiblingMember member, int index, double top, bool active) {
         var height = TopologySiblingCard.RowHeight;
-        // A member's own link and tooltip survive grouping on its row.
-        using var link = Host(member.Href, member.Tooltip, card.Id + "-sibling-link-" + index.ToString(CultureInfo.InvariantCulture), "topology-sibling-row-host");
-        using var row = _builder.PushGroup(card.Id + "-sibling-" + index.ToString(CultureInfo.InvariantCulture), "topology-sibling-row", new Dictionary<string, string> {
+        // A member's own link and tooltip survive grouping on its row. A row hidden in a collapsed card carries no live link or tooltip: an invisible target would still take clicks and focus.
+        // Its safe link stays as data for the browser to attach when the card opens.
+        using var link = siblings.Collapsed ? null : Host(member.Href, member.Tooltip, card.Id + "-sibling-link-" + index.ToString(CultureInfo.InvariantCulture), "topology-sibling-row-host");
+        var rowData = new Dictionary<string, string> {
             ["data-node-id"] = member.Id, ["data-node-label"] = member.Label, ["data-node-subtitle"] = member.Subtitle ?? string.Empty,
             ["data-cfx-status"] = member.Status.ToString(), ["data-sibling-card-id"] = card.Id
-        });
+        };
+        if (siblings.Collapsed && TopologyRenderPrimitives.SafeHref(member.Href) is { } href) {
+            rowData["data-sibling-href"] = href;
+            if (_options.OpenLinksInNewTab) rowData["data-sibling-new-tab"] = "true";
+        }
+        if (siblings.Collapsed && _options.IncludeTooltips && !string.IsNullOrWhiteSpace(member.Tooltip)) rowData["data-sibling-tooltip"] = member.Tooltip!;
+        using var row = _builder.PushGroup(card.Id + "-sibling-" + index.ToString(CultureInfo.InvariantCulture), "topology-sibling-row", rowData);
         var tone = Highlight(Color(member.Color, member.Status == TopologyHealthStatus.Unknown ? _colors.MutedForeground : Status(member.Status)), active);
         BuildGlyph(new TopologyNode { Kind = member.Kind, IconId = member.IconId, Symbol = member.Symbol }, card.X + 18, top + height / 2, tone, .5, SvgColorRole.Status, allowArtwork: false);
         var right = card.X + card.Width - 10;

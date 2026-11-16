@@ -93,7 +93,10 @@ internal static class TopologySiblingGroupingLayout {
         // Leaves whose links differ in direction or kind keep separate cards, so no relationship is lost to the aggregate edge.
         var buckets = new Dictionary<(string Parent, TopologyNodeKind Kind, string? Group, string Links), List<TopologyNode>>();
         foreach (var leaf in Leaves(chart, nodes, pinned)) {
-            var links = string.Join(";", leaf.Edges.Select(edge => (edge.SourceNodeId == leaf.Parent ? "out" : "in") + ":" + edge.Direction + ":" + edge.Kind).OrderBy(text => text, StringComparer.Ordinal));
+            // A view that filters by health judges every member by its own status, so only same-status leaves may share a card.
+            var byStatus = view?.HealthStatuses.Count > 0;
+            var links = string.Join(";", leaf.Edges.Select(edge => (edge.SourceNodeId == leaf.Parent ? "out" : "in") + ":" + edge.Direction + ":" + edge.Kind
+                + (byStatus ? ":" + edge.Status : string.Empty)).OrderBy(text => text, StringComparer.Ordinal)) + (byStatus ? "|" + leaf.Node.Status : string.Empty);
             var key = (leaf.Parent, leaf.Node.Kind, leaf.Node.GroupId, links);
             if (!buckets.TryGetValue(key, out var list)) buckets.Add(key, list = new List<TopologyNode>());
             list.Add(leaf.Node);
@@ -136,8 +139,16 @@ internal static class TopologySiblingGroupingLayout {
                 Status = Worst(family.Select(candidate => candidate.Status)), Color = Shared(family, candidate => candidate.Color),
                 IsMuted = family.All(candidate => candidate.IsMuted),
                 Evidence = family.All(candidate => candidate.Evidence == template.Evidence) ? template.Evidence : TopologyEdgeEvidence.Unspecified,
-                UplinkEnd = family.All(candidate => candidate.UplinkEnd == template.UplinkEnd) ? template.UplinkEnd : TopologyEdgeEnd.None
+                UplinkEnd = family.All(candidate => candidate.UplinkEnd == template.UplinkEnd) ? template.UplinkEnd : TopologyEdgeEnd.None,
+                // Whatever every member link says identically, the aggregate says too.
+                EvidenceText = Shared(family, candidate => candidate.EvidenceText), Label = Shared(family, candidate => candidate.Label),
+                SecondaryLabel = Shared(family, candidate => candidate.SecondaryLabel), Tooltip = Shared(family, candidate => candidate.Tooltip),
+                SourceLabel = Shared(family, candidate => candidate.SourceLabel), TargetLabel = Shared(family, candidate => candidate.TargetLabel)
             };
+            if (Shared(family, candidate => Signature(candidate.Stripes.Select(stripe => stripe.Color + "\u001f" + stripe.Label))) != null)
+                foreach (var stripe in template.Stripes) aggregate.Stripes.Add(stripe.Clone());
+            if (Shared(family, candidate => Signature(candidate.Chips.Select(chip => chip.Text + "\u001f" + chip.Tone + "\u001f" + chip.IconId))) != null)
+                foreach (var chip in template.Chips) aggregate.Chips.Add(chip.Clone());
             chart.Edges.Insert(insertAt++, aggregate);
         }
         chart.Edges.RemoveAll(candidate => edges.Contains(candidate));
@@ -253,6 +264,8 @@ internal static class TopologySiblingGroupingLayout {
             if (all.Contains(status)) return status;
         return all.All(status => status == TopologyHealthStatus.Disabled) && all.Length > 0 ? TopologyHealthStatus.Disabled : TopologyHealthStatus.Unknown;
     }
+
+    private static string? Signature(IEnumerable<string> parts) { var text = string.Join("\u001e", parts); return text.Length == 0 ? null : text; }
 
     private static string? Shared<T>(IEnumerable<T> items, Func<T, string?> value) {
         var values = items.Select(value).Distinct(StringComparer.Ordinal).ToArray();

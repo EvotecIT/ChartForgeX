@@ -1464,11 +1464,23 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     };
     const siblingClipTop = card => siblingClip(card).top;
     const siblingClipBottom = card => siblingClip(card).bottom;
+    // Rows of a card that started collapsed carry their member's safe link and tooltip as data until the card first opens.
+    const attachSiblingRowLinks = rows => rows.querySelectorAll('[data-cfx-role="topology-sibling-row"][data-sibling-href],[data-cfx-role="topology-sibling-row"][data-sibling-tooltip]').forEach(row => {
+      const namespace = 'http://www.w3.org/2000/svg';
+      const href = attr(row, 'data-sibling-href'), tip = attr(row, 'data-sibling-tooltip');
+      const host = href ? row.ownerDocument.createElementNS(namespace, 'a') : row.ownerDocument.createElementNS(namespace, 'g');
+      if (href) host.setAttribute('href', href);
+      if (href && attr(row, 'data-sibling-new-tab') === 'true') { host.setAttribute('target', '_blank'); host.setAttribute('rel', 'noopener noreferrer'); }
+      if (tip) { const title = row.ownerDocument.createElementNS(namespace, 'title'); title.textContent = tip; host.appendChild(title); }
+      host.setAttribute('data-cfx-role', 'topology-sibling-row-host');
+      row.parentNode.insertBefore(host, row); host.appendChild(row);
+      row.removeAttribute('data-sibling-href'); row.removeAttribute('data-sibling-tooltip');
+    });
     const setSiblingCardExpanded = (card, expanded, emit) => {
       const layout = siblingCardLayout(card);
       const rows = card.querySelector('[data-cfx-role="topology-sibling-rows"]');
       const header = card.querySelector('[data-cfx-role="topology-sibling-header"]');
-      if (rows) { rows.style.display = expanded ? '' : 'none'; if (expanded) rows.removeAttribute('opacity'); }
+      if (rows) { rows.style.display = expanded ? '' : 'none'; if (expanded) { rows.removeAttribute('opacity'); attachSiblingRowLinks(rows); } }
       // A card that started collapsed opens over its neighbours, so it is drawn last while open.
       // An open card must stay inside the clipped diagram: lift it by however far its rows would reach past the clip.
       const clipBottom = siblingClipBottom(card);
