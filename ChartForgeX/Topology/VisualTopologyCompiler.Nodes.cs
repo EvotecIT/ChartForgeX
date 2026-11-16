@@ -73,9 +73,9 @@ internal sealed partial class VisualTopologyCompiler {
                         BuildShapeCaption(node, active);
                     else if (mode != TopologyNodeDisplayMode.Dot) {
                         // A card without details centres its heading beside the glyph instead of leaving the lower half
-                        // empty. A heading set above its glyph (left == 10) keeps the top row.
+                        // empty. A heading set above its glyph (left == 10) or beside a badge keeps the top row.
                         var centered = !caption && mode is TopologyNodeDisplayMode.Card or TopologyNodeDisplayMode.CompactCard
-                            && node.Details.Count == 0 && !node.Shape.HasValue && !(hasGlyph && left == 10)
+                            && node.Details.Count == 0 && !node.Shape.HasValue && string.IsNullOrWhiteSpace(node.Badge) && !(hasGlyph && left == 10)
                             && _options.CardSubtitleMode != TopologyCardSubtitleMode.Chip;
                         BuildNodeText(node, textBounds, accent, active, caption, centered);
                     }

@@ -44,10 +44,13 @@ public sealed class TopologyDiagramDefaultsTests {
         Assert.Equal(worker.Left, request.Points[^1].X, 1);
     }
 
-    [Fact]
-    public void TitleOnlyCardCentresItsHeadingBesideTheGlyph() {
+    [Theory]
+    [InlineData(null, .45, .7)]
+    [InlineData("v2", 0, .45)]
+    public void TitleOnlyCardCentresItsHeadingUnlessABadgeHoldsTheLowerRow(string? badge, double minimum, double maximum) {
         var chart = TopologyChart.Create().WithViewport(320, 160)
             .AddNode("worker", "Processing service", 40, 30, TopologyNodeKind.Server, width: 240, height: 85);
+        chart.Nodes[0].Badge = badge;
         var document = XDocument.Parse(chart.ToSvg());
         var node = document.Descendants().First(element => (string?)element.Attribute("data-cfx-role") == "topology-node"
             && (string?)element.Attribute("data-node-id") == "worker");
@@ -56,7 +59,7 @@ public sealed class TopologyDiagramDefaultsTests {
         var label = node.Descendants().First(element => element.Name.LocalName == "text"
             && element.Ancestors().Any(parent => (string?)parent.Attribute("data-cfx-role") == "topology-node-label"));
         var baseline = (double)label.Attribute("y")!;
-        // The baseline sits just below the card's middle, not in its top row.
-        Assert.InRange(baseline - top, height * .45, height * .7);
+        // Centred, the baseline sits just below the card's middle; beside a badge it stays in the top row.
+        Assert.InRange(baseline - top, height * minimum, height * maximum);
     }
 }

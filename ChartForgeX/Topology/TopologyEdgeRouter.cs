@@ -122,13 +122,15 @@ internal static partial class TopologyEdgeRouter {
         var sourceHorizontal = right ? TopologyEdgePort.Right : TopologyEdgePort.Left;
         var targetVertical = below ? TopologyEdgePort.Top : TopologyEdgePort.Bottom;
         var targetHorizontal = right ? TopologyEdgePort.Left : TopologyEdgePort.Right;
+        // A caption under an actor or tile owns that node's bottom side, so a leg may not leave or enter through it.
+        var sourceBottomFree = !CaptionBelow(source); var targetBottomFree = !CaptionBelow(target);
         var start = BoundaryPoint(source, CenterX(target), CenterY(target), sourceVertical, routingUnits);
         var end = BoundaryPoint(target, CenterX(source), CenterY(source), targetHorizontal, routingUnits);
-        if ((below ? end.Y > start.Y : end.Y < start.Y) && (right ? start.X < end.X : start.X > end.X) && Clear(new(start.X, end.Y)))
+        if ((below ? end.Y > start.Y : end.Y < start.Y) && (right ? start.X < end.X : start.X > end.X) && (above || sourceBottomFree) && Clear(new(start.X, end.Y)))
             yield return new RouteCandidate(SingleBendCorridor + "vertical", new List<ChartPoint> { start, new(start.X, end.Y), end });
         start = BoundaryPoint(source, CenterX(target), CenterY(target), sourceHorizontal, routingUnits);
         end = BoundaryPoint(target, CenterX(source), CenterY(source), targetVertical, routingUnits);
-        if ((right ? end.X > start.X : end.X < start.X) && (below ? start.Y < end.Y : start.Y > end.Y) && Clear(new(end.X, start.Y)))
+        if ((right ? end.X > start.X : end.X < start.X) && (below ? start.Y < end.Y : start.Y > end.Y) && (below || targetBottomFree) && Clear(new(end.X, start.Y)))
             yield return new RouteCandidate(SingleBendCorridor + "horizontal", new List<ChartPoint> { start, new(end.X, start.Y), end });
 
         // Obstacle scoring accepts a leg that grazes a card's border; a single-bend route must keep a lane's clearance
@@ -136,12 +138,15 @@ internal static partial class TopologyEdgeRouter {
         bool Clear(ChartPoint corner) {
             var clearance = EdgePortClearance * routingUnits;
             foreach (var node in chart.Nodes) {
-                if (ReferenceEquals(node, source) || ReferenceEquals(node, target) || node.Id == source.Id || node.Id == target.Id) continue;
-                var box = new RouteBox(node.X - clearance, node.Y - clearance, node.X + node.Width + clearance, node.Y + node.Height + clearance);
+                if (ReferenceEquals(node, source) || ReferenceEquals(node, target) || node.Id == source.Id || node.Id == target.Id
+                    || IsRouteBackdropArtwork(node) || EffectiveNodeDisplayMode(node, chart.RenderOptions ?? new TopologyRenderOptions()) == TopologyNodeDisplayMode.Hidden) continue;
+                var box = NodeRouteBox(chart, node).Expand(clearance);
                 if (SegmentEnters(start, corner, box) || SegmentEnters(corner, end, box)) return false;
             }
             return true;
         }
+
+        bool CaptionBelow(TopologyNode node) => TopologyNodeShapeGeometry.IsActor(node) || CaptionBox(chart, node).Height > .5;
     }
 
     private const double EdgePortClearance = 10;
