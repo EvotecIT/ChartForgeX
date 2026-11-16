@@ -35,7 +35,8 @@ internal sealed partial class VisualTopologyCompiler {
             var ink = ChartColorMath.AccessibleTextOnBackground(accent);
             Text(count, pill, countSize, ink, 700, "topology-sibling-count", centered: true, verticallyCentered: true, paint: SvgPaint.Contrast(accent, NodeAccentPaint(node, accent, active)));
             var titleLeft = node.X + 34;
-            Text(node.Label, Bounds(titleLeft, node.Y + 4, Math.Max(0, (pill.X - _offsetX) / _scale - 6 - titleLeft), TopologySiblingCard.HeaderHeight - 8),
+            // Captions follow the same switches as ordinary nodes, so label-free styles stay label-free when grouped.
+            if (node.ShowLabel && _options.IncludeNodeLabels) Text(node.Label, Bounds(titleLeft, node.Y + 4, Math.Max(0, (pill.X - _offsetX) / _scale - 6 - titleLeft), TopologySiblingCard.HeaderHeight - 8),
                 TitleSize, Highlight(Color(node.LabelColor, _colors.Foreground), active), 700, "topology-sibling-title", verticallyCentered: true, fitSingleLine: true);
             if (toggle) {
                 // A chevron for the browser host only. Static output has no control, so it is not drawn there.
@@ -95,7 +96,7 @@ internal sealed partial class VisualTopologyCompiler {
         }
         var left = card.X + RowTextLeft;
         var available = Math.Max(0, right - left);
-        var name = Text(member.Label, Bounds(left, top, available, height), NameSize, Highlight(_colors.Foreground, active), 600, "topology-sibling-name", verticallyCentered: true, fitSingleLine: true);
+        var name = !_options.IncludeNodeLabels ? null : Text(member.Label, Bounds(left, top, available, height), NameSize, Highlight(_colors.Foreground, active), 600, "topology-sibling-name", verticallyCentered: true, fitSingleLine: true);
         if (name is { } drawn && !string.IsNullOrWhiteSpace(member.Subtitle)) {
             var after = (drawn.Right - _offsetX) / _scale + 6;
             if (right - after > 18) Text(member.Subtitle!, Bounds(after, top, right - after, height), SecondarySize, Highlight(_colors.MutedForeground, active), 400, "topology-sibling-secondary", verticallyCentered: true);

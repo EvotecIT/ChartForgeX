@@ -138,6 +138,22 @@ public sealed class TopologySiblingGroupingTests {
     }
 
     [Fact]
+    public void SummaryOnlyCardsReopenAndLabelFreeStylesStayLabelFree() {
+        var summary = Site(4).WithSiblingGrouping(maximumRows: 1).Prepare(Options());
+        var reopened = VisualArtifactInterchangeEnvelope.FromJson(summary.ToInterchangeEnvelope().ToJson()).ToTopologyChart();
+        var card = Assert.Single(reopened.Nodes, node => node.SiblingGroup != null).SiblingGroup!;
+        Assert.Equal((0, 4), (card.VisibleCount, card.Members.Count));
+
+        var labelled = XDocument.Parse(Site(4).WithSiblingGrouping().Prepare(Options()).ToSvg());
+        Assert.Contains(labelled.Descendants(), element => Role(element) == "topology-sibling-title");
+        Assert.Equal(4, labelled.Descendants().Count(element => Role(element) == "topology-sibling-name"));
+        var options = Options(); options.IncludeNodeLabels = false;
+        var plain = XDocument.Parse(Site(4).WithSiblingGrouping().Prepare(options).ToSvg());
+        Assert.DoesNotContain(plain.Descendants(), element => Role(element) is "topology-sibling-title" or "topology-sibling-name" or "topology-sibling-secondary");
+        Assert.Equal(4, plain.Descendants().Count(element => Role(element) == "topology-sibling-row"));
+    }
+
+    [Fact]
     public void LargeSetsStartCollapsedToTheirHeaderAndCount() {
         var prepared = Site(40).WithSiblingGrouping().Prepare(Options());
         var card = XDocument.Parse(prepared.ToSvg()).Descendants().Single(element => element.Attribute("data-sibling-count") != null);

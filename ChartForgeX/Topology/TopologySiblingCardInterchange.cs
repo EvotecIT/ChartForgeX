@@ -51,7 +51,8 @@ internal static class TopologySiblingCardInterchange {
                     fields[6], fields[7], fields[8], fields[9], fields[10]));
             }
         }
-        if (members.Count == 0 || visible < 1 || visible > members.Count) throw new NotSupportedException("Malformed topology sibling card in interchange extensions.");
+        // Zero listed rows is valid: with a one-row limit the only row is the "+N more" summary.
+        if (members.Count == 0 || visible < 0 || visible > members.Count) throw new NotSupportedException("Malformed topology sibling card in interchange extensions.");
         node.SiblingGroup = new TopologySiblingCard(Unescape(parts[0]) ?? string.Empty, members, visible, parts[2] == "collapsed");
         node.PreserveDisplayModeSize = true;
     }
