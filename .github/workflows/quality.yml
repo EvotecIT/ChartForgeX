@@ -341,6 +341,7 @@ jobs:
           name: chartforgex-example-gallery-${{ matrix.runner }}
           path: ChartForgeX.Examples/bin/Release/net8.0/output
           if-no-files-found: error
+          retention-days: ${{ github.event_name == 'push' && '1' || '7' }}
 
   browser-quality:
     name: Browser contract work (Windows Chromium ${{ matrix.shard }}/4)
@@ -394,7 +395,7 @@ jobs:
             ${{ runner.temp }}/chartforgex-browser-quality/captures
             ${{ runner.temp }}/chartforgex-browser-quality/gallery-server.log
           if-no-files-found: error
-          retention-days: 7
+          retention-days: ${{ github.event_name == 'push' && '1' || '7' }}
 
   compatibility-plan:
     # macOS runners are scarce across the organisation. A focused PR selects a few classes, so it
@@ -512,7 +513,7 @@ jobs:
             ${{ runner.temp }}/chartforgex-${{ matrix.browser }}/results
             ${{ runner.temp }}/chartforgex-${{ matrix.browser }}/captures
           if-no-files-found: error
-          retention-days: 7
+          retention-days: ${{ github.event_name == 'push' && '1' || '7' }}
 
   browser-shards:
     name: Browser shard coverage
