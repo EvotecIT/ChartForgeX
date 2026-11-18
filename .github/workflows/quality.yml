@@ -6,6 +6,11 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      retain_outputs:
+        description: Retain built packages, galleries, and browser evidence for one day
+        type: boolean
+        default: false
 
 # PRs replace only earlier runs for the same PR. Every other event is independent,
 # including queued main pushes and manual full-matrix runs.
@@ -337,13 +342,14 @@ jobs:
           ./Build.ps1 @options
 
       - name: Retain native test diagnostics
-        if: always()
+        if: ${{ !cancelled() && (failure() || (github.event_name == 'workflow_dispatch' && inputs.retain_outputs)) }}
         uses: actions/upload-artifact@v7
+        continue-on-error: true
         with:
           name: chartforgex-native-results-${{ matrix.name }}-${{ matrix.lane }}
           path: ${{ runner.temp }}/chartforgex-native-results
           if-no-files-found: warn
-          retention-days: 7
+          retention-days: 1
 
       - name: Export Website API documentation bundle
         if: runner.os == 'Linux' && matrix.lane != 'tests'
@@ -362,7 +368,7 @@ jobs:
           retention-days: 7
 
       - name: Upload packages
-        if: matrix.lane != 'tests'
+        if: matrix.lane != 'tests' && github.event_name == 'workflow_dispatch' && inputs.retain_outputs
         uses: actions/upload-artifact@v7
         with:
           name: chartforgex-packages-${{ matrix.runner }}
@@ -370,15 +376,16 @@ jobs:
             artifacts/packages/Release/*.nupkg
             artifacts/packages/Release/*.snupkg
           if-no-files-found: error
+          retention-days: 1
 
       - name: Upload example gallery
-        if: matrix.lane != 'tests'
+        if: matrix.lane != 'tests' && github.event_name == 'workflow_dispatch' && inputs.retain_outputs
         uses: actions/upload-artifact@v7
         with:
           name: chartforgex-example-gallery-${{ matrix.runner }}
           path: ChartForgeX.Examples/bin/Release/net8.0/output
           if-no-files-found: error
-          retention-days: ${{ github.event_name == 'push' && '1' || '7' }}
+          retention-days: 1
 
   browser-quality:
     name: Browser contract work (Windows Chromium ${{ matrix.shard }}/4)
@@ -423,8 +430,9 @@ jobs:
           retention-days: 7
 
       - name: Retain browser results and rendered evidence
-        if: always()
+        if: ${{ !cancelled() && (failure() || (github.event_name == 'workflow_dispatch' && inputs.retain_outputs)) }}
         uses: actions/upload-artifact@v7
+        continue-on-error: true
         with:
           name: chartforgex-browser-quality-${{ matrix.shard }}
           path: |
@@ -432,7 +440,7 @@ jobs:
             ${{ runner.temp }}/chartforgex-browser-quality/captures
             ${{ runner.temp }}/chartforgex-browser-quality/gallery-server.log
           if-no-files-found: error
-          retention-days: ${{ github.event_name == 'push' && '1' || '7' }}
+          retention-days: 1
 
   compatibility-plan:
     # macOS runners are scarce across the organisation. A focused PR selects a few classes, so it
@@ -542,15 +550,16 @@ jobs:
           if-no-files-found: error
           retention-days: 7
       - name: Retain compatibility evidence
-        if: always()
+        if: ${{ !cancelled() && (failure() || (github.event_name == 'workflow_dispatch' && inputs.retain_outputs)) }}
         uses: actions/upload-artifact@v7
+        continue-on-error: true
         with:
           name: chartforgex-browser-compatibility-${{ matrix.browser }}-${{ matrix.shard }}
           path: |
             ${{ runner.temp }}/chartforgex-${{ matrix.browser }}/results
             ${{ runner.temp }}/chartforgex-${{ matrix.browser }}/captures
           if-no-files-found: error
-          retention-days: ${{ github.event_name == 'push' && '1' || '7' }}
+          retention-days: 1
 
   browser-shards:
     name: Browser shard coverage
