@@ -217,5 +217,7 @@ internal static partial class TopologyDenseRoutePlanner {
             + ":" + edge.TargetMarkerStyle.Offset.ToString("R", CultureInfo.InvariantCulture) + ":" + edge.TargetMarkerStyle.StrokeWidth?.ToString("R", CultureInfo.InvariantCulture))
         + (edge.Interpolation.HasValue ? "|interpolation:" + (int)edge.Interpolation.Value
             + ":" + edge.InterpolationCornerBlendLength?.ToString("R", CultureInfo.InvariantCulture) : string.Empty)
-        + (TopologyPreparedEdgePlan.Units(edge) != 1 ? "|preparedUnits:" + TopologyPreparedEdgePlan.Units(edge).ToString("R", CultureInfo.InvariantCulture) : string.Empty);
+        + (TopologyPreparedEdgePlan.Units(edge) != 1 ? "|preparedUnits:" + TopologyPreparedEdgePlan.Units(edge).ToString("R", CultureInfo.InvariantCulture) : string.Empty)
+        // A shared tail is painted in its owner's bands, so only identically striped edges may share one.
+        + (edge.Stripes.Count > 1 ? "|stripes:" + string.Join(";", System.Linq.Enumerable.Select(edge.Stripes, stripe => stripe.Color.Length + ":" + stripe.Color)) : string.Empty);
 }

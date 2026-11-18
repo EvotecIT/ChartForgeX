@@ -12,6 +12,7 @@ internal static partial class TopologyLayoutEngine {
             LayoutDirection = chart.LayoutDirection,
             GridLayout = chart.GridLayout,
             HierarchyPreparation = chart.HierarchyPreparation,
+            SiblingGrouping = chart.SiblingGrouping?.Clone(),
             PlacesFacingPorts = chart.PlacesFacingPorts,
             UsesPreparedSceneCoordinates = chart.UsesPreparedSceneCoordinates,
             PreparedFramePadding = TopologyPreparedFramePadding.ForRequest(chart),
@@ -126,7 +127,8 @@ internal static partial class TopologyLayoutEngine {
             PreserveDisplayModeSize = node.PreserveDisplayModeSize,
             FitLabelToContent = node.FitLabelToContent,
             MaximumLabelCharacters = node.MaximumLabelCharacters,
-            HasPositionOverride = node.HasPositionOverride
+            HasPositionOverride = node.HasPositionOverride,
+            SiblingGroup = node.SiblingGroup
         };
         copy.SurfaceElementAppearance = TopologySurfaceElementAppearance.Resolve(node);
         copy.DashPattern.AddRange(node.DashPattern);
@@ -196,6 +198,7 @@ internal static partial class TopologyLayoutEngine {
         foreach (var item in edge.Metadata) copy.Metadata[item.Key] = item.Value;
         copy.Waypoints.AddRange(edge.Waypoints);
         copy.DashPattern.AddRange(edge.DashPattern);
+        edge.CopyPresentationTo(copy);
         return copy;
     }
 }

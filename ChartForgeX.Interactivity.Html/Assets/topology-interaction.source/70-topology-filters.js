@@ -71,7 +71,7 @@
         const edgeStatusOk = !status || attr(edge, 'data-cfx-status') === status || (source && attr(source, 'data-cfx-status') === status) || (target && attr(target, 'data-cfx-status') === status);
         return !showEdges || !endpointsVisible || !edgeQueryOk || !edgeStatusOk;
       });
-      setTopologyFilterHidden('[data-cfx-role="topology-edge-label"]', label => !showLabels || !showEdges || !wrapper.querySelector('[data-cfx-role="topology-edge"][data-edge-id="' + topologyFilterEscape(attr(label, 'data-edge-id')) + '"]:not(.cfx-topology-html-filter-hidden)'));
+      setTopologyFilterHidden(edgeAnnotationSelector, label => !showLabels || !showEdges || !wrapper.querySelector('[data-cfx-role="topology-edge"][data-edge-id="' + topologyFilterEscape(attr(label, 'data-edge-id')) + '"]:not(.cfx-topology-html-filter-hidden)'));
       syncTopologyGroupVisibility();
       syncTopologyHighlightAppearance();
       const detail = publishTopologyFilterSummary();

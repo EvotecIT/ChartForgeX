@@ -407,6 +407,7 @@ public static partial class VisualArtifactInterchangeMapping {
             Topology = MapNodePresentation(node, displayMode, showStatusBadge)
         };
         Copy(node.Metadata, mapped.Extensions);
+        ChartForgeX.Topology.TopologySiblingCardInterchange.Write(node, mapped.Extensions);
         CopyMetrics(node.Metrics, mapped.Metrics);
         foreach (var port in node.Ports) {
             var mappedPort = new VisualArtifactInterchangePort { Id = ids.Port(node.Id, port.Id), Side = port.Side, Offset = port.Offset, Label = port.Label };
@@ -464,6 +465,7 @@ public static partial class VisualArtifactInterchangeMapping {
         if (mapped.Topology?.LabelContent is { } content && !string.Equals(content.PlainText, mapped.Label, StringComparison.Ordinal))
             mapped.Topology.LabelContent = null;
         Copy(edge.Metadata, mapped.Extensions);
+        ChartForgeX.Topology.TopologyEdgePresentationInterchange.Write(edge, mapped.Extensions);
         CopyMetrics(edge.Metrics, mapped.Metrics);
         return mapped;
     }

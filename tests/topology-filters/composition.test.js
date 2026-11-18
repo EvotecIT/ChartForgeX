@@ -27,6 +27,7 @@ function fixture() {
     const uiText = (key, fallback, values) => window[Symbol.for('ChartForgeX.uiText')](wrapper, key, fallback, values);
     const CSS = window.CSS, Element = window.Element;
     const forceGraphControls = true, viewportControls = false, attr = (element, name) => element.getAttribute(name) || '';
+    const edgeAnnotationSelector = '[data-cfx-role="topology-edge-label"],[data-cfx-role="topology-edge-chip"]';
     const restoreForceFocusLabels = () => {};
     const clearScenarioPreview = () => {};
     ${source}\nreturn { applyTopologyFilter, clearTopologyFilter, applyForceGraphFilters, highlight };`)(wrapper, forceGraphPanel, dom.window, dom.window.CustomEvent, lifetime);

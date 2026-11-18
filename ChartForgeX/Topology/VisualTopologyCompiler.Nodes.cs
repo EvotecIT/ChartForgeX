@@ -45,6 +45,8 @@ internal sealed partial class VisualTopologyCompiler {
             if (!image) {
                 BuildNodeSurface(node, mode, bounds, fill, accent, strokeWidth, surfaceDash, surfacePaint, accentPaint);
                 if (!shapeContent && UseNodeAccentBand(mode, _options)) _builder.Rect(new ChartRect(bounds.X + strokeWidth / 2, bounds.Y + strokeWidth / 2, 4 * _scale, Math.Max(0, bounds.Height - strokeWidth)), accent, role: "topology-node-accent", paint: new VisualScenePaintBinding(accentPaint));
+                if (node.SiblingGroup is { } siblings) BuildSiblingCard(node, siblings, accent, active, accentRole);
+                else {
                 var hasGlyph = HasInlineNodeGlyph(node, mode, _options);
                 if (node.Shape == TopologyNodeShape.ActorIcon && !hasGlyph) BuildActorIcon(node, accent, active, accentRole);
                 if (shapeContent && (node.ShowLabel || node.TableContent != null)) BuildShapeContent(node, accent, active, accentRole);
@@ -80,6 +82,7 @@ internal sealed partial class VisualTopologyCompiler {
                         BuildNodeText(node, textBounds, accent, active, caption, centered);
                     }
                 }
+                }
             }
             BuildHealthRing(node, bounds, active);
             if (image && TopologyExternalCaption.HasPolicy(node)) BuildExternalCaption(node, accent, active);
@@ -91,7 +94,7 @@ internal sealed partial class VisualTopologyCompiler {
                     : new ChartPoint(bounds.Right - 10 * _scale, bounds.Y + 10 * _scale);
                 using (PinnedState()) _builder.Ellipse(statusCenter.X, statusCenter.Y, 3 * _scale, 3 * _scale, status, role: "topology-status", paint: new VisualScenePaintBinding(StatusPaint(node.Status, status, HighlightFactor(active))));
             }
-            if (!shapeContent && !string.IsNullOrWhiteSpace(node.Badge)) {
+            if (!shapeContent && node.SiblingGroup == null && !string.IsNullOrWhiteSpace(node.Badge)) {
                 var reserved = NodeBadgeBounds(node, mode, _options);
                 var badge = Bounds(reserved.X, reserved.Y, reserved.Width, reserved.Height);
                 _builder.Rect(badge, accent, radius: 4 * _scale, role: "topology-node-badge-surface", paint: new VisualScenePaintBinding(accentPaint));

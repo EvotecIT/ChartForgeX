@@ -15,6 +15,8 @@
     }
     const uiText = (message, fallback, values) => window[Symbol.for('ChartForgeX.uiText')](wrapper, message, fallback, values);
     const selectables = '[data-cfx-role="topology-node"],[data-cfx-role="topology-edge"],[data-cfx-role="topology-group"]';
+    // Edge labels and value chips are painted apart from their route but follow its visibility and emphasis.
+    const edgeAnnotationSelector = '[data-cfx-role="topology-edge-label"],[data-cfx-role="topology-edge-chip"]';
     const viewportControls = wrapper.getAttribute('data-cfx-viewport-controls') === 'true';
     const exportControls = wrapper.getAttribute('data-cfx-export-controls') === 'true';
     const fullscreenControl = wrapper.getAttribute('data-cfx-fullscreen-control') === 'true';

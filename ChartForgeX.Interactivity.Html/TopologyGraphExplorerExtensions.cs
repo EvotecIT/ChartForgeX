@@ -209,7 +209,7 @@ public static class TopologyGraphExplorerExtensions {
         }
 
         var label = EdgeLabel(edge, options.IncludeEdgeDetailInLabels);
-        var dashPattern = edge.IsMuted ? "none" : TopologyRenderPrimitives.EdgeDash(edge);
+        var dashPattern = TopologyRenderPrimitives.EffectiveEdgeDash(edge);
         var graphEdge = new GraphSceneEdge {
             Id = ids.EdgeId(index),
             SourceNodeId = sourceNodeId,

@@ -76,6 +76,7 @@ public static partial class ExampleRecipes {
         ["independent-progress"] = new(nameof(IndependentProgressRecipe), IndependentProgressRecipe.Create),
         ["topology-table-content"] = new(nameof(TopologyTableContentRecipe), TopologyTableContentRecipe.Create),
         ["topology-interchange"] = new(nameof(TopologyInterchangeRecipe), TopologyInterchangeRecipe.Create),
+        ["topology-site-links"] = new(nameof(TopologySiteLinksRecipe), TopologySiteLinksRecipe.Create),
         ["org-portraits"] = new(nameof(OrgPortraitsRecipe), OrgPortraitsRecipe.Create),
         ["heatmap-hierarchical-axes"] = new(nameof(HeatmapHierarchicalAxesRecipe), HeatmapHierarchicalAxesRecipe.Create),
         ["categorical-radial-area"] = new(nameof(CategoricalRadialAreaRecipe), CategoricalRadialAreaRecipe.Create),

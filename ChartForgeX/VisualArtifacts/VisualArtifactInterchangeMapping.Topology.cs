@@ -116,6 +116,7 @@ public static partial class VisualArtifactInterchangeMapping {
         node.SurfaceElementAppearance = native.SurfaceElementAppearance;
         node.DashPattern.AddRange(native.DashPattern);
         RestoreTopologyMetadata(source.Extensions, node.Metadata);
+        TopologySiblingCardInterchange.Read(node);
         foreach (var metric in source.Metrics) node.Metrics.Add(metric.Name, metric.Value);
         foreach (var sourcePort in source.Ports) {
             var port = new TopologyNodePort { Id = sourcePort.Id, Side = sourcePort.Side, Offset = sourcePort.Offset, Label = sourcePort.Label };
@@ -172,6 +173,7 @@ public static partial class VisualArtifactInterchangeMapping {
         edge.DashPattern.AddRange(native.DashPattern);
         foreach (var point in native.Waypoints) edge.Waypoints.Add(new ChartPoint(point.X, point.Y));
         RestoreTopologyMetadata(source.Extensions, edge.Metadata);
+        TopologyEdgePresentationInterchange.Read(edge);
         foreach (var metric in source.Metrics) edge.Metrics.Add(metric.Name, metric.Value);
         return edge;
     }

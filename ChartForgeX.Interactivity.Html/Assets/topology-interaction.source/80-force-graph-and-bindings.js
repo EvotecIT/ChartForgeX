@@ -68,7 +68,7 @@
         const edgeStatusOk = !state.status || attr(edge, 'data-cfx-status') === state.status || (source && attr(source, 'data-cfx-status') === state.status) || (target && attr(target, 'data-cfx-status') === state.status);
         return !state.edges || !endpointsVisible || !edgeQueryOk || !edgeStatusOk;
       });
-      setForceHidden('[data-cfx-role="topology-edge-label"]', label => !state.labels || !state.edges || !wrapper.querySelector('[data-cfx-role="topology-edge"][data-edge-id="' + cssEscape(attr(label, 'data-edge-id')) + '"]:not(.cfx-topology-html-force-hidden)'));
+      setForceHidden(edgeAnnotationSelector, label => !state.labels || !state.edges || !wrapper.querySelector('[data-cfx-role="topology-edge"][data-edge-id="' + cssEscape(attr(label, 'data-edge-id')) + '"]:not(.cfx-topology-html-force-hidden)'));
       syncTopologyGroupVisibility();
       syncTopologyHighlightAppearance();
       const detail = publishTopologyFilterSummary();
@@ -104,7 +104,7 @@
       detail.related = detail.related || related(detail);
       const edgeIds = new Set(detail.related.edgeIds || []);
       if (detail.kind === 'edge') edgeIds.add(detail.id);
-      wrapper.querySelectorAll('[data-cfx-role="topology-edge-label"]').forEach(label => {
+      wrapper.querySelectorAll(edgeAnnotationSelector).forEach(label => {
         const edgeId = attr(label, 'data-edge-id');
         const edge = wrapper.querySelector('[data-cfx-role="topology-edge"][data-edge-id="' + cssEscape(edgeId) + '"]:not(.cfx-topology-html-force-hidden)');
         const active = edgeIds.has(edgeId) && !!edge;
@@ -331,7 +331,10 @@
       const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (initialRoute && initialRoute.autoPlay && !initialScenarioStep && !reducedMotion) playScenario();
     }
+    // A member link inside a sibling card opens its own target rather than selecting the card around it.
+    const siblingRowLink = target => target instanceof Element && !!target.closest('a[data-cfx-role="topology-sibling-row-host"]');
     listen(wrapper, 'click', event => {
+      if (siblingRowLink(event.target)) return;
       const element = event.target instanceof Element ? event.target.closest(selectables) : null;
       if (!element || !wrapper.contains(element)) return;
       event.preventDefault();
@@ -351,6 +354,7 @@
         return;
       }
       if (event.key !== 'Enter' && event.key !== ' ') return;
+      if (event.key === 'Enter' && siblingRowLink(event.target)) return;
       const element = event.target instanceof Element ? event.target.closest(selectables) : null;
       if (!element || !wrapper.contains(element)) return;
       event.preventDefault();

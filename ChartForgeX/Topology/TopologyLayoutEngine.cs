@@ -48,6 +48,8 @@ internal static partial class TopologyLayoutEngine {
         copy.RenderOptions = options;
         if (options?.HierarchyView != null) TopologyHierarchyPreparation.Apply(copy, hierarchySource ?? chart, options.HierarchyView, options);
         ApplyNamedPortSides(copy);
+        TopologyRenderPrimitives.ApplyUplinkMarkers(copy);
+        TopologySiblingGroupingLayout.Apply(copy, view, options);
         if (options != null) {
             ApplyNodeDisplayMode(copy, options, copy.LayoutMode == TopologyLayoutMode.MindMap);
         }
@@ -74,7 +76,10 @@ internal static partial class TopologyLayoutEngine {
                 break;
             case TopologyLayoutMode.Layered:
                 compoundLayout = TryApplyCompoundLayered(copy, options, !constrained, compactCompoundLayout);
-                if (!compoundLayout) ApplyLayered(copy, options, !constrained);
+                if (!compoundLayout) {
+                    ApplyLayered(copy, options, !constrained);
+                    if (!constrained) TopologySiblingGroupingLayout.Stagger(copy);
+                }
                 break;
             case TopologyLayoutMode.Matrix:
                 ApplyMatrix(copy, options);
