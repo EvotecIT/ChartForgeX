@@ -262,11 +262,13 @@ jobs:
           ./ChartForgeX.Markup.VSCode/scripts/package-vsix.ps1 @params
 
       - name: Upload VSIX
+        if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v7
         with:
           name: chartforgex-markup-vsix
           path: ChartForgeX.Markup.VSCode/dist/*.vsix
           if-no-files-found: error
+          retention-days: 1
 
   attach-release-asset:
     if: ${{ github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.release_tag != '') }}
