@@ -1,9 +1,9 @@
 {
   "contractVersion": 2,
-  "version": "1.6.0",
+  "version": "1.6.1",
   "name": "Evotec palette v2 (Graphite)",
   "decision": "Palette and typography review, 2026-11-02",
-  "source": "HtmlForgeX HtmlForgeX/Resources/Tokens/evotec.tokens.json 1.6.0 (generated, do not edit)",
+  "source": "HtmlForgeX HtmlForgeX/Resources/Tokens/evotec.tokens.json 1.6.1 (generated, do not edit)",
   "notes": [
     "Semantic roles and status follow the selected design style. Chart data fills use the shared categorical palette; text and control inks retain their independent contrast requirements."
   ],
@@ -144,7 +144,7 @@
     "series": ["#2a78d6", "#0f9f8c", "#d9711f", "#8055c4", "#c24fa8", "#cc4048", "#a97800", "#37813e", "#00739b", "#5f5f5f"],
     "other": "#737373",
     "ramps": {
-      "sequential": ["#9ab8dc", "#5598e7", "#2171ce", "#1c5cab", "#104281"],
+      "sequential": ["#9ab8dc", "#6099e1", "#2d7ad4", "#0c5db1", "#104281"],
       "diverging": { "negative": ["#d7ad87", "#eaa363", "#d9711f"], "neutral": "#eceef0", "positive": ["#9ab8dc", "#2171ce", "#1c5cab"] }
     }
   },
@@ -174,7 +174,7 @@
     "series": ["#4a90ea", "#22b39e", "#ee8a3a", "#ad86eb", "#e479c4", "#e15f55", "#e8b83e", "#73be79", "#55bed9", "#b1b1b1"],
     "other": "#929292",
     "ramps": {
-      "sequential": ["#324c6e", "#2a78d6", "#5598e7", "#86b6ef", "#b7d3f6"],
+      "sequential": ["#324c6e", "#2e6ab4", "#3f8be7", "#73b0fc", "#b7d3f6"],
       "diverging": { "negative": ["#6a442a", "#9b5c29", "#ee8a3a"], "neutral": "#2b2e34", "positive": ["#324c6e", "#509efe", "#9ec5f4"] }
     }
   }

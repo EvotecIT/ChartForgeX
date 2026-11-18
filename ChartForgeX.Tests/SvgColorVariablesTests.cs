@@ -36,7 +36,8 @@ public sealed class SvgColorVariablesTests {
         Assert.Equal(Cells(authored).ToSvg("literal-ramp"), Cells(themed).ToSvg("literal-ramp"));
         var variables = tokens.ToSvgColorVariables();
         Assert.Equal("rgb(from var(--cfx-ramps-diverging-positive-2, #2171CE) r g b / 1)", Fill(themed, variables));
-        Assert.Equal("rgb(from var(--cfx-ramps-sequential-3, #2171CE) r g b / 1)", Fill(authored, variables));
+        // An authored copy keeps no ramp identity; its colour binds to the theme variable that carries the same value.
+        Assert.Equal("rgb(from var(--cfx-ramps-diverging-positive-2, #2171CE) r g b / 1)", Fill(authored, variables));
         Assert.Equal(variables.Variables.Count, variables.Variables.Select(variable => variable.Name).Distinct().Count());
         string? Host(string path) => path == "ramps.diverging.positive.2" ? null : "--host-" + path.Replace('.', '_');
         var host = tokens.ToSvgColorVariables(Host).Clone();
@@ -49,7 +50,8 @@ public sealed class SvgColorVariablesTests {
         var explicitScale = ChartColorScale.Diverging(ramp.Negative.Reverse(), ramp.Neutral,
             ramp.Positive.Select(color => color.WithCssVariable("--authored")), 0).WithValueRange(-3, 3);
         Assert.Equal("var(--authored, #1C5CAB)", Fill(explicitScale, variables, "3"));
-        Assert.Equal("var(--cfx-ramps-sequential-4-ink, #FFFFFF)", Fill(authored, variables, "3", ink: true));
+        // No theme ink variable is keyed to that colour, so an authored copy derives its ink like the themed scale.
+        Assert.StartsWith("var(--cfx-derived-ink-v1-", Fill(authored, variables, "3", ink: true), StringComparison.Ordinal);
         Assert.StartsWith("var(--cfx-derived-ink-v1-", Fill(themed, variables, "3", ink: true), StringComparison.Ordinal);
         var customInk = ChartColor.FromHex("#DDBB11");
         var manualInk = new SvgColorVariables().Add("--legacy-stop", ramp.Positive[2], SvgColorRole.Ramp)
