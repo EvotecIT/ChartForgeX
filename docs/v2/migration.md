@@ -232,6 +232,8 @@ Read `ChartMapPoint.Weight` instead of `Value`, and rename a named constructor a
 
 `ChartMapPoint.ColorValue` remains independent of its finite nonnegative `Weight`. Missing weight is unweighted; zero is an observed weight. Color measurements may be signed, and missing color stays distinct from zero. With a numeric color scale, null uses its no-data paint unless explicit point paint overrides it. Maps without a numeric scale retain their existing default paint. Region and tile scalar values remain `ChartRegionMapItem.Value`. Generic exported `data-cfx-value` metadata continues to carry the dotted point's raw weight.
 
+`ChartMapCatalogEntry` records the licence of its geometry in `License`, and its constructor takes an optional `license` argument after `notes`. Source callers compile unchanged; assemblies built against the previous constructor must be rebuilt. `ChartMapCatalog.EmbeddedEntries()` now lists every built-in region map (see [region maps](../region-maps.md)), and the built-in `us-states` definition declares `ChartMapGeoJsonProjection.UnitedStatesAlbers`, so markers and routes compose on it.
+
 Move the former `AddCalendarHeatmap` arguments `firstDayOfWeek`, `dayNames` and `monthNames`, and `WithCalendarHeatmapCells` settings, to `ConfigureCalendar`. `chart.Options.Calendar` exposes the installed `ChartCalendarOptions`. Weekday names contain seven entries indexed by `DayOfWeek`, Sunday first; month names contain twelve entries, January first. Assign null to restore invariant names or automatic cell sizing. Unassigned callback properties retain their current settings, so explicitly assign null when resetting a former cell setting. Invalid names or a throwing callback leave the installed presentation unchanged.
 
 ```csharp

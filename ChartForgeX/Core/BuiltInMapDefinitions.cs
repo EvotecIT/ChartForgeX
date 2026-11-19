@@ -44,17 +44,7 @@ internal static class BuiltInMapDefinitions {
 
     // Geometry comes from simplified Natural Earth GeoJSON embedded as gzip; each atlas is read once and maps sharing it filter by group.
     private static ChartMapDefinition Load(BuiltInRegionMap map) {
-        var options = new ChartMapGeoJsonOptions {
-            CodePropertyNames = new[] { "code" },
-            NamePropertyNames = new[] { "name" },
-            AliasPropertyNames = new[] { "aliases" },
-            IncludeFeatureIdAsAlias = false,
-            Projection = map.Projection,
-            LabelPropertyName = "label",
-            CoordinatePrecision = map.CoordinatePrecision
-        };
-        if (map.Group != null) options.IncludeFeaturePropertyValues("group", map.Group);
-        var definition = ChartMapGeoJson.ToMapDefinition(map.Id, map.Name, Atlas(map.Atlas!), options);
+        var definition = ChartMapGeoJson.ToMapDefinition(map.Id, map.Name, Atlas(map.Atlas!), map.CreateOptions());
         if (!map.Window.HasValue) return definition;
         var window = map.Window.Value;
         var topLeft = ChartGeographicProjection.Project(window.MinimumLongitude, window.MaximumLatitude, map.Projection);

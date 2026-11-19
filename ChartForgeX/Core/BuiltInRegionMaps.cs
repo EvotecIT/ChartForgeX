@@ -7,7 +7,7 @@ namespace ChartForgeX.Core;
 internal sealed class BuiltInRegionMap {
     internal BuiltInRegionMap(string id, string name, string geography, string level, string joinKey, string? atlas,
         ChartMapGeoJsonProjection projection, string source, string sourceUrl, string license, string notes,
-        string? group = null, ChartMapViewport? window = null, int coordinatePrecision = 3) {
+        string? group = null, ChartMapViewport? window = null, int coordinatePrecision = 4) {
         Id = id;
         Name = name;
         Geography = geography;
@@ -40,7 +40,22 @@ internal sealed class BuiltInRegionMap {
     internal int CoordinatePrecision { get; }
 
     internal ChartMapCatalogEntry ToEntry() => new(Id, Name, Geography, Level, Source, JoinKey, SourceUrl, "embedded",
-        isEmbedded: true, notes: Notes, license: License);
+        CreateOptions, isEmbedded: true, notes: Notes, license: License);
+
+    /// <summary>Creates the import options of this map: its property names, projection, label points and continent group.</summary>
+    internal ChartMapGeoJsonOptions CreateOptions() {
+        var options = new ChartMapGeoJsonOptions {
+            CodePropertyNames = new[] { "code" },
+            NamePropertyNames = new[] { "name" },
+            AliasPropertyNames = new[] { "aliases" },
+            IncludeFeatureIdAsAlias = false,
+            Projection = Projection,
+            LabelPropertyName = "label",
+            CoordinatePrecision = CoordinatePrecision
+        };
+        if (Group != null) options.IncludeFeaturePropertyValues("group", Group);
+        return options;
+    }
 }
 
 internal static class BuiltInRegionMaps {
@@ -82,15 +97,14 @@ internal static class BuiltInRegionMaps {
         UnitedStates("us-states-miller", "United States states (Miller)", ChartMapGeoJsonProjection.UnitedStatesMiller),
         new BuiltInRegionMap("continents", "Continents", "World", "continent", "continent code (AF, AS, EU, NA, OC, SA) or name", "world-continents",
             ChartMapGeoJsonProjection.Miller, NaturalEarth, NaturalEarthCountriesUrl, PublicDomain,
-            WorldEdition + ", dissolved by continent; Antarctica is omitted.", coordinatePrecision: 2),
+            WorldEdition + ", dissolved by continent; Antarctica is omitted."),
         Continent("africa", "Africa", "AF"),
         Continent("asia", "Asia", "AS"),
         Continent("europe", "Europe", "EU", new ChartMapViewport("Europe", -25, 45, 34, 72)),
         Continent("north-america", "North America", "NA", new ChartMapViewport("North America", -172, -12, 7, 84)),
         new BuiltInRegionMap("oceania", "Oceania countries", "Oceania", "admin0", Countries, "oceania-countries",
             ChartMapGeoJsonProjection.Miller, NaturalEarth, NaturalEarthCountriesUrl, PublicDomain,
-            WorldEdition + ". Islands east of the antimeridian use longitudes above 180 so the region stays continuous; markers there are not placed.",
-            coordinatePrecision: 2),
+            WorldEdition + ". Islands east of the antimeridian use longitudes above 180 so the region stays continuous; markers there are not placed."),
         Continent("south-america", "South America", "SA"),
         Country("spain", "Spain provinces", "ES", "province"),
         Country("russia", "Russia federal subjects", "RU", "federal subject",
@@ -109,17 +123,16 @@ internal static class BuiltInRegionMaps {
 
     private static BuiltInRegionMap World(string id, string name, ChartMapGeoJsonProjection projection) =>
         new(id, name, "World", "admin0", Countries, "world-countries", projection, NaturalEarth, NaturalEarthCountriesUrl, PublicDomain,
-            WorldEdition + ", simplified; Antarctica is omitted. Dependencies without their own ISO code use their Natural Earth A3 code.",
-            coordinatePrecision: 2);
+            WorldEdition + ", simplified; Antarctica is omitted. Dependencies without their own ISO code use their Natural Earth A3 code.");
 
     private static BuiltInRegionMap UnitedStates(string id, string name, ChartMapGeoJsonProjection projection) =>
         new(id, name, "US", "state", "state abbreviation, ISO 3166-2 code or state name", "us-states", projection, NaturalEarth, NaturalEarthProvincesUrl,
-            PublicDomain, "Natural Earth 1:10m states with Alaska and Hawaii insets.", coordinatePrecision: 1);
+            PublicDomain, "Natural Earth 1:10m states with Alaska and Hawaii insets.");
 
     private static BuiltInRegionMap Continent(string id, string name, string group, ChartMapViewport? window = null) =>
         new(id, name + " countries", name, "admin0", Countries, "world-countries", ChartMapGeoJsonProjection.Miller, NaturalEarth, NaturalEarthCountriesUrl,
             PublicDomain, WorldEdition + ", assigned to " + name + "." + (window.HasValue ? " The frame is cropped to the continent; overseas parts are clipped." : string.Empty),
-            group, window, 2);
+            group, window);
 
     private static BuiltInRegionMap Country(string id, string name, string iso, string level, string? notes = null) =>
         new(id, name, iso, level, Subdivisions, id, ChartMapGeoJsonProjection.Miller, NaturalEarth, NaturalEarthProvincesUrl, PublicDomain,

@@ -18,7 +18,8 @@ const here = dirname(fileURLToPath(import.meta.url));
 const repository = resolve(here, "..", "..");
 const output = join(repository, "ChartForgeX", "Maps", "Data");
 const cache = resolve(process.argv[2] ?? join(here, ".cache"));
-const mapshaper = join(here, "node_modules", ".bin", process.platform === "win32" ? "mapshaper.cmd" : "mapshaper");
+// Run mapshaper's JavaScript entry point with this Node, so Windows doesn't need the .cmd shim (which needs a shell).
+const mapshaper = join(here, "node_modules", "mapshaper", "bin", "mapshaper");
 const naturalEarth = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/geojson/";
 
 // The German point-of-view edition follows internationally recognised borders (for example Crimea is part of Ukraine);
@@ -61,17 +62,19 @@ const worldCountries = (filter, extra = {}) => ({
     filter,
     fields: ["ISO_A2_EH", "ISO_A3_EH", "ADM0_A3", "NAME", "NAME_LONG", "ADMIN", "CONTINENT", "LABEL_X", "LABEL_Y"],
     interval: 12000, precision: 0.01,
-    map: p => {
-      // Dependencies that share their sovereign's ISO code (for example Ashmore and Cartier Islands) keep their own A3 code.
-      const primary = /^[A-Z]{2}$/.test(p.ISO_A2_EH) && (p.ADM0_A3 === p.ISO_A3_EH || !/^[A-Z]{3}$/.test(p.ISO_A3_EH));
-      const code = primary ? p.ISO_A2_EH : p.ADM0_A3;
-      return {
-        code, name: p.NAME,
-        aliases: [primary && /^[A-Z]{3}$/.test(p.ISO_A3_EH) ? p.ISO_A3_EH : null, p.ADM0_A3, p.NAME_LONG, p.ADMIN],
-        group: continentCodes[p.CONTINENT] ?? "XX",
-        label: [p.LABEL_X, p.LABEL_Y]
-      };
-    },
+    // Countries use their ISO alpha-2 code even when Natural Earth's own A3 differs (South Sudan is SS, not SDS).
+    // When dependencies share their sovereign's ISO code (Ashmore and Cartier Islands carry AU), the sovereign keeps
+    // the ISO codes and the dependency falls back to its Natural Earth A3 code; see resolveSharedCodes.
+    map: p => ({
+      code: /^[A-Z]{2}$/.test(p.ISO_A2_EH) ? p.ISO_A2_EH : p.ADM0_A3,
+      fallbackCode: p.ADM0_A3,
+      home: p.ADM0_A3 === p.ISO_A3_EH,
+      isoAliases: /^[A-Z]{3}$/.test(p.ISO_A3_EH) ? [p.ISO_A3_EH] : [],
+      name: p.NAME,
+      aliases: [p.ADM0_A3, p.NAME_LONG, p.ADMIN],
+      group: continentCodes[p.CONTINENT] ?? "XX",
+      label: [p.LABEL_X, p.LABEL_Y]
+    }),
     ...extra
 });
 
@@ -151,6 +154,32 @@ function transformCoordinates(coordinates, transform) {
   return coordinates.map(item => transformCoordinates(item, transform));
 }
 
+// Gives a shared ISO code to the sovereign (or the first claimant); the others use their fallback code without ISO aliases.
+function resolveSharedCodes(entries) {
+  const claims = new Map();
+  for (const entry of entries) claims.set(entry.mapped.code, [...(claims.get(entry.mapped.code) ?? []), entry]);
+  for (const claimants of claims.values()) {
+    const owner = claimants.find(entry => entry.mapped.home) ?? claimants[0];
+    for (const entry of claimants) {
+      if (entry !== owner && entry.mapped.fallbackCode) {
+        entry.mapped.code = entry.mapped.fallbackCode;
+        entry.mapped.isoAliases = [];
+      }
+    }
+  }
+}
+
+// Shoelace area of a ring; zero means rounding collapsed it to a line or a point.
+function ringArea(ring) {
+  let area = 0;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) area += (ring[j][0] + ring[i][0]) * (ring[j][1] - ring[i][1]);
+  return Math.abs(area / 2);
+}
+
+function polygons(geometry) {
+  return geometry.type === "Polygon" ? [geometry.coordinates] : geometry.coordinates;
+}
+
 function clean(values, code, name) {
   const seen = new Set([code.toUpperCase(), name.toUpperCase()]);
   const result = [];
@@ -171,21 +200,29 @@ for (const [id, atlas] of Object.entries(atlases)) {
   const commands = ["-i", input, "-filter", atlas.filter, "-filter-fields", atlas.fields.join(",")];
   if (atlas.dissolve) commands.push("-dissolve", atlas.dissolve);
   commands.push("-simplify", "interval=" + atlas.interval, "keep-shapes", "-clean", "-o", simplified, "format=geojson", "force");
-  execFileSync(mapshaper, ["-quiet", ...commands], { stdio: "inherit" });
+  execFileSync(process.execPath, [mapshaper, "-quiet", ...commands], { stdio: "inherit" });
 
   const collection = JSON.parse(readFileSync(simplified, "utf8"));
-  const features = collection.features.filter(feature => feature.geometry).map(feature => {
-    const mapped = atlas.map(feature.properties);
-    const properties = { code: mapped.code, name: mapped.name, aliases: clean(mapped.aliases, mapped.code, mapped.name) };
+  const entries = collection.features.filter(feature => feature.geometry).map(feature => ({ feature, mapped: atlas.map(feature.properties) }));
+  resolveSharedCodes(entries);
+  const features = entries.map(({ feature, mapped }) => {
+    const aliases = [...(mapped.isoAliases ?? []), ...mapped.aliases];
+    const properties = { code: mapped.code, name: mapped.name, aliases: clean(aliases, mapped.code, mapped.name) };
     if (mapped.group) properties.group = mapped.group;
     if (mapped.label && mapped.label.every(Number.isFinite)) {
       properties.label = [round(atlas.unwrap ? unwrapLongitude(mapped.label[0]) : mapped.label[0], 0.01), round(mapped.label[1], 0.01)];
     }
-    const geometry = {
-      type: feature.geometry.type,
-      coordinates: transformCoordinates(feature.geometry.coordinates, ([lon, lat]) => [
-        round(atlas.unwrap ? unwrapLongitude(lon) : lon, atlas.precision), round(lat, atlas.precision)])
-    };
+    // Tiny regions (Vatican City, Coral Sea Islands) keep extra decimals until every polygon still encloses area.
+    let geometry;
+    for (let precision = atlas.precision; ; precision /= 10) {
+      geometry = {
+        type: feature.geometry.type,
+        coordinates: transformCoordinates(feature.geometry.coordinates, ([lon, lat]) => [
+          round(atlas.unwrap ? unwrapLongitude(lon) : lon, precision), round(lat, precision)])
+      };
+      if (polygons(geometry).every(polygon => ringArea(polygon[0]) > 0)) break;
+      if (precision < 1e-5) throw new Error(id + " region " + mapped.code + " has a polygon without area");
+    }
     return { type: "Feature", properties, geometry };
   }).sort((a, b) => a.properties.code < b.properties.code ? -1 : a.properties.code > b.properties.code ? 1 : 0);
 

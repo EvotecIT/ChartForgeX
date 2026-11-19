@@ -44,7 +44,24 @@ public sealed class BuiltInRegionMapTests {
         Assert.False(string.IsNullOrWhiteSpace(entry.Source));
         Assert.StartsWith("https://", entry.SourceUrl, StringComparison.Ordinal);
         Assert.StartsWith("Public domain", entry.License, StringComparison.Ordinal);
-        Assert.All(definition.Regions, region => Assert.True(region.Path.Length > 0 && region.HasLabel, region.Code));
+        Assert.All(definition.Regions, region => Assert.True(region.HasLabel && LargestRingArea(region.Path) > 0, region.Code));
+        Assert.Equal(projection, entry.CreateOptions().Projection);
+    }
+
+    [Theory]
+    [InlineData("world", "SS", "SSD", "South Sudan")]
+    [InlineData("world", "PS", "PSE", "Palestine")]
+    [InlineData("world", "EH", "ESH", "Western Sahara")]
+    [InlineData("africa", "SS", "SSD", "South Sudan")]
+    public void CountriesKeepIsoCodesWhenNaturalEarthUsesItsOwnCode(string id, string code, string alpha3, string name) {
+        var definition = ChartMapCatalog.Get(id);
+
+        Assert.True(definition.TryResolveRegion(code, out var fromCode));
+        Assert.True(definition.TryResolveRegion(alpha3, out var fromAlias));
+        Assert.True(definition.TryResolveRegion(name, out var fromName));
+        Assert.Equal(code, fromCode);
+        Assert.Equal(code, fromAlias);
+        Assert.Equal(code, fromName);
     }
 
     [Fact]
@@ -152,6 +169,20 @@ public sealed class BuiltInRegionMapTests {
         Assert.True(markers[1].Cx > markers[0].Cx, "New York should sit east of Denver.");
         Assert.Equal(1, nodes.OfType<VisualScenePath>().Count(node => node.Role == "dotted-map-connector"));
         Assert.Contains("data-cfx-projection=\"" + projection + "\"", prepared.ToSvg(), StringComparison.Ordinal);
+    }
+
+    // Shoelace area of the largest ring in an M/L/Z path; zero means the region would draw nothing.
+    private static double LargestRingArea(string path) {
+        var largest = 0d;
+        foreach (var ring in path.Split(new[] { 'M' }, StringSplitOptions.RemoveEmptyEntries)) {
+            var numbers = Regex.Matches(ring, @"-?\d+(?:\.\d+)?").Select(match => double.Parse(match.Value, CultureInfo.InvariantCulture)).ToArray();
+            var area = 0d;
+            for (var i = 0; i + 3 < numbers.Length; i += 2) area += numbers[i] * numbers[i + 3] - numbers[i + 2] * numbers[i + 1];
+            if (numbers.Length >= 6) area += numbers[^2] * numbers[1] - numbers[0] * numbers[^1];
+            largest = Math.Max(largest, Math.Abs(area / 2));
+        }
+
+        return largest;
     }
 
     private static void AssertInside(ChartMapDefinition definition, string code, ChartPoint point) {

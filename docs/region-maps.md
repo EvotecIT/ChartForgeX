@@ -43,8 +43,8 @@ var chart = Chart.Create()
 `ChartMapCatalog.EmbeddedEntries()` lists the same maps with their source,
 licence, join key and notes, so a host can show attribution next to the chart.
 Each map is decompressed and parsed the first time it is requested and then
-cached; maps that share geometry (the world and the continents) share one
-parse.
+cached. Maps that share geometry (the world and the continents) share the
+decompressed text, but each one parses it once on first use.
 
 The United States projections draw the lower 48 states at full size and move
 Alaska and Hawaii into insets, so all four variants share one layout. They
