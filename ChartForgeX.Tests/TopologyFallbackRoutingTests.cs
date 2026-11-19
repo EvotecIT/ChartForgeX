@@ -5,11 +5,11 @@ namespace ChartForgeX.Tests;
 
 public sealed class TopologyFallbackRoutingTests {
     [Theory]
-    // Indexes whose mesh still forces fallback routes, covering a legend (52), shared trunks (119) and labelled
+    // Indexes whose mesh still forces fallback routes, covering a legend (52), shared trunks (35) and labelled
     // subtitled cards (138).
     [InlineData(34)]
+    [InlineData(35)]
     [InlineData(52)]
-    [InlineData(119)]
     [InlineData(138)]
     public void CrowdedReadableFallbackRoutesKeepBothEndsAttached(int index) {
         var chart = DenseRouteFixture.Mesh(4 + index % 17, 25 + index % 20, 10 + index % 50)

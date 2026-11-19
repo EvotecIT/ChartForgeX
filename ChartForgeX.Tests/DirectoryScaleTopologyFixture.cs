@@ -44,6 +44,7 @@ internal static class DirectoryScaleTopologyFixture {
 
     /// <summary>60 sites in three regions with 170 aggregated site links; a handful are delayed or failing.</summary>
     public static TopologyChart SiteOverview(int sites = 60, int links = 170) {
+        if (links > (long)sites * (sites - 1) / 2) throw new ArgumentOutOfRangeException(nameof(links), "More links than distinct site pairs.");
         var regions = new[] { "AMER", "APAC", "EMEA" };
         var chart = Create("site-overview", "Replication topology", Height(300, sites + regions.Length * 2, 520, 1800));
         chart.WithRenderOptions(new TopologyRenderOptions {

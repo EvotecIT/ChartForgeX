@@ -49,7 +49,9 @@ internal sealed class TopologyGroupHeaderLayout {
             var titleRows = TopologyGroupHeader.CaptionRows(group.Label, options);
             var subtitleRows = TopologyGroupHeader.CaptionRows(group.Subtitle, options);
             var fitTitle = group.TextStyle?.HasOverrides != true && titleRows == 1 && (size > VisualTextFitting.MaximumOrdinaryFontSize || titleLineHeight > TopologyGroupHeader.TitleHeight);
-            var fitSubtitle = group.TextStyle?.HasOverrides != true && subtitleRows == 1 && (size > VisualTextFitting.MaximumOrdinaryFontSize || subtitleLineHeight > TopologyGroupHeader.SubtitleHeight);
+            // A readable minimum is kept rather than shrunk to the subtitle row.
+            var fitSubtitle = group.TextStyle?.HasOverrides != true && subtitleRows == 1 && options.ResolvedMinimumReadableTextSize <= 0
+                && (size > VisualTextFitting.MaximumOrdinaryFontSize || subtitleLineHeight > TopologyGroupHeader.SubtitleHeight);
             if (group.LabelContent.IsStructured) {
                 var allocation = TopologyGroupHeader.TitleBounds(group, options, titleLineHeight);
                 var style = StructuredStyle(size);
@@ -96,10 +98,10 @@ internal sealed class TopologyGroupHeaderLayout {
 
     private readonly struct HeaderKey : IEquatable<HeaderKey> {
         private readonly (double X, double Y, double Width, string Label, string? Subtitle, double SymbolReserve,
-            bool Status, bool Multiline, bool Wrap, bool ShowLabel) _value;
+            bool Status, bool Multiline, bool Wrap, bool ShowLabel, double MinimumText) _value;
         internal HeaderKey(TopologyGroup group, TopologyRenderOptions options) => _value =
             (group.X, group.Y, group.Width, group.Label, group.Subtitle, TopologyGroupHeader.SymbolReserve(group, options),
-                options.IncludeGroupStatusDots, options.AllowMultilineNodeLabels, options.WrapNodeLabels, group.ShowLabel);
+                options.IncludeGroupStatusDots, options.AllowMultilineNodeLabels, options.WrapNodeLabels, group.ShowLabel, options.ResolvedMinimumReadableTextSize);
         public bool Equals(HeaderKey other) => _value.Equals(other._value);
         public override bool Equals(object? value) => value is HeaderKey other && Equals(other);
         public override int GetHashCode() => _value.GetHashCode();

@@ -39,23 +39,26 @@ internal static partial class TopologyLayoutEngine {
         if (HasManyDenseRowPanels(chart)) return true;
         if (!UsesReadableDenseLayout(chart) || !IsHorizontalDenseLayout(chart) || chart.Groups.Count < 2) return false;
         var available = chart.Viewport.Width - pad * 2 + .001;
-        if (DenseSingleRowWidth(chart) <= available) return false;
+        if (DenseSingleRowWidth(chart, pad) <= available) return false;
         // Narrower panels keep the groups side by side; below the minimum they would turn into tall strips, so the row wraps.
         for (var columns = DenseMaximumGridColumns - 1; columns >= DenseMinimumRowGridColumns; columns--) {
             chart.DenseGridColumnLimit = columns;
-            if (DenseSingleRowWidth(chart) <= available) return false;
+            if (DenseSingleRowWidth(chart, pad) <= available) return false;
         }
         chart.DenseGridColumnLimit = null;
         return true;
     }
 
-    private static double DenseSingleRowWidth(TopologyChart chart) {
+    // The row as PlaceDenseGroupGrid lays it out: every panel at least an equal share of the row.
+    private static double DenseSingleRowWidth(TopologyChart chart, double pad) {
+        var gaps = Math.Max(0, chart.Groups.Count - 1) * DenseGroupGridGap;
+        var share = (chart.Viewport.Width - pad * 2 - gaps) / chart.Groups.Count;
         var width = 0.0;
         foreach (var group in chart.Groups) {
             var nodes = chart.Nodes.Where(node => string.Equals(node.GroupId, group.Id, StringComparison.Ordinal)).ToList();
-            width += Math.Max(Math.Max(190, group.Width), DenseGroupWidth(chart, nodes, ResolveDenseGroupPolicy(chart, group, nodes), group));
+            width += Math.Max(Math.Max(Math.Max(190, share), group.Width), DenseGroupWidth(chart, nodes, ResolveDenseGroupPolicy(chart, group, nodes), group));
         }
-        return width + Math.Max(0, chart.Groups.Count - 1) * DenseGroupGridGap;
+        return width + gaps;
     }
 
     /// <summary>
@@ -76,6 +79,8 @@ internal static partial class TopologyLayoutEngine {
         var rowWidth = Math.Max(chart.Viewport.Width - pad * 2, sized.Max(item => item.Group.Width));
         var columns = new DensePanelColumns(pad, pad + titleOffset, rowWidth, DenseWrappedGroupGap,
             sized.Where(item => !explicitGroupPositions.ContainsKey(item.Group.Id)).Select(item => item.Group.Width).ToArray());
+        foreach (var (group, _) in sized)
+            if (explicitGroupPositions.TryGetValue(group.Id, out var pinned)) columns.Reserve(pinned.X, pinned.Y, group.Width, group.Height);
         foreach (var (group, nodes) in sized) {
             if (!explicitGroupPositions.ContainsKey(group.Id)) {
                 var place = columns.Place(group.Width, group.Height);

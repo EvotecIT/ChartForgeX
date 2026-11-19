@@ -97,7 +97,7 @@ internal sealed partial class VisualTopologyCompiler {
                         var subtitleRows = TopologyGroupHeader.CaptionRows(group.Subtitle, _options);
                         var titleBounds = TopologyGroupHeader.TitleBounds(group, _options, titleLineHeight);
                         var fitTitle = group.TextStyle?.HasOverrides != true && titleRows == 1 && ShouldFitHeaderLine(TextPolicySize(_context.Theme.Typography.DataLabelSize), titleBounds.Height, 600);
-                        var fitSubtitle = group.TextStyle?.HasOverrides != true && subtitleRows == 1 && ShouldFitHeaderLine(TopologyGroupHeader.SubtitleSize(TextPolicySize(_context.Theme.Typography.DataLabelSize), _options), TopologyGroupHeader.SubtitleHeight);
+                        var fitSubtitle = group.TextStyle?.HasOverrides != true && subtitleRows == 1 && _options.ResolvedMinimumReadableTextSize <= 0 && ShouldFitHeaderLine(TopologyGroupHeader.SubtitleSize(TextPolicySize(_context.Theme.Typography.DataLabelSize), _options), TopologyGroupHeader.SubtitleHeight);
                         var titleColor = Highlight(Color(group.LabelColor, GroupCaptionInk(captionSurface, _colors.Foreground)), active);
                         var titlePaint = string.IsNullOrWhiteSpace(group.LabelColor)
                             ? GroupCaptionPaint(captionSurface, titleColor, active, false) : GroupLabelPaint(group, titleColor, active);

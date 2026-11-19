@@ -32,6 +32,14 @@ internal sealed class DensePanelColumns {
 
     internal double ColumnWidth { get; }
 
+    /// <summary>Keeps automatic panels out of a pinned panel: every column it overlaps continues below it.</summary>
+    internal void Reserve(double x, double y, double width, double height) {
+        for (var i = 0; i < _tops.Length; i++) {
+            var left = _left + i * (ColumnWidth + _gap);
+            if (left < x + width + _gap && x < left + ColumnWidth + _gap) _tops[i] = Math.Max(_tops[i], y + height + _gap);
+        }
+    }
+
     /// <summary>Places one panel and returns its position and the width it is stretched to.</summary>
     internal (double X, double Y, double Width) Place(double width, double height) {
         var span = Math.Min(_tops.Length, Math.Max(1, (int)Math.Ceiling((width + _gap - .001) / (ColumnWidth + _gap))));

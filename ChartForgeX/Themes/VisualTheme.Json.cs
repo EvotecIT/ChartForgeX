@@ -47,6 +47,8 @@ public sealed partial class VisualTheme {
                 OptionalNumber(typography, "tileValueSize", "typography", 22),
                 OptionalNumber(typography, "tileDetailSize", "typography", 13));
         if (typography.TryGetValue("chart", out var chartScale)) scale = ReadChartTypography(scale.Family, scale.MonospaceFamily, chartScale, 16);
+        if (typography.ContainsKey("minimumReadableTextSize"))
+            scale = scale.WithMinimumReadableTextSize(Number(typography, "minimumReadableTextSize", "typography"));
         return new VisualTheme(light, dark, scale,
             Number(geometry, "spacing", "geometry"), Number(geometry, "seriesStrokeWidth", "geometry"), Number(geometry, "markerRadius", "geometry"),
             Number(geometry, "areaOpacity", "geometry"), Number(geometry, "barRadius", "geometry"),
@@ -77,6 +79,9 @@ public sealed partial class VisualTheme {
         WriteNumber(writer, "scalarValueSize", Typography.ScalarValueSize); WriteNumber(writer, "centerValueSize", Typography.CenterValueSize);
         WriteNumber(writer, "tileLabelSize", Typography.TileLabelSize); WriteNumber(writer, "tileValueSize", Typography.TileValueSize);
         WriteNumber(writer, "tileDetailSize", Typography.TileDetailSize);
+        // Written only when changed, so documents with the default stay as they were.
+        if (Typography.MinimumReadableTextSize != VisualTypography.DefaultMinimumReadableTextSize)
+            WriteNumber(writer, "minimumReadableTextSize", Typography.MinimumReadableTextSize);
         WriteChartTypography(writer, Typography);
         writer.EndObject();
         writer.Property("geometry"); writer.StartObject();

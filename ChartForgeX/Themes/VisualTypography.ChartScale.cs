@@ -10,7 +10,8 @@ public sealed partial class VisualTypography {
     /// <summary>Gets the smallest text size readable diagram layouts keep at the size they are shown, 11 px by default.</summary>
     /// <remarks>Readable dense topologies raise smaller captions to it and wrap group panels instead of growing wider than their viewport.</remarks>
     public double MinimumReadableTextSize => _minimumReadableTextSize;
-    private double _minimumReadableTextSize = 11;
+    internal const double DefaultMinimumReadableTextSize = 11;
+    private double _minimumReadableTextSize = DefaultMinimumReadableTextSize;
     internal int TitleWeight { get; set; } = 600;
     internal int PanelTitleWeight { get; set; } = 600;
     internal int SubtitleWeight { get; set; } = 400;
