@@ -11,6 +11,9 @@ namespace ChartForgeX.Tests;
 public sealed class GraphCardNodeBrowserTests {
     // The runtime script also names the role in a selector, so match the element's own attribute run.
     private const string Markup = "data-cfx-role=\"graph-layout-progress\" role=\"progressbar\"";
+    // Records layout progress events from before the explorer mounts, so the first report is captured too.
+    private const string Recorder = "<script>window.__layoutProgress=[];document.addEventListener('cfxgraphlayoutprogress',e=>window.__layoutProgress.push({progress:e.detail.progress,done:e.detail.done,"
+        + "visible:!e.target.querySelector('[data-cfx-role=graph-layout-progress]').hidden}),true);</script>";
     private const string Avatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='20'%3E%3Crect width='40' height='20' fill='%232563eb'/%3E%3C/svg%3E";
 
     [BrowserTheory]
@@ -52,6 +55,51 @@ public sealed class GraphCardNodeBrowserTests {
         Assert.True(exported.GetProperty("badge").GetBoolean(), exported.GetRawText());
         // The icon-only card keeps its icon; the image card does not draw its icon over the image.
         Assert.Equal(new[] { "S" }, exported.GetProperty("icons").EnumerateArray().Select(item => item.GetString()));
+
+        // The PNG export paints the card image (it is preloaded like other node images), and SVG never clips it to a circle.
+        var png = await page.EvaluateAsync<JsonElement>("""
+            async()=>{const root=document.querySelector('.cfx-graph-explorer');let svg,png;
+                root.addEventListener('cfxgraphexport',e=>{if(e.detail.format==='svg')svg=e.detail.content;else png=e.detail.content;e.preventDefault();});
+                await ChartForgeXGraphExplorer.export(root,'png');await ChartForgeXGraphExplorer.export(root,'svg');
+                const host=document.createElement('div');host.style.cssText='position:absolute;left:0;top:0';
+                host.append(document.importNode(new DOMParser().parseFromString(svg,'image/svg+xml').documentElement,true));document.body.append(host);
+                const frame=host.querySelector('svg').getBoundingClientRect(),slot=host.querySelector('image.cfx-graph-node-card-image').getBoundingClientRect();
+                const fx=(slot.left+slot.width/2-frame.left)/frame.width,fy=(slot.top+slot.height/2-frame.top)/frame.height;host.remove();
+                const image=new Image();image.src=png;await image.decode();
+                const canvas=document.createElement('canvas');canvas.width=image.naturalWidth;canvas.height=image.naturalHeight;
+                const context=canvas.getContext('2d');context.drawImage(image,0,0);
+                const pixel=context.getImageData(Math.round(fx*canvas.width),Math.round(fy*canvas.height),1,1).data;
+                const live=document.querySelector('.cfx-graph-node-card-image');
+                return {r:pixel[0],g:pixel[1],b:pixel[2],clip:live?getComputedStyle(live).clipPath:'none'};}
+            """);
+        Assert.True(png.GetProperty("b").GetInt32() > 200 && png.GetProperty("r").GetInt32() < 80, png.GetRawText());
+        Assert.Equal("none", png.GetProperty("clip").GetString());
+        AssertNoConsoleErrors(session);
+    }
+
+    [BrowserFact]
+    public async Task DraggingDuringTheFirstLayoutEndsItsProgressReport() {
+        var scene = RingScene(180);
+        // A budget the layout cannot reach and a negligible velocity threshold keep it running until the drag.
+        scene.Options.Physics.Stabilization.Iterations = 1_000_000;
+        scene.Options.Physics.MinVelocity = 1e-12;
+        var html = scene.ToGraphExplorerHtmlPage(o => { o.RenderBackend = HtmlGraphRenderBackend.Svg; o.PersistThemePreference = false; });
+        var head = html.IndexOf("<head>", StringComparison.OrdinalIgnoreCase);
+        await using var session = await OpenAsync(html.Insert(head + "<head>".Length, Recorder), 960, 640);
+        var page = session.Page;
+        await page.WaitForFunctionAsync("()=>window.__layoutProgress.some(item=>item.progress===0)&&document.querySelector('.cfx-graph-explorer').dataset.cfxGraphLayoutProgress==='running'");
+        var point = await page.Locator("[data-cfx-role=graph-node][data-node-id=n0]").EvaluateAsync<double[]>("node=>{const b=node.getBoundingClientRect();return [b.x+b.width/2,b.y+b.height/2];}");
+        await page.Mouse.MoveAsync((float)point[0], (float)point[1]);
+        await page.Mouse.DownAsync();
+        await page.Mouse.MoveAsync((float)point[0] + 40, (float)point[1] + 30, new() { Steps = 4 });
+        await page.Mouse.UpAsync();
+        await page.WaitForFunctionAsync("()=>document.querySelector('.cfx-graph-explorer').dataset.cfxGraphLayoutProgress==='done'");
+        var events = (await page.EvaluateAsync<JsonElement>("()=>window.__layoutProgress")).EnumerateArray().ToArray();
+        var progress = events.Select(item => item.GetProperty("progress").GetDouble()).ToArray();
+        Assert.Equal(progress.OrderBy(value => value), progress);
+        Assert.Single(events, item => item.GetProperty("done").GetBoolean());
+        Assert.True(events[^1].GetProperty("done").GetBoolean());
+        Assert.True(await page.Locator("[data-cfx-role=graph-layout-progress]").EvaluateAsync<bool>("bar=>bar.hidden"));
         AssertNoConsoleErrors(session);
     }
 
@@ -61,12 +109,9 @@ public sealed class GraphCardNodeBrowserTests {
     public async Task InitialLayoutReportsProgressAndHidesWhenSettled(HtmlGraphRenderBackend backend) {
         var scene = RingScene(180);
         var html = scene.ToGraphExplorerHtmlPage(o => { o.RenderBackend = backend; o.PersistThemePreference = false; });
-        // Record events from before the explorer mounts, so the first report is captured too.
-        const string recorder = "<script>window.__layoutProgress=[];document.addEventListener('cfxgraphlayoutprogress',e=>window.__layoutProgress.push({progress:e.detail.progress,done:e.detail.done,"
-            + "visible:!e.target.querySelector('[data-cfx-role=graph-layout-progress]').hidden}),true);</script>";
         var head = html.IndexOf("<head>", StringComparison.OrdinalIgnoreCase);
         Assert.True(head >= 0);
-        await using var session = await OpenAsync(html.Insert(head + "<head>".Length, recorder), 960, 640);
+        await using var session = await OpenAsync(html.Insert(head + "<head>".Length, Recorder), 960, 640);
         var page = session.Page;
         await page.WaitForFunctionAsync("()=>document.querySelector('.cfx-graph-explorer').dataset.cfxGraphLayoutProgress==='done'");
 

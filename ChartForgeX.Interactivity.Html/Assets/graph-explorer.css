@@ -795,7 +795,8 @@ g[data-cfx-role="graph-node"].cfx-graph-node-shadow {
   clip-path: circle(50%);
 }
 
-.cfx-graph-node .cfx-graph-node-image-rect {
+.cfx-graph-node .cfx-graph-node-image-rect,
+.cfx-graph-node .cfx-graph-node-card-image {
   clip-path: none;
 }
 

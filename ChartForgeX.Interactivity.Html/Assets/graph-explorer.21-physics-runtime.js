@@ -213,6 +213,8 @@ self.onmessage = event => {
     if (!hasFeature(root, 'RuntimePhysics')) return false;
     root.dataset.cfxGraphPhysicsReason = reason || 'reheat';
     if (options?.rebuild) return startPhysics(root, { reason, fit: options.fit });
+    // A drag during the first layout ends its progress report before the tick counter restarts.
+    finishLayoutProgress(root);
     if (root.__cfxGraphWorker) {
       root.dataset.cfxGraphPhysicsState = 'running'; root.__cfxGraphWorker.worker.postMessage({ type: 'reheat', generation: ++root.__cfxGraphWorker.generation });
       if (typeof syncPhysicsControls === 'function') syncPhysicsControls(root); return true;
