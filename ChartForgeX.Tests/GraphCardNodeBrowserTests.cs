@@ -80,10 +80,17 @@ public sealed class GraphCardNodeBrowserTests {
             ()=>{const root=document.querySelector('.cfx-graph-explorer');
                 ChartForgeXGraphExplorer.update(root,{upsertNodes:[{id:'dc3',label:'DC03',shape:'box',card:true,imageUrl:"{{Avatar}}",size:8,x:300,y:440}]});
                 const node=root.querySelector('[data-cfx-role=graph-node][data-node-id=dc3]');
-                return {size:+node.dataset.nodeSize,card:node.dataset.nodeCard,images:node.querySelectorAll('image.cfx-graph-node-card-image').length};}
+                ChartForgeXGraphExplorer.update(root,{upsertNodes:[{id:'topo',label:'Topology',shape:'box',metadata:{'topology.card':'true'},size:40,x:620,y:440}]});
+                ChartForgeXGraphExplorer.update(root,{upsertNodes:[{id:'topo',label:'Topology',shape:'box',size:36,x:620,y:440}]});
+                const topology=root.querySelector('[data-cfx-role=graph-node][data-node-id=topo]');
+                return {size:+node.dataset.nodeSize,card:node.dataset.nodeCard,images:node.querySelectorAll('image.cfx-graph-node-card-image').length,
+                    topologySize:+topology.dataset.nodeSize,topologyCard:topology.dataset.nodeCard};}
             """);
         Assert.Equal(62, patched.GetProperty("size").GetDouble());
         Assert.Equal("true", patched.GetProperty("card").GetString());
+        // Topology cards keep their own sizes, even when a later patch omits their metadata.
+        Assert.Equal("true", patched.GetProperty("topologyCard").GetString());
+        Assert.Equal(36, patched.GetProperty("topologySize").GetDouble());
         if (backend == HtmlGraphRenderBackend.Svg) Assert.Equal(1, patched.GetProperty("images").GetInt32());
         AssertNoConsoleErrors(session);
     }

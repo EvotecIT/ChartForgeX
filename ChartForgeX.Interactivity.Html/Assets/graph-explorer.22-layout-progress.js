@@ -8,6 +8,7 @@
     if (!element || root.dataset.cfxGraphLayoutProgress) return;
     root.dataset.cfxGraphLayoutProgress = 'running';
     root.__cfxGraphLayoutProgressIterations = Math.max(1, iterations || 1);
+    root.__cfxGraphLayoutProgressPercent = -1;
     element.hidden = false;
     syncLayoutProgress(root, 0);
   };
@@ -17,7 +18,9 @@
     if (!element) return;
     // Physics can settle before its iteration budget, so the bar stops short of 100 until it does.
     const percent = Math.max(0, Math.min(99, Math.floor((Number(tick) || 0) / root.__cfxGraphLayoutProgressIterations * 100)));
-    if (element.getAttribute('aria-valuenow') === String(percent) && tick > 0) return;
+    // A worker that falls back to the main thread restarts its tick count; the report holds instead of going backwards.
+    if (percent <= root.__cfxGraphLayoutProgressPercent) return;
+    root.__cfxGraphLayoutProgressPercent = percent;
     element.setAttribute('aria-valuenow', String(percent));
     element.style.setProperty('--cfx-graph-layout-progress', String(percent / 100));
     const value = element.querySelector('[data-cfx-role="graph-layout-progress-value"]');

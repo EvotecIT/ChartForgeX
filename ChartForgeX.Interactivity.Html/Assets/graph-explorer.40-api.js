@@ -144,7 +144,9 @@
     }
     const patchedNode = { ...node, card: graphPatchNodeCard(node, element) };
     // Public cards keep the server's 62 minimum (a 180 px card); topology cards keep their own sizes.
-    if (patchedNode.card && String(node.metadata?.['topology.card'] || '').toLowerCase() !== 'true') patchedNode.size = Math.max(62, Number(node.size) || 0);
+    const topologyCard = node.metadata ? String(node.metadata['topology.card'] || '').toLowerCase() === 'true'
+      : /"topology\.card":"true"/i.test(attr(element, 'data-cfx-metadata'));
+    if (patchedNode.card && !topologyCard) patchedNode.size = Math.max(62, Number(node.size) || 0);
     const index = items(root, '[data-cfx-role="graph-node"]').indexOf(element);
     const x = graphPatchPosition(element, node.x, 'data-node-x', 160 + Math.max(0, index) * 22);
     const y = graphPatchPosition(element, node.y, 'data-node-y', 160 + Math.max(0, index) * 17);
