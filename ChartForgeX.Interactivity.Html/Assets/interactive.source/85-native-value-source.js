@@ -202,7 +202,8 @@
         || !Number.isFinite(source.readings[index].value) || source.readings[index].value < 0)
         || new Set(expected.map(row => JSON.stringify([row.seriesKey, row.id]))).size !== expected.length)
       throw new TypeError('Section: exact ordered authored raw rows required.');
-    const counts = new Map(metadata.series.map(series => [series.key, expected.filter(row => row.seriesKey === series.key).length]));
+    const counts = new Map(metadata.series.map(series => [series.key, 0]));
+    for (const row of expected) counts.set(row.seriesKey, counts.get(row.seriesKey) + 1);
     const tokens = new Set(), contributors = new Set(), matched = new Set();
     const painted = [...section.querySelectorAll('.cfx-stage [data-cfx-role="radial-point"]')];
     const owners = nativeMarkIndex(painted, node => [node.dataset.cfxSeriesKey, node.dataset.cfxPoint, node.dataset.cfxSourcePoints]);
