@@ -40,6 +40,21 @@ public sealed class TopologyHiddenNodeRoutingTests {
         Assert.Contains(route, point => Math.Abs(point.Y - route[0].Y) > 1);
     }
 
+    [Fact]
+    public void DensePlanIsRebuiltWhenAHiddenNodeIsShownInPlace() {
+        var chart = Chart(TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
+        chart.RenderOptions = new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false };
+        var hidden = chart.Nodes.Single(node => node.Id == "hidden");
+        hidden.DisplayMode = TopologyNodeDisplayMode.Hidden;
+        var straight = TopologyDenseRoutePlanner.Plan(chart)![chart.Edges[0]]!;
+
+        hidden.DisplayMode = TopologyNodeDisplayMode.Card;
+        var detour = TopologyDenseRoutePlanner.Plan(chart)![chart.Edges[0]]!;
+
+        Assert.All(straight, point => Assert.Equal(straight[0].Y, point.Y, 3));
+        Assert.Contains(detour, point => Math.Abs(point.Y - detour[0].Y) > 1);
+    }
+
     private static void Save(string name, PreparedTopology prepared) {
         var directory = Environment.GetEnvironmentVariable("CFX_TOPOLOGY_FIXTURE_OUTPUT");
         if (string.IsNullOrWhiteSpace(directory)) return;
