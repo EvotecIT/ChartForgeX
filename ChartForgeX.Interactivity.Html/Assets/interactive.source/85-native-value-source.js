@@ -1,13 +1,26 @@
   // Raw rows are detached native facts, not synthetic interactive paint. No geometry, sums or formatting is reconstructed here.
   const nativeRawSource = section => JSON.parse(section.dataset.cfxPreparedChart).nativeValueSource;
   // Intrinsic sign/zero policy is independent of the finite display window. No transform is evaluated here.
+  // Marks keyed once by the exact values each check compares, so matching every observation stays linear in the drawing.
+  // Every mark with a key is kept: a duplicate still fails the exactly-one check.
+  const nativeMarkIndex = (nodes, key) => {
+    const marks = new Map();
+    for (const node of nodes) { const token = JSON.stringify(key(node)); (marks.get(token) || marks.set(token, []).get(token)).push(node); }
+    return (...values) => marks.get(JSON.stringify(values)) || [];
+  };
+  // A projection parses the section's whole captured metadata, readings included, so one validation reads each axis once.
+  const nativeAxisReader = section => {
+    const axes = new Map();
+    return name => axes.has(name) ? axes.get(name) : axes.set(name, chartAxisProjection(section, name)).get(name);
+  };
+  const nativeObservationMarks = nodes => nativeMarkIndex(nodes, node => [node.dataset.cfxSeriesKey, node.dataset.cfxObservationId]);
   const nativeComponentMemberValid = (axis, value) => !!axis && Number.isFinite(value)
     && (axis.scale !== 'logarithmic' || (axis.logarithmicDomain === 'negative' ? value < 0 : value > 0));
   const validateNativeComponentAxes = section => {
-    const x = chartAxisProjection(section, 'x');
+    const projection = nativeAxisReader(section), x = projection('x');
     if (!x) throw new TypeError('Section: captured native component X axis required.');
     for (const point of section.querySelectorAll('.cfx-stage [data-cfx-role="point"]')) {
-      const y = chartAxisProjection(section, point.dataset.cfxAxis === 'secondary' ? 'secondaryY' : 'y');
+      const y = projection(point.dataset.cfxAxis === 'secondary' ? 'secondaryY' : 'y');
       const rawX = point.getAttribute('data-cfx-x');
       if (!rawX?.trim() || !nativeComponentMemberValid(x, Number(rawX))) throw new TypeError('Section: finite intrinsically valid native component X required.');
       if (!y || y.scale === 'time' || x.scale === 'time' && (point.hasAttribute('data-cfx-x-lower') || point.hasAttribute('data-cfx-x-upper')))
@@ -22,9 +35,9 @@
         throw new TypeError('Native transition: exact native component axis/session/calendar facts required.');
     const points = [...section.querySelectorAll('.cfx-stage [data-cfx-role="point"]')], originals = [...basis.querySelectorAll('.cfx-stage [data-cfx-role="point"]')];
     if (points.length !== originals.length) throw new TypeError('Native transition: exact native component coordinate catalog required.');
-    const matched = new Set();
+    const matched = new Set(), original = nativeObservationMarks(originals);
     for (const point of points) {
-      const expected = originals.filter(row => row.dataset.cfxSeriesKey === point.dataset.cfxSeriesKey && row.dataset.cfxObservationId === point.dataset.cfxObservationId);
+      const expected = original(point.dataset.cfxSeriesKey, point.dataset.cfxObservationId);
       if (expected.length !== 1 || matched.has(expected[0]) || ['data-cfx-x', 'data-cfx-x-scale', 'data-cfx-x-instant'].some(name => point.getAttribute(name) !== expected[0].getAttribute(name)))
         throw new TypeError('Native transition: fixed native component X/instant facts required.');
       matched.add(expected[0]);
@@ -42,12 +55,13 @@
     const expected = metadata.series.flatMap(series => (series.observationIds || []).flatMap((row, index) =>
       ['y', 'size'].map(component => ({ ...row, ordinal: index, seriesKey: series.key, component }))));
     const painted = [...section.querySelectorAll('.cfx-stage [data-cfx-role="point"]')], matched = new Set(), identities = new Set();
+    const marks = nativeObservationMarks(painted), projection = nativeAxisReader(section);
     let sizeDomain = null;
     if (expected.length !== source.readings.length || painted.length * 2 !== expected.length)
       throw new TypeError('Section: exact native Bubble component catalog required.');
     for (let index = 0; index < expected.length; index++) {
       const row = expected[index], fact = source.readings[index], token = JSON.stringify([row.seriesKey, row.id, row.component]);
-      const matches = painted.filter(node => node.dataset.cfxSeriesKey === row.seriesKey && node.dataset.cfxObservationId === row.id);
+      const matches = marks(row.seriesKey, row.id);
       if (typeof row.id !== 'string' || !row.id || row.index !== row.ordinal || identities.has(token)
           || !keys(fact, ['seriesKey', 'observationId', 'component', 'value', 'minimum', 'maximum'])
           || fact.seriesKey !== row.seriesKey || fact.observationId !== row.id || fact.component !== row.component
@@ -58,7 +72,7 @@
       if (!attribute?.trim() || Number(attribute) !== fact.value || mark.dataset.cfxSizeMapping !== source.mapping)
         throw new TypeError('Section: native component value/size mapping mismatch.');
       if (row.component === 'y') {
-        const axis = chartAxisProjection(section, mark.dataset.cfxAxis === 'secondary' ? 'secondaryY' : 'y');
+        const axis = projection(mark.dataset.cfxAxis === 'secondary' ? 'secondaryY' : 'y');
         if (!nativeComponentMemberValid(axis, fact.value) || axis.minimum !== fact.minimum || axis.maximum !== fact.maximum)
           throw new TypeError('Section: native Bubble Y domain mismatch.');
       } else {
@@ -78,19 +92,20 @@
       throw new TypeError('Section: finite captured native range component source required.');
     const expected = metadata.series.flatMap(series => (series.observationIds || []).flatMap((row, index) =>
       ['lower', 'upper'].map(component => ({ ...row, ordinal: index, seriesKey: series.key, component }))));
-    const points = [...section.querySelectorAll('.cfx-stage [data-cfx-role="point"]')], matched = new Set(), identities = new Set();
+    const points = [...section.querySelectorAll('.cfx-stage [data-cfx-role="point"]')], matched = new Set(), identities = new Set(), marks = nativeObservationMarks(points);
+    const projection = nativeAxisReader(section);
     if (expected.length !== source.readings.length || points.length * 2 !== expected.length)
       throw new TypeError('Section: exact native range component catalog required.');
     for (let index = 0; index < expected.length; index++) {
       const row = expected[index], fact = source.readings[index], token = JSON.stringify([row.seriesKey, row.id, row.component]);
-      const matches = points.filter(node => node.dataset.cfxSeriesKey === row.seriesKey && node.dataset.cfxObservationId === row.id);
+      const matches = marks(row.seriesKey, row.id);
       if (typeof row.id !== 'string' || !row.id || row.index !== row.ordinal || identities.has(token)
           || !keys(fact, ['seriesKey', 'observationId', 'component', 'value', 'minimum', 'maximum'])
           || fact.seriesKey !== row.seriesKey || fact.observationId !== row.id || fact.component !== row.component
           || ![fact.value, fact.minimum, fact.maximum].every(Number.isFinite) || fact.maximum <= fact.minimum || matches.length !== 1)
         throw new TypeError('Section: exact ordered native lower/upper readings required.');
       identities.add(token); const mark = matches[0], attribute = mark.getAttribute('data-cfx-' + row.component);
-      const axis = chartAxisProjection(section, mark.dataset.cfxAxis === 'secondary' ? 'secondaryY' : 'y');
+      const axis = projection(mark.dataset.cfxAxis === 'secondary' ? 'secondaryY' : 'y');
       if (!attribute?.trim() || Number(attribute) !== fact.value || !nativeComponentMemberValid(axis, fact.value) || axis.minimum !== fact.minimum || axis.maximum !== fact.maximum
           || row.component === 'upper' && source.readings[index - 1].value > fact.value)
         throw new TypeError('Section: native range tuple/domain/value mismatch.');
@@ -106,8 +121,9 @@
     const observations = metadata.series.flatMap(series => (series.observationIds || []).map((row, index) => ({ ...row, ordinal: index, seriesKey: series.key })));
     const points = [...section.querySelectorAll('.cfx-stage [data-cfx-role="point"]')], matched = new Set(), identities = new Set(); let offset = 0;
     if (points.length !== observations.length) throw new TypeError('Section: exact native uncertainty point catalog required.');
+    const marks = nativeObservationMarks(points), projection = nativeAxisReader(section);
     for (const observation of observations) {
-      const matches = points.filter(node => node.dataset.cfxSeriesKey === observation.seriesKey && node.dataset.cfxObservationId === observation.id);
+      const matches = marks(observation.seriesKey, observation.id);
       if (typeof observation.id !== 'string' || !observation.id || observation.index !== observation.ordinal || matches.length !== 1 || matched.has(matches[0]))
         throw new TypeError('Section: exact authored uncertainty observation required.');
       const point = matches[0], hasX = point.hasAttribute('data-cfx-x-lower'), hasY = point.hasAttribute('data-cfx-y-lower');
@@ -116,7 +132,7 @@
       const members = ['value', ...(hasX ? ['x-lower', 'x-upper'] : []), ...(hasY ? ['y-lower', 'y-upper'] : [])], values = new Map();
       for (const component of members) {
         const fact = source.readings[offset++], token = JSON.stringify([observation.seriesKey, observation.id, component]);
-        const axis = chartAxisProjection(section, component.startsWith('x-') ? 'x' : point.dataset.cfxAxis === 'secondary' ? 'secondaryY' : 'y');
+        const axis = projection(component.startsWith('x-') ? 'x' : point.dataset.cfxAxis === 'secondary' ? 'secondaryY' : 'y');
         const attribute = point.getAttribute('data-cfx-' + component);
         if (!keys(fact, ['seriesKey', 'observationId', 'component', 'value', 'minimum', 'maximum']) || fact.seriesKey !== observation.seriesKey || fact.observationId !== observation.id
             || fact.component !== component || identities.has(token) || ![fact.value, fact.minimum, fact.maximum].every(Number.isFinite) || fact.maximum <= fact.minimum
@@ -142,12 +158,13 @@
     const observations = metadata.series.flatMap(series => (series.observationIds || []).map((row, index) => ({ ...row, ordinal: index, seriesKey: series.key })));
     const points = [...section.querySelectorAll('.cfx-stage [data-cfx-role="point"]')], matched = new Set(), identities = new Set(); let offset = 0;
     if (points.length !== observations.length) throw new TypeError('Section: exact native financial point catalog required.');
+    const marks = nativeObservationMarks(points), projection = nativeAxisReader(section);
     for (const observation of observations) {
-      const matches = points.filter(node => node.dataset.cfxSeriesKey === observation.seriesKey && node.dataset.cfxObservationId === observation.id);
+      const matches = marks(observation.seriesKey, observation.id);
       if (typeof observation.id !== 'string' || !observation.id || observation.index !== observation.ordinal || matches.length !== 1 || matched.has(matches[0]))
         throw new TypeError('Section: exact authored financial observation required.');
       const point = matches[0], values = new Map();
-      const axis = chartAxisProjection(section, point.dataset.cfxAxis === 'secondary' ? 'secondaryY' : 'y');
+      const axis = projection(point.dataset.cfxAxis === 'secondary' ? 'secondaryY' : 'y');
       for (const component of ['open', 'high', 'low', 'close']) {
         const fact = source.readings[offset++], token = JSON.stringify([observation.seriesKey, observation.id, component]), attribute = point.getAttribute('data-cfx-' + component);
         if (!keys(fact, ['seriesKey', 'observationId', 'component', 'value', 'minimum', 'maximum']) || fact.seriesKey !== observation.seriesKey || fact.observationId !== observation.id
@@ -188,6 +205,10 @@
     const counts = new Map(metadata.series.map(series => [series.key, expected.filter(row => row.seriesKey === series.key).length]));
     const tokens = new Set(), contributors = new Set(), matched = new Set();
     const painted = [...section.querySelectorAll('.cfx-stage [data-cfx-role="radial-point"]')];
+    const owners = nativeMarkIndex(painted, node => [node.dataset.cfxSeriesKey, node.dataset.cfxPoint, node.dataset.cfxSourcePoints]);
+    // First occurrence wins, as the scans these replace returned.
+    const first = (rows, key) => rows.reduce((index, row) => { const token = JSON.stringify(key(row)); if (!index.has(token)) index.set(token, row); return index; }, new Map());
+    const authored = first(expected, row => [row.seriesKey, row.index]), readings = first(source.readings, row => [row.seriesKey, row.observationId]);
     for (const slice of source.slices) {
       const token = slice && JSON.stringify([slice.seriesKey, slice.pointIndex]);
       if (!keys(slice, ['seriesKey', 'pointIndex', 'sourceIndices', 'paintedMetadata']) || !counts.has(slice.seriesKey) || !Number.isSafeInteger(slice.pointIndex) || slice.pointIndex < -1 || slice.pointIndex >= counts.get(slice.seriesKey)
@@ -204,11 +225,10 @@
       if (slice.paintedMetadata === null) continue;
       if (!slice.paintedMetadata || typeof slice.paintedMetadata !== 'object' || Array.isArray(slice.paintedMetadata) || Object.entries(slice.paintedMetadata).some(([key, value]) => !key.startsWith('data-cfx-') || typeof value !== 'string'))
         throw new TypeError('Section: native completed slice paint metadata required.');
-      const matches = painted.filter(node => node.dataset.cfxSeriesKey === slice.seriesKey && node.dataset.cfxPoint === String(slice.pointIndex)
-        && node.dataset.cfxSourcePoints === slice.sourceIndices.join(','));
+      const matches = owners(slice.seriesKey, String(slice.pointIndex), slice.sourceIndices.join(','));
       if (matches.length !== 1 || matched.has(matches[0]) || Object.entries(slice.paintedMetadata).some(([key, value]) => matches[0].getAttribute(key) !== value))
         throw new TypeError('Section: native raw slice/paint owner mismatch.');
-      const mark = matches[0], original = slice.sourceIndices[0], reading = source.readings.find(row => row.seriesKey === slice.seriesKey && row.observationId === expected.find(row => row.seriesKey === slice.seriesKey && row.index === original)?.id);
+      const mark = matches[0], original = slice.sourceIndices[0], reading = readings.get(JSON.stringify([slice.seriesKey, authored.get(JSON.stringify([slice.seriesKey, original]))?.id]));
       if (slice.pointIndex === -1 ? mark.dataset.cfxObservationId !== undefined : !reading || mark.dataset.cfxObservationId !== reading.observationId || Number(mark.dataset.cfxValue) !== reading.value)
         throw new TypeError('Section: native raw slice observation/value mismatch.');
       matched.add(mark);
