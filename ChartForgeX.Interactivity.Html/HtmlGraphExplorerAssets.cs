@@ -46,6 +46,7 @@ internal static class HtmlGraphExplorerAssets {
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.19-physics-telemetry.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.20-physics.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.21-physics-runtime.js",
+        "ChartForgeX.Interactivity.Html.Assets.graph-explorer.22-layout-progress.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.25-layout-metrics.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.25-layout-quality.js",
         "ChartForgeX.Interactivity.Html.Assets.graph-explorer.26-box-selection.js",

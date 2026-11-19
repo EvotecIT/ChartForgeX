@@ -46,4 +46,18 @@ public sealed partial class HtmlGraphExplorerRenderer {
         Attribute(writer, "preserveAspectRatio", "none");
         writer.Append("></image>");
     }
+
+    /// <summary>Draws a card's image in the slot left of its caption, keeping the image's aspect ratio.</summary>
+    private static void WriteCardImage(StringBuilder writer, GraphSceneNode node, double size) {
+        var slot = CardImageSize(size);
+        writer.Append("<image class=\"cfx-graph-node-card-image\"");
+        Attribute(writer, "href", node.ImageUrl);
+        Attribute(writer, "aria-label", node.ImageAlt);
+        Attribute(writer, "x", Number(-BoxHalfWidth(size) + 28 - slot / 2));
+        Attribute(writer, "y", Number(-slot / 2));
+        Attribute(writer, "width", Number(slot));
+        Attribute(writer, "height", Number(slot));
+        Attribute(writer, "preserveAspectRatio", "xMidYMid meet");
+        writer.Append("></image>");
+    }
 }

@@ -29,6 +29,7 @@ public sealed partial class HtmlChartLocalization {
         [HtmlChartText.GraphView] = "View",
         [HtmlChartText.GraphFit] = "Fit",
         [HtmlChartText.GraphFitToView] = "Fit graph to view",
+        [HtmlChartText.GraphLayoutProgress] = "Arranging graph",
         [HtmlChartText.GraphSelect] = "Select",
         [HtmlChartText.GraphBoxSelect] = "Box select",
         [HtmlChartText.GraphToggleBoxSelection] = "Toggle box selection",

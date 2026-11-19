@@ -68,6 +68,53 @@ Double-clicking a node with children enters that node. Double-clicking empty gra
 
 `ParentId` is a real validated contract: missing parents, self-parenting, and cycles fail before rendering. `ParentClusterId` provides the same structural relationship for nested cluster descriptions.
 
+## Card nodes
+
+`GraphNodeShape.Card` draws a rounded card with a fixed, accessible layout: the image (or icon text) on the left, `Label` as the title, `SecondaryLabel` as the subtitle, `BadgeText` in the top corner and the status dot in the bottom corner. It covers what HTML node templates are usually used for (a person or device card with an avatar, a name, a role and a count) without injecting host HTML, so cards render the same in SVG, Canvas, WebGL and exported SVG/PNG.
+
+```csharp
+var graph = GraphScene.Create("directory", "Directory estate")
+    .AddNode("dc01", "DC01", node => {
+        node.Shape = GraphNodeShape.Card;
+        node.ImageUrl = "data:image/svg+xml,...";   // keeps its aspect ratio inside a 32 px slot
+        node.ImageAlt = "Domain controller";
+        node.SecondaryLabel = "Warsaw · 4 roles";
+        node.BadgeText = "3";
+        node.Status = "warning";
+    })
+    .AddNode("warsaw", "Warsaw", node => {
+        node.Shape = GraphNodeShape.Card;
+        node.IconText = "S";                         // shown when there is no image
+        node.SecondaryLabel = "Site";
+    })
+    .AddEdge("dc01-warsaw", "dc01", "warsaw");
+```
+
+`Size` sets the card width (2.9 × `Size`); sizes below 62 use 62, which is a 180 px card. Long titles and subtitles are shortened with an ellipsis and keep their full text for search and screen readers. Patches can add cards with `shape: 'box'` and `card: true`.
+
+Coming from vis-network HTML nodes (`VisNetworkHtmlNode` in HtmlForgeX): the card's header text becomes `Label`, the body or caption becomes `SecondaryLabel`, an image becomes `ImageUrl`, a badge becomes `BadgeText`, and a status colour becomes `Status`. Lists, tables and progress bars inside a node belong in the tooltip or a side panel instead.
+
+## Layout progress
+
+Large graphs that run physics on load show a progress bar while the first layout settles, like vis-network's loading bar. It reports how far the layout has come through its iteration budget, hides when the layout stabilizes or the reader pauses it, and never comes back for later reheats after a drag or a patch. The bar is a `role="progressbar"` element with a localizable label (`HtmlChartText.GraphLayoutProgress`); it doesn't block the stage.
+
+```csharp
+var html = graph.ToGraphExplorerHtmlPage(options => {
+    options.IncludeLayoutProgress = true;        // default
+    options.LayoutProgressMinimumNodes = 150;    // default; smaller graphs settle too quickly to need it
+});
+```
+
+The runtime also raises `cfxgraphlayoutprogress` with `graphId`, `progress` (0 to 1) and `done`, so a host can drive its own loading indicator:
+
+```js
+document.addEventListener('cfxgraphlayoutprogress', event => {
+  status.textContent = event.detail.done ? 'Ready' : Math.round(event.detail.progress * 100) + '%';
+});
+```
+
+The bar appears only when the scene enables `RuntimePhysics` and `Stabilization` and the solver isn't `StaticPrepared` or `None`; prepared layouts are already in place when the page opens.
+
 ## Premium themes and accessibility
 
 The HTML adapter owns one responsive explorer shell rather than leaving each generated page to invent its own fields, graph controls, physics panel, breadcrumbs, focus treatment, and minimap. Search, filters, and appearance live in the discovery header. Hierarchy and graph commands float inside the stage, where icon-only actions have accessible names and custom tooltips; export formats open as a labeled popover instead of three unexplained glyphs. The shell and all three rendering backends consume the same theme tokens.

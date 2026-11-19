@@ -7,7 +7,14 @@ namespace ChartForgeX.Interactivity.Html;
 public sealed partial class HtmlGraphExplorerRenderer {
     private const double CardNodeHalfHeight = 36;
 
+    // A 180 px wide card: narrower cards leave no room for the caption beside the image slot.
+    private const double CardNodeMinimumSize = 62;
+
+    /// <summary>Gets the square image slot centred 28 px from a card's left edge, matching the icon slot.</summary>
+    private static double CardImageSize(double size) => Math.Max(12, Math.Min(32, BoxHalfHeight(size) * 2 - 14));
+
     private static bool IsCardNode(GraphSceneNode node) {
+        if (node.Shape == GraphNodeShape.Card) return true;
         return EffectiveNodeShape(node) == GraphNodeShape.Box
             && node.Metadata.TryGetValue("topology.card", out var card)
             && string.Equals(card, "true", StringComparison.OrdinalIgnoreCase);

@@ -73,6 +73,15 @@ public sealed class HtmlGraphExplorerOptions {
 
     /// <summary>Gets or sets how long the pointer must rest on a node or edge before its tooltip appears, in milliseconds. The default is zero (immediate); keyboard focus is always immediate.</summary>
     public int TooltipDelayMilliseconds { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether a progress bar shows while the first physics layout arranges a large graph. The bar reports progress
+    /// through the iteration budget, hides when the layout settles or is paused, and raises <c>cfxgraphlayoutprogress</c> events. Default: true.
+    /// </summary>
+    public bool IncludeLayoutProgress { get; set; } = true;
+
+    /// <summary>Gets or sets the smallest number of nodes that shows the layout progress bar. Smaller graphs settle too quickly for it to help. Default: 150.</summary>
+    public int LayoutProgressMinimumNodes { get; set; } = 150;
 }
 
 /// <summary>

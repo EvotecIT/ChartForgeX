@@ -1,7 +1,7 @@
   const imageCache = new Map();
   const imageLoadCallbacks = new Map();
   const imageConsumers = new Map();
-  const graphImageUrls = nodes => new Set(nodes.filter(node => (node.shape === 'image' || node.shape === 'imageRect') && node.imageUrl).map(node => node.imageUrl));
+  const graphImageUrls = nodes => new Set(nodes.filter(node => (node.shape === 'image' || node.shape === 'imageRect' || node.card) && node.imageUrl).map(node => node.imageUrl));
   const retainGraphImageUrl = url => imageConsumers.set(url, (imageConsumers.get(url) || 0) + 1);
   const releaseGraphImageUrl = url => {
     const count = imageConsumers.get(url) || 0;

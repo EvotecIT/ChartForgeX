@@ -37,6 +37,12 @@
       const wide = node.shape === 'box' ? 1.45 : 1;
       const high = node.shape === 'box' ? (node.card ? Math.min(size * 1.05, 36) : size * 1.05) : size;
       group.appendChild(svgNode(document, 'rect', { x: -size * wide, y: -high, width: size * wide * 2, height: high * 2, rx: node.shape === 'square' ? 4 : node.card ? 10 : 6, style }));
+      if (node.card && node.imageUrl) {
+        const slot = graphCardImageRect(node), image = svgNode(document, 'image', { class: 'cfx-graph-node-card-image', href: node.imageUrl, x: slot.x, y: slot.y, width: slot.size, height: slot.size, preserveAspectRatio: 'xMidYMid meet' });
+        const alt = attr(node.el, 'data-node-image-alt');
+        if (alt) image.setAttribute('aria-label', alt);
+        group.appendChild(image);
+      }
     } else if (node.shape === 'ellipse') {
       group.appendChild(svgNode(document, 'ellipse', { rx: size * 1.55, ry: size, style }));
     } else if (node.shape === 'database') {
@@ -48,7 +54,7 @@
     } else if (node.shape !== 'text') {
       group.appendChild(svgNode(document, 'circle', { r: size, style }));
     }
-    if (node.icon && node.shape !== 'image' && node.shape !== 'imageRect') {
+    if (node.icon && node.shape !== 'image' && node.shape !== 'imageRect' && !(node.card && node.imageUrl)) {
       const card = node.card === true;
       const icon = svgNode(document, 'text', { class: card ? 'cfx-graph-node-icon cfx-graph-node-card-icon' : 'cfx-graph-node-icon', x: card ? -node.size * 1.45 + 28 : 0, y: 4 });
       icon.textContent = node.icon;
