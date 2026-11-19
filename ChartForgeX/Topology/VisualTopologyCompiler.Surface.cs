@@ -92,12 +92,12 @@ internal sealed partial class VisualTopologyCompiler {
                     }
                     if (group.ShowLabel) {
                         var titleLineHeight = (group.LabelContent.IsStructured ? CaptionLineHeight(group.LabelContent, TextPolicySize(_context.Theme.Typography.DataLabelSize) * _scale) : MeasurePolicyText("Ag", TextPolicySize(_context.Theme.Typography.DataLabelSize) * _scale, 600).LineHeight) / _scale;
-                        var subtitleLineHeight = MeasurePolicyText("Ag", TextPolicySize(_context.Theme.Typography.DataLabelSize) * .85 * _scale, 400).LineHeight / _scale;
+                        var subtitleLineHeight = MeasurePolicyText("Ag", TopologyGroupHeader.SubtitleSize(TextPolicySize(_context.Theme.Typography.DataLabelSize), _options) * _scale, 400).LineHeight / _scale;
                         var titleRows = TopologyGroupHeader.CaptionRows(group.Label, _options);
                         var subtitleRows = TopologyGroupHeader.CaptionRows(group.Subtitle, _options);
                         var titleBounds = TopologyGroupHeader.TitleBounds(group, _options, titleLineHeight);
                         var fitTitle = group.TextStyle?.HasOverrides != true && titleRows == 1 && ShouldFitHeaderLine(TextPolicySize(_context.Theme.Typography.DataLabelSize), titleBounds.Height, 600);
-                        var fitSubtitle = group.TextStyle?.HasOverrides != true && subtitleRows == 1 && ShouldFitHeaderLine(TextPolicySize(_context.Theme.Typography.DataLabelSize) * .85, TopologyGroupHeader.SubtitleHeight);
+                        var fitSubtitle = group.TextStyle?.HasOverrides != true && subtitleRows == 1 && ShouldFitHeaderLine(TopologyGroupHeader.SubtitleSize(TextPolicySize(_context.Theme.Typography.DataLabelSize), _options), TopologyGroupHeader.SubtitleHeight);
                         var titleColor = Highlight(Color(group.LabelColor, GroupCaptionInk(captionSurface, _colors.Foreground)), active);
                         var titlePaint = string.IsNullOrWhiteSpace(group.LabelColor)
                             ? GroupCaptionPaint(captionSurface, titleColor, active, false) : GroupLabelPaint(group, titleColor, active);
@@ -107,7 +107,7 @@ internal sealed partial class VisualTopologyCompiler {
                             var subtitleColor = Highlight(Color(group.LabelColor, GroupCaptionInk(captionSurface, _colors.MutedForeground)), active);
                             var subtitlePaint = string.IsNullOrWhiteSpace(group.LabelColor)
                                 ? GroupCaptionPaint(captionSurface, subtitleColor, active, true) : GroupLabelPaint(group, subtitleColor, active, true);
-                            CaptureCaption(Text(group.Subtitle!, Bounds(subtitleBounds.X, subtitleBounds.Y, subtitleBounds.Width, subtitleBounds.Height), TextPolicySize(_context.Theme.Typography.DataLabelSize) * .85, subtitleColor, 400, "topology-group-subtitle", paint: subtitlePaint, maxLines: subtitleRows, fitSingleLine: fitSubtitle));
+                            CaptureCaption(Text(group.Subtitle!, Bounds(subtitleBounds.X, subtitleBounds.Y, subtitleBounds.Width, subtitleBounds.Height), TopologyGroupHeader.SubtitleSize(TextPolicySize(_context.Theme.Typography.DataLabelSize), _options), subtitleColor, 400, "topology-group-subtitle", paint: subtitlePaint, maxLines: subtitleRows, fitSingleLine: fitSubtitle));
                         }
                     }
                     if (_options.IncludeGroupStatusDots) {

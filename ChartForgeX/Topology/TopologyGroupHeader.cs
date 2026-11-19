@@ -12,6 +12,9 @@ namespace ChartForgeX.Topology;
 internal static class TopologyGroupHeader {
     internal const double TitleHeight = 24;
     internal const double SubtitleHeight = 18;
+    /// <summary>The group subtitle size for a title size, raised to the readable minimum a readable dense layout keeps.</summary>
+    internal static double SubtitleSize(double titleSize, TopologyRenderOptions? options) =>
+        Math.Max(titleSize * .85, options?.ResolvedMinimumReadableTextSize ?? 0);
     internal const double SymbolScale = .8;
     internal const double StatusRadius = 4;
 

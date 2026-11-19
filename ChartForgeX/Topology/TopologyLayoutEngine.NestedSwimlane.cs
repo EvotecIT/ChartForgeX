@@ -78,7 +78,7 @@ internal static partial class TopologyLayoutEngine {
             var reserve = 24 + TopologyGroupHeader.SymbolReserve(group, render);
             width = Math.Max(width, DenseHeaderWidth(chart, group.Label, size, true, render) + reserve + 1);
             if (!string.IsNullOrWhiteSpace(group.Subtitle))
-                width = Math.Max(width, DenseHeaderWidth(chart, group.Subtitle!, size * .85, false, render) + reserve + 1);
+                width = Math.Max(width, DenseHeaderWidth(chart, group.Subtitle!, TopologyGroupHeader.SubtitleSize(size, render), false, render) + reserve + 1);
             return width;
         }
 

@@ -69,8 +69,8 @@ public sealed class DenseTopologyLayoutTests {
     }
 
     [Fact]
-    public void LeftToRight_FewSites_KeepOneRow() {
-        var prepared = TopologyLayoutEngine.Prepare(Sites(6, 3), options: TileOptions);
+    public void LeftToRight_FewSites_KeepOneRowWhenItFits() {
+        var prepared = TopologyLayoutEngine.Prepare(Sites(5, 3), options: TileOptions);
         Assert.Single(prepared.Groups.Select(group => group.Y).Distinct());
     }
 
@@ -332,7 +332,7 @@ public sealed class DenseTopologyLayoutTests {
 
     [Fact]
     public void SingleRowGroups_DeclaredSmallSizes_ContainCardsWithoutOverlappingNeighbors() {
-        var chart = Sites(6, 5);
+        var chart = Sites(5, 5);
         foreach (var group in chart.Groups) { group.Width = 190; group.Height = 170; }
 
         var prepared = TopologyLayoutEngine.Prepare(chart, options: TileOptions);

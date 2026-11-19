@@ -109,7 +109,7 @@ internal sealed partial class VisualTopologyCompiler {
     }
     private double FitMeasuredNodeLabelSize(TextContent content, double preferred, Func<double, ChartRect> contentBounds) {
         if (!content.IsStructured) return FitMeasuredNodeLabelSize(content.PlainText, preferred, contentBounds);
-        return ChartTextFitting.FitFontSize(Math.Min(11, preferred), preferred, candidate => {
+        return ChartTextFitting.FitFontSize(Math.Min(CaptionFitFloor(11), preferred), preferred, candidate => {
             var bounds = contentBounds(candidate); if (bounds.Width <= 0 || bounds.Height <= 0) return false;
             var style = InlineStyle(candidate * _scale, _colors.Foreground);
             var height = TextLayoutEngine.Measure(content, style).LineHeight;

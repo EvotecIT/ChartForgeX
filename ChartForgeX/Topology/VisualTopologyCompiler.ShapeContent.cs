@@ -175,7 +175,7 @@ internal sealed partial class VisualTopologyCompiler {
     private void BuildShapeContent(TopologyNode node, ChartColor accent, bool active, SvgColorRole glyphRole) {
         var preferred = ShapeContentFontSize(node);
         var spacing = ShapeContentSpacingScale(node);
-        var size = ChartTextFitting.FitFontSize(Math.Min(11, preferred), preferred,
+        var size = ChartTextFitting.FitFontSize(Math.Min(CaptionFitFloor(11), preferred), preferred,
             candidate => ShapeContent(node, candidate).Complete);
         var layout = ShapeContent(node, size);
         if (!layout.Complete) _builder.AddDiagnostic(new VisualDiagnostic("topology.shape-content-overflow",

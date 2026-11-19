@@ -45,7 +45,7 @@ internal sealed class TopologyGroupHeaderLayout {
         if (group.ShowLabel) {
             var size = TopologyTextPolicy.Size(group.TextStyle, chart.Theme.Typography.DataLabelSize, chart.Theme.Typography.DataLabelSize);
             var titleLineHeight = group.LabelContent.IsStructured ? TextLayoutEngine.Measure(group.LabelContent, StructuredStyle(size)).LineHeight : Measure("Ag", size, 600).LineHeight;
-            var subtitleLineHeight = Measure("Ag", size * .85, 400).LineHeight;
+            var subtitleLineHeight = Measure("Ag", TopologyGroupHeader.SubtitleSize(size, options), 400).LineHeight;
             var titleRows = TopologyGroupHeader.CaptionRows(group.Label, options);
             var subtitleRows = TopologyGroupHeader.CaptionRows(group.Subtitle, options);
             var fitTitle = group.TextStyle?.HasOverrides != true && titleRows == 1 && (size > VisualTextFitting.MaximumOrdinaryFontSize || titleLineHeight > TopologyGroupHeader.TitleHeight);
@@ -65,7 +65,7 @@ internal sealed class TopologyGroupHeaderLayout {
                 }
             } else AddCaption(group.Label, TopologyGroupHeader.TitleBounds(group, options, titleLineHeight), size, 600, fitTitle, titleRows);
             if (!string.IsNullOrWhiteSpace(group.Subtitle))
-                AddCaption(group.Subtitle!, TopologyGroupHeader.SubtitleBounds(group, options, fitTitle || fitSubtitle, titleLineHeight, subtitleLineHeight), size * .85, 400, fitSubtitle, subtitleRows);
+                AddCaption(group.Subtitle!, TopologyGroupHeader.SubtitleBounds(group, options, fitTitle || fitSubtitle, titleLineHeight, subtitleLineHeight), TopologyGroupHeader.SubtitleSize(size, options), 400, fitSubtitle, subtitleRows);
         }
         if (TopologyGroupHeader.SymbolReserve(group, options) > 0) parts.Add(TopologyGroupHeader.SymbolBounds(group));
         if (options.IncludeGroupStatusDots) parts.Add(TopologyGroupHeader.StatusBounds(group));

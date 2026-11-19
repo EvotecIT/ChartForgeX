@@ -115,12 +115,15 @@ internal sealed partial class VisualTopologyCompiler {
 
     // Caption footprints and routing reserve the ordinary 11px lines. Fit authored
     // typography within those cells using actual native metrics, including bitmap faces.
+    /// <summary>The smallest size a node caption shrinks to while fitting; a readable minimum raises it.</summary>
+    private double CaptionFitFloor(double floor) => Math.Max(floor, _options.ResolvedMinimumReadableTextSize);
+
     private double FitCaptionFontSize(TextContent content, IReadOnlyList<string> lines, double width, double preferred, int weight, double units = 1) {
         if (!content.IsStructured) return FitCaptionFontSize(lines, width, preferred, weight, units);
         var height = Math.Max(14 * units * _scale, CaptionLineHeight(content, 11 * units * _scale));
         var maximumWidth = Math.Max(0, width * _scale);
         foreach (var line in lines) maximumWidth = Math.Max(maximumWidth, MeasurePolicyText(line, 11 * units * _scale, weight).Width);
-        return ChartTextFitting.FitFontSize(Math.Min(11 * units, preferred), preferred, candidate => {
+        return ChartTextFitting.FitFontSize(Math.Min(CaptionFitFloor(11 * units), preferred), preferred, candidate => {
             var metrics = TextLayoutEngine.Measure(content, InlineStyle(candidate * _scale, _colors.Foreground));
             return metrics.LineHeight <= height && metrics.Width <= maximumWidth;
         });
@@ -130,7 +133,7 @@ internal sealed partial class VisualTopologyCompiler {
         var height = Math.Max(14 * units * _scale, MeasurePolicyText("Ag", 11 * units * _scale, weight).LineHeight);
         var maximumWidth = Math.Max(0, width * _scale);
         foreach (var line in lines) maximumWidth = Math.Max(maximumWidth, MeasurePolicyText(line, 11 * units * _scale, weight).Width);
-        return ChartTextFitting.FitFontSize(Math.Min(11 * units, preferred), preferred, candidate => {
+        return ChartTextFitting.FitFontSize(Math.Min(CaptionFitFloor(11 * units), preferred), preferred, candidate => {
             if (MeasurePolicyText("Ag", candidate * _scale, weight).LineHeight > height) return false;
             foreach (var line in lines) if (MeasurePolicyText(line, candidate * _scale, weight).Width > maximumWidth) return false;
             return true;
@@ -145,11 +148,12 @@ internal sealed partial class VisualTopologyCompiler {
             var measured = MeasuredSubtitleChip(node, mode, _options, _context.Font, _scale);
             width = measured.Width; height = measured.Height; size = measured.FontSize; metrics = measured.Metrics;
         } else {
-            var ordinary = MeasureRoleText(chip.Text, RoleTextSize(9.5, node.SubtitleTextStyle) * _scale, 700, node.SubtitleTextStyle);
+            var estimate = SubtitleChipEstimateSize(_options);
+            var ordinary = MeasureRoleText(chip.Text, RoleTextSize(estimate, node.SubtitleTextStyle) * _scale, 700, node.SubtitleTextStyle);
             width = Math.Max(chip.Width * _scale, ordinary.Width + 18 * _scale);
             height = Math.Max(17 * _scale, ordinary.Height + 4 * _scale);
-            var preferred = RoleTextSize(TextPolicySize(_context.Theme.Typography.DataLabelSize) * (9.5 / 11), node.SubtitleTextStyle);
-            size = ChartTextFitting.FitFontSize(Math.Min(9.5, preferred), preferred, candidate => {
+            var preferred = RoleTextSize(Math.Max(TextPolicySize(_context.Theme.Typography.DataLabelSize) * (9.5 / 11), _options.ResolvedMinimumReadableTextSize), node.SubtitleTextStyle);
+            size = ChartTextFitting.FitFontSize(Math.Min(estimate, preferred), preferred, candidate => {
                 var measured = MeasureRoleText(chip.Text, candidate * _scale, 700, node.SubtitleTextStyle);
                 return measured.Width <= width - 18 * _scale && measured.Height <= height - 4 * _scale;
             });

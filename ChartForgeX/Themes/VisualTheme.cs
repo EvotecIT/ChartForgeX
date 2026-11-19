@@ -101,6 +101,8 @@ public sealed partial class VisualTheme {
     }
     /// <summary>Creates a theme with the supplied family and all other typography preserved.</summary>
     public VisualTheme WithFontFamily(string family) => WithTypography(Typography.WithFamily(family));
+    /// <summary>Creates a theme whose readable diagram layouts keep text at or above <paramref name="size"/> pixels.</summary>
+    public VisualTheme WithMinimumReadableTextSize(double size) => WithTypography(Typography.WithMinimumReadableTextSize(size));
     /// <summary>Creates a theme with a categorical palette for one explicit mode.</summary>
     public VisualTheme WithPalette(VisualThemeMode mode, params ChartColor[] colors) => Configure(builder => builder.Colors(mode).Palette = colors);
     /// <summary>Creates a theme with the supplied categorical palette in both modes.</summary>

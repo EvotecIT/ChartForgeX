@@ -9,6 +9,11 @@ internal static partial class TopologyLayoutEngine {
     private const int DenseSingleRowGroupLimit = 6;
     // Gutter between site panels and between dense cards; wider than twice the router's obstacle padding so routes fit.
     private const double DenseWrappedGroupGap = 44;
+    private const int DenseMaximumGridColumns = 4;
+    // A row of panels narrows their grids to this many columns before it wraps.
+    private const int DenseMinimumRowGridColumns = 3;
+    // Gutter between the panels of an unwrapped dense grid.
+    private const double DenseGroupGridGap = 24;
     private const double DenseCardColumnGutter = 30;
     private const double DenseClassicColumnGutter = 18;
     // Groups with more nodes than this collapse to dots; smaller groups keep readable cards.
@@ -19,12 +24,44 @@ internal static partial class TopologyLayoutEngine {
     /// <summary>Returns true when the chart was prepared with <see cref="TopologyRenderOptions.ReadableDenseLayout"/>.</summary>
     internal static bool UsesReadableDenseLayout(TopologyChart chart) => chart.RenderOptions?.ReadableDenseLayout == true;
 
-    private static bool UsesWrappedDenseRows(TopologyChart chart) =>
-        UsesReadableDenseLayout(chart) && chart.LayoutDirection is TopologyLayoutDirection.LeftToRight or TopologyLayoutDirection.RightToLeft && chart.Groups.Count > DenseSingleRowGroupLimit;
+    private static bool IsHorizontalDenseLayout(TopologyChart chart) =>
+        chart.LayoutDirection is TopologyLayoutDirection.LeftToRight or TopologyLayoutDirection.RightToLeft;
+
+    // Panel sizing keeps the budget it had before wrapping: one panel per row past the group limit, otherwise a share of one row.
+    private static bool HasManyDenseRowPanels(TopologyChart chart) =>
+        UsesReadableDenseLayout(chart) && IsHorizontalDenseLayout(chart) && chart.Groups.Count > DenseSingleRowGroupLimit;
 
     /// <summary>
-    /// Packs site panels left to right into rows no wider than the viewport content width (or the widest panel), keeping
-    /// the declared group order so related sites stay together.
+    /// Readable left-to-right panels wrap past the group limit, and also when one row of them would be wider than the
+    /// viewport: a host shows the canvas no wider than that, so a wider row would scale its text below the readable size.
+    /// </summary>
+    private static bool UsesWrappedDenseRows(TopologyChart chart, double pad) {
+        if (HasManyDenseRowPanels(chart)) return true;
+        if (!UsesReadableDenseLayout(chart) || !IsHorizontalDenseLayout(chart) || chart.Groups.Count < 2) return false;
+        var available = chart.Viewport.Width - pad * 2 + .001;
+        if (DenseSingleRowWidth(chart) <= available) return false;
+        // Narrower panels keep the groups side by side; below the minimum they would turn into tall strips, so the row wraps.
+        for (var columns = DenseMaximumGridColumns - 1; columns >= DenseMinimumRowGridColumns; columns--) {
+            chart.DenseGridColumnLimit = columns;
+            if (DenseSingleRowWidth(chart) <= available) return false;
+        }
+        chart.DenseGridColumnLimit = null;
+        return true;
+    }
+
+    private static double DenseSingleRowWidth(TopologyChart chart) {
+        var width = 0.0;
+        foreach (var group in chart.Groups) {
+            var nodes = chart.Nodes.Where(node => string.Equals(node.GroupId, group.Id, StringComparison.Ordinal)).ToList();
+            width += Math.Max(Math.Max(190, group.Width), DenseGroupWidth(chart, nodes, ResolveDenseGroupPolicy(chart, group, nodes), group));
+        }
+        return width + Math.Max(0, chart.Groups.Count - 1) * DenseGroupGridGap;
+    }
+
+    /// <summary>
+    /// Packs site panels into equal columns across the viewport content width (or the widest panel). Each panel goes to
+    /// the highest free column, so a short panel no longer leaves the height of a tall neighbour empty below it, and
+    /// declared order decides ties, so related sites stay close together.
     /// </summary>
     private static void PlaceWrappedDenseGroups(TopologyChart chart, IReadOnlyDictionary<string, (double X, double Y)> explicitGroupPositions, double pad, double titleOffset) {
         var sized = new List<(TopologyGroup Group, List<TopologyNode> Nodes)>(chart.Groups.Count);
@@ -37,24 +74,15 @@ internal static partial class TopologyLayoutEngine {
         }
 
         var rowWidth = Math.Max(chart.Viewport.Width - pad * 2, sized.Max(item => item.Group.Width));
-        var rowStartX = pad;
-        var x = rowStartX;
-        var y = pad + titleOffset;
-        var rowHeight = 0.0;
+        var columns = new DensePanelColumns(pad, pad + titleOffset, rowWidth, DenseWrappedGroupGap,
+            sized.Where(item => !explicitGroupPositions.ContainsKey(item.Group.Id)).Select(item => item.Group.Width).ToArray());
         foreach (var (group, nodes) in sized) {
-            if (x > rowStartX && x + group.Width > rowStartX + rowWidth) {
-                x = rowStartX;
-                y += rowHeight + DenseWrappedGroupGap;
-                rowHeight = 0;
-            }
-
             if (!explicitGroupPositions.ContainsKey(group.Id)) {
-                group.X = x;
-                group.Y = y;
+                var place = columns.Place(group.Width, group.Height);
+                group.X = place.X;
+                group.Y = place.Y;
+                group.Width = place.Width;
             }
-
-            x += group.Width + DenseWrappedGroupGap;
-            rowHeight = Math.Max(rowHeight, group.Height);
             PlaceDenseNodesInGroup(chart, nodes, group);
         }
     }
@@ -97,7 +125,7 @@ internal static partial class TopologyLayoutEngine {
         var lanes = (int)Math.Ceiling(DenseRoutedEdges(chart, nodes) / (double)columns);
         var extra = Math.Min(DenseMaximumExtraRowGutter, DenseLaneHeight * Math.Max(0, lanes - DenseBaseLanes));
         var pad = Math.Max(24, chart.Viewport.Padding) + TopologyRenderPrimitives.CanvasSurfaceInset(chart, chart.RenderOptions!);
-        var panels = UsesWrappedDenseRows(chart) ? 1 : DenseGroupColumns(chart);
+        var panels = HasManyDenseRowPanels(chart) ? 1 : DenseGroupColumns(chart);
         var budget = Math.Max(0, (chart.Viewport.Width - pad * 2 - (panels - 1) * 24) / panels);
         var nodeWidth = nodes.Select(node => TopologyNodeFootprint.Width(chart, node)).DefaultIfEmpty(90).Max();
         var baseWidth = 36 + columns * Math.Max(70, nodeWidth + DenseCardColumnGutter);
@@ -113,7 +141,8 @@ internal static partial class TopologyLayoutEngine {
     private static double DenseCaptionHeight(TopologyChart chart, IList<TopologyNode> nodes) =>
         nodes.Select(node => TopologyNodeFootprint.Caption(chart, node).Height).DefaultIfEmpty(0).Max();
 
-    private static int DenseGridColumns(int count) => Math.Max(1, Math.Min(4, (int)Math.Ceiling(Math.Sqrt(Math.Max(1, count)))));
+    private static int DenseGridColumns(TopologyChart chart, int count) =>
+        Math.Max(1, Math.Min(chart.DenseGridColumnLimit ?? DenseMaximumGridColumns, (int)Math.Ceiling(Math.Sqrt(Math.Max(1, count)))));
 
     private static int DenseCollapsedDotColumns(int count) {
         if (count <= 0) return 1;
@@ -129,7 +158,7 @@ internal static partial class TopologyLayoutEngine {
                 var reserve = 24 + TopologyGroupHeader.SymbolReserve(group, options);
                 width = Math.Max(width, DenseHeaderWidth(chart, group.Label, size, true, options) + reserve + 1);
                 if (!string.IsNullOrWhiteSpace(group.Subtitle)) width = Math.Max(width,
-                    DenseHeaderWidth(chart, group.Subtitle!, size * .85, false, options) + reserve + 1);
+                    DenseHeaderWidth(chart, group.Subtitle!, TopologyGroupHeader.SubtitleSize(size, options), false, options) + reserve + 1);
             }
             return width;
         }
@@ -148,7 +177,7 @@ internal static partial class TopologyLayoutEngine {
 
         if (policy == TopologyGroupLayoutPolicy.Grid) {
             var gridMaxNodeWidth = nodes.Select(node => TopologyNodeFootprint.Width(chart, node)).DefaultIfEmpty(90).Max();
-            var columns = DenseGridColumns(nodes.Count);
+            var columns = DenseGridColumns(chart, nodes.Count);
             return Math.Max(190, 36 + columns * Math.Max(70, gridMaxNodeWidth + DenseColumnGap(chart, nodes, columns)));
         }
 
@@ -184,7 +213,7 @@ internal static partial class TopologyLayoutEngine {
 
         if (policy == TopologyGroupLayoutPolicy.Grid && UsesReadableDenseLayout(chart)) {
             var gridMaxNodeHeight = nodes.Select(node => node.Height).DefaultIfEmpty(46).Max() + DenseCaptionHeight(chart, nodes);
-            var gridRows = (int)Math.Ceiling(nodes.Count / (double)DenseGridColumns(nodes.Count));
+            var gridRows = (int)Math.Ceiling(nodes.Count / (double)DenseGridColumns(chart, nodes.Count));
             return Math.Max(170, 98 + gridRows * (gridMaxNodeHeight + DenseRowGap(chart, nodes, gridRows)));
         }
 

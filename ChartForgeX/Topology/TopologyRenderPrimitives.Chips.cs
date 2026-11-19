@@ -15,9 +15,13 @@ internal static partial class TopologyRenderPrimitives {
     internal static (string Text, double Width) SubtitleChip(TopologyNode node, TopologyNodeDisplayMode mode, TopologyRenderOptions options) {
         bool tile = mode == TopologyNodeDisplayMode.Tile;
         var maximum = Math.Max(tile ? 46 : 48, tile ? node.Width + 28 : node.Width - 50);
-        var text = TrimToEstimatedWidth(TrimTo(node.Subtitle!, mode == TopologyNodeDisplayMode.CompactCard ? 12 : 16), maximum - 18, 9.5, true, options.TextMeasurement);
-        return (text, Math.Min(maximum, Math.Max(tile ? 46 : 48, EstimateTextWidth(text, 9.5, true, options.TextMeasurement) + 18)));
+        var size = SubtitleChipEstimateSize(options);
+        var text = TrimToEstimatedWidth(TrimTo(node.Subtitle!, mode == TopologyNodeDisplayMode.CompactCard ? 12 : 16), maximum - 18, size, true, options.TextMeasurement);
+        return (text, Math.Min(maximum, Math.Max(tile ? 46 : 48, EstimateTextWidth(text, size, true, options.TextMeasurement) + 18)));
     }
+
+    /// <summary>The chip text size its width is estimated at; a readable minimum raises it.</summary>
+    internal static double SubtitleChipEstimateSize(TopologyRenderOptions options) => Math.Max(9.5, options.ResolvedMinimumReadableTextSize);
 
     /// <summary>Captures the same styled subtitle chip allocation for layout, diagnostics, routes and native paint.</summary>
     /// <remarks>Only explicit subtitle-role overrides call this owner. Ordinary chip estimates and paint remain unchanged.</remarks>
@@ -34,7 +38,7 @@ internal static partial class TopologyRenderPrimitives {
         var ordinary = Measure(preferred);
         var width = Math.Max(chip.Width * scale, ordinary.Width + 18 * scale);
         var height = Math.Max(17 * scale, ordinary.Height + 4 * scale);
-        var size = ChartTextFitting.FitFontSize(Math.Min(9.5, preferred), preferred, candidate => {
+        var size = ChartTextFitting.FitFontSize(Math.Min(SubtitleChipEstimateSize(options), preferred), preferred, candidate => {
             var measured = Measure(candidate);
             return measured.Width <= width - 18 * scale && measured.Height <= height - 4 * scale;
         });

@@ -11,7 +11,8 @@ internal sealed partial class VisualTopologyCompiler {
     /// <remarks>Region diagrams paint their own prepared text, so they skip the badge and endpoint faces.</remarks>
     internal static void InitializeOptionsMetrics(VisualRenderContext context, TopologyRenderOptions options, bool textFaces = true) {
         options.ResolvedIconLabelFontSize = context.Theme.Typography.DataLabelSize * (10.5 / 11);
-        options.ResolvedSubtitleChipFontSize = context.Theme.Typography.DataLabelSize * (9.5 / 11);
+        options.ResolvedMinimumReadableTextSize = options.ReadableDenseLayout ? context.Theme.Typography.MinimumReadableTextSize : 0;
+        options.ResolvedSubtitleChipFontSize = Math.Max(context.Theme.Typography.DataLabelSize * (9.5 / 11), options.ResolvedMinimumReadableTextSize);
         options.ResolvedEdgeLabelScale = context.Theme.Typography.DataLabelSize / 11;
         options.ResolvedCaptionStrokeWidth = context.Theme.AxisStrokeWidth;
         if (!textFaces) return;
