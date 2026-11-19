@@ -139,7 +139,7 @@ internal static partial class TopologyEdgeRouter {
             var clearance = EdgePortClearance * routingUnits;
             foreach (var node in chart.Nodes) {
                 if (ReferenceEquals(node, source) || ReferenceEquals(node, target) || node.Id == source.Id || node.Id == target.Id
-                    || IsRouteBackdropArtwork(node) || EffectiveNodeDisplayMode(node, chart.RenderOptions ?? new TopologyRenderOptions()) == TopologyNodeDisplayMode.Hidden) continue;
+                    || IsRouteTransparent(node, chart.RenderOptions ?? new TopologyRenderOptions())) continue;
                 var box = NodeRouteBox(chart, node).Expand(clearance);
                 if (SegmentEnters(start, corner, box) || SegmentEnters(corner, end, box)) return false;
             }
@@ -331,9 +331,10 @@ internal static partial class TopologyEdgeRouter {
     // Planned routes are not scored against other edges' labels: those are placed on their routes afterwards.
     private static List<RouteBox> RouteObstacles(TopologyChart chart, string sourceNodeId, string targetNodeId, TopologyEdge routedEdge, bool includeCaptions = false, bool includeLabels = true, IReadOnlyList<ChartRect>? additionalCaptionObstacles = null, double routingUnits = 1) {
         var nodePadding = 10 * routingUnits;
+        var options = chart.RenderOptions ?? new TopologyRenderOptions();
         var obstacles = chart.Nodes
             .Where(node => !string.Equals(node.Id, sourceNodeId, StringComparison.Ordinal) && !string.Equals(node.Id, targetNodeId, StringComparison.Ordinal))
-            .Where(node => !IsRouteBackdropArtwork(node))
+            .Where(node => !IsRouteTransparent(node, options))
             .Select(node => (includeCaptions ? NodeRouteBox(chart, node) : new RouteBox(node.X, node.Y, node.X + node.Width, node.Y + node.Height)).Expand(nodePadding))
             .ToList();
 
@@ -377,7 +378,7 @@ internal static partial class TopologyEdgeRouter {
         // A route may already touch an obstacle's search padding without touching the actual card.
         // Still reject an endpoint move that crosses the card itself.
         foreach (var node in chart.Nodes) {
-            if (node.Id == source.Id || node.Id == target.Id || IsRouteBackdropArtwork(node)) continue;
+            if (node.Id == source.Id || node.Id == target.Id || IsRouteTransparent(node, chart.RenderOptions ?? new TopologyRenderOptions())) continue;
             var card = NodeRouteBox(chart, node);
             if (!IntersectsRoute(original, card) && IntersectsRoute(spread, card)) return true;
         }
@@ -403,6 +404,10 @@ internal static partial class TopologyEdgeRouter {
         var center = node.X + node.Width / 2;
         return new RouteBox(Math.Min(node.X, center - caption.Width / 2), node.Y, Math.Max(node.X + node.Width, center + caption.Width / 2), node.Y + node.Height + caption.Height);
     }
+
+    /// <summary>Hidden nodes draw nothing and artwork nodes are backdrops, so routes may pass over either.</summary>
+    internal static bool IsRouteTransparent(TopologyNode node, TopologyRenderOptions options) =>
+        IsRouteBackdropArtwork(node) || EffectiveNodeDisplayMode(node, options) == TopologyNodeDisplayMode.Hidden;
 
     private static bool IsRouteBackdropArtwork(TopologyNode node) {
         return !TopologyExternalCaption.HasPolicy(node)

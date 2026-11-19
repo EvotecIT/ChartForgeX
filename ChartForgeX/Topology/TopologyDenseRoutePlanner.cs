@@ -297,8 +297,7 @@ internal static partial class TopologyDenseRoutePlanner {
             var options = chart.RenderOptions!;
             var obstacles = new List<Obstacle>(chart.Nodes.Count * 2 + chart.Groups.Count);
             foreach (var node in chart.Nodes) {
-                // Artwork nodes are backdrops that routes may pass over.
-                if (!TopologyExternalCaption.HasPolicy(node) && (node.DisplayMode == TopologyNodeDisplayMode.Artwork || (!node.DisplayMode.HasValue && TopologyRenderPrimitives.HasRenderableNodeArtwork(node)))) continue;
+                if (TopologyEdgeRouter.IsRouteTransparent(node, options)) continue;
                 if (TopologyNodeFootprint.ExplicitOccupiedBounds(node, options) is {} occupied) {
                     obstacles.Add(new Obstacle(new Box(occupied.Left, occupied.Top, occupied.Right, occupied.Bottom), node.Id));
                     continue;

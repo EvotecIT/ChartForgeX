@@ -15,8 +15,7 @@ internal static partial class TopologyEdgeRouter {
         var bodies = new List<RouteBox>();
         var options = chart.RenderOptions ?? new TopologyRenderOptions();
         foreach (var node in chart.Nodes) {
-            if (node.Id == source.Id || node.Id == target.Id || IsRouteBackdropArtwork(node)
-                || EffectiveNodeDisplayMode(node, options) == TopologyNodeDisplayMode.Hidden) continue;
+            if (node.Id == source.Id || node.Id == target.Id || IsRouteTransparent(node, options)) continue;
             // Real interiors are distinct from search padding. Padding may cover a free
             // endpoint gap while the actual card remains fully avoidable.
             if (node.Width > .000002 && node.Height > .000002)
