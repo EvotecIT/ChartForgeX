@@ -67,7 +67,7 @@ internal static partial class TopologyDenseRoutePlanner {
         }
     }
 
-    // A plan is reused only while cards, groups, the viewport, the render options, and every edge's endpoints stay the
+    // A plan is reused only while cards, which of them are obstacles, groups, the viewport, the render options, and every edge's endpoints stay the
     // same. Identifiers are compared by reference, which keeps the check cheap; it runs on every route lookup.
     private static long Signature(TopologyChart chart) {
         unchecked {
@@ -75,7 +75,9 @@ internal static partial class TopologyDenseRoutePlanner {
             hash = Mix(Mix(hash, chart.Viewport.Width), chart.Viewport.Height);
             hash = hash * 1_000_003L ^ (chart.RenderOptions == null ? 0 : RuntimeHelpers.GetHashCode(chart.RenderOptions));
             hash = hash * 31 + (chart.RenderOptions?.ShareIncomingTrunks == true ? 1 : 0);
-            foreach (var node in chart.Nodes) hash = Mix(Mix(Mix(Mix(hash, node.X), node.Y), node.Width), node.Height);
+            // A node shown or hidden in place keeps its geometry but changes whether routes avoid it.
+            var options = chart.RenderOptions ?? new TopologyRenderOptions();
+            foreach (var node in chart.Nodes) hash = Mix(Mix(Mix(Mix(hash, node.X), node.Y), node.Width), node.Height) * 31 + (TopologyEdgeRouter.IsRouteTransparent(node, options) ? 1 : 0);
             foreach (var group in chart.Groups) hash = Mix(Mix(Mix(Mix(hash, group.X), group.Y), group.Width), group.Height);
             foreach (var edge in chart.Edges) {
                 hash = hash * 1_000_003L ^ RuntimeHelpers.GetHashCode(edge);
@@ -297,8 +299,7 @@ internal static partial class TopologyDenseRoutePlanner {
             var options = chart.RenderOptions!;
             var obstacles = new List<Obstacle>(chart.Nodes.Count * 2 + chart.Groups.Count);
             foreach (var node in chart.Nodes) {
-                // Artwork nodes are backdrops that routes may pass over.
-                if (!TopologyExternalCaption.HasPolicy(node) && (node.DisplayMode == TopologyNodeDisplayMode.Artwork || (!node.DisplayMode.HasValue && TopologyRenderPrimitives.HasRenderableNodeArtwork(node)))) continue;
+                if (TopologyEdgeRouter.IsRouteTransparent(node, options)) continue;
                 if (TopologyNodeFootprint.ExplicitOccupiedBounds(node, options) is {} occupied) {
                     obstacles.Add(new Obstacle(new Box(occupied.Left, occupied.Top, occupied.Right, occupied.Bottom), node.Id));
                     continue;
