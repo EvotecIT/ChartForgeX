@@ -95,6 +95,21 @@ public sealed class BuiltInRegionMapTests {
     }
 
     [Fact]
+    public void CatalogEntriesImportGeoJsonWithTheirOwnProjection() {
+        const string square = """
+            {"type":"FeatureCollection","features":[{"type":"Feature","properties":{"code":"A","name":"Square"},
+              "geometry":{"type":"Polygon","coordinates":[[[10,60],[20,60],[20,70],[10,70],[10,60]]]}}]}
+            """;
+        var miller = ChartMapCatalog.FromGeoJson("world", square);
+        var mercator = ChartMapCatalog.FromGeoJson("world-mercator", square);
+
+        Assert.Equal(ChartMapGeoJsonProjection.Miller, miller.GeographicProjection);
+        Assert.Equal(ChartMapGeoJsonProjection.WebMercator, mercator.GeographicProjection);
+        // Mercator stretches high latitudes more than Miller, so the same square is taller.
+        Assert.True(mercator.Bounds.Height > miller.Bounds.Height, $"{mercator.Bounds.Height} <= {miller.Bounds.Height}");
+    }
+
+    [Fact]
     public void RussiaLeavesCrimeaToUkraine() {
         var russia = ChartMapCatalog.Get("russia");
 
