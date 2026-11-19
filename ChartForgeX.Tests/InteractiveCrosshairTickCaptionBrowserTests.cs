@@ -16,7 +16,7 @@ public sealed class InteractiveCrosshairTickCaptionBrowserTests {
     private static readonly DateTime Start = new(2026, 6, 1, 0, 0, 0, DateTimeKind.Utc);
 
     // The value pills sit on the axes they read, where the tick captions are drawn. A caption the pill
-    // touches must not show around it, and every caption returns once the guide leaves.
+    // touches must not show around it on screen, and every caption returns once the guide leaves or loses its mark.
     [BrowserTheory]
     [InlineData("daily-bars", 0, false, 950)]
     [InlineData("daily-bars", -45, true, 420)]
@@ -50,10 +50,32 @@ public sealed class InteractiveCrosshairTickCaptionBrowserTests {
         Assert.True(hovered.GetProperty("visible").GetInt32() > hovered.GetProperty("hidden").GetArrayLength());
         await CaptureAsync(session, "crosshair-ticks-" + shape + (dark ? "-dark-" : "-light-") + width, hovered);
 
+        // Print drops the pills, so it keeps every caption.
+        await page.EmulateMediaAsync(new PageEmulateMediaOptions { Media = Media.Print });
+        var printed = await ObserveAsync(page);
+        Assert.Equal(0, printed.GetProperty("pills").GetInt32());
+        Assert.Equal(0, printed.GetProperty("hidden").GetArrayLength());
+        await page.EmulateMediaAsync(new PageEmulateMediaOptions { Media = Media.Screen });
+        Assert.Empty((await ObserveAsync(page)).GetProperty("collisions").EnumerateArray());
+
         await MoveAwayAsync(page);
         var left = await ObserveAsync(page);
         Assert.Equal(0, left.GetProperty("pills").GetInt32());
         Assert.Equal(0, left.GetProperty("hidden").GetArrayLength());
+
+        // A host hiding the hovered series under a still pointer never leaves a caption hidden without a pill over it.
+        await page.Mouse.MoveAsync((float)aligned.GetProperty("x").GetDouble(), (float)aligned.GetProperty("y").GetDouble(), new MouseMoveOptions { Steps = 4 });
+        Assert.NotEqual(0, (await ObserveAsync(page)).GetProperty("hidden").GetArrayLength());
+        await page.EvaluateAsync("""
+            async () => {
+                const root=document.querySelector('.cfx-interactive-chart'), id=(root.dataset.cfxHoverKey||'').split('|')[1];
+                const hovered=[...root.querySelectorAll('[data-cfx-point][data-cfx-target-id]')].find(node=>node.dataset.cfxTargetId===id);
+                if(!hovered) throw new Error('No hovered observation');
+                root.querySelectorAll('[data-cfx-series="'+hovered.dataset.cfxSeries+'"]').forEach(node=>node.style.setProperty('visibility','hidden'));
+                for(let frame=0;frame<3;frame++) await new Promise(requestAnimationFrame);
+            }
+            """);
+        Assert.Empty((await ObserveAsync(page)).GetProperty("orphans").EnumerateArray());
         AssertNoConsoleErrors(session);
     }
 
@@ -66,7 +88,8 @@ public sealed class InteractiveCrosshairTickCaptionBrowserTests {
             const shown=captions.filter(item=>getComputedStyle(item.node).visibility==='visible');
             return {pills:pills.length,visible:shown.length,
                 hidden:captions.filter(item=>!shown.includes(item)).map(item=>item.node.textContent),
-                collisions:shown.filter(({box})=>pills.some(pill=>box.left<pill.right&&box.right>pill.left&&box.top<pill.bottom&&box.bottom>pill.top)).map(item=>item.node.textContent)};
+                collisions:shown.filter(({box})=>pills.some(pill=>box.left<pill.right&&box.right>pill.left&&box.top<pill.bottom&&box.bottom>pill.top)).map(item=>item.node.textContent),
+                orphans:captions.filter(item=>!shown.includes(item)&&!pills.some(pill=>item.box.left<pill.right+2&&item.box.right>pill.left-2&&item.box.top<pill.bottom+2&&item.box.bottom>pill.top-2)).map(item=>item.node.textContent)};
         }
         """);
 

@@ -1,7 +1,7 @@
 
   const keyboardPaintClasses = new Set(['cfx-hovered', 'cfx-hover-related', 'cfx-hover-column', 'cfx-hover-series',
     'cfx-selected', 'cfx-highlighted', 'cfx-linked-dim', 'cfx-selection-dim', 'cfx-linked-series-active',
-    'cfx-linked-series-dim', 'cfx-trail']);
+    'cfx-linked-series-dim', 'cfx-trail', 'cfx-crosshair-covered']);
   const keyboardNativeClasses = value => (value || '').split(/\s+/).filter(value => value && !keyboardPaintClasses.has(value)).sort().join(' ');
   const keyboardNativeStyle = value => (value || '').replace(/--cfx-highlight-(?:opacity|stroke|stroke-width)\s*:[^;]*(?:;|$)/g, '').trim();
   const keyboardAvailabilityMutation = (record, stage, ancestry) => {
