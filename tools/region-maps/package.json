@@ -1,0 +1,12 @@
+{
+  "name": "chartforgex-region-maps",
+  "private": true,
+  "description": "Regenerates the built-in ChartForgeX region map geometry from Natural Earth.",
+  "type": "module",
+  "scripts": {
+    "build": "node build-region-maps.mjs"
+  },
+  "devDependencies": {
+    "mapshaper": "0.7.101"
+  }
+}

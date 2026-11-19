@@ -90,7 +90,7 @@ public static partial class ChartMapGeoJson {
         }
 
         path = sb.ToString();
-        label = Average(labelPoints);
+        label = DeclaredLabel(feature, options) ?? Average(labelPoints);
         return path.Length > 0;
     }
 
@@ -114,6 +114,11 @@ public static partial class ChartMapGeoJson {
 
             if (!first) sb.Append('Z');
         }
+    }
+
+    private static ChartPoint? DeclaredLabel(GeoJsonFeature feature, ChartMapGeoJsonOptions options) {
+        if (options.LabelPropertyName == null || !feature.TryProperty(options.LabelPropertyName, out var value) || !value.TryAsArray(out var position) || position.Count < 2) return null;
+        return ChartGeographicProjection.Project(position[0].AsNumber("label longitude"), position[1].AsNumber("label latitude"), options.Projection);
     }
 
     private static ChartPoint Average(List<ChartPoint> points) {

@@ -115,6 +115,9 @@ public sealed class ChartMapGeoJsonOptions {
     /// </summary>
     public ChartMapGeoJsonProjection Projection { get; set; } = ChartMapGeoJsonProjection.Equirectangular;
 
+    /// <summary>Names a [longitude, latitude] feature property used as the region label point; built-in maps use it for curated label positions.</summary>
+    internal string? LabelPropertyName { get; set; }
+
     /// <summary>Gets or sets an explicit antimeridian polygon geometry window, or null to preserve ordinary import bytes.</summary>
     /// <remarks>This is view geometry, not feature filtering. Closed rings unwrap through the same projection owner; native rectangle clipping
     /// retains complete raw rings and source features. Projection must match this viewport. Point/route imports still retain raw positions.</remarks>
