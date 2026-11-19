@@ -1,4 +1,20 @@
   const graphNodeMarkWidth = (selected, compact) => selected ? 5 : compact ? 1.5 : 3;
+  // Card images share the icon slot 28px from the card's left edge; the server markup uses the same square.
+  const graphCardImageRect = node => {
+    const slot = Math.max(12, Math.min(32, Math.min(node.size * 1.05, 36) * 2 - 14));
+    return { x: -node.size * 1.45 + 28 - slot / 2, y: -slot / 2, size: slot };
+  };
+  const drawCardImage = (context, node, root) => {
+    const image = graphImage(node.imageUrl, graphImageRedraw(root));
+    if (!image || !image.complete || !(image.naturalWidth > 0)) return;
+    const slot = graphCardImageRect(node), scale = Math.min(slot.size / image.naturalWidth, slot.size / Math.max(1, image.naturalHeight));
+    const width = image.naturalWidth * scale, height = image.naturalHeight * scale;
+    try {
+      context.drawImage(image, node.x + slot.x + (slot.size - width) / 2, node.y + slot.y + (slot.size - height) / 2, width, height);
+    } catch {
+      // Keep malformed host-supplied images from breaking Canvas interaction.
+    }
+  };
   const graphNodeMarkPaint = (node, selected, compact, selectedColor) => ({
     fill: node.backgroundColor || '#2563eb', stroke: selected ? selectedColor : node.borderColor || '#eff6ff',
     width: graphNodeMarkWidth(selected, compact)
@@ -44,6 +60,10 @@
       else context.rect(node.x - width / 2, node.y - height / 2, width, height);
       context.fill();
       context.stroke();
+      if (node.card && node.imageUrl) {
+        context.shadowColor = 'transparent';
+        drawCardImage(context, node, root);
+      }
     } else if (node.shape === 'image' && node.imageUrl) {
       context.beginPath();
       context.arc(node.x, node.y, node.size + 3, 0, Math.PI * 2);
@@ -83,7 +103,7 @@
     context.shadowColor = 'transparent';
     context.shadowBlur = 0;
     context.shadowOffsetY = 0;
-    if (node.icon && !moving) {
+    if (node.icon && !moving && !(node.card && node.imageUrl)) {
       context.font = `bold 12px ${graphNodeFontFamily(root)}`;
       context.textAlign = 'center'; context.textBaseline = 'middle'; context.fillStyle = graphNodeIconColor(root, node.el, palette || graphThemePalette(root), paint.fill);
       context.fillText(node.icon, node.card ? node.x - node.size * 1.45 + 28 : node.x, node.y + 1);

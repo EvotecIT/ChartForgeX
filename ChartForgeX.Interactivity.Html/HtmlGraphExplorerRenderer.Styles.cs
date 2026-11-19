@@ -23,6 +23,8 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static GraphNodeShape EffectiveNodeShape(GraphSceneNode? node) {
         if (node == null) return GraphNodeShape.Circle;
+        // A card is a box node drawn with the card layout; every geometry rule for boxes applies to it.
+        if (node.Shape == GraphNodeShape.Card) return GraphNodeShape.Box;
         return (node.Shape == GraphNodeShape.Image || node.Shape == GraphNodeShape.RectangularImage) && string.IsNullOrWhiteSpace(node.ImageUrl) ? GraphNodeShape.Circle : node.Shape;
     }
 

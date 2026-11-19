@@ -142,5 +142,11 @@ public enum GraphNodeShape {
     Text,
 
     /// <summary>Use an image-backed rectangular node mark when an image URI is available.</summary>
-    RectangularImage
+    RectangularImage,
+
+    /// <summary>
+    /// Use a rounded card: the image (or icon text) on the left, the label as its title, the secondary label as its subtitle,
+    /// and the badge and status in the corners. Replaces HTML node templates with a fixed, accessible layout.
+    /// </summary>
+    Card
 }

@@ -107,12 +107,14 @@ self.onmessage = event => {
   };
   const pausePhysics = (root) => {
     root.dataset.cfxGraphPhysicsState = 'paused';
+    finishLayoutProgress(root);
     root.__cfxGraphWorker?.worker.postMessage({ type: 'pause' });
     stopWorkerPhysics(root, true); stopMainPhysics(root, true);
     if (typeof syncPhysicsControls === 'function') syncPhysicsControls(root);
   };
   const completePhysics = (root, state, ticks, velocity, thread) => {
     root.dataset.cfxGraphPhysicsState = 'stabilized';
+    finishLayoutProgress(root);
     runLayoutQualityPass(root, state);
     if (root.dataset.cfxGraphRendererActive !== 'svg') syncSvgLayout(root, state);
     applyLayout(root, state);
@@ -144,6 +146,7 @@ self.onmessage = event => {
           const present = (current && message.type === 'done') || !graphPrefersReducedMotion(root);
           const renderStarted = performanceClock();
           if (present) updatePhysicsNodes(root, state, message.positions, active.editedNodes, message.generation);
+          if (current) syncLayoutProgress(root, message.tick);
           if (current && message.type === 'done') {
             stopWorkerPhysics(root, true);
             completePhysics(root, state, message.tick, message.maxVelocity, 'worker');
@@ -173,6 +176,7 @@ self.onmessage = event => {
       if (root.isConnected === false) { pausePhysics(root); return; }
       active.tick += 1;
       const frame = physicsTick(root, state, settings, active.tick);
+      syncLayoutProgress(root, active.tick);
       const renderedAt = performanceClock(); recordFramePerformance(root, Number.isFinite(timestamp) ? timestamp : renderedAt, frame.renderMs, 'main');
       const canFinish = !root.__cfxGraphDragNodeId && (active.tick >= settings.iterations || frame.maxVelocity <= settings.minVelocity);
       if (canFinish) { root.__cfxGraphMainPhysics = null; completePhysics(root, state, active.tick, frame.maxVelocity, 'main'); return; }
@@ -201,6 +205,7 @@ self.onmessage = event => {
     if (!hasFeature(root, 'RuntimePhysics') || settings.solver === 'None' || settings.solver === 'StaticPrepared' || performanceGate(root)) return false;
     root.__cfxGraphAutoFitOnStabilize = settings.stabilizationFit && options?.fit !== false && hasFeature(root, 'Viewport') && root.__cfxGraphViewportTouched !== true;
     root.dataset.cfxGraphPhysicsState = 'running'; root.dataset.cfxGraphPhysicsReason = options?.reason || 'manual';
+    if (options?.reason === 'initial-stabilization') beginLayoutProgress(root, settings.iterations); else finishLayoutProgress(root);
     if (canUseWorkerPhysics(root, state) && startWorkerPhysics(root, state, settings)) return true;
     startMainPhysics(root, state, settings); return true;
   };

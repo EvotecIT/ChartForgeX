@@ -657,4 +657,6 @@ public enum HtmlChartText {
     TopologyCollapseGroup,
     /// <summary>UI text: Expand {label}</summary>
     TopologyExpandGroup,
+    /// <summary>UI text: Arranging graph</summary>
+    GraphLayoutProgress,
 }

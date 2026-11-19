@@ -76,6 +76,12 @@
       setGraphAttribute(image, 'x', -width / 2); setGraphAttribute(image, 'y', -height / 2); setGraphAttribute(image, 'width', width); setGraphAttribute(image, 'height', height); setGraphAttribute(image, 'href', node.imageUrl); setGraphAttribute(image, 'aria-label', node.imageAlt || node.label || node.id);
       if (shape === 'imageRect') image.classList.add('cfx-graph-node-image-rect');
       element.appendChild(image);
+    } else if (node.card && node.imageUrl) {
+      const slot = graphCardImageRect({ size }), image = svgElement(root, 'image');
+      image.classList.add('cfx-graph-node-card-image');
+      setGraphAttribute(image, 'x', slot.x); setGraphAttribute(image, 'y', slot.y); setGraphAttribute(image, 'width', slot.size); setGraphAttribute(image, 'height', slot.size);
+      setGraphAttribute(image, 'preserveAspectRatio', 'xMidYMid meet'); setGraphAttribute(image, 'href', node.imageUrl); setGraphAttribute(image, 'aria-label', node.imageAlt || node.label || node.id);
+      element.appendChild(image);
     } else if (node.icon) {
       const icon = svgElement(root, 'text'); icon.classList.add('cfx-graph-node-icon');
       if (node.card) { icon.classList.add('cfx-graph-node-card-icon'); icon.setAttribute('x', String(-size * 1.45 + 28)); }

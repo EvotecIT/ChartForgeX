@@ -665,3 +665,63 @@
   unicode-bidi: plaintext;
   text-align: match-parent;
 }
+
+.cfx-graph-layout-progress {
+  position: absolute;
+  z-index: 12;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 6px 12px;
+  min-width: 200px;
+  padding: 10px 14px;
+  border: 1px solid var(--cfx-color-border);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--cfx-color-surface-raised) 94%, transparent);
+  color: var(--cfx-color-text);
+  font-size: 12px;
+  pointer-events: none;
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--cfx-color-text) 12%, transparent);
+}
+
+.cfx-graph-layout-progress[hidden] {
+  display: none;
+}
+
+.cfx-graph-layout-progress__value {
+  justify-self: end;
+  font-variant-numeric: tabular-nums;
+  color: var(--cfx-color-text-muted);
+}
+
+.cfx-graph-layout-progress__track {
+  grid-column: 1 / -1;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--cfx-color-accent) 18%, transparent);
+}
+
+.cfx-graph-layout-progress__bar {
+  display: block;
+  height: 100%;
+  width: 100%;
+  transform-origin: left center;
+  transform: scaleX(var(--cfx-graph-layout-progress, 0));
+  background: var(--cfx-color-accent);
+  transition: transform 160ms linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cfx-graph-layout-progress__bar {
+    transition: none;
+  }
+}
+
+@media print {
+  .cfx-graph-layout-progress {
+    display: none;
+  }
+}

@@ -177,6 +177,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         Attribute(writer, "aria-label", options.Localization.Format(HtmlChartText.GraphAcceleratedName, ("title", scene.Title)));
         Attribute(writer, "aria-describedby", graphId + "-instructions");
         writer.Append("></canvas><canvas dir=\"ltr\" class=\"cfx-graph-overview\" data-cfx-role=\"graph-overview\" width=\"168\" height=\"98\" aria-hidden=\"true\"></canvas><div class=\"cfx-graph-selection-box\" data-cfx-role=\"graph-selection-box\" hidden></div>");
+        WriteLayoutProgress(writer, scene, options);
         writer.Append("<svg direction=\"ltr\" class=\"cfx-graph-svg\" data-cfx-role=\"graph-scene\" width=\"960\" height=\"560\" viewBox=\"0 0 960 560\" role=\"");
         writer.Append(focusableGraphItems ? "group" : "img");
         writer.Append("\" aria-hidden=\"false\"");
@@ -372,7 +373,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static void WriteNodeMark(StringBuilder writer, GraphSceneNode node) {
         var size = SafeNodeSize(node);
-        if (node.Shape == GraphNodeShape.Box) {
+        if (EffectiveNodeShape(node) == GraphNodeShape.Box) {
             var halfWidth = BoxHalfWidth(size);
             var halfHeight = BoxHalfHeight(node, size);
             writer.Append("<rect x=\"");
@@ -386,6 +387,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
             writer.Append(IsCardNode(node) ? "\" rx=\"10\"" : "\" rx=\"6\"");
             WriteNodeMarkStyle(writer, node);
             writer.Append("></rect>");
+            if (IsCardNode(node) && !string.IsNullOrWhiteSpace(node.ImageUrl)) WriteCardImage(writer, node, size);
         } else if (node.Shape == GraphNodeShape.Square) {
             writer.Append("<rect x=\"");
             writer.Append(Number(-size));
@@ -576,7 +578,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
 
     private static double TargetBoundaryInset(GraphSceneNode? node, double unitX, double unitY) {
         if (node?.Hidden == true) return 0;
-        var size = Math.Max(4, node?.Size ?? 8);
+        var size = node == null ? 8 : SafeNodeSize(node);
         var shape = EffectiveNodeShape(node);
         if (TryNodeBoundaryExtents(node, shape, size, out var halfWidth, out var halfHeight)) {
             if (Math.Abs(unitX) < 0.001 && Math.Abs(unitY) < 0.001) return Math.Max(6, Math.Max(halfWidth, halfHeight) + 7);
@@ -605,7 +607,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         return scene.Options.HasFeature(GraphSceneFeatures.Viewport) || scene.Options.HasFeature(GraphSceneFeatures.DragNodes);
     }
 
-    private static double SafeNodeSize(GraphSceneNode node) => Math.Max(4, node.Size);
+    private static double SafeNodeSize(GraphSceneNode node) => Math.Max(node.Shape == GraphNodeShape.Card ? CardNodeMinimumSize : 4, node.Size);
 
     private static void AppendScript(StringBuilder writer, HtmlGraphExplorerOptions options) {
         writer.Append("<script");
