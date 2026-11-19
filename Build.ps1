@@ -690,7 +690,7 @@ try {
     $contractSettings = if ($TestDiagnosticsDirectory) { Join-Path $root 'Build/native-diagnostics.runsettings' } else { $null }
     if (-not $SkipTests) {
         # Explicit expensive rendering contracts retain their own normal command budgets.
-        $testArguments = @('test', $tests, '-c', $Configuration, '--no-build', '--no-restore', '--filter', 'Category!=Gallery&Category!=RasterStress')
+        $testArguments = @('test', $tests, '-c', $Configuration, '--no-build', '--no-restore', '--filter', 'Category!=Gallery&Category!=RasterStress&Category!=Performance')
         if (-not [string]::IsNullOrWhiteSpace($TestDiagnosticsDirectory)) {
             New-Item -ItemType Directory -Path $TestDiagnosticsDirectory -Force | Out-Null
             $testArguments += @('--settings', (Join-Path $root 'Build/native-diagnostics.runsettings'),

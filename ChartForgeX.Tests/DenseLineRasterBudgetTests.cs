@@ -15,18 +15,24 @@ public sealed class DenseLineRasterBudgetTests {
     // Tens of thousands of raw points squeeze about seventy segments into each device pixel column.
     // Scanning that stroke outline as one shape grew with the square of its density (about 28 s here);
     // the PNG must stay a small multiple of the second it takes now.
+    // The time budget is Category=Performance, so normal CI on shared runners leaves it out.
     [Fact]
+    [Trait("Category", "Performance")]
     public void DenseRawLinePngStaysWithinRasterBudget() {
-        var prepared = Chart.Create().WithSize(1200, 600).WithTitle("Dense raw line").WithLegend(false)
-            .AddLine("Signal", Signal(80_000))
-            .Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(1200, 600))));
+        var prepared = Prepare();
         var watch = Stopwatch.StartNew();
         var png = prepared.ToPng();
         watch.Stop();
         _output.WriteLine($"80k-point line PNG: {watch.ElapsedMilliseconds} ms, {png.Length} bytes; budget 6000 ms.");
-        Assert.True(png.Length > 1_000);
         Assert.True(watch.ElapsedMilliseconds <= 6_000, $"Dense line PNG took {watch.ElapsedMilliseconds} ms.");
     }
+
+    [Fact]
+    public void DenseRawLineRendersToPng() => Assert.True(Prepare().ToPng().Length > 1_000);
+
+    private static PreparedVisual Prepare() => Chart.Create().WithSize(1200, 600).WithTitle("Dense raw line").WithLegend(false)
+        .AddLine("Signal", Signal(80_000))
+        .Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(1200, 600))));
 
     private static IEnumerable<ChartPoint> Signal(int count) {
         uint state = 12345;

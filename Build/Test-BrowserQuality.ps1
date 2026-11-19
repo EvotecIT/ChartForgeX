@@ -6,7 +6,9 @@ param(
     [ValidateRange(1, 16)]
     [int] $ShardIndex = 1,
     [ValidateRange(1, 16)]
-    [int] $ShardCount = 1
+    [int] $ShardCount = 1,
+    # Runs only the opt-in browser timing budgets (Category=Performance) instead of the contracts.
+    [switch] $Performance
 )
 
 $ErrorActionPreference = 'Stop'
@@ -30,7 +32,7 @@ if (-not (Test-Path -LiteralPath (Join-Path $gallery 'manifest.json'))) { throw 
 
 . (Join-Path $PSScriptRoot 'Invoke-BrowserTestHost.ps1')
 . (Join-Path $PSScriptRoot 'Select-BrowserTestShard.ps1')
-$filter = 'Category=Browser'
+$filter = if ($Performance) { 'Category=Browser&Category=Performance' } else { 'Category=Browser&Category!=Performance' }
 $selection = $null
 if ($ShardCount -gt 1) {
     $selection = Select-BrowserTestShard -Project $project -Configuration Release -Filter $filter -ShardIndex $ShardIndex -ShardCount $ShardCount -Suite chromium-required -ResultsDirectory $results

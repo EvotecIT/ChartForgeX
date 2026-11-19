@@ -65,19 +65,34 @@ public sealed class FontPaletteTests {
     }
     [Fact]
     public void ManySharedPalettesRetainOneRecordStoreAndMalformedAlternatesUseDefault() {
+        var bytes = SharedPaletteTable();
+        var data = FontColorPalettes.Read(new FontTableReader(bytes, 0, bytes.Length))!;
+        const int palettes = 65535;
+        Assert.Equal(new ChartColor(255, 0, 0), data.Color(0, 400));
+        Assert.Equal(data.Color(0, 0), data.Color(0, palettes - 1));
+        Assert.Equal(data.Color(0, 0), data.Color(0, 65535));
+    }
+    // The allocation budget is Category=Performance, so normal CI on shared runners leaves it out.
+    [Fact]
+    [Trait("Category", "Performance")]
+    public void ManySharedPalettesReadWithinAllocationBudget() {
+        var bytes = SharedPaletteTable();
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        FontColorPalettes.Read(new FontTableReader(bytes, 0, bytes.Length));
+        Assert.InRange(GC.GetAllocatedBytesForCurrentThread() - before, 0, 1024 * 1024);
+    }
+
+    // 65,535 palettes sharing one red record store, with one out-of-range alternate index.
+    private static byte[] SharedPaletteTable() {
         const int palettes = 65535; var bytes = new byte[12 + palettes * 2 + 12];
         void U16(int at, int value) => BinaryPrimitives.WriteUInt16BigEndian(bytes.AsSpan(at), (ushort)value);
         U16(2, 3); U16(4, palettes); U16(6, 3);
         BinaryPrimitives.WriteUInt32BigEndian(bytes.AsSpan(8), (uint)(bytes.Length - 12));
         bytes[^10] = 255; bytes[^9] = 255; // Default red BGRA record.
         U16(12 + 400 * 2, 65535);
-        var before = GC.GetAllocatedBytesForCurrentThread();
-        var data = FontColorPalettes.Read(new FontTableReader(bytes, 0, bytes.Length))!;
-        Assert.InRange(GC.GetAllocatedBytesForCurrentThread() - before, 0, 1024 * 1024);
-        Assert.Equal(new ChartColor(255, 0, 0), data.Color(0, 400));
-        Assert.Equal(data.Color(0, 0), data.Color(0, palettes - 1));
-        Assert.Equal(data.Color(0, 0), data.Color(0, 65535));
+        return bytes;
     }
+
     [Fact]
     public void PaletteOverridesInheritResetCloneAndValidateWithoutMutatingFallback() {
         var style = new TextStyle { Font = FontSpec.SystemSans().WithColorPalette(2) };

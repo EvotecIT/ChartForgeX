@@ -78,10 +78,10 @@ jobs:
             }))];
             const clauses = new Set(['StandaloneViewportBrowserTests', 'InteractiveBundleTests', ...browserClasses]);
             // Keep Chromium-only rows out of the declared cross-engine compatibility lane.
-            browserFilter = `Category=Browser&BrowserSuite=Compatibility&(${[...clauses].map(name => `FullyQualifiedName~${name}`).join('|')})`;
+            browserFilter = `Category=Browser&BrowserSuite=Compatibility&Category!=Performance&(${[...clauses].map(name => `FullyQualifiedName~${name}`).join('|')})`;
             // Unrecognised partial filenames must broaden coverage rather than silently omit tests.
             if (browserPaths.some(path => !/^ChartForgeX\.Tests\/([A-Za-z_][A-Za-z0-9_]*BrowserTests)(?:\.[A-Za-z0-9_]+)*\.cs$/.test(path))) {
-              browserFilter = 'Category=Browser&BrowserSuite=Compatibility';
+              browserFilter = 'Category=Browser&BrowserSuite=Compatibility&Category!=Performance';
             }
             console.log(`Compared ${paths.length} PR paths; build/test required: ${build}`);
           }
