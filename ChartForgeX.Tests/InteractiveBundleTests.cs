@@ -25,9 +25,11 @@ public sealed class InteractiveBundleTests {
     // Crossing a dense line and zooming it now touch only the observations they read (10,000-point hover p95 about 300 ms to
     // 55 ms, 50,000-point zoom about 45% faster); the series hand-off, summary-only hover repaint and translated observations
     // added about 0.9 KiB raw to the report runtimes, so both report raw budgets moved up 1 KiB.
+    // Hiding the tick captions under the crosshair value pills added about 0.6 KiB raw (0.2 KiB gzip) to every runtime; the
+    // report runtimes had under 0.1 KiB left of each, so both report raw and gzip budgets moved up 1 KiB.
     [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.Tooltips, 103 * 1024, 33 * 1024)]
-    [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.ReportReview, 298 * 1024, 92 * 1024)]
-    [InlineData(HtmlChartRuntime.Full, ChartInteractionFeatures.ReportReview, 366 * 1024, 111 * 1024)]
+    [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.ReportReview, 299 * 1024, 93 * 1024)]
+    [InlineData(HtmlChartRuntime.Full, ChartInteractionFeatures.ReportReview, 367 * 1024, 112 * 1024)]
     public void EmittedRuntimeFitsRawAndGzipBudgets(HtmlChartRuntime runtime, ChartInteractionFeatures features, int rawBudget, int gzipBudget) {
         var asset = HtmlInteractiveAssetFiles.ChartScriptFor(runtime, features);
         var bytes = Encoding.UTF8.GetBytes(asset.Content);

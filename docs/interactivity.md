@@ -70,8 +70,8 @@ bundle needs it. They exclude the drawing, font payloads and stylesheet:
 | Bundle | Raw budget | Gzip budget |
 | --- | ---: | ---: |
 | Core reader (tooltips, keyboard, crosshair) | 103 KiB | 33 KiB |
-| Standalone reader | 298 KiB | 92 KiB |
-| Full controller/native host | 366 KiB | 111 KiB |
+| Standalone reader | 299 KiB | 93 KiB |
+| Full controller/native host | 367 KiB | 112 KiB |
 
 Optional behaviour ships in separate feature bundles, so the runtimes above do
 not grow with it. A page carries only the bundles its options need, and the core
@@ -522,7 +522,7 @@ Shared-x readouts use Cartesian source observations, including scatter and bubbl
 
 Distances use CSS pixels after responsive layout and SVG transforms, so the same setting works with `Fit` and `Readable`. Heatmap, map, schedule, hierarchy, scalar, polar, annotation, and legend targets retain native hit semantics. Inferred lookup does not extend outside the stage. Hidden paint and muted data cannot become pointer readouts through a retained bounding box or a legend colour. A visible child can restore inherited visibility, and marker-free observations remain eligible while their series path is painted at that location. An `Exact` native hit on a connected line, area, or range envelope retains its series summary during pointer movement; the crosshair can independently guide to a real nearby observation. `Nearest` and `WithinDistance` can refine that native summary to an eligible observation. Keyboard focus and pinned readouts retain their explicit targets, including keyboard-only authored zero or precision-collapse facts.
 
-Tooltip acquisition works with `ChartInteractionFeatures.Tooltips` even when `Crosshair` is disabled. The crosshair keeps its own 120 CSS pixel guide range. `Crosshair.ShowLabel` controls the guide's label and defaults to true for every palette; set it to false when a compact layout already provides the same information in the tooltip. These options do not enable either feature.
+Tooltip acquisition works with `ChartInteractionFeatures.Tooltips` even when `Crosshair` is disabled. The crosshair keeps its own 120 CSS pixel guide range. `Crosshair.ShowLabel` controls the guide's label and defaults to true for every palette; set it to false when a compact layout already provides the same information in the tooltip. The label shows the guide's values as pills on the axes. A pill sits where that axis draws its tick captions, so captions it would touch are hidden while it shows and return when the guide leaves. These options do not enable either feature.
 
 `cfxcrosshair` and crosshair synchronization follow the guide's observation independently of a retained `Exact` tooltip summary. They update when the guide's observation or series/shared emphasis changes and restore the guide after a native hover change. Pointer movement within the same state does not repeat these notifications.
 

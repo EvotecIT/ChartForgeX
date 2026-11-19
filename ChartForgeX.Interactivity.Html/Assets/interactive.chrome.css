@@ -118,6 +118,8 @@
 }
 /* Browser ticks replace raster native labels without a text template; keep the axis label colour role. */
 .cfx-interactive-chart [data-cfx-browser-axis] text[fill="currentColor"] { fill: var(--cfx-tooltip-muted); }
+/* Tick captions under a value pill step aside while it shows on screen; the pill names the value. Print hides the pills. */
+@media screen { .cfx-interactive-chart .cfx-crosshair-covered { visibility: hidden; } }
 .cfx-crosshair__axis-value[hidden],
 .cfx-interactive-chart[data-cfx-crosshair-label="false"] :is(.cfx-crosshair__label, .cfx-crosshair__axis-value) { display: none; }
 .cfx-tooltip__quiet { color: var(--cfx-tooltip-muted) !important; }

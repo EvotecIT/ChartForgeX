@@ -80,6 +80,7 @@
     clearHover(root, true, true);
     const crosshair = root.querySelector('.cfx-crosshair');
     if (crosshair) crosshair.hidden = true;
+    uncoverCrosshairTicks(root);
   };
   const pointLegendUnits = (root, target) => target.point !== undefined && chartNodes(root, '[data-cfx-role="legend-item"]').filter(item => item.hasAttribute('data-cfx-point'))
     .some((item) => target.seriesKey ? seriesKey(item) === target.seriesKey : (item.dataset || {}).cfxSeries === String(target.series));

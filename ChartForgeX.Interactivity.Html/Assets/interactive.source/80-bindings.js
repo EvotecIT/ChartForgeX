@@ -120,6 +120,8 @@
         });
         listenChart(root, surface, 'pointerleave', (event) => {
           if (!ownsTooltipPointer(root, event)) return;
+          // A mark hidden under a still pointer sends no stage move to settle the guide, so it goes with the mark.
+          if (!pointerTargetPaint(node)) hideCrosshair(root, crosshair);
           // Moving off a mark onto the drawing hands the hover to the stage readout, which settles it in its next frame:
           // clearing the chart's hover state here and setting it again there restyles every marker of a dense chart.
           const handover = handsOver(surface, event.relatedTarget), staged = !handover && stage?.contains(event.relatedTarget);
