@@ -74,6 +74,17 @@ public sealed class GraphCardNodeBrowserTests {
             """);
         Assert.True(png.GetProperty("b").GetInt32() > 200 && png.GetProperty("r").GetInt32() < 80, png.GetRawText());
         Assert.Equal("none", png.GetProperty("clip").GetString());
+
+        // Cards added by a patch keep the same minimum size and image slot as server-rendered cards.
+        var patched = await page.EvaluateAsync<JsonElement>($$"""
+            ()=>{const root=document.querySelector('.cfx-graph-explorer');
+                ChartForgeXGraphExplorer.update(root,{upsertNodes:[{id:'dc3',label:'DC03',shape:'box',card:true,imageUrl:"{{Avatar}}",size:8,x:300,y:440}]});
+                const node=root.querySelector('[data-cfx-role=graph-node][data-node-id=dc3]');
+                return {size:+node.dataset.nodeSize,card:node.dataset.nodeCard,images:node.querySelectorAll('image.cfx-graph-node-card-image').length};}
+            """);
+        Assert.Equal(62, patched.GetProperty("size").GetDouble());
+        Assert.Equal("true", patched.GetProperty("card").GetString());
+        if (backend == HtmlGraphRenderBackend.Svg) Assert.Equal(1, patched.GetProperty("images").GetInt32());
         AssertNoConsoleErrors(session);
     }
 
@@ -83,6 +94,8 @@ public sealed class GraphCardNodeBrowserTests {
         // A budget the layout cannot reach and a negligible velocity threshold keep it running until the drag.
         scene.Options.Physics.Stabilization.Iterations = 1_000_000;
         scene.Options.Physics.MinVelocity = 1e-12;
+        // A pinned node stays under the pointer while the rest of the layout moves; pinned nodes can still be dragged.
+        scene.Nodes.Single(node => node.Id == "n0").Fixed = true;
         var html = scene.ToGraphExplorerHtmlPage(o => { o.RenderBackend = HtmlGraphRenderBackend.Svg; o.PersistThemePreference = false; });
         var head = html.IndexOf("<head>", StringComparison.OrdinalIgnoreCase);
         await using var session = await OpenAsync(html.Insert(head + "<head>".Length, Recorder), 960, 640);
@@ -176,7 +189,7 @@ public sealed class GraphCardNodeBrowserTests {
             })
             .AddNode("site", "Warsaw", node => { node.Shape = GraphNodeShape.Card; node.IconText = "S"; node.SecondaryLabel = "Site"; node.X = 620; node.Y = 280; })
             .AddEdge("link", "dc1", "site");
-        scene.Options.Features = GraphSceneFeatures.Viewport | GraphSceneFeatures.Selection | GraphSceneFeatures.Export;
+        scene.Options.Features = GraphSceneFeatures.Viewport | GraphSceneFeatures.Selection | GraphSceneFeatures.Export | GraphSceneFeatures.IncrementalUpdates;
         return scene;
     }
 

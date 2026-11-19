@@ -191,6 +191,8 @@ self.onmessage = event => {
   };
   const startPhysics = (root, options) => {
     stopWorkerPhysics(root); stopMainPhysics(root);
+    // Any later run ends the first layout's report, even when a guard below declines to restart physics.
+    if (options?.reason !== 'initial-stabilization') finishLayoutProgress(root);
     const state = activePhysicsState(root), base = profile(root);
     const settings = {
       ...base,
@@ -205,7 +207,7 @@ self.onmessage = event => {
     if (!hasFeature(root, 'RuntimePhysics') || settings.solver === 'None' || settings.solver === 'StaticPrepared' || performanceGate(root)) return false;
     root.__cfxGraphAutoFitOnStabilize = settings.stabilizationFit && options?.fit !== false && hasFeature(root, 'Viewport') && root.__cfxGraphViewportTouched !== true;
     root.dataset.cfxGraphPhysicsState = 'running'; root.dataset.cfxGraphPhysicsReason = options?.reason || 'manual';
-    if (options?.reason === 'initial-stabilization') beginLayoutProgress(root, settings.iterations); else finishLayoutProgress(root);
+    if (options?.reason === 'initial-stabilization') beginLayoutProgress(root, settings.iterations);
     if (canUseWorkerPhysics(root, state) && startWorkerPhysics(root, state, settings)) return true;
     startMainPhysics(root, state, settings); return true;
   };
