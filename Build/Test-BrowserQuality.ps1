@@ -6,10 +6,13 @@ param(
     [ValidateRange(1, 16)]
     [int] $ShardIndex = 1,
     [ValidateRange(1, 16)]
-    [int] $ShardCount = 1
+    [int] $ShardCount = 1,
+    # Runs only the opt-in browser timing budgets (Category=Performance) instead of the contracts.
+    [switch] $Performance
 )
 
 $ErrorActionPreference = 'Stop'
+if ($Performance -and $ShardCount -gt 1) { throw 'Performance runs select a single browser timing check; run them unsharded.' }
 if (-not [IO.Path]::IsPathRooted($OutputRoot)) { throw 'OutputRoot must be an explicit absolute task-owned path.' }
 $repository = Split-Path -Parent $PSScriptRoot
 $output = [IO.Path]::GetFullPath($OutputRoot)
@@ -30,7 +33,7 @@ if (-not (Test-Path -LiteralPath (Join-Path $gallery 'manifest.json'))) { throw 
 
 . (Join-Path $PSScriptRoot 'Invoke-BrowserTestHost.ps1')
 . (Join-Path $PSScriptRoot 'Select-BrowserTestShard.ps1')
-$filter = 'Category=Browser'
+$filter = if ($Performance) { 'Category=Browser&Category=Performance' } else { 'Category=Browser&Category!=Performance' }
 $selection = $null
 if ($ShardCount -gt 1) {
     $selection = Select-BrowserTestShard -Project $project -Configuration Release -Filter $filter -ShardIndex $ShardIndex -ShardCount $ShardCount -Suite chromium-required -ResultsDirectory $results
@@ -60,6 +63,8 @@ try {
         throw 'Required browser proof must discover and execute tests without skips.'
     }
     if ($selection) { Assert-BrowserShardExecution -Selection $selection -Report $report }
+    # The timing budgets are a separate opt-in selection; the contract inventory and evidence belong to the normal run.
+    if (-not $Performance) {
     $requiredContracts = @(
         'SvgRasterTurbulenceAffineBrowserTests.NativeAffineSheetKeepsActualSourceCoverageAndCompleteDownloadAtBothWidths',
         'StaticExportNativeFontBrowserTests.ActualNativeNumericFallbackSuffixesRemainVisibleAndExportAcceptedValuesThroughTheExistingLifetime',
@@ -337,6 +342,7 @@ try {
     }
     if ((-not $selection -or $selection.Classes.Contains('ChartForgeX.Tests.V2GalleryBrowserMatrixTests')) -and
         -not (Test-Path -LiteralPath (Join-Path $captures 'native-family-matrix.json'))) { throw 'Native family matrix evidence is missing.' }
+    }
     Write-Host "Required browser proof passed: $($counters.total) executed tests. Evidence: $output"
     }
 } finally {

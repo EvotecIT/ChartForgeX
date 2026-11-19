@@ -7,7 +7,9 @@ using Xunit.Abstractions;
 
 namespace ChartForgeX.Tests;
 
+/// <summary>Render-time and allocation budgets; <c>Category=Performance</c>, so normal CI on shared runners leaves them out.</summary>
 [Collection(nameof(RenderingBudgetCollection))]
+[Trait("Category", "Performance")]
 public sealed class GraphiteRenderingBudgetTests {
     private readonly ITestOutputHelper _output;
     public GraphiteRenderingBudgetTests(ITestOutputHelper output) => _output = output;

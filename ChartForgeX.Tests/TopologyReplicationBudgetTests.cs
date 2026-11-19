@@ -8,8 +8,8 @@ namespace ChartForgeX.Tests;
 
 /// <summary>
 /// Dense Active Directory replication fixtures (76, 121, and 144 domain controllers in 16, 24, and 28 sites) with CI
-/// budgets for render time, SVG size, and routing quality. The time budget is generous for small CI runners and a JIT
-/// warm-up render runs first. SVG size budgets sit about 15% above the values measured on Windows. Dense layouts wrap site
+/// budgets for SVG size and routing quality. The render-time budget is a <c>Category=Performance</c> test, which normal CI
+/// leaves out because shared runners carry variable load. SVG size budgets sit about 15% above the values measured on Windows. Dense layouts wrap site
 /// panels into rows no wider than the viewport, keep readable cards, and route around every card, so the fixtures require
 /// zero route/foreign-card crossings, zero card overlaps, zero edge-label overlaps, and the viewport width.
 /// <see cref="TopologyRouteQualityTests"/> holds the same fixtures to zero caption and group-header crossings, zero
@@ -30,31 +30,26 @@ public sealed class TopologyReplicationBudgetTests {
         new object[] { 6, 18, 920_000, 0, 0, 0 }
     };
 
+    public static IEnumerable<object[]> TimedTiers => Tiers.Select(tier => new[] { tier[0], tier[1] });
+
     [Theory]
     [MemberData(nameof(Tiers))]
     public void DenseReplicationFixture_RendersWithinBudgets(int branchSites, int hubControllers, int svgByteBudget, int crossingCeiling, int collisionCeiling, int labelOverlapCeiling) {
         var options = new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile };
         var chart = ReplicationTopologyFixture.Create(branchSites, hubControllers);
         var expectedControllers = ReplicationTopologyFixture.DomainControllerCount(branchSites, hubControllers);
-        ReplicationTopologyFixture.Create(1, 2).Prepare(options).ToPng();
 
-        var stopwatch = Stopwatch.StartNew();
         var prepared = chart.Prepare(options);
-        var prepareMs = stopwatch.ElapsedMilliseconds;
-        stopwatch.Restart();
         var svg = prepared.ToSvg();
-        var svgMs = stopwatch.ElapsedMilliseconds;
         var sharedFontSvg = prepared.Visual.ToSvgWithoutProductFonts();
-        stopwatch.Restart();
         var png = prepared.ToPng();
-        var pngMs = stopwatch.ElapsedMilliseconds;
         var report = prepared.Analyze();
         var crossings = ReplicationTopologyFixture.NodeCardCrossings(report);
         var collisions = report.Collisions.Count(collision => collision.Kind == "node-node");
         var svgElements = XDocument.Parse(svg).Descendants().ToArray();
         var renderedNodes = svgElements.Where(element => (string?)element.Attribute("data-cfx-role") == "topology-node").ToArray();
         var renderedEdges = svgElements.Where(element => (string?)element.Attribute("data-cfx-role") == "topology-edge").ToArray();
-        _output.WriteLine($"dcs={expectedControllers} edges={prepared.EdgeCount} prepare={prepareMs}ms svg={svgMs}ms/{svg.Length}B png={pngMs}ms/{png.Length}B size={prepared.Width}x{prepared.Height} cardCrossings={crossings} nodeCollisions={collisions}");
+        _output.WriteLine($"dcs={expectedControllers} edges={prepared.EdgeCount} svg={svg.Length}B png={png.Length}B size={prepared.Width}x{prepared.Height} cardCrossings={crossings} nodeCollisions={collisions}");
         SaveSample(svg, png, expectedControllers);
 
         Assert.Equal(expectedControllers, prepared.NodeCount);
@@ -67,7 +62,6 @@ public sealed class TopologyReplicationBudgetTests {
         Assert.Equal(chart.Edges.Select(edge => edge.Id).OrderBy(id => id, StringComparer.Ordinal),
             renderedEdges.Select(element => (string?)element.Attribute("data-edge-id") ?? throw new InvalidOperationException("Rendered edge has no ID.")).OrderBy(id => id, StringComparer.Ordinal));
         Assert.True(png.Length > 10_000, "The PNG export should contain the rendered topology.");
-        Assert.True(prepareMs + svgMs + pngMs <= RenderTimeBudgetMilliseconds, $"Layout plus SVG and PNG export took {prepareMs + svgMs + pngMs} ms; budget {RenderTimeBudgetMilliseconds} ms.");
         // The existing diagram budget remains unchanged. Standalone exports additionally
         // carry at most one copy of the two bundled WOFF2 faces and their OFL notices.
         Assert.True(sharedFontSvg.Length <= svgByteBudget, $"Diagram SVG is {sharedFontSvg.Length} characters; budget {svgByteBudget}.");
@@ -79,6 +73,27 @@ public sealed class TopologyReplicationBudgetTests {
         Assert.True(collisions <= collisionCeiling, $"Node cards overlap {collisions} times; ceiling {collisionCeiling}.");
         Assert.True(prepared.Width <= chart.Viewport.Width, $"Layout is {prepared.Width} px wide; wrapped site rows should stay within {chart.Viewport.Width} px.");
         Assert.All(report.Nodes, node => Assert.True(node.Bounds.Width >= 40, node.Id + " collapsed below card size."));
+    }
+
+    [Theory]
+    [MemberData(nameof(TimedTiers))]
+    [Trait("Category", "Performance")]
+    public void DenseReplicationFixture_RendersWithinTimeBudget(int branchSites, int hubControllers) {
+        var options = new TopologyRenderOptions { ReadableDenseLayout = true, IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Tile };
+        var chart = ReplicationTopologyFixture.Create(branchSites, hubControllers);
+        ReplicationTopologyFixture.Create(1, 2).Prepare(options).ToPng(); // Warm the JIT and font caches first.
+
+        var stopwatch = Stopwatch.StartNew();
+        var prepared = chart.Prepare(options);
+        var prepareMs = stopwatch.ElapsedMilliseconds;
+        stopwatch.Restart();
+        prepared.ToSvg();
+        var svgMs = stopwatch.ElapsedMilliseconds;
+        stopwatch.Restart();
+        prepared.ToPng();
+        var pngMs = stopwatch.ElapsedMilliseconds;
+        _output.WriteLine($"prepare={prepareMs}ms svg={svgMs}ms png={pngMs}ms");
+        Assert.True(prepareMs + svgMs + pngMs <= RenderTimeBudgetMilliseconds, $"Layout plus SVG and PNG export took {prepareMs + svgMs + pngMs} ms; budget {RenderTimeBudgetMilliseconds} ms.");
     }
 
     [Fact]

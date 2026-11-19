@@ -15,8 +15,16 @@ That command restores packages, builds all projects, runs the smoke suite throug
 For a faster test-only loop:
 
 ```powershell
-dotnet test .\ChartForgeX.sln -c Release
+dotnet test .\ChartForgeX.sln -c Release --filter "Category!=Gallery&Category!=RasterStress&Category!=Performance"
 ```
+
+Wall-clock and allocation budgets are `Category=Performance` tests. They are left out of `Build.ps1`, the browser runners and CI, because shared runners carry variable load and timing checks there fail at random. Run them on a quiet machine when a change could affect render speed or memory:
+
+```powershell
+dotnet test .\ChartForgeX.Tests\ChartForgeX.Tests.csproj -c Release --filter "Category=Performance"
+```
+
+The browser timing check runs through the browser runner: `./Build/Test-BrowserQuality.ps1 -OutputRoot <absolute-dir> -Performance`. Deterministic budgets such as SVG byte sizes, geometry and route counts stay in the normal run.
 
 Use a supported Node.js runtime for the Mermaid reference checks. CI selects Node 24, starting at 24.15.0; the npm restore enforces dependency engine requirements.
 

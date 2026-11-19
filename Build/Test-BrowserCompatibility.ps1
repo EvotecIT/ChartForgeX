@@ -27,7 +27,7 @@ param(
     [switch] $SkipBuild,
 
     [ValidateNotNullOrEmpty()]
-    [string] $Filter = 'Category=Browser&BrowserSuite=Compatibility',
+    [string] $Filter = 'Category=Browser&BrowserSuite=Compatibility&Category!=Performance',
 
     [ValidateRange(1, 16)]
     [int] $ShardIndex = 1,

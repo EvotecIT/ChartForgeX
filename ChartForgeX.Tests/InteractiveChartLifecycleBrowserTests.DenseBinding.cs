@@ -9,22 +9,25 @@ namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveChartLifecycleBrowserTests {
     // Binding used to search the whole series once per point and to re-lay the drawing out between point
-    // measurements, so a 10,000-point line took minutes to become interactive. The bound is deliberately generous.
+    // measurements, so a 10,000-point line took minutes to become interactive. The bound is deliberately generous,
+    // and it is Category=Performance, so normal CI on shared runners leaves it out.
     [BrowserFact]
-    public async Task DenseInteractiveLineBindsWithinSecondsAndHoverMeasuresOnlyNearbyPoints() {
+    [Trait("Category", "Performance")]
+    public async Task DenseInteractiveLineBindsWithinSeconds() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(1200, 600).WithLegend(false)
-            .AddLine("Signal", Enumerable.Range(0, 10000).Select(index => new ChartPoint(index, Math.Sin(index / 300.0) * 40 + 100)));
-        var html = chart.ToInteractiveHtmlPage(options =>
-            options.Interaction.Enable(ChartInteractionFeatures.Tooltips | ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan));
         await using var session = await OpenAsync("<!doctype html><html><body></body></html>", 1300, 760, configurePage: _ => { });
-        var page = session.Page;
-
         var watch = Stopwatch.StartNew();
-        await page.SetContentAsync(html, new() { Timeout = 60000 });
-        await page.WaitForSelectorAsync(Root + "[data-cfx-runtime-bound=\"true\"]", new() { Timeout = 60000 });
+        await BindDenseLineAsync(session.Page);
         watch.Stop();
         Assert.True(watch.Elapsed < TimeSpan.FromSeconds(15), $"A 10,000-point line took {watch.Elapsed.TotalSeconds:0.0} s to bind.");
+    }
+
+    [BrowserFact]
+    public async Task DenseInteractiveLineHoverMeasuresOnlyNearbyPoints() {
+        if (!Enabled) return;
+        await using var session = await OpenAsync("<!doctype html><html><body></body></html>", 1300, 760, configurePage: _ => { });
+        var page = session.Page;
+        await BindDenseLineAsync(page);
 
         await page.EvaluateAsync("() => document.querySelector('[data-cfx-point=\"5000\"]').scrollIntoView({ block: 'center' })");
         await HoverPointAsync(page, 5000);
@@ -37,6 +40,15 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         await HoverPointAsync(page, 5001);
         await page.EvaluateAsync("() => new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done)))");
         Assert.InRange(await page.EvaluateAsync<int>("() => window.densePointMeasures"), 0, 50);
+    }
+
+    private static async Task BindDenseLineAsync(Microsoft.Playwright.IPage page) {
+        var chart = Chart.Create().WithSize(1200, 600).WithLegend(false)
+            .AddLine("Signal", Enumerable.Range(0, 10000).Select(index => new ChartPoint(index, Math.Sin(index / 300.0) * 40 + 100)));
+        var html = chart.ToInteractiveHtmlPage(options =>
+            options.Interaction.Enable(ChartInteractionFeatures.Tooltips | ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan));
+        await page.SetContentAsync(html, new() { Timeout = 60000 });
+        await page.WaitForSelectorAsync(Root + "[data-cfx-runtime-bound=\"true\"]", new() { Timeout = 60000 });
     }
 
     private static async Task HoverPointAsync(Microsoft.Playwright.IPage page, int index) {
