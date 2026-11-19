@@ -22,4 +22,17 @@
         label.style.top = clamp(y - label.offsetHeight / 2, 0, Math.max(0, bounds.height - label.offsetHeight)) + 'px';
       }
     });
+    coverCrosshairTicks(root, crosshair);
+  };
+  // A value pill sits on the axis it reads, where tick captions are drawn. Captions it touches would show as clipped
+  // fragments around it, so they step aside while the pill names the value. Hidden pills measure empty and cover nothing.
+  const crosshairTickSelector = '[data-cfx-role^="axis-"][data-cfx-role$="-label"]:not([data-cfx-role*="title"]),[data-cfx-browser-axis]>text';
+  const uncoverCrosshairTicks = root => root.querySelectorAll('.cfx-crosshair-covered').forEach(node => node.classList.remove('cfx-crosshair-covered'));
+  const coverCrosshairTicks = (root, crosshair) => {
+    const pills = Array.from(crosshair.querySelectorAll('.cfx-crosshair__axis-value'), node => node.getBoundingClientRect()).filter(box => box.width && box.height);
+    chartNodes(root, crosshairTickSelector).forEach(node => {
+      const box = node.getBoundingClientRect();
+      node.classList.toggle('cfx-crosshair-covered', !!(box.width || box.height) && pills.some(pill =>
+        box.left < pill.right + 2 && box.right > pill.left - 2 && box.top < pill.bottom + 2 && box.bottom > pill.top - 2));
+    });
   };

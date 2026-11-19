@@ -128,6 +128,7 @@
   };
   const hideCrosshair = (root, crosshair) => {
     if (crosshair) crosshair.hidden = true;
+    uncoverCrosshairTicks(root);
     root.removeAttribute('data-cfx-crosshair');
     delete root._cfxCrosshairMode;
   };

@@ -1,7 +1,7 @@
 
 
   const withPersistentExportPaint = (root, svg, read) => {
-    const transientClasses = ['cfx-hovered', 'cfx-hover-related', 'cfx-hover-column', 'cfx-hover-series', 'cfx-trail'];
+    const transientClasses = ['cfx-hovered', 'cfx-hover-related', 'cfx-hover-column', 'cfx-hover-series', 'cfx-trail', 'cfx-crosshair-covered'];
     const classes = Array.from(svg.querySelectorAll('[class]')).map(node => [node, node.getAttribute('class')]);
     const attributes = ['data-cfx-hovering', 'data-cfx-hover-mode', 'data-cfx-hover-unit', 'data-cfx-hover-continuous', 'data-cfx-flow-hover', 'data-cfx-export-probe'];
     const rootState = attributes.map(name => [name, root.getAttribute(name)]);
