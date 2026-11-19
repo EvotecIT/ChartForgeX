@@ -12,6 +12,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+if ($Performance -and $ShardCount -gt 1) { throw 'Performance runs select a single browser timing check; run them unsharded.' }
 if (-not [IO.Path]::IsPathRooted($OutputRoot)) { throw 'OutputRoot must be an explicit absolute task-owned path.' }
 $repository = Split-Path -Parent $PSScriptRoot
 $output = [IO.Path]::GetFullPath($OutputRoot)
@@ -62,6 +63,8 @@ try {
         throw 'Required browser proof must discover and execute tests without skips.'
     }
     if ($selection) { Assert-BrowserShardExecution -Selection $selection -Report $report }
+    # The timing budgets are a separate opt-in selection; the contract inventory and evidence belong to the normal run.
+    if (-not $Performance) {
     $requiredContracts = @(
         'SvgRasterTurbulenceAffineBrowserTests.NativeAffineSheetKeepsActualSourceCoverageAndCompleteDownloadAtBothWidths',
         'StaticExportNativeFontBrowserTests.ActualNativeNumericFallbackSuffixesRemainVisibleAndExportAcceptedValuesThroughTheExistingLifetime',
@@ -339,6 +342,7 @@ try {
     }
     if ((-not $selection -or $selection.Classes.Contains('ChartForgeX.Tests.V2GalleryBrowserMatrixTests')) -and
         -not (Test-Path -LiteralPath (Join-Path $captures 'native-family-matrix.json'))) { throw 'Native family matrix evidence is missing.' }
+    }
     Write-Host "Required browser proof passed: $($counters.total) executed tests. Evidence: $output"
     }
 } finally {
