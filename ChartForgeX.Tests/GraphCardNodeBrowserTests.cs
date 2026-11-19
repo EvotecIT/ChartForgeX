@@ -158,6 +158,28 @@ public sealed class GraphCardNodeBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
+    [BrowserFact]
+    public async Task DisposingDuringTheFirstLayoutEndsItsProgressReport() {
+        var scene = RingScene(180);
+        scene.Options.Physics.Stabilization.Iterations = 1_000_000;
+        scene.Options.Physics.MinVelocity = 1e-12;
+        var html = scene.ToGraphExplorerHtmlPage(o => { o.RenderBackend = HtmlGraphRenderBackend.Svg; o.PersistThemePreference = false; });
+        var head = html.IndexOf("<head>", StringComparison.OrdinalIgnoreCase);
+        await using var session = await OpenAsync(html.Insert(head + "<head>".Length, Recorder), 960, 640);
+        var page = session.Page;
+        await page.WaitForFunctionAsync("()=>document.querySelector('.cfx-graph-explorer').dataset.cfxGraphLayoutProgress==='running'");
+
+        var facts = await page.EvaluateAsync<JsonElement>("""
+            ()=>{const root=document.querySelector('.cfx-graph-explorer');ChartForgeXGraphExplorer.dispose(root);
+                return {state:root.dataset.cfxGraphLayoutProgress,hidden:root.querySelector('[data-cfx-role=graph-layout-progress]').hidden,
+                    done:window.__layoutProgress.filter(item=>item.done).length};}
+            """);
+        Assert.Equal("done", facts.GetProperty("state").GetString());
+        Assert.True(facts.GetProperty("hidden").GetBoolean(), facts.GetRawText());
+        Assert.Equal(1, facts.GetProperty("done").GetInt32());
+        AssertNoConsoleErrors(session);
+    }
+
     [Fact]
     public void ProgressMarkupFollowsOptionsAndGraphSize() {
         Assert.DoesNotContain(Markup, RingScene(40).ToGraphExplorerHtmlPage(), StringComparison.Ordinal);

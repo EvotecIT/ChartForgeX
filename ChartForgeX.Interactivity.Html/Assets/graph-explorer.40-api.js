@@ -254,6 +254,8 @@
     syncGraphItemTabStops(root);
     if (graphChanged && options?.reheat === false && hasFeature(root, 'RuntimePhysics')) { root.dataset.cfxGraphPhysicsReason = options.reason || 'graph-patch'; pausePhysics(root); }
     else if (graphChanged && attr(root, 'data-cfx-graph-reheat-patch') !== 'false' && hasFeature(root, 'RuntimePhysics')) reheatPhysics(root, 'graph-patch', { rebuild: true, fit: false });
+    // A patch that stops physics without restarting it also ends the first layout's progress report.
+    else if (graphChanged && typeof finishLayoutProgress === 'function') finishLayoutProgress(root);
     if (resetHistory) emit(root, 'cfxgraphhistory', { graphId: attr(root, 'data-cfx-graph-id'), action: 'host-update', undoCount: 0, redoCount: 0 });
     emit(root, 'cfxgraphpatch', { graphId: attr(root, 'data-cfx-graph-id'), nodeCount: state.nodes.length, edgeCount: state.edges.length, clusterCount: state.clusters.length });
     return { nodeCount: state.nodes.length, edgeCount: state.edges.length, clusterCount: state.clusters.length };

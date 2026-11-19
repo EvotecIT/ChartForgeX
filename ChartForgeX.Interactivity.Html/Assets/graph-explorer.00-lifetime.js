@@ -5,6 +5,7 @@
     const lifetime = window[Symbol.for('ChartForgeX.adapterLifetimes')].create(root, 'graph');
     lifetime.own(() => {
       stopWorkerPhysics(root); stopMainPhysics(root);
+      if (typeof finishLayoutProgress === 'function') finishLayoutProgress(root);
       if (root.dataset.cfxGraphPhysicsState === 'running') root.dataset.cfxGraphPhysicsState = 'paused';
       if (root.__cfxGraphState) syncSvgLayout(root, root.__cfxGraphState);
       graphHover(root, null);
