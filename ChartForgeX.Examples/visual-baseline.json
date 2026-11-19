@@ -19810,19 +19810,19 @@
         "frameFontFingerprint": "29AAEDFAC26A70410D1E59BC84D838B698513D551612560B870A1F073BB59CB3"
       },
       "width": 1400,
-      "height": 967,
+      "height": 871,
       "logicalWidth": 1400.0,
-      "logicalHeight": 967.0,
+      "logicalHeight": 871.0,
       "svg": {
-        "minVisualNodes": 356,
+        "minVisualNodes": 228,
         "maxClippedTextNodes": 0,
         "maxNearEdgeTextNodes": 0
       },
       "png": {
         "outputScale": 1,
-        "minVisiblePixels": 676900,
+        "minVisiblePixels": 609700,
         "minTransparentPixels": 0,
-        "minDistinctColors": 1324,
+        "minDistinctColors": 1659,
         "maxEdgeInkPixels": 0
       }
     },
