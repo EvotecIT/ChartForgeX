@@ -36,7 +36,9 @@ node Build/Test-GraphRuntime.js                           # Node tests under tes
 
 `Build.ps1` switches: `-SkipTests`, `-SkipExamples`, `-SkipAot`, `-SkipPack`,
 `-QualifyPackages`. Its ordinary test run excludes `Category=Gallery` and
-`Category=RasterStress` and runs them as separate contracts.
+`Category=RasterStress` and runs them as separate contracts. Wall-clock and
+allocation budgets are `Category=Performance`, kept out of CI and run only on
+request (see `CONTRIBUTING.md`); don't add timing checks to other categories.
 
 Targets: library projects build `net472`, `netstandard2.0`, `net8.0` and
 `net10.0`; keep all four. Tests, examples and tools target `net8.0`.
