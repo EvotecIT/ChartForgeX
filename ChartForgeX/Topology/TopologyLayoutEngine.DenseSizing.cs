@@ -24,6 +24,13 @@ internal static partial class TopologyLayoutEngine {
     /// <summary>Returns true when the chart was prepared with <see cref="TopologyRenderOptions.ReadableDenseLayout"/>.</summary>
     internal static bool UsesReadableDenseLayout(TopologyChart chart) => chart.RenderOptions?.ReadableDenseLayout == true;
 
+    /// <summary>
+    /// The size readable dense panels keep small captions at: the theme's minimum readable size, up to its data-label
+    /// size, so subtitles and chips grow but never past the captions their footprints are measured for. 0 elsewhere.
+    /// </summary>
+    internal static double ReadableTextFloor(ChartForgeX.Themes.VisualTypography typography, TopologyRenderOptions options, TopologyLayoutMode layoutMode) =>
+        options.ReadableDenseLayout && layoutMode == TopologyLayoutMode.DenseGrouped ? Math.Min(typography.MinimumReadableTextSize, typography.DataLabelSize) : 0;
+
     private static bool IsHorizontalDenseLayout(TopologyChart chart) =>
         chart.LayoutDirection is TopologyLayoutDirection.LeftToRight or TopologyLayoutDirection.RightToLeft;
 
@@ -80,7 +87,7 @@ internal static partial class TopologyLayoutEngine {
         var columns = new DensePanelColumns(pad, pad + titleOffset, rowWidth, DenseWrappedGroupGap,
             sized.Where(item => !explicitGroupPositions.ContainsKey(item.Group.Id)).Select(item => item.Group.Width).ToArray());
         foreach (var (group, _) in sized)
-            if (explicitGroupPositions.TryGetValue(group.Id, out var pinned)) columns.Reserve(pinned.X, pinned.Y, group.Width, group.Height);
+            if (explicitGroupPositions.TryGetValue(group.Id, out var pinned)) columns.Reserve(MirroredPinnedX(chart, pad, rowWidth, pinned.X, group.Width), pinned.Y, group.Width, group.Height);
         foreach (var (group, nodes) in sized) {
             if (!explicitGroupPositions.ContainsKey(group.Id)) {
                 var place = columns.Place(group.Width, group.Height);
@@ -91,6 +98,11 @@ internal static partial class TopologyLayoutEngine {
             PlaceDenseNodesInGroup(chart, nodes, group);
         }
     }
+
+    // Right-to-left panels are packed left to right and mirrored afterwards, so a pinned panel is reserved where the
+    // mirror will put the automatic panels around it (the axis ApplyDenseGrouped mirrors with).
+    private static double MirroredPinnedX(TopologyChart chart, double pad, double rowWidth, double x, double width) =>
+        chart.LayoutDirection == TopologyLayoutDirection.RightToLeft ? pad + Math.Max(chart.Viewport.Width - pad, Math.Ceiling(pad + rowWidth)) - x - width : x;
 
     private static int DenseGroupColumns(TopologyChart chart) {
         if (chart.LayoutDirection is TopologyLayoutDirection.LeftToRight or TopologyLayoutDirection.RightToLeft) return Math.Max(1, chart.Groups.Count);

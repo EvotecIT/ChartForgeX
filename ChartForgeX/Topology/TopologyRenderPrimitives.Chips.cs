@@ -29,7 +29,7 @@ internal static partial class TopologyRenderPrimitives {
         TopologyNode node, TopologyNodeDisplayMode mode, TopologyRenderOptions options, FontSpec? font = null, double scale = 1) {
         var chip = SubtitleChip(node, mode, options);
         var preferred = node.SubtitleTextStyle?.FontSize
-            ?? (node.TextStyle?.FontSize is double authored ? authored * (9.5 / 11) : options.ResolvedSubtitleChipFontSize);
+            ?? (node.TextStyle?.FontSize is double authored ? Math.Max(authored * (9.5 / 11), options.ResolvedMinimumReadableTextSize) : options.ResolvedSubtitleChipFontSize);
         var style = TopologyTextPolicy.ResolveRole(node.TextStyle, node.SubtitleTextStyle,
             font ?? options.TextMeasurement?.Font ?? FontSpec.FromFamily(TopologyPaint.Default.FontFamily), 1, 700);
         style.LetterSpacing *= scale;

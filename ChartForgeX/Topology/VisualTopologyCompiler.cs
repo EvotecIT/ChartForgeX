@@ -50,7 +50,7 @@ internal sealed partial class VisualTopologyCompiler {
         _svgTheme = new TopologyPaint(context.Theme, context.ThemeMode, options.SvgColorVariables?.Clone());
         _context = ResolveFrame(context, source, options);
         _options = options.CloneForRendering();
-        InitializeOptionsMetrics(context, _options, textFaces: source.LayoutMode != TopologyLayoutMode.Regions);
+        InitializeOptionsMetrics(context, _options, source.LayoutMode, textFaces: source.LayoutMode != TopologyLayoutMode.Regions);
         if (!Enum.IsDefined(typeof(TextMeasurementMode), _options.TextMeasurementMode)) throw new ArgumentOutOfRangeException(nameof(options.TextMeasurementMode));
         _builder = new VisualSceneBuilder(context.Layout.Size, context.Font, context.NativeTextCapture);
         _colors = context.Theme.Resolve(context.ThemeMode);

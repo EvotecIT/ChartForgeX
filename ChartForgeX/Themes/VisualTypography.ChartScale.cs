@@ -8,7 +8,7 @@ public sealed partial class VisualTypography {
     internal double CompactBreakpoint { get; set; } = 480;
     internal double MinimumTextSize { get; set; } = 10;
     /// <summary>Gets the smallest text size readable diagram layouts keep at the size they are shown, 11 px by default.</summary>
-    /// <remarks>Readable dense topologies raise smaller captions to it and wrap group panels instead of growing wider than their viewport.</remarks>
+    /// <remarks>Readable dense topologies raise smaller captions to it, up to the data-label size, and keep their canvas within the viewport width.</remarks>
     public double MinimumReadableTextSize => _minimumReadableTextSize;
     internal const double DefaultMinimumReadableTextSize = 11;
     private double _minimumReadableTextSize = DefaultMinimumReadableTextSize;

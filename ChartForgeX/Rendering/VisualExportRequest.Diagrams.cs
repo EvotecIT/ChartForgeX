@@ -11,7 +11,7 @@ internal sealed partial class VisualExportRequest {
     internal static VisualExportRequest ForTopology(TopologyChart chart, TopologyRenderOptions options) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         if (options == null) throw new ArgumentNullException(nameof(options));
-        var theme = ChartForgeX.Topology.TopologyReadableTheme.Resolve(chart.Theme, options);
+        var theme = chart.Theme;
         var colors = theme.Resolve(chart.ThemeMode);
         // A convenience export can grow a tiny authored canvas after canonical layout. Its initial
         // padding must still leave a positive plot; explicit Prepare(context) retains strict validation.

@@ -39,11 +39,10 @@ internal static partial class TopologyLayoutEngine {
         copy.GroupHeaderLayout = null;
         copy.PreparedRegionRoutes = null;
         copy.PreparedRegionPaintPlan = null;
-        copy.Theme = TopologyReadableTheme.Resolve(copy.Theme, options);
         copy.TextMeasurement = measurement ?? new TextMeasurementContext((copy.ResolvedTheme).FontFamily, options?.TextMeasurementMode ?? TextMeasurementMode.PortableEstimate);
         if (options != null) {
             options.TextMeasurement = copy.TextMeasurement;
-            options.ResolvedMinimumReadableTextSize = options.ReadableDenseLayout ? copy.Theme.Typography.MinimumReadableTextSize : 0;
+            options.ResolvedMinimumReadableTextSize = ReadableTextFloor(copy.Theme.Typography, options, copy.LayoutMode);
             options.ResolvedSubtitleChipFontSize = Math.Max(copy.Theme.Typography.DataLabelSize * (9.5 / 11), options.ResolvedMinimumReadableTextSize);
             options.ResolvedCaptionStrokeWidth ??= copy.Theme.AxisStrokeWidth;
         }

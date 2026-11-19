@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using ChartForgeX.Themes;
 using ChartForgeX.Topology;
+using ChartForgeX.VisualArtifacts;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -85,18 +86,27 @@ public sealed class TopologyReadablePanelTests {
     }
 
     [Theory]
-    [InlineData(12)]
-    [InlineData(14)]
-    public void ThemeMinimum_RaisesEveryCaptionToIt(double minimum) {
-        // 14 px is above the 12 px data-label size, so captions grow rather than only stop shrinking.
+    [InlineData(12, 12)]
+    [InlineData(14, 12)]
+    public void ThemeMinimum_RaisesSmallCaptionsUpToTheDataLabelSize(double minimum, double expected) {
+        // Captions grow to the minimum but not past the 12 px data-label size their footprints are measured for.
         var theme = VisualTheme.Graphite().WithMinimumReadableTextSize(minimum);
         var (prepared, svg) = Render(Build("controller-detail").WithTheme(theme));
-        var text = RenderedText.Measure(svg, DirectoryScaleTopologyFixture.ReportWidth, minimum);
+        var text = RenderedText.Measure(svg, DirectoryScaleTopologyFixture.ReportWidth, expected);
 
         Assert.Equal(11, VisualTheme.Graphite().Typography.MinimumReadableTextSize);
         Assert.Equal(minimum, theme.Typography.MinimumReadableTextSize);
         Assert.True(text.BelowMinimum == 0, text.ToString());
+        Assert.Equal(expected, text.Smallest, 3);
         Assert.Empty(prepared.Analyze().Collisions);
+    }
+
+    [Fact]
+    public void ThemeMinimum_TravelsWithAPreparedTopology() {
+        var chart = Build("critical-groups").WithTheme(VisualTheme.Graphite().WithMinimumReadableTextSize(12));
+        var restored = VisualArtifactInterchangeEnvelope.FromJson(chart.Prepare().ToInterchangeEnvelope().ToJson()).ToTopologyChart();
+
+        Assert.Equal(12, restored.Theme.Typography.MinimumReadableTextSize);
     }
 
     [Fact]
@@ -108,11 +118,14 @@ public sealed class TopologyReadablePanelTests {
         Assert.Equal(11, VisualTheme.FromJson(VisualTheme.Graphite().ToJson()).Typography.MinimumReadableTextSize);
     }
 
-    [Fact]
-    public void PinnedPanel_KeepsAutomaticPanelsOutOfItsArea() {
+    [Theory]
+    [InlineData(TopologyLayoutDirection.LeftToRight, 24)]
+    [InlineData(TopologyLayoutDirection.RightToLeft, 1036)]
+    public void PinnedPanel_KeepsAutomaticPanelsOutOfItsArea(TopologyLayoutDirection direction, double x) {
         var chart = Build("controller-detail");
+        chart.LayoutDirection = direction;
         var pinned = chart.Groups[0];
-        pinned.X = 24; pinned.Y = 24; pinned.Width = 300; pinned.Height = 400;
+        pinned.X = x; pinned.Y = 24; pinned.Width = 300; pinned.Height = 400;
         var groups = Render(chart, save: false).Prepared.Analyze().Groups;
 
         var area = Assert.Single(groups, group => group.Id == pinned.Id).Bounds;
