@@ -81,7 +81,7 @@
     if (!emit(root, 'cfxgraphexport', { graphId: attr(root, 'data-cfx-graph-id'), format, fileName: name, mimeType: mime, content }, { cancelable: true })) return;
     downloadExport(name, mime, content);
   };
-  const preloadCanvasImages = (root, state) => Promise.all([...new Set(state.nodes.filter(node => (node.shape === 'image' || node.shape === 'imageRect') && node.imageUrl).map(node => node.imageUrl))].map(url => new Promise(resolve => {
+  const preloadCanvasImages = (root, state) => Promise.all([...graphImageUrls(state.nodes)].map(url => new Promise(resolve => {
     const image = graphImage(url);
     if (!image || image.complete) {
       resolve();

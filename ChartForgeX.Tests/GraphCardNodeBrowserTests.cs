@@ -13,7 +13,7 @@ public sealed class GraphCardNodeBrowserTests {
     private const string Markup = "data-cfx-role=\"graph-layout-progress\" role=\"progressbar\"";
     // Records layout progress events from before the explorer mounts, so the first report is captured too.
     private const string Recorder = "<script>window.__layoutProgress=[];document.addEventListener('cfxgraphlayoutprogress',e=>window.__layoutProgress.push({progress:e.detail.progress,done:e.detail.done,"
-        + "visible:!e.target.querySelector('[data-cfx-role=graph-layout-progress]').hidden}),true);</script>";
+        + "visible:e.target.querySelector?.('[data-cfx-role=graph-layout-progress]')?.hidden===false}),true);</script>";
     private const string Avatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='20'%3E%3Crect width='40' height='20' fill='%232563eb'/%3E%3C/svg%3E";
 
     [BrowserTheory]
@@ -81,6 +81,7 @@ public sealed class GraphCardNodeBrowserTests {
                 ChartForgeXGraphExplorer.update(root,{upsertNodes:[{id:'dc3',label:'DC03',shape:'box',card:true,imageUrl:"{{Avatar}}",size:8,x:300,y:440}]});
                 const node=root.querySelector('[data-cfx-role=graph-node][data-node-id=dc3]');
                 ChartForgeXGraphExplorer.update(root,{upsertNodes:[{id:'topo',label:'Topology',shape:'box',metadata:{'topology.card':'true'},size:40,x:620,y:440}]});
+                ChartForgeXGraphExplorer.update(root,{upsertNodes:[{id:'topo',label:'Topology',shape:'box',size:30,x:620,y:440}]});
                 ChartForgeXGraphExplorer.update(root,{upsertNodes:[{id:'topo',label:'Topology',shape:'box',size:36,x:620,y:440}]});
                 const topology=root.querySelector('[data-cfx-role=graph-node][data-node-id=topo]');
                 return {size:+node.dataset.nodeSize,card:node.dataset.nodeCard,images:node.querySelectorAll('image.cfx-graph-node-card-image').length,
