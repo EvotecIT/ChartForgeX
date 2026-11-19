@@ -18,17 +18,23 @@ public sealed class InteractiveCrosshairTickCaptionBrowserTests {
     // The value pills sit on the axes they read, where the tick captions are drawn. A caption the pill
     // touches must not show around it on screen, and every caption returns once the guide leaves or loses its mark.
     [BrowserTheory]
-    [InlineData("daily-bars", 0, false, 950)]
-    [InlineData("daily-bars", -45, true, 420)]
-    [InlineData("time-line", 0, true, 950)]
-    [InlineData("time-line", 0, false, 420)]
-    public async Task ValuePillsHideOnlyTheTickCaptionsTheyCoverUntilTheGuideLeaves(string shape, double labelAngle, bool dark, int width) {
+    [InlineData("daily-bars", 0, false, 950, HtmlChartRuntime.Full)]
+    [InlineData("daily-bars", 0, false, 950, HtmlChartRuntime.Standalone)]
+    [InlineData("daily-bars", -45, true, 420, HtmlChartRuntime.Full)]
+    [InlineData("time-line", 0, true, 950, HtmlChartRuntime.Full)]
+    [InlineData("time-line", 0, false, 420, HtmlChartRuntime.Full)]
+    public async Task ValuePillsHideOnlyTheTickCaptionsTheyCoverUntilTheGuideLeaves(string shape, double labelAngle, bool dark, int width, HtmlChartRuntime runtime) {
         if (!Enabled) return;
         var chart = shape == "daily-bars" ? DailyBars(labelAngle, dark) : TimeLine(dark);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
+            options.Runtime = runtime;
             options.Interaction.Features = ChartInteractionFeatures.Tooltips | ChartInteractionFeatures.Crosshair;
+            // The saved core reader has no native text export, so it keeps browser text.
+            if (runtime == HtmlChartRuntime.Standalone) options.TextPresentation = HtmlChartTextPresentation.Browser;
         }), width, 560);
         var page = session.Page;
+        Assert.Equal(runtime == HtmlChartRuntime.Standalone ? "core" : null, await page.EvaluateAsync<string?>(
+            "() => document.querySelector('.cfx-interactive-chart')[Symbol.for('ChartForgeX.chartRuntime')]?.kind ?? null"));
         Assert.Equal(0, (await ObserveAsync(page)).GetProperty("hidden").GetArrayLength());
 
         // Hover the observation aligned with a middle x caption, so the x pill lands on that caption.
@@ -48,7 +54,7 @@ public sealed class InteractiveCrosshairTickCaptionBrowserTests {
         Assert.Empty(hovered.GetProperty("collisions").EnumerateArray());
         Assert.Contains(aligned.GetProperty("caption").GetString(), hovered.GetProperty("hidden").EnumerateArray().Select(caption => caption.GetString()));
         Assert.True(hovered.GetProperty("visible").GetInt32() > hovered.GetProperty("hidden").GetArrayLength());
-        await CaptureAsync(session, "crosshair-ticks-" + shape + (dark ? "-dark-" : "-light-") + width, hovered);
+        await CaptureAsync(session, "crosshair-ticks-" + shape + (dark ? "-dark-" : "-light-") + width + "-" + runtime, hovered);
 
         // Print drops the pills, so it keeps every caption.
         await page.EmulateMediaAsync(new PageEmulateMediaOptions { Media = Media.Print });
@@ -63,7 +69,7 @@ public sealed class InteractiveCrosshairTickCaptionBrowserTests {
         Assert.Equal(0, left.GetProperty("pills").GetInt32());
         Assert.Equal(0, left.GetProperty("hidden").GetArrayLength());
 
-        // A host hiding the hovered series under a still pointer never leaves a caption hidden without a pill over it.
+        // A host hiding the hovered series under a still pointer drops the guide, its pills and its covered captions together.
         await page.Mouse.MoveAsync((float)aligned.GetProperty("x").GetDouble(), (float)aligned.GetProperty("y").GetDouble(), new MouseMoveOptions { Steps = 4 });
         Assert.NotEqual(0, (await ObserveAsync(page)).GetProperty("hidden").GetArrayLength());
         await page.EvaluateAsync("""
@@ -75,7 +81,10 @@ public sealed class InteractiveCrosshairTickCaptionBrowserTests {
                 for(let frame=0;frame<3;frame++) await new Promise(requestAnimationFrame);
             }
             """);
-        Assert.Empty((await ObserveAsync(page)).GetProperty("orphans").EnumerateArray());
+        var unavailable = await ObserveAsync(page);
+        Assert.Equal(0, unavailable.GetProperty("pills").GetInt32());
+        Assert.Equal(0, unavailable.GetProperty("hidden").GetArrayLength());
+        Assert.True(await page.Locator(".cfx-crosshair").IsHiddenAsync());
         AssertNoConsoleErrors(session);
     }
 
@@ -88,8 +97,7 @@ public sealed class InteractiveCrosshairTickCaptionBrowserTests {
             const shown=captions.filter(item=>getComputedStyle(item.node).visibility==='visible');
             return {pills:pills.length,visible:shown.length,
                 hidden:captions.filter(item=>!shown.includes(item)).map(item=>item.node.textContent),
-                collisions:shown.filter(({box})=>pills.some(pill=>box.left<pill.right&&box.right>pill.left&&box.top<pill.bottom&&box.bottom>pill.top)).map(item=>item.node.textContent),
-                orphans:captions.filter(item=>!shown.includes(item)&&!pills.some(pill=>item.box.left<pill.right+2&&item.box.right>pill.left-2&&item.box.top<pill.bottom+2&&item.box.bottom>pill.top-2)).map(item=>item.node.textContent)};
+                collisions:shown.filter(({box})=>pills.some(pill=>box.left<pill.right&&box.right>pill.left&&box.top<pill.bottom&&box.bottom>pill.top)).map(item=>item.node.textContent)};
         }
         """);
 
