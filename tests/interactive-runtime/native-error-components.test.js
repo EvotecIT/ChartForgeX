@@ -8,3 +8,41 @@ for(const form of ['x','y','xy'])for(const initial of [false,true])test('actual 
 const malformed={duplicateMember:p=>p.readings[1].component='value',unknownMember:p=>p.readings[1].component='radius',foreignObservation:p=>p.drawings.wide.frames[1].nativeValueSource.readings[0].observationId='foreign',wrongDimension:p=>p.readings[1].maximum=100,wrongNullableShape:p=>p.drawings.wide.frames[1].svg=p.drawings.wide.frames[1].svg.replace('data-cfx-y-upper="50"',''),outsideEstimate:p=>{const frame=p.drawings.wide.frames[1];frame.nativeValueSource.readings[3].value=45;frame.svg=frame.svg.replace('data-cfx-y-lower="30"','data-cfx-y-lower="45"');},foreignSize:p=>p.drawings.wide.frames[1].nativeValueSource.mapping='sqrt-radius-range',wrongStructure:p=>p.drawings.wide.frames[1].nativeValueSource.structureKey='e'.repeat(64),malformedLast:p=>p.drawings.wide.frames[2].svg='<svg><'};
 for(const[name,mutate]of Object.entries(malformed))test('error component all-candidate preflight rejects '+name+' before accepted source/events/revision',()=>{const f=setup();try{const p=f.capture(),before=f.root.outerHTML,revision=f.controller.sceneRevision;mutate(p);let error;try{f.controller.update(p.destination,{sceneRevision:revision,transition:JSON.stringify(p),motion:{duration:1000}});}catch(failure){error=failure;}f.save(name,p,error);assert.ok(error instanceof f.window.TypeError);assert.equal(f.root.outerHTML,before);assert.equal(f.controller.sceneRevision,revision);assert.equal(f.changes.length,0);}finally{f.close();}});
 test('error changed-point flash retains accepted raw members and existing disposal cleanup',()=>{const f=setup();try{const p=f.capture(true);f.controller.update(p.destination,{sceneRevision:f.controller.sceneRevision,transition:JSON.stringify(p),motion:{duration:1000}});f.save('flash',p);assert.equal(f.changes.length,1);assert.equal(f.root.querySelectorAll('.cfx-native-motion-frame').length,1);assert.equal(JSON.parse(f.root.dataset.cfxPreparedChart).nativeValueSource.readings[0].value,50);f.controller.dispose();assert.equal(f.root.querySelectorAll('.cfx-native-motion-frame').length,0);}finally{f.close();}});
+// Validating a section reads every authored observation once. The work is counted, not timed: element data reads and
+// parsed captured-metadata characters. Four times the error bars do about four times the work, while a per-observation
+// scan of every point or a per-point parse of the section's metadata does about sixteen times as much.
+test('error component validation work grows linearly with the observation count', () => {
+  const section = (f, count) => {
+    const root = f.make(30), metadata = JSON.parse(root.dataset.cfxPreparedChart), template = root.querySelector('[data-cfx-role=point]'), readings = [];
+    metadata.series[0].kind = 'errorbar'; metadata.series[0].observationIds = [];
+    for (let index = 0; index < count; index++) {
+      const point = index ? template.parentNode.appendChild(template.cloneNode(true)) : template, id = 'o' + index;
+      Object.assign(point.dataset, { cfxObservationId: id, cfxValue: '30', cfxYLower: '20', cfxYUpper: '40' });
+      metadata.series[0].observationIds.push({ index, id });
+      for (const [component, value] of [['value', 30], ['y-lower', 20], ['y-upper', 40]])
+        readings.push({ seriesKey: 'current', observationId: id, component, value, minimum: 0, maximum: 100 });
+    }
+    metadata.nativeValueSource = { kind: 'error-components', sourceKey: 'a'.repeat(64), structureKey: 'd'.repeat(64), readings };
+    root.dataset.cfxPreparedChart = JSON.stringify(metadata);
+    return root;
+  };
+  const work = count => {
+    const f = fixture('cartesian-value'), { window } = f, counted = { reads: 0, parsed: 0 };
+    let counting = false;
+    try {
+      const built = section(f, count);
+      for (const type of [window.HTMLElement, window.SVGElement]) {
+        const descriptor = Object.getOwnPropertyDescriptor(type.prototype, 'dataset');
+        Object.defineProperty(type.prototype, 'dataset', { ...descriptor, get() { if (counting) counted.reads++; return descriptor.get.call(this); } });
+      }
+      const parse = window.JSON.parse;
+      window.JSON.parse = (text, reviver) => { if (counting) counted.parsed += String(text).length; return parse(text, reviver); };
+      counting = true; f.controller.update(built); counting = false;
+      assert.equal(f.root.querySelectorAll('[data-cfx-role=point]').length, count);
+      return counted;
+    } finally { counting = false; f.close(); }
+  };
+  const small = work(250), large = work(1000);
+  for (const name of ['reads', 'parsed'])
+    assert.ok(large[name] <= small[name] * 5, `4x observations did ${(large[name] / small[name]).toFixed(1)}x the ${name} work (limit 5x).`);
+});
