@@ -32,6 +32,7 @@ Static HTML from reports and email has to feel interactive without a .NET host. 
 Charts already look professional; topology-laid-out diagrams don't yet. The defects below were seen on the published atlas renders.
 
 - Done when the atlas renders for every family pass a side-by-side review against Mermaid and the visual baselines are refreshed deliberately.
+- [ ] **Readable minimum for card rows.** Readable dense layouts keep tile captions, tile chips and group headers at `Typography.MinimumReadableTextSize`, but card subtitle and detail rows still derive from the caption size (`* .85`, `* .8`) and can fall below it. Floor them in `VisualTopologyCompiler.ShapeContent` and grow the card height allocation to match. Done when a readable dense chart of cards has no text below the minimum and no card overflows.
 
 ## 4. One look across HtmlForgeX, ChartForgeX and CanopyX
 
