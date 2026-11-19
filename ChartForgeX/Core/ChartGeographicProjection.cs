@@ -15,10 +15,28 @@ internal static class ChartGeographicProjection {
             var radians = clipped * Math.PI / 180;
             return new ChartPoint(longitude, -Math.Log(Math.Tan(Math.PI / 4 + radians / 2)) * 180 / Math.PI);
         }
+        if (projection == ChartMapGeoJsonProjection.Miller) {
+            var radians = Math.Max(-90, Math.Min(90, latitude)) * Math.PI / 180;
+            return new ChartPoint(longitude, -1.25 * Math.Log(Math.Tan(Math.PI / 4 + .4 * radians)) * 180 / Math.PI);
+        }
+        if (ChartUnitedStatesProjection.IsComposite(projection)) return ChartUnitedStatesProjection.Project(longitude, latitude, projection);
         return new ChartPoint(longitude, -latitude);
     }
 
+    /// <summary>Gets the stable name written to rendered map metadata.</summary>
+    internal static string Name(ChartMapGeoJsonProjection projection) => projection switch {
+        ChartMapGeoJsonProjection.WebMercator => "web-mercator",
+        ChartMapGeoJsonProjection.Miller => "miller",
+        ChartMapGeoJsonProjection.UnitedStatesAlbers => "united-states-albers",
+        ChartMapGeoJsonProjection.UnitedStatesLambert => "united-states-lambert",
+        ChartMapGeoJsonProjection.UnitedStatesMercator => "united-states-mercator",
+        ChartMapGeoJsonProjection.UnitedStatesMiller => "united-states-miller",
+        _ => "equirectangular"
+    };
+
     internal static ChartRect Bounds(ChartMapViewport viewport, ChartMapGeoJsonProjection projection) {
+        // Composite projections move Alaska and Hawaii, so a longitude/latitude window has no single rectangle; they use their fixed frame.
+        if (ChartUnitedStatesProjection.IsComposite(projection)) return ChartUnitedStatesProjection.Frame;
         var topLeft = Project(viewport.MinimumLongitude, viewport.MaximumLatitude, projection);
         var bottomRight = Project(viewport.CrossesAntimeridian ? viewport.MinimumLongitude + viewport.LongitudeSpan : viewport.MaximumLongitude,
             viewport.MinimumLatitude, projection);
@@ -71,7 +89,7 @@ internal static class ChartGeographicProjection {
     }
 
     internal static void Validate(ChartMapGeoJsonProjection projection) {
-        if (projection != ChartMapGeoJsonProjection.Equirectangular && projection != ChartMapGeoJsonProjection.WebMercator)
+        if (projection < ChartMapGeoJsonProjection.Equirectangular || projection > ChartMapGeoJsonProjection.UnitedStatesMiller)
             throw new ArgumentOutOfRangeException(nameof(projection));
     }
 }

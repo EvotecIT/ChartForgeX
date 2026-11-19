@@ -75,6 +75,11 @@ public sealed class ChartMapCatalogEntry {
     public string Notes { get; }
 
     /// <summary>
+    /// Gets the licence of the source geometry, or an empty string when the caller did not record one.
+    /// </summary>
+    public string License { get; }
+
+    /// <summary>
     /// Initializes a new catalog entry.
     /// </summary>
     public ChartMapCatalogEntry(
@@ -89,7 +94,8 @@ public sealed class ChartMapCatalogEntry {
         Func<ChartMapGeoJsonOptions>? optionsFactory = null,
         bool isEmbedded = false,
         bool isLarge = false,
-        string? notes = null) {
+        string? notes = null,
+        string? license = null) {
         Id = Required(id, nameof(id));
         Name = Required(name, nameof(name));
         Geography = Required(geography, nameof(geography));
@@ -102,6 +108,7 @@ public sealed class ChartMapCatalogEntry {
         IsEmbedded = isEmbedded;
         IsLarge = isLarge;
         Notes = notes == null ? string.Empty : notes.Trim();
+        License = license == null ? string.Empty : license.Trim();
     }
 
     /// <summary>
@@ -176,19 +183,10 @@ public sealed class ChartMapCatalogEntry {
     public ChartMapGeoJsonOptions CreateOptions() => _optionsFactory();
 
     internal static IReadOnlyList<ChartMapCatalogEntry> BuiltIns() {
-        return Array.AsReadOnly(new[] {
-            new ChartMapCatalogEntry(
-                "us-states",
-                "United States states",
-                "US",
-                "state",
-                "ChartForgeX built-in simplified state geometry",
-                "state abbreviation",
-                "embedded",
-                "embedded",
-                isEmbedded: true,
-                notes: "Small built-in geometry intended for dependency-free examples and dashboards.")
-        });
+        var maps = BuiltInRegionMaps.All;
+        var entries = new ChartMapCatalogEntry[maps.Count];
+        for (var i = 0; i < maps.Count; i++) entries[i] = maps[i].ToEntry();
+        return Array.AsReadOnly(entries);
     }
 
     private static string Required(string value, string parameterName) {

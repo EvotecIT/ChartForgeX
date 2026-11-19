@@ -383,6 +383,7 @@ Contributions are welcome. [Contributing](CONTRIBUTING.md) explains how to build
 - [chartforgex.com](https://chartforgex.com): [gallery](https://chartforgex.com/gallery/), [documentation](https://chartforgex.com/docs/), [playground](https://chartforgex.com/playground/) and [API reference](https://chartforgex.com/api/)
 - [API conventions and chart options](docs/v2/api-conventions.md)
 - [Chart combinations, orientation and axes](docs/v2/chart-combinations.md)
+- [Region maps](docs/region-maps.md): built-in world, continent, United States and country maps with markers and routes
 - [Topology](docs/topology.md), [icon packs](docs/topology-icon-packs.md), and [architecture diagrams with use case playback](docs/architecture-diagrams.md)
 - [Design language](docs/design-language.md): shared `--hfx-*` roles, the categorical order, states and output profiles
 - [Typography and measured label placement](docs/label-placement.md)

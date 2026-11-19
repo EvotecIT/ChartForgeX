@@ -67,7 +67,7 @@ public readonly struct ChartMapViewport {
     /// <param name="eastLongitude">Raw eastern boundary in [-180,180]. The increasing span across the seam must be positive and less than one turn.</param>
     /// <param name="minimumLatitude">Inclusive southern raw latitude in [-90,90].</param>
     /// <param name="maximumLatitude">Inclusive northern raw latitude, greater than the southern boundary.</param>
-    /// <param name="projection">One of the existing geographic projections. Web Mercator keeps its existing polar latitude clamp.</param>
+    /// <param name="projection">A cylindrical geographic projection. Web Mercator keeps its existing polar latitude clamp; United States composites are rejected.</param>
     /// <returns>An immutable viewport retaining both raw longitude bounds.</returns>
     /// <remarks>Points at equivalent +180/-180 bearings remain separate source observations. Consecutive route waypoints use shortest signed
     /// longitude deltas; exact half-turn ties preserve the authored sign. Every intersecting periodic route fragment is clipped to the fitted rectangular window,
@@ -82,6 +82,8 @@ public readonly struct ChartMapViewport {
         var span = (180 - westLongitude) + (eastLongitude + 180);
         if (span <= 0 || span >= 360) throw new ArgumentOutOfRangeException(nameof(eastLongitude), "A seam-crossing viewport needs a positive longitude span below one full turn.");
         ChartGeographicProjection.Validate(projection);
+        if (ChartUnitedStatesProjection.IsComposite(projection))
+            throw new ArgumentOutOfRangeException(nameof(projection), "United States composite projections already place Alaska and Hawaii and cannot cross the antimeridian.");
         var latitudeWindow = new ChartMapViewport(name, -180, 180, minimumLatitude, maximumLatitude);
         return new ChartMapViewport(latitudeWindow, westLongitude, eastLongitude, projection);
     }

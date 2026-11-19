@@ -35,6 +35,7 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.3" PrivateAssets="all" />
+    <Reference Include="System.IO.Compression" />
   </ItemGroup>
 
   <ItemGroup>
@@ -50,6 +51,7 @@
     <EmbeddedResource Include="Topology\Assets\topology-regions.svg" LogicalName="ChartForgeX.Topology.Assets.topology-regions.svg" />
     <EmbeddedResource Include="Topology\Assets\topology-region-status.svg" LogicalName="ChartForgeX.Topology.Assets.topology-region-status.svg" />
     <EmbeddedResource Include="Topology\Assets\topology-regions.css" LogicalName="ChartForgeX.Topology.Assets.topology-regions.css" />
+    <EmbeddedResource Include="Maps\Data\*.geojson.gz" LogicalName="ChartForgeX.Maps.Data.%(Filename)%(Extension)" />
     <EmbeddedResource Include="Themes\Tokens\evotec.chartforgex.tokens.json" LogicalName="ChartForgeX.Themes.Tokens.evotec.chartforgex.tokens.json" />
   </ItemGroup>
 </Project>

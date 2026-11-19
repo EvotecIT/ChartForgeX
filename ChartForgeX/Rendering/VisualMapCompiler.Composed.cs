@@ -54,7 +54,7 @@ internal static partial class VisualMapCompiler {
         var routeOwner = Array.FindIndex(datasets, data => data.Series.Kind == ChartSeriesKind.DottedMap);
         if (routeOwner < 0) routeOwner = 0;
         var mapMetadata = new Dictionary<string, string> {
-            ["data-cfx-projection"] = !projection.HasValue ? "arbitrary" : projection == ChartMapGeoJsonProjection.WebMercator ? "web-mercator" : "equirectangular",
+            ["data-cfx-projection"] = !projection.HasValue ? "arbitrary" : ChartGeographicProjection.Name(projection.Value),
             ["data-cfx-source-left"] = N(source.Left), ["data-cfx-source-top"] = N(source.Top),
             ["data-cfx-source-width"] = N(source.Width), ["data-cfx-source-height"] = N(source.Height),
             ["data-cfx-dataset-count"] = N(datasets.Length)

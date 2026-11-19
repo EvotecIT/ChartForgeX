@@ -26,7 +26,8 @@ internal static class ChartMapExternalCatalog {
                     NamePropertyNames = new[] { "NAME", "NAMELSAD", "name" }
                 },
                 isLarge: true,
-                notes: "Recommended as a repository-hosted or user-supplied GeoJSON converted from the official Census shapefile."),
+                notes: "Recommended as a repository-hosted or user-supplied GeoJSON converted from the official Census shapefile.",
+                license: "Public domain (U.S. Census Bureau)"),
             new ChartMapCatalogEntry(
                 "world-admin0-natural-earth-50m",
                 "World countries Natural Earth 50m",
@@ -41,7 +42,8 @@ internal static class ChartMapExternalCatalog {
                     NamePropertyNames = new[] { "NAME", "NAME_EN", "ADMIN" }
                 },
                 isLarge: false,
-                notes: "Useful for global country maps and pale context layers."),
+                notes: "Useful for global country maps and pale context layers.",
+                license: "Public domain (Natural Earth terms of use)"),
             new ChartMapCatalogEntry(
                 "global-adm1-geoboundaries",
                 "Global administrative level 1",
@@ -56,7 +58,8 @@ internal static class ChartMapExternalCatalog {
                     NamePropertyNames = new[] { "shapeName", "name", "NAME" }
                 },
                 isLarge: true,
-                notes: "Global subnational data is valuable but large; keep it external or split by country/continent.")
+                notes: "Global subnational data is valuable but large; keep it external or split by country/continent.",
+                license: "CC BY 4.0 for most boundaries; check the licence recorded with each geoBoundaries file")
         });
     }
 
@@ -76,6 +79,7 @@ internal static class ChartMapExternalCatalog {
                 AliasPropertyNames = new[] { "CNTR_CODE" }
             },
             isLarge: isLarge,
-            notes: "Official EU statistical regions. Join metric data by NUTS_ID.");
+            notes: "Official EU statistical regions. Join metric data by NUTS_ID.",
+            license: "Eurostat/GISCO reuse terms with the EuroGeographics copyright notice for administrative boundaries");
     }
 }
