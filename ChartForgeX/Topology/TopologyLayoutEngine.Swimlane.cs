@@ -40,7 +40,7 @@ internal static partial class TopologyLayoutEngine {
                 var reserve = 24 + TopologyGroupHeader.SymbolReserve(group, render);
                 extent = Math.Max(extent, DenseHeaderWidth(chart, group.Label, size, true, render) + reserve + 1);
                 if (!string.IsNullOrWhiteSpace(group.Subtitle)) extent = Math.Max(extent,
-                    DenseHeaderWidth(chart, group.Subtitle!, size * .85, false, render) + reserve + 1);
+                    DenseHeaderWidth(chart, group.Subtitle!, TopologyGroupHeader.SubtitleSize(size, render), false, render) + reserve + 1);
             }
         }
         var laneOffset = 0.0;

@@ -27,6 +27,7 @@ public sealed partial class VisualTheme {
             && Typography.TileLabelSize.Equals(ordinary.Typography.TileLabelSize)
             && Typography.TileValueSize.Equals(ordinary.Typography.TileValueSize)
             && Typography.TileDetailSize.Equals(ordinary.Typography.TileDetailSize)
+            && Typography.MinimumReadableTextSize.Equals(ordinary.Typography.MinimumReadableTextSize)
             && _light.SameValues(ordinary._light) && _dark.SameValues(ordinary._dark);
     }
 }

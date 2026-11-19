@@ -20,7 +20,7 @@ internal sealed class TopologyPreparedRouteBasis {
         if (!chart.Edges.Any(edge => edge.PreparedEdgePlan?.Geometry != null)) return;
         var options = (chart.DefaultRenderOptions ?? new TopologyRenderOptions()).CloneForRendering();
         var context = TopologyPreparedFramePadding.ResolveContext(chart, options);
-        VisualTopologyCompiler.InitializeOptionsMetrics(context, options);
+        VisualTopologyCompiler.InitializeOptionsMetrics(context, options, chart.LayoutMode);
         var basis = Capture(chart, options, context, recordedInputs: true);
         foreach (var edge in chart.Edges) if (edge.PreparedEdgePlan?.Geometry != null)
             edge.PreparedEdgePlan = edge.PreparedEdgePlan.WithBasis(basis);

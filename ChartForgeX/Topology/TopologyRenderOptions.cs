@@ -20,6 +20,8 @@ public sealed class TopologyRenderOptions {
     internal TextMeasurementContext? TextMeasurement { get; set; }
     internal double ResolvedIconLabelFontSize { get; set; } = 10.5;
     internal double ResolvedSubtitleChipFontSize { get; set; } = 9.5;
+    // Readable dense layouts keep captions at or above the theme's minimum readable size; 0 leaves sizes as resolved.
+    internal double ResolvedMinimumReadableTextSize { get; set; }
     internal double ResolvedEdgeLabelScale { get; set; } = 1;
     internal double? ResolvedCaptionStrokeWidth { get; set; }
     // Native badges retain their resolved face without changing portable diagram-layout estimates.
@@ -71,8 +73,9 @@ public sealed class TopologyRenderOptions {
 
     /// <summary>
     /// Gets or sets whether <see cref="TopologyLayoutMode.DenseGrouped"/> uses the readable dense layout for large
-    /// replication-style maps: left-to-right or right-to-left layouts with more than six groups wrap site panels into
-    /// rows no wider than the viewport, site panels take the height of their content (panels in one row share a height)
+    /// replication-style maps: left-to-right or right-to-left layouts keep the canvas within the viewport width, narrowing
+    /// panel grids and then packing site panels into columns when one row would be wider, small captions keep the theme's
+    /// minimum readable size, healthy links recede, site panels take the height of their content (panels in one row share a height)
     /// and the canvas height follows the content instead of the requested viewport height, <see cref="TopologyGroupLayoutPolicy.Auto"/> groups of 10–24 nodes keep cards in a
     /// grid (only larger groups collapse to dots), card spacing reserves room for tile captions, and obstacle-avoiding
     /// routes treat captions as part of the card and fall back to a grid search when a route would cross another card.

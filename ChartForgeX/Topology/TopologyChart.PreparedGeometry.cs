@@ -6,6 +6,8 @@ namespace ChartForgeX.Topology;
 public sealed partial class TopologyChart {
     internal IReadOnlyDictionary<string, IReadOnlyList<ChartPoint>>? PreparedRegionRoutes { get; set; }
     internal TopologyRegionPaintPlan? PreparedRegionPaintPlan { get; set; }
+    /// <summary>Fewer grid columns a readable dense layout gives its panels so one row of them fits the viewport.</summary>
+    internal int? DenseGridColumnLimit { get; set; }
     /// <summary>
     /// Identifies bounds restored from a typed prepared-scene envelope. Only Manual rendering
     /// keeps this scene coordinate domain; explicit fitting and fresh automatic layout resolve it anew.

@@ -7,6 +7,11 @@ public sealed partial class VisualTypography {
     internal VisualTypography? WideScale { get; set; }
     internal double CompactBreakpoint { get; set; } = 480;
     internal double MinimumTextSize { get; set; } = 10;
+    /// <summary>Gets the smallest text size readable diagram layouts keep at the size they are shown, 11 px by default.</summary>
+    /// <remarks>Readable dense topologies raise smaller captions to it, up to the data-label size, and keep their canvas within the viewport width.</remarks>
+    public double MinimumReadableTextSize => _minimumReadableTextSize;
+    internal const double DefaultMinimumReadableTextSize = 11;
+    private double _minimumReadableTextSize = DefaultMinimumReadableTextSize;
     internal int TitleWeight { get; set; } = 600;
     internal int PanelTitleWeight { get; set; } = 600;
     internal int SubtitleWeight { get; set; } = 400;
@@ -38,13 +43,26 @@ public sealed partial class VisualTypography {
         return WideScale != null ? copy.CompactScale! : copy;
     }
     private VisualTypography CopyRoles(VisualTypography source) {
-        MinimumTextSize = source.MinimumTextSize; CompactBreakpoint = source.CompactBreakpoint;
+        MinimumTextSize = source.MinimumTextSize; _minimumReadableTextSize = source._minimumReadableTextSize; CompactBreakpoint = source.CompactBreakpoint;
         TitleWeight = source.TitleWeight; PanelTitleWeight = source.PanelTitleWeight; SubtitleWeight = source.SubtitleWeight;
         AxisTitleWeight = source.AxisTitleWeight; TickWeight = source.TickWeight; LegendWeight = source.LegendWeight;
         LegendValueWeight = source.LegendValueWeight; DataLabelWeight = source.DataLabelWeight; CenterValueWeight = source.CenterValueWeight;
         CenterMinimumSize = source.CenterMinimumSize; CenterMaximumSize = source.CenterMaximumSize; CenterRadiusFactor = source.CenterRadiusFactor;
         CenterCaptionSize = source.CenterCaptionSize; CenterCaptionGap = source.CenterCaptionGap;
         return this;
+    }
+    /// <summary>Creates an independent scale with a different minimum readable text size.</summary>
+    public VisualTypography WithMinimumReadableTextSize(double size) {
+        if (double.IsNaN(size) || double.IsInfinity(size) || size <= 0) throw new ArgumentOutOfRangeException(nameof(size));
+        var wide = WideScale ?? this;
+        var copy = (VisualTypography)wide.MemberwiseClone();
+        copy._minimumReadableTextSize = size;
+        if (wide.CompactScale != null) {
+            copy.CompactScale = (VisualTypography)wide.CompactScale.MemberwiseClone();
+            copy.CompactScale._minimumReadableTextSize = size;
+            copy.CompactScale.WideScale = copy;
+        }
+        return WideScale != null ? copy.CompactScale! : copy;
     }
     internal double CenterSize(double radius) => Math.Max(CenterMinimumSize, Math.Min(CenterMaximumSize, radius * CenterRadiusFactor));
 }

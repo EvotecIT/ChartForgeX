@@ -45,11 +45,13 @@ internal sealed class TopologyGroupHeaderLayout {
         if (group.ShowLabel) {
             var size = TopologyTextPolicy.Size(group.TextStyle, chart.Theme.Typography.DataLabelSize, chart.Theme.Typography.DataLabelSize);
             var titleLineHeight = group.LabelContent.IsStructured ? TextLayoutEngine.Measure(group.LabelContent, StructuredStyle(size)).LineHeight : Measure("Ag", size, 600).LineHeight;
-            var subtitleLineHeight = Measure("Ag", size * .85, 400).LineHeight;
+            var subtitleLineHeight = Measure("Ag", TopologyGroupHeader.SubtitleSize(size, options), 400).LineHeight;
             var titleRows = TopologyGroupHeader.CaptionRows(group.Label, options);
             var subtitleRows = TopologyGroupHeader.CaptionRows(group.Subtitle, options);
             var fitTitle = group.TextStyle?.HasOverrides != true && titleRows == 1 && (size > VisualTextFitting.MaximumOrdinaryFontSize || titleLineHeight > TopologyGroupHeader.TitleHeight);
-            var fitSubtitle = group.TextStyle?.HasOverrides != true && subtitleRows == 1 && (size > VisualTextFitting.MaximumOrdinaryFontSize || subtitleLineHeight > TopologyGroupHeader.SubtitleHeight);
+            // A readable minimum is kept rather than shrunk to the subtitle row.
+            var fitSubtitle = group.TextStyle?.HasOverrides != true && subtitleRows == 1 && options.ResolvedMinimumReadableTextSize <= 0
+                && (size > VisualTextFitting.MaximumOrdinaryFontSize || subtitleLineHeight > TopologyGroupHeader.SubtitleHeight);
             if (group.LabelContent.IsStructured) {
                 var allocation = TopologyGroupHeader.TitleBounds(group, options, titleLineHeight);
                 var style = StructuredStyle(size);
@@ -65,7 +67,7 @@ internal sealed class TopologyGroupHeaderLayout {
                 }
             } else AddCaption(group.Label, TopologyGroupHeader.TitleBounds(group, options, titleLineHeight), size, 600, fitTitle, titleRows);
             if (!string.IsNullOrWhiteSpace(group.Subtitle))
-                AddCaption(group.Subtitle!, TopologyGroupHeader.SubtitleBounds(group, options, fitTitle || fitSubtitle, titleLineHeight, subtitleLineHeight), size * .85, 400, fitSubtitle, subtitleRows);
+                AddCaption(group.Subtitle!, TopologyGroupHeader.SubtitleBounds(group, options, fitTitle || fitSubtitle, titleLineHeight, subtitleLineHeight), TopologyGroupHeader.SubtitleSize(size, options), 400, fitSubtitle, subtitleRows);
         }
         if (TopologyGroupHeader.SymbolReserve(group, options) > 0) parts.Add(TopologyGroupHeader.SymbolBounds(group));
         if (options.IncludeGroupStatusDots) parts.Add(TopologyGroupHeader.StatusBounds(group));
@@ -96,10 +98,10 @@ internal sealed class TopologyGroupHeaderLayout {
 
     private readonly struct HeaderKey : IEquatable<HeaderKey> {
         private readonly (double X, double Y, double Width, string Label, string? Subtitle, double SymbolReserve,
-            bool Status, bool Multiline, bool Wrap, bool ShowLabel) _value;
+            bool Status, bool Multiline, bool Wrap, bool ShowLabel, double MinimumText) _value;
         internal HeaderKey(TopologyGroup group, TopologyRenderOptions options) => _value =
             (group.X, group.Y, group.Width, group.Label, group.Subtitle, TopologyGroupHeader.SymbolReserve(group, options),
-                options.IncludeGroupStatusDots, options.AllowMultilineNodeLabels, options.WrapNodeLabels, group.ShowLabel);
+                options.IncludeGroupStatusDots, options.AllowMultilineNodeLabels, options.WrapNodeLabels, group.ShowLabel, options.ResolvedMinimumReadableTextSize);
         public bool Equals(HeaderKey other) => _value.Equals(other._value);
         public override bool Equals(object? value) => value is HeaderKey other && Equals(other);
         public override int GetHashCode() => _value.GetHashCode();

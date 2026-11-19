@@ -60,7 +60,7 @@ internal sealed partial class VisualTopologyCompiler {
         && string.IsNullOrWhiteSpace(node.Subtitle) && node.Details.Count == 0 && string.IsNullOrWhiteSpace(node.Badge);
 
     private double FitMeasuredNodeLabelSize(string label, double preferred, Func<double, ChartRect> contentBounds) =>
-        ChartTextFitting.FitFontSize(Math.Min(11, preferred), preferred, candidate => {
+        ChartTextFitting.FitFontSize(Math.Min(CaptionFitFloor(11), preferred), preferred, candidate => {
             // Pixel-size corrections and synthetic emphasis need not scale proportionally.
             // Recheck the final font against its output cell, including prepared-layout resizing.
             var bounds = contentBounds(candidate);

@@ -42,7 +42,8 @@ internal static partial class TopologyLayoutEngine {
         copy.TextMeasurement = measurement ?? new TextMeasurementContext((copy.ResolvedTheme).FontFamily, options?.TextMeasurementMode ?? TextMeasurementMode.PortableEstimate);
         if (options != null) {
             options.TextMeasurement = copy.TextMeasurement;
-            options.ResolvedSubtitleChipFontSize = copy.Theme.Typography.DataLabelSize * (9.5 / 11);
+            options.ResolvedMinimumReadableTextSize = ReadableTextFloor(copy.Theme.Typography, options, copy.LayoutMode);
+            options.ResolvedSubtitleChipFontSize = Math.Max(copy.Theme.Typography.DataLabelSize * (9.5 / 11), options.ResolvedMinimumReadableTextSize);
             options.ResolvedCaptionStrokeWidth ??= copy.Theme.AxisStrokeWidth;
         }
         copy.RenderOptions = options;
@@ -54,6 +55,7 @@ internal static partial class TopologyLayoutEngine {
             ApplyNodeDisplayMode(copy, options, copy.LayoutMode == TopologyLayoutMode.MindMap);
         }
 
+        if (options?.ReadableDenseLayout == true && copy.LayoutMode == TopologyLayoutMode.DenseGrouped) RecedeHealthyDenseEdges(copy);
         if (view != null) ApplyView(copy, view);
         if (chart.Alignments.Count > 0) ProjectAlignments(copy);
         if (placeFacingPorts) AddFacingPortAlignments(copy);
@@ -175,6 +177,17 @@ internal static partial class TopologyLayoutEngine {
                     node.Height = Math.Min(node.Height, 1);
                     break;
             }
+        }
+    }
+
+    /// <summary>
+    /// A readable dense overview draws its healthy links with subtle emphasis, so delayed and failing links can be
+    /// traced through the bundle. Links with an authored colour, palette slot or emphasis keep it.
+    /// </summary>
+    private static void RecedeHealthyDenseEdges(TopologyChart chart) {
+        foreach (var edge in chart.Edges) {
+            if (edge.Status == TopologyHealthStatus.Healthy && edge.Emphasis == TopologyEdgeEmphasis.Normal && !edge.IsMuted
+                && string.IsNullOrWhiteSpace(edge.Color) && !edge.PaletteIndex.HasValue) edge.Emphasis = TopologyEdgeEmphasis.Subtle;
         }
     }
 
@@ -386,7 +399,7 @@ internal static partial class TopologyLayoutEngine {
         var pad = Math.Max(24, chart.Viewport.Padding) + surfaceInset;
         var titleOffset = string.IsNullOrWhiteSpace(chart.Title) ? 0 : 72;
         var legendOffset = LegendReservedHeight(chart.Legend, chart.Viewport);
-        if (UsesWrappedDenseRows(chart)) {
+        if (UsesWrappedDenseRows(chart, pad)) {
             PlaceWrappedDenseGroups(chart, explicitGroupPositions, pad, titleOffset);
         } else {
             PlaceDenseGroupGrid(chart, explicitGroupPositions, pad, titleOffset, legendOffset);
@@ -469,7 +482,7 @@ internal static partial class TopologyLayoutEngine {
     }
 
     private static void PlaceDenseGroupGrid(TopologyChart chart, IReadOnlyDictionary<string, (double X, double Y)> explicitGroupPositions, double pad, double titleOffset, double legendOffset) {
-        const double gap = 24;
+        const double gap = DenseGroupGridGap;
         var columns = DenseGroupColumns(chart);
         var rows = (int)Math.Ceiling(chart.Groups.Count / (double)columns);
         var cellW = (chart.Viewport.Width - pad * 2 - (columns - 1) * gap) / columns;
@@ -561,8 +574,8 @@ internal static partial class TopologyLayoutEngine {
         }
 
         if (policy == TopologyGroupLayoutPolicy.Grid || policy == TopologyGroupLayoutPolicy.CollapsedDots) {
-            var gridRows = (int)Math.Ceiling(nodes.Count / (double)DenseGridColumns(nodes.Count));
-            PlaceDenseGrid(nodes, group, policy == TopologyGroupLayoutPolicy.CollapsedDots ? DenseCollapsedDotColumns(nodes.Count) : 4, policy == TopologyGroupLayoutPolicy.CollapsedDots ? 12 : DenseRowGap(chart, nodes, gridRows) + DenseCaptionHeight(chart, nodes), useRequestedColumns: policy == TopologyGroupLayoutPolicy.CollapsedDots);
+            var gridRows = (int)Math.Ceiling(nodes.Count / (double)DenseGridColumns(chart, nodes.Count));
+            PlaceDenseGrid(nodes, group, policy == TopologyGroupLayoutPolicy.CollapsedDots ? DenseCollapsedDotColumns(nodes.Count) : chart.DenseGridColumnLimit ?? DenseMaximumGridColumns, policy == TopologyGroupLayoutPolicy.CollapsedDots ? 12 : DenseRowGap(chart, nodes, gridRows) + DenseCaptionHeight(chart, nodes), useRequestedColumns: policy == TopologyGroupLayoutPolicy.CollapsedDots);
             return;
         }
 

@@ -25,9 +25,9 @@ public sealed class TopologyReplicationBudgetTests {
     public static IEnumerable<object[]> Tiers => new[] {
         // branches per region, DCs per hub site, SVG byte budget, edge/foreign-card crossing ceiling, node collision ceiling,
         // edge-label overlap ceiling
-        new object[] { 3, 10, 480_000, 0, 0, 0 },
+        new object[] { 3, 10, 490_000, 0, 0, 0 },
         new object[] { 5, 15, 760_000, 0, 0, 0 },
-        new object[] { 6, 18, 900_000, 0, 0, 0 }
+        new object[] { 6, 18, 920_000, 0, 0, 0 }
     };
 
     [Theory]
