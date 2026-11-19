@@ -177,13 +177,18 @@ public sealed class GraphCardNodeBrowserTests {
         await page.WaitForFunctionAsync("()=>document.querySelector('.cfx-graph-explorer').dataset.cfxGraphLayoutProgress==='running'");
 
         var facts = await page.EvaluateAsync<JsonElement>("""
-            ()=>{const root=document.querySelector('.cfx-graph-explorer');ChartForgeXGraphExplorer.dispose(root);
-                return {state:root.dataset.cfxGraphLayoutProgress,hidden:root.querySelector('[data-cfx-role=graph-layout-progress]').hidden,
-                    done:window.__layoutProgress.filter(item=>item.done).length};}
+            ()=>{const root=document.querySelector('.cfx-graph-explorer'),parent=root.parentNode,next=root.nextSibling;
+                const doneEvents=[];document.addEventListener('cfxgraphlayoutprogress',e=>{if(e.detail.done)doneEvents.push(e.detail.graphId);});
+                // Remove the root first: its completion must still reach document listeners.
+                root.remove();ChartForgeXGraphExplorer.dispose(root);parent.insertBefore(root,next);
+                return {state:root.dataset.cfxGraphLayoutProgress||'',hidden:root.querySelector('[data-cfx-role=graph-layout-progress]').hidden,doneEvents:doneEvents.length};}
             """);
-        Assert.Equal("done", facts.GetProperty("state").GetString());
+        Assert.Equal("", facts.GetProperty("state").GetString());
+        Assert.Equal(1, facts.GetProperty("doneEvents").GetInt32());
         Assert.True(facts.GetProperty("hidden").GetBoolean(), facts.GetRawText());
-        Assert.Equal(1, facts.GetProperty("done").GetInt32());
+        // A remount of the same element reports its own first layout again.
+        await page.EvaluateAsync("()=>ChartForgeXGraphExplorer.mount(document.querySelector('.cfx-graph-explorer'))");
+        await page.WaitForFunctionAsync("()=>document.querySelector('.cfx-graph-explorer').dataset.cfxGraphLayoutProgress==='running'");
         AssertNoConsoleErrors(session);
     }
 

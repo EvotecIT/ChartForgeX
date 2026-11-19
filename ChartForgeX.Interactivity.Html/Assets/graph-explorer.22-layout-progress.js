@@ -1,8 +1,8 @@
-  // Shows how far the first layout pass has come on large graphs. Only the initial stabilization
-  // reports here; reheats after a drag or a filter stay quiet so the overlay never flickers.
+  // Reports only the first layout of a large graph; later reheats stay quiet.
   const graphLayoutProgressElement = root => root.querySelector('[data-cfx-role="graph-layout-progress"]');
+  // A detached root no longer bubbles to the document, so report to it directly.
   const publishLayoutProgress = (root, progress, done) =>
-    emit(root, 'cfxgraphlayoutprogress', { graphId: attr(root, 'data-cfx-graph-id'), progress, done });
+    emit(root.isConnected === false && root.ownerDocument ? root.ownerDocument : root, 'cfxgraphlayoutprogress', { graphId: attr(root, 'data-cfx-graph-id'), progress, done });
   const beginLayoutProgress = (root, iterations) => {
     const element = graphLayoutProgressElement(root);
     if (!element || root.dataset.cfxGraphLayoutProgress) return;
@@ -16,9 +16,9 @@
     if (root.dataset.cfxGraphLayoutProgress !== 'running') return;
     const element = graphLayoutProgressElement(root);
     if (!element) return;
-    // Physics can settle before its iteration budget, so the bar stops short of 100 until it does.
+    // Physics may settle early, so the bar stays below 100 until it does.
     const percent = Math.max(0, Math.min(99, Math.floor((Number(tick) || 0) / root.__cfxGraphLayoutProgressIterations * 100)));
-    // A worker that falls back to the main thread restarts its tick count; the report holds instead of going backwards.
+    // A worker fallback restarts its ticks; hold instead of going backwards.
     if (percent <= root.__cfxGraphLayoutProgressPercent) return;
     root.__cfxGraphLayoutProgressPercent = percent;
     element.setAttribute('aria-valuenow', String(percent));

@@ -191,7 +191,7 @@ self.onmessage = event => {
   };
   const startPhysics = (root, options) => {
     stopWorkerPhysics(root); stopMainPhysics(root);
-    // Any later run ends the first layout's report, even when a guard below declines to restart physics.
+    // Any later run ends the first layout's report, even if a guard below declines to restart.
     if (options?.reason !== 'initial-stabilization') finishLayoutProgress(root);
     const state = activePhysicsState(root), base = profile(root);
     const settings = {

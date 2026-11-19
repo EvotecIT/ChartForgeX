@@ -6,6 +6,7 @@
     lifetime.own(() => {
       stopWorkerPhysics(root); stopMainPhysics(root);
       if (typeof finishLayoutProgress === 'function') finishLayoutProgress(root);
+      delete root.dataset.cfxGraphLayoutProgress;
       if (root.dataset.cfxGraphPhysicsState === 'running') root.dataset.cfxGraphPhysicsState = 'paused';
       if (root.__cfxGraphState) syncSvgLayout(root, root.__cfxGraphState);
       graphHover(root, null);
