@@ -10,8 +10,11 @@ $lanes = @{}
 foreach ($lane in 'Baseline', 'Candidate') {
     foreach ($fixture in $fixtureNames) {
         $path = if ($lane -eq 'Baseline') { $baseline } else { $candidate }
-        $adapter = if ($formats -notcontains 'Responsive') { $null } elseif ($lane -eq 'Baseline') { $baselineResponsive } else { $responsive }
-        $lanes["$lane-$fixture"] = [ChartBenchmarkLane]::new($path, $fixtures, $fixture, $adapter)
+        $lanes["$lane-$fixture"] = if ($formats -notcontains 'Responsive') {
+            [ChartBenchmarkLane]::new($path, $fixtures, $fixture)
+        } else {
+            [ChartBenchmarkLane]::new($path, $fixtures, $fixture, $(if ($lane -eq 'Baseline') { $baselineResponsive } else { $responsive }))
+        }
     }
 }
 foreach ($fixture in $fixtureNames) {
