@@ -5,6 +5,7 @@ using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Html;
 using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Interactivity.Html;
 
@@ -31,10 +32,10 @@ public sealed partial class HtmlInteractiveChartRenderer {
         configure?.Invoke(options);
 
         var title = options.PageTitle ?? ChartTitle(chart, "ChartForgeX interactive chart");
-        var surfaceStyle = HtmlInteractivePage.ChartSurfaceStyle(chart);
+        var (surfaceStyle, surfaceTheme) = HtmlInteractivePage.ChartSurface(chart);
         var writer = HtmlInteractivePage.StartDocument(title, options.ExternalAssets, surfaceStyle,
             options.Localization.ResolveLanguage(chart.Accessibility.Language), options.Localization.DirectionAttribute,
-            options.TextPresentation == HtmlChartTextPresentation.NativeContours ? null : ChartForgeX.Typography.ChartFontAssets.StyleSheet);
+            options.TextPresentation == HtmlChartTextPresentation.NativeContours ? null : ChartForgeX.Typography.ChartFontAssets.StyleSheet, surfaceTheme);
         writer.StartElement("main").Attribute("class", "cfx-shell").Attribute("style", surfaceStyle).EndStartElement().Line()
             .RawTrusted(BuildChartSection(chart, options, title, "document")).Line()
             .EndElement().Line();
@@ -160,8 +161,29 @@ public sealed partial class HtmlInteractiveChartRenderer {
 
     internal static string InteractiveScript => HtmlInteractiveAssets.Script;
 
-    internal static string BuildChartSection(Chart chart, HtmlChartInteractionOptions options, string titleFallback, string assetSource) =>
-        PrepareChartSection(chart, options, titleFallback, assetSource, null).Html;
+    // Self-contained fragments and documents carry an Auto section's scoped stylesheet beside it.
+    internal static string BuildChartSection(Chart chart, HtmlChartInteractionOptions options, string titleFallback, string assetSource) {
+        var section = PrepareChartSection(chart, options, titleFallback, assetSource, null);
+        return section.AutoThemeStyleSheet == null ? section.Html
+            : "<style data-cfx-auto-theme-style>" + section.AutoThemeStyleSheet + "</style>\n" + section.Html;
+    }
+
+    /// <summary>
+    /// Returns the scoped stylesheet that lets a <see cref="ThemeMode.Auto"/> chart's interactive section follow the viewer's
+    /// colour scheme, or null for an explicit mode or a chart with its own SVG colour variables.
+    /// </summary>
+    /// <param name="chart">The chart the section is rendered from.</param>
+    /// <returns>Plain CSS for the section root's <c>data-cfx-auto-theme</c> scope, or null.</returns>
+    /// <remarks>Self-contained fragments and pages include it. Hosts of <see cref="RenderFragmentWithoutAssets(Chart)"/>
+    /// register it once per distinct theme; <see cref="HtmlChartSection.AutoThemeStyleSheet"/> carries the same CSS.</remarks>
+    public static string? AutoThemeStyleSheet(Chart chart) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        return ChartAutoTheme(chart)?.StyleSheet;
+    }
+
+    private static AutoThemeStyle? ChartAutoTheme(Chart chart) =>
+        AutoThemeStyle.ForHtml(chart.Options.Theme, chart.Options.ThemeMode, chart.Options.SvgColorVariables)?
+            .WithRule("&", mode => GraphiteInteractionTokens(chart, mode).Substring(1));
 
     private static HtmlChartSection PrepareChartSection(Chart chart, HtmlChartInteractionOptions options, string titleFallback, string assetSource, ChartCartesianViewport? viewport,
         VisualRenderContext? drawingContext = null, bool narrow = false, PreparedVisual? preparedDrawing = null, PreparedVisual? fullDrawing = null, PreparedVisual? narrowDrawing = null, PreparedVisual? fullNarrowDrawing = null, ChartPolarViewport? polarViewport = null, bool requirePolar = false, ChartVisibilityView? visibility = null) {
@@ -197,12 +219,14 @@ public sealed partial class HtmlInteractiveChartRenderer {
         if (!Enum.IsDefined(typeof(HtmlChartToolbarLayout), options.Toolbar)) throw new ArgumentOutOfRangeException(nameof(options.Toolbar));
         if (!Enum.IsDefined(typeof(HtmlChartTooltipMode), options.Tooltip.Mode)) throw new ArgumentOutOfRangeException(nameof(options.Tooltip.Mode));
         if (options.Tooltip.DelayMilliseconds < 0) throw new ArgumentOutOfRangeException(nameof(options.Tooltip.DelayMilliseconds));
+        var autoTheme = ChartAutoTheme(chart);
         return BuildPreparedSceneSection(new PreparedSceneSectionSource {
             Drawing = prepared, Title = ChartTitle(chart, titleFallback), Language = chart.Accessibility.Language,
             Metadata = PreparedChartMetadata(chart, prepared), AssetSource = assetSource, ChartId = chartId,
             Context = context, IntrinsicWidth = request.Context.Layout.Size.Width, Narrow = narrow,
-            ThemeTokens = GraphiteInteractionTokens(chart),
-            SvgOptions = new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(scope), chart.Options.SvgColorVariables),
+            ThemeTokens = autoTheme == null ? GraphiteInteractionTokens(chart, chart.Options.ThemeMode) : string.Empty,
+            AutoTheme = autoTheme,
+            SvgOptions = new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(scope), chart.Options.SvgColorVariables ?? autoTheme?.Variables),
             NativeNavigation = BuildXNavigation(chart, options, prepared, context, viewport, scope, fullDrawing),
             HierarchyNavigation = BuildHierarchyNavigation(options, prepared),
             PrepareNarrow = adaptive && !narrow ? () => PrepareChartSection(chart, options, titleFallback, assetSource, viewport,

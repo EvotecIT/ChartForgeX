@@ -19,11 +19,11 @@ public static partial class GalleryWriter {
         var hasFlatBody = Regex.Matches(css, "(?:^|})\\s*body\\s*\\{(?<body>[^{}]*)}", RegexOptions.IgnoreCase)
             .Select(match => Regex.Match(match.Groups["body"].Value, "(?:^|;)\\s*background(?:-color)?\\s*:\\s*(?<color>[^;]+)", RegexOptions.IgnoreCase))
             .Where(match => match.Success).Take(1)
-            .Any(match => SvgRasterColor.TryParse(match.Groups["color"].Value.Trim(), out _));
+            .Any(match => IsPaint(match.Groups["color"].Value));
         var hasSceneBackground = Regex.Matches(html, "<rect\\s[^>]*>", RegexOptions.IgnoreCase)
             .Where(match => match.Value.Contains("data-cfx-role=\"background\"", StringComparison.Ordinal))
             .Select(match => Regex.Match(match.Value, "(?:^|\\s)fill=\"(?<color>[^\"]+)\""))
-            .Any(match => match.Success && SvgRasterColor.TryParse(match.Groups["color"].Value, out _));
+            .Any(match => match.Success && IsPaint(match.Groups["color"].Value));
         return new HtmlHealth(
             ReadFileLength(htmlFileName),
             html.Contains("<!doctype html>", StringComparison.OrdinalIgnoreCase) && html.Contains("<title>", StringComparison.OrdinalIgnoreCase),
@@ -35,6 +35,13 @@ public static partial class GalleryWriter {
             html.Contains("@media print", StringComparison.Ordinal) && html.Contains("background:transparent", StringComparison.Ordinal),
             (html.Contains("data-cfx-role=\"frame-card\"", StringComparison.Ordinal) || hasFlatBody || hasSceneBackground)
                 && !css.Contains("linear-gradient(", StringComparison.Ordinal) && !css.Contains("radial-gradient(", StringComparison.Ordinal));
+    }
+
+    // Auto pages write colours as custom properties with a literal fallback: var(--name, #rrggbb) is a solid paint too.
+    private static bool IsPaint(string value) {
+        var paint = value.Trim();
+        var fallback = Regex.Match(paint, "^var\\(\\s*--[\\w-]+\\s*,(?<fallback>.+)\\)$");
+        return fallback.Success ? IsPaint(fallback.Groups["fallback"].Value) : SvgRasterColor.TryParse(paint, out _);
     }
 
     private static bool HasUnclippedNativeGrid(string html, string css) {

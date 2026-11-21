@@ -38,7 +38,8 @@ public sealed class V2EmbeddingTests {
 
     [Fact]
     public void StaticHtmlHostsEmbedPreparedGeometryAndKeepArbitraryHostScopesDistinct() {
-        var chart = Sample().WithTitle("<Revenue & cost>");
+        // An explicit mode embeds the literal prepared SVG; Auto writes it with scoped properties (AutoThemeHtmlTests).
+        var chart = Sample().WithTitle("<Revenue & cost>").WithThemeMode(ThemeMode.Light);
         var chartPrepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var chartHtml = new HtmlChartRenderer().RenderFragment(chart);
         Assert.Contains(chartPrepared.ToSvg(new VisualSvgOptions(colorVariables: chart.Options.SvgColorVariables, responsive: true)), chartHtml);
@@ -47,7 +48,7 @@ public sealed class V2EmbeddingTests {
         Assert.Equal(chartPrepared.Size.Width.ToString(System.Globalization.CultureInfo.InvariantCulture), chartSvg.Attribute("width")?.Value);
         Assert.Null(XDocument.Parse(chartPrepared.ToSvg()).Root!.Attribute("style"));
         Assert.DoesNotContain("<script", new HtmlChartRenderer().RenderPage(chart), StringComparison.OrdinalIgnoreCase);
-        var grid = ChartGrid.Create().WithTitle("Shared comparison").WithColumns(2).Add(chart).Add(chart);
+        var grid = ChartGrid.Create().WithTitle("Shared comparison").WithThemeMode(ThemeMode.Light).WithColumns(2).Add(chart).Add(chart);
         grid.Accessibility.Language = "pl";
         var prepared = grid.Prepare(VisualExportRequest.ForGrid(grid).Context);
         var renderer = new HtmlChartGridRenderer();

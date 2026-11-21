@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Net;
 using System.Text;
 using ChartForgeX.Core;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Interactivity.Html;
 
@@ -39,6 +40,22 @@ public sealed class HtmlResponsiveChartRenderer {
     /// <c>style</c> attributes: every inline style and style element moves into one <c>style</c> element with this nonce
     /// (see <see cref="HtmlStrictStyles"/>).</summary>
     public string? StyleNonce { get; set; }
+
+    /// <summary>
+    /// Returns the scoped stylesheet that lets a <see cref="ThemeMode.Auto"/> chart follow the viewer's colour scheme, or
+    /// null when the chart has an explicit mode or its own SVG colour variables.
+    /// </summary>
+    /// <remarks><see cref="RenderFragment"/> includes it. Hosts of <see cref="RenderFragmentWithoutAssets"/> register it
+    /// once per distinct theme, next to <see cref="Stylesheet"/>; the fragment root carries the class it targets.</remarks>
+    /// <param name="chart">The chart the fragment is rendered from.</param>
+    /// <returns>Plain CSS, or null.</returns>
+    public static string? AutoThemeStylesheet(Chart chart) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        return AutoTheme(chart)?.StyleSheet;
+    }
+
+    private static AutoThemeStyle? AutoTheme(Chart chart) =>
+        AutoThemeStyle.ForHtml(chart.Options.Theme, chart.Options.ThemeMode, chart.Options.SvgColorVariables);
 
     /// <summary>Renders an offline fragment with one serialized specification and a script-free native fallback.</summary>
     /// <param name="chart">The caller's chart; authored size and axis policies are restored after preparation.</param>
@@ -79,16 +96,19 @@ public sealed class HtmlResponsiveChartRenderer {
         var size = chart.Options.Size; var x = chart.Options.XAxis; var y = chart.Options.YAxis; var window = chart.Options.HeatmapColumnWindow;
         var drawingHeight = height ?? size.Height;
         var fallbackWidth = printWidth ?? Math.Max(minimumWidth, Math.Min(maximumWidth, size.Width));
+        var auto = AutoTheme(chart);
         try {
+            // The serialized drawing writes the Auto colours as scoped properties; the caller's options are restored below.
+            if (auto != null) chart.Options.SvgColorVariables = auto.Variables;
             var specification = HtmlChartLayoutSpecification.Serialize(chart, minimumWidth, maximumWidth, drawingHeight, fallbackWidth, idScope, out var fallback);
             var data = compressLayouts ? Compress(specification) : specification;
             var attribute = compressLayouts ? "data-cfx-spec-gzip" : "data-cfx-spec";
             var payload = assets ? "<script type=\"" + (compressLayouts ? "application/octet-stream" : "application/json") + "\" " + attribute + ">" + data + "</script>"
                 : "<span hidden " + attribute + ">" + WebUtility.HtmlEncode(data) + "</span>";
             var runtime = HtmlRadialLayoutSpecification.Supports(chart) ? RadialScript.Value + Script.Value : Script.Value;
-            return "<div data-cfx-responsive-chart style=\"min-width:" + minimumWidth + "px;max-width:" + maximumWidth + "px;margin-inline:auto\">" +
-                (assets ? "<style>" + Stylesheet + "</style>" : "") + fallback + payload + (assets ? (scriptNonce == null ? "<script>" : "<script nonce=\"" + WebUtility.HtmlEncode(scriptNonce) + "\">") + runtime + "</script>" : "") + "</div>";
-        } finally { chart.WithSize(size.Width, size.Height); chart.Options.XAxis = x; chart.Options.YAxis = y; chart.Options.HeatmapColumnWindow = window; }
+            return "<div data-cfx-responsive-chart" + auto?.RootAttributes + " style=\"min-width:" + minimumWidth + "px;max-width:" + maximumWidth + "px;margin-inline:auto\">" +
+                (assets ? "<style>" + Stylesheet + "</style>" + auto?.StyleElement : "") + fallback + payload + (assets ? (scriptNonce == null ? "<script>" : "<script nonce=\"" + WebUtility.HtmlEncode(scriptNonce) + "\">") + runtime + "</script>" : "") + "</div>";
+        } finally { if (auto != null) chart.Options.SvgColorVariables = null; chart.WithSize(size.Width, size.Height); chart.Options.XAxis = x; chart.Options.YAxis = y; chart.Options.HeatmapColumnWindow = window; }
     }
     private static string Compress(string text) {
         using var buffer = new MemoryStream();

@@ -22,9 +22,6 @@ public sealed class SharedVocabularyTests {
         Assert.Equal(Line(ThemeMode.Light).ToPng(), Line(ThemeMode.Auto).ToPng());
         Assert.NotEqual(Line(ThemeMode.Dark).ToSvg(), Line(ThemeMode.Auto).ToSvg());
         Assert.Equal(ThemeMode.Light, new VisualRenderContext(themeMode: ThemeMode.Auto).ThemeMode);
-
-        var topology = TopologyEdgePresentationTests.Sites().WithThemeMode(ThemeMode.Auto);
-        Assert.Contains("data-cfx-theme-mode=\"light\"", topology.ToHtmlFragment());
     }
 
     [Fact]

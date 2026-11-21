@@ -17,7 +17,8 @@ public sealed partial class ResponsiveHeatmapMarkupBudgetTests {
         var colors = VisualTheme.Graphite().Resolve(ThemeMode.Light);
         var days = Enumerable.Range(0, 30).Select(day => new DateTime(2026, 9, 29).AddDays(day).ToString("yyyy-MM-dd")).ToArray();
         string[] groups = { "Domain controllers", "DNS", "Certificates" };
-        var chart = Chart.Create().WithSize(1100, 240 + rows * 48 + 3 * 30).WithAxes().WithYAxisVisible().WithPadding(24, 40, 20, 70)
+        // The budget covers the literal markup of an explicit mode; Auto adds its scoped colour properties.
+        var chart = Chart.Create().WithThemeMode(ThemeMode.Light).WithSize(1100, 240 + rows * 48 + 3 * 30).WithAxes().WithYAxisVisible().WithPadding(24, 40, 20, 70)
             .WithStateCategories(new ChartStateCategory("up", "Up", colors.Status.Pass.Fill), new ChartStateCategory("degraded", "Degraded", colors.Status.Medium.Fill, ChartStatePattern.Hatched),
                 new ChartStateCategory("down", "Down", colors.Status.Critical.Fill, ChartStatePattern.CrossHatched), new ChartStateCategory("maintenance", "Maintenance", colors.Status.Info.Fill))
             .WithXLabels(days);

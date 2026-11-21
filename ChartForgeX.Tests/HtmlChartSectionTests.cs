@@ -12,7 +12,7 @@ namespace ChartForgeX.Tests;
 public sealed class HtmlChartSectionTests {
     [Fact]
     public void SectionAndExportShareOnePreparationAndRemainDetachedFromTheChartAndCallback() {
-        var chart = Line();
+        var chart = Line().WithThemeMode(ThemeMode.Light);
         var calls = new Dictionary<double, int>();
         chart.Options.XAxis.LabelFormatter = value => {
             calls[value] = calls.TryGetValue(value, out var count) ? count + 1 : 1;

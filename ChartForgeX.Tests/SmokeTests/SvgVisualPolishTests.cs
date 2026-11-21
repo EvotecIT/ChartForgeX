@@ -39,7 +39,7 @@ internal static partial class SmokeTests {
             && element.Attribute("font-size") != null && element.Attribute("font-weight") != null),
             "Native text should carry its resolved typography independently of the embedding page.");
 
-        var html = Chart.Create().WithTheme(VisualTheme.Graphite())
+        var html = Chart.Create().WithTheme(VisualTheme.Graphite(), ThemeMode.Light)
             .WithSize(420, 260)
             .WithTitle("Premium HTML")
             .AddSmoothLine("Values", Points(10, 30, 20), ChartColor.FromRgb(37, 99, 235))
@@ -50,7 +50,7 @@ internal static partial class SmokeTests {
     }
 
     private static void StaticHtmlShellsSharePremiumPreviewPolish() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite())
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), ThemeMode.Light)
             .WithSize(360, 220)
             .WithTitle("Shell chart")
             .AddSmoothLine("Values", Points(12, 22, 18), ChartColor.FromRgb(37, 99, 235));
@@ -58,7 +58,7 @@ internal static partial class SmokeTests {
 
         var grid = ChartGrid.Create()
             .WithTitle("Shell grid")
-            .WithTheme(VisualTheme.Graphite())
+            .WithTheme(VisualTheme.Graphite(), ThemeMode.Light)
             .WithColumns(2)
             .Add(chart)
             .Add(Chart.Create().WithSize(360, 220).WithTitle("Bars").AddBar("Values", Points(4, 7, 5)));
@@ -66,7 +66,7 @@ internal static partial class SmokeTests {
 
         var table = ChartTable.Create()
             .WithTitle("Shell visual block")
-            .WithTheme(VisualTheme.Graphite())
+            .WithTheme(VisualTheme.Graphite(), ThemeMode.Light)
             .AddColumn("Name")
             .AddColumn("Value")
             .AddRow("Coverage", "98%");

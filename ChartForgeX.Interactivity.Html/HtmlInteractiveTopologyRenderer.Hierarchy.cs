@@ -25,7 +25,10 @@ public sealed partial class HtmlInteractiveTopologyRenderer {
         options.Tooltip.Mode = HtmlChartTooltipMode.Single; Localization.CopyTo(options.Localization); configure?.Invoke(options);
         ValidateHierarchyInteractionOptions(options);
         var nativeOptions = chart.ResolveRenderOptions(null);
+        var auto = ChartForgeX.Themes.AutoThemeStyle.ForHtml(chart.Theme, chart.ThemeMode, nativeOptions.SvgColorVariables);
+        if (auto != null) { nativeOptions = nativeOptions.Clone(); nativeOptions.SvgColorVariables = auto.Variables; }
         var context = VisualExportRequest.ForTopology(chart, nativeOptions).Context;
+        auto?.WithRule("&", mode => HtmlInteractiveChartRenderer.ThemeInteractionTokens(context.Theme, mode, context.Frame.TransparentBackground).Substring(1));
         var prepared = chart.PrepareHierarchy(context, view, nativeOptions);
         var scope = options.IdScope ?? options.Interaction.ChartId ?? (string.IsNullOrWhiteSpace(chart.Id) ? "topology-hierarchy" : chart.Id!);
         var title = options.PageTitle ?? (string.IsNullOrWhiteSpace(chart.Title) ? chart.Labels.UntitledTopology : chart.Title!);
@@ -34,7 +37,7 @@ public sealed partial class HtmlInteractiveTopologyRenderer {
             HtmlInteractiveChartRenderer.BuildPreparedSceneSection(new HtmlInteractiveChartRenderer.PreparedSceneSectionSource {
                 Drawing = drawing, Title = title, Language = chart.Accessibility.Language,
                 Metadata = PreparedTopologyHierarchyMetadata(drawing), ChartId = chartId, Context = drawingContext,
-                IntrinsicWidth = context.Layout.Size.Width, Narrow = narrow, ThemeTokens = HtmlInteractiveChartRenderer.PreparedInteractionTokens(drawingContext),
+                IntrinsicWidth = context.Layout.Size.Width, Narrow = narrow, ThemeTokens = auto == null ? HtmlInteractiveChartRenderer.PreparedInteractionTokens(drawingContext) : string.Empty, AutoTheme = auto,
                 SvgOptions = new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(narrow ? scope + "-narrow" : scope), nativeOptions.SvgColorVariables),
                 HierarchyNavigation = BuildTopologyHierarchyNavigation(options, drawing), LocalizationJson = options.Localization.ToTopologyHierarchyJson(), PrepareNarrow = prepareNarrow
             }, options);

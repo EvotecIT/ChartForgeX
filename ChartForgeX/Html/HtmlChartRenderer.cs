@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using ChartForgeX.Core;
 using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Html;
 
@@ -56,15 +57,18 @@ public sealed partial class HtmlChartRenderer {
         if (dataTable < ChartDataTableMode.None || dataTable > ChartDataTableMode.VisuallyHidden) throw new ArgumentOutOfRangeException(nameof(dataTable));
         var request = VisualExportRequest.ForChart(chart);
         var prepared = chart.Prepare(request.Context);
-        var svg = prepared.ToSvg(svgOptions);
+        var auto = svgOptions.HasColorVariables ? null : AutoThemeStyle.ForHtml(chart.Options.Theme, chart.Options.ThemeMode, null);
+        var svg = prepared.ToSvg(auto == null ? svgOptions : svgOptions.WithColorScope(auto.Variables));
         var style = (constrainMaxWidth ? "width:100%;max-width:" + chart.Options.Size.Width.ToString(CultureInfo.InvariantCulture) + "px;" : string.Empty) + "box-sizing:border-box;overflow:visible";
         return new HtmlMarkupWriter()
             .StartElement("div")
-            .Attribute("class", "chartforgex-chart")
+            .Attribute("class", "chartforgex-chart").Attribute(ChartForgeX.Themes.AutoThemeStyle.ScopeAttribute, auto?.Id)
+            .Attribute(AutoThemeStyle.Attribute, auto == null ? null : AutoThemeStyle.AttributeValue)
             .Attribute("style", style)
             .EndStartElement()
             .RawTrusted(svg)
             .RawTrusted(dataTable == ChartDataTableMode.None ? null : RenderDataTables(chart, dataTable))
+            .RawTrusted(auto?.StyleElement)
             .EndElement()
             .Build();
     }
@@ -77,15 +81,20 @@ public sealed partial class HtmlChartRenderer {
     public string RenderPage(Chart chart) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         var theme = chart.Options.ResolvedTheme;
-        var bg = HtmlSurfacePolish.PageBackground(chart.Options.TransparentBackground ? theme.CardBackground : theme.Background, theme.CardBackground);
+        string Background(ResolvedVisualTheme resolved) => HtmlSurfacePolish.BackgroundCss(HtmlSurfacePolish.PageBackground(
+            chart.Options.TransparentBackground ? resolved.CardBackground : resolved.Background, resolved.CardBackground), flat: true);
+        var bg = Background(theme);
+        var page = chart.Options.SvgColorVariables != null ? null : AutoThemeStyle.ForHtml(chart.Options.Theme, chart.Options.ThemeMode, null)?
+            .WithRule("&", mode => AutoThemeStyle.PageBackground + ":" + Background(chart.Options.Theme.ResolvePresentation(mode)));
+        if (page != null) bg = AutoThemeStyle.Var(AutoThemeStyle.PageBackground, bg);
         var title = string.IsNullOrWhiteSpace(chart.Title) ? chart.Options.Labels.UntitledChart : chart.Title;
         var writer = new HtmlMarkupWriter();
         writer.Doctype().Line()
             .StartElement("html").Attribute("lang", chart.Accessibility.Language ?? "en").EndStartElement().Line()
             .StartElement("head").EndStartElement().Line();
-        WriteDocumentHead(writer, title, HtmlSurfacePolish.CenteredBodyCss(bg, CssFontFamily(chart.Options.ResolvedTheme.FontFamily), true) + ".chartforgex-chart{width:min(100%," + chart.Options.Size.Width.ToString(CultureInfo.InvariantCulture) + "px);box-sizing:border-box;overflow:visible}.chartforgex-chart svg{max-width:100%;height:auto;display:block;overflow:visible}" + HtmlSurfacePolish.ResponsiveCenteredBodyCss + HtmlSurfacePolish.PrintBodyCss("0", ".chartforgex-chart{width:100%;max-width:none}.chartforgex-chart svg{width:100%;height:auto}"));
+        WriteDocumentHead(writer, title, HtmlSurfacePolish.CenteredBodyCss(bg, CssFontFamily(chart.Options.ResolvedTheme.FontFamily)) + ".chartforgex-chart{width:min(100%," + chart.Options.Size.Width.ToString(CultureInfo.InvariantCulture) + "px);box-sizing:border-box;overflow:visible}.chartforgex-chart svg{max-width:100%;height:auto;display:block;overflow:visible}" + HtmlSurfacePolish.ResponsiveCenteredBodyCss + HtmlSurfacePolish.PrintBodyCss("0", ".chartforgex-chart{width:100%;max-width:none}.chartforgex-chart svg{width:100%;height:auto}") + page?.StyleSheet);
         writer.EndElement().Line()
-            .StartElement("body").EndStartElement().Line()
+            .StartElement("body").Attribute(ChartForgeX.Themes.AutoThemeStyle.ScopeAttribute, page?.Id).Attribute(AutoThemeStyle.Attribute, page == null ? null : AutoThemeStyle.AttributeValue).EndStartElement().Line()
             .RawTrusted(RenderFragment(chart, "html-page", constrainMaxWidth: false)).Line()
             .EndElement().Line()
             .EndElement();
