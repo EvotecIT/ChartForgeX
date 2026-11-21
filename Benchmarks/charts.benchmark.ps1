@@ -1,13 +1,20 @@
 $candidate = Get-BenchmarkInput AssemblyPath -Required
 $baseline = Get-BenchmarkInput BaselineAssemblyPath -Required
 $fixtures = Get-BenchmarkInput FixtureAssemblyPath -Required
+$responsive = Get-BenchmarkInput ResponsiveAssemblyPath -Default ''
+$baselineResponsive = Get-BenchmarkInput BaselineResponsiveAssemblyPath -Default ''
+$formats = if ($responsive -and $baselineResponsive) { 'Svg', 'Png', 'Responsive' } else { 'Svg', 'Png' }
 Add-Type -Path (Join-Path $PSScriptRoot 'ChartBenchmarkLane.cs')
 $fixtureNames = 'timeline-60', 'timeline-8', 'latency', 'calendar', 'cartesian', 'donut'
 $lanes = @{}
 foreach ($lane in 'Baseline', 'Candidate') {
     foreach ($fixture in $fixtureNames) {
         $path = if ($lane -eq 'Baseline') { $baseline } else { $candidate }
-        $lanes["$lane-$fixture"] = [ChartBenchmarkLane]::new($path, $fixtures, $fixture)
+        $lanes["$lane-$fixture"] = if ($formats -notcontains 'Responsive') {
+            [ChartBenchmarkLane]::new($path, $fixtures, $fixture)
+        } else {
+            [ChartBenchmarkLane]::new($path, $fixtures, $fixture, $(if ($lane -eq 'Baseline') { $baselineResponsive } else { $responsive }))
+        }
     }
 }
 foreach ($fixture in $fixtureNames) {
@@ -25,11 +32,11 @@ New-BenchmarkSuite 'chartforgex-charts' {
     Set-BenchmarkSetup { param($case, $run) $run.Lane = $lanes["$($case.Engine)-$($case.Fixture)"]; $run.Lane.Reset() }
     foreach ($lane in 'Baseline', 'Candidate') {
         Add-BenchmarkEngine $lane {
-            foreach ($format in 'Svg', 'Png') {
+            foreach ($format in $formats) {
                 Add-BenchmarkOperation $format {
                     param($case, $run)
                     $before = [GC]::GetAllocatedBytesForCurrentThread()
-                    $run.Result = if ($case.Operation -eq 'Svg') { $run.Lane.Svg() } else { $run.Lane.Png() }
+                    $run.Result = switch ($case.Operation) { 'Svg' { $run.Lane.Svg() } 'Png' { $run.Lane.Png() } default { $run.Lane.Responsive() } }
                     $run.Allocated = [GC]::GetAllocatedBytesForCurrentThread() - $before
                 }
             }
@@ -41,7 +48,7 @@ New-BenchmarkSuite 'chartforgex-charts' {
     Add-BenchmarkMetadata BaselineSha256 (Get-FileHash -LiteralPath $baseline).Hash
     Add-BenchmarkMetadata CandidateSha256 (Get-FileHash -LiteralPath $candidate).Hash
     Add-BenchmarkMetadata PairedOrdering 'Shared fixture scenarios and format operations pair Baseline/Candidate engines; Rotated alternates each paired group.'
-    Add-BenchmarkMetadata Scope 'Svg renders a fresh report chart with host colour variables and an id scope; Png renders the same chart natively. Validation outside timing requires byte-identical SVG and PNG against the baseline binary. ThreadAllocatedBytes is the managed allocation of the rendering thread during the operation.'
+    Add-BenchmarkMetadata Scope 'Svg renders a fresh report chart with host colour variables and an id scope; Png renders the same chart natively; Responsive renders the compressed responsive HTML fragment (native preparation, compact SVG and layout data) when both adapters are present. Validation outside timing requires byte-identical output against the baseline binaries. ThreadAllocatedBytes is the managed allocation of the rendering thread during the operation.'
     Add-BenchmarkMetadata LogicalProcessors ([Environment]::ProcessorCount)
     Add-BenchmarkMetadata ProcessorPlacement 'Baseline and candidate share the same process and processor placement. Record host placement and power policy when qualifying a comparison.'
     Set-BenchmarkArtifacts Json, Csv, Markdown
