@@ -9,7 +9,8 @@ namespace ChartForgeX.Interactivity.Html;
 
 // Compacts responsive paint while retaining the ordinary static SVG contract.
 internal static class HtmlCompactSvg {
-    internal static string Compact(string svg, int printWidth) {
+    // Returns the compacted tree so the layout specification reads the same parsed drawing it serializes.
+    internal static XElement Compact(string svg, int printWidth) {
         var root = XElement.Parse(svg, LoadOptions.PreserveWhitespace);
         ShortenNamespaces(root);
         root.SetAttributeValue("style", "display:block;width:100%;max-width:" + printWidth.ToString(CultureInfo.InvariantCulture) + "px;height:auto");
@@ -31,21 +32,31 @@ internal static class HtmlCompactSvg {
             root.SetAttributeValue("role", "group");
         DeduplicatePatterns(root);
         RemoveUnneededClips(root);
-        return root.ToString(SaveOptions.DisableFormatting);
+        return root;
     }
+    private static readonly Regex GeneratedNamespace = new(@"^cfx-(?:v2|scope)-([0-9a-f]{24})[0-9a-f]{40}(?=-)", RegexOptions.CultureInvariant);
+    private static readonly Regex UrlReference = new(@"url\(#([^)]*)\)", RegexOptions.CultureInvariant);
     // Keep 96 bits of generated identity; replace only references to IDs in this drawing, never user text.
     private static void ShortenNamespaces(XElement root) {
         var aliases = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var attribute in root.DescendantsAndSelf().Attributes("id")) {
-            var match = Regex.Match(attribute.Value, @"^cfx-(?:v2|scope)-([0-9a-f]{24})[0-9a-f]{40}(?=-)");
+            if (!attribute.Value.StartsWith("cfx-", StringComparison.Ordinal)) continue;
+            var match = GeneratedNamespace.Match(attribute.Value);
             if (!match.Success) continue;
-            var hex = match.Groups[1].Value;
-            var bytes = new byte[12];
-            for (var i = 0; i < bytes.Length; i++) bytes[i] = byte.Parse(hex.Substring(i * 2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-            var compact = Convert.ToBase64String(bytes).Replace('+', '-').Replace('/', '_');
-            aliases[attribute.Value] = "cfx-" + compact + attribute.Value.Substring(match.Length);
+            aliases[attribute.Value] = CompactHex(match.Groups[1].Value) + attribute.Value.Substring(match.Length);
         }
         RewriteReferences(root, aliases, true);
+    }
+    // The compact form of a generated namespace: its first 96 bits as URL-safe base64.
+    internal static string? ShortNamespace(string? generated) {
+        if (generated == null) return null;
+        var match = GeneratedNamespace.Match(generated + "-");
+        return match.Success && match.Length == generated.Length ? CompactHex(match.Groups[1].Value) : generated;
+    }
+    private static string CompactHex(string hex) {
+        var bytes = new byte[12];
+        for (var i = 0; i < bytes.Length; i++) bytes[i] = byte.Parse(hex.Substring(i * 2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+        return "cfx-" + Convert.ToBase64String(bytes).Replace('+', '-').Replace('/', '_');
     }
     private static void RewriteReferences(XElement root, Dictionary<string, string> aliases, bool renameIds) {
         if (aliases.Count == 0) return;
@@ -56,7 +67,7 @@ internal static class HtmlCompactSvg {
             else if (attribute.Name.LocalName == "aria-labelledby" || attribute.Name.LocalName == "aria-describedby")
                 value = string.Join(" ", value.Split(' ').Select(token => aliases.TryGetValue(token, out var mapped) ? mapped : token));
             else if ((attribute.Name.LocalName == "fill" || attribute.Name.LocalName == "stroke" || attribute.Name.LocalName == "clip-path" || attribute.Name.LocalName == "mask" || attribute.Name.LocalName == "filter" || attribute.Name.LocalName == "style") && value.IndexOf("url(#", StringComparison.Ordinal) >= 0)
-                value = Regex.Replace(value, @"url\(#([^)]*)\)", match => aliases.TryGetValue(match.Groups[1].Value, out var mapped) ? "url(#" + mapped + ")" : match.Value);
+                value = UrlReference.Replace(value, match => aliases.TryGetValue(match.Groups[1].Value, out var mapped) ? "url(#" + mapped + ")" : match.Value);
             if (value != attribute.Value) attribute.Value = value;
         }
     }
@@ -76,9 +87,18 @@ internal static class HtmlCompactSvg {
         RewriteReferences(root, aliases, false);
     }
     private static void RemoveUnneededClips(XElement root) {
-        var clips = root.Descendants().Where(e => e.Name.LocalName == "clipPath" && e.Attribute("id") != null)
-            .ToDictionary(e => (string)e.Attribute("id")!, e => e, StringComparer.Ordinal);
-        foreach (var group in root.Descendants().Where(e => e.Attribute("data-cfx-pattern-kind") != null && e.Attribute("clip-path") != null)) {
+        // One scan finds the clips and their candidate users; the rewrites below do not add or remove candidates.
+        var clips = new Dictionary<string, XElement>(StringComparer.Ordinal);
+        var patternGroups = new List<XElement>();
+        var clippedGroups = new List<XElement>();
+        foreach (var element in root.Descendants()) {
+            if (element.Attribute("clip-path") != null) {
+                if (element.Attribute("data-cfx-pattern-kind") != null) patternGroups.Add(element);
+                if (element.Name.LocalName == "g") clippedGroups.Add(element);
+            }
+            if (element.Name.LocalName == "clipPath" && element.Attribute("id") is { } clipId) clips.Add(clipId.Value, element);
+        }
+        foreach (var group in patternGroups) {
             var reference = (string)group.Attribute("clip-path")!;
             if (!reference.StartsWith("url(#", StringComparison.Ordinal) || !reference.EndsWith(")", StringComparison.Ordinal)
                 || !clips.TryGetValue(reference.Substring(5, reference.Length - 6), out var clip)) continue;
@@ -95,7 +115,8 @@ internal static class HtmlCompactSvg {
                 group.Attribute("data-cfx-pattern-spacing")?.Remove();
             }
         }
-        foreach (var group in root.Descendants().Where(e => e.Name.LocalName == "g" && e.Attributes().Count() == 1 && e.Attribute("clip-path") != null).ToArray()) {
+        foreach (var group in clippedGroups) {
+            if (group.Parent == null || group.FirstAttribute != group.LastAttribute) continue;
             var clipRef = (string)group.Attribute("clip-path")!;
             if (!clipRef.StartsWith("url(#", StringComparison.Ordinal) || !clipRef.EndsWith(")", StringComparison.Ordinal)) continue;
             if (!clips.TryGetValue(clipRef.Substring(5, clipRef.Length - 6), out var clip)) continue;
@@ -107,7 +128,8 @@ internal static class HtmlCompactSvg {
         // Pattern tiles replace their clipped line scopes; retire the now-unreferenced outlines as well.
         var references = new HashSet<string>(StringComparer.Ordinal);
         foreach (var attribute in root.DescendantsAndSelf().Attributes()) {
-            foreach (Match match in Regex.Matches(attribute.Value, @"url\(#([^)]+)\)")) references.Add(match.Groups[1].Value);
+            if (attribute.Value.IndexOf("url(#", StringComparison.Ordinal) >= 0)
+                foreach (Match match in UrlReference.Matches(attribute.Value)) if (match.Groups[1].Length > 0) references.Add(match.Groups[1].Value);
             if (attribute.Name.LocalName == "href" && attribute.Value.StartsWith("#", StringComparison.Ordinal)) references.Add(attribute.Value.Substring(1));
         }
         foreach (var clip in clips.Where(pair => !references.Contains(pair.Key)).Select(pair => pair.Value)) {

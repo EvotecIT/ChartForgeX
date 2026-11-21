@@ -23,8 +23,9 @@ internal static class HtmlChartLayoutSpecification {
         if (HtmlRadialLayoutSpecification.Supports(chart)) context = HtmlRadialLayoutSpecification.SourceContext(chart, context);
         var prepared = chart.Prepare(context);
         height = (int)Math.Ceiling(prepared.Size.Height);
-        var options = new VisualSvgOptions(VisualSvgOptions.NamespaceFromExternalId(scope == null ? null : scope + "|spec"), chart.Options.SvgColorVariables).WithPatternTiles().WithoutProductFonts();
-        svg = HtmlCompactSvg.Compact(prepared.ToSvg(options), printWidth);
+        var options = new VisualSvgOptions(HtmlCompactSvg.ShortNamespace(VisualSvgOptions.NamespaceFromExternalId(scope == null ? null : scope + "|spec")), chart.Options.SvgColorVariables).WithPatternTiles().WithoutProductFonts();
+        var root = HtmlCompactSvg.Compact(prepared.ToSvg(options), printWidth);
+        svg = root.ToString(SaveOptions.DisableFormatting);
         // A declared plot band stretches with the container while gutters before it stay fixed and gutters after it move
         // with the right edge. Drawings without a plot band stay centred; only their heading keeps its left inset.
         // Only state timelines stretch their schedule plot: Gantt marks (open ends, milestones, item captions) are not yet
@@ -33,7 +34,7 @@ internal static class HtmlChartLayoutSpecification {
         var region = prepared.Regions.FirstOrDefault(item => item.Role is "cartesian-plot" or "matrix-plot" || stateLanes && item.Role == "schedule-plot");
         var plot = region?.Bounds ?? new ChartRect(24, 24, Math.Max(1, maximum - 48), Math.Max(1, height - 48));
         var matrix = chart.Series.Count > 0 && chart.Series.All(series => series.Kind == ChartSeriesKind.Heatmap);
-        var matrixNode = matrix ? XElement.Parse(svg).Descendants().FirstOrDefault(e => (string?)e.Attribute("data-cfx-role") == "heatmap") : null;
+        var matrixNode = matrix ? root.Descendants().FirstOrDefault(e => (string?)e.Attribute("data-cfx-role") == "heatmap") : null;
         var output = new StringBuilder("{\"schema\":\"chartforgex/layout-" + (HtmlRadialLayoutSpecification.Supports(chart) ? "4" : matrix ? "3" : "2") + "\",\"width\":").Append(maximum)
             .Append(",\"height\":").Append(height).Append(",\"minimum\":").Append(minimum).Append(",\"maximum\":").Append(maximum)
             .Append(",\"printWidth\":").Append(printWidth).Append(",\"plot\":[").Append(N(plot.X)).Append(',').Append(N(plot.Y)).Append(',').Append(N(plot.Width)).Append(',').Append(N(plot.Height)).Append(']')
@@ -46,7 +47,6 @@ internal static class HtmlChartLayoutSpecification {
         else output.Append(CompactTypeSizes(context.Theme.Typography, minimum));
         // Source values and labels travel with the serialized native scene, including typed observations and category/time formatting.
         HtmlChartLayoutBars.Append(output, chart, prepared);
-        var root = XElement.Parse(svg);
         output.Append(",\"series\":["); var first = true;
         foreach (var series in root.Descendants().Where(e => (string?)e.Attribute("data-cfx-role") == "series")) {
             if (!first) output.Append(','); first = false;

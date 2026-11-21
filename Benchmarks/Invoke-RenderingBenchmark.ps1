@@ -82,6 +82,23 @@ if ($Suite -eq 'XZoom') {
     & dotnet build (Join-Path $PSScriptRoot "$fixtureFolder/$fixtureName.csproj") -c Release --nologo -o $fixtureOutput "-p:ProductDll=$assemblyPath" @fixtureBuildOptions
     if ($LASTEXITCODE -ne 0) { throw "The $Suite benchmark fixture build failed." }
     $variables.FixtureAssemblyPath = Join-Path $fixtureOutput "$fixtureName.dll"
+    if ($Suite -eq 'Charts') {
+        # The responsive HTML operation needs the adapter built beside each product binary.
+        $adapterProject = Join-Path $repositoryRoot 'ChartForgeX.Interactivity.Html/ChartForgeX.Interactivity.Html.csproj'
+        if (-not $SkipBuild.IsPresent) {
+            & dotnet build $adapterProject -c Release --nologo -f net8.0
+            if ($LASTEXITCODE -ne 0) { throw 'The responsive HTML adapter build failed.' }
+        }
+        $candidateAdapter = Join-Path $repositoryRoot 'ChartForgeX.Interactivity.Html/bin/Release/net8.0/ChartForgeX.Interactivity.Html.dll'
+        $baselineAdapter = Join-Path (Split-Path -Parent $variables.BaselineAssemblyPath) 'ChartForgeX.Interactivity.Html.dll'
+        if ((Test-Path -LiteralPath $candidateAdapter) -and (Test-Path -LiteralPath $baselineAdapter)) {
+            $variables.ResponsiveAssemblyPath = $candidateAdapter
+            $variables.BaselineResponsiveAssemblyPath = $baselineAdapter
+        } elseif ($variables.BaselineAssemblyPath -eq $assemblyPath -and (Test-Path -LiteralPath $candidateAdapter)) {
+            $variables.ResponsiveAssemblyPath = $candidateAdapter
+            $variables.BaselineResponsiveAssemblyPath = $candidateAdapter
+        }
+    }
     if ($Suite -eq 'Scenes') {
         $variables.SceneGroup = $SceneGroup
         $variables.BaselineRendering = $BaselineRendering

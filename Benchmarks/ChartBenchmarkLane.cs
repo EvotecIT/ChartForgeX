@@ -10,16 +10,26 @@ public sealed class ChartBenchmarkLane {
     private readonly Func<object> _create;
     private readonly Func<object, string, string> _svg;
     private readonly Func<object, byte[]> _png;
+    private readonly Func<object, string>? _responsive;
     private readonly MethodInfo _digest;
     private object _chart;
     private string? _lastSvg;
     private byte[]? _lastPng;
+    private string? _lastResponsive;
     private string _expectedSvg, _expectedPng;
+    private string? _expectedResponsive;
 
     /// <summary>Loads one product binary and records the fixture's SVG and PNG digests outside timing.</summary>
-    public ChartBenchmarkLane(string core, string fixtures, string fixture) {
+    public ChartBenchmarkLane(string core, string fixtures, string fixture) : this(core, fixtures, fixture, null) { }
+
+    /// <summary>Also loads the matching responsive HTML adapter, when one is given, and records its fragment digest.</summary>
+    public ChartBenchmarkLane(string core, string fixtures, string fixture, string? responsive) {
         var context = new AssemblyLoadContext("Charts-" + Guid.NewGuid(), true);
-        context.Resolving += (ctx, name) => name.Name == "ChartForgeX" ? ctx.LoadFromAssemblyPath(Path.GetFullPath(core)) : null;
+        context.Resolving += (ctx, name) => {
+            if (name.Name == "ChartForgeX") return ctx.LoadFromAssemblyPath(Path.GetFullPath(core));
+            var sibling = responsive == null ? null : Path.Combine(Path.GetDirectoryName(Path.GetFullPath(responsive))!, name.Name + ".dll");
+            return sibling != null && File.Exists(sibling) ? ctx.LoadFromAssemblyPath(sibling) : null;
+        };
         var library = context.LoadFromAssemblyPath(Path.GetFullPath(core));
         var cases = context.LoadFromAssemblyPath(Path.GetFullPath(fixtures)).GetType("ChartBenchmarkCases", throwOnError: true)!;
         var create = cases.GetMethod("Create")!;
@@ -30,21 +40,33 @@ public sealed class ChartBenchmarkLane {
         var c = Expression.Parameter(typeof(object)); var scope = Expression.Parameter(typeof(string));
         _svg = Expression.Lambda<Func<object, string, string>>(Expression.Call(extensions.GetMethod("ToSvg", new[] { chartType, typeof(string) })!, Expression.Convert(c, chartType), scope), c, scope).Compile();
         _png = Expression.Lambda<Func<object, byte[]>>(Expression.Call(extensions.GetMethod("ToPng", new[] { chartType })!, Expression.Convert(c, chartType)), c).Compile();
+        if (responsive != null) {
+            var adapter = context.LoadFromAssemblyPath(Path.GetFullPath(responsive));
+            var rendererType = adapter.GetType("ChartForgeX.Interactivity.Html.HtmlResponsiveChartRenderer", throwOnError: true)!;
+            var render = rendererType.GetMethod("RenderFragment")!;
+            var renderer = Activator.CreateInstance(rendererType)!;
+            // Report hosts render responsive charts with a scope and compressed layout data.
+            _responsive = chart => (string)render.Invoke(renderer, new object?[] { chart, 480, 1600, null, "bench", true, null })!;
+        }
         _chart = _create();
         _expectedSvg = Digest(_svg(_chart, "bench"), null);
         _expectedPng = Digest(null, _png(_chart));
+        if (_responsive != null) { _expectedResponsive = Digest(_responsive(_create()), null); }
     }
+
+    /// <summary>Whether this lane loaded the responsive HTML adapter.</summary>
+    public bool HasResponsive => _responsive != null;
 
     private string Digest(string? svg, byte[]? png) => (string)_digest.Invoke(null, new object?[] { svg, png })!;
 
     /// <summary>Requires a comparison lane to retain the baseline's complete output.</summary>
     public void Expect(ChartBenchmarkLane baseline) {
-        _expectedSvg = baseline._expectedSvg; _expectedPng = baseline._expectedPng;
+        _expectedSvg = baseline._expectedSvg; _expectedPng = baseline._expectedPng; _expectedResponsive = baseline._expectedResponsive;
     }
 
     /// <summary>Creates a fresh chart outside timing, so caches on the chart instance cannot carry over.</summary>
     public void Reset() {
-        _chart = _create(); _lastSvg = null; _lastPng = null;
+        _chart = _create(); _lastSvg = null; _lastPng = null; _lastResponsive = null;
     }
 
     /// <summary>Renders the chart to SVG with a host id scope.</summary>
@@ -57,11 +79,18 @@ public sealed class ChartBenchmarkLane {
         _lastPng = _png(_chart); return _lastPng.Length;
     }
 
-    /// <summary>Fails when the SVG or PNG bytes differ from the declared baseline.</summary>
+    /// <summary>Renders the responsive HTML fragment (native preparation, compact SVG and layout data).</summary>
+    public int Responsive() {
+        if (_responsive == null) throw new InvalidOperationException("The responsive HTML adapter was not loaded.");
+        _lastResponsive = _responsive(_chart); return _lastResponsive.Length;
+    }
+
+    /// <summary>Fails when the SVG, PNG or responsive fragment bytes differ from the declared baseline.</summary>
     public void Validate() {
         if (_lastSvg != null && Digest(_lastSvg, null) != _expectedSvg) throw new InvalidOperationException("SVG changed from the baseline.");
         if (_lastPng != null && Digest(null, _lastPng) != _expectedPng) throw new InvalidOperationException("PNG changed from the baseline.");
-        if (_lastSvg == null && _lastPng == null) throw new InvalidOperationException("Nothing was rendered.");
+        if (_lastResponsive != null && Digest(_lastResponsive, null) != _expectedResponsive) throw new InvalidOperationException("The responsive fragment changed from the baseline.");
+        if (_lastSvg == null && _lastPng == null && _lastResponsive == null) throw new InvalidOperationException("Nothing was rendered.");
     }
 }
 

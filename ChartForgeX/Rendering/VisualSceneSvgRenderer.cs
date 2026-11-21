@@ -50,6 +50,7 @@ internal static partial class VisualSceneSvgRenderer {
         var images = new VisualSvgImageResources(prefix);
         fonts = options?.TextPresentation == VisualSvgTextPresentation.Automatic ? new VisualSvgFontResources(scene, textImages?.Lines) : null;
         string? resourceOwner = null;
+        PatternTileCache? patternTiles = null;
         var resourceOwners = maximumCharacters.HasValue ? new Stack<string?>() : null;
         var writer = maximumCharacters.HasValue
             ? new SvgMarkupWriter(4096, maximumCharacters.Value, observed => new VisualResourceLimitException("MaximumOutputBytes", maximumCharacters.Value, observed, resourceOwner))
@@ -138,7 +139,7 @@ internal static partial class VisualSceneSvgRenderer {
                 }
                 if (surfaces != null && surfaces.TryGetValue(i, out var surface) && options?.EffectProfile != VisualSvgEffectProfile.NativeFilters)
                     WriteBakedSurfaceShadow(writer, surface, cancellation);
-                if (options?.PatternTiles == true && WritePatternTile(writer, scene, group, prefix, ref i, paintOptions)) continue;
+                if (options?.PatternTiles == true && WritePatternTile(writer, scene, group, prefix, ref i, paintOptions, patternTiles ??= new PatternTileCache())) continue;
                 if (group.Tooltip != null) writer.StartElement("title").Text(group.Tooltip).EndElement();
                 if (group.ImageResource != null) {
                     WriteImageResource(writer, group.ImageResource, images, prefix, i);

@@ -75,6 +75,8 @@ The [visual effects reference](docs/visual-effects.md) describes the effects ava
 
 Financial indicators (moving averages, Bollinger, MACD, RSI); map label placement, clustering and callouts; org chart collapse/expand; topology ports, self/parallel edges and obstacle-aware labels; font fallback and colour fonts with reference fonts; animated WebP/MP4 behind optional adapters. I'll pick these up when a consumer needs them.
 
+- [ ] **Compact responsive SVG at the source.** `HtmlCompactSvg` still parses and writes every responsive drawing as XML to relink heatmap cells and drop clips that pattern tiles replace, about a fifth of a large report's fragment time. Emit that form from `VisualSceneSvgRenderer` under a responsive SVG option instead. Done when the Charts suite's `Responsive` operation stays byte-identical without the XML pass.
+
 ## Quality gates
 
 - **Browser lanes.** The required Windows Chromium lane and the macOS Firefox/WebKit lane run for every candidate; required runs reject skipped prerequisites. Settle readouts and transitions before screenshots, and treat intermittent capture differences as their own bug.

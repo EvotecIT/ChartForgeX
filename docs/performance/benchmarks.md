@@ -40,6 +40,12 @@ Topology, Charts and Scenes suites pair a `Baseline` and a `Candidate` lane;
 without `-BaselineAssemblyPath` both use the current binary as a repeatability
 check.
 
+The Charts suite also measures `Responsive`, the compressed
+`HtmlResponsiveChartRenderer` fragment report hosts embed, when the
+responsive adapter is built beside both binaries. For a baseline, pass the
+`ChartForgeX.dll` from a baseline `ChartForgeX.Interactivity.Html` build output,
+which holds both assemblies.
+
 ## Reference measurements
 
 Measured on 9 November 2026 on an AMD Ryzen 9 9950X3D2 with Windows 11, .NET 8
@@ -51,6 +57,7 @@ They are machine-specific and show orders of magnitude, not guarantees.
 | Rendering | 72-point report chart: SVG 29 ms, RGBA 75 ms, PNG 87 ms. 128-node force topology: SVG 183 ms, PNG 335 ms |
 | Decimation | 100,000 to 1,200 points: LTTB 11.9 ms, min/max 11.8 ms |
 | Charts | 60-lane status timeline: SVG 45 ms, PNG 228 ms. Small report charts: SVG 3–6 ms, PNG 15–34 ms |
+| Charts, responsive fragment | Measured 21 November 2026 on an Apple M5 Max, .NET 8, against the previous release in the same process. 60-lane status timeline: 58.4 → 41.0 ms, 96.7 → 66.4 MiB allocated. Two-series latency line: 6.2 → 3.3 ms, 5.9 → 4.6 MiB. 8-lane timeline: 8.2 → 5.9 ms. Output is byte-identical |
 | Topology | Small groups: prepare and SVG about 7.5 ms. 40–60 node dense meshes, overviews and replication maps: prepare 2.4–2.7 s; a reused prepared snapshot exports SVG in 6–8 ms |
 | XZoom | Zoom-bank preparation 10.9 ms (median of case medians); prepared window 0.27 ms; prepared SVG 0.62 ms |
 | Interactivity | 16 pointer hovers: 170 ms at 1,000 Scatter points, 840 ms at 5,000 |
