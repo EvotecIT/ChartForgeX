@@ -116,10 +116,11 @@ public static class HtmlStrictStyles {
         return name;
     }
 
-    // Declarations leave an attribute for a rule in a style element. Escape "<", which could close the element, and braces,
-    // which could close the rule and start another one; escaped, they stay characters inside the declaration's value.
+    // Declarations leave an attribute for a rule in a style element. Escape "<", which could close the element, braces,
+    // which could close the rule and start another one, and "/*", which would comment out the rules after it; escaped,
+    // they stay characters inside the declaration's value.
     private static string Declarations(string encoded) => WebUtility.HtmlDecode(encoded).Trim()
-        .Replace("<", "\\3c ").Replace("{", "\\7b ").Replace("}", "\\7d ");
+        .Replace("<", "\\3c ").Replace("{", "\\7b ").Replace("}", "\\7d ").Replace("/*", "/\\*");
 
     private sealed class Tag {
         private readonly List<(string Name, int Start, int End, int ValueStart, int ValueEnd)> _attributes = new();

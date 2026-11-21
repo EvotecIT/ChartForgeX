@@ -19,7 +19,8 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
       const rules = new Map();
       const index = list => {
         for (const rule of list) {
-          if (rule.styleSheet) { try { index(rule.styleSheet.cssRules); } catch { } continue; } // an imported sheet
+          // Conditional imports stay class-based.
+          if (rule.styleSheet) { if (!rule.media?.length && !rule.supportsText && rule.layerName == null) try { index(rule.styleSheet.cssRules); } catch { } continue; }
           const match = pattern.exec(rule.selectorText || ''); if (match) rules.set(match[1], rule.style);
         }
       };
@@ -47,14 +48,14 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
     for (const node of nodes) {
       for (const name of [...node.classList]) {
         if (!name.startsWith('cfx-s-')) continue;
-        // Rules a host inserted later into a stylesheet already indexed need a fresh index.
+        // Index again for rules inserted later.
         if (!reindexed && !sources.some(rules => rules.has(name))) {
           reindexed = true;
           sheets.forEach((sheet, index) => { cache.delete(sheet); sources[offset + index] = rulesOf(sheet); });
         }
         const declarations = sources.find(rules => rules.has(name))?.get(name);
         if (!declarations) continue;
-        // A property the host already set inline keeps the host's value, as it did over the class.
+        // Host inline values win, as over the class.
         for (const property of declarations)
           if (!node.style.getPropertyValue(property)) node.style.setProperty(property, declarations.getPropertyValue(property), declarations.getPropertyPriority(property));
         node.classList.remove(name);

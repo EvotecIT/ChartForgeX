@@ -90,7 +90,8 @@
       if (removed || paintChanged && !tooltipRequestAvailable(pending)) {
         // A delayed tooltip whose mark stops being painted takes its hover and guide with it, as a shown one does.
         cancelTooltipRequest(pending.root);
-        dropUnavailableReadout(pending.root, pending.node);
+        // A mark removed and put back before this record arrived keeps its hover.
+        if (!pending.node.isConnected || !pending.root.contains(pending.node) || !pointerTargetPaint(pending.node)) dropUnavailableReadout(pending.root, pending.node);
       }
     }
   };

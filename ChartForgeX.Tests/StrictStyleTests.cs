@@ -42,6 +42,8 @@ public sealed class StrictStyleTests {
         // A brace cannot end the generated rule and start one for the page.
         Assert.Equal(2, result.StyleSheet.Count(ch => ch == '}'));
         Assert.Contains("color:red\\7d body\\7b display:none", result.StyleSheet, StringComparison.Ordinal);
+        // An opened comment cannot swallow the rules after it.
+        Assert.DoesNotContain("/*", HtmlStrictStyles.Extract("<i style=\"color:red/*\"></i><u style=\"color:blue\"></u>").StyleSheet, StringComparison.Ordinal);
     }
 
     public static TheoryData<string> Outputs => new() {
@@ -109,6 +111,11 @@ public sealed class StrictStyleTests {
         Assert.Equal("hsl(38.82 calc(2 * 50%) 50%)", new TopologyScenario { Color = "hsl(38.82 calc(2 * 50%) 50%)" }.Color);
         Assert.Throws<ArgumentException>(() => scenario.Color = "red}body{display:none");
         Assert.Throws<ArgumentException>(() => scenario.Color = "#12_");
+        Assert.Throws<ArgumentException>(() => scenario.Color = "red/*");
+        Assert.Throws<ArgumentException>(() => new TopologyScenario { Color = "red */" });
+        var longReference = "var(--" + new string('a', 80) + ")";
+        Assert.Equal(longReference, new TopologyScenario { Color = longReference }.Color);
+        Assert.Equal(longReference, new ChartForgeX.Interactivity.ChartInteractionScenario { Color = longReference }.Color);
         Assert.Throws<ArgumentException>(() => new TopologyScenario { Color = "#12345" });
         Assert.Throws<ArgumentException>(() => new TopologyScenario { Color = "red;background:url(x)" });
     }
