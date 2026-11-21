@@ -106,6 +106,7 @@ public sealed class StrictStyleTests {
         scenario.Color = "rgb(37\t99\t235)";
         Assert.Equal("rgb(37 99 235)", scenario.Color);
         Assert.Equal("var(--brand_accent)", new TopologyScenario { Color = "var(--brand_accent)" }.Color);
+        Assert.Equal("hsl(38.82 calc(2 * 50%) 50%)", new TopologyScenario { Color = "hsl(38.82 calc(2 * 50%) 50%)" }.Color);
         Assert.Throws<ArgumentException>(() => scenario.Color = "red}body{display:none");
         Assert.Throws<ArgumentException>(() => scenario.Color = "#12_");
         Assert.Throws<ArgumentException>(() => new TopologyScenario { Color = "#12345" });
@@ -138,6 +139,16 @@ public sealed class StrictStyleTests {
             }
             """);
         Assert.Equal("520px", width.Trim());
+        // A property the host set inline before mounting keeps the host's value; the others are restored.
+        var kept = await session.Page.EvaluateAsync<string[]>("""
+            () => {
+              const section = document.getElementById('next').content.firstElementChild.cloneNode(true);
+              section.style.setProperty('--cfx-intrinsic-width', '999px');
+              window[Symbol.for('ChartForgeX.strictStyles')](section);
+              return [section.style.getPropertyValue('--cfx-intrinsic-width').trim(), String(section.style.length > 1)];
+            }
+            """);
+        Assert.Equal(new[] { "999px", "true" }, kept);
         Assert.Empty(await session.Page.EvaluateAsync<string[]>("() => window.__cfxViolations || []"));
     }
 
