@@ -1,6 +1,7 @@
   const bind = root => {
     const stage = root.querySelector('[data-cfx-diagram-stage]'), svg = stage?.querySelector('svg');
     if (!svg || root.getAttribute('data-cfx-runtime-bound') === 'true') return;
+    window[Symbol.for('ChartForgeX.strictStyles')]?.(root);
     const lifetime = window[Symbol.for('ChartForgeX.adapterLifetimes')].create(root, 'diagram');
     window[Symbol.for('ChartForgeX.nativeTextExport')]?.mount(root, release => lifetime.own(release));
     const listen = (target, name, listener, options) => lifetime.listen(target, name, listener, options);

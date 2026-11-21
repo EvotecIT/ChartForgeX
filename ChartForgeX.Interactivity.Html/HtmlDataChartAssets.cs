@@ -19,17 +19,18 @@ public static class HtmlDataChartAssets {
         // Browser projections consume the same surface policy as native chart layout.
         // Ship ScriptFile, which contains this resolved policy, rather than the resource template.
         var theme = VisualTheme.Graphite();
+        var options = new ChartForgeX.Core.ChartOptions(); var gauge = new ChartForgeX.Core.ChartGaugeOptions();
         var palette = string.Join(",", theme.Resolve(VisualThemeMode.Light).Palette.Select(color =>
             "\"#" + color.R.ToString("x2") + color.G.ToString("x2") + color.B.ToString("x2") + "\""));
         var policy = FormattableString.Invariant($$"""
-            {"bandFill":{{ChartMarkSurface.BandFill}},"gap":{{ChartMarkSurface.SurfaceGap}},"separator":{{ChartMarkSurface.StackSeparator}},"minimumSegment":{{ChartMarkSurface.MinimumSegmentExtent}},"columnMaximum":{{theme.MaximumBarWidth}},"barMaximum":{{ChartMarkSurface.MaximumThickness(theme.MaximumBarWidth, true)}},"palette":[{{palette}}],"lineWidth":{{theme.SeriesStrokeWidth}},"markerRadius":{{theme.MarkerRadius}},"areaOpacity":{{theme.AreaOpacity}}}
+            {"bandFill":{{ChartMarkSurface.BandFill}},"gap":{{ChartMarkSurface.SurfaceGap}},"separator":{{ChartMarkSurface.StackSeparator}},"minimumSegment":{{ChartMarkSurface.MinimumSegmentExtent}},"columnMaximum":{{theme.MaximumBarWidth}},"barMaximum":{{ChartMarkSurface.MaximumThickness(theme.MaximumBarWidth, true)}},"palette":[{{palette}}],"lineWidth":{{theme.SeriesStrokeWidth}},"markerRadius":{{theme.MarkerRadius}},"areaOpacity":{{theme.AreaOpacity}},"donutInner":{{options.DonutInnerRadiusRatio}},"gaugeStart":{{gauge.StartAngleDegrees}},"gaugeSweep":{{gauge.SweepAngleDegrees}}}
             """);
         return reader.ReadToEnd().Replace("__CFX_NATIVE_SURFACE__", policy);
     });
     private static readonly Lazy<HtmlAssetFile> ScriptAsset = new(() => new HtmlAssetFile("cfx-renderer", "js", Script));
 
     /// <summary>
-    /// Gets the standalone script for line, area, bar, column, stacked, win/loss and bullet charts.
+    /// Gets the standalone script for line, area, bar, column, stacked, win/loss, bullet, donut, gauge and state-timeline charts.
     /// The renderer accepts data descriptors and supports updates, selection and explicit disposal.
     /// </summary>
     public static string Script => ScriptResource.Value;

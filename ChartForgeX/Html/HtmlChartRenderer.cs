@@ -9,6 +9,16 @@ namespace ChartForgeX.Html;
 /// Renders charts as dependency-free HTML with inline SVG.
 /// </summary>
 public sealed partial class HtmlChartRenderer {
+    private string? _styleNonce;
+
+    /// <summary>Gets or sets the content security policy nonce for style elements. When set, fragments and pages carry no
+    /// <c>style</c> attributes: every inline style and style element moves into one <c>style</c> element with this nonce
+    /// (see <see cref="HtmlStrictStyles"/>).</summary>
+    public string? StyleNonce {
+        get => _styleNonce;
+        set => _styleNonce = string.IsNullOrWhiteSpace(value) ? null : value!.Trim();
+    }
+
     /// <summary>
     /// Renders a chart as an embeddable HTML fragment.
     /// </summary>
@@ -22,7 +32,7 @@ public sealed partial class HtmlChartRenderer {
     /// <param name="chart">The chart to render.</param>
     /// <param name="idScope">A stable scope used to keep IDs unique when embedding equivalent fragments together.</param>
     /// <returns>An HTML fragment containing inline SVG.</returns>
-    public string RenderFragment(Chart chart, string idScope) => RenderFragment(chart, idScope, constrainMaxWidth: true);
+    public string RenderFragment(Chart chart, string idScope) => HtmlStrictStyles.Apply(RenderFragment(chart, idScope, constrainMaxWidth: true), _styleNonce);
 
     private string RenderFragment(Chart chart, string idScope, bool constrainMaxWidth) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
@@ -38,7 +48,7 @@ public sealed partial class HtmlChartRenderer {
     /// <returns>An HTML fragment containing SVG and, when requested, one captioned table per series.</returns>
     /// <exception cref="NotSupportedException">A requested table contains a typed series without a table representation.</exception>
     public string RenderFragment(Chart chart, VisualSvgOptions svgOptions, ChartDataTableMode dataTable = ChartDataTableMode.None) =>
-        RenderFragment(chart, svgOptions, dataTable, constrainMaxWidth: true);
+        HtmlStrictStyles.Apply(RenderFragment(chart, svgOptions, dataTable, constrainMaxWidth: true), _styleNonce);
 
     private string RenderFragment(Chart chart, VisualSvgOptions svgOptions, ChartDataTableMode dataTable, bool constrainMaxWidth) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
@@ -79,7 +89,7 @@ public sealed partial class HtmlChartRenderer {
             .RawTrusted(RenderFragment(chart, "html-page", constrainMaxWidth: false)).Line()
             .EndElement().Line()
             .EndElement();
-        return writer.Build();
+        return HtmlStrictStyles.Apply(writer.Build(), _styleNonce);
     }
 
     internal static void WriteDocumentHead(HtmlMarkupWriter writer, string title, string? css) {

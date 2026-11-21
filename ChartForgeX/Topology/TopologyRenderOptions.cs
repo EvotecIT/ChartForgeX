@@ -207,6 +207,11 @@ public sealed class TopologyRenderOptions {
     /// <summary>Gets or sets the optional HTML synchronization group name used by topology wrappers on the same page.</summary>
     public string? HtmlSyncGroupName { get; set; }
 
+    /// <summary>Gets or sets the content security policy nonce for topology HTML. When set, the HTML carries no <c>style</c>
+    /// attributes: every inline style and style element moves into one <c>style</c> element with this nonce
+    /// (see <see cref="ChartForgeX.Html.HtmlStrictStyles"/>), and interactive script elements carry it too.</summary>
+    public string? HtmlNonce { get; set; }
+
     /// <summary>Gets or sets the optional scenario id to activate when an interactive HTML page loads.</summary>
     public string? ActiveScenarioId { get; set; }
 

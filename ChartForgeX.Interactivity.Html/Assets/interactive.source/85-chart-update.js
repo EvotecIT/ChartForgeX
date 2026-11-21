@@ -3,8 +3,12 @@
     let section = value;
     if (typeof value === 'string') {
       const template = document.createElement('template'); template.innerHTML = value.trim();
+      // A strict-style section arrives with its own stylesheet first; its rules become the section's inline styles.
+      const strict = template.content.firstElementChild?.matches('style[data-cfx-strict-styles]') ? template.content.firstElementChild : null;
+      strict?.remove();
       if (template.content.children.length !== 1) throw new TypeError('Section: one generated chart; no assets.');
       section = template.content.firstElementChild;
+      if (strict) window[Symbol.for('ChartForgeX.strictStyles')]?.(section, strict.textContent);
     }
     if (!(section instanceof Element) || !section.matches('section.cfx-interactive-chart'))
       throw new TypeError('Section: generated interactive chart required.');

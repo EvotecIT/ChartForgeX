@@ -30,30 +30,30 @@ if (-not [System.IO.File]::Exists($PowerForgeCliPath)) {
 
 $assets = @(
     @{
-        Prelude = 'ChartForgeX.Interactivity.Html/Assets/adapter-localization.js'
+        Prelude = 'ChartForgeX.Interactivity.Html/Assets/adapter-shared.js'
         Source = 'ChartForgeX.Interactivity.Html/Assets/topology-interaction.source'
         Target = 'ChartForgeX.Interactivity.Html/Assets/topology-interaction.js'
     },
     @{
-        Prelude = 'ChartForgeX.Interactivity.Html/Assets/adapter-localization.js'
+        Prelude = 'ChartForgeX.Interactivity.Html/Assets/adapter-shared.js'
         Source = 'ChartForgeX.Interactivity.Html/Assets/diagram-interaction.source'
         Target = 'ChartForgeX.Interactivity.Html/Assets/diagram-interaction.js'
     },
     @{
-        Prelude = 'ChartForgeX.Interactivity.Html/Assets/adapter-localization.js'
+        Prelude = 'ChartForgeX.Interactivity.Html/Assets/adapter-shared.js'
         Source = 'ChartForgeX.Interactivity.Html/Assets/interactive.source'
         Target = 'ChartForgeX.Interactivity.Html/Assets/interactive.js'
         OptimizeJavaScript = $true
     },
     @{
-        Prelude = 'ChartForgeX.Interactivity.Html/Assets/adapter-localization.js'
+        Prelude = 'ChartForgeX.Interactivity.Html/Assets/adapter-shared.js'
         Source = 'ChartForgeX.Interactivity.Html/Assets/interactive.source'
         Entry = 'ChartForgeX.Interactivity.Html/Assets/interactive.entries/core.js'
         Target = 'ChartForgeX.Interactivity.Html/Assets/interactive.core.js'
         OptimizeJavaScript = $true
     },
     @{
-        Prelude = 'ChartForgeX.Interactivity.Html/Assets/adapter-localization.js'
+        Prelude = 'ChartForgeX.Interactivity.Html/Assets/adapter-shared.js'
         Source = 'ChartForgeX.Interactivity.Html/Assets/interactive.source'
         Entry = 'ChartForgeX.Interactivity.Html/Assets/interactive.entries/standalone.js'
         Target = 'ChartForgeX.Interactivity.Html/Assets/interactive.standalone.js'

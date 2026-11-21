@@ -41,7 +41,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
         HtmlInteractivePage.EndDocument(writer, options.ScriptNonce, options.ExternalAssets,
             options.Runtime, options.Interaction.Features, options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive,
             HtmlInteractiveAssets.FeatureBundlesFor(options, chart));
-        return writer.Build();
+        return HtmlStrictStyles.Apply(writer.Build(), options.StyleNonce);
     }
 
     /// <summary>
@@ -78,7 +78,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
             .RawTrusted(HtmlInteractiveAssets.ScriptFor(options.Runtime, options.Interaction.Features,
                 options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive))
             .EndElement();
-        return writer.Build();
+        return HtmlStrictStyles.Apply(writer.Build(), options.StyleNonce);
     }
 
     /// <summary>
@@ -95,7 +95,9 @@ public sealed partial class HtmlInteractiveChartRenderer {
     /// <param name="configure">An optional configuration callback for the HTML interaction adapter.</param>
     /// <returns>An embeddable interactive HTML fragment that expects the caller to register interactive chart assets.</returns>
     public string RenderFragmentWithoutAssets(Chart chart, Action<HtmlChartInteractionOptions>? configure) {
-        return PrepareSection(chart, configure: configure).Html;
+        HtmlChartInteractionOptions? configured = null;
+        var html = PrepareSection(chart, configure: options => { configure?.Invoke(options); configured = options; }).Html;
+        return HtmlStrictStyles.Apply(html, configured?.StyleNonce);
     }
 
     /// <summary>Prepares an asset-free interactive section and its matching detached native scene.</summary>

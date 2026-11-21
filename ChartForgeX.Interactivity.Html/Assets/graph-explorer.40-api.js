@@ -66,7 +66,7 @@
     }
     const style = node.style || {};
     const markStyle = [style.backgroundColor ? `--cfx-node-fill:${style.backgroundColor}` : '', style.borderColor ? `--cfx-node-stroke:${style.borderColor}` : ''].filter(Boolean).join(';');
-    if (markStyle) mark.setAttribute('style', markStyle);
+    if (markStyle) mark.style.cssText = markStyle;
     element.appendChild(mark);
     if ((shape === 'image' || shape === 'imageRect') && node.imageUrl) {
       const image = svgElement(root, 'image');
@@ -103,12 +103,12 @@
     details.setAttribute('data-node-details-for', node.id); details.setAttribute('data-cfx-status', node.status || ''); details.setAttribute('transform', `translate(${x} ${y})`);
     const labelText = node.label || node.id;
     if (node.style?.labelBackgroundColor && !card) {
-      const background = svgElement(root, 'rect'); background.classList.add('cfx-graph-node-label-bg'); background.setAttribute('x', String(-Math.max(24, labelText.length * 3.8))); background.setAttribute('y', String(shape === 'text' ? -9 : size + 7)); background.setAttribute('width', String(Math.max(48, labelText.length * 7.6))); background.setAttribute('height', '18'); background.setAttribute('rx', '5'); background.setAttribute('style', `fill:${node.style.labelBackgroundColor};stroke:none;stroke-width:0;pointer-events:none`); details.appendChild(background);
+      const background = svgElement(root, 'rect'); background.classList.add('cfx-graph-node-label-bg'); background.setAttribute('x', String(-Math.max(24, labelText.length * 3.8))); background.setAttribute('y', String(shape === 'text' ? -9 : size + 7)); background.setAttribute('width', String(Math.max(48, labelText.length * 7.6))); background.setAttribute('height', '18'); background.setAttribute('rx', '5'); background.style.cssText = `fill:${node.style.labelBackgroundColor};stroke:none;stroke-width:0;pointer-events:none`; details.appendChild(background);
     }
     const label = svgElement(root, 'text'); label.classList.add('cfx-graph-node-label');
     if (card) { label.classList.add('cfx-graph-node-card-label'); label.setAttribute('x', String(cardX)); label.setAttribute('data-cfx-full-label', labelText); }
     label.setAttribute('y', card ? String(graphCardCaptionBaseline(node)) : shape === 'text' ? '4' : String(size + 18)); label.textContent = card ? graphCardText(labelText, size) : labelText;
-    if (node.style?.labelColor) label.setAttribute('style', `--cfx-node-label-explicit:${node.style.labelColor}`);
+    if (node.style?.labelColor) label.style.cssText = `--cfx-node-label-explicit:${node.style.labelColor}`;
     details.appendChild(label);
     if (node.secondaryLabel) {
       const secondary = svgElement(root, 'text'); secondary.classList.add('cfx-graph-node-secondary');
@@ -120,12 +120,12 @@
       const badge = svgElement(root, 'g'); badge.classList.add('cfx-graph-node-badge'); badge.setAttribute('transform', `translate(${geometry.x} ${geometry.y})`);
       const surface = svgElement(root, geometry.width <= 16 ? 'circle' : 'rect');
       Object.entries(geometry.width <= 16 ? { r: 8 } : { x: -geometry.width / 2, y: -8, width: geometry.width, height: 16, rx: 8 }).forEach(([key, value]) => surface.setAttribute(key, String(value)));
-      surface.setAttribute('style', 'fill:var(--cfx-color-text);stroke:var(--cfx-color-paper);stroke-width:2'); badge.appendChild(surface);
-      const text = svgElement(root, 'text'); text.setAttribute('y', '3.5'); text.setAttribute('style', 'fill:var(--cfx-color-paper);stroke:none'); text.textContent = geometry.text; badge.appendChild(text); details.appendChild(badge);
+      surface.style.cssText = 'fill:var(--cfx-color-text);stroke:var(--cfx-color-paper);stroke-width:2'; badge.appendChild(surface);
+      const text = svgElement(root, 'text'); text.setAttribute('y', '3.5'); text.style.cssText = 'fill:var(--cfx-color-paper);stroke:none'; text.textContent = geometry.text; badge.appendChild(text); details.appendChild(badge);
     }
     const status = String(node.status || '').toLowerCase();
     if (status && status !== 'unknown') {
-      const indicator = svgElement(root, 'circle'); indicator.classList.add('cfx-graph-node-status'); indicator.setAttribute('cx', String(card ? size * 1.45 - 15 : -size * .8)); indicator.setAttribute('cy', String(card ? cardHalfHeight - 14 : -size * .8)); indicator.setAttribute('r', String(Math.min(4.5, Math.max(1.35, size * .28)))); indicator.setAttribute('style', `fill:${graphPatchStatusColor(status)};stroke:var(--cfx-color-paper);stroke-width:2`); details.appendChild(indicator);
+      const indicator = svgElement(root, 'circle'); indicator.classList.add('cfx-graph-node-status'); indicator.setAttribute('cx', String(card ? size * 1.45 - 15 : -size * .8)); indicator.setAttribute('cy', String(card ? cardHalfHeight - 14 : -size * .8)); indicator.setAttribute('r', String(Math.min(4.5, Math.max(1.35, size * .28)))); indicator.style.cssText = `fill:${graphPatchStatusColor(status)};stroke:var(--cfx-color-paper);stroke-width:2`; details.appendChild(indicator);
     }
   };
   const graphPatchVirtualElement = (root, role, className) => {

@@ -11,6 +11,34 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
   if (typeof value === 'string') text = value;
   return values ? text.replace(/\{([^{}]+)\}/g, (token, name) => Object.prototype.hasOwnProperty.call(values, name) ? String(values[name]) : token) : text;
 };
+// Strict CSP: runtimes turn HtmlStrictStyles' cfx-s-* classes back into inline styles through the CSSOM when they mount.
+window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
+  const pattern = /^\.(cfx-s-[0-9a-f]{12})\.\1\.\1$/, cache = new WeakMap();
+  const rulesOf = sheet => {
+    if (!cache.has(sheet)) {
+      const rules = new Map();
+      try { for (const rule of sheet.cssRules) { const match = pattern.exec(rule.selectorText || ''); if (match) rules.set(match[1], rule.style.cssText); } } catch { }
+      cache.set(sheet, rules);
+    }
+    return cache.get(sheet);
+  };
+  return (root, css) => {
+    const nodes = root?.querySelectorAll ? [...(root.matches('[class*="cfx-s-"]') ? [root] : []), ...root.querySelectorAll('[class*="cfx-s-"]')] : [];
+    if (!nodes.length) return;
+    const sources = [];
+    if (css) try { const sheet = new CSSStyleSheet(); sheet.replaceSync(css); sources.push(rulesOf(sheet)); } catch { }
+    for (const owner of new Set([root.getRootNode(), root.ownerDocument])) for (const sheet of owner?.styleSheets || []) sources.push(rulesOf(sheet));
+    for (const node of nodes) {
+      for (const name of [...node.classList]) {
+        const text = name.startsWith('cfx-s-') && sources.find(rules => rules.has(name))?.get(name);
+        if (text === undefined || text === false) continue;
+        node.style.cssText = node.style.cssText ? node.style.cssText + ';' + text : text;
+        node.classList.remove(name);
+      }
+      if (!node.classList.length) node.removeAttribute('class');
+    }
+  };
+})();
 (() => {
   // Flow and sequence exploration over native script-free SVG. Facts come from the model the adapter
   // captured beside the SVG; the runtime only finds the matching native groups and paints state.
@@ -143,6 +171,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
   const bind = root => {
     const stage = root.querySelector('[data-cfx-diagram-stage]'), svg = stage?.querySelector('svg');
     if (!svg || root.getAttribute('data-cfx-runtime-bound') === 'true') return;
+    window[Symbol.for('ChartForgeX.strictStyles')]?.(root);
     const lifetime = window[Symbol.for('ChartForgeX.adapterLifetimes')].create(root, 'diagram');
     window[Symbol.for('ChartForgeX.nativeTextExport')]?.mount(root, release => lifetime.own(release));
     const listen = (target, name, listener, options) => lifetime.listen(target, name, listener, options);

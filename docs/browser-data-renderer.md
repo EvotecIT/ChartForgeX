@@ -38,7 +38,20 @@ document.getElementById("close-chart").addEventListener("click", () => {
 
 ## Data contract
 
-The supported types are `line`, `area`, `bar` (horizontal), `column`, `stacked` (vertical), `win-loss` and `bullet`. Bullet accepts a measure series and an optional target series. Win/loss draws the sign and returns the original numeric value when selected.
+The supported types are `line`, `area`, `bar` (horizontal), `column`, `stacked` (vertical), `win-loss`, `bullet`, `donut`, `gauge` and `state-timeline`. Bullet accepts a measure series and an optional target series. Win/loss draws the sign and returns the original numeric value when selected.
+
+A donut takes one series of nonnegative values, one per category; each category is a slice and a legend entry, and the total sits in the centre. A gauge takes one category, a value series and an optional target series, plus optional `minimum` (default 0) and `maximum` (default the larger of 1 and the values). Its arc and hole follow the native gauge and donut defaults.
+
+A state timeline draws each series as a lane over the categories, which are periods. It needs `states`, up to 32 of `{ id, label, color? }`, and each value is a state index or `null` for no data. Consecutive periods in one state form one mark, named by its first period. Without a `color`, state `n` uses `--cfx-state-n`, then the palette; colours must be hexadecimal.
+
+```javascript
+const chart = ChartForgeXRenderer.create(host, {
+  type: "state-timeline", label: "Site health",
+  states: [{ id: "up", label: "Up", color: "#2f9e44" }, { id: "down", label: "Down", color: "#d6336c" }],
+  categories: hours,                                  // [{ id, label, instant }]
+  series: [{ id: "dc1", name: "DC1", values: [0, 0, 1] }]
+});
+```
 
 Each category has a unique nonempty `id` and a visible `label`. Each series has a unique nonempty `id`, a visible `name` and exactly one finite number or `null` per category. Null observations leave gaps in lines and areas. Zero observations retain zero ink and have a separate pointer target when selection is enabled. Strings are limited to 2,000 characters, categories to 10,000 and series to 32. Sparse arrays and numeric domains whose span overflows are rejected.
 
@@ -50,7 +63,7 @@ Selection supports click, Enter and Space. Arrow keys, Home and End move between
 
 The renderer measures its host and redraws through `ResizeObserver`. Category band fill, grouped gaps, bar caps, stack separators, palette, line width, marker radius and area opacity come from native ChartForgeX policy when the asset is emitted. Browser conformance tests compare slot bounds against native layout across narrow and wide hosts.
 
-`update` validates a complete descriptor before replacing the accepted drawing. Host-authored siblings remain in place. Creating another controller for the same host disposes the prior drawing. `destroy` is idempotent and releases the observer, pending animation frame, event listeners and owned SVG. Updates after disposal throw.
+`update` validates a complete descriptor before replacing the accepted drawing. For live data, `append({ categories, values }, { maximum })` adds periods to the accepted chart, with one value per new category for each series named in `values` (other series get `null`), and keeps at most `maximum` periods. `replaceSeries(series)` replaces one series by id, or adds it. Both validate the resulting chart like `update` and keep selection and focus. Host-authored siblings remain in place. Creating another controller for the same host disposes the prior drawing. `destroy` is idempotent and releases the observer, pending animation frame, event listeners and owned SVG. Updates after disposal throw.
 
 Set `--cfx-color-text`, `--cfx-color-border` and `--cfx-series-1` through `--cfx-series-32` on the host to inherit a page's theme. Labels are inserted as text. Titles expose complete labels when the axis or legend shortens them.
 

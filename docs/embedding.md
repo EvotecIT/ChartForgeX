@@ -186,11 +186,29 @@ The fallback covers numeric point series, sparklines, schedules, comparison rang
 
 For an MVC/Razor page, insert the generated fragment with `@Html.Raw(Model.ChartHtml)`. For a static Blazor component, use `@((MarkupString)ChartHtml)`. Treat only ChartForgeX-generated markup as trusted: keep page content in normal encoded bindings and provide navigation URLs from the host's own routing rules.
 
+## Dashboard widths
+
+A dashboard card that reflows from desktop to phone can carry one native drawing per width:
+
+```csharp
+var html = new HtmlChartRenderer().RenderWidths(chart, "latency"); // 800, 600 and 390 pixels
+```
+
+Each drawing is prepared at its own width, so ticks, captions and legends are laid out for it rather than scaled. A container query shows the widest drawing that fits the card; below the narrowest width that drawing scales down. It needs no script, works for every chart family and honours `StyleNonce`. Pass other widths as extra arguments. For Cartesian, matrix, radial and state-timeline charts, `HtmlResponsiveChartRenderer` lays out one drawing at any width in the browser instead; interactive charts use `HtmlChartResponsiveLayout.Adaptive`.
+
 ## ID scopes, CSP and testing
 
 Pass a unique, stable `idPrefix` for every occurrence on a page, including repeated equal charts. An automatic content namespace is deterministic, so two identical occurrences otherwise reuse definition IDs. Use a route-safe prefix such as `release-4-track`; keep source record identifiers in validated host data attributes.
 
-Static SVG, native links, fluid tracks and data tables need no inline script. The static output includes SVG presentation/style attributes, and table fallbacks include scoped CSS. Account for those styles in the page's `style-src` policy; this API does not supply a CSP nonce. Interactive adapters have a separate script policy and are optional.
+Static SVG, native links, fluid tracks and data tables need no inline script. By default the output includes `style` attributes and scoped `style` elements. For a page whose policy allows styles only from nonce'd elements (`style-src 'nonce-…'` without `'unsafe-inline'`), set a style nonce:
+
+```csharp
+var html = new HtmlChartRenderer { StyleNonce = nonce }.RenderFragment(chart, "activity-daily");
+```
+
+The output then has no `style` attributes. Each inline style becomes a generated `cfx-s-…` class, and its declarations, together with every `style` element, move into one `<style nonce="…">` element. The same option exists on `HtmlChartInteractionOptions`, `HtmlInteractiveDashboardOptions`, `HtmlGraphExplorerOptions` and `HtmlResponsiveChartRenderer` (`StyleNonce`, next to `ScriptNonce`), and on `TopologyRenderOptions` as `HtmlNonce`, which also marks topology script elements. Interactive runtimes move the generated classes back to inline styles through the CSS object model when they mount, which a strict policy allows, so tooltips, resizing and updates behave as before.
+
+Hosts that deliver styles themselves call `HtmlStrictStyles.Extract(html)` on any ChartForgeX output, including `HtmlChartSection.Html`. It returns the `Markup` without inline styles and the `StyleSheet` to register once in their own nonce'd element or stylesheet file. Equal declarations get the same class name in every fragment, so the stylesheets of several fragments can be concatenated. `controller.update(html)` accepts a strict section that starts with its own `style` element.
 
 Test links and hooks against the [DOM contract](https://chartforgex.com/docs/dom-contract/), not child order or generated definition IDs. Check each link's URL, target, accessible label and tab stop; check host attributes verbatim; resize the HTML track column and measure text and marker dimensions. Inspect desktop and phone output in both page themes, and test the actual rendered page's keyboard navigation and data disclosure. Try the [linked columns, support schedule and shared strips](https://chartforgex.com/examples/generated/embedding/light.html), or open their companion source-and-output story.
 

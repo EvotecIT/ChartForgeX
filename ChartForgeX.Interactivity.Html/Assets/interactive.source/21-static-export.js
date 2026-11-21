@@ -21,7 +21,7 @@
         if (value === null) root.removeAttribute(name); else root.setAttribute(name, value);
       }
       for (const [node, value] of branchPaint) {
-        if (value === null) node.removeAttribute('style'); else node.setAttribute('style', value);
+        if (value === null) node.removeAttribute('style'); else node.style.cssText = value;
       }
       svg.getBoundingClientRect();
       if (probe === null) root.removeAttribute('data-cfx-export-probe'); else root.setAttribute('data-cfx-export-probe', probe);

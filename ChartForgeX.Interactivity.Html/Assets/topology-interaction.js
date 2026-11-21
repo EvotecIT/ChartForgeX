@@ -11,6 +11,34 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
   if (typeof value === 'string') text = value;
   return values ? text.replace(/\{([^{}]+)\}/g, (token, name) => Object.prototype.hasOwnProperty.call(values, name) ? String(values[name]) : token) : text;
 };
+// Strict CSP: runtimes turn HtmlStrictStyles' cfx-s-* classes back into inline styles through the CSSOM when they mount.
+window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
+  const pattern = /^\.(cfx-s-[0-9a-f]{12})\.\1\.\1$/, cache = new WeakMap();
+  const rulesOf = sheet => {
+    if (!cache.has(sheet)) {
+      const rules = new Map();
+      try { for (const rule of sheet.cssRules) { const match = pattern.exec(rule.selectorText || ''); if (match) rules.set(match[1], rule.style.cssText); } } catch { }
+      cache.set(sheet, rules);
+    }
+    return cache.get(sheet);
+  };
+  return (root, css) => {
+    const nodes = root?.querySelectorAll ? [...(root.matches('[class*="cfx-s-"]') ? [root] : []), ...root.querySelectorAll('[class*="cfx-s-"]')] : [];
+    if (!nodes.length) return;
+    const sources = [];
+    if (css) try { const sheet = new CSSStyleSheet(); sheet.replaceSync(css); sources.push(rulesOf(sheet)); } catch { }
+    for (const owner of new Set([root.getRootNode(), root.ownerDocument])) for (const sheet of owner?.styleSheets || []) sources.push(rulesOf(sheet));
+    for (const node of nodes) {
+      for (const name of [...node.classList]) {
+        const text = name.startsWith('cfx-s-') && sources.find(rules => rules.has(name))?.get(name);
+        if (text === undefined || text === false) continue;
+        node.style.cssText = node.style.cssText ? node.style.cssText + ';' + text : text;
+        node.classList.remove(name);
+      }
+      if (!node.classList.length) node.removeAttribute('class');
+    }
+  };
+})();
 // Region presentation bindings share the adapter's mount/dispose lifetime and public event contract.
 (() => {
   window[Symbol.for('ChartForgeX.topologyRegions')] = (wrapper, lifetime) => {
@@ -153,6 +181,7 @@ window[Symbol.for('ChartForgeX.uiText')] ||= (root, key, text, values) => {
     const wrappers = root?.matches?.(selector) ? [root] : Array.from((root || document).querySelectorAll(selector));
     for (const wrapper of wrappers) {
     if (wrapper.getAttribute('data-cfx-runtime-bound') === 'true') continue;
+    window[Symbol.for('ChartForgeX.strictStyles')]?.(wrapper);
     const lifetime = window[Symbol.for('ChartForgeX.adapterLifetimes')].create(wrapper, 'topology:' + selector);
     window[Symbol.for('ChartForgeX.nativeTextExport')].mount(wrapper, release => lifetime.own(release));
     const listen = (target, name, listener, options) => lifetime.listen(target, name, listener, options);

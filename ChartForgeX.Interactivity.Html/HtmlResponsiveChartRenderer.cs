@@ -1,4 +1,5 @@
 using System;
+using ChartForgeX.Html;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
@@ -31,6 +32,14 @@ public sealed class HtmlResponsiveChartRenderer {
     /// once when using bundled fonts, unless the host already supplies them. Explicitly registered families require matching host-provided browser CSS.</remarks>
     public static string Stylesheet => "@media print{[data-cfx-responsive-chart]{min-width:0!important}}";
 
+    /// <summary>Gets or sets the content security policy nonce for the fragment's script element.</summary>
+    public string? ScriptNonce { get; set; }
+
+    /// <summary>Gets or sets the content security policy nonce for style elements. When set, the fragment carries no
+    /// <c>style</c> attributes: every inline style and style element moves into one <c>style</c> element with this nonce
+    /// (see <see cref="HtmlStrictStyles"/>).</summary>
+    public string? StyleNonce { get; set; }
+
     /// <summary>Renders an offline fragment with one serialized specification and a script-free native fallback.</summary>
     /// <param name="chart">The caller's chart; authored size and axis policies are restored after preparation.</param>
     /// <param name="minimumWidth">Width below which the container scrolls.</param>
@@ -42,7 +51,7 @@ public sealed class HtmlResponsiveChartRenderer {
     /// <returns>A self-contained fragment with an offline debounced resize and print lifecycle.</returns>
     public string RenderFragment(Chart chart, int minimumWidth = 480, int maximumWidth = 1600, int? height = null,
         string? idScope = null, bool compressLayouts = false, int? printWidth = null) =>
-        Render(chart, minimumWidth, maximumWidth, height, idScope, compressLayouts, printWidth, true);
+        HtmlStrictStyles.Apply(Render(chart, minimumWidth, maximumWidth, height, idScope, compressLayouts, printWidth, true, Nonce(ScriptNonce)), Nonce(StyleNonce));
 
     /// <summary>Renders a script-free host fragment with inert layout data for composition inside an interactive section.</summary>
     /// <remarks>Install <see cref="Stylesheet"/>, <see cref="InitializationScript"/> and matching fonts outside the section.
@@ -58,10 +67,12 @@ public sealed class HtmlResponsiveChartRenderer {
     /// <returns>The drawing and inert layout data, without style or executable script elements.</returns>
     public string RenderFragmentWithoutAssets(Chart chart, int minimumWidth = 480, int maximumWidth = 1600, int? height = null,
         string? idScope = null, bool compressLayouts = false, int? printWidth = null) =>
-        Render(chart, minimumWidth, maximumWidth, height, idScope, compressLayouts, printWidth, false);
+        HtmlStrictStyles.Apply(Render(chart, minimumWidth, maximumWidth, height, idScope, compressLayouts, printWidth, false, null), Nonce(StyleNonce));
+
+    private static string? Nonce(string? value) => string.IsNullOrWhiteSpace(value) ? null : value!.Trim();
 
     private static string Render(Chart chart, int minimumWidth, int maximumWidth, int? height,
-        string? idScope, bool compressLayouts, int? printWidth, bool assets) {
+        string? idScope, bool compressLayouts, int? printWidth, bool assets, string? scriptNonce) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         if (minimumWidth < 160 || maximumWidth < minimumWidth || maximumWidth > 8192) throw new ArgumentOutOfRangeException(nameof(minimumWidth));
         if (height <= 0 || printWidth <= 0) throw new ArgumentOutOfRangeException(nameof(height));
@@ -76,7 +87,7 @@ public sealed class HtmlResponsiveChartRenderer {
                 : "<span hidden " + attribute + ">" + WebUtility.HtmlEncode(data) + "</span>";
             var runtime = HtmlRadialLayoutSpecification.Supports(chart) ? RadialScript.Value + Script.Value : Script.Value;
             return "<div data-cfx-responsive-chart style=\"min-width:" + minimumWidth + "px;max-width:" + maximumWidth + "px;margin-inline:auto\">" +
-                (assets ? "<style>" + Stylesheet + "</style>" : "") + fallback + payload + (assets ? "<script>" + runtime + "</script>" : "") + "</div>";
+                (assets ? "<style>" + Stylesheet + "</style>" : "") + fallback + payload + (assets ? (scriptNonce == null ? "<script>" : "<script nonce=\"" + WebUtility.HtmlEncode(scriptNonce) + "\">") + runtime + "</script>" : "") + "</div>";
         } finally { chart.WithSize(size.Width, size.Height); chart.Options.XAxis = x; chart.Options.YAxis = y; chart.Options.HeatmapColumnWindow = window; }
     }
     private static string Compress(string text) {

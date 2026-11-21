@@ -1,4 +1,5 @@
 using System;
+using ChartForgeX.Html;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -42,7 +43,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         if (options.ExternalAssets == null) AppendScript(writer, options);
         else writer.Append(ExternalAssetMarkup(markup => HtmlInteractiveAssetFiles.WriteScript(markup, options.ExternalAssets, HtmlInteractiveAssetFiles.GraphExplorerScript, string.IsNullOrWhiteSpace(options.ScriptNonce) ? null : options.ScriptNonce)));
         writer.Append("</body></html>");
-        return writer.ToString();
+        return HtmlStrictStyles.Apply(writer.ToString(), StyleNonce(options));
     }
 
     /// <summary>
@@ -60,8 +61,10 @@ public sealed partial class HtmlGraphExplorerRenderer {
         writer.Append("</style>");
         writer.Append(RenderGraph(scene, options));
         AppendScript(writer, options);
-        return writer.ToString();
+        return HtmlStrictStyles.Apply(writer.ToString(), StyleNonce(options));
     }
+
+    private static string? StyleNonce(HtmlGraphExplorerOptions options) => string.IsNullOrWhiteSpace(options.StyleNonce) ? null : options.StyleNonce!.Trim();
 
     /// <summary>
     /// Gets the scoped graph explorer CSS that hosts can register once.

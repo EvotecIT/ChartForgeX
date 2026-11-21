@@ -55,7 +55,7 @@ public sealed class HtmlInteractiveDashboardRenderer {
             options.Runtime, options.Interaction.Features, options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive,
             HtmlInteractiveAssets.FeatureBundlesFor(options.Runtime, options.Interaction.Features,
                 options.ResponsiveLayout == HtmlChartResponsiveLayout.Adaptive, options.Motion.EffectiveDuration > 0, false, chartArray.Any(HtmlInteractiveAssets.HasHierarchy)));
-        return writer.Build();
+        return HtmlStrictStyles.Apply(writer.Build(), options.StyleNonce);
     }
 
     // A fitted chart scales its text with its column; 5/6 of the widest design width keeps 12px text at the 10px floor.

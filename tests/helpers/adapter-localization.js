@@ -1,6 +1,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const source = fs.readFileSync(path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets/adapter-localization.js'), 'utf8');
+const source = fs.readFileSync(path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets/adapter-shared.js'), 'utf8');
 
 // Use the shipped prelude, including its parsing, fallback and per-root cache.
 function installUiText(window) {

@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-const source = fs.readFileSync(path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets/adapter-localization.js'), 'utf8');
+const source = fs.readFileSync(path.resolve(__dirname, '../../ChartForgeX.Interactivity.Html/Assets/adapter-shared.js'), 'utf8');
 const key = Symbol.for('ChartForgeX.uiText');
 function runtime() {
   const context = vm.createContext({ window: {} });

@@ -116,14 +116,14 @@
       const background = document.createElementNS('http:' + '//www.w3.org/2000/svg', 'rect');
       background.setAttribute('x', '12'); background.setAttribute('y', '12');
       background.setAttribute('width', String(Math.max(1, width - 24))); background.setAttribute('height', '48');
-      background.setAttribute('style', 'fill:#102334');
+      background.style.cssText = 'fill:#102334';
       group.appendChild(background);
       [disclosure, width < 480 ? uiText(root, 'GraphReducedViewShort', 'Reduced view; expand or filter.') : uiText(root, 'GraphReducedView', 'Other relationships are hidden. Expand a site or filter to inspect all.')].forEach((line, index) => {
         const label = document.createElementNS('http:' + '//www.w3.org/2000/svg', 'text');
         label.setAttribute('x', '22'); label.setAttribute('y', index ? '48' : '30');
         label.setAttribute('textLength', String(Math.min(Math.max(1, width - 44), line.length * (index ? 6 : 7))));
         label.setAttribute('lengthAdjust', 'spacingAndGlyphs');
-        label.setAttribute('style', `fill:#fff;font:${index ? '11' : '600 13'}px ${graphNodeFontFamily(root)}`);
+        label.style.cssText = `fill:#fff;font:${index ? '11' : '600 13'}px ${graphNodeFontFamily(root)}`;
         label.textContent = line;
         group.appendChild(label);
       });
