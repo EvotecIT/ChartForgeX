@@ -20,6 +20,11 @@ public sealed class ChartWidthSetTests {
         Assert.Equal(new[] { "800", "600", "390" }, System.Text.RegularExpressions.Regex.Matches(html, "viewBox=\"0 0 (\\d+)").Select(match => match.Groups[1].Value));
         Assert.Equal(3, System.Text.RegularExpressions.Regex.Matches(html, "id=\"(cfx-scope-[0-9a-f]{64})-title\"").Select(match => match.Groups[1].Value).Distinct().Count());
         Assert.Throws<ArgumentOutOfRangeException>(() => new HtmlChartRenderer().RenderWidths(chart, "checks", 800));
+        // A default (Auto) chart follows the viewer in every drawing; an explicit Light chart keeps literal colours.
+        Assert.Contains("var(--cfx-auto-", html, StringComparison.Ordinal);
+        Assert.Contains("prefers-color-scheme:dark", html, StringComparison.Ordinal);
+        var light = new HtmlChartRenderer().RenderWidths(Chart().WithTheme(ChartForgeX.Themes.VisualTheme.Graphite(), ThemeMode.Light), "checks");
+        Assert.DoesNotContain("var(--cfx-auto-", light, StringComparison.Ordinal);
     }
 
     [Trait("Category", "Browser")]
