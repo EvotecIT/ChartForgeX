@@ -4,7 +4,7 @@ Design, 4 November 2026. This document sets one authoring convention for ChartFo
 
 It replaces the separate-builder design in `next-major-api.md` and changes ConsoleMonster, CanopyX and CodeGlyphX in their next major or minor versions.
 
-Status, 16 November 2026: the shared generator and vocabulary ship in `PowerForge.Generators` (PSPublishModule 3.0.190 and later), and ConsoleMonster 3.0 is the first engine on them. [What the ConsoleMonster pilot settled](#what-the-consolemonster-pilot-settled) records the rules the pilot had to add or correct; they apply to every engine that follows. ChartForgeX, CanopyX and CodeGlyphX are not converted yet.
+Status, 16 November 2026: the shared generator and vocabulary ship in `PowerForge.Generators` (PSPublishModule 3.0.190 and later), and ConsoleMonster 3.0 is the first engine on them. [What the ConsoleMonster pilot settled](#what-the-consolemonster-pilot-settled) records the rules the pilot had to add or correct; they apply to every engine that follows. ChartForgeX has adopted the shared vocabulary (`ThemeMode`, `Tone`, `Icon`) but not yet the generated fluent methods; CanopyX and CodeGlyphX are not converted yet.
 
 ## Where the four libraries stand
 
@@ -121,6 +121,13 @@ Formats are one engine-local `OutputFormat` enum per library containing only wha
 | `Theme` | `Theme.Default`, `Theme.FromTokens(json)`, `Theme(...)`, `Mode(...)` on every root model of an engine with themed output (CodeGlyphX has none yet, so it has neither) | Built from the shared visual-token export (`evotec.tokens.json`). ChartForgeX's `VisualTheme.Graphite()` becomes `Theme.Default`. |
 
 The generator emits `ThemeMode`, `Tone` and `Icon` into each engine from one definition file in PowerForge, so the four copies cannot drift. Bridges such as `HtmlForgeX.CanopyX` and ImagePlayground convert them by name.
+
+ChartForgeX generates the three types into its core `ChartForgeX` namespace, so every `ChartForgeX.*` package shares one copy. It replaced `VisualThemeMode`, `VisualStatus`, `TopologyTone` and `VisualIcon` with them, without aliases; the [migration guide](../v2/migration.md#shared-theme-mode-tone-and-icon-types) maps the old names. In ChartForgeX:
+
+- `ThemeMode.Auto` is the default for charts, topology, visual blocks and sequence diagrams; canvases and stories still start dark. Static SVG and PNG output paints it as light, and HTML output marks it light too, because the exported paint is resolved per mode; following `prefers-color-scheme` in HTML needs both palettes in the page and is still open.
+- A named tone resolves to the `VisualThemeColorToken` of that name (`accent`, `maintenance`, `muted-foreground`), matched without regard to case, hyphens or underscores. `Tone.Muted` paints the muted text colour. Topology keeps its existing `tone-good`, `tone-warn` and `tone-bad` classes for the built-in tones.
+- `ChartForgeX.VisualBlocks.Icons` lists the keys metric cards draw (`Icons.Flame`, `Icons.All`); any other key draws a default ring.
+- Interchange and topology metadata store a tone by its wire name (`success`, `danger`).
 
 ## One visual standard
 

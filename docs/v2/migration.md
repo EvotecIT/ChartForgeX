@@ -6,6 +6,31 @@ description: "Upgrade to the current ChartForgeX packages: what changed in prepa
 
 Upgrading an existing project? Move every ChartForgeX package to the same version, build, and then work through the changes below. Each one names what changed and what to write instead. The newest changes come first.
 
+## Shared theme mode, tone and icon types
+
+ChartForgeX now uses the `ThemeMode`, `Tone` and `Icon` types that every Evotec rendering engine shares. They live in the `ChartForgeX` namespace, so code in a `ChartForgeX.*` namespace needs no new `using`; other code adds `using ChartForgeX;`. Rename the old types and values:
+
+| Old | New |
+| --- | --- |
+| `VisualThemeMode.Light`, `VisualThemeMode.Dark` | `ThemeMode.Light`, `ThemeMode.Dark` |
+| `VisualStatus.None`, `Neutral`, `Warning`, `Info` | `Tone.None`, `Tone.Neutral`, `Tone.Warning`, `Tone.Info` |
+| `VisualStatus.Positive`, `VisualStatus.Negative` | `Tone.Success`, `Tone.Danger` |
+| `TopologyTone.Automatic` | `Tone.None` (follows the health status, as before) |
+| `TopologyTone.Good`, `Warn`, `Bad` | `Tone.Success`, `Tone.Warning`, `Tone.Danger` |
+| `TopologyTone.Info`, `TopologyTone.Neutral` | `Tone.Info`, `Tone.Neutral` |
+| `VisualIcon.None` | `Icon.None` |
+| `VisualIcon.ForkKnife`, `Flame`, `Lightning`, `Droplet`, `Runner`, `Bicycle`, `Person` | `Icons.ForkKnife`, `Icons.Flame`, `Icons.Lightning`, `Icons.Droplet`, `Icons.Runner`, `Icons.Bicycle`, `Icons.Person` |
+
+What behaves differently:
+
+- `ThemeMode` gains `Auto`, which is now the default for charts, chart grids, topology, visual blocks and sequence diagrams (canvases and stories still start dark). Static SVG and PNG output paints `Auto` as light, so a model that never set a mode renders exactly as before, and HTML output marks it light. `ThemeMode` values are renumbered (`Auto` is 0, `Light` 1, `Dark` 2): code that stored the numeric value of the old enum must map it again. `VisualThemeBuilder.Colors(ThemeMode.Auto)` and `VisualTheme.WithPalette(ThemeMode.Auto, ...)` edit the light palette. `VisualRenderContext.ThemeMode` reports the resolved mode, so it is `Light` for an `Auto` request.
+- `Tone` and `Icon` are value types, so `switch` statements over them become comparisons or a `switch` on `Tone.Name` and `Icon.Key`. A tone property is never null; `Tone.None` means unset.
+- Visual blocks paint `Tone.Muted` with the muted text colour. A named tone such as `Tone.Named("accent")` or `Tone.Named("maintenance")` uses the theme colour role of that name (`VisualThemeColorToken`); a name the theme does not define paints as neutral. Topology rings, relationships and edge chips follow the same rules and keep their `tone-good`, `tone-warn` and `tone-bad` classes.
+- `AddEdgeChip(edgeId, text, tone, iconId)` takes a `Tone?`; leaving it out still gives a neutral chip.
+- Metric and radial metric cards draw the keys listed in `Icons.All`. Any other key, such as `Icon.Named("tabler:server")`, draws a small default ring instead of the lightning bolt the old enum fell back to.
+- Interchange documents and topology metadata store tones by their lowercase name: table rows and cells, flow steps, lanes and connectors write `success` and `danger` where they wrote `Positive` and `Negative`, and `chartforgex.region.tone` holds `success`, `warning` or `danger` where it held `Good`, `Warn` or `Bad`. Documents written by earlier versions keep the old spellings: flow documents with them are rejected, and table statuses and topology tones read them as unknown named tones that paint neutral. Regenerate such documents from the model. Theme modes keep their enum names (`Light`, `Dark`) and accept `Auto`.
+- The markup language accepts `auto` for `theme` and `themeMode`, and `danger` and `muted` as table and flow statuses.
+
 ## One diagram theme
 
 Mermaid's `default` and `dark` themes now select the native Graphite theme in light or dark mode, the same as source without a theme. Flowcharts no longer turn lavender with yellow clusters, Sequence participants no longer pick up Mermaid's pastel and grey preset paints or drop shadows, and the dark preset's `#333` canvas is gone. The named alternatives `base`, `forest`, `neutral`, `neo`, `neo-dark` and the `redux` family remain explicit opt-ins and render as before. Authored `themeVariables`, `classDef`, `style` and host themes still take precedence over the defaults.
@@ -99,7 +124,7 @@ Numeric and typed transactions use the same `ChartObservationChange<T>` payload 
 
 `ApplyPointChanges` retains its bounded enumeration, cancellation, atomic validation, rolling source order, identity and presentation rules. It accepts the generic point payload directly; typed families keep their existing `ApplyBubbleChanges`, `ApplyFinancialChanges`, `ApplyRangeChanges` and `ApplyDifferenceChanges` methods. Rebuild compiled consumers after changing the public payload type.
 
-Use the same immutable `VisualTheme` and explicit `VisualThemeMode` for every visual model. Replace `ChartTheme` and `TopologyTheme` with the paired `VisualTheme.Graphite()` theme (or `VisualTheme.Accessible()` for a colorblind-safe palette), then select `Dark` through `WithTheme(theme, VisualThemeMode.Dark)` or `ThemeMode`. Replace mutable theme and brand-kit edits with `theme.Configure(builder => ...)`; assign the returned snapshot. Palette colors live in `builder.Light` and `builder.Dark`, typography in `builder.Typography`, and geometry/effects in their named builder properties. Local canvas/story/window controls live in their owning style options.
+Use the same immutable `VisualTheme` and explicit `ThemeMode` for every visual model. Replace `ChartTheme` and `TopologyTheme` with the paired `VisualTheme.Graphite()` theme (or `VisualTheme.Accessible()` for a colorblind-safe palette), then select `Dark` through `WithTheme(theme, ThemeMode.Dark)` or `ThemeMode`. Replace mutable theme and brand-kit edits with `theme.Configure(builder => ...)`; assign the returned snapshot. Palette colors live in `builder.Light` and `builder.Dark`, typography in `builder.Typography`, and geometry/effects in their named builder properties. Local canvas/story/window controls live in their owning style options.
 
 Replace independent `VisualCanvasTheme` text paints with `canvas.ConfigureStyle(...)`: `TileLabelColor`, `TileValueColor`, `TileDetailColor` and `HeroBadgeTextColor` preserve independent authored roles. A null override inherits the selected shared theme; changing the canvas mode does not discard an explicit color. Title and other positioned text keep their existing text-layer color options.
 
@@ -538,7 +563,7 @@ Explicit zero-duration image frames are preserved in GIF and APNG. Negative and 
 
 ## Shared visual defaults
 
-Replace `VisualStoryTheme` and `TerminalTheme` with the shared immutable `VisualTheme` and an explicit mode, for example `.WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)`. `VisualStoryThemes` and `TerminalThemes` provide authored paired palettes when a desktop or shell appearance is useful. Configure colors and typography with `theme.Configure(...)` and assign its returned snapshot; `tokens.ApplyTo(theme)` is removed. Move story window chrome, background gradients and syntax colors to `VisualStoryStyleOptions`, and terminal header and cursor overrides to `TerminalStyleOptions`. Desktop style factories such as `VisualStoryStyleOptions.MacOS(light: true)` configure local chrome separately from the theme's mode. Replay surfaces inherit the containing story's colors when their theme is null; pass a theme and `themeMode` for an independent replay palette. Prepared stories retain immutable themes and copy mutable styles. See [Stories](../stories.md) for current examples.
+Replace `VisualStoryTheme` and `TerminalTheme` with the shared immutable `VisualTheme` and an explicit mode, for example `.WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)`. `VisualStoryThemes` and `TerminalThemes` provide authored paired palettes when a desktop or shell appearance is useful. Configure colors and typography with `theme.Configure(...)` and assign its returned snapshot; `tokens.ApplyTo(theme)` is removed. Move story window chrome, background gradients and syntax colors to `VisualStoryStyleOptions`, and terminal header and cursor overrides to `TerminalStyleOptions`. Desktop style factories such as `VisualStoryStyleOptions.MacOS(light: true)` configure local chrome separately from the theme's mode. Replay surfaces inherit the containing story's colors when their theme is null; pass a theme and `themeMode` for an independent replay palette. Prepared stories retain immutable themes and copy mutable styles. See [Stories](../stories.md) for current examples.
 
 Default charts and diagrams use 24 logical units of outer padding, 17px bold titles, 13.5px subtitles, 13px legends and 12px axis/data labels. The paired theme owns these values; authored padding, text styles and model legend settings remain authoritative. Native compact exports lay out the data again instead of scaling a desktop chart and its text down.
 
