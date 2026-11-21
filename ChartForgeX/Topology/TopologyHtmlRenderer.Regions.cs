@@ -77,6 +77,15 @@ public sealed partial class TopologyHtmlRenderer {
         + ";--cfx-warn:" + colors.Status.Medium.Fill.ToCss() + ";--cfx-bad:" + colors.Status.Critical.Fill.ToCss()
         + ";--cfx-info:" + colors.Info.ToCss() + ";--cfx-neutral:" + colors.Status.Neutral.Fill.ToCss();
 
+    private static string RegionAutoColors(VisualThemeColors light) {
+        string V(VisualThemeColorToken token, ChartForgeX.Primitives.ChartColor color) => AutoThemeStyle.TokenVar(token, color);
+        return "--cfx-surface:" + V(VisualThemeColorToken.ElevatedSurface, light.ElevatedSurface) + ";--cfx-text:" + V(VisualThemeColorToken.Foreground, light.Foreground)
+            + ";--cfx-muted:" + V(VisualThemeColorToken.MutedForeground, light.MutedForeground) + ";--cfx-border:" + V(VisualThemeColorToken.Border, light.Border)
+            + ";--cfx-focus:" + V(VisualThemeColorToken.Accent, light.Accent) + ";--cfx-good:" + V(VisualThemeColorToken.Positive, light.Status.Pass.Fill)
+            + ";--cfx-warn:" + V(VisualThemeColorToken.Warning, light.Status.Medium.Fill) + ";--cfx-bad:" + V(VisualThemeColorToken.Negative, light.Status.Critical.Fill)
+            + ";--cfx-info:" + V(VisualThemeColorToken.Info, light.Info) + ";--cfx-neutral:" + V(VisualThemeColorToken.Neutral, light.Status.Neutral.Fill);
+    }
+
     private static string RegionDetails(TopologyChart chart) {
         var html = new StringBuilder("<section class=\"cfx-region-details\" aria-label=\"Details\"><h2>Details</h2><table><caption>Nodes</caption><thead><tr><th>Name</th><th>Region</th><th>Details</th><th>Status</th></tr></thead><tbody>");
         string Escape(string? value) => WebUtility.HtmlEncode(value ?? "");

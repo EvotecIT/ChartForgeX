@@ -266,7 +266,8 @@ public sealed partial class TopologyHtmlRenderer {
     internal static AutoThemeStyle? AutoTheme(TopologyChart chart, TopologyRenderOptions options) {
         var auto = AutoThemeStyle.ForHtml(chart.Theme, chart.ThemeMode, options.SvgColorVariables);
         if (auto != null && chart.LayoutMode == TopologyLayoutMode.Regions && !options.RegionPrint)
-            auto.WithRule("&", mode => RegionColors(chart.Theme.Resolve(mode)).Substring(1));
+            // Region chrome reads the Auto role properties, so a host's shared status roles reach the ring and edge rules too.
+            auto.WithRule("&", _ => RegionAutoColors(chart.Theme.Resolve(ThemeMode.Light)));
         return auto;
     }
 

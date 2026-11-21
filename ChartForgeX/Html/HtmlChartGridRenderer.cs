@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using ChartForgeX.Core;
 using ChartForgeX.Rendering;
@@ -19,9 +20,19 @@ public sealed class HtmlChartGridRenderer {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
         if (idScope == null) throw new ArgumentNullException(nameof(idScope));
         var request = VisualExportRequest.ForGrid(grid);
-        var prepared = grid.Prepare(request.Context);
-        var prefix = VisualSvgOptions.NamespaceFromExternalId(idScope);
         var auto = AutoThemeStyle.ForHtml(grid.Theme, grid.ThemeMode, grid.SvgColorVariables);
+        // Panels with their own themes paint inside their own colour scope. An Auto panel whose theme gives the grid's Auto
+        // colours shares the grid's properties for the render; other panels keep their own colours.
+        var bound = new List<Chart>();
+        if (auto != null && grid.UsePanelThemes)
+            foreach (var chart in grid.Charts)
+                if (chart.Options.SvgColorVariables == null && AutoThemeStyle.ForHtml(chart.Options.Theme, chart.Options.ThemeMode, null)?.Id == auto.Id) {
+                    chart.Options.SvgColorVariables = auto.Variables; bound.Add(chart);
+                }
+        PreparedVisual prepared;
+        try { prepared = grid.Prepare(request.Context); }
+        finally { foreach (var chart in bound) chart.Options.SvgColorVariables = null; }
+        var prefix = VisualSvgOptions.NamespaceFromExternalId(idScope);
         return new HtmlMarkupWriter().StartElement("section").Attribute("class", "chartforgex-grid").Attribute(ChartForgeX.Themes.AutoThemeStyle.ScopeAttribute, auto?.Id)
             .Attribute(AutoThemeStyle.Attribute, auto == null ? null : AutoThemeStyle.AttributeValue)
             .Attribute("style", "width:100%;max-width:" + prepared.Size.Width.ToString(CultureInfo.InvariantCulture) + "px;box-sizing:border-box")

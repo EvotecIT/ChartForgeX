@@ -98,11 +98,12 @@ internal sealed class AutoThemeStyle {
 
     /// <summary>
     /// Adds a colour the renderer derives outside the theme tokens (for example story syntax colours), so value-mapped
-    /// output (<see cref="SvgColorVariables.Apply"/>) follows the viewer for it too. Colours already mapped keep their variable.
+    /// output (<see cref="SvgColorVariables.Apply"/>) follows the viewer for it too. It takes over an equal theme colour,
+    /// so its dark value (a readable syntax colour) wins over the theme's.
     /// </summary>
     internal AutoThemeStyle WithColor(string name, ChartForgeX.Primitives.ChartColor light, ChartForgeX.Primitives.ChartColor dark) {
         var property = AutoPrefix + name;
-        Variables.Add(property, light);
+        Variables.AddPreferred(property, light);
         _lightVariables += property + ":" + light.ToCss() + ";";
         _darkVariables += property + ":" + dark.ToCss() + ";";
         _built = null;
@@ -112,6 +113,12 @@ internal sealed class AutoThemeStyle {
     /// <summary>Defines <see cref="PageBackground"/> per mode on the scoped element, for a page body that carries the scope.</summary>
     internal AutoThemeStyle WithPageBackground(Func<ThemeMode, string> background) =>
         WithRule("&", mode => PageBackground + ":" + background(mode));
+
+    /// <summary>Writes the Auto property of a theme role, with its light colour as the fallback.</summary>
+    internal static string TokenVar(VisualThemeColorToken token, ChartForgeX.Primitives.ChartColor light) {
+        foreach (var (candidate, path, _) in TokenPaths) if (candidate == token) return Var(AutoName(path)!, light.ToCss());
+        return light.ToCss();
+    }
 
     /// <summary>Writes a reference to a property this style defines, with the light value as the fallback.</summary>
     internal static string Var(string property, string lightFallback) => "var(" + property + "," + lightFallback + ")";

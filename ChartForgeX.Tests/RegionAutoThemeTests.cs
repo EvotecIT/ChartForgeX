@@ -36,3 +36,37 @@ public sealed class RegionAutoThemeTests {
         Assert.Contains("--cfx-auto-", html.Substring(0, start), StringComparison.Ordinal);
     }
 }
+
+public sealed class AutoThemeBindingTests {
+    // Region ring and edge rules read the Auto role properties, so a host's shared status roles reach them.
+    [Fact]
+    public void AutoRegionStatusPropertiesFollowTheSharedRoles() {
+        var chart = TopologyChart.Create().WithViewport(860, 500, 20).WithLayout(TopologyLayoutMode.Regions)
+            .AddAutoGroup("r", "Region").AddAutoNode("a", "A", groupId: "r");
+        var css = TopologyHtmlRenderer.BuildAutoThemeStyle(chart)!;
+        Assert.Contains("--cfx-good:var(--cfx-auto-color-outcome-pass-fill,", css, StringComparison.Ordinal);
+        Assert.DoesNotMatch("--cfx-good:#", css);
+    }
+
+    // A derived colour (story syntax) equal to a theme colour takes it over, so its own dark value applies.
+    [Fact]
+    public void DerivedColoursTakeOverAnEqualThemeColour() {
+        var theme = ChartForgeX.Themes.VisualTheme.Graphite();
+        var light = theme.Resolve(ThemeMode.Light).Foreground;
+        var auto = ChartForgeX.Themes.AutoThemeStyle.ForHtml(theme, ThemeMode.Auto, null)!
+            .WithColor("story-syntax-0", light, ChartForgeX.Primitives.ChartColor.FromHex("#e5e7eb"));
+        Assert.Contains("--cfx-auto-story-syntax-0", auto.Variables.Apply("<svg xmlns=\"http://www.w3.org/2000/svg\"><rect fill=\"" + light.ToCss() + "\"/></svg>"), StringComparison.Ordinal);
+        Assert.Contains("--cfx-auto-story-syntax-0:#E5E7EB", auto.StyleSheet, StringComparison.Ordinal);
+    }
+
+    // Panels with their own themes paint in their own colour scope; an Auto panel with the grid's theme follows the viewer.
+    [Fact]
+    public void AutoGridPanelsWithTheGridThemeFollowTheViewer() {
+        var chart = ChartForgeX.Core.Chart.Create().WithSize(320, 200).AddLine("Requests", new[] { new ChartPoint(1, 5), new ChartPoint(2, 10) });
+        var grid = ChartForgeX.Core.ChartGrid.Create().Add(chart);
+        grid.UsePanelThemes = true;
+        var html = new ChartForgeX.Html.HtmlChartGridRenderer().RenderFragment(grid, "g");
+        Assert.Contains("var(--cfx-auto-color-chart-series-1", html, StringComparison.Ordinal);
+        Assert.Null(chart.Options.SvgColorVariables);
+    }
+}
