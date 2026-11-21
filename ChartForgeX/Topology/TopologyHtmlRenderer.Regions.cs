@@ -47,6 +47,8 @@ public sealed partial class TopologyHtmlRenderer {
             source.Viewport.Width = entry.Width;
             if (variant == "print") source.ThemeMode = ThemeMode.Light;
             var policy = options.Clone(); policy.RegionPrint = options.RegionPrint || variant == "print"; policy.UseResponsiveSvg = true;
+            // Print stays light: the print drawing paints literal colours rather than the Auto properties a dark preference changes.
+            if (variant == "print" && auto != null) policy.SvgColorVariables = null;
             policy.IdScope = (options.IdScope ?? chart.Id ?? "region") + "-" + variant + "-" + entry.Width.ToString("R", CultureInfo.InvariantCulture);
             html.Append("<div class=\"cfx-region-").Append(variant).Append("\"");
             if (variant == "desktop") {

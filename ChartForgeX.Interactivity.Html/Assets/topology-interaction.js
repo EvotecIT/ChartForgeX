@@ -192,7 +192,7 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
       for (const update of updates) nodes.filter(node => node.dataset.nodeId === update.id).forEach(node => {
         const tone = {Healthy:'tone-good',Warning:'tone-warn',Critical:'tone-bad',Unknown:'tone-neutral',Disabled:'tone-neutral'}[update.status];
         if (!tone) return;
-        node.classList.remove('tone-good','tone-warn','tone-bad','tone-info','tone-neutral'); node.classList.add(tone);
+        node.classList.remove('tone-good','tone-warn','tone-bad','tone-info','tone-neutral','tone-muted','tone-named'); node.classList.add(tone);
         node.dataset.cfxStatus = update.status;
         node.dataset.regionTip = [node.dataset.nodeLabel,node.dataset.nodeSubtitle,node.dataset.nodeBadgeMeanings,update.statusText || update.status].filter(Boolean).join(' · ');
         if (node.dataset.regionGeneratedName === 'true') node.setAttribute('aria-label',node.dataset.regionTip);

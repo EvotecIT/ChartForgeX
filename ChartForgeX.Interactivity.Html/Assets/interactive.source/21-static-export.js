@@ -9,7 +9,9 @@
     const branchPaint = Array.from(svg.querySelectorAll('[data-cfx-highlight-paint]'))
       .map(node => [node, node.getAttribute('style')]);
     try {
-      for (const [node] of classes) node.classList.remove(...transientClasses);
+      // A node left with no class exports without the attribute, so equal drawings export equal bytes; the restore below
+      // puts every original class attribute back.
+      for (const [node] of classes) { node.classList.remove(...transientClasses); if (!node.classList.length) node.removeAttribute('class'); }
       for (const name of attributes) root.removeAttribute(name);
       root.setAttribute('data-cfx-export-probe', '');
       for (const [node] of branchPaint) node.style.removeProperty('--cfx-highlight-opacity');

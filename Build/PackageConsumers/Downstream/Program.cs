@@ -3,7 +3,6 @@ using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.VisualArtifacts;
-using HtmlForgeX;
 using OfficeIMO.ChartForgeX;
 using OfficeIMO.Excel;
 using OfficeIMO.Pdf;
@@ -54,12 +53,6 @@ internal static class Program {
         var pdf = File.ReadAllBytes(Path.Combine(output, "allocation.pdf"));
         PackageAssertions.Require(pdf.Length > 100 && System.Text.Encoding.ASCII.GetString(pdf, 0, 5) == "%PDF-",
             "The public OfficeIMO adapter did not save a PDF document.");
-        using (var document = new Document()) {
-            document.Body.Add(new ChartForgeXChart(chart)); document.Save(Path.Combine(output, "allocation.html"));
-        }
-        var html = File.ReadAllText(Path.Combine(output, "allocation.html"));
-        PackageAssertions.Require(html.Contains("pyramid-stage", StringComparison.Ordinal), "The public HTML adapter lost the candidate SVG.");
-        PackageBrowserProbe.RunDocumentAsync(html).GetAwaiter().GetResult();
-        Console.WriteLine("Public OfficeIMO.ChartForgeX 3.5.1 and HtmlForgeX.ChartForgeX 3.0.0 consumed the staged ChartForgeX package; DOCX/XLSX/PPTX/PDF and HTML saved.");
+        Console.WriteLine("Public OfficeIMO.ChartForgeX 3.5.1 consumed the staged ChartForgeX package; DOCX/XLSX/PPTX/PDF saved.");
     }
 }

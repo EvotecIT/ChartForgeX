@@ -105,7 +105,10 @@ internal sealed partial class VisualTopologyCompiler {
         if (tone == Tone.Success) return "tone-good";
         if (tone == Tone.Warning) return "tone-warn";
         if (tone == Tone.Danger) return "tone-bad";
-        return tone == Tone.Info ? "tone-info" : "tone-neutral";
+        if (tone == Tone.Info) return "tone-info";
+        // Muted and recognised named tones keep their own ring colour; tone-neutral would restyle it neutral.
+        if (tone == Tone.Muted) return "tone-muted";
+        return ToneRoles.TryResolveNamed(tone, out _) ? "tone-named" : "tone-neutral";
     }
     private ChartColor RegionToneColor(Tone tone, TopologyHealthStatus status) {
         if (tone == Tone.None) return status == TopologyHealthStatus.Disabled ? _colors.Status.Neutral.Fill : Status(status);

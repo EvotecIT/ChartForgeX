@@ -151,7 +151,7 @@ chart.WithTheme(brand);
 
 Validate a new categorical set in both modes before you ship it. The default order is the validated set from the design language. Status colours are kept out of the series cycle.
 
-## Following the viewer's colour scheme
+## Auto theme mode in HTML
 
 A model whose `ThemeMode` is `Auto` (the default for charts, chart grids, topology, visual blocks and sequence diagrams) follows the viewer's `prefers-color-scheme` in HTML output, with no script. The SVG writes its colours as `--cfx-auto-*` properties with the light colours as fallbacks, and a stylesheet scoped to the output's root defines them: light by default, dark inside `@media (prefers-color-scheme: dark)`. The root keeps its usual class and carries `data-cfx-theme-mode="auto"` and `data-cfx-auto-theme="cfx-auto-<hash>"`, which the stylesheet selects. Each property reads the matching shared role first, for example `--cfx-auto-color-surface-card: var(--hfx-color-surface-card, #FFFFFF)`, so a CanopyX or HtmlForgeX page that defines its roles keeps them. Chrome around the drawing (page background, tooltips, topology controls, region colours) switches with it.
 
