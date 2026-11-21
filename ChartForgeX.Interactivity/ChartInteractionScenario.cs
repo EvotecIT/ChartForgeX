@@ -29,8 +29,9 @@ public sealed class ChartInteractionScenario {
     public string? Color {
         get => _color;
         set {
-            var color = string.IsNullOrWhiteSpace(value) ? null : value!.Trim();
-            if (color != null && (color.Length > 80 || !color.All(ch => char.IsLetterOrDigit(ch) || ch is '#' or '(' or ')' or ',' or '.' or '%' or '-' or ' ' or '/')))
+            // Same rule as topology scenarios: CSS whitespace becomes one space; custom-property references may hold underscores.
+            var color = string.IsNullOrWhiteSpace(value) ? null : string.Join(" ", value!.Split(new[] { ' ', '\t', '\n', '\r', '\f' }, StringSplitOptions.RemoveEmptyEntries));
+            if (color != null && (color.Length > 80 || !color.All(ch => char.IsLetterOrDigit(ch) || ch is '#' or '(' or ')' or ',' or '.' or '%' or '-' or '_' or ' ' or '/')))
                 throw new ArgumentException("Scenario colors must be CSS colors.", nameof(value));
             _color = color;
         }

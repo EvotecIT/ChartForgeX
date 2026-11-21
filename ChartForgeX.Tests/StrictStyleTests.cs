@@ -103,6 +103,9 @@ public sealed class StrictStyleTests {
         var scenario = new ChartForgeX.Interactivity.ChartInteractionScenario { Color = " #2563eb " };
         Assert.Equal("#2563eb", scenario.Color);
         scenario.Color = "rgb(37 99 235 / 50%)";
+        scenario.Color = "rgb(37\t99\t235)";
+        Assert.Equal("rgb(37 99 235)", scenario.Color);
+        Assert.Equal("var(--brand_accent)", new TopologyScenario { Color = "var(--brand_accent)" }.Color);
         Assert.Throws<ArgumentException>(() => scenario.Color = "red}body{display:none");
         Assert.Throws<ArgumentException>(() => new TopologyScenario { Color = "red;background:url(x)" });
     }
@@ -120,8 +123,12 @@ public sealed class StrictStyleTests {
         var width = await session.Page.EvaluateAsync<string>("""
             () => {
               const root = document.querySelector('.cfx-interactive-chart'), section = document.getElementById('next').content.firstElementChild.cloneNode(true);
-              ChartForgeXCharts.mount(root).update(section);
-              return root.style.getPropertyValue('--cfx-intrinsic-width');
+              const controller = ChartForgeXCharts.mount(root);
+              controller.update(section);
+              const fromElement = root.style.getPropertyValue('--cfx-intrinsic-width');
+              // Markup alone, with its rules registered by the host, restores the same properties.
+              controller.update(document.getElementById('next').innerHTML);
+              return fromElement === root.style.getPropertyValue('--cfx-intrinsic-width') ? fromElement : 'element ' + fromElement + ', markup ' + root.style.getPropertyValue('--cfx-intrinsic-width');
             }
             """);
         Assert.Equal("520px", width.Trim());

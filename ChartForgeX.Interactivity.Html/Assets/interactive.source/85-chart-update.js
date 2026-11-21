@@ -8,7 +8,8 @@
       strict?.remove();
       if (template.content.children.length !== 1) throw new TypeError('Section: one generated chart; no assets.');
       section = template.content.firstElementChild;
-      if (strict) window[Symbol.for('ChartForgeX.strictStyles')]?.(section, strict.textContent);
+      // Markup without its stylesheet resolves from the rules the page already holds.
+      if (section) window[Symbol.for('ChartForgeX.strictStyles')]?.(section, strict?.textContent);
     } else if (section instanceof Element) {
       // A strict section passed as an element resolves its classes from the page's stylesheets.
       window[Symbol.for('ChartForgeX.strictStyles')]?.(section);

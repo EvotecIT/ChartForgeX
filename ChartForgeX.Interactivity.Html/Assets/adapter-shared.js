@@ -34,11 +34,20 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
     if (!nodes.length) return;
     const sources = [];
     if (css) try { const sheet = new CSSStyleSheet(); sheet.replaceSync(css); sources.push(rulesOf(sheet)); } catch { }
-    for (const owner of new Set([root.getRootNode(), root.ownerDocument, document])) for (const sheet of owner?.styleSheets || []) sources.push(rulesOf(sheet));
+    const offset = sources.length, sheets = [];
+    let reindexed = false;
+    for (const owner of new Set([root.getRootNode(), root.ownerDocument, document])) sheets.push(...(owner?.styleSheets || []));
+    sources.push(...sheets.map(rulesOf));
     for (const node of nodes) {
       for (const name of [...node.classList]) {
-        const text = name.startsWith('cfx-s-') && sources.find(rules => rules.has(name))?.get(name);
-        if (text === undefined || text === false) continue;
+        if (!name.startsWith('cfx-s-')) continue;
+        // Rules a host inserted later into a stylesheet already indexed need a fresh index.
+        if (!reindexed && !sources.some(rules => rules.has(name))) {
+          reindexed = true;
+          sheets.forEach((sheet, index) => { cache.delete(sheet); sources[offset + index] = rulesOf(sheet); });
+        }
+        const text = sources.find(rules => rules.has(name))?.get(name);
+        if (text === undefined) continue;
         node.style.cssText = node.style.cssText ? node.style.cssText + ';' + text : text;
         node.classList.remove(name);
       }

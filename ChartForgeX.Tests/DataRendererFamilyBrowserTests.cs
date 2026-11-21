@@ -73,6 +73,7 @@ public sealed class DataRendererFamilyBrowserTests {
         await page.EvaluateAsync("()=>chart.replaceSeries({id:'dc2',name:'DC2',values:[1,1,1,1]})");
         Assert.Equal("DC2, 2:00 – 5:00: Down", await page.Locator("[data-cfx-series='dc2']").GetAttributeAsync("aria-label"));
         await Assert.ThrowsAnyAsync<Exception>(() => page.EvaluateAsync("()=>chart.append({categories:[hour(6)],values:{dc9:[0]}})"));
+        await Assert.ThrowsAnyAsync<Exception>(() => page.EvaluateAsync("()=>chart.update({type:'state-timeline',label:'x',states:[{id:'a',label:'A',color:'#12345'}],categories:[hour(0)],series:[{id:'s',name:'S',values:[0]}]})"));
         AssertNoConsoleErrors(session);
     }
 

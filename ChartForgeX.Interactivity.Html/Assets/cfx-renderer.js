@@ -65,7 +65,7 @@
         if (stateIds.has(id)) throw new TypeError("ChartForgeX: state ids must be unique.");
         stateIds.add(id);
         // Colours are data, never markup: only hexadecimal colours are accepted.
-        if (state.color !== undefined && (typeof state.color !== "string" || !/^#[0-9a-f]{3,8}$/i.test(state.color)))
+        if (state.color !== undefined && (typeof state.color !== "string" || !/^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(state.color)))
           throw new TypeError("ChartForgeX: state colours must be hexadecimal.");
         return Object.freeze({ id, label, color: state.color ?? null });
       }));
