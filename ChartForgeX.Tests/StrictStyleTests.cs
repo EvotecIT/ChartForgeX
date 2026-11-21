@@ -107,6 +107,8 @@ public sealed class StrictStyleTests {
         Assert.Equal("rgb(37 99 235)", scenario.Color);
         Assert.Equal("var(--brand_accent)", new TopologyScenario { Color = "var(--brand_accent)" }.Color);
         Assert.Throws<ArgumentException>(() => scenario.Color = "red}body{display:none");
+        Assert.Throws<ArgumentException>(() => scenario.Color = "#12_");
+        Assert.Throws<ArgumentException>(() => new TopologyScenario { Color = "#12345" });
         Assert.Throws<ArgumentException>(() => new TopologyScenario { Color = "red;background:url(x)" });
     }
 
@@ -118,7 +120,9 @@ public sealed class StrictStyleTests {
         var next = Chart.Create().WithTitle("Checks").WithSize(520, 300).WithXLabels("Mon", "Tue")
             .AddLine("Passed", new[] { new ChartPoint(1, 2), new ChartPoint(2, 9) });
         var expected = HtmlStrictStyles.Extract(next.ToInteractiveHtmlFragmentWithoutAssets());
-        var page = Render("interactive-page", Nonce).Replace("</body>", "<style nonce=\"" + Nonce + "\">" + expected.StyleSheet + "</style><template id=\"next\">" + expected.Markup + "</template></body>", StringComparison.Ordinal);
+        var wider = HtmlStrictStyles.Extract(next.WithSize(700, 300).ToInteractiveHtmlFragmentWithoutAssets());
+        var page = Render("interactive-page", Nonce).Replace("</body>", "<style nonce=\"" + Nonce + "\">" + expected.StyleSheet + wider.StyleSheet + "</style><template id=\"next\">" + expected.Markup
+            + "</template><template id=\"wider\">" + wider.Markup + "</template></body>", StringComparison.Ordinal);
         await using var session = await OpenAsync(page, policy);
         var width = await session.Page.EvaluateAsync<string>("""
             () => {
@@ -127,6 +131,8 @@ public sealed class StrictStyleTests {
               controller.update(section);
               const fromElement = root.style.getPropertyValue('--cfx-intrinsic-width');
               // Markup alone, with its rules registered by the host, restores the same properties.
+              controller.update(document.getElementById('wider').content.firstElementChild.cloneNode(true));
+              if (root.style.getPropertyValue('--cfx-intrinsic-width').trim() !== '700px') return 'wider update did not apply';
               controller.update(document.getElementById('next').innerHTML);
               return fromElement === root.style.getPropertyValue('--cfx-intrinsic-width') ? fromElement : 'element ' + fromElement + ', markup ' + root.style.getPropertyValue('--cfx-intrinsic-width');
             }

@@ -36,7 +36,7 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
     if (css) try { const sheet = new CSSStyleSheet(); sheet.replaceSync(css); sources.push(rulesOf(sheet)); } catch { }
     const offset = sources.length, sheets = [];
     let reindexed = false;
-    for (const owner of new Set([root.getRootNode(), root.ownerDocument, document])) sheets.push(...(owner?.styleSheets || []));
+    for (const owner of new Set([root.getRootNode(), root.ownerDocument, document])) sheets.push(...(owner?.styleSheets || []), ...(owner?.adoptedStyleSheets || []));
     sources.push(...sheets.map(rulesOf));
     for (const node of nodes) {
       for (const name of [...node.classList]) {
