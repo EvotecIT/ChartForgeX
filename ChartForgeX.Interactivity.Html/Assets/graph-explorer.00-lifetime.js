@@ -2,6 +2,7 @@
   const listenGraph = (root, target, name, listener, options) => target?.__cfxVirtual
     ? () => {} : graphLifetime(root)?.listen(target, name, listener, options) || (() => {});
   const beginGraphLifetime = root => {
+    window[Symbol.for('ChartForgeX.strictStyles')]?.(root);
     const lifetime = window[Symbol.for('ChartForgeX.adapterLifetimes')].create(root, 'graph');
     lifetime.own(() => {
       stopWorkerPhysics(root); stopMainPhysics(root);

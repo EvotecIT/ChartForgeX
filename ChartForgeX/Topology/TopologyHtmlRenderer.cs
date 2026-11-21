@@ -24,7 +24,7 @@ public sealed partial class TopologyHtmlRenderer {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         options ??= chart.DefaultRenderOptions;
         EnsureStatic(options);
-        return RenderFragmentCore(chart, options, includeAssets: true, assetSource: "inline");
+        return HtmlStrictStyles.Apply(RenderFragmentCore(chart, options, includeAssets: true, assetSource: "inline"), Nonce(options));
     }
 
     /// <summary>
@@ -37,7 +37,7 @@ public sealed partial class TopologyHtmlRenderer {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         options ??= chart.DefaultRenderOptions;
         EnsureStatic(options);
-        return RenderFragmentCore(chart, options, includeAssets: false, assetSource: "host");
+        return HtmlStrictStyles.Apply(RenderFragmentCore(chart, options, includeAssets: false, assetSource: "host"), Nonce(options));
     }
 
     internal string RenderInteractiveFragment(TopologyChart chart, TopologyRenderOptions options, bool includeAssets,
@@ -234,8 +234,10 @@ public sealed partial class TopologyHtmlRenderer {
             .RawTrusted(RenderFragmentCore(chart, options, includeAssets: false, assetSource: "document", preparedSvg, preparedWidth)).Line();
         writer.EndElement().Line()
             .EndElement().Line();
-        return writer.Build();
+        return HtmlStrictStyles.Apply(writer.Build(), Nonce(options));
     }
+
+    internal static string? Nonce(TopologyRenderOptions? options) => string.IsNullOrWhiteSpace(options?.HtmlNonce) ? null : options!.HtmlNonce!.Trim();
 
     /// <summary>
     /// Builds the renderer-owned stylesheet used by topology HTML fragments.

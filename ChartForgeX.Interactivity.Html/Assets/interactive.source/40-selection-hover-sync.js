@@ -82,6 +82,14 @@
     if (crosshair) crosshair.hidden = true;
     uncoverCrosshairTicks(root);
   };
+  // The guide goes with an unavailable readout in this frame rather than at the browser's next hover update under a still
+  // pointer, which can come several frames later. A guide that reads another mark that is still painted stays.
+  const dropUnavailableReadout = (root, node) => {
+    clearUnavailableHover(root, node);
+    const hoverKey = root.dataset.cfxHoverKey;
+    const hovered = hoverKey && interactiveTargets(root).find(target => targetKey(targetIdentity(target)) === hoverKey);
+    if (!hovered || hovered === node || !pointerTargetPaint(hovered)) hideCrosshair(root, root.querySelector('.cfx-crosshair'));
+  };
   const pointLegendUnits = (root, target) => target.point !== undefined && chartNodes(root, '[data-cfx-role="legend-item"]').filter(item => item.hasAttribute('data-cfx-point'))
     .some((item) => target.seriesKey ? seriesKey(item) === target.seriesKey : (item.dataset || {}).cfxSeries === String(target.series));
   const legendItemUnit = (root, target) => {

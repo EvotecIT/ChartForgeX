@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ChartForgeX.Interactivity;
 
@@ -21,8 +22,20 @@ public sealed class ChartInteractionScenario {
     /// <summary>Gets or sets an optional scenario description.</summary>
     public string? Description { get; set; }
 
-    /// <summary>Gets or sets an optional scenario accent color.</summary>
-    public string? Color { get; set; }
+    private string? _color;
+
+    /// <summary>Gets or sets an optional scenario accent color: a CSS color such as <c>#2563eb</c>, <c>rgb(37 99 235)</c> or a named color.</summary>
+    /// <exception cref="ArgumentException">The value contains characters outside a CSS color.</exception>
+    public string? Color {
+        get => _color;
+        set {
+            // Same rule as topology scenarios: CSS whitespace becomes one space; custom-property references may hold underscores.
+            var color = string.IsNullOrWhiteSpace(value) ? null : string.Join(" ", value!.Split(new[] { ' ', '\t', '\n', '\r', '\f' }, StringSplitOptions.RemoveEmptyEntries));
+            if (color != null && (color.Length > 512 || color.Contains("/*") || color.Contains("*/") || (color[0] == '#' ? !(color.Length is 4 or 5 or 7 or 9 && color.Skip(1).All(Uri.IsHexDigit)) : !color.All(ch => char.IsLetterOrDigit(ch) || ch is '#' or '(' or ')' or ',' or '.' or '%' or '-' or '_' or ' ' or '/' or '*' or '+'))))
+                throw new ArgumentException("Scenario colors must be CSS colors.", nameof(value));
+            _color = color;
+        }
+    }
 
     /// <summary>Gets or sets the default time each step remains visible during playback.</summary>
     public int PlaybackDelayMilliseconds {

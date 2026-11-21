@@ -87,7 +87,12 @@
 
       const paintChanged = records.some(record => pending.root.contains(record.target)
         || record.type === 'attributes' && pending.nodes.includes(record.target));
-      if (removed || paintChanged && !tooltipRequestAvailable(pending)) cancelTooltipRequest(pending.root);
+      if (removed || paintChanged && !tooltipRequestAvailable(pending)) {
+        // A delayed tooltip whose mark stops being painted takes its hover and guide with it, as a shown one does.
+        cancelTooltipRequest(pending.root);
+        // A mark removed and put back before this record arrived keeps its hover.
+        if (!pending.node.isConnected || !pending.root.contains(pending.node) || !pointerTargetPaint(pending.node)) dropUnavailableReadout(pending.root, pending.node);
+      }
     }
   };
   const watchPendingTooltips = (request) => {

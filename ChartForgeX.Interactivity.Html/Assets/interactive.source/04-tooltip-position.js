@@ -126,7 +126,10 @@
       }
       for (const state of Array.from(activeTooltipPositions)) {
         if (state.tip.hidden) { forgetTooltipPosition(state.tip); continue; }
-        if (!tooltipPositionAvailable(state)) { clearUnavailableHover(state.root, state.node); hideTip(state.root, state.tip, true); continue; }
+        if (!tooltipPositionAvailable(state)) {
+          dropUnavailableReadout(state.root, state.node);
+          hideTip(state.root, state.tip, true); continue;
+        }
         state.paintChanged = false;
         placeTooltip(state, true);
       }

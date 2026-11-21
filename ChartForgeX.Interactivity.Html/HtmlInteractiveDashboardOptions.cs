@@ -10,6 +10,7 @@ public sealed class HtmlInteractiveDashboardOptions {
     private string? _pageTitle;
     private string? _idScope;
     private string? _scriptNonce;
+    private string? _styleNonce;
     private int _columns = 2;
 
     /// <summary>Gets or sets whether the dashboard includes native host APIs or a feature-selected offline reader runtime.</summary>
@@ -51,6 +52,16 @@ public sealed class HtmlInteractiveDashboardOptions {
     public string? ScriptNonce {
         get => _scriptNonce;
         set => _scriptNonce = NormalizeOptionalText(value, nameof(value));
+    }
+
+    /// <summary>
+    /// Gets or sets an optional nonce for style elements. When set, the output carries no <c>style</c> attributes: every
+    /// inline style and style element moves into one <c>style</c> element with this nonce (see
+    /// <see cref="ChartForgeX.Html.HtmlStrictStyles"/>), and the runtime restores the inline styles through the CSS object model.
+    /// </summary>
+    public string? StyleNonce {
+        get => _styleNonce;
+        set => _styleNonce = NormalizeOptionalText(value, nameof(value));
     }
 
     /// <summary>

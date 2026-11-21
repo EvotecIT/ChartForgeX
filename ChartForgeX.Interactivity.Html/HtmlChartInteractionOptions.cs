@@ -11,6 +11,7 @@ public sealed class HtmlChartInteractionOptions {
     private string? _pageTitle;
     private string? _idScope;
     private string? _scriptNonce;
+    private string? _styleNonce;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HtmlChartInteractionOptions"/> class.
@@ -48,6 +49,16 @@ public sealed class HtmlChartInteractionOptions {
     public string? ScriptNonce {
         get => _scriptNonce;
         set => _scriptNonce = NormalizeOptionalText(value, nameof(value));
+    }
+
+    /// <summary>
+    /// Gets or sets an optional nonce for style elements. When set, the output carries no <c>style</c> attributes: every
+    /// inline style and style element moves into one <c>style</c> element with this nonce (see
+    /// <see cref="ChartForgeX.Html.HtmlStrictStyles"/>), and the runtime restores the inline styles through the CSS object model.
+    /// </summary>
+    public string? StyleNonce {
+        get => _styleNonce;
+        set => _styleNonce = NormalizeOptionalText(value, nameof(value));
     }
 
     /// <summary>

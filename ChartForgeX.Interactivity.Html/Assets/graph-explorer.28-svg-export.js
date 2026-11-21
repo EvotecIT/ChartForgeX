@@ -149,7 +149,7 @@
       const index = used[mark.side] = (used[mark.side] ?? -1) + 1;
       const polygon = previous.filter(node => attr(node, 'data-arrow-side') === mark.side)[index] || svgNode(document, 'polygon', { 'data-arrow-side': mark.side });
       polygon.setAttribute('points', mark.points.map(point => `${point.x},${point.y}`).join(' '));
-      polygon.setAttribute('style', `fill:${mark.paper ? paint.paper : paint.color};stroke:none`);
+      polygon.style.cssText = `fill:${mark.paper ? paint.paper : paint.color};stroke:none`;
       return polygon;
     });
     previous.forEach(node => { if (!polygons.includes(node)) node.remove(); });

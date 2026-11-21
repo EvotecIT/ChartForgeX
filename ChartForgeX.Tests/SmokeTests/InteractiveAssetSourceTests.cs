@@ -82,7 +82,7 @@ internal static partial class SmokeTests {
             .ToArray();
         Assert(parts.Length >= 3, "Interactive JS assets should be split into maintainable source fragments: " + sourceRelativePath);
 
-        var prelude = Path.Combine(root, "ChartForgeX.Interactivity.Html", "Assets", "adapter-localization.js");
+        var prelude = Path.Combine(root, "ChartForgeX.Interactivity.Html", "Assets", "adapter-shared.js");
         var generated = string.Join("\n", parts.Select(part => NormalizeAsset(File.ReadAllText(part)).TrimEnd('\n'))) + "\n";
         if (entry != null) {
             generated = InteractiveBundle.Link(generated,

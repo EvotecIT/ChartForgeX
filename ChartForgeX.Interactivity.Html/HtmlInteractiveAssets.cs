@@ -20,7 +20,7 @@ internal static class HtmlInteractiveAssets {
     internal static string AdapterLifetimeScript => ReadResource("ChartForgeX.Interactivity.Html.Assets.adapter-lifetime.js");
     internal static string NativeTextScript => ReadResource("ChartForgeX.Interactivity.Html.Assets.adapter-native-text-export.js");
 
-    internal static string LocalizationScript => ReadResource("ChartForgeX.Interactivity.Html.Assets.adapter-localization.js");
+    internal static string LocalizationScript => ReadResource("ChartForgeX.Interactivity.Html.Assets.adapter-shared.js");
 
     internal static string Style => StyleResource.Value;
 
