@@ -28,10 +28,11 @@ public sealed class InteractiveBundleTests {
     // Hiding the tick captions under the crosshair value pills added about 0.6 KiB raw (0.2 KiB gzip) to every runtime; the
     // report runtimes had under 0.1 KiB left of each, so both report raw and gzip budgets moved up 1 KiB.
     // Restoring strict-CSP styles through the CSS object model (adapter-shared.js) added about 0.6 KiB raw to every runtime;
-    // each raw budget moved up 1 KiB.
-    [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.Tooltips, 104 * 1024, 33 * 1024)]
-    [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.ReportReview, 300 * 1024, 93 * 1024)]
-    [InlineData(HtmlChartRuntime.Full, ChartInteractionFeatures.ReportReview, 368 * 1024, 112 * 1024)]
+    // each raw budget and the tooltip reader's gzip budget moved up 1 KiB. Restoring them in adaptive templates and element
+    // updates added about 0.2 KiB more, so the report raw budgets moved up another 1 KiB.
+    [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.Tooltips, 104 * 1024, 34 * 1024)]
+    [InlineData(HtmlChartRuntime.Standalone, ChartInteractionFeatures.ReportReview, 301 * 1024, 93 * 1024)]
+    [InlineData(HtmlChartRuntime.Full, ChartInteractionFeatures.ReportReview, 369 * 1024, 112 * 1024)]
     public void EmittedRuntimeFitsRawAndGzipBudgets(HtmlChartRuntime runtime, ChartInteractionFeatures features, int rawBudget, int gzipBudget) {
         var asset = HtmlInteractiveAssetFiles.ChartScriptFor(runtime, features);
         var bytes = Encoding.UTF8.GetBytes(asset.Content);
@@ -103,8 +104,9 @@ public sealed class InteractiveBundleTests {
     // Collapsible sibling cards, edge chips and evidence in the selection panel raised topology to 165.3 KiB raw on 16 November 2026.
     // Card node images and the initial layout progress bar raised the Explorer to 433.2 KiB raw / 97.1 KiB gzip (Windows CRLF checkout) on 19 November 2026.
     [Theory]
-    // Strict-CSP style restoration: about 0.9 KiB raw and 0.3 KiB gzip in the unoptimized topology runtime, 1.2 KiB raw in the explorer.
-    [InlineData("topology", 167 * 1024, 36 * 1024)]
+    // Strict-CSP style restoration, including adaptive templates: about 1.1 KiB raw and 0.3 KiB gzip in the unoptimized
+    // topology runtime, 1.2 KiB raw in the explorer.
+    [InlineData("topology", 168 * 1024, 36 * 1024)]
     [InlineData("explorer", 436 * 1024, 98 * 1024)]
     public void TopologyAndExplorerRuntimesFitRawAndGzipBudgetsAsShipped(string runtime, int rawBudget, int gzipBudget) {
         var topology = TopologyChart.Create().WithId("budget").AddAutoNode("a", "Edge").AddAutoNode("b", "Core").AddEdge("a-b", "a", "b");

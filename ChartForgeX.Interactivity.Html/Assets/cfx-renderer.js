@@ -45,11 +45,14 @@
       categories: Object.freeze(categories), series: Object.freeze(series) };
     if (input.type === "donut" && (series.length !== 1 || series[0].values.some(value => value !== null && value < 0)))
       throw new TypeError("ChartForgeX: donut charts accept one series of nonnegative values, one per slice.");
+    if (input.type === "donut" && !Number.isFinite(series[0].values.reduce((sum, value) => sum + (value || 0), 0)))
+      throw new RangeError("ChartForgeX: the donut total exceeds the supported finite range.");
     if (input.type === "gauge") {
       if (categories.length !== 1 || series.length > 2 || series.some(item => item.values[0] === null))
         throw new TypeError("ChartForgeX: gauges accept one category, a value series and an optional target series.");
       const minimum = input.minimum ?? 0, maximum = input.maximum ?? Math.max(1, ...series.map(item => item.values[0]));
-      if (typeof minimum !== "number" || typeof maximum !== "number" || !Number.isFinite(minimum) || !Number.isFinite(maximum) || maximum <= minimum)
+      if (typeof minimum !== "number" || typeof maximum !== "number" || !Number.isFinite(minimum) || !Number.isFinite(maximum) || maximum <= minimum
+          || !Number.isFinite(maximum - minimum))
         throw new RangeError("ChartForgeX: a gauge requires finite minimum < maximum.");
       captured.range = Object.freeze([minimum, maximum]);
     }
@@ -211,7 +214,8 @@
       const value = series.values[categoryIndex];
       const node = element(document, "g", { "data-cfx-series": series.id,
         "data-cfx-category": category.id }, svg);
-      const ink = element(document, name, { ...attributes, "data-cfx-ink": "" }, node);
+      const { target, ...paint } = attributes;
+      const ink = element(document, name, { ...paint, "data-cfx-ink": "" }, node);
       const caption = series.name + ", " + category.label + ": " + number.format(value);
       element(document, "title", {}, node, caption);
       if (onSelect) {
@@ -226,6 +230,10 @@
             height: Math.max(8, attributes.height), fill: "transparent", "pointer-events": "all", "data-cfx-target": "",
             stroke: selected?.seriesId === series.id && selected?.categoryId === category.id ? "currentColor" : "none",
             "stroke-width": 2, "stroke-dasharray": "2 2" }, node);
+        // A zero arc has no area either; a small target at its start keeps it reachable.
+        if (name === "path" && attributes.target)
+          element(document, "circle", { cx: attributes.target[0], cy: attributes.target[1], r: 5, fill: "transparent", "pointer-events": "all", "data-cfx-target": "",
+            stroke: selected?.seriesId === series.id && selected?.categoryId === category.id ? "currentColor" : "none", "stroke-width": 2, "stroke-dasharray": "2 2" }, node);
         if (selected?.seriesId === series.id && selected?.categoryId === category.id) {
           ink.setAttribute("stroke", "currentColor"); ink.setAttribute("stroke-width", "2");
         }
@@ -237,12 +245,17 @@
       const series = data.series[0], total = series.values.reduce((sum, value) => sum + (value || 0), 0);
       const cx = width / 2, cy = plot.y + plot.height / 2, outer = Math.max(1, Math.min(plot.width, plot.height) / 2), inner = outer * surface.donutInner;
       let angle = -Math.PI / 2;
+      const zeros = [];
       series.values.forEach((value, categoryIndex) => {
         if (value === null || !total) return;
-        const sweep = value / total * Math.PI * 2;
-        mark("path", { d: sector(cx, cy, outer, inner, angle, angle + sweep), fill: color(categoryIndex) }, 0, categoryIndex);
+        const sweep = value / total * Math.PI * 2, middle = (outer + inner) / 2;
+        const node = mark("path", { d: sector(cx, cy, outer, inner, angle, angle + sweep), fill: color(categoryIndex),
+          target: sweep ? undefined : [cx + Math.cos(angle) * middle, cy + Math.sin(angle) * middle] }, 0, categoryIndex);
+        if (!sweep) zeros.push(node);
         angle += sweep;
       });
+      // A zero slice's target lies on its neighbour's edge; drawing it last keeps it on top.
+      for (const node of zeros) svg.appendChild(node);
       if (!compact) label(cx, cy + 6, number.format(total), "middle", { "font-size": 18, "font-weight": 600 });
       return { svg, marks };
     }
@@ -252,7 +265,8 @@
       const inner = outer * surface.donutInner, ratio = value => Math.max(0, Math.min(1, (value - minimum) / (maximum - minimum)));
       element(document, "path", { d: sector(cx, cy, outer, inner, start, start + sweep), fill: "var(--cfx-color-border,#e2e8f0)" }, svg);
       const value = data.series[0].values[0];
-      mark("path", { d: sector(cx, cy, outer, inner, start, start + sweep * ratio(value)), fill: color(0) }, 0, 0);
+      mark("path", { d: sector(cx, cy, outer, inner, start, start + sweep * ratio(value)), fill: color(0),
+        target: ratio(value) ? undefined : [cx + Math.cos(start) * (outer + inner) / 2, cy + Math.sin(start) * (outer + inner) / 2] }, 0, 0);
       if (data.series[1]) {
         const at = start + sweep * ratio(data.series[1].values[0]);
         mark("line", { x1: cx + Math.cos(at) * (inner - 4), y1: cy + Math.sin(at) * (inner - 4), x2: cx + Math.cos(at) * (outer + 4),
@@ -422,7 +436,7 @@
           if (!next.series.some(series => series.id === key)) throw new TypeError("ChartForgeX: unknown series id " + key + ".");
         next.categories.push(...change.categories);
         for (const series of next.series) {
-          const values = change.values[series.id] ?? Array(added).fill(null);
+          const values = Object.prototype.hasOwnProperty.call(change.values, series.id) ? change.values[series.id] : Array(added).fill(null);
           if (!Array.isArray(values) || values.length !== added) throw new TypeError("ChartForgeX: append requires one value per new category.");
           series.values.push(...values);
         }

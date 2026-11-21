@@ -23,11 +23,18 @@ window[Symbol.for('ChartForgeX.strictStyles')] ||= (() => {
     return cache.get(sheet);
   };
   return (root, css) => {
-    const nodes = root?.querySelectorAll ? [...(root.matches('[class*="cfx-s-"]') ? [root] : []), ...root.querySelectorAll('[class*="cfx-s-"]')] : [];
+    if (!root?.querySelectorAll) return;
+    // Adaptive drawings wait in templates, which querySelectorAll does not enter.
+    const nodes = root.matches?.('[class*="cfx-s-"]') ? [root] : [];
+    const collect = scope => {
+      nodes.push(...scope.querySelectorAll('[class*="cfx-s-"]'));
+      for (const template of scope.querySelectorAll('template')) collect(template.content);
+    };
+    collect(root);
     if (!nodes.length) return;
     const sources = [];
     if (css) try { const sheet = new CSSStyleSheet(); sheet.replaceSync(css); sources.push(rulesOf(sheet)); } catch { }
-    for (const owner of new Set([root.getRootNode(), root.ownerDocument])) for (const sheet of owner?.styleSheets || []) sources.push(rulesOf(sheet));
+    for (const owner of new Set([root.getRootNode(), root.ownerDocument, document])) for (const sheet of owner?.styleSheets || []) sources.push(rulesOf(sheet));
     for (const node of nodes) {
       for (const name of [...node.classList]) {
         const text = name.startsWith('cfx-s-') && sources.find(rules => rules.has(name))?.get(name);

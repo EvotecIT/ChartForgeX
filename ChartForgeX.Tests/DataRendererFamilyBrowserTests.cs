@@ -75,4 +75,23 @@ public sealed class DataRendererFamilyBrowserTests {
         await Assert.ThrowsAnyAsync<Exception>(() => page.EvaluateAsync("()=>chart.append({categories:[hour(6)],values:{dc9:[0]}})"));
         AssertNoConsoleErrors(session);
     }
+
+    [BrowserFact]
+    public async Task ZeroArcsStaySelectableAndOverflowingSpansAreRejected() {
+        await using var session = await OpenAsync(Page);
+        var page = session.Page;
+        await page.EvaluateAsync("()=>{window.picked=[];window.chart=ChartForgeXRenderer.create(document.getElementById('chart'),{type:'donut',label:'Findings',"
+            + "categories:[{id:'zero',label:'None'},{id:'all',label:'All'}],series:[{id:'count',name:'Findings',values:[0,4]}]},{onSelect:mark=>picked.push(mark.categoryId)});}");
+        await page.Locator("[data-cfx-category='zero'] [data-cfx-target]").ClickAsync(new() { Force = true });
+        Assert.Equal("zero", await page.EvaluateAsync<string>("()=>picked[0]"));
+        await page.EvaluateAsync("()=>chart.update({type:'gauge',label:'Load',minimum:0,maximum:10,categories:[{id:'now',label:'Now'}],series:[{id:'v',name:'Load',values:[0]}]})");
+        Assert.Equal(1, await page.Locator("[data-cfx-series='v'] [data-cfx-target]").CountAsync());
+        await Assert.ThrowsAnyAsync<Exception>(() => page.EvaluateAsync("()=>chart.update({type:'gauge',label:'x',minimum:-1e308,maximum:1e308,categories:[{id:'a',label:'a'}],series:[{id:'v',name:'v',values:[0]}]})"));
+        await Assert.ThrowsAnyAsync<Exception>(() => page.EvaluateAsync("()=>chart.update({type:'donut',label:'x',categories:[{id:'a',label:'a'},{id:'b',label:'b'}],series:[{id:'v',name:'v',values:[1e308,1e308]}]})"));
+        // A series id that names an inherited property still gets null for the new period.
+        await page.EvaluateAsync("()=>chart.update({type:'line',label:'x',categories:[{id:'a',label:'a'}],series:[{id:'constructor',name:'C',values:[1]},{id:'v',name:'V',values:[2]}]})");
+        await page.EvaluateAsync("()=>chart.append({categories:[{id:'b',label:'b'}],values:{v:[3]}})");
+        Assert.Equal(1, await page.Locator("[data-cfx-series='constructor'] [data-cfx-ink]").CountAsync());
+        AssertNoConsoleErrors(session);
+    }
 }

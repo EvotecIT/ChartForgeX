@@ -126,7 +126,12 @@
       }
       for (const state of Array.from(activeTooltipPositions)) {
         if (state.tip.hidden) { forgetTooltipPosition(state.tip); continue; }
-        if (!tooltipPositionAvailable(state)) { clearUnavailableHover(state.root, state.node); hideTip(state.root, state.tip, true); continue; }
+        if (!tooltipPositionAvailable(state)) {
+          // The guide and its value pills read out the tooltip's mark, so they go with it in this frame even when the hover
+          // key has moved on; under a still pointer the browser's own hover update can come several frames later.
+          clearUnavailableHover(state.root, state.node); hideCrosshair(state.root, state.root.querySelector('.cfx-crosshair'));
+          hideTip(state.root, state.tip, true); continue;
+        }
         state.paintChanged = false;
         placeTooltip(state, true);
       }

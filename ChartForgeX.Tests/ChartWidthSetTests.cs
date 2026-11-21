@@ -39,4 +39,20 @@ public sealed class ChartWidthSetTests {
         var drawn = await session.Page.Locator("[data-cfx-width='" + expected + "'] svg").EvaluateAsync<double>("node=>node.getBoundingClientRect().width");
         Assert.Equal(Math.Min(container, expected), drawn, 1);
     }
+
+    [Trait("Category", "Browser")]
+    [Fact]
+    public async Task DifferentWidthSetsOnOnePageChooseIndependentlyOnScreenAndInPrint() {
+        if (!InteractiveChartBrowser.Enabled) return;
+        var renderer = new HtmlChartRenderer();
+        var html = "<!doctype html><html><head></head><body style=\"margin:0\"><div id=\"a\" style=\"width:1000px\">" + renderer.RenderWidths(Chart(), "a")
+            + "</div><div id=\"b\" style=\"width:1000px\">" + renderer.RenderWidths(Chart(), "b", 900, 700, 400) + "</div></body></html>";
+        await using var session = await InteractiveChartBrowser.OpenAsync(html, 1100, 900);
+        const string Visible = "id=>[...document.querySelectorAll('#'+id+' [data-cfx-width]')].filter(node=>getComputedStyle(node).display!=='none').map(node=>node.dataset.cfxWidth)";
+        Assert.Equal(new[] { "800" }, await session.Page.EvaluateAsync<string[]>(Visible, "a"));
+        Assert.Equal(new[] { "900" }, await session.Page.EvaluateAsync<string[]>(Visible, "b"));
+        await session.Page.EmulateMediaAsync(new() { Media = Microsoft.Playwright.Media.Print });
+        Assert.Equal(new[] { "800" }, await session.Page.EvaluateAsync<string[]>(Visible, "a"));
+        Assert.Equal(new[] { "900" }, await session.Page.EvaluateAsync<string[]>(Visible, "b"));
+    }
 }

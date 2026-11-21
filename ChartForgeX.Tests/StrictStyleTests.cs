@@ -36,14 +36,17 @@ public sealed class StrictStyleTests {
 
     [Fact]
     public void ExtractKeepsDeclarationsInsideTheirStyleElement() {
-        var result = HtmlStrictStyles.Extract("<p style=\"content:&quot;&lt;/style&gt;&quot;\"></p>");
+        var result = HtmlStrictStyles.Extract("<p style=\"content:&quot;&lt;/style&gt;&quot;\"></p><b style=\"color:red}body{display:none\"></b>");
         Assert.DoesNotContain("</style", result.StyleSheet, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("\\3c /style>", result.StyleSheet, StringComparison.Ordinal);
+        // A brace cannot end the generated rule and start one for the page.
+        Assert.Equal(2, result.StyleSheet.Count(ch => ch == '}'));
+        Assert.Contains("color:red\\7d body\\7b display:none", result.StyleSheet, StringComparison.Ordinal);
     }
 
     public static TheoryData<string> Outputs => new() {
         "static-fragment", "static-page", "responsive-fragment", "interactive-fragment", "interactive-page", "interactive-section",
-        "dashboard-page", "topology-fragment", "topology-page", "topology-interactive-fragment", "topology-interactive-page", "graph-fragment"
+        "dashboard-page", "interactive-adaptive-page", "topology-fragment", "topology-page", "topology-interactive-fragment", "topology-interactive-page", "graph-fragment"
     };
 
     [Theory]
@@ -65,6 +68,7 @@ public sealed class StrictStyleTests {
     [Trait("Category", "Browser")]
     [Theory]
     [InlineData("interactive-page")]
+    [InlineData("interactive-adaptive-page")]
     [InlineData("topology-interactive-page")]
     [InlineData("static-page")]
     public async Task StrictPageRendersLikeTheOrdinaryPageUnderAStrictPolicy(string output) {
@@ -92,6 +96,36 @@ public sealed class StrictStyleTests {
         Assert.Empty(await session.Page.EvaluateAsync<string[]>("() => window.__cfxViolations || []"));
         Assert.Equal(expected, await session.Page.EvaluateAsync<string[]>(Snapshot));
         Assert.Equal(expectedInline, await session.Page.EvaluateAsync<string[]>(Inline));
+    }
+
+    [Fact]
+    public void ScenarioColorsMustBeCssColors() {
+        var scenario = new ChartForgeX.Interactivity.ChartInteractionScenario { Color = " #2563eb " };
+        Assert.Equal("#2563eb", scenario.Color);
+        scenario.Color = "rgb(37 99 235 / 50%)";
+        Assert.Throws<ArgumentException>(() => scenario.Color = "red}body{display:none");
+        Assert.Throws<ArgumentException>(() => new TopologyScenario { Color = "red;background:url(x)" });
+    }
+
+    [Trait("Category", "Browser")]
+    [Fact]
+    public async Task UpdateAcceptsAStrictSectionElementWhoseRulesThePageHolds() {
+        if (!InteractiveChartBrowser.Enabled) return;
+        var policy = "default-src 'none'; img-src data:; font-src data:; style-src 'nonce-" + Nonce + "'; script-src 'nonce-" + Nonce + "'";
+        var next = Chart.Create().WithTitle("Checks").WithSize(520, 300).WithXLabels("Mon", "Tue")
+            .AddLine("Passed", new[] { new ChartPoint(1, 2), new ChartPoint(2, 9) });
+        var expected = HtmlStrictStyles.Extract(next.ToInteractiveHtmlFragmentWithoutAssets());
+        var page = Render("interactive-page", Nonce).Replace("</body>", "<style nonce=\"" + Nonce + "\">" + expected.StyleSheet + "</style><template id=\"next\">" + expected.Markup + "</template></body>", StringComparison.Ordinal);
+        await using var session = await OpenAsync(page, policy);
+        var width = await session.Page.EvaluateAsync<string>("""
+            () => {
+              const root = document.querySelector('.cfx-interactive-chart'), section = document.getElementById('next').content.firstElementChild.cloneNode(true);
+              ChartForgeXCharts.mount(root).update(section);
+              return root.style.getPropertyValue('--cfx-intrinsic-width');
+            }
+            """);
+        Assert.Equal("520px", width.Trim());
+        Assert.Empty(await session.Page.EvaluateAsync<string[]>("() => window.__cfxViolations || []"));
     }
 
     // Serve the page with a real Content-Security-Policy header; a meta policy is not applied to injected content.
@@ -132,6 +166,8 @@ public sealed class StrictStyleTests {
             "responsive-fragment" => new HtmlResponsiveChartRenderer { StyleNonce = nonce, ScriptNonce = nonce }.RenderFragment(chart, idScope: "checks"),
             "interactive-fragment" => chart.ToInteractiveHtmlFragment(Interactive),
             "interactive-page" => chart.ToInteractiveHtmlPage(Interactive),
+            // The narrow drawing waits in a template until a narrow container selects it.
+            "interactive-adaptive-page" => chart.ToInteractiveHtmlPage(options => { Interactive(options); options.ResponsiveLayout = HtmlChartResponsiveLayout.Adaptive; options.Adaptive.Breakpoint = 1200; }),
             "interactive-section" => chart.ToInteractiveHtmlFragmentWithoutAssets(Interactive),
             "dashboard-page" => new HtmlInteractiveDashboardRenderer().RenderPage(new[] { chart }, options => { options.StyleNonce = nonce; options.ScriptNonce = nonce; }),
             "topology-fragment" => new TopologyHtmlRenderer().RenderFragment(topology, topologyOptions),

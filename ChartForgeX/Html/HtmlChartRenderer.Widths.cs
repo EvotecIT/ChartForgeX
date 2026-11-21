@@ -49,8 +49,10 @@ public sealed partial class HtmlChartRenderer {
         return HtmlStrictStyles.Apply(writer.Build(), _styleNonce);
     }
 
-    // One rule per threshold, written from the widths alone, so equal width sets on one page share identical rules.
+    // The switching rules name their complete width set, so different sets on one page cannot select each other's
+    // drawings, while equal sets share identical rules.
     private static string WidthSetCss(IReadOnlyList<int> descending) {
+        var set = ".chartforgex-widths[data-cfx-widths=\"" + string.Join(" ", descending.Select(N)) + "\"]>";
         var css = new System.Text.StringBuilder(".chartforgex-widths{container-type:inline-size;width:100%}")
             .Append(".chartforgex-widths>[data-cfx-width]{display:none;box-sizing:border-box;overflow:visible}")
             .Append(".chartforgex-widths>[data-cfx-width] svg{display:block;width:100%;height:auto;max-width:100%}")
@@ -60,9 +62,9 @@ public sealed partial class HtmlChartRenderer {
             css.Append(".chartforgex-widths>[data-cfx-width=\"").Append(N(width)).Append("\"]{max-width:").Append(N(width)).Append("px}");
         foreach (var width in descending.Take(descending.Count - 1).Reverse())
             css.Append("@container (min-width:").Append(N(width)).Append("px){")
-                .Append(".chartforgex-widths>[data-cfx-from=\"").Append(N(width)).Append("\"]{display:block}")
-                .Append(".chartforgex-widths>[data-cfx-until=\"").Append(N(width)).Append("\"]{display:none}}");
-        css.Append("@media print{.chartforgex-widths>[data-cfx-width]{display:none}.chartforgex-widths>[data-cfx-width=\"")
+                .Append(set).Append("[data-cfx-from=\"").Append(N(width)).Append("\"]{display:block}")
+                .Append(set).Append("[data-cfx-until=\"").Append(N(width)).Append("\"]{display:none}}");
+        css.Append("@media print{").Append(set).Append("[data-cfx-width]{display:none}").Append(set).Append("[data-cfx-width=\"")
             .Append(N(descending[0])).Append("\"]{display:block}}");
         return css.ToString();
     }
