@@ -29,7 +29,7 @@ internal static class Program {
         PackageAssertions.Require(PackageAssertions.Contains(terminal.ToTranscript(), "Ready"), "Terminal transcript is missing.");
         PackageAssertions.Png(terminal.ToPng());
         var shared = VisualTheme.Graphite().Configure(builder => builder.Dark.Foreground = ChartColor.FromHex("#00FE7F"));
-        var themedTerminal = TerminalStory.Create().WithTheme(shared, VisualThemeMode.Dark).WithFinalPrompt(false).Output("Shared appearance");
+        var themedTerminal = TerminalStory.Create().WithTheme(shared, ThemeMode.Dark).WithFinalPrompt(false).Output("Shared appearance");
         PackageAssertions.Require(ReferenceEquals(shared, themedTerminal.Theme)
             && PackageAssertions.Contains(themedTerminal.ToSvg(), "#00FE7F"), "Terminal lost its shared dark foreground.");
         PackageAssertions.Png(themedTerminal.ToPng());
@@ -47,7 +47,7 @@ internal static class Program {
         PackageAssertions.Require(PackageAssertions.Contains(story.ToTranscript(), "Ready"), "Story transcript is missing.");
         PackageAssertions.Png(story.ToPng());
         var style = new VisualStoryStyleOptions { Syntax = new StorySyntaxPalette { Plain = ChartColor.FromHex("#1234FF") } };
-        var themedStory = VisualStory.Create("Shared story").WithTheme(shared, VisualThemeMode.Dark).WithStyle(style).WithSize(480, 320);
+        var themedStory = VisualStory.Create("Shared story").WithTheme(shared, ThemeMode.Dark).WithStyle(style).WithSize(480, 320);
         themedStory.Scene("source", "Source", 1).Panel("source", new VisualStorySourceSurface(StorySourceText.Create("Ready")));
         themedStory.Outcome("ready", "Ready", "source");
         var captured = themedStory.Prepare();

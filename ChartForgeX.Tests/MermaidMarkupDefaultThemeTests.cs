@@ -10,15 +10,15 @@ namespace ChartForgeX.Tests;
 
 public sealed class MermaidMarkupDefaultThemeTests {
     [Theory]
-    [InlineData("pie\n\"Done\" : 7\n\"Open\" : 3", VisualThemeMode.Light)]
-    [InlineData("pie\n\"Done\" : 7\n\"Open\" : 3", VisualThemeMode.Dark)]
-    [InlineData("flowchart LR\na[Start] --> b[Done]", VisualThemeMode.Dark)]
-    [InlineData("sequenceDiagram\nAlice->>Bob: Done", VisualThemeMode.Dark)]
-    [InlineData("packet-beta\n0-3: \"Flags\"\n4-7: \"Payload\"", VisualThemeMode.Dark)]
-    [InlineData("railroad-abnf-beta\nvalue = %s\"Exact\" ;", VisualThemeMode.Dark)]
-    public void HostFallbackMatchesDirectSourceThemeBeforeAppearanceCapture(string source, VisualThemeMode mode) {
+    [InlineData("pie\n\"Done\" : 7\n\"Open\" : 3", ThemeMode.Light)]
+    [InlineData("pie\n\"Done\" : 7\n\"Open\" : 3", ThemeMode.Dark)]
+    [InlineData("flowchart LR\na[Start] --> b[Done]", ThemeMode.Dark)]
+    [InlineData("sequenceDiagram\nAlice->>Bob: Done", ThemeMode.Dark)]
+    [InlineData("packet-beta\n0-3: \"Flags\"\n4-7: \"Payload\"", ThemeMode.Dark)]
+    [InlineData("railroad-abnf-beta\nvalue = %s\"Exact\" ;", ThemeMode.Dark)]
+    public void HostFallbackMatchesDirectSourceThemeBeforeAppearanceCapture(string source, ThemeMode mode) {
         var document = new MermaidParser().Parse(source).Document!;
-        if (mode == VisualThemeMode.Dark) document.Theme = "dark";
+        if (mode == ThemeMode.Dark) document.Theme = "dark";
         var expected = document.ToVisualArtifact();
         var result = new MermaidVisualMarkupParser(new MermaidRenderOptions(), mode).Parse("```mermaid\n" + source + "\n```");
         Assert.False(result.HasErrors);
@@ -29,9 +29,9 @@ public sealed class MermaidMarkupDefaultThemeTests {
     }
 
     [Theory]
-    [InlineData("default", VisualThemeMode.Dark)]
-    [InlineData("dark", VisualThemeMode.Light)]
-    public void AuthoredPaletteOverridesFallbackAndKeepsSourceOwnership(string theme, VisualThemeMode fallback) {
+    [InlineData("default", ThemeMode.Dark)]
+    [InlineData("dark", ThemeMode.Light)]
+    public void AuthoredPaletteOverridesFallbackAndKeepsSourceOwnership(string theme, ThemeMode fallback) {
         var source = "---\nconfig:\n  theme: " + theme + "\n---\npie\n\"Done\" : 7";
         var expected = MermaidRenderer.Render(source).Artifact!;
         var result = new MermaidVisualMarkupParser(new MermaidRenderOptions(), fallback).Parse("```mermaid\n" + source + "\n```");
@@ -45,7 +45,7 @@ public sealed class MermaidMarkupDefaultThemeTests {
     [Fact]
     public void MixedFencesRetainIndependentOwnershipAndLocatedRejections() {
         const string source = "```mermaid\n---\nconfig:\n  theme: default\n---\npie\n\"First\" : 1\n```\n\n```mermaid\npie\n\"Second\" : 1\n```";
-        var parser = new MermaidVisualMarkupParser(new MermaidRenderOptions(), VisualThemeMode.Dark);
+        var parser = new MermaidVisualMarkupParser(new MermaidRenderOptions(), ThemeMode.Dark);
         var result = parser.Parse(source);
         Assert.False(result.HasErrors); Assert.Equal(2, result.Artifacts.Count);
         Assert.Equal("default", result.Artifacts[0].Metadata["mermaid.config.theme"]);
@@ -57,8 +57,8 @@ public sealed class MermaidMarkupDefaultThemeTests {
 
     [Fact]
     public void InvalidFallbackModesRejectAtBothPublicEntrypoints() {
-        Assert.Throws<ArgumentOutOfRangeException>(() => new MermaidVisualMarkupParser(new MermaidRenderOptions(), (VisualThemeMode)99));
-        Assert.Throws<ArgumentOutOfRangeException>(() => new MermaidVisualMarkupBlockParser(new MermaidRenderOptions(), (VisualThemeMode)99));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new MermaidVisualMarkupParser(new MermaidRenderOptions(), (ThemeMode)99));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new MermaidVisualMarkupBlockParser(new MermaidRenderOptions(), (ThemeMode)99));
     }
 
     private static string Normalize(string svg) {

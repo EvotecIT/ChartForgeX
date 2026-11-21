@@ -15,7 +15,7 @@ public sealed class NativeReflowVisibilityBeforeControls {
     [InlineData("line", false)] [InlineData("line", true)] [InlineData("bar", false)] [InlineData("bar", true)]
     [InlineData("boxes", false)] [InlineData("boxes", true)] [InlineData("raw", false)] [InlineData("raw", true)]
     public void OrdinaryNativeSourcePreparationRemainsRepeatable(string kind, bool dark) {
-        var chart = Model(kind).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        var chart = Model(kind).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         var renderer = new HtmlInteractiveChartRenderer(); var first = renderer.PrepareSection(chart); var second = renderer.PrepareSection(chart);
         Capture(first, "reflow-before-ordinary-" + kind + "-" + dark);
         Assert.Equal(first.Html, second.Html); Assert.Equal(first.PreparedVisual.ToSvg(), second.PreparedVisual.ToSvg()); Assert.Equal(first.PreparedVisual.ToPng(), second.PreparedVisual.ToPng());

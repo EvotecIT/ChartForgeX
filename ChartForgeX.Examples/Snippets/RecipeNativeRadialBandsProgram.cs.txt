@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -9,9 +10,9 @@ using ChartForgeX.Themes;
 using ChartForgeX.Interactivity.Html;
 
 var family = {{FAMILY}}; var automatic = {{AUTOMATIC}}; var intent = {{INTENT}}; var other = intent == "other"; var renderer = new HtmlInteractiveChartRenderer();
-var chart = NativeRadialBandMotionRecipe.Create(family,automatic,other,60,45,{{WIDTH}},VisualThemeMode.{{MODE}});
+var chart = NativeRadialBandMotionRecipe.Create(family,automatic,other,60,45,{{WIDTH}},ThemeMode.{{MODE}});
 var from = other ? renderer.PrepareVisibilitySection(chart,NativeRadialBandMotionRecipe.View(false)) : renderer.PrepareSection(chart);
-var to = other ? renderer.PrepareVisibilitySection(chart,NativeRadialBandMotionRecipe.View(true)) : renderer.PrepareSection(NativeRadialBandMotionRecipe.Create(family,automatic,false,80,55,{{WIDTH}},VisualThemeMode.{{MODE}}));
+var to = other ? renderer.PrepareVisibilitySection(chart,NativeRadialBandMotionRecipe.View(true)) : renderer.PrepareSection(NativeRadialBandMotionRecipe.Create(family,automatic,false,80,55,{{WIDTH}},ThemeMode.{{MODE}}));
 var options = new HtmlNativeTransitionOptions(other ? HtmlNativeTransitionEffect.LegendVisibility : intent == "initial" ? HtmlNativeTransitionEffect.InitialValues : HtmlNativeTransitionEffect.Values, NativeRadialBandMotionRecipe.PresentationFrameCount);
 var payload = renderer.PrepareNativeTransitionJson(from,to,options); var reverse = intent == "initial" ? payload : renderer.PrepareNativeTransitionJson(to,from,options);
 var action = "const chart=ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'));let forward=true;document.querySelector('#play').onclick=()=>" + (intent == "initial"

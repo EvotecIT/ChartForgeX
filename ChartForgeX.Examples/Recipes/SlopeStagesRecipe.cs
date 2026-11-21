@@ -1,7 +1,7 @@
 /// <summary>Compares complete stage observations without inventing values for unrecorded stages.</summary>
 public static class SlopeStagesRecipe {
     /// <summary>Creates ordered stage lines, including one explicit disconnected interval, on either physical orientation.</summary>
-    public static Chart Create(string variant = "stages", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "stages", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("stages" or "compact-stages" or "horizontal-stages" or "compact-horizontal-stages"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithXLabels("Received", "Prepared", "Reviewed", "Accepted")

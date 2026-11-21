@@ -107,7 +107,7 @@ public sealed class MermaidJourneyTimelineNativeTests {
     public void NativeJourneyAndBothTimelineDirectionsShareDirectFencedSvgPngAndRepeatedOutput(bool dark, int width) {
         foreach (var source in new[] { Journey, Timeline, Timeline.Replace("timeline TD", "timeline") }) {
             var options = new MermaidRenderOptions {
-                Presentation = new MermaidPresentationOptions { ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light, FontFamily = BrowserProofFonts.Family },
+                Presentation = new MermaidPresentationOptions { ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light, FontFamily = BrowserProofFonts.Family },
                 Journey = new MermaidJourneyRenderOptions { Width = width, Height = 640 }, Timeline = new MermaidTimelineRenderOptions { Width = width, Height = 640 }
             };
             var direct = MermaidRenderer.Render(source, options); Assert.Empty(direct.Diagnostics);
@@ -135,7 +135,7 @@ public sealed class MermaidJourneyTimelineNativeTests {
         foreach (var dark in new[] { false, true }) {
             var options = new MermaidRenderOptions {
                 Presentation = new MermaidPresentationOptions {
-                    ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light, Theme = dark ? opaqueHost : null
+                    ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light, Theme = dark ? opaqueHost : null
                 }
             };
             var direct = MermaidRenderer.Render(source, options); Assert.Empty(direct.Diagnostics);
@@ -172,12 +172,12 @@ public sealed class MermaidJourneyTimelineNativeTests {
         foreach (var options in new[] { null, Options(opaqueHost), Options(opaqueHost, opaqueFamily) }) {
             var native = Assert.IsAssignableFrom<IVisualBlock>(MermaidRenderer.Render("%%{init: {\"theme\":\"dark\"}}%%\n" + (journey ? Journey : Timeline), options).Artifact!.Model);
             Assert.True(native.Options.TransparentBackground);
-            Assert.Equal(VisualThemeMode.Dark, native.Options.ThemeMode);
+            Assert.Equal(ThemeMode.Dark, native.Options.ThemeMode);
         }
-        Assert.Equal(ChartColor.FromHex("#010203"), opaqueHost.Resolve(VisualThemeMode.Dark).Background);
-        Assert.Equal(ChartColor.FromHex("#01020300"), transparentHost.Resolve(VisualThemeMode.Dark).Background);
-        Assert.Equal(ChartColor.FromHex("#040506"), opaqueFamily.Resolve(VisualThemeMode.Dark).Background);
-        Assert.Equal(ChartColor.FromHex("#04050600"), transparentFamily.Resolve(VisualThemeMode.Dark).Background);
+        Assert.Equal(ChartColor.FromHex("#010203"), opaqueHost.Resolve(ThemeMode.Dark).Background);
+        Assert.Equal(ChartColor.FromHex("#01020300"), transparentHost.Resolve(ThemeMode.Dark).Background);
+        Assert.Equal(ChartColor.FromHex("#040506"), opaqueFamily.Resolve(ThemeMode.Dark).Background);
+        Assert.Equal(ChartColor.FromHex("#04050600"), transparentFamily.Resolve(ThemeMode.Dark).Background);
 
         MermaidRenderOptions Options(VisualTheme host, VisualTheme? family = null) {
             var options = new MermaidRenderOptions { Presentation = new MermaidPresentationOptions { Theme = host } };

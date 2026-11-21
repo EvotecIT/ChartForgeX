@@ -147,7 +147,7 @@ public sealed partial class TerminalStory {
     /// <summary>Gets the terminal theme.</summary>
     public VisualTheme Theme => InitialTab.Theme;
     /// <summary>Gets the explicit initial-tab appearance.</summary>
-    public VisualThemeMode ThemeMode => InitialTab.ThemeMode;
+    public ThemeMode ThemeMode => InitialTab.ThemeMode;
     /// <summary>Gets the initial-tab cursor and title-bar styling.</summary>
     public TerminalStyleOptions Style => InitialTab.Style;
     internal ResolvedTerminalStyle ResolvedStyle => InitialTab.ResolvedStyle;
@@ -205,7 +205,7 @@ public sealed partial class TerminalStory {
     }
 
     /// <summary>Sets the prompt dialect and optional custom prompt.</summary>
-    public TerminalStory WithDialect(TerminalDialect dialect, string? customPrompt = null, VisualThemeMode themeMode = VisualThemeMode.Dark, TerminalStyleOptions? style = null) {
+    public TerminalStory WithDialect(TerminalDialect dialect, string? customPrompt = null, ThemeMode themeMode = ThemeMode.Dark, TerminalStyleOptions? style = null) {
         EnsureInitialConfiguration();
         ValidateEnum(dialect, nameof(dialect));
         var normalizedPrompt = customPrompt == null ? string.Empty : OneLine(customPrompt, nameof(customPrompt), allowEmpty: false);
@@ -223,7 +223,7 @@ public sealed partial class TerminalStory {
     }
 
     /// <summary>Sets the terminal theme.</summary>
-    public TerminalStory WithTheme(VisualTheme theme, VisualThemeMode? mode = null) {
+    public TerminalStory WithTheme(VisualTheme theme, ThemeMode? mode = null) {
         EnsureInitialConfiguration();
         InitialTab.Theme = theme ?? throw new ArgumentNullException(nameof(theme));
         if (mode.HasValue) InitialTab.ThemeMode = mode.Value;
@@ -376,7 +376,7 @@ public sealed partial class TerminalStory {
         string workingDirectory,
         VisualTheme theme,
         TerminalTabIcon icon = TerminalTabIcon.Terminal,
-        string? customPrompt = null, VisualThemeMode themeMode = VisualThemeMode.Dark, TerminalStyleOptions? style = null) {
+        string? customPrompt = null, ThemeMode themeMode = ThemeMode.Dark, TerminalStyleOptions? style = null) {
         EnsureInitialConfiguration();
         var tab = CreateTab(id, title, dialect, workingDirectory, theme, icon, customPrompt, themeMode, style);
         _tabs[0] = tab;
@@ -394,7 +394,7 @@ public sealed partial class TerminalStory {
         string workingDirectory,
         VisualTheme theme,
         TerminalTabIcon icon = TerminalTabIcon.Terminal,
-        string? customPrompt = null, VisualThemeMode themeMode = VisualThemeMode.Dark, TerminalStyleOptions? style = null) {
+        string? customPrompt = null, ThemeMode themeMode = ThemeMode.Dark, TerminalStyleOptions? style = null) {
         EnsureStepCapacity();
         var tab = CreateTab(id, title, dialect, workingDirectory, theme, icon, customPrompt, themeMode, style);
         if (_tabsById.ContainsKey(tab.Id)) throw new ArgumentException("Terminal tab identifiers must be unique.", nameof(id));
@@ -413,7 +413,7 @@ public sealed partial class TerminalStory {
         VisualTheme theme,
         TerminalTabIcon icon = TerminalTabIcon.Terminal,
         string? customPrompt = null,
-        double transitionSeconds = 0.2, VisualThemeMode themeMode = VisualThemeMode.Dark, TerminalStyleOptions? style = null) {
+        double transitionSeconds = 0.2, ThemeMode themeMode = ThemeMode.Dark, TerminalStyleOptions? style = null) {
         EnsureStepCapacity();
         var transitionDuration = TransitionDuration(transitionSeconds);
         var tab = CreateTab(id, title, dialect, workingDirectory, theme, icon, customPrompt, themeMode, style);
@@ -426,7 +426,7 @@ public sealed partial class TerminalStory {
     }
 
     /// <summary>Activates a previously declared terminal tab without clearing its buffer.</summary>
-    public TerminalStory SelectTab(string id, double transitionSeconds = 0.2, VisualThemeMode themeMode = VisualThemeMode.Dark, TerminalStyleOptions? style = null) {
+    public TerminalStory SelectTab(string id, double transitionSeconds = 0.2, ThemeMode themeMode = ThemeMode.Dark, TerminalStyleOptions? style = null) {
         EnsureStepCapacity();
         var transitionDuration = TransitionDuration(transitionSeconds);
         var normalizedId = TabId(id, nameof(id));
@@ -490,7 +490,7 @@ public sealed partial class TerminalStory {
         string workingDirectory,
         VisualTheme theme,
         TerminalTabIcon icon,
-        string? customPrompt, VisualThemeMode themeMode, TerminalStyleOptions? style) {
+        string? customPrompt, ThemeMode themeMode, TerminalStyleOptions? style) {
         var normalizedId = TabId(id, nameof(id));
         ValidateEnum(dialect, nameof(dialect));
         ValidateEnum(icon, nameof(icon));
@@ -543,7 +543,7 @@ public sealed partial class TerminalStory {
         if (double.IsNaN(value) || double.IsInfinity(value) || value < minimum || value > maximum) throw new ArgumentOutOfRangeException(name);
     }
 
-    private static void ValidateEnum<T>(T value, string name) where T : struct {
+    private static void ValidateEnum<T>(T value, string name) where T : struct, Enum {
         if (!Enum.IsDefined(typeof(T), value)) throw new ArgumentOutOfRangeException(name);
     }
 }

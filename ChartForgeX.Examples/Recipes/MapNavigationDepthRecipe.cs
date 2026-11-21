@@ -1,7 +1,7 @@
 /// <summary>Shows opt-in source-preserving grid badges, shared callouts and route endpoint clearance.</summary>
 public static class MapNavigationDepthRecipe {
     /// <summary>Creates the same complete native scene at compact/wide sizes in either theme.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var width = variant == "compact" ? 390 : 800;
         var definition = new ChartMapDefinition("service-zones", "Service zones", new ChartRect(-10, -65, 40, 30), new[] {

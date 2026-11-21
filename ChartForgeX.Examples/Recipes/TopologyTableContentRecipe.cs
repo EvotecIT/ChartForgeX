@@ -2,7 +2,7 @@
 /// <remarks>The separate UseCase source example exercises parsing; this recipe needs only the Core package.</remarks>
 public static class TopologyTableContentRecipe {
     /// <summary>Creates a complete native example in compact/wide and both theme modes.</summary>
-    public static TopologyChart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static TopologyChart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant == "compact";
         var chart = TopologyChart.Create().WithId("linked-table-content").WithTitle("Approve a captured release")

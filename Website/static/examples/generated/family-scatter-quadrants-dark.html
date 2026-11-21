@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = ScatterQuadrantsRecipe.Create(&quot;quadrants&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Places proposed work into effort and impact regions.&lt;/summary&gt;
 public static class ScatterQuadrantsRecipe {
     /// &lt;summary&gt;Creates the selected example without choosing a renderer or export backend.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;quadrants&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;quadrants&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;quadrants&quot; or &quot;compact-quadrants&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         return Quadrants();
     }
@@ -134,6 +135,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -143,7 +145,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = ScatterQuadrantsRecipe.Create(&quot;quadrants&quot;, mode);
 var context = new VisualRenderContext(
@@ -158,7 +160,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Places proposed work into effort and impact regions.&lt;/summary&gt;
 public static class ScatterQuadrantsRecipe {
     /// &lt;summary&gt;Creates the selected example without choosing a renderer or export backend.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;quadrants&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;quadrants&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;quadrants&quot; or &quot;compact-quadrants&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         return Quadrants();
     }

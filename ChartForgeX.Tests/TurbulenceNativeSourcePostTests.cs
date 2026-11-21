@@ -36,8 +36,8 @@ public sealed class TurbulenceNativeSourcePostTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)] [InlineData(VisualThemeMode.Dark)]
-    public void CommonFrameHeadingsAndInsetsStayIndependentOfTheSingleProceduralSurface(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)] [InlineData(ThemeMode.Dark)]
+    public void CommonFrameHeadingsAndInsetsStayIndependentOfTheSingleProceduralSurface(ThemeMode mode) {
         var effect = new VisualTurbulence(.071, .113, 2, 13, VisualTurbulenceType.FractalNoise);
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(390, 280), new ChartPadding(17, 23, 31, 29)),
             themeMode: mode, frame: new VisualFrame("Noise as a source", "Four independent channels", showLegend: false));
@@ -100,9 +100,9 @@ public sealed class TurbulenceNativeSourcePostTests {
         Assert.Equal(int.MaxValue, source.NumberOfOctaves);
     }
     [Theory]
-    [InlineData("compact",VisualThemeMode.Light)] [InlineData("compact",VisualThemeMode.Dark)]
-    [InlineData("wide",VisualThemeMode.Light)] [InlineData("wide",VisualThemeMode.Dark)]
-    public void CompleteCoreOnlyProgramSavesLoadsEditsAndDisplaysTheSameSharedSource(string variant,VisualThemeMode mode) {
+    [InlineData("compact",ThemeMode.Light)] [InlineData("compact",ThemeMode.Dark)]
+    [InlineData("wide",ThemeMode.Light)] [InlineData("wide",ThemeMode.Dark)]
+    public void CompleteCoreOnlyProgramSavesLoadsEditsAndDisplaysTheSameSharedSource(string variant,ThemeMode mode) {
         var saved=NativeTurbulenceExample.Save(variant,mode);
         var loaded=NativeTurbulenceExample.Load(saved,variant,mode);
         var edited=NativeTurbulenceExample.Edit(saved,14,variant,mode);

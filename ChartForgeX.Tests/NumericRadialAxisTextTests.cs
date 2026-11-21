@@ -144,7 +144,7 @@ public sealed class NumericRadialAxisTextTests {
 
     internal static Chart Configured(bool bars, int width, bool dark = false) {
         var chart = Chart.Create().WithSize(width, width == 360 ? 360 : 440).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithFontFamily("Carlito").WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithFontFamily("Carlito").WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithXLabels("North", "South", "East").WithRadialGeometry(new(-75, 195, .2, .25, .1))
             .WithXAxis("Region").WithYAxis("Requests").WithSecondaryYAxis("Resolved (%)")
             .WithYAxisBounds(0, 1500).WithSecondaryYAxisBounds(0, 100)

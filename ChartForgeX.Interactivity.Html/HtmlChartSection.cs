@@ -43,6 +43,13 @@ public sealed class HtmlChartSection {
     /// <summary>Gets the detached native scene and X projection matching the section markup.</summary>
     public PreparedVisual PreparedVisual { get; }
 
+    /// <summary>
+    /// Gets the scoped stylesheet that lets a <see cref="ThemeMode.Auto"/> section follow the viewer's colour scheme, or null
+    /// for an explicit mode or a chart with its own SVG colour variables. Register it once per distinct theme in the host
+    /// document, as plain CSS; the section root carries the <c>data-cfx-auto-theme</c> scope it targets.
+    /// </summary>
+    public string? AutoThemeStyleSheet { get; internal set; }
+
     /// <summary>Gets the detached narrow scene embedded by adaptive layout, or null for a single drawing.</summary>
     public PreparedVisual? NarrowPreparedVisual { get; }
 }

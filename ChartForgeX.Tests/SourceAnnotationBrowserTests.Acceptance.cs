@@ -10,9 +10,9 @@ namespace ChartForgeX.Tests;
 public sealed partial class SourceAnnotationBrowserTests {
     [BrowserTheory]
     [Trait("BrowserSuite", "Compatibility")]
-    [InlineData(390, VisualThemeMode.Dark)]
-    [InlineData(900, VisualThemeMode.Light)]
-    public async Task NativeReferenceChangesCannotInventSourceDrawingUndoHistory(int width, VisualThemeMode mode) {
+    [InlineData(390, ThemeMode.Dark)]
+    [InlineData(900, ThemeMode.Light)]
+    public async Task NativeReferenceChangesCannotInventSourceDrawingUndoHistory(int width, ThemeMode mode) {
         if (!Enabled) return;
         var host = new AnnotationHost(width, mode, references: true);
         await using var session = await BrowserProofFonts.OpenAsync(host.Initial, width + 24, 1000);
@@ -47,9 +47,9 @@ public sealed partial class SourceAnnotationBrowserTests {
 
     [BrowserTheory]
     [Trait("BrowserSuite", "Compatibility")]
-    [InlineData(390, VisualThemeMode.Dark)]
-    [InlineData(900, VisualThemeMode.Light)]
-    public async Task AdaptiveAnnotationReplyRejectsStaleAlternateBeforeHistoryBasisOrExportChanges(int width, VisualThemeMode mode) {
+    [InlineData(390, ThemeMode.Dark)]
+    [InlineData(900, ThemeMode.Light)]
+    public async Task AdaptiveAnnotationReplyRejectsStaleAlternateBeforeHistoryBasisOrExportChanges(int width, ThemeMode mode) {
         if (!Enabled) return;
         var host = new AnnotationHost(width, mode);
         await using var session = await BrowserProofFonts.OpenAsync(host.Initial, width + 24, 1000);

@@ -94,7 +94,7 @@ public sealed class MermaidKanbanSourceGeometryTests {
     public void OmittedDimensionsRetainTheExistingHostDefaultsAndDirectNativeExportBytes(bool dark) {
         const string source = "kanban\nqueue[Queue]\n  a[Task A]\ndone[Done]\n";
         var family = new MermaidTopologyRenderOptions { Id = "kanban-default-control", Width = 700, Height = 400, Padding = 19,
-            Presentation = new MermaidPresentationOptions { ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light, FontFamily = BrowserProofFonts.Family } };
+            Presentation = new MermaidPresentationOptions { ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light, FontFamily = BrowserProofFonts.Family } };
         var document = new MermaidParser().ParseKanban(source).Document!; var native = document.ToTopologyChart(family);
         Assert.Equal(19, native.Viewport.Padding); Assert.All(native.Groups, group => Assert.Equal(0, group.Width)); Assert.Equal(180, native.Nodes[0].Width);
         Assert.All(native.Groups, group => Assert.DoesNotContain(group.Metadata.Keys, key => key.StartsWith("mermaid.config.kanban.", StringComparison.Ordinal)));
@@ -116,12 +116,12 @@ public sealed class MermaidKanbanSourceGeometryTests {
     }
 
     [Theory]
-    [InlineData("wide", VisualThemeMode.Light)] [InlineData("wide", VisualThemeMode.Dark)]
-    [InlineData("compact", VisualThemeMode.Light)] [InlineData("compact", VisualThemeMode.Dark)]
-    public void CompleteSourceProgramRetainsTheMaintainedFixtureAndOrdinaryMermaidPublicProducer(string variant, VisualThemeMode mode) {
+    [InlineData("wide", ThemeMode.Light)] [InlineData("wide", ThemeMode.Dark)]
+    [InlineData("compact", ThemeMode.Light)] [InlineData("compact", ThemeMode.Dark)]
+    public void CompleteSourceProgramRetainsTheMaintainedFixtureAndOrdinaryMermaidPublicProducer(string variant, ThemeMode mode) {
         var program = ExampleRecipeSource.EmitKanban(variant, mode);
         Assert.Contains("var source = " + JsonSerializer.Serialize(Fixture()) + ";", program);
-        Assert.Contains("MermaidRenderer.Render(source", program); Assert.Contains("VisualThemeMode." + mode, program);
+        Assert.Contains("MermaidRenderer.Render(source", program); Assert.Contains("ThemeMode." + mode, program);
         Assert.Contains("Width = " + (variant == "compact" ? 390 : 1100), program);
         foreach (var extension in new[] { "mmd", "svg", "png", "html", "json" }) Assert.Contains("board." + extension, program);
         Assert.DoesNotContain("{{", program); Assert.DoesNotContain("FontRegistry.Register", program);
@@ -130,7 +130,7 @@ public sealed class MermaidKanbanSourceGeometryTests {
 
     internal static string Fixture() => File.ReadAllText(Path.Combine(TestRepository.Root, "ChartForgeX.Examples", "Assets", "Mermaid", "kanban-source-geometry.mmd"));
     internal static MermaidRenderOptions Options(bool dark, int width) => new() {
-        Presentation = new MermaidPresentationOptions { ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light, FontFamily = BrowserProofFonts.Family, FontSize = 12, TopologySizing = MermaidTopologySizing.Natural },
+        Presentation = new MermaidPresentationOptions { ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light, FontFamily = BrowserProofFonts.Family, FontSize = 12, TopologySizing = MermaidTopologySizing.Natural },
         Kanban = new MermaidTopologyRenderOptions { Width = width, Height = 700 }
     };
     private static string Source(double padding, double width) => "---\nconfig:\n  kanban:\n    padding: " + padding.ToString("R", CultureInfo.InvariantCulture)

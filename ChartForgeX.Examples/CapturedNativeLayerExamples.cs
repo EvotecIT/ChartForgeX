@@ -14,7 +14,7 @@ using ChartForgeX.Typography;
 internal static class CapturedNativeLayerExamples {
     internal static void Write(string output) {
         foreach (var dark in new[] { false, true }) foreach (var width in new[] { 400, 800 }) {
-            var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+            var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
             var theme = VisualTheme.Graphite().WithFontFamily(ExampleTypography.FontFamily);
             var childWidth = width - 72; var childHeight = 210;
             var chart = Chart.Create().WithTitle("Completed work").WithSize(childWidth, childHeight).WithTheme(theme, mode);

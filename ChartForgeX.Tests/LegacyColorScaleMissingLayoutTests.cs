@@ -64,7 +64,7 @@ public sealed class LegacyColorScaleMissingLayoutTests {
         var chart = V2GalleryModels.Create(ChartSeriesKind.HexbinHeatmap, "compact-color-scale")
             .ConfigureLabels(labels => labels.NoData = missing);
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 500)),
-            VisualTheme.Graphite(), VisualThemeMode.Light,
+            VisualTheme.Graphite(), ThemeMode.Light,
             new VisualFrame("Service coverage in hexagonal cells", "Named numeric intervals keep their exact boundaries"), GalleryFont()));
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "heatmap-scale-label").ToArray();
         var bands = labels.Where(node => node.Id!.StartsWith("heatmap-scale-label-band-", StringComparison.Ordinal)).ToArray();
@@ -103,7 +103,7 @@ public sealed class LegacyColorScaleMissingLayoutTests {
             VisualTheme.Graphite(), Mode(dark), new VisualFrame("Temperature by grid position", subtitle), GalleryFont()));
     }
 
-    private static VisualThemeMode Mode(bool dark) => dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+    private static ThemeMode Mode(bool dark) => dark ? ThemeMode.Dark : ThemeMode.Light;
 
     private static void AssertKey(PreparedVisual prepared, string variant, bool missingInHeading,
         string heading = "Temperature", string missing = "Not sampled") {

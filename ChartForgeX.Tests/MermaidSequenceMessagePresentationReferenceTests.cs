@@ -16,7 +16,7 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         var reference=manifest.RootElement.GetProperty("references").GetProperty("12");var bundle=Path.Combine(corpus,"node_modules",reference.GetProperty("package").GetString()!);
         using var installed=JsonDocument.Parse(File.ReadAllText(Path.Combine(bundle,"package.json")));Assert.Equal(reference.GetProperty("version").GetString(),installed.RootElement.GetProperty("version").GetString());
         var source=SequenceMessageSourceFixture.Canonical();var result=MermaidRenderer.Render(source,new MermaidRenderOptions{
-            Presentation=new MermaidPresentationOptions{ThemeMode=dark?VisualThemeMode.Dark:VisualThemeMode.Light,FontFamily=BrowserProofFonts.Family},
+            Presentation=new MermaidPresentationOptions{ThemeMode=dark?ThemeMode.Dark:ThemeMode.Light,FontFamily=BrowserProofFonts.Family},
             Sequence=new MermaidSequenceRenderOptions{Width=width-32,Height=820}});Assert.Empty(result.Diagnostics);var artifact=result.Artifact!;
         var svg=artifact.ToSvg();var png=artifact.ToPng();
         var html="<style>body{margin:0;padding:16px;box-sizing:border-box;background:"+(dark?"#171b23;color:#edf2f7":"#fff;color:#182235")

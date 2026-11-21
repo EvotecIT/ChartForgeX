@@ -208,9 +208,9 @@ public sealed class DesignRuleGuardTests {
     /// its steps keep moving, and a count heatmap (1–17) spreads across the whole ramp instead of collapsing to one tint.
     /// </summary>
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void SequentialRamp_CoversAVisibleRangeOnItsSurface(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void SequentialRamp_CoversAVisibleRangeOnItsSurface(ThemeMode mode) {
         var colors = VisualTheme.Graphite().Resolve(mode);
         var ramp = colors.SequentialRamp;
         Assert.True(ramp.Count >= 4, "The sequential ramp needs at least four steps.");
@@ -227,7 +227,7 @@ public sealed class DesignRuleGuardTests {
         Assert.True(ChartColorMath.ContrastRatio(lightest, strongest) >= 2.5, mode + ": the heatmap uses only part of its ramp.");
     }
 
-    private static readonly VisualThemeMode[] Modes = { VisualThemeMode.Light, VisualThemeMode.Dark };
+    private static readonly ThemeMode[] Modes = { ThemeMode.Light, ThemeMode.Dark };
 
     private static readonly HashSet<string> RowLabelRoles = new(StringComparer.Ordinal) {
         "schedule-row-label", "bullet-row-label", "progress-label", "heatmap-row-label", "axis-y-label", "axis-x-label"
@@ -268,7 +268,7 @@ public sealed class DesignRuleGuardTests {
         return new ChartRect(left, top, points.Max(point => point.X) - left, points.Max(point => point.Y) - top);
     }
 
-    private static PreparedVisual Prepare(Chart chart, VisualThemeMode mode) =>
+    private static PreparedVisual Prepare(Chart chart, ThemeMode mode) =>
         chart.WithThemeMode(mode).Prepare(new VisualRenderContext(theme: chart.Options.Theme, themeMode: mode));
 
 }

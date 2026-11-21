@@ -10,7 +10,7 @@ public sealed class FlowchartAssetBrowserTests {
     [BrowserTheory]
     [InlineData("compact",false)] [InlineData("compact",true)] [InlineData("wide",false)] [InlineData("wide",true)]
     public async Task OrdinaryAssetWorkflowKeepsItsPaintedCaptionsAndOwnedImagesInsideTheNativeFrame(string variant,bool dark) {
-        var artifact=FlowchartAssetRecipe.Create(variant,dark?VisualThemeMode.Dark:VisualThemeMode.Light,BrowserProofFonts.Family);
+        var artifact=FlowchartAssetRecipe.Create(variant,dark?ThemeMode.Dark:ThemeMode.Light,BrowserProofFonts.Family);
         var html=artifact.ToHtmlPage(new VisualArtifactRenderOptions{HtmlSizing=VisualArtifactHtmlSizing.PreserveSize});
         await using var session=await BrowserProofFonts.OpenAsync(html,variant=="compact"?640:1100,900);
         var observed=await session.Page.EvaluateAsync<JsonElement>("""

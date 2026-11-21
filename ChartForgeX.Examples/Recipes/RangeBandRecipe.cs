@@ -1,7 +1,7 @@
 /// <summary>Builds an expected temperature band from typed lower and upper limits.</summary>
 public static class RangeBandRecipe {
     /// <summary>Creates the selected range-band example.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "singleton" or "compact-singleton" or "dense" or "compact-dense"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         if (variant is "singleton" or "compact-singleton") return Chart.Create().WithTitle("One observed range")

@@ -21,7 +21,7 @@ public sealed class MermaidRemainingTypographyBoundsTests {
     [InlineData(true, 960, true)]
     public async Task MaximumBodyFontKeepsBlockCellAndEdgeLabelsVisible(bool dark, int width, bool circle) {
         var theme = VisualTheme.Graphite().WithFontFamily("Arial"); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: 256, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
-        var block = BlockLayoutBlock.Create().WithSize(width, 300).WithCard(false).WithTheme(theme, dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithColumns(2)
+        var block = BlockLayoutBlock.Create().WithSize(width, 300).WithCard(false).WithTheme(theme, dark ? ThemeMode.Dark : ThemeMode.Light).WithColumns(2)
             .AddItem("a", "API").AddItem("b", "Store", shape: circle ? BlockLayoutShape.Circle : BlockLayoutShape.Rectangle).AddEdge("a", "b", "link");
         var svg = block.ToSvg();
         var labels = XDocument.Parse(svg).Descendants().Where(element => element.Name.LocalName == "text").Select(element => element.Value).ToArray();
@@ -44,7 +44,7 @@ public sealed class MermaidRemainingTypographyBoundsTests {
     public async Task MaximumSourceFontRetainsChartTitleAndContent(bool dark, int width) {
         var parsed = new MermaidParser().ParsePie("%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\npie\ntitle Visible\n\"A\": 2\n\"B\": 1");
         Assert.Empty(parsed.Diagnostics);
-        var chart = parsed.Document!.ToChart(new MermaidPieRenderOptions { Width = width, Height = 460 }).WithThemeMode(dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        var chart = parsed.Document!.ToChart(new MermaidPieRenderOptions { Width = width, Height = 460 }).WithThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         var svg = chart.ToSvg();
         var title = Assert.Single(XDocument.Parse(svg).Descendants(), element => element.Name.LocalName == "text" && element.Value == "Visible");
         Assert.True(double.Parse(title.Attribute("font-size")!.Value, CultureInfo.InvariantCulture) > 0);

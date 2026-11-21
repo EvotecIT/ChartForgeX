@@ -1,7 +1,7 @@
 /// <summary>A complete core-only nested block diagram with genuine cross-boundary source IDs.</summary>
 public static class BlockLayoutDepthRecipe {
     /// <summary>Creates a deterministic organization of source blocks; no browser layout or Mermaid runtime is required.</summary>
-    public static BlockLayoutBlock Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static BlockLayoutBlock Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant != "wide" && variant != "compact") throw new ArgumentOutOfRangeException(nameof(variant));
         var block = BlockLayoutBlock.Create().WithTitle("Request processing").WithSubtitle("Nested source grids and cross-boundary connectors")
             .WithTheme(VisualTheme.Graphite(), mode).WithSize(variant == "compact" ? 390 : 1000, 620).WithColumns(3)

@@ -12,7 +12,7 @@ public sealed class RequirementThemeBrowserTests {
     [InlineData("compact", 390, false)] [InlineData("compact", 390, true)]
     [InlineData("wide", 1100, false)] [InlineData("wide", 1100, true)]
     public async Task NativeRequirementRolesKeepVisibleInkAndScrollableOrdinaryHtml(string variant, int width, bool dark) {
-        var artifact = RequirementThemeRecipe.Create(variant, dark ? VisualThemeMode.Dark : VisualThemeMode.Light, BrowserProofFonts.Family);
+        var artifact = RequirementThemeRecipe.Create(variant, dark ? ThemeMode.Dark : ThemeMode.Light, BrowserProofFonts.Family);
         await using var session = await BrowserProofFonts.OpenAsync(artifact.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }), width, 880);
         var observed = await session.Page.EvaluateAsync<JsonElement>("""
             () => {

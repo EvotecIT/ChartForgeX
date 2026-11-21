@@ -10,9 +10,9 @@ namespace ChartForgeX.Tests;
 
 public sealed partial class ExampleRecipeTests {
     [Theory]
-    [InlineData("gradient-colors", VisualThemeMode.Light)] [InlineData("gradient-colors", VisualThemeMode.Dark)]
-    [InlineData("compact-gradient-colors", VisualThemeMode.Light)] [InlineData("compact-gradient-colors", VisualThemeMode.Dark)]
-    public void EndpointGradientRecipeUsesOneCompiledSourceAndOrdinaryPackageProgram(string variant, VisualThemeMode mode) {
+    [InlineData("gradient-colors", ThemeMode.Light)] [InlineData("gradient-colors", ThemeMode.Dark)]
+    [InlineData("compact-gradient-colors", ThemeMode.Light)] [InlineData("compact-gradient-colors", ThemeMode.Dark)]
+    public void EndpointGradientRecipeUsesOneCompiledSourceAndOrdinaryPackageProgram(string variant, ThemeMode mode) {
         var selection = new ExampleFamilySelection(ChartSeriesKind.Sankey, variant);
         Assert.Contains(selection, ExampleRecipes.FamilySelections(ChartSeriesKind.Sankey));
         Assert.Contains(selection, ExampleRecipes.FamilySelections(ChartSeriesKind.Sankey, curated: true));

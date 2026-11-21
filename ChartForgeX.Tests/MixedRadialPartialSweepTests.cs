@@ -74,7 +74,7 @@ public sealed class MixedRadialPartialSweepTests {
             .ConfigureRadar(options => { options.Form = ChartLineAreaForm.Area; options.CurveTension = .2; options.FillOpacity = .4; });
         for (var index = 0; index < categories.Length; index++) reference.WithObservationId(index, new ChartObservationId("reference-" + index));
         var chart = Chart.Create().WithSize(width, 420).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false).WithDataLabels(false)
-            .WithYAxisBounds(0, 1000).WithSecondaryYAxisBounds(0, 100).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithYAxisBounds(0, 1000).WithSecondaryYAxisBounds(0, 100).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithRadialGeometry(new ChartRadialGeometryOptions(-90, -90 + sweep, innerRadiusRatio: .2))
             .AddRadialColumn("Observed", categories).AddSeries(reference);
         chart.Options.TransparentBackground = true; chart.Options.ShowPlotBackground = false; chart.Options.ShowCard = false; return chart;

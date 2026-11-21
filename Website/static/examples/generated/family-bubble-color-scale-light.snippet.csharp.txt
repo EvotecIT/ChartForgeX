@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -14,7 +15,7 @@ using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 using static BubbleColorScaleRecipe;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 #endregion
 
@@ -31,7 +32,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 #endregion
 
 static class BubbleColorScaleRecipe {
-    internal static Chart NumericColorScale(VisualThemeMode mode) {
+    internal static Chart NumericColorScale(ThemeMode mode) {
         var colors = VisualTheme.Graphite().Resolve(mode);
         var samples = new[] {
             new { Batch = 15d, Minutes = 28d, Requests = 9d, Temperature = (double?)-12 },

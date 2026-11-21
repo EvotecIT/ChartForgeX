@@ -1,6 +1,6 @@
 /// <summary>Core-only retained vector presentation and explicit source/output-frame save-load-edit workflow.</summary>
 public static class NativeRetainedAppearanceExample {
-    public static PreparedVisual PrepareSource(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static PreparedVisual PrepareSource(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var width = Width(variant);
         var model = SequenceArtifact.Create("retained-appearance").WithSize(width, 420)
             .AddParticipant("review", "Review").AddParticipant("archive", "Archive")
@@ -12,13 +12,13 @@ public static class NativeRetainedAppearanceExample {
         return model.Prepare(Context(width, mode));
     }
 
-    public static PreparedVisual Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) =>
+    public static PreparedVisual Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) =>
         PrepareSource(variant, mode)
             .WithDropShadow(new ChartForgeX.Effects.VisualDropShadow(ChartColor.Black, 2, 3, 1, opacity: .15))
-            .WithOutline(new ChartForgeX.Effects.VisualOutline(ChartColor.FromHex(mode == VisualThemeMode.Dark ? "#38BDF8" : "#0369A1"), 1))
+            .WithOutline(new ChartForgeX.Effects.VisualOutline(ChartColor.FromHex(mode == ThemeMode.Dark ? "#38BDF8" : "#0369A1"), 1))
             .WithBloom(new ChartForgeX.Effects.VisualBloom(1, threshold: .7, strength: .3));
 
-    public static CapturedVisualLayer Capture(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static CapturedVisualLayer Capture(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var source = Create(variant, mode);
         var layer = source.CaptureLayer(new ChartForgeX.Effects.VisualLayerBlur(1, orderedDither: false),
             new VisualRenderOptions(supersampling: 1));
@@ -33,20 +33,20 @@ public static class NativeRetainedAppearanceExample {
             new ChartPoint(-8, -8), orderedDither: false));
     }
 
-    public static PreparedVisual RestoreRoot(string saved, string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light,
+    public static PreparedVisual RestoreRoot(string saved, string variant = "wide", ThemeMode mode = ThemeMode.Light,
         string? messageText = null) {
         var (envelope, source) = RestoreSource(saved, variant, mode, messageText);
         return envelope.ApplyCapturedEffects(source);
     }
 
-    public static CapturedVisualLayer RestoreLayer(string saved, string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light,
+    public static CapturedVisualLayer RestoreLayer(string saved, string variant = "wide", ThemeMode mode = ThemeMode.Light,
         string? messageText = null) {
         var (envelope, source) = RestoreSource(saved, variant, mode, messageText);
         return envelope.ApplyCapturedLayer(source);
     }
 
     private static (VisualArtifactInterchangeEnvelope Envelope, PreparedVisual Source) RestoreSource(string saved,
-        string variant, VisualThemeMode mode, string? messageText) {
+        string variant, ThemeMode mode, string? messageText) {
         var envelope = VisualArtifactInterchangeEnvelope.FromJson(saved);
         var facts = VisualArtifactInterchangeEnvelope.FromJson(saved);
         facts.Presentation!.CapturedEffects.Clear();
@@ -57,7 +57,7 @@ public static class NativeRetainedAppearanceExample {
 
     private static int Width(string variant) => variant == "compact" ? 390 : variant == "wide" ? 760
         : throw new ArgumentOutOfRangeException(nameof(variant));
-    private static VisualRenderContext Context(int width, VisualThemeMode mode) =>
+    private static VisualRenderContext Context(int width, ThemeMode mode) =>
         new(new VisualLayoutOptions(new VisualSize(width, 420), 24), VisualTheme.Graphite(), mode,
             new VisualFrame("Service review", showLegend: false, transparentBackground: true));
 }

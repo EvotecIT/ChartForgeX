@@ -125,9 +125,9 @@ public sealed class AxisTickPolicyTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void MinorLinesKeepVisibleInkAndDefaultBandsTintTheThemeGrid(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void MinorLinesKeepVisibleInkAndDefaultBandsTintTheThemeGrid(ThemeMode mode) {
         var chart = Chart.Create().WithSize(640, 360).WithHeader(false).WithLegend(false).WithTheme(VisualTheme.Graphite(), mode)
             .AddLine("Measured", new[] { new ChartPoint(0, 12), new ChartPoint(10, 96) })
             .ConfigureYAxis(axis => axis.WithTickStep(25).WithMinorTicks(1).ConfigureGrid(grid => grid.WithBands()));
@@ -138,7 +138,7 @@ public sealed class AxisTickPolicyTests {
         Assert.Equal((major.R, major.G, major.B), (band.R, band.G, band.B));
         Assert.Equal((major.R, major.G, major.B), (minor.R, minor.G, minor.B));
         // The pale light grid keeps a visible floor above half its alpha; the darker grid keeps exactly half.
-        if (mode == VisualThemeMode.Dark) Assert.InRange(minor.A, major.A / 2 - 1, major.A / 2 + 1);
+        if (mode == ThemeMode.Dark) Assert.InRange(minor.A, major.A / 2 - 1, major.A / 2 + 1);
         else Assert.InRange(minor.A, major.A / 2 + 20, major.A * .8 + 1);
     }
 
@@ -147,7 +147,7 @@ public sealed class AxisTickPolicyTests {
         var band = ChartColor.FromHex("#2F7D5B");
         var line = ChartColor.FromHex("#B04A3A");
         var chart = Chart.Create().WithSize(640, 360).WithHeader(false).WithLegend(false)
-            .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), ThemeMode.Light)
             .AddLine("Measured", new[] { new ChartPoint(0, 12), new ChartPoint(10, 96) })
             .ConfigureYAxis(axis => axis.WithTickStep(25).WithMinorTicks(4)
                 .ConfigureGrid(grid => grid.WithColor(line).WithStrokeWidth(1.5).WithDash(4, 3).WithBands(band, .2)));

@@ -11,11 +11,11 @@ namespace ChartForgeX.Tests;
 
 public sealed class AutomaticNumericXAxisTests {
     [Theory]
-    [InlineData(VisualThemeMode.Light, 6)]
-    [InlineData(VisualThemeMode.Dark, 6)]
-    [InlineData(VisualThemeMode.Light, 10)]
-    [InlineData(VisualThemeMode.Dark, 10)]
-    public void DocumentSizedSmallIntegerSpecimensPaintEveryAutomaticCaption(VisualThemeMode mode, int count) {
+    [InlineData(ThemeMode.Light, 6)]
+    [InlineData(ThemeMode.Dark, 6)]
+    [InlineData(ThemeMode.Light, 10)]
+    [InlineData(ThemeMode.Dark, 10)]
+    public void DocumentSizedSmallIntegerSpecimensPaintEveryAutomaticCaption(ThemeMode mode, int count) {
         var observed = new[] { 42, 58, 73, 91, 67, 82 };
         var chart = Chart.Create().AddLine("Observed", Enumerable.Range(1, count).Select(index => new ChartPoint(index, observed[(index - 1) % observed.Length])))
             .AddLine("Capacity", Enumerable.Range(1, count).Select(index => new ChartPoint(index, 100)));
@@ -40,7 +40,7 @@ public sealed class AutomaticNumericXAxisTests {
                 for (var x = Math.Max(0, (int)Math.Floor(label.X) - 1);
                     x < Math.Min(png.Width, Math.Ceiling(label.X + label.Text.Metrics.Width) + 1); x++) {
                     var pixel = (y * png.Width + x) * 4;
-                    if (mode == VisualThemeMode.Light ? png.Pixels[pixel] < 160 && png.Pixels[pixel + 1] < 160 && png.Pixels[pixel + 2] < 160
+                    if (mode == ThemeMode.Light ? png.Pixels[pixel] < 160 && png.Pixels[pixel + 1] < 160 && png.Pixels[pixel + 2] < 160
                         : png.Pixels[pixel] > 100 && png.Pixels[pixel + 1] > 100 && png.Pixels[pixel + 2] > 100) ink++;
                 }
             Assert.True(ink >= 5, "Native PNG must paint caption " + Text(label) + " at its prepared tick.");
@@ -77,7 +77,7 @@ public sealed class AutomaticNumericXAxisTests {
     [InlineData(240, true)]
     [InlineData(600, true)]
     public void AutomaticCaptionsCoarsenWhenMeasuredLabelsCannotFit(int width, bool longLabels) {
-        var chart = NumericAxisExamples.Create(width, VisualThemeMode.Light, longLabels);
+        var chart = NumericAxisExamples.Create(width, ThemeMode.Light, longLabels);
         var labels = Labels(chart.Prepare(VisualExportRequest.ForChart(chart).Context));
         Assert.NotEmpty(labels);
         if (longLabels) Assert.True(labels.Length < 6);
@@ -86,7 +86,7 @@ public sealed class AutomaticNumericXAxisTests {
 
     [Fact]
     public void ExplicitCountAndAuthoredCategoriesRetainTheirOwnPolicies() {
-        var chart = NumericAxisExamples.Create(600, VisualThemeMode.Light);
+        var chart = NumericAxisExamples.Create(600, ThemeMode.Light);
         chart.Options.XAxis.TickCount = 3;
         var explicitLabels = Labels(chart.Prepare(VisualExportRequest.ForChart(chart).Context));
         Assert.InRange(explicitLabels.Length, 1, 3);

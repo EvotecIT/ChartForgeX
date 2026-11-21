@@ -119,7 +119,7 @@ public sealed class InteractiveChartExportBrowserTests {
     [BrowserFact]
     public async Task RootBranchExportsKeepSelectedPaintAndOmitTheActiveBranchOverride() {
         if (!Enabled) return;
-        var chart = V2GalleryModels.Create(ChartSeriesKind.Sunburst, "options", VisualThemeMode.Light).WithSize(680, 460);
+        var chart = V2GalleryModels.Create(ChartSeriesKind.Sunburst, "options", ThemeMode.Light).WithSize(680, 460);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
             options.Tooltip.PinOnSelect = false;

@@ -11,7 +11,7 @@ using ChartForgeX.Themes;
 /// <summary>One executable source for the homepage chart, its data and its displayed program.</summary>
 public static class HeroSignInsWebsiteRecipe {
     /// <summary>Creates the homepage chart in the selected output theme.</summary>
-    public static Chart Create(VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(ThemeMode mode = ThemeMode.Light) {
 #region chart
         var (series, weeks, values) = SignInData();
         var chart = Chart.Create()

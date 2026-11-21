@@ -4,7 +4,7 @@ using ChartForgeX.VisualArtifacts;
 
 /// <summary>Native source presentation with no browser engine or plugin dependency.</summary>
 public static class ZenUmlPresentationRecipe {
-    public static VisualArtifact Create(string family,string variant,VisualThemeMode mode,string? fontFamily=null) {
+    public static VisualArtifact Create(string family,string variant,ThemeMode mode,string? fontFamily=null) {
         var source=family=="order"?Order:Presentation;
         var result=MermaidRenderer.Render(source,new MermaidRenderOptions{
             Sequence=new MermaidSequenceRenderOptions{Width=variant=="compact"?640:1100,Height=900},

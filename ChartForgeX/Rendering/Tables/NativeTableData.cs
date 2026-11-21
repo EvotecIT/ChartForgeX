@@ -37,7 +37,7 @@ internal sealed class NativeTableData {
             var copy = new NativeTableRow { Key = row.Key };
             foreach (var cell in row.Cells) copy.Cells.Add(new NativeTableCell { Text = cell.DisplayText,
                 Content = cell.Content ?? (cell.DisplayText.IndexOf('\n') >= 0 ? TextContent.Plain(cell.DisplayText) : null),
-                Status = cell.Status == VisualStatus.None ? row.Status : cell.Status });
+                Status = cell.Status == Tone.None ? row.Status : cell.Status });
             data.Rows.Add(copy);
         }
         return data;
@@ -62,7 +62,7 @@ internal sealed class NativeTableCell {
     internal string Text = "", BadgeText = "";
     internal TextAlignment? Alignment;
     internal ChartColor? Foreground, Background, MicroColor, BadgeColor;
-    internal VisualStatus Status, BadgeStatus;
+    internal Tone Status, BadgeStatus;
     internal NativeTableBadgeTreatment BadgeTreatment;
     internal NativeTableMicroVisual MicroVisual;
     internal double? Minimum, Maximum;

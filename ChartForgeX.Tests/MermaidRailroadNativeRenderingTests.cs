@@ -22,7 +22,7 @@ public sealed class MermaidRailroadNativeRenderingTests {
     public void EveryFrontendUsesTheSameNativeDirectFencedSvgPngAndMeasuredFrame(string dialect, string source, int width, bool dark) {
         var options = new MermaidRenderOptions {
             WarningPolicy = MermaidWarningPolicy.Reject,
-            Presentation = new MermaidPresentationOptions { ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light, FontFamily = BrowserProofFonts.Family },
+            Presentation = new MermaidPresentationOptions { ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light, FontFamily = BrowserProofFonts.Family },
             Railroad = new MermaidRailroadRenderOptions { Width = width, Height = 240 }
         };
         var direct = MermaidRenderer.Render(source, options); Assert.Empty(direct.Diagnostics);
@@ -47,14 +47,14 @@ public sealed class MermaidRailroadNativeRenderingTests {
     public void SourceAndCapturedHostTypographyDriveNaturalMeasurementWithoutClippingOrMutatingDefaults() {
         const string source = "---\nconfig:\n  theme: dark\n  fontFamily: Source Font\n---\nrailroad-ebnf-beta\nvalue = \"an intentionally wide terminal\" [ value ] ;";
         var options = new MermaidRenderOptions {
-            Presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family, ThemeMode = VisualThemeMode.Light, FontSize = 18 },
+            Presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family, ThemeMode = ThemeMode.Light, FontSize = 18 },
             Railroad = new MermaidRailroadRenderOptions { Width = 100, Height = 100, Presentation = new MermaidPresentationOptions { FontSize = 23 } }
         };
         var parser = new MermaidVisualMarkupParser(options);
         options.Presentation.FontSize = 9; options.Railroad.Presentation.FontSize = 9;
         var fence = parser.Parse("```mermaid\n" + source + "\n```"); Assert.Empty(fence.Diagnostics);
         var artifact = Assert.Single(fence.Artifacts); var block = Assert.IsType<RailroadDiagramBlock>(artifact.Model);
-        Assert.Equal(23, block.Options.Theme.Typography.DataLabelSize); Assert.Equal(VisualThemeMode.Light, block.Options.ThemeMode);
+        Assert.Equal(23, block.Options.Theme.Typography.DataLabelSize); Assert.Equal(ThemeMode.Light, block.Options.ThemeMode);
         Assert.Equal(BrowserProofFonts.Family, block.Options.Theme.Typography.Family);
         Assert.True(block.Options.Size.Width > 100); Assert.True(block.Options.Size.Height > 100);
         Assert.True(artifact.ToPng().Length > 64);

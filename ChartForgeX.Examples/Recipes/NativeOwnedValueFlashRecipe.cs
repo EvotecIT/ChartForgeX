@@ -1,6 +1,6 @@
 /// <summary>Native value-ink flash with explicit font ownership; layout and source values stay native.</summary>
 internal static class NativeOwnedValueFlashRecipe {
-    internal static Chart Create(string kind,double value,int width,VisualThemeMode mode,string family) {
+    internal static Chart Create(string kind,double value,int width,ThemeMode mode,string family) {
         ChartSeries series;
         if(kind is "treemap" or "sunburst") {
             var items=new[]{new ChartHierarchyItem("root","Portfolio"),new ChartHierarchyItem("first","Delivery","root",value),new ChartHierarchyItem("second","Support","root",20)};

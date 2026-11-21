@@ -111,7 +111,7 @@ internal static class WellnessDashboardExamples {
             .WithTitle("Calories left")
             .WithSize(360, 438)
             .WithTheme(WellnessTheme())
-            .WithIcon(VisualIcon.Lightning)
+            .WithIcon(Icons.Lightning)
             .WithMetric("Calories left", "1240 kcal")
             .AddLayer("Available area", 100, color: Track, configure: layer => layer
                 .WithGeometry(1.00, 0.18)
@@ -126,7 +126,7 @@ internal static class WellnessDashboardExamples {
         var eaten = MetricCard.Create()
             .WithSize(360, 210)
             .WithTheme(WellnessTheme())
-            .WithIcon(VisualIcon.ForkKnife)
+            .WithIcon(Icons.ForkKnife)
             .WithMetric("Eaten calories", "1750 kcal")
             .WithMiniBars(new[] { 42d, 56d, 49d, 64d, 71d }, maximum: 100, color: Orange, mutedColor: Muted.WithAlpha(72))
             .WithCaption("Logged intake");
@@ -134,7 +134,7 @@ internal static class WellnessDashboardExamples {
         var burned = MetricCard.Create()
             .WithSize(360, 210)
             .WithTheme(WellnessTheme())
-            .WithIcon(VisualIcon.Flame)
+            .WithIcon(Icons.Flame)
             .WithMetric("Burned calories", "510 kcal")
             .WithMiniBars(new[] { 22d, 34d, 39d, 32d, 46d }, maximum: 60, color: Green, mutedColor: Muted.WithAlpha(72))
             .WithCaption("Activity estimate");
@@ -187,7 +187,7 @@ internal static class WellnessDashboardExamples {
             builder.PlotRadius = builder.BarRadius = 10;
         });
 
-        MetricCard Card(string label, string value, string trend, string caption, string symbol, VisualStatus status, double[] history, ChartColor color) =>
+        MetricCard Card(string label, string value, string trend, string caption, string symbol, Tone status, double[] history, ChartColor color) =>
             MetricCard.Create()
                 .WithSize(320, 176)
                 .WithTheme(theme)
@@ -199,7 +199,7 @@ internal static class WellnessDashboardExamples {
                 .WithStatus(status)
                 .WithMiniBars(history, maximum: 100, color: color, mutedColor: ChartColor.FromHex("#64748B").WithAlpha(112));
 
-        MetricCard SparkCard(string label, string value, string trend, string caption, string symbol, VisualStatus status, double[] history, ChartColor color) =>
+        MetricCard SparkCard(string label, string value, string trend, string caption, string symbol, Tone status, double[] history, ChartColor color) =>
             MetricCard.Create()
                 .WithSize(320, 176)
                 .WithTheme(theme)
@@ -212,10 +212,10 @@ internal static class WellnessDashboardExamples {
                 .WithMiniSparkline(history, color: color, fillColor: color.WithAlpha(42));
 
         var cards = new[] {
-            SparkCard("CPU Load", "38%", "-6%", "5 minute trend", "CPU", VisualStatus.Positive, new[] { 52d, 48d, 44d, 41d, 38d }, Emerald),
-            Card("Memory Used", "71%", "+4%", "since boot", "RAM", VisualStatus.Warning, new[] { 55d, 59d, 63d, 68d, 71d }, Yellow),
-            Card("Disk Free", "128 GB", "-12 GB", "system volume", "SSD", VisualStatus.Positive, new[] { 92d, 87d, 82d, 76d, 71d }, Cyan),
-            SparkCard("Network", "842 Mbps", "+18%", "active adapter", "LAN", VisualStatus.Info, new[] { 24d, 48d, 37d, 64d, 82d }, Orange)
+            SparkCard("CPU Load", "38%", "-6%", "5 minute trend", "CPU", Tone.Success, new[] { 52d, 48d, 44d, 41d, 38d }, Emerald),
+            Card("Memory Used", "71%", "+4%", "since boot", "RAM", Tone.Warning, new[] { 55d, 59d, 63d, 68d, 71d }, Yellow),
+            Card("Disk Free", "128 GB", "-12 GB", "system volume", "SSD", Tone.Success, new[] { 92d, 87d, 82d, 76d, 71d }, Cyan),
+            SparkCard("Network", "842 Mbps", "+18%", "active adapter", "LAN", Tone.Info, new[] { 24d, 48d, 37d, 64d, 82d }, Orange)
         };
 
         var grid = VisualGrid.CreateMetricStrip("Endpoint Snapshot", cards)
@@ -242,7 +242,7 @@ internal static class WellnessDashboardExamples {
             builder.PlotRadius = builder.BarRadius = 8;
         });
 
-        MetricCard Card(string label, string value, string trend, string caption, string symbol, VisualStatus status, double[] history, ChartColor color, bool sparkline) {
+        MetricCard Card(string label, string value, string trend, string caption, string symbol, Tone status, double[] history, ChartColor color, bool sparkline) {
             var card = MetricCard.Create()
                 .WithSize(300, 170)
                 .WithTheme(theme)
@@ -258,9 +258,9 @@ internal static class WellnessDashboardExamples {
         }
 
         var cards = new[] {
-            Card("Patch Rate", "94%", "+4 pp", "last 30 days", "OK", VisualStatus.Positive, new[] { 80d, 84d, 88d, 91d, 94d }, ChartColor.FromHex("#2563EB"), true),
-            Card("Warnings", "18", "-7", "open controls", "WRN", VisualStatus.Warning, new[] { 72d, 64d, 51d, 42d, 35d }, ChartColor.FromHex("#F59E0B"), false),
-            Card("Coverage", "1,284", "+96", "assets scanned", "INV", VisualStatus.Info, new[] { 44d, 58d, 63d, 77d, 86d }, ChartColor.FromHex("#14B8A6"), true)
+            Card("Patch Rate", "94%", "+4 pp", "last 30 days", "OK", Tone.Success, new[] { 80d, 84d, 88d, 91d, 94d }, ChartColor.FromHex("#2563EB"), true),
+            Card("Warnings", "18", "-7", "open controls", "WRN", Tone.Warning, new[] { 72d, 64d, 51d, 42d, 35d }, ChartColor.FromHex("#F59E0B"), false),
+            Card("Coverage", "1,284", "+96", "assets scanned", "INV", Tone.Info, new[] { 44d, 58d, 63d, 77d, 86d }, ChartColor.FromHex("#14B8A6"), true)
         };
 
         var grid = VisualGrid.CreateMetricStrip("Report Summary", cards, columns: 3, panelWidth: 300, panelHeight: 170)
@@ -288,7 +288,7 @@ internal static class WellnessDashboardExamples {
             builder.CardShadowOpacity = 0;
         });
 
-        MetricCard Card(string label, string value, string trend, string caption, string symbol, VisualStatus status, double[] history, ChartColor color, bool sparkline) {
+        MetricCard Card(string label, string value, string trend, string caption, string symbol, Tone status, double[] history, ChartColor color, bool sparkline) {
             var card = MetricCard.Create()
                 .WithSize(300, 170)
                 .WithTheme(theme)
@@ -304,9 +304,9 @@ internal static class WellnessDashboardExamples {
         }
 
         var cards = new[] {
-            Card("Patch Rate", "94%", "+4 pp", "last 30 days", "OK", VisualStatus.Positive, new[] { 80d, 84d, 88d, 91d, 94d }, ChartColor.FromHex("#60A5FA"), true),
-            Card("Warnings", "18", "-7", "open controls", "WRN", VisualStatus.Warning, new[] { 72d, 64d, 51d, 42d, 35d }, ChartColor.FromHex("#F59E0B"), false),
-            Card("Coverage", "1,284", "+96", "assets scanned", "INV", VisualStatus.Info, new[] { 44d, 58d, 63d, 77d, 86d }, ChartColor.FromHex("#2DD4BF"), true)
+            Card("Patch Rate", "94%", "+4 pp", "last 30 days", "OK", Tone.Success, new[] { 80d, 84d, 88d, 91d, 94d }, ChartColor.FromHex("#60A5FA"), true),
+            Card("Warnings", "18", "-7", "open controls", "WRN", Tone.Warning, new[] { 72d, 64d, 51d, 42d, 35d }, ChartColor.FromHex("#F59E0B"), false),
+            Card("Coverage", "1,284", "+96", "assets scanned", "INV", Tone.Info, new[] { 44d, 58d, 63d, 77d, 86d }, ChartColor.FromHex("#2DD4BF"), true)
         };
 
         var grid = VisualGrid.CreateMetricStrip("Transparent Report Summary", cards, columns: 3, panelWidth: 300, panelHeight: 170)
@@ -360,7 +360,7 @@ internal static class WellnessDashboardExamples {
         var water = MetricCard.Create()
             .WithSize(360, 140)
             .WithTheme(theme)
-            .WithIcon(VisualIcon.Droplet)
+            .WithIcon(Icons.Droplet)
             .WithBadgePlacement(MetricCardBadgePlacement.TopLeft)
             .WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset)
             .WithMetric("Litres of water", "4.5", unit: "Litres");
@@ -368,7 +368,7 @@ internal static class WellnessDashboardExamples {
         var calories = MetricCard.Create()
             .WithSize(360, 140)
             .WithTheme(warmTheme)
-            .WithIcon(VisualIcon.Flame)
+            .WithIcon(Icons.Flame)
             .WithBadgePlacement(MetricCardBadgePlacement.TopLeft)
             .WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset)
             .WithMetric("Calories", "2.3k", unit: "Kcal");

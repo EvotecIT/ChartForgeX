@@ -10,11 +10,11 @@ namespace ChartForgeX.Tests;
 /// <summary>Checks that one continuous-fill SVG can obtain readable ink from either host theme.</summary>
 public sealed class SvgDerivedInkTests {
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void DivergingCellLabelsContrastWithActualFillsInEitherHostTheme(VisualThemeMode sourceMode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void DivergingCellLabelsContrastWithActualFillsInEitherHostTheme(ThemeMode sourceMode) {
         var theme = VisualTheme.Graphite();
-        Chart ChartFor(VisualThemeMode mode) => Chart.Create().WithSize(960, 240).WithTheme(theme, mode).WithDataLabels()
+        Chart ChartFor(ThemeMode mode) => Chart.Create().WithSize(960, 240).WithTheme(theme, mode).WithDataLabels()
             .WithHeatmapColorScale(theme.Resolve(mode).DivergingRamp!.ToColorScale(0))
             .AddHeatmapRow("Change", new double?[] { -3, -2, -1, 0, 1, 2, 3 });
         XElement[] Cells(string svg) => XDocument.Parse(svg).Descendants()
@@ -22,7 +22,7 @@ public sealed class SvgDerivedInkTests {
         var bound = ChartFor(sourceMode).WithSvgColorVariables(SvgColorVariables.SharedRoles(theme, sourceMode)).ToSvg();
         var boundCells = Cells(bound);
         Assert.Equal(7, boundCells.Length);
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             var nativeCells = Cells(ChartFor(mode).ToSvg());
             var variables = SvgColorVariables.SharedRoles(theme, mode).GetVariablesForSvg(bound).ToDictionary(variable => variable.Name);
             Assert.Equal(7, nativeCells.Length);
@@ -34,7 +34,7 @@ public sealed class SvgDerivedInkTests {
                 var reboundInk = variables[paint.Substring(4, paint.IndexOf(',') - 4)].Color;
                 Assert.Equal(nativeInk, reboundInk);
                 Assert.True(ChartColorMath.ContrastRatio(fill, nativeInk) >= 4.5, mode + " cell " + (index - 3));
-                if (mode == VisualThemeMode.Dark && index == 2) Assert.Equal(ChartColor.White, nativeInk);
+                if (mode == ThemeMode.Dark && index == 2) Assert.Equal(ChartColor.White, nativeInk);
             }
         }
     }

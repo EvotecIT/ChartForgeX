@@ -27,7 +27,7 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         var body = File.ReadAllText(Path.Combine(TestRepository.Root, "Build", "PackageConsumers", "Adapters", "sequence-retained-surface-shadows.mmd"));
         var source = "%%{init: " + JsonSerializer.Serialize(new { themeVariables = new {
             dropShadow = "drop-shadow(1px 2px 2px rgba(0,0,0,0.25))" } }) + "}%%\n" + body;
-        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var result = MermaidRenderer.Render(source, new MermaidRenderOptions {
             Presentation = new MermaidPresentationOptions { ThemeMode = mode, FontFamily = BrowserProofFonts.Family },
             Sequence = new MermaidSequenceRenderOptions { Width = Math.Max(640, width), Height = 900 }

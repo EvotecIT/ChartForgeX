@@ -8,7 +8,7 @@ using ChartForgeX.VisualArtifacts;
 /// <summary>Shows finite caller-owned images and native catalog glyphs in an ordinary review workflow.</summary>
 public static class FlowchartAssetRecipe {
     /// <summary>Creates the same source recipe used by native, emitted and browser consumers.</summary>
-    public static VisualArtifact Create(string variant, VisualThemeMode mode, string? fontFamily = null) {
+    public static VisualArtifact Create(string variant, ThemeMode mode, string? fontFamily = null) {
         if (variant is not ("compact" or "wide")) throw new ArgumentException("Unknown asset recipe size.", nameof(variant));
         var options = new MermaidRenderOptions {
             WarningPolicy = MermaidWarningPolicy.Reject,

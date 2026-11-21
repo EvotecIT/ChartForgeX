@@ -220,7 +220,7 @@ public static class ConsumerRenderingExamples {
             foreach (var node in captions.Nodes) node.DisplayMode = mode;
             SaveExample("topology-fit-captions-" + mode.ToString().ToLowerInvariant(), captions.ToSvg(growingOptions), captions.ToPng(growingOptions));
         }
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             var suffix = mode.ToString().ToLowerInvariant();
             var radar = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(600, 369)
                 .WithXLabels("Mail auth", "DNSSEC", "TLS", "CT", "Policy", "Monitoring")
@@ -228,11 +228,11 @@ public static class ConsumerRenderingExamples {
                 .AddRadar("Target", Enumerable.Range(1, 6).Select(i => new ChartPoint(i, 80)).ToArray());
             SaveExample( "radar-" + suffix, radar.ToSvg(), radar.ToPng());
             var card = MetricCard.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(330, 150).WithPadding(0)
-                .WithMetric("CPU", "38").WithStatus(VisualStatus.Info).WithSymbol("CPU")
+                .WithMetric("CPU", "38").WithStatus(Tone.Info).WithSymbol("CPU")
                 .WithMiniSparkline(new[] { 12d, 24, 18, 38, 27, 38 });
             SaveExample( "metric-" + suffix, card.ToSvg(), card.ToPng());
             var compactMetric = MetricCard.Create().WithTheme(VisualTheme.Graphite().WithTypography(new VisualTypography(subtitleSize: 9)), mode)
-                .WithSize(281, 55).WithPadding(6.5).WithCard(false).WithMetric("Memory", 68, unit: "%").WithStatus(VisualStatus.Positive);
+                .WithSize(281, 55).WithPadding(6.5).WithCard(false).WithMetric("Memory", 68, unit: "%").WithStatus(Tone.Success);
             SaveExample("metric-compact-" + suffix, compactMetric.ToSvg(), compactMetric.ToPng());
             var markerTheme = VisualTheme.Graphite().WithPalette(ChartColor.FromRgb(210, 30, 45), ChartColor.FromRgb(20, 170, 90), ChartColor.FromRgb(40, 90, 220));
             var list = ChartList.Create().WithTheme(markerTheme, mode).WithSize(330, 140).WithPadding(0).WithCard(false)
@@ -261,7 +261,7 @@ public static class ConsumerRenderingExamples {
             var largeText = VisualTheme.Graphite().WithTypography(new VisualTypography(dataLabelSize: 24));
             var table = ChartTable.Create().WithTheme(largeText, mode).WithSize(600, 339)
                 .WithColumns("Check", "State").AddRow("Backups", "Verified").AddRow("Recovery test", "Scheduled");
-            table.ConfigureRow(0, row => row.Cells[1].WithBadge("Verified", VisualStatus.Positive));
+            table.ConfigureRow(0, row => row.Cells[1].WithBadge("Verified", Tone.Success));
             SaveExample( "table-typography-" + suffix, table.ToSvg(), table.ToPng());
             var bullet = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(600, 231).AddBullet("Coverage", 72, 85);
             SaveExample( "bullet-" + suffix, bullet.ToSvg(), bullet.ToPng());

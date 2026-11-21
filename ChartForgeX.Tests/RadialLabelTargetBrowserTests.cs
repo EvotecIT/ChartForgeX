@@ -125,7 +125,7 @@ public sealed class RadialLabelTargetBrowserTests {
 
     internal static Chart Create(ChartSeriesKind kind, bool outside) {
         var chart = Chart.Create().WithSize(outside ? 640 : 360, outside ? 420 : 360)
-            .WithTheme(VisualTheme.Graphite(), outside ? VisualThemeMode.Light : VisualThemeMode.Dark)
+            .WithTheme(VisualTheme.Graphite(), outside ? ThemeMode.Light : ThemeMode.Dark)
             .WithFontFamily("Carlito").WithLegend(false).WithXLabels("North", "South", "East")
             .WithDataLabels().WithDataLabelPlacement(outside ? ChartDataLabelPlacement.Outside : ChartDataLabelPlacement.Inside);
         chart.Options.PngFontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");

@@ -162,7 +162,7 @@ public sealed class MermaidStateFloatingNoteTests {
 
     internal static string Source => File.ReadAllText(Path.Combine(TestRepository.Root, "ChartForgeX.Examples", "Assets", "state-floating-notes.mmd"));
     internal static MermaidRenderOptions Options(bool dark, int width) => new() {
-        Presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family, FontSize = 12, ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light, TopologySizing = MermaidTopologySizing.Natural },
+        Presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family, FontSize = 12, ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light, TopologySizing = MermaidTopologySizing.Natural },
         State = new MermaidTopologyRenderOptions { Width = width, Height = 680 }
     };
     internal static string? Role(XElement element) => (string?)element.Attribute("data-cfx-role");

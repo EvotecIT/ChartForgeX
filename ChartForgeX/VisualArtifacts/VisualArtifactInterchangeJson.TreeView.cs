@@ -34,7 +34,7 @@ internal static partial class VisualArtifactInterchangeJson {
     private static VisualArtifactInterchangeTreeViewArtifact? ReadTreeView(Dictionary<string, GeoJsonValue> root) {
         var fields = OptionalObject(root, "treeView"); if (fields == null) return null;
         var tree = new VisualArtifactInterchangeTreeViewArtifact {
-            ThemeMode = OptionalEnum<VisualThemeMode>(fields, "themeMode") ?? VisualThemeMode.Light,
+            ThemeMode = OptionalEnum<ThemeMode>(fields, "themeMode") ?? ThemeMode.Light,
             Padding = new ChartPadding(OptionalNumber(fields, "paddingLeft") ?? 18, OptionalNumber(fields, "paddingTop") ?? 16,
                 OptionalNumber(fields, "paddingRight") ?? 18, OptionalNumber(fields, "paddingBottom") ?? 12),
             TransparentBackground = OptionalBool(fields, "transparentBackground") ?? false,

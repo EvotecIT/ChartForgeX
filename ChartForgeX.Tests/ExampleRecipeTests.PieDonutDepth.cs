@@ -14,12 +14,12 @@ public sealed partial class ExampleRecipeTests {
         foreach (var kind in new[] { ChartSeriesKind.Pie, ChartSeriesKind.Donut })
             foreach (var variant in kind == ChartSeriesKind.Pie ? new[] { "variable-radius", "compact-variable-radius" }
                 : new[] { "variable-radius", "compact-variable-radius", "automatic-rings", "compact-automatic-rings" })
-                foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) yield return new object[] { kind, variant, mode };
+                foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) yield return new object[] { kind, variant, mode };
     }
 
     [Theory]
     [MemberData(nameof(PieDonutDepthSelections))]
-    public void PieDonutDepthDownloadsRetainTheirAuthoredRadiiAndCompleteSourceOrderedRings(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
+    public void PieDonutDepthDownloadsRetainTheirAuthoredRadiiAndCompleteSourceOrderedRings(ChartSeriesKind kind, string variant, ThemeMode mode) {
         var selection = new ExampleFamilySelection(kind, variant);
         Assert.Contains(selection, ExampleRecipes.FamilySelections(kind)); Assert.Contains(selection, ExampleRecipes.FamilySelections(kind, curated: true));
         Assert.Contains(selection, ExampleRecipes.StandaloneFamilySelections());

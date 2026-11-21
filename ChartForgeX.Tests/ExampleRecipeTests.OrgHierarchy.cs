@@ -8,10 +8,10 @@ namespace ChartForgeX.Tests;
 
 public sealed partial class ExampleRecipeTests {
     [Theory]
-    [InlineData("collapsed", VisualThemeMode.Light, 1)]
-    [InlineData("horizontal", VisualThemeMode.Dark, 3)]
-    [InlineData("reordered", VisualThemeMode.Light, 3)]
-    public void OrganizationHierarchyRecipeKeepsCompleteSourceAndNativeView(string variant, VisualThemeMode mode, int visible) {
+    [InlineData("collapsed", ThemeMode.Light, 1)]
+    [InlineData("horizontal", ThemeMode.Dark, 3)]
+    [InlineData("reordered", ThemeMode.Light, 3)]
+    public void OrganizationHierarchyRecipeKeepsCompleteSourceAndNativeView(string variant, ThemeMode mode, int visible) {
         var recipe = ExampleRecipes.Named("org-portraits"); var source = Source(recipe, variant);
         Assert.Contains("TopologyHierarchyView", source); Assert.Contains("TopologyIconArtwork.Portrait", source);
         Assert.DoesNotContain("ChartForgeX.Examples", source); Assert.DoesNotContain("{{", source);

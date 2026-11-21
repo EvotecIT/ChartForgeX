@@ -10,12 +10,12 @@ namespace ChartForgeX.Tests;
 public sealed partial class ExampleRecipeTests {
     public static IEnumerable<object[]> SlopeStageSelections() {
         foreach (var variant in new[] { "stages", "horizontal-stages" }) foreach (var compact in new[] { false, true })
-            foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark })
+            foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark })
                 yield return new object[] { compact ? "compact-" + variant : variant, mode };
     }
     [Theory]
     [MemberData(nameof(SlopeStageSelections))]
-    public void MultiStageSlopeHasCompleteCompiledDownloadsAndNativeBothThemePoses(string variant, VisualThemeMode mode) {
+    public void MultiStageSlopeHasCompleteCompiledDownloadsAndNativeBothThemePoses(string variant, ThemeMode mode) {
         var selection = new ExampleFamilySelection(ChartSeriesKind.Slope, variant);
         Assert.Contains(selection, ExampleRecipes.FamilySelections(ChartSeriesKind.Slope));
         Assert.Contains(selection, ExampleRecipes.FamilySelections(ChartSeriesKind.Slope, curated: true));

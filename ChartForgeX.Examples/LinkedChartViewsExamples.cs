@@ -134,7 +134,7 @@ public static class LinkedChartViewsExamples {
     }
 
     private static Chart Frame(bool dark) => Chart.Create().WithSize(800, 360)
-        .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
         .WithFontFamily(ExampleTypography.FontFamily)
         .WithYAxis("Requests").WithDataLabels(false);
 }

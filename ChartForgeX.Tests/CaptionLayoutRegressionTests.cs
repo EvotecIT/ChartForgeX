@@ -12,11 +12,11 @@ public sealed class CaptionLayoutRegressionTests {
     private const string ProofFont = "CFX Visual Brief Captions Carlito";
 
     [Theory]
-    [InlineData(400, 280, VisualThemeMode.Light)]
-    [InlineData(400, 280, VisualThemeMode.Dark)]
-    [InlineData(800, 440, VisualThemeMode.Light)]
-    [InlineData(800, 440, VisualThemeMode.Dark)]
-    public void TreemapCatalogPreservesCompleteNamesInItsActualNestedCells(int width, int height, VisualThemeMode mode) {
+    [InlineData(400, 280, ThemeMode.Light)]
+    [InlineData(400, 280, ThemeMode.Dark)]
+    [InlineData(800, 440, ThemeMode.Light)]
+    [InlineData(800, 440, ThemeMode.Dark)]
+    public void TreemapCatalogPreservesCompleteNamesInItsActualNestedCells(int width, int height, ThemeMode mode) {
         var chart = V2GalleryModels.Create(ChartSeriesKind.Treemap, "wide", mode);
         var context = Context(width, height, mode, null, 16);
         if (width == 800) context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, height)), VisualTheme.Graphite(), mode,
@@ -43,7 +43,7 @@ public sealed class CaptionLayoutRegressionTests {
     public void TreemapOmitsAnUnfittingCompleteNameWhileKeepingItsMarkAndSourceFacts() {
         const string name = "A service name that cannot fit in a tiny cell";
         var chart = Chart.Create().WithDataLabels().AddTreemap("Allocation", new[] { new ChartHierarchyItem("service", name, value: 125) });
-        var prepared = chart.Prepare(Context(40, 32, VisualThemeMode.Light, false, 0));
+        var prepared = chart.Prepare(Context(40, 32, ThemeMode.Light, false, 0));
         Assert.DoesNotContain(prepared.Scene.Nodes, node => node.Role == "treemap-label");
         Assert.Contains(prepared.Scene.Nodes, node => node.Role == "treemap-tile-mark");
         Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "hierarchy.label-overflow");
@@ -54,11 +54,11 @@ public sealed class CaptionLayoutRegressionTests {
     }
 
     [Theory]
-    [InlineData(400, 280, VisualThemeMode.Light)]
-    [InlineData(400, 280, VisualThemeMode.Dark)]
-    [InlineData(640, 400, VisualThemeMode.Light)]
-    [InlineData(640, 400, VisualThemeMode.Dark)]
-    public void ProgressRingCenterReservesItsCompleteCaptionWithinTheMeasuredCircularHole(int width, int height, VisualThemeMode mode) {
+    [InlineData(400, 280, ThemeMode.Light)]
+    [InlineData(400, 280, ThemeMode.Dark)]
+    [InlineData(640, 400, ThemeMode.Light)]
+    [InlineData(640, 400, ThemeMode.Dark)]
+    public void ProgressRingCenterReservesItsCompleteCaptionWithinTheMeasuredCircularHole(int width, int height, ThemeMode mode) {
         var chart = ProgressRingRecipe.Create();
         var prepared = chart.Prepare(Context(width, height, mode, true, 16));
         ScatterBubbleColorRenderingTests.Capture(prepared, $"caption-progress-ring-{width}-{height}-{mode}");
@@ -83,11 +83,11 @@ public sealed class CaptionLayoutRegressionTests {
     }
 
     [Theory]
-    [InlineData(74, VisualThemeMode.Light)]
-    [InlineData(74, VisualThemeMode.Dark)]
-    [InlineData(320, VisualThemeMode.Light)]
-    [InlineData(320, VisualThemeMode.Dark)]
-    public void TreemapWrapsThePrimaryCaptionIntoSpareHeightAndKeepsItsValueAndSource(int width, VisualThemeMode mode) {
+    [InlineData(74, ThemeMode.Light)]
+    [InlineData(74, ThemeMode.Dark)]
+    [InlineData(320, ThemeMode.Light)]
+    [InlineData(320, ThemeMode.Dark)]
+    public void TreemapWrapsThePrimaryCaptionIntoSpareHeightAndKeepsItsValueAndSource(int width, ThemeMode mode) {
         var chart = Chart.Create().WithDataLabels().AddTreemap("Allocation", new[] {
             new ChartHierarchyItem("service", "Service team", value: 125)
         });
@@ -113,7 +113,7 @@ public sealed class CaptionLayoutRegressionTests {
         var chart = Chart.Create().WithDataLabels().AddTreemap("Allocation", new[] {
             new ChartHierarchyItem("service", "Service team", value: 125)
         });
-        var prepared = chart.Prepare(Context(74, 64, VisualThemeMode.Light, false, 0));
+        var prepared = chart.Prepare(Context(74, 64, ThemeMode.Light, false, 0));
         ScatterBubbleColorRenderingTests.Capture(prepared, "caption-treemap-short-height");
         var caption = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "treemap-label");
         Assert.Equal(2, caption.Text.Lines.Count);
@@ -127,11 +127,11 @@ public sealed class CaptionLayoutRegressionTests {
     }
 
     [Theory]
-    [InlineData(400, 280, VisualThemeMode.Light)]
-    [InlineData(400, 280, VisualThemeMode.Dark)]
-    [InlineData(800, 440, VisualThemeMode.Light)]
-    [InlineData(800, 440, VisualThemeMode.Dark)]
-    public void SunburstOmitsAnUnfittingCaptionRatherThanPaintingAnIncompleteName(int width, int height, VisualThemeMode mode) {
+    [InlineData(400, 280, ThemeMode.Light)]
+    [InlineData(400, 280, ThemeMode.Dark)]
+    [InlineData(800, 440, ThemeMode.Light)]
+    [InlineData(800, 440, ThemeMode.Dark)]
+    public void SunburstOmitsAnUnfittingCaptionRatherThanPaintingAnIncompleteName(int width, int height, ThemeMode mode) {
         var prepared = SunburstRecipe.Create().Prepare(Context(width, height, mode, true, 14));
         ScatterBubbleColorRenderingTests.Capture(prepared, $"caption-sunburst-{width}-{mode}");
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "sunburst-label").ToArray();
@@ -144,7 +144,7 @@ public sealed class CaptionLayoutRegressionTests {
         Assert.NotEmpty(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
     }
 
-    private static VisualRenderContext Context(int width, int height, VisualThemeMode mode, bool? legend, double padding) {
+    private static VisualRenderContext Context(int width, int height, ThemeMode mode, bool? legend, double padding) {
         var fonts = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito");
         foreach (var (file, weight) in new[] { ("Carlito-Regular.ttf", 400), ("Carlito-Bold.ttf", 700) }) {
             var path = Path.Combine(fonts, file);

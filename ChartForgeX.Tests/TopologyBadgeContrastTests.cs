@@ -9,11 +9,11 @@ namespace ChartForgeX.Tests;
 
 public sealed class TopologyBadgeContrastTests {
     [Theory]
-    [InlineData(false, VisualThemeMode.Light)]
-    [InlineData(false, VisualThemeMode.Dark)]
-    [InlineData(true, VisualThemeMode.Light)]
-    [InlineData(true, VisualThemeMode.Dark)]
-    public void DefaultWarningBadgeUsesReadableNativeInkAndRetainsItsPairedSvgPaint(bool enclosed, VisualThemeMode mode) {
+    [InlineData(false, ThemeMode.Light)]
+    [InlineData(false, ThemeMode.Dark)]
+    [InlineData(true, ThemeMode.Light)]
+    [InlineData(true, ThemeMode.Dark)]
+    public void DefaultWarningBadgeUsesReadableNativeInkAndRetainsItsPairedSvgPaint(bool enclosed, ThemeMode mode) {
         var chart = TopologyChart.Create().WithViewport(400, 280, 20);
         chart.Nodes.Add(new TopologyNode { Id = "approval", Label = "Approved?", Badge = "?", Status = TopologyHealthStatus.Warning,
             X = 40, Y = 40, Width = 220, Height = enclosed ? 120 : 80, PreserveDisplayModeSize = true,

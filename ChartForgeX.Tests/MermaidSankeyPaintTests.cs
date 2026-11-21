@@ -122,7 +122,7 @@ public sealed class MermaidSankeyPaintTests {
     internal static readonly ChartColor Blue = ChartColor.FromHex("#2864B4"), Orange = ChartColor.FromHex("#BB6428"), Green = ChartColor.FromHex("#279473");
     internal static string Source(string policy = "gradient", string labels = "outlined") => "%%{init: {\"sankey\":{\"linkColor\":\"" + policy + "\",\"labelStyle\":\"" + labels + "\",\"showValues\":false,\"nodeColors\":{\"Intake.eu[1]\":\"#2864B4\",\"Review\":\"#BB6428\",\"Ready 東京\":\"#279473\"}}}}%%\nsankey-beta\nIntake.eu[1],Review,6\nIntake.eu[1],Review,2\nReview,Ready 東京,8";
     internal static MermaidRenderOptions Options(int width, bool dark) => new() { WarningPolicy = MermaidWarningPolicy.Reject,
-        Sankey = new MermaidSankeyRenderOptions { Width = width, Height = 460 }, Presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family, Theme = VisualTheme.Graphite(), ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light } };
+        Sankey = new MermaidSankeyRenderOptions { Width = width, Height = 460 }, Presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family, Theme = VisualTheme.Graphite(), ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light } };
     internal static void Capture(string name, PreparedVisual prepared) {
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY"); if (string.IsNullOrWhiteSpace(directory)) return;
         Directory.CreateDirectory(directory); File.WriteAllText(Path.Combine(directory, name + ".svg"), prepared.ToSvg()); File.WriteAllBytes(Path.Combine(directory, name + ".png"), prepared.ToPng());

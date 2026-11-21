@@ -12,7 +12,7 @@ internal static class ResponsiveRadialFixture {
         var names = new[] { "Microsoft 365 E3", "Microsoft 365 E5", "Exchange Online Plan 1", "Power BI Pro", "Visio Plan 2", "Project Plan 3" };
         if (longName) names[2] += " with an extended archive and compliance service description";
         var values = new double[] { 412, 268, 190, 120, 64, 31 };
-        var chart = Chart.Create().WithSize(1100, 420).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = Chart.Create().WithSize(1100, 420).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithTitle("Licences by product").WithSubtitle("Assigned seats, October 2026").WithXLabels(names);
         chart.AddSeries(new ChartSeries(new ChartSeriesId("licences"), "Licences", other ? ChartSeriesKind.Pie : ChartSeriesKind.Donut,
             values.Select((value, index) => new ChartPoint(index + 1, value))));

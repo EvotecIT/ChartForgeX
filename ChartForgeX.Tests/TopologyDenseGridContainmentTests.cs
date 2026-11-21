@@ -52,7 +52,7 @@ public sealed partial class TopologyDenseGridContainmentTests {
         var source = File.ReadAllText(Path.Combine(TestRepository.Root, "Website", "static", "site", "atlas", family + ".mmd"));
         var topology = new MermaidTopologyRenderOptions { Width = family == "kanban" ? 760 : 1142, Height = 690 };
         var options = new MermaidRenderOptions {
-            Presentation = new MermaidPresentationOptions { ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light },
+            Presentation = new MermaidPresentationOptions { ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light },
             Kanban = topology, EventModeling = topology
         };
         var direct = MermaidRenderer.Render(source, options);

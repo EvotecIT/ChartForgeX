@@ -16,13 +16,13 @@ internal static class HierarchyViewExamples {
                     options.SectorGap = 6; options.MinimumLabelFontSize = 10; options.CornerRadius = 4;
                 });
                 var chart = kind == ChartSeriesKind.Sunburst ? sunburst : Chart.Create().WithSize(width, height).WithDataLabels()
-                    .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+                    .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
                     .AddSeries(ChartSeries.CreateTreemap(new ChartSeriesId("allocation"), "Allocated work", sunburst.Series[0].HierarchyItems))
                     .ConfigureTreemap(options => options.ColorScale = sunburst.Options.Sunburst.ColorScale);
                 foreach (var selected in new[] { false, true }) {
                     var id = "hierarchy-view-" + kind.ToString().ToLowerInvariant() + "-" + (selected ? "engineering" : "full") + "-" + (dark ? "dark" : "light");
                     var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, height)), VisualTheme.Graphite(),
-                        dark ? VisualThemeMode.Dark : VisualThemeMode.Light,
+                        dark ? ThemeMode.Dark : ThemeMode.Light,
                         new VisualFrame(selected ? "Engineering allocation" : "All teams", "Original item IDs, sizes and color values", showLegend: false, showCard: true),
                         FontSpec.FromFamily(ExampleTypography.FontFamily));
                     var prepared = chart.PrepareHierarchy(context, selected ? new ChartHierarchyView("engineering") : null);

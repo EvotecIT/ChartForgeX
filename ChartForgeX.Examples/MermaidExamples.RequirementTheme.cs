@@ -3,7 +3,7 @@ using ChartForgeX.VisualArtifacts;
 
 internal static partial class MermaidExamples {
     private static void WriteRequirementThemeExamples(string output) {
-        foreach (var variant in new[] { "compact", "wide" }) foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var variant in new[] { "compact", "wide" }) foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             var artifact = RequirementThemeRecipe.Create(variant, mode, ExampleTypography.FontFamily);
             var name = "requirement-role-colors-" + variant + "-" + mode.ToString().ToLowerInvariant();
             artifact.SaveSvg(Path.Combine(output, name + ".svg"));

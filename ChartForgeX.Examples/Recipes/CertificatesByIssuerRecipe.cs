@@ -1,7 +1,7 @@
 /// <summary>Builds certificates issued per month by issuer over the last year, as a certificate report shows it.</summary>
 public static class CertificatesByIssuerRecipe {
     /// <summary>Creates stacked monthly issuance; the compact variant keeps the same data.</summary>
-    public static Chart Create(string variant = "issuers", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "issuers", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("issuers" or "compact-issuers")) throw new ArgumentOutOfRangeException(nameof(variant));
         var months = Enumerable.Range(0, 12).Select(month => new DateTime(2025, 11, 1).AddMonths(month).ToString("MMM", CultureInfo.InvariantCulture)).ToArray();
         var chart = Chart.Create().WithXLabels(months).WithStackedBars().WithYAxis("Certificates")

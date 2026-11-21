@@ -111,11 +111,11 @@ public sealed partial class MarkupChartFamiliesTests {
     }
 
     [Theory]
-    [InlineData(390, VisualThemeMode.Light)]
-    [InlineData(390, VisualThemeMode.Dark)]
-    [InlineData(1000, VisualThemeMode.Light)]
-    [InlineData(1000, VisualThemeMode.Dark)]
-    public void TypedCommandsAndTablesMatchNativeSvgAndDecodedPngAtCompactAndWideSizes(int width, VisualThemeMode mode) {
+    [InlineData(390, ThemeMode.Light)]
+    [InlineData(390, ThemeMode.Dark)]
+    [InlineData(1000, ThemeMode.Light)]
+    [InlineData(1000, ThemeMode.Dark)]
+    public void TypedCommandsAndTablesMatchNativeSvgAndDecodedPngAtCompactAndWideSizes(int width, ThemeMode mode) {
         foreach (var family in new[] { "candlestick", "ohlc", "treemap", "sankey" }) {
             var bodies = family switch {
                 "treemap" => new[] { ItemCommands, ItemTable },

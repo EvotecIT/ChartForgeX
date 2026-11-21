@@ -15,7 +15,7 @@ public sealed partial class ManagedNativeConnectionBrowserTests {
         const int cycles = 5, bursts = 20, requestsPerBurst = 5;
         var requests = 0; var commits = 0;
         for (var cycle = 0; cycle < cycles; cycle++) {
-            var host = new NativeHost(390, VisualThemeMode.Dark);
+            var host = new NativeHost(390, ThemeMode.Dark);
             await using var session = await BrowserProofFonts.OpenAsync(host.Page, 414, 800);
             var page = session.Page;
             var pageErrors = new List<string>(); page.PageError += (_, error) => pageErrors.Add(error);

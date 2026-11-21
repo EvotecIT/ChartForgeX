@@ -75,7 +75,7 @@ public sealed class PictorialImagePaintBrowserTests {
             var at = (y * 8 + x) * 4; pixels[at] = 51; pixels[at + 1] = 102; pixels[at + 2] = 153; pixels[at + 3] = 255;
         }
         var artwork = fromSvg ? ChartPictorialArtwork.FromSvg(PictorialArtworkTests.ArtworkSvg, 8, 4) : ChartPictorialArtwork.FromImage(new RgbaImage(8, 4, pixels));
-        var chart = PictorialArtworkTests.Model(.25).WithSize(width, 320).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithPictorialArtwork(artwork);
+        var chart = PictorialArtworkTests.Model(.25).WithSize(width, 320).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light).WithPictorialArtwork(artwork);
         chart.Series[0].WithObservationId(0, new ChartObservationId("team")); return chart;
     }
     private static Task<JsonElement> Observe(IPage page) => page.EvaluateAsync<JsonElement>("""

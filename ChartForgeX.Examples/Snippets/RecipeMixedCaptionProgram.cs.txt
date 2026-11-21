@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using ChartForgeX;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.Themes;
 using ChartForgeX.Topology;
@@ -11,7 +12,7 @@ using ChartForgeX.Typography;
 const string captionFamily = "CFX Proof Carlito";
 FontRegistry.Register(captionFamily, args.Length > 0 ? args[0] : "fonts/Carlito-Regular.ttf", 400);
 FontRegistry.Register(captionFamily, args.Length > 1 ? args[1] : "fonts/Carlito-Bold.ttf", 700);
-var artifact = MixedCaptionRecipe.Create({{VARIANT}}, VisualThemeMode.{{MODE}}, captionFamily);
+var artifact = MixedCaptionRecipe.Create({{VARIANT}}, ThemeMode.{{MODE}}, captionFamily);
 File.WriteAllText("caption.svg", artifact.ToSvg());
 File.WriteAllBytes("caption.png", artifact.ToPng());
 File.WriteAllText("caption.html", artifact.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));

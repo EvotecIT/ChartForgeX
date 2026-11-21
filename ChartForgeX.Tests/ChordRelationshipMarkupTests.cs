@@ -57,11 +57,11 @@ public sealed class ChordRelationshipMarkupTests {
         """;
 
     [Theory]
-    [InlineData(390, VisualThemeMode.Light)]
-    [InlineData(390, VisualThemeMode.Dark)]
-    [InlineData(800, VisualThemeMode.Light)]
-    [InlineData(800, VisualThemeMode.Dark)]
-    public void TypedCommandsTablesAndFenceShareManagedFactsAndExactPreparedSvgPng(int width, VisualThemeMode mode) {
+    [InlineData(390, ThemeMode.Light)]
+    [InlineData(390, ThemeMode.Dark)]
+    [InlineData(800, ThemeMode.Light)]
+    [InlineData(800, ThemeMode.Dark)]
+    public void TypedCommandsTablesAndFenceShareManagedFactsAndExactPreparedSvgPng(int width, ThemeMode mode) {
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, 520)),
             theme: VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), themeMode: mode);
         var direct = Chart.Create().WithTitle("Transfers").AddChord("Volume", new[] { new ChartNode("a", "Support"), new ChartNode("b", "Support"), new ChartNode("idle", "Standby") }, new[] {

@@ -20,16 +20,16 @@ var output = Path.Combine(website, "static", "site");
 var partials = Path.Combine(website, "themes", "chartforgex", "partials", "generated");
 Directory.CreateDirectory(output);
 Directory.CreateDirectory(partials);
-var modes = new[] { (Name: "light", Mode: VisualThemeMode.Light), (Name: "dark", Mode: VisualThemeMode.Dark) };
+var modes = new[] { (Name: "light", Mode: ThemeMode.Light), (Name: "dark", Mode: ThemeMode.Dark) };
 
 var (HeroSeries, HeroWeeks, HeroData) = HeroSignInsWebsiteRecipe.GetData();
-Chart HeroChart(VisualThemeMode mode) => HeroSignInsWebsiteRecipe.Create(mode);
+Chart HeroChart(ThemeMode mode) => HeroSignInsWebsiteRecipe.Create(mode);
 
 var lightVariables = VisualDesignTokens.GraphiteLight().ToSvgColorVariables();
 var darkVariables = VisualDesignTokens.GraphiteDark().ToSvgColorVariables();
 
 // SVG: one file for both themes; the page swaps the custom properties.
-var themedHero = HeroChart(VisualThemeMode.Light).WithSvgColorVariables(lightVariables);
+var themedHero = HeroChart(ThemeMode.Light).WithSvgColorVariables(lightVariables);
 var heroSvg = themedHero.ToSvg("cfx-hero");
 Write("hero.svg", heroSvg);
 Write("hero-theme.css", ThemeCss(lightVariables, darkVariables));
@@ -43,7 +43,7 @@ foreach (var (name, mode) in modes) {
 }
 
 // Hero dashboard: one ChartGrid of several families, rendered in both themes.
-ChartGrid HeroDashboard(VisualThemeMode mode) {
+ChartGrid HeroDashboard(ThemeMode mode) {
     ChartPoint[] Values(params double[] values) => values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();
     var trend = HeroChart(mode).WithTitle("Sign-ins by method").WithSubtitle("Last 12 weeks").WithSize(1056, 320);
     var methods = Chart.Create().WithThemeMode(mode).WithTitle("This week").WithSubtitle("Share of sign-ins")
@@ -79,7 +79,7 @@ foreach (var (name, mode) in modes) {
 // Touch icon and social card, rasterized by ChartForgeX from SVG.
 var faviconSvg = File.ReadAllText(Path.Combine(website, "static", "favicon.svg"));
 File.WriteAllBytes(Path.Combine(website, "static", "apple-touch-icon.png"), SvgRasterizer.ToPng(faviconSvg, 180, 180));
-var heroLightSvg = HeroChart(VisualThemeMode.Light).ToSvg("cfx-social");
+var heroLightSvg = HeroChart(ThemeMode.Light).ToSvg("cfx-social");
 var heroInner = heroLightSvg.Substring(heroLightSvg.IndexOf('>') + 1);
 heroInner = heroInner.Substring(0, heroInner.LastIndexOf("</svg>", StringComparison.Ordinal));
 var logoInner = faviconSvg.Substring(faviconSvg.IndexOf('>') + 1);

@@ -7,7 +7,7 @@ using ChartForgeX.Themes;
 
 internal static class TurbulenceSnippetProof {
     internal static void Write(string output, List<RecipeResult> results) {
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) foreach (var variant in new[] { "compact", "wide" }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) foreach (var variant in new[] { "compact", "wide" }) {
             var id = "native-turbulence-" + variant + "-" + mode;
             try {
                 var source = NativeTurbulenceExample.Create(variant, mode);

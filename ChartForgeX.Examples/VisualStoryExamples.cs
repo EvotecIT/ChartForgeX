@@ -97,7 +97,7 @@ internal static class FiveLineChartExample {
         var chart = Chart.Create()
             .WithTitle("Weekly builds")
             .WithSubtitle("A real outcome, not a console promise")
-            .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)
+            .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
             .WithSize(800, 444)
             .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri");
         chart.AddSmoothArea(

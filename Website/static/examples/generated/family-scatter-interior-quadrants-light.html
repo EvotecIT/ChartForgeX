@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = QuadrantRegionDepthRecipe.Create(&quot;interior-quadrants&quot;, mode);
 var context = new VisualRenderContext(
@@ -111,7 +112,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Effort/impact observations with native quadrant borders, deliberate captions and rules through an authored pivot.&lt;/summary&gt;
 public static class QuadrantRegionDepthRecipe {
     /// &lt;summary&gt;Creates a complete public-API chart; exports use the same native prepared scene.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;pivot-quadrants&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;pivot-quadrants&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;pivot-quadrants&quot; or &quot;compact-pivot-quadrants&quot; or &quot;interior-quadrants&quot; or &quot;compact-interior-quadrants&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create().WithSize(variant.StartsWith(&quot;compact-&quot;, StringComparison.Ordinal) ? 360 : 800, 440)
             .WithTheme(VisualTheme.Graphite(), mode).WithTitle(&quot;Effort and impact&quot;).WithSubtitle(&quot;Authored 4-day / 6-point pivot&quot;)
@@ -140,6 +141,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -149,7 +151,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = QuadrantRegionDepthRecipe.Create(&quot;interior-quadrants&quot;, mode);
 var context = new VisualRenderContext(
@@ -165,7 +167,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Effort/impact observations with native quadrant borders, deliberate captions and rules through an authored pivot.&lt;/summary&gt;
 public static class QuadrantRegionDepthRecipe {
     /// &lt;summary&gt;Creates a complete public-API chart; exports use the same native prepared scene.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;pivot-quadrants&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;pivot-quadrants&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;pivot-quadrants&quot; or &quot;compact-pivot-quadrants&quot; or &quot;interior-quadrants&quot; or &quot;compact-interior-quadrants&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create().WithSize(variant.StartsWith(&quot;compact-&quot;, StringComparison.Ordinal) ? 360 : 800, 440)
             .WithTheme(VisualTheme.Graphite(), mode).WithTitle(&quot;Effort and impact&quot;).WithSubtitle(&quot;Authored 4-day / 6-point pivot&quot;)

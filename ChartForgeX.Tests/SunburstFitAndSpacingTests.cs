@@ -188,7 +188,7 @@ public sealed class SunburstFitAndSpacingTests {
     }).ConfigureSunburst(options => options.ParentValuePolicy = ChartHierarchyValuePolicy.AuthoredTotal);
 
     private static VisualRenderContext Context(bool dark) => new(new VisualLayoutOptions(new VisualSize(390, 420)),
-        themeMode: dark ? VisualThemeMode.Dark : VisualThemeMode.Light, frame: new VisualFrame(showLegend: false),
+        themeMode: dark ? ThemeMode.Dark : ThemeMode.Light, frame: new VisualFrame(showLegend: false),
         font: new FontSpec { Family = "Carlito", FilePath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf") });
 
     private static Dictionary<string, VisualSceneGroup> Groups(PreparedVisual prepared) => prepared.Scene.Nodes.OfType<VisualSceneGroup>()

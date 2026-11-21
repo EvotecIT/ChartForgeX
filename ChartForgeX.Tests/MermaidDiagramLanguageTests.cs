@@ -21,7 +21,7 @@ public sealed class MermaidDiagramLanguageTests {
     [InlineData(920, 690, .85, 1.6)]
     [InlineData(1280, 640, 1.8, 3.2)]
     public void C4BoundaryChainFollowsTheTargetLongAxisAndCardsFitTheirContent(int width, int height, double minimumAspect, double maximumAspect) {
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             var svg = Render(C4, new MermaidRenderOptions { C4 = new MermaidTopologyRenderOptions { Width = width, Height = height } }, mode);
             var box = ((string)svg.Root!.Attribute("viewBox")!).Split(' ').Select(value => double.Parse(value, CultureInfo.InvariantCulture)).ToArray();
             Assert.InRange(box[2] / box[3], minimumAspect, maximumAspect);
@@ -43,8 +43,8 @@ public sealed class MermaidDiagramLanguageTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)] [InlineData(VisualThemeMode.Dark)]
-    public void ConnectorsAreSingleSolidStrokesUnlessTheNotationIsDashed(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)] [InlineData(ThemeMode.Dark)]
+    public void ConnectorsAreSingleSolidStrokesUnlessTheNotationIsDashed(ThemeMode mode) {
         var architecture = Render("architecture-beta\ngroup api(cloud)[API]\nservice db(database)[Database] in api\nservice server(server)[Server] in api\ndb:L -- R:server\n",
             new MermaidRenderOptions(), mode);
         var lines = Role(architecture, "topology-edge-line").ToArray();
@@ -60,7 +60,7 @@ public sealed class MermaidDiagramLanguageTests {
 
     [Fact]
     public void EntityAttributeGridHeaderIsAQuietCaptionRowInsideTheCard() {
-        var svg = Render("erDiagram\nCUSTOMER {\n  string id PK\n  string name\n}\n", new MermaidRenderOptions(), VisualThemeMode.Light);
+        var svg = Render("erDiagram\nCUSTOMER {\n  string id PK\n  string name\n}\n", new MermaidRenderOptions(), ThemeMode.Light);
         var header = Assert.Single(Role(svg, "table-header"));
         Assert.True((string?)header.Attribute("stroke") is null or "none");
         Assert.NotEmpty(Role(svg, "table-header-cell"));
@@ -78,7 +78,7 @@ public sealed class MermaidDiagramLanguageTests {
         Assert.NotEmpty(Role(XDocument.Parse(result.Artifact!.ToSvg()), "table-header-cell"));
     }
 
-    private static XDocument Render(string source, MermaidRenderOptions options, VisualThemeMode mode) {
+    private static XDocument Render(string source, MermaidRenderOptions options, ThemeMode mode) {
         var document = new MermaidParser().Parse(source).Document!;
         options.Presentation ??= new MermaidPresentationOptions(); options.Presentation.ThemeMode = mode;
         options.Presentation.FontFamily = BrowserProofFonts.Family;

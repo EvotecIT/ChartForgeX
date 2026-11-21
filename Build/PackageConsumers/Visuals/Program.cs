@@ -31,7 +31,7 @@ internal static partial class Program {
         PackageAssertions.Require(PackageAssertions.Contains(canvas.ToSvg(), "Packed canvas"), "Canvas text is missing.");
         PackageAssertions.Png(canvas.ToPng());
         var shared = VisualTheme.Graphite().Configure(builder => builder.Dark.Foreground = ChartColor.FromHex("#00FE7F"));
-        var themedCanvas = VisualCanvas.Create(340, 120).WithTheme(shared, VisualThemeMode.Dark)
+        var themedCanvas = VisualCanvas.Create(340, 120).WithTheme(shared, ThemeMode.Dark)
             .WithBackdrop(VisualCanvasBackdropStyle.Transparent).AddText(12, 14, 300, "Shared theme", 24);
         PackageAssertions.Require(ReferenceEquals(shared, themedCanvas.Theme)
             && PackageAssertions.Contains(themedCanvas.ToSvg(), "#00FE7F"), "Canvas lost its shared dark foreground.");
@@ -40,7 +40,7 @@ internal static partial class Program {
         for (var offset = 0; offset < darkPixels.Length; offset += 4)
             if (darkPixels[offset] == 0 && darkPixels[offset + 1] == 254 && darkPixels[offset + 2] == 127 && darkPixels[offset + 3] == 255) foundForeground = true;
         PackageAssertions.Require(foundForeground, "Canvas native text did not paint the shared foreground.");
-        themedCanvas.WithThemeMode(VisualThemeMode.Light);
+        themedCanvas.WithThemeMode(ThemeMode.Light);
         PackageAssertions.Require(!PackageAssertions.Contains(themedCanvas.ToSvg(), "#00FE7F"), "Canvas did not switch to the explicit light mode.");
         var metric = MetricCard.Create().WithMetric("Ready", 98, "P0").WithSize(320, 170);
         PackageAssertions.Png(metric.ToPng());

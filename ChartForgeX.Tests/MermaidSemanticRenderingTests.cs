@@ -36,8 +36,8 @@ public sealed class MermaidSemanticRenderingTests {
         Assert.Contains(svg.Descendants(), element => element.Name.LocalName == "title" && element.Value == "Accessible API");
         var topology = Assert.IsType<TopologyChart>(artifact.Model);
         // Mermaid's dark theme selects Graphite dark; diagrams draw on its card surface.
-        var expected = VisualTheme.Graphite().Resolve(VisualThemeMode.Dark).ElevatedSurface;
-        Assert.Equal(VisualThemeMode.Dark, topology.ThemeMode);
+        var expected = VisualTheme.Graphite().Resolve(ThemeMode.Dark).ElevatedSurface;
+        Assert.Equal(ThemeMode.Dark, topology.ThemeMode);
         Assert.Contains(expected.ToHex(), svg.ToString());
         Assert.Equal(expected, topology.Theme.Resolve(topology.ThemeMode).Background);
     }

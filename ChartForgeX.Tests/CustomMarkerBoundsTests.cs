@@ -31,8 +31,8 @@ public sealed class CustomMarkerBoundsTests {
     [Theory]
     [InlineData(360, false)] [InlineData(800, true)]
     public void AutomaticRangesFitPhysicalCustomGeometryAcrossCompactWideAndBothThemes(int width, bool dark) {
-        var original = Bubbles(Lens(1), false, automatic: true).WithSize(width, 300).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
-        var scaled = Bubbles(Lens(1e-200), false, automatic: true).WithSize(width, 300).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        var original = Bubbles(Lens(1), false, automatic: true).WithSize(width, 300).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+        var scaled = Bubbles(Lens(1e-200), false, automatic: true).WithSize(width, 300).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         var expected = Prepare(original); var actual = Prepare(scaled);
         ScatterBubbleColorRenderingTests.Capture(actual, "custom-marker-automatic-bounds-" + width + "-" + (dark ? "dark" : "light"));
         var first = expected.Regions.Single(region => region.Role == "point"); var second = actual.Regions.Single(region => region.Role == "point");

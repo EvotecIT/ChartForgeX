@@ -38,6 +38,8 @@ public sealed partial class VisualSvgOptions {
         var copy = Copy(); copy.IdPrefix = idPrefix == null ? null : VisualSceneSvgRenderer.ValidatePrefix(idPrefix); return copy;
     }
 
+    internal bool HasColorVariables => _colorVariables != null;
+
     internal VisualSvgOptions WithColorScope(SvgColorVariables? variables) {
         var copy = Copy(); copy._colorVariables = variables?.Clone(); return copy;
     }

@@ -3,7 +3,7 @@ using ChartForgeX.Themes;
 
 public static partial class ExampleRecipeSource {
     /// <summary>Exports native contour paints or one finite source contour-style program.</summary>
-    public static string EmitNativeSurfacePaints(string family,string variant="wide",VisualThemeMode mode=VisualThemeMode.Light) {
+    public static string EmitNativeSurfacePaints(string family,string variant="wide",ThemeMode mode=ThemeMode.Light) {
         if(family is not ("flowchart" or "agentflow" or "native"))throw new ArgumentOutOfRangeException(nameof(family));
         if(variant is not ("compact" or "wide"))throw new ArgumentOutOfRangeException(nameof(variant));
         return Template("RecipeNativeSurfacePaintProgram",new Dictionary<string,string>(StringComparer.Ordinal){

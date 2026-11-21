@@ -23,7 +23,7 @@ public sealed class PictorialArtworkTests {
     public void ImagePartialDirectionsRetainSourceAspectAndMatchSvgNativePixels(ChartPictorialFillDirection direction, bool fromSvg) {
         var artwork = fromSvg ? ChartPictorialArtwork.FromSvg(ArtworkSvg, 8, 4) : ChartPictorialArtwork.FromImage(Image());
         var chart = Model(.25).WithPictorialArtwork(artwork).WithPictorialFillDirection(direction);
-        var prepared = Prepare(chart, fromSvg ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        var prepared = Prepare(chart, fromSvg ? ThemeMode.Dark : ThemeMode.Light);
         var image = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneImage>(), node => node.Role == "pictorial-fill");
         Assert.Equal(2, image.Bounds.Width / image.Bounds.Height, 10);
         var index = prepared.Scene.Nodes.ToList().IndexOf(image);
@@ -96,7 +96,7 @@ public sealed class PictorialArtworkTests {
         .WithPictorialShape(ChartPictorialShape.Square).WithXLabels("Team")
         .AddSeries(new ChartSeries(new ChartSeriesId("assessments"), "Assessments", ChartSeriesKind.Pictorial,
             new[] { new ChartPoint(1, value) }).WithPointColor(0, ChartColor.FromHex("#336699")));
-    internal static PreparedVisual Prepare(Chart chart, VisualThemeMode mode = VisualThemeMode.Light) => chart.Prepare(new VisualRenderContext(
+    internal static PreparedVisual Prepare(Chart chart, ThemeMode mode = ThemeMode.Light) => chart.Prepare(new VisualRenderContext(
         new VisualLayoutOptions(new VisualSize(480, 220)), VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), mode,
         new VisualFrame(showLegend: false, transparentBackground: true)));
     internal static RgbaImage Image() {

@@ -152,7 +152,7 @@ public static partial class TopologyChartExtensions {
     /// <param name="theme">The theme to use.</param>
     /// <returns>The current topology chart.</returns>
     /// <param name="mode">An explicit mode, or null to retain the current mode.</param>
-    public static TopologyChart WithTheme(this TopologyChart chart, VisualTheme theme, VisualThemeMode? mode = null) {
+    public static TopologyChart WithTheme(this TopologyChart chart, VisualTheme theme, ThemeMode? mode = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         chart.Theme = theme ?? throw new ArgumentNullException(nameof(theme));
         if (mode.HasValue) chart.ThemeMode = mode.Value;
@@ -160,7 +160,7 @@ public static partial class TopologyChartExtensions {
     }
 
     /// <summary>Sets the explicit light or dark mode without changing the shared theme.</summary>
-    public static TopologyChart WithThemeMode(this TopologyChart chart, VisualThemeMode mode) {
+    public static TopologyChart WithThemeMode(this TopologyChart chart, ThemeMode mode) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         chart.ThemeMode = mode;
         return chart;

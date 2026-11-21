@@ -232,8 +232,8 @@ public sealed class V2GalleryBrowserMatrixTests {
                 families = Enum.GetValues<ChartSeriesKind>().Select(kind => new {
                     kind = kind.ToString(), family = System.Text.RegularExpressions.Regex.Replace(kind.ToString(), "([a-z])([A-Z])", "$1-$2").ToLowerInvariant()
                 }).ToArray(),
-                light = VisualTheme.Graphite().Resolve(VisualThemeMode.Light).Background.ToHex(),
-                dark = VisualTheme.Graphite().Resolve(VisualThemeMode.Dark).Background.ToHex()
+                light = VisualTheme.Graphite().Resolve(ThemeMode.Light).Background.ToHex(),
+                dark = VisualTheme.Graphite().Resolve(ThemeMode.Dark).Background.ToHex()
             }).WaitAsync(TimeSpan.FromSeconds(90)); // Outlasts the page's own 60-second guard so its message is reported.
         } catch (Exception error) {
             // HtmlTinkerX already records transport failures. Keep them in the TRX even

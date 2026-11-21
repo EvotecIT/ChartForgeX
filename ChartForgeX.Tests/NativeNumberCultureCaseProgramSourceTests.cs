@@ -12,7 +12,7 @@ public sealed class NativeNumberCultureCaseProgramSourceTests {
     [InlineData("donut", "scientific", 390, true)] [InlineData("treemap", "escaped", 760, false)]
     [InlineData("donut", "literal-ms", 760, true)] [InlineData("pie", "sections", 390, false)]
     public void PublicProgramUsesTheRealNumericAndNativeCaptionOwnersWithExplicitHostFonts(string kind, string policy, int width, bool dark) {
-        var program = ExampleRecipeSource.EmitNativeNumberCultureCase(kind, policy, width, dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        var program = ExampleRecipeSource.EmitNativeNumberCultureCase(kind, policy, width, dark ? ThemeMode.Dark : ThemeMode.Light);
         NativeRadialMotionBeforeControls.Save("number-culture-case-program-" + kind + "-" + policy + "-" + width + ".cs", program);
         Assert.DoesNotContain("{{", program, StringComparison.Ordinal); Assert.Contains("class NativeNumberCultureCaseRecipe", program, StringComparison.Ordinal);
         Assert.Contains("PrepareNativeTransitionJson", program, StringComparison.Ordinal); Assert.Contains("CultureInfo.GetCultureInfo", program, StringComparison.Ordinal); Assert.Contains("TextCaseTransform.SentenceCase", program, StringComparison.Ordinal);

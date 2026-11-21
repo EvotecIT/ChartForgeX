@@ -15,13 +15,13 @@ internal static partial class SmokeTests {
 
         var metric = MetricCard.Create().WithTheme(VisualTheme.Graphite())
             .WithMetric("Coverage", 0.982, "P1")
-            .WithIcon(VisualIcon.Lightning)
+            .WithIcon(Icons.Lightning)
             .WithBadgePlacement(MetricCardBadgePlacement.TopLeft)
             .WithTrend("+2.4 pp")
             .WithCaption("since previous run")
-            .WithStatus(VisualStatus.Positive)
-            .AddDetail("Ready", "84%", VisualStatus.Positive)
-            .AddDetail("Risk", "6%", VisualStatus.Warning)
+            .WithStatus(Tone.Success)
+            .AddDetail("Ready", "84%", Tone.Success)
+            .AddDetail("Risk", "6%", Tone.Warning)
             .WithMiniBars(new[] { 72d, 78d, 83d, 80d, 98d }, maximum: 100)
             .WithTheme(VisualTheme.Graphite())
             .WithSize(360, 190);
@@ -40,8 +40,8 @@ internal static partial class SmokeTests {
             .WithMetric("Patch Rate", "94%", "OK")
             .WithSymbol("WRN")
             .WithBadgePlacement(MetricCardBadgePlacement.TopLeft)
-            .WithStatus(VisualStatus.Warning)
-            .WithTheme(VisualTheme.TransparentOverlay(), VisualThemeMode.Dark)
+            .WithStatus(Tone.Warning)
+            .WithTheme(VisualTheme.TransparentOverlay(), ThemeMode.Dark)
             .WithSize(300, 170);
         var symbolMetricSvg = symbolMetric.ToSvg("visual-block-metric-symbol");
         Assert(symbolMetricSvg.Contains("data-cfx-role=\"metric-symbol\"", StringComparison.Ordinal), "MetricCard should render text symbols when no icon is configured.");
@@ -50,7 +50,7 @@ internal static partial class SmokeTests {
 
         var valueSurfaceMetric = MetricCard.Create().WithTheme(VisualTheme.Graphite())
             .WithMetric("Litres of water", "4.5", unit: "Litres")
-            .WithIcon(VisualIcon.Droplet)
+            .WithIcon(Icons.Droplet)
             .WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset)
             .WithSize(300, 140);
         var valueSurfaceSvg = valueSurfaceMetric.ToSvg("visual-block-metric-value-surface");
@@ -111,7 +111,7 @@ internal static partial class SmokeTests {
 
         var sparkMetric = MetricCard.Create().WithTheme(VisualTheme.Graphite())
             .WithMetric("Network", "842 Mbps")
-            .WithStatus(VisualStatus.Info)
+            .WithStatus(Tone.Info)
             .WithMiniSparkline(new[] { 42d, 36d, 31d, 28d, 24d, 18d });
         var sparkSvg = sparkMetric.ToSvg("visual-block-metric-sparkline");
         Assert(sparkSvg.Contains("data-cfx-role=\"metric-mini-sparkline\"", StringComparison.Ordinal), "MetricCard should render compact sparkline groups.");

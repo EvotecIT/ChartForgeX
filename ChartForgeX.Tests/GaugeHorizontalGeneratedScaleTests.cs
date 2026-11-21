@@ -10,11 +10,11 @@ namespace ChartForgeX.Tests;
 
 public sealed class GaugeHorizontalGeneratedScaleTests {
     [Theory]
-    [InlineData(390, VisualThemeMode.Light)]
-    [InlineData(390, VisualThemeMode.Dark)]
-    [InlineData(760, VisualThemeMode.Light)]
-    [InlineData(760, VisualThemeMode.Dark)]
-    public void GeneratedHorizontalScaleKeepsCompleteEndpointsWithoutIntersectingTheirNeighbours(int width, VisualThemeMode mode) {
+    [InlineData(390, ThemeMode.Light)]
+    [InlineData(390, ThemeMode.Dark)]
+    [InlineData(760, ThemeMode.Light)]
+    [InlineData(760, ThemeMode.Dark)]
+    public void GeneratedHorizontalScaleKeepsCompleteEndpointsWithoutIntersectingTheirNeighbours(int width, ThemeMode mode) {
         const string family = "CFX Horizontal Gauge Numeric Carlito";
         var fonts = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito");
         FontRegistry.Register(family, Path.Combine(fonts, "Carlito-Regular.ttf"), 400);

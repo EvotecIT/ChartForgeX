@@ -38,10 +38,10 @@ public sealed class HtmlInteractiveDashboardRenderer {
         var scope = options.IdScope ?? HtmlInteractiveChartRenderer.Slugify(title);
         var groupName = options.Interaction.GroupName ?? scope;
 
-        var surfaceStyle = HtmlInteractivePage.ChartSurfaceStyle(chartArray[0]);
+        var (surfaceStyle, surfaceTheme) = HtmlInteractivePage.ChartSurface(chartArray[0]);
         var writer = HtmlInteractivePage.StartDocument(title, options.ExternalAssets, surfaceStyle,
             options.Localization.ResolveLanguage(chartArray[0].Accessibility.Language), options.Localization.DirectionAttribute,
-            ChartForgeX.Typography.ChartFontAssets.StyleSheet);
+            ChartForgeX.Typography.ChartFontAssets.StyleSheet, surfaceTheme);
         writer.StartElement("main").Attribute("class", "cfx-shell").Attribute("style", surfaceStyle).EndStartElement().Line()
             .StartElement("div").Attribute("class", "cfx-dashboard").Attribute("style", DashboardStyle(options, chartArray)).EndStartElement().Line();
         for (var i = 0; i < chartArray.Length; i++) {

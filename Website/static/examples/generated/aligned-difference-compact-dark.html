@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = AlignedDifferenceRecipe.Create(&quot;compact&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Compares exact shared coordinates while retaining both independent raw sources and selected nonlinear scales.&lt;/summary&gt;
 public static class AlignedDifferenceRecipe {
     /// &lt;summary&gt;Creates a complete comparison. Exact documentation typography needs Carlito regular/bold installed or registered; other hosts use normal font fallback.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;negative-log&quot; or &quot;compact-negative-log&quot; or &quot;sym-log&quot; or &quot;compact-sym-log&quot; or &quot;connect&quot; or &quot;compact-connect&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant.StartsWith(&quot;compact&quot;, StringComparison.Ordinal);
@@ -151,6 +152,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -160,7 +162,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = AlignedDifferenceRecipe.Create(&quot;compact&quot;, mode);
 var context = new VisualRenderContext(
@@ -175,7 +177,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Compares exact shared coordinates while retaining both independent raw sources and selected nonlinear scales.&lt;/summary&gt;
 public static class AlignedDifferenceRecipe {
     /// &lt;summary&gt;Creates a complete comparison. Exact documentation typography needs Carlito regular/bold installed or registered; other hosts use normal font fallback.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;negative-log&quot; or &quot;compact-negative-log&quot; or &quot;sym-log&quot; or &quot;compact-sym-log&quot; or &quot;connect&quot; or &quot;compact-connect&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant.StartsWith(&quot;compact&quot;, StringComparison.Ordinal);

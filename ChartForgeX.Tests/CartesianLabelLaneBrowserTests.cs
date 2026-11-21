@@ -10,11 +10,11 @@ namespace ChartForgeX.Tests;
 /// <summary>Checks actual browser glyph bounds alongside native pixels for the public grouped-stack recipe.</summary>
 public sealed class CartesianLabelLaneBrowserTests {
     [Theory]
-    [InlineData(360, VisualThemeMode.Light)]
-    [InlineData(360, VisualThemeMode.Dark)]
-    [InlineData(640, VisualThemeMode.Light)]
-    [InlineData(640, VisualThemeMode.Dark)]
-    public void NativeNormalizedReversedStackTotalsKeepPaintedCategoryLanesClear(int width, VisualThemeMode mode) {
+    [InlineData(360, ThemeMode.Light)]
+    [InlineData(360, ThemeMode.Dark)]
+    [InlineData(640, ThemeMode.Light)]
+    [InlineData(640, ThemeMode.Dark)]
+    public void NativeNormalizedReversedStackTotalsKeepPaintedCategoryLanesClear(int width, ThemeMode mode) {
         var chart = Recipe(width, mode);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var rasterOptions = new VisualRenderOptions();
@@ -39,11 +39,11 @@ public sealed class CartesianLabelLaneBrowserTests {
     }
 
     [BrowserTheory]
-    [InlineData(360, VisualThemeMode.Light)]
-    [InlineData(360, VisualThemeMode.Dark)]
-    [InlineData(640, VisualThemeMode.Light)]
-    [InlineData(640, VisualThemeMode.Dark)]
-    public async Task NormalizedReversedStackTotalsClearRenderedCategoryGlyphs(int width, VisualThemeMode mode) {
+    [InlineData(360, ThemeMode.Light)]
+    [InlineData(360, ThemeMode.Dark)]
+    [InlineData(640, ThemeMode.Light)]
+    [InlineData(640, ThemeMode.Dark)]
+    public async Task NormalizedReversedStackTotalsClearRenderedCategoryGlyphs(int width, ThemeMode mode) {
         if (!InteractiveChartBrowser.Enabled) return;
         var chart = Recipe(width, mode);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -83,7 +83,7 @@ public sealed class CartesianLabelLaneBrowserTests {
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
     }
 
-    private static Chart Recipe(int width, VisualThemeMode mode) => BarRecipe.Create("compact-options", mode).WithSize(width, 360)
+    private static Chart Recipe(int width, ThemeMode mode) => BarRecipe.Create("compact-options", mode).WithSize(width, 360)
         .WithTitle("Completed orders").WithSubtitle("Normalized grouped stacks")
         .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), mode);
 

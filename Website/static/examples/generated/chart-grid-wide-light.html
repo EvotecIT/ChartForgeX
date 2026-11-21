@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = ChartGridRecipe.Create(&quot;wide&quot;, mode);
 var context = new VisualRenderContext(
@@ -109,7 +110,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 
 /// &lt;summary&gt;A three-panel comparison with shared Cartesian axes.&lt;/summary&gt;
 public static class ChartGridRecipe {
-    public static ChartGrid Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static ChartGrid Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         var observations = Enumerable.Range(1, 6).Select(index =&gt; new ChartPoint(index, 20 + index * 7 % 29)).ToArray();
         var requests = Chart.Create().WithTitle(&quot;Observed requests&quot;).WithXLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;, &quot;Sat&quot;)
             .AddSeries(ChartSeries.CreateLine(new ChartSeriesId(&quot;requests&quot;), &quot;Requests&quot;, observations));
@@ -127,6 +128,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -136,7 +138,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = ChartGridRecipe.Create(&quot;wide&quot;, mode);
 var context = new VisualRenderContext(
@@ -150,7 +152,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 
 /// &lt;summary&gt;A three-panel comparison with shared Cartesian axes.&lt;/summary&gt;
 public static class ChartGridRecipe {
-    public static ChartGrid Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static ChartGrid Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         var observations = Enumerable.Range(1, 6).Select(index =&gt; new ChartPoint(index, 20 + index * 7 % 29)).ToArray();
         var requests = Chart.Create().WithTitle(&quot;Observed requests&quot;).WithXLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;, &quot;Sat&quot;)
             .AddSeries(ChartSeries.CreateLine(new ChartSeriesId(&quot;requests&quot;), &quot;Requests&quot;, observations));

@@ -5,11 +5,11 @@ namespace ChartForgeX.Tests;
 
 public sealed class NativeValueRepertoireProgramSourceTests {
     public static IEnumerable<object[]> Cases() {
-        foreach (var donut in new[] { false, true }) foreach (var width in new[] { 390, 760 }) foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark })
+        foreach (var donut in new[] { false, true }) foreach (var width in new[] { 390, 760 }) foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark })
             yield return new object[] { donut, width, mode };
     }
     [Theory, MemberData(nameof(Cases))]
-    public void NormalCoreAndAdapterProgramUsesTheActualCompactFormatterAndExplicitHostFonts(bool donut, int width, VisualThemeMode mode) {
+    public void NormalCoreAndAdapterProgramUsesTheActualCompactFormatterAndExplicitHostFonts(bool donut, int width, ThemeMode mode) {
         var program = ExampleRecipeSource.EmitNativeValueTextRepertoire(donut, width, mode);
         NativeRadialMotionBeforeControls.Save("value-text-consumer-" + donut + "-" + width + "-" + mode + ".program.cs", program);
         Assert.DoesNotContain("{{", program, StringComparison.Ordinal); Assert.Contains("class NativeRadialMotionRecipe", program, StringComparison.Ordinal);

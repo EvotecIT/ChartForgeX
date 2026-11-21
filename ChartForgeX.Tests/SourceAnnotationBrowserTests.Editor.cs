@@ -11,9 +11,9 @@ namespace ChartForgeX.Tests;
 public sealed partial class SourceAnnotationBrowserTests {
     [BrowserTheory]
     [Trait("BrowserSuite", "Compatibility")]
-    [InlineData(390, VisualThemeMode.Dark, false)]
-    [InlineData(900, VisualThemeMode.Light, true)]
-    public async Task SourceEditorDraftsAreTransientAndOnlyNativeAcceptedEditsEnterUndoHistory(int width, VisualThemeMode mode, bool secondary) {
+    [InlineData(390, ThemeMode.Dark, false)]
+    [InlineData(900, ThemeMode.Light, true)]
+    public async Task SourceEditorDraftsAreTransientAndOnlyNativeAcceptedEditsEnterUndoHistory(int width, ThemeMode mode, bool secondary) {
         if (!Enabled) return;
         var host = new AnnotationHost(width, mode, secondary);
         await using var session = await BrowserProofFonts.OpenAsync(host.Initial, width + 24, 1000);
@@ -55,7 +55,7 @@ public sealed partial class SourceAnnotationBrowserTests {
     [Trait("BrowserSuite", "Compatibility")]
     public async Task SourceEditorPointerControlsCreateNativeDrawingsAndCancelRetainsTheCommittedScene() {
         if (!Enabled) return;
-        var host = new AnnotationHost(900, VisualThemeMode.Light);
+        var host = new AnnotationHost(900, ThemeMode.Light);
         await using var session = await BrowserProofFonts.OpenAsync(host.Initial, 924, 1000);
         var page = session.Page; await ConnectAnnotations(page, host);
         await page.EvaluateAsync("() => {window.nextDrawing=0;window.editor=drawings.editAnnotations({createId:kind=>'new-'+(++nextDrawing)});}");
@@ -91,7 +91,7 @@ public sealed partial class SourceAnnotationBrowserTests {
     [Trait("BrowserSuite", "Compatibility")]
     public async Task SourceEditorRejectedCanceledAndExternalUpdatesCannotManufactureAcceptedHistory() {
         if (!Enabled) return;
-        var host = new AnnotationHost(900, VisualThemeMode.Dark);
+        var host = new AnnotationHost(900, ThemeMode.Dark);
         await using var session = await BrowserProofFonts.OpenAsync(host.Initial, 924, 1000);
         var page = session.Page; await ConnectAnnotations(page, host);
         await page.EvaluateAsync("""

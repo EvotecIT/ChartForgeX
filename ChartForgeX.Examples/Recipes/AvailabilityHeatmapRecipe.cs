@@ -1,7 +1,7 @@
 /// <summary>Shows two weeks of daily availability for ten targets, with days that have no measurements left empty.</summary>
 public static class AvailabilityHeatmapRecipe {
     /// <summary>Creates the availability heatmap; the compact variant keeps the same data.</summary>
-    public static Chart Create(string variant = "availability", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "availability", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("availability" or "compact-availability")) throw new ArgumentOutOfRangeException(nameof(variant));
         var colors = VisualTheme.Graphite().Resolve(mode);
         var start = new DateTime(2026, 10, 14);

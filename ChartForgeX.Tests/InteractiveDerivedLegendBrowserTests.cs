@@ -20,7 +20,7 @@ public sealed class InteractiveDerivedLegendBrowserTests {
         Chart Histogram(string title, double[] boundaries, ChartHistogramAggregation aggregation = ChartHistogramAggregation.Count,
             ChartHistogramEncoding encoding = ChartHistogramEncoding.Value) {
             var chart = Chart.Create().WithSize(640, 360).WithTitle(title).WithPointLegend()
-                .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+                .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
                 .AddSeries(ChartSeries.CreateHistogram(new ChartSeriesId("shared-observations"), "Observations", source, ChartHistogramBinLayout.FromBoundaries(boundaries), aggregation, encoding));
             return chart;
         }

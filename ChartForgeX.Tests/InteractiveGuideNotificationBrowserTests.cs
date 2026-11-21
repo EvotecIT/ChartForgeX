@@ -113,7 +113,7 @@ public sealed class InteractiveGuideNotificationBrowserTests {
     }
 
     private static Chart Frame(bool dark, string title) => Chart.Create().WithSize(800, 540).WithTitle(title)
-        .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithLineMarkers(ChartLineMarkerMode.None)
+        .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithLineMarkers(ChartLineMarkerMode.None)
         .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10);
 
     private static string Dashboard(bool tooltips, bool dark) {

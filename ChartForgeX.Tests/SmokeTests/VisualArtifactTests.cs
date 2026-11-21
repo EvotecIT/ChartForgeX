@@ -37,9 +37,9 @@ internal static partial class SmokeTests {
 
         table.Columns[1].Metadata["facet"] = "health";
         table.ConfigureRow(1, row => {
-            row.Status = VisualStatus.Warning;
+            row.Status = Tone.Warning;
             row.Metadata["source"] = "probe";
-            row.Cells[1].Status = VisualStatus.Warning;
+            row.Cells[1].Status = Tone.Warning;
         });
 
         Assert(table.Supports(TableArtifactCapabilities.Search), "TableArtifact should declare full-table search capability.");
@@ -47,8 +47,8 @@ internal static partial class SmokeTests {
         Assert(table.SupportsExport(VisualArtifactExportFormat.Csv), "TableArtifact should declare data export formats independently from static previews.");
         Assert(table.Columns[2].Alignment == TextAlignment.Right, "TableArtifact columns should preserve static preview alignment hints.");
         Assert(table.Columns[1].Metadata["facet"] == "health", "TableArtifact columns should preserve host metadata.");
-        Assert(table.Rows[1].Status == VisualStatus.Warning, "TableArtifact rows should carry status for selection and preview hosts.");
-        Assert(table.Rows[1].Cells[1].Status == VisualStatus.Warning, "TableArtifact cells should carry status for selection and preview hosts.");
+        Assert(table.Rows[1].Status == Tone.Warning, "TableArtifact rows should carry status for selection and preview hosts.");
+        Assert(table.Rows[1].Cells[1].Status == Tone.Warning, "TableArtifact cells should carry status for selection and preview hosts.");
 
         var artifact = table.ToVisualArtifact();
         Assert(artifact.Kind == VisualArtifactKind.Table, "TableArtifact should wrap into a product-neutral visual artifact envelope.");
@@ -68,8 +68,8 @@ internal static partial class SmokeTests {
             .AddRow("a", "Ada Lovelace", "Enabled")
             .AddRow("g", "Grace Hopper", "Disabled")
             .ConfigureRow(1, row => {
-                row.Status = VisualStatus.Negative;
-                row.Cells[1].Status = VisualStatus.Negative;
+                row.Status = Tone.Danger;
+                row.Cells[1].Status = Tone.Danger;
             });
 
         var block = table.ToPreviewBlock();
@@ -367,8 +367,6 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => new TableArtifactColumn("bad", "Bad", (TableArtifactColumnType)999), "TableArtifactColumn should reject unknown data types.");
         AssertThrows<ArgumentOutOfRangeException>(() => new TableArtifactColumn("bad", "Bad", width: 0), "TableArtifactColumn should reject invalid width hints.");
         AssertThrows<ArgumentOutOfRangeException>(() => new TableArtifactColumn("bad", "Bad").Width = -1, "TableArtifactColumn should reject invalid width hints through the public setter.");
-        AssertThrows<ArgumentOutOfRangeException>(() => new TableArtifactRow("bad").Status = (VisualStatus)999, "TableArtifactRow should reject unknown status values.");
-        AssertThrows<ArgumentOutOfRangeException>(() => new TableArtifactCell("bad").Status = (VisualStatus)999, "TableArtifactCell should reject unknown status values.");
         AssertThrows<ArgumentOutOfRangeException>(() => new VisualArtifact().ExportFormats = (VisualArtifactExportFormat)1024, "VisualArtifact should reject undefined export format flags.");
         AssertThrows<ArgumentOutOfRangeException>(() => new TableArtifactQuery { Offset = -1 }, "TableArtifactQuery should reject negative virtual offsets.");
         AssertThrows<ArgumentOutOfRangeException>(() => new TableArtifactQuery { Limit = 0 }, "TableArtifactQuery should reject empty virtual windows.");
@@ -387,9 +385,9 @@ internal static partial class SmokeTests {
             new("worker") {
                 Cells = {
                     new TableArtifactCell("Worker"),
-                    new TableArtifactCell("Warning") { Status = VisualStatus.Warning }
+                    new TableArtifactCell("Warning") { Status = Tone.Warning }
                 },
-                Status = VisualStatus.Warning
+                Status = Tone.Warning
             }
         };
         var result = new TableArtifactQueryResult(rows, totalRowCount: 125);
@@ -405,9 +403,9 @@ internal static partial class SmokeTests {
             .WithTitle("Approval Flow")
             .WithSize(720, 420)
             .AddLane("ops", "Operations")
-            .AddStep("start", "Start", FlowArtifactStepKind.Start, "ops", VisualStatus.Positive)
-            .AddStep("review", "Review", FlowArtifactStepKind.Decision, "ops", VisualStatus.Warning)
-            .AddConnector("start", "review", "handoff", FlowArtifactConnectorKind.Flow, VisualLinkDirection.Forward, VisualStatus.Positive, "#EF4444");
+            .AddStep("start", "Start", FlowArtifactStepKind.Start, "ops", Tone.Success)
+            .AddStep("review", "Review", FlowArtifactStepKind.Decision, "ops", Tone.Warning)
+            .AddConnector("start", "review", "handoff", FlowArtifactConnectorKind.Flow, VisualLinkDirection.Forward, Tone.Success, "#EF4444");
 
         var artifact = flow.ToVisualArtifact();
         var svg = flow.ToSvg();

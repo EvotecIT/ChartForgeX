@@ -1,7 +1,7 @@
 /// <summary>Observed service levels compared with expected values or a marked target line.</summary>
 public static class RadarRecipe {
     /// <summary>Creates shared radar categories with marker options or reversed angular order.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "angular-reversal" or "compact-angular-reversal"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         if (variant is "angular-reversal" or "compact-angular-reversal") return Reversed();

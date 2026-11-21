@@ -8,7 +8,7 @@ public static class MermaidMixedCaptionSourceExample {
         _ => throw new ArgumentOutOfRangeException(nameof(family))
     };
     /// <summary>Creates one source-backed artifact through the canonical parser/converter and native renderer.</summary>
-    public static VisualArtifact Create(string family, string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light, string? fontFamily = null) {
+    public static VisualArtifact Create(string family, string variant = "wide", ThemeMode mode = ThemeMode.Light, string? fontFamily = null) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var width = variant == "compact" ? 390 : 1100;
         var result = ChartForgeX.Mermaid.MermaidRenderer.Render(Source(family), new ChartForgeX.Mermaid.MermaidRenderOptions {

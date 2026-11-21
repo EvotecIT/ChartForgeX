@@ -15,7 +15,7 @@ public sealed class TerminalStyleOptions {
 }
 
 internal sealed partial class TerminalThemeProjection {
-    internal static ResolvedTerminalStyle Resolve(VisualTheme theme, VisualThemeMode mode, TerminalStyleOptions? style = null) {
+    internal static ResolvedTerminalStyle Resolve(VisualTheme theme, ThemeMode mode, TerminalStyleOptions? style = null) {
         if (theme == null) throw new ArgumentNullException(nameof(theme));
         var colors = theme.Resolve(mode);
         return new ResolvedTerminalStyle {
@@ -30,12 +30,12 @@ internal sealed partial class TerminalThemeProjection {
 }
 
 internal sealed partial class ResolvedTerminalStyle {
-    internal static ResolvedTerminalStyle FromTheme(VisualTheme theme, VisualThemeMode mode) => TerminalThemeProjection.Resolve(theme, mode);
+    internal static ResolvedTerminalStyle FromTheme(VisualTheme theme, ThemeMode mode) => TerminalThemeProjection.Resolve(theme, mode);
 }
 
 public sealed partial class TerminalStory {
     /// <summary>Chooses the initial tab's explicit light or dark appearance before timeline authoring.</summary>
-    public TerminalStory WithThemeMode(VisualThemeMode mode) {
+    public TerminalStory WithThemeMode(ThemeMode mode) {
         EnsureInitialConfiguration(); InitialTab.ThemeMode = mode; return this;
     }
     /// <summary>Sets independent cursor and title-bar options before timeline authoring.</summary>

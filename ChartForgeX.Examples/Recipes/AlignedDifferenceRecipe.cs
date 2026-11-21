@@ -1,7 +1,7 @@
 /// <summary>Compares exact shared coordinates while retaining both independent raw sources and selected nonlinear scales.</summary>
 public static class AlignedDifferenceRecipe {
     /// <summary>Creates a complete comparison. Exact documentation typography needs Carlito regular/bold installed or registered; other hosts use normal font fallback.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "negative-log" or "compact-negative-log" or "sym-log" or "compact-sym-log" or "connect" or "compact-connect"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant.StartsWith("compact", StringComparison.Ordinal);

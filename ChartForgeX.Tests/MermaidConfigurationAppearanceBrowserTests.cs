@@ -18,7 +18,7 @@ public sealed class MermaidConfigurationAppearanceBrowserTests {
         Assert.False(result.HasErrors);
         var artifact = result.Artifact!;
         var topology = Assert.IsType<TopologyChart>(artifact.Model);
-        Assert.Equal(VisualThemeMode.Dark, topology.ThemeMode);
+        Assert.Equal(ThemeMode.Dark, topology.ThemeMode);
         var global = MermaidRenderer.Render("---\nconfig:\n  theme: dark\n  look: classic\n---\nflowchart LR\nA[Start] --> B[Done]");
         Assert.Equal(global.Artifact!.ToPng(), artifact.ToPng());
         await using var session = await InteractiveChartBrowser.OpenAsync(artifact.ToHtmlPage(), width, 460);

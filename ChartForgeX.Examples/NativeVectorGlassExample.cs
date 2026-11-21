@@ -1,10 +1,10 @@
 /// <summary>Local backdrop filtering with a separately retained native foreground, using the ordinary optional Visuals canvas.</summary>
 public static class NativeVectorGlassExample {
-    public static ChartForgeX.Composition.VisualCanvas Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static ChartForgeX.Composition.VisualCanvas Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant != "compact" && variant != "wide") throw new ArgumentOutOfRangeException(nameof(variant));
-        if (mode != VisualThemeMode.Light && mode != VisualThemeMode.Dark) throw new ArgumentOutOfRangeException(nameof(mode));
+        if (mode != ThemeMode.Light && mode != ThemeMode.Dark) throw new ArgumentOutOfRangeException(nameof(mode));
         var width = variant == "compact" ? 390 : 1100;
-        var dark = mode == VisualThemeMode.Dark;
+        var dark = mode == ThemeMode.Dark;
         var background = ChartColor.FromHex(dark ? "#102338" : "#E2E8F0");
         var accent = ChartColor.FromHex(dark ? "#38BDF8" : "#0369A1");
         var ink = ChartColor.FromHex(dark ? "#F8FAFC" : "#0F172A");

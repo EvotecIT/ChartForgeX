@@ -14,7 +14,7 @@ public sealed class MermaidSurfacePaintBrowserTests {
     public async Task AuthoredSurfaceStylesRemainStaticAndKeepTheirComputedPaints(bool dark,int width) {
         if(!InteractiveChartBrowser.Enabled)return;
         foreach(var family in new[]{"flowchart","agentflow"}) {
-            var rendered=MermaidRenderer.Render(MermaidSurfacePaintRenderingTests.Fixture(family),new MermaidRenderOptions{Presentation=new MermaidPresentationOptions{ThemeMode=dark?VisualThemeMode.Dark:VisualThemeMode.Light}});
+            var rendered=MermaidRenderer.Render(MermaidSurfacePaintRenderingTests.Fixture(family),new MermaidRenderOptions{Presentation=new MermaidPresentationOptions{ThemeMode=dark?ThemeMode.Dark:ThemeMode.Light}});
             MermaidSurfacePaintCausalTests.Capture(rendered,family+"-surface-browser-"+width+(dark?"-dark":"-light"));Assert.Empty(rendered.Diagnostics);var artifact=rendered.Artifact!;
             await using var session=await BrowserProofFonts.OpenAsync(artifact.ToHtmlPage(new VisualArtifactRenderOptions{HtmlSizing=VisualArtifactHtmlSizing.PreserveSize}),width,700);
             var observed=await session.Page.EvaluateAsync<string>("""

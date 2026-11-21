@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using ChartForgeX;
 using ChartForgeX.Themes;
 
 namespace SiteVisuals;
@@ -54,9 +55,9 @@ internal sealed class VisualOutput {
     public int Files { get; private set; }
     public long Bytes { get; private set; }
 
-    public IEnumerable<(string Name, VisualThemeMode Mode, bool IsDark)> Modes() {
-        yield return ("light", VisualThemeMode.Light, false);
-        yield return ("dark", VisualThemeMode.Dark, true);
+    public IEnumerable<(string Name, ThemeMode Mode, bool IsDark)> Modes() {
+        yield return ("light", ThemeMode.Light, false);
+        yield return ("dark", ThemeMode.Dark, true);
     }
 
     public void Text(string relative, string content) {
@@ -73,9 +74,9 @@ internal sealed class VisualOutput {
     }
 
     /// <summary>Writes a light and a dark SVG named <c>{name}-light.svg</c> and <c>{name}-dark.svg</c> and returns their size.</summary>
-    public Dictionary<string, object> Pair(string name, Func<VisualThemeMode, bool, string> render) {
-        var light = render(VisualThemeMode.Light, false);
-        var dark = render(VisualThemeMode.Dark, true);
+    public Dictionary<string, object> Pair(string name, Func<ThemeMode, bool, string> render) {
+        var light = render(ThemeMode.Light, false);
+        var dark = render(ThemeMode.Dark, true);
         Text(name + "-light.svg", light);
         Text(name + "-dark.svg", dark);
         var (width, height) = Size(light);
@@ -89,9 +90,9 @@ internal sealed class VisualOutput {
     }
 
     /// <summary>Writes a light and a dark PNG pair, for outputs whose SVG animates.</summary>
-    public Dictionary<string, object> PngPair(string name, Func<VisualThemeMode, bool, byte[]> render) {
-        var light = render(VisualThemeMode.Light, false);
-        var dark = render(VisualThemeMode.Dark, true);
+    public Dictionary<string, object> PngPair(string name, Func<ThemeMode, bool, byte[]> render) {
+        var light = render(ThemeMode.Light, false);
+        var dark = render(ThemeMode.Dark, true);
         // Width and height are the big-endian integers of the IHDR chunk.
         static int Read(byte[] png, int offset) => (png[offset] << 24) | (png[offset + 1] << 16) | (png[offset + 2] << 8) | png[offset + 3];
         var width = Read(light, 16);

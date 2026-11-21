@@ -217,7 +217,7 @@ public sealed class PyramidGeometryTests {
         var parsed = new MarkupChartParser().Parse("```chartforgex chart v1 {type=\"pyramid\"}\nlabels A B C\nseries Allocation values 50 30 20\n```");
         Assert.False(parsed.HasErrors); Assert.Equal(ChartSeriesKind.Pyramid, Assert.Single(parsed.Document!.Chart.Series).Kind);
         Assert.Contains("pyramid-stage", parsed.Document.Chart.ToSvg());
-        foreach (var variant in new[] { "wide", "compact", "options", "compact-options" }) foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var variant in new[] { "wide", "compact", "options", "compact-options" }) foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             var chart = V2GalleryModels.Create(ChartSeriesKind.Pyramid, variant, mode);
             var size = variant.StartsWith("compact", StringComparison.Ordinal) ? new VisualSize(360, 360) : new VisualSize(800, 440);
             var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(size), VisualTheme.Graphite(), mode));
@@ -231,7 +231,7 @@ public sealed class PyramidGeometryTests {
     public async Task ReversedPyramidUsesAuthoredSourceIdentityForRealKeyboardSelection(bool dark) {
         if (!InteractiveChartBrowser.Enabled) return;
         var chart = Pyramid(50, 30, 20, 0).WithSize(596, 338).WithDataLabels()
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .ConfigurePyramid(options => { options.Orientation = ChartOrientation.Horizontal; options.Reversed = true; });
         await using var session = await InteractiveChartBrowser.OpenAsync(chart.ToInteractiveHtmlPage());
         var page = session.Page;

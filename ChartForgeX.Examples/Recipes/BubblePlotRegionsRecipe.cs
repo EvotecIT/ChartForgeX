@@ -1,7 +1,7 @@
 /// <summary>Shows work queues against bounded target and review regions.</summary>
 public static class BubblePlotRegionsRecipe {
     /// <summary>Creates the selected example without choosing a renderer or export backend.</summary>
-    public static Chart Create(string variant = "plot-regions", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "plot-regions", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("plot-regions" or "compact-plot-regions")) throw new ArgumentOutOfRangeException(nameof(variant));
         return PlotRegions();
     }

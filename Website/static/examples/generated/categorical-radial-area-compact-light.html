@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = CategoricalRadialAreaRecipe.Create(&quot;compact&quot;, mode);
 var context = new VisualRenderContext(
@@ -113,7 +114,7 @@ public static class CategoricalRadialAreaRecipe {
     /// &lt;param name=&quot;variant&quot;&gt;Use wide, compact, stacked, compact-stacked, radius or compact-radius.&lt;/param&gt;
     /// &lt;param name=&quot;mode&quot;&gt;The paired visual theme mode.&lt;/param&gt;
     /// &lt;returns&gt;A complete chart ready for the ordinary SVG, PNG and HTML output workflow.&lt;/returns&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;stacked&quot; or &quot;compact-stacked&quot; or &quot;radius&quot; or &quot;compact-radius&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant.StartsWith(&quot;compact&quot;, StringComparison.Ordinal);
@@ -148,6 +149,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -157,7 +159,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = CategoricalRadialAreaRecipe.Create(&quot;compact&quot;, mode);
 var context = new VisualRenderContext(
@@ -175,7 +177,7 @@ public static class CategoricalRadialAreaRecipe {
     /// &lt;param name=&quot;variant&quot;&gt;Use wide, compact, stacked, compact-stacked, radius or compact-radius.&lt;/param&gt;
     /// &lt;param name=&quot;mode&quot;&gt;The paired visual theme mode.&lt;/param&gt;
     /// &lt;returns&gt;A complete chart ready for the ordinary SVG, PNG and HTML output workflow.&lt;/returns&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;stacked&quot; or &quot;compact-stacked&quot; or &quot;radius&quot; or &quot;compact-radius&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant.StartsWith(&quot;compact&quot;, StringComparison.Ordinal);

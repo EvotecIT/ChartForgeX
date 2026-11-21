@@ -47,7 +47,7 @@ public static partial class XZoomBenchmarkCases {
             "High" => new ChartXZoomLevels(1, 2, 4, 8, 16), _ => throw new ArgumentOutOfRangeException(nameof(descriptor)) };
         if (input.LevelIndex < 0 || input.LevelIndex >= input.Levels.Count) throw new ArgumentOutOfRangeException(nameof(descriptor));
         var width = int.Parse(fields[3], CultureInfo.InvariantCulture); var height = int.Parse(fields[4], CultureInfo.InvariantCulture);
-        var mode = Enum.Parse<VisualThemeMode>(fields[5]);
+        var mode = Enum.Parse<ThemeMode>(fields[5]);
         input.Context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, height), padding: 24), _theme, mode,
             new VisualFrame("Prepared X zoom cost fixture", "Native bank, contained pan and static export", showLegend: false), FontSpec.FromFamily(Family));
         var shape = input.Fixture.Split('-');

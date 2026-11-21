@@ -1,10 +1,11 @@
 using System;
 using System.IO;
+using ChartForgeX;
 using ChartForgeX.Themes;
 using ChartForgeX.VisualArtifacts;
 
 // Reference ChartForgeX.Mermaid. The source is inert input to its canonical parser and native renderer.
-var artifact = MermaidUseCaseJsonSourceExample.Create({{SOURCE_TEXT}}, {{VARIANT}}, VisualThemeMode.{{MODE}});
+var artifact = MermaidUseCaseJsonSourceExample.Create({{SOURCE_TEXT}}, {{VARIANT}}, ThemeMode.{{MODE}});
 File.WriteAllText("usecase-json.svg", artifact.ToSvg());
 File.WriteAllBytes("usecase-json.png", artifact.ToPng());
 File.WriteAllText("usecase-json.html", artifact.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));

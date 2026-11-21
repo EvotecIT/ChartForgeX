@@ -71,7 +71,7 @@ public sealed class HierarchyTranslucentCaptionCausalTests {
         return kind == ChartSeriesKind.Treemap ? chart.AddTreemap("One", items) : chart.AddSunburst("One", items);
     }
     internal static VisualRenderContext Context(bool dark, int width) => new(new VisualLayoutOptions(new VisualSize(width, 460)),
-        VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light, new VisualFrame(showLegend: false),
+        VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light, new VisualFrame(showLegend: false),
         FontSpec.FromFamily(BrowserProofFonts.Family));
     private static void Capture(string name, string svg, byte[] png) {
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");

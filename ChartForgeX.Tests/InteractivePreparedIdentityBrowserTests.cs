@@ -61,7 +61,7 @@ public sealed class InteractivePreparedIdentityBrowserTests {
     public async Task LinkedHeatmapCellHasOneKeyboardTargetAndRetainsNativeEnterNavigation(bool dark) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(596, 338).WithTitle("Service evidence")
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithXLabels("Directory")
             .WithStateCategories(new ChartStateCategory("pass", "Passed", ChartColor.FromHex("#1d8a52")))
             .AddHeatmapCategoryRow("DC01", new ChartHeatmapCell("pass", "3", href: "#evidence", tooltip: "Open evidence"));

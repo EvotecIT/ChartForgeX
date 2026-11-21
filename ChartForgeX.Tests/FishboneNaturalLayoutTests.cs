@@ -16,7 +16,7 @@ public sealed class FishboneNaturalLayoutTests {
     [InlineData(false, 390)] [InlineData(true, 390)]
     [InlineData(false, 1100)] [InlineData(true, 1100)]
     public void NaturalTreeKeepsEveryCaptionInDisjointMeasuredCellsAndConnectsActualParents(bool dark, int minimumWidth) {
-        var block = IshikawaDepthRecipe.Create(minimumWidth == 390 ? "compact" : "wide", dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        var block = IshikawaDepthRecipe.Create(minimumWidth == 390 ? "compact" : "wide", dark ? ThemeMode.Dark : ThemeMode.Light);
         var source = Facts(block); var size = block.MeasureNaturalSize(); var svg = block.ToSvg(); var xml = XDocument.Parse(svg); var png = block.ToPng();
         Capture(block, "fishbone-natural-" + minimumWidth + (dark ? "-dark" : "-light"));
         Assert.True(block.Options.Size.Width >= minimumWidth && block.Options.Size.Width >= size.Width && block.Options.Size.Height >= size.Height);

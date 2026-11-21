@@ -12,9 +12,9 @@ namespace ChartForgeX.Tests;
 
 public sealed class V2TopologyMigrationTests {
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void PreparedTopologyAllShapesAndMarkersExportOneDetachedSemanticGeometry(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void PreparedTopologyAllShapesAndMarkersExportOneDetachedSemanticGeometry(ThemeMode mode) {
         var chart = TopologyChart.Create(); chart.Id = "shape-atlas";
         var shapes = Enum.GetValues(typeof(TopologyNodeShape)).Cast<TopologyNodeShape>().ToArray();
         for (var i = 0; i < shapes.Length; i++) chart.Nodes.Add(new TopologyNode {
@@ -146,6 +146,6 @@ public sealed class V2TopologyMigrationTests {
         Assert.Throws<ArgumentOutOfRangeException>(() => VisualArtifactInterchangeEnvelope.FromJson(envelope.ToJson().Replace("\"width\":25", "\"width\":-1")));
     }
 
-    private static VisualRenderContext Context(VisualThemeMode mode = VisualThemeMode.Light) => new(
+    private static VisualRenderContext Context(ThemeMode mode = ThemeMode.Light) => new(
         new VisualLayoutOptions(new VisualSize(960, 640)), themeMode: mode, frame: new VisualFrame(showLegend: false));
 }

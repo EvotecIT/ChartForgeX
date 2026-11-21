@@ -66,10 +66,10 @@ public sealed class MermaidImplicitTopologyPaletteTests {
         Assert.Equal(VisualTheme.Graphite().ToJson(), chart.Theme.ToJson()); Assert.Null(chart.Nodes[0].BackgroundColor); Assert.Null(chart.Nodes[0].BorderColor); Assert.Null(chart.Nodes[0].LabelColor); Assert.Equal(artifact.ToPng(), restored.ToPng());
     }
     [Theory]
-    [InlineData("flowchart", "compact", VisualThemeMode.Light)] [InlineData("flowchart", "wide", VisualThemeMode.Dark)]
-    [InlineData("swimlane", "compact", VisualThemeMode.Light)] [InlineData("swimlane", "wide", VisualThemeMode.Dark)]
-    [InlineData("agentflow", "compact", VisualThemeMode.Light)] [InlineData("agentflow", "wide", VisualThemeMode.Dark)]
-    public void OrdinaryPaletteRecipeExportsTheSameCapturedGraphAndConsumerSource(string family, string variant, VisualThemeMode mode) {
+    [InlineData("flowchart", "compact", ThemeMode.Light)] [InlineData("flowchart", "wide", ThemeMode.Dark)]
+    [InlineData("swimlane", "compact", ThemeMode.Light)] [InlineData("swimlane", "wide", ThemeMode.Dark)]
+    [InlineData("agentflow", "compact", ThemeMode.Light)] [InlineData("agentflow", "wide", ThemeMode.Dark)]
+    public void OrdinaryPaletteRecipeExportsTheSameCapturedGraphAndConsumerSource(string family, string variant, ThemeMode mode) {
         var artifact = TopologySourcePaletteRecipe.Create(family, variant, mode, BrowserProofFonts.Family); CaptureArtifact("recipe-" + family + "-" + variant + "-" + mode, artifact);
         var source = ExampleRecipeSource.EmitTopologySourcePalette(family, variant, mode);
         Assert.Contains("TopologySourcePaletteRecipe.Create", source, StringComparison.Ordinal); Assert.Contains("ToInterchangeJson", source, StringComparison.Ordinal);

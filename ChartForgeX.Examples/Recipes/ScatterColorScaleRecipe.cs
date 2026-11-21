@@ -1,12 +1,12 @@
 /// <summary>Colors processing observations by temperature and overlays a target duration.</summary>
 public static class ScatterColorScaleRecipe {
     /// <summary>Creates the selected example without choosing a renderer or export backend.</summary>
-    public static Chart Create(string variant = "color-scale", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "color-scale", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("color-scale" or "compact-color-scale")) throw new ArgumentOutOfRangeException(nameof(variant));
         return NumericColorScale(mode);
     }
 
-    private static Chart NumericColorScale(VisualThemeMode mode) {
+    private static Chart NumericColorScale(ThemeMode mode) {
         var colors = VisualTheme.Graphite().Resolve(mode);
         var samples = new[] {
             new { Batch = 15d, Minutes = 28d, Temperature = (double?)-12 },

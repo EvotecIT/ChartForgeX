@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -11,7 +12,7 @@ using ChartForgeX.Interactivity.Html;
 
 if(args.Length!=1)throw new ArgumentException("Pass the path of a font licensed for this output.");FontRegistry.Register("Owned flash font",File.ReadAllBytes(args[0]));
 var kind={{KIND}};var raw=kind.StartsWith("raw-",StringComparison.Ordinal);var renderer=new HtmlInteractiveChartRenderer();
-Chart Model(double value)=>NativeOwnedValueFlashRecipe.Create(kind,value,{{WIDTH}},VisualThemeMode.{{MODE}},"Owned flash font");
+Chart Model(double value)=>NativeOwnedValueFlashRecipe.Create(kind,value,{{WIDTH}},ThemeMode.{{MODE}},"Owned flash font");
 void Configure(HtmlChartInteractionOptions options){options.CaptureNativeValueSource=raw;options.Interaction.ChartId="native-owned-flash";}
 var from=renderer.PrepareSection(Model(raw?60:30),configure:Configure);var to=renderer.PrepareSection(Model(raw?5:40),configure:Configure);
 var payload=renderer.PrepareNativeTransitionJson(from,to,new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.ValueFlash,5,ChartColor.FromHex("#FFC000")));

@@ -67,7 +67,7 @@ public sealed class ProgressBarIdentityBrowserTests {
         series.WithObservationId(updated ? 1 : 0, new ChartObservationId("north"))
             .WithObservationId(updated ? 0 : 1, new ChartObservationId("south"));
         return Chart.Create().WithSize(640, 360).WithTitle("Progress by region").WithXLabels("North", "South")
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).AddSeries(series);
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).AddSeries(series);
     }
     private static void Options(HtmlChartInteractionOptions options) {
         options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit; options.Tooltip.PinOnSelect = false;

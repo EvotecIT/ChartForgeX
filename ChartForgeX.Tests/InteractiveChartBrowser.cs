@@ -160,7 +160,7 @@ internal static partial class InteractiveChartBrowser {
 
     private static Chart Frame(bool dark, string title, string subtitle) => Chart.Create()
         .WithSize(596, 338)
-        .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
         .WithTitle(title)
         .WithSubtitle(subtitle);
 

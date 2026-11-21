@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using ChartForgeX;
 using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Themes;
@@ -8,7 +9,7 @@ using ChartForgeX.VisualArtifacts;
 var source=File.ReadAllText(args.Length>0?args[0]:"swimlane-native-layout-depth.mmd");
 var output=args.Length>1?args[1]:"swimlane-output";Directory.CreateDirectory(output);
 foreach(var dark in new[]{false,true})foreach(var width in new[]{390,1100}){
-    var options=new MermaidRenderOptions {WarningPolicy=MermaidWarningPolicy.Reject,Presentation=new MermaidPresentationOptions {ThemeMode=dark?VisualThemeMode.Dark:VisualThemeMode.Light},Swimlane=new MermaidFlowchartRenderOptions {Width=width,Height=850}};
+    var options=new MermaidRenderOptions {WarningPolicy=MermaidWarningPolicy.Reject,Presentation=new MermaidPresentationOptions {ThemeMode=dark?ThemeMode.Dark:ThemeMode.Light},Swimlane=new MermaidFlowchartRenderOptions {Width=width,Height=850}};
     var direct=MermaidRenderer.Render(source,options);if(direct.HasErrors||direct.Artifact==null)throw new InvalidOperationException("Source could not be rendered.");
     var fence=new MermaidVisualMarkupParser(options).Parse("```mermaid\n"+source+"\n```");if(fence.HasErrors||fence.Artifacts.Count!=1)throw new InvalidOperationException("Fenced source could not be rendered.");
     foreach(var pair in new[]{("direct",direct.Artifact!),("fenced",fence.Artifacts[0])}){

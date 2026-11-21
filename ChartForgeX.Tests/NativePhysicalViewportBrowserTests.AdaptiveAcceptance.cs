@@ -12,9 +12,9 @@ namespace ChartForgeX.Tests;
 
 public sealed partial class NativePhysicalViewportBrowserTests {
     [BrowserTheory]
-    [InlineData(false, 390, VisualThemeMode.Dark)]
-    [InlineData(true, 900, VisualThemeMode.Light)]
-    public async Task AdaptivePhysicalAndLegacyRepliesRequireEveryAlternateProjectionBeforeAcceptance(bool legacy, int width, VisualThemeMode mode) {
+    [InlineData(false, 390, ThemeMode.Dark)]
+    [InlineData(true, 900, ThemeMode.Light)]
+    public async Task AdaptivePhysicalAndLegacyRepliesRequireEveryAlternateProjectionBeforeAcceptance(bool legacy, int width, ThemeMode mode) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(900, 440).WithFontFamily(BrowserProofFonts.Family).WithTheme(VisualTheme.Graphite(), mode)
             .WithXAxisBounds(0, 4).WithYAxisBounds(0, 100)

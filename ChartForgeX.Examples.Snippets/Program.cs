@@ -4,7 +4,7 @@ using ChartForgeX;
 
 var output = args.Length == 0 ? Path.Combine(AppContext.BaseDirectory, "recipe-output") : Path.GetFullPath(args[0]);
 Directory.CreateDirectory(output);
-var modes = new[] { VisualThemeMode.Light, VisualThemeMode.Dark };
+var modes = new[] { ThemeMode.Light, ThemeMode.Dark };
 var results = new List<RecipeResult>();
 var visited = new HashSet<string>(StringComparer.Ordinal);
 AppearanceSnippetProof.Write(output, results);
@@ -164,7 +164,7 @@ void RunNamed(string name, params string[] variants) {
         foreach (var mode in modes) Run(name, ExampleRecipes.Named(name), variant, mode);
 }
 
-void Run(string name, ExampleRecipe recipe, string variant, VisualThemeMode mode, ChartSeriesKind? expectedKind = null) {
+void Run(string name, ExampleRecipe recipe, string variant, ThemeMode mode, ChartSeriesKind? expectedKind = null) {
     var id = name.ToLowerInvariant() + "-" + variant + "-" + mode.ToString().ToLowerInvariant();
     // Ordinary and advanced catalogs can advertise the same exact selection; qualify it once.
     if (!visited.Add(id)) return;
@@ -213,7 +213,7 @@ void Run(string name, ExampleRecipe recipe, string variant, VisualThemeMode mode
     }
 }
 
-void RunBlockLayout(string variant, VisualThemeMode mode) {
+void RunBlockLayout(string variant, ThemeMode mode) {
     var id = "block-layout-" + variant + "-" + mode.ToString().ToLowerInvariant(); var width = variant == "compact" ? 390 : 1000;
     try {
         var block = BlockLayoutDepthRecipe.Create(variant, mode); var svg = block.ToSvg(); var png = block.ToPng();

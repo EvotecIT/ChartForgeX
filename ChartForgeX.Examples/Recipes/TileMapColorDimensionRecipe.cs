@@ -1,7 +1,7 @@
 /// <summary>Creates a tile map with independently formatted temperature values and color legends.</summary>
 public static class TileMapColorDimensionRecipe {
     /// <summary>Creates the source model for a gallery variant without choosing an export backend.</summary>
-    public static Chart Create(string variant = "color-dimension", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "color-dimension", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("color-dimension" or "compact-color-dimension"
             or "gradient-color-legend" or "compact-gradient-color-legend"
             or "swatch-color-legend" or "compact-swatch-color-legend"))

@@ -62,7 +62,7 @@ public sealed class VennSetContainmentTests {
         var options = new MermaidRenderOptions {
             Presentation = new MermaidPresentationOptions {
                 FontFamily = BrowserProofFonts.Family,
-                ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light
+                ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light
             }
         };
         var direct = MermaidRenderer.Render(source, options);

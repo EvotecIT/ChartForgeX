@@ -24,7 +24,7 @@ public sealed class InteractiveTreemapLegendBrowserTests {
         if (missing) items = items.Where(item => item.Id != FirstId);
         if (reordered) items = items.Reverse().Select(item => new ChartHierarchyItem(item.Id,
             item.Id == FirstId ? "Customer care" : item.Label, item.ParentId, item.Value, item.ColorValue));
-        var chart = Chart.Create().WithPointLegend().WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = Chart.Create().WithPointLegend().WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithTitle("Work by team").AddSeries(ChartSeries.CreateTreemap(new ChartSeriesId("allocation-source"), "Allocation", items));
         return chart;
     }
@@ -133,7 +133,7 @@ public sealed class InteractiveTreemapLegendBrowserTests {
     public async Task LeafKeysKeepZeroAndTinyRawValuesWithoutInventingPaintedArea(bool dark) {
         if (!Enabled) return;
         var chart = Chart.Create().WithDataLabels().WithPointLegend().WithSize(540, 350)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).AddTreemap("Sizes", new[] {
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).AddTreemap("Sizes", new[] {
                 new ChartHierarchyItem("large", "Large", value: 1e308),
                 new ChartHierarchyItem("tiny", "Tiny", value: 1e-310), new ChartHierarchyItem("zero", "Zero", value: 0)
             });
@@ -188,7 +188,7 @@ public sealed class InteractiveTreemapLegendBrowserTests {
         var red = ChartColor.FromRgb(255, 0, 0); var blue = ChartColor.FromRgb(0, 0, 255);
         var missing = ChartColor.FromRgb(13, 47, 81);
         var chart = Chart.Create().WithPointLegend().WithSize(width, 360)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).AddTreemap("Colors", new[] {
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).AddTreemap("Colors", new[] {
                 new ChartHierarchyItem("low", "Low", value: 4, colorValue: 0),
                 new ChartHierarchyItem("explicit", "Explicit", value: 3, colorValue: 100),
                 new ChartHierarchyItem("missing", "Missing", value: 2)

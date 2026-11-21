@@ -32,8 +32,8 @@ public sealed class StoryReplayViewportReviewTests {
         var terminal = TerminalStory.Create().WithTheme(theme).WithFinalPrompt(false).Output("Ready");
         var viewport = XDocument.Parse(Story(terminal, 600, 400).Prepare().ToSvg()).Descendants()
             .Single(element => (string?)element.Attribute("data-cfx-role") == "terminal-viewport");
-        Assert.Equal(theme.Resolve(VisualThemeMode.Dark).ElevatedSurface.ToCss(), (string?)viewport.Attribute("fill"));
-        Assert.Equal(theme.Resolve(VisualThemeMode.Dark).Border.ToCss(), (string?)viewport.Attribute("stroke"));
+        Assert.Equal(theme.Resolve(ThemeMode.Dark).ElevatedSurface.ToCss(), (string?)viewport.Attribute("fill"));
+        Assert.Equal(theme.Resolve(ThemeMode.Dark).Border.ToCss(), (string?)viewport.Attribute("stroke"));
     }
 
     [Fact]

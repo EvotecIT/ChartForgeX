@@ -20,11 +20,11 @@ public sealed class HeatmapNiceKeyTests {
     }
 
     [Theory]
-    [InlineData(390, VisualThemeMode.Light)]
-    [InlineData(390, VisualThemeMode.Dark)]
-    [InlineData(800, VisualThemeMode.Light)]
-    [InlineData(800, VisualThemeMode.Dark)]
-    public void DefaultKeyUsesNamedRoundedStepsWithTrueEndpointsAndMeasuredGaps(int width, VisualThemeMode mode) {
+    [InlineData(390, ThemeMode.Light)]
+    [InlineData(390, ThemeMode.Dark)]
+    [InlineData(800, ThemeMode.Light)]
+    [InlineData(800, ThemeMode.Dark)]
+    public void DefaultKeyUsesNamedRoundedStepsWithTrueEndpointsAndMeasuredGaps(int width, ThemeMode mode) {
         var chart = Chart.Create().WithSize(width, 440).WithThemeMode(mode).WithDataLabels(false)
             .AddHeatmapRow("Service score", new[] { 41d, 55, 70, 92 });
         RoundedRadialSeriesTests.UseFixtureFont(chart);

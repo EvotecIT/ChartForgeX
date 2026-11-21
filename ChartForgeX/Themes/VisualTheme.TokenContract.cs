@@ -6,8 +6,8 @@ namespace ChartForgeX.Themes;
 public sealed partial class VisualTheme {
     private static VisualTheme FromVisualContract(string json, VisualTypography? typography) {
         // The palette parser owns required colours and all input budgets before optional presentation is read.
-        var light = VisualDesignTokens.FromJson(json, VisualThemeMode.Light);
-        var dark = VisualDesignTokens.FromJson(json, VisualThemeMode.Dark);
+        var light = VisualDesignTokens.FromJson(json, ThemeMode.Light);
+        var dark = VisualDesignTokens.FromJson(json, ThemeMode.Dark);
         var root = GeoJsonValue.Parse(json, StringComparer.Ordinal, ThemeJsonLimits).AsObject("visual tokens");
         if (root.TryGetValue("contractVersion", out var version) && version.AsNumber("contractVersion") != 2)
             throw new ArgumentException("Only visual token contractVersion 2 is supported.", nameof(json));

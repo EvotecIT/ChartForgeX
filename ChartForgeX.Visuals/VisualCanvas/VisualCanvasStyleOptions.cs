@@ -59,11 +59,11 @@ public sealed class VisualCanvasStyleOptions {
 
 public sealed partial class VisualCanvas {
     /// <summary>Gets or sets the explicit light or dark appearance.</summary>
-    public VisualThemeMode ThemeMode { get => _themeMode; set { ValidateEnum(value, nameof(value)); _themeMode = value; } }
+    public ThemeMode ThemeMode { get => _themeMode; set { ValidateEnum(value, nameof(value)); _themeMode = value; } }
     /// <summary>Gets or sets local canvas styling without replacing the shared theme.</summary>
     public VisualCanvasStyleOptions Style { get => _style; set => _style = value ?? throw new ArgumentNullException(nameof(value)); }
     /// <summary>Changes appearance without changing the theme snapshot.</summary>
-    public VisualCanvas WithThemeMode(VisualThemeMode mode) { ThemeMode = mode; return this; }
+    public VisualCanvas WithThemeMode(ThemeMode mode) { ThemeMode = mode; return this; }
     /// <summary>Sets canvas-specific surface and measurement options.</summary>
     public VisualCanvas WithStyle(VisualCanvasStyleOptions style) { Style = style; return this; }
     /// <summary>Installs independent canvas-specific surface and measurement options after successful configuration.</summary>
@@ -75,7 +75,7 @@ public sealed partial class VisualCanvas {
 
     internal ResolvedVisualCanvasStyle ResolveStyle() => ResolveStyle(Theme, ThemeMode, Style);
 
-    internal static ResolvedVisualCanvasStyle ResolveStyle(VisualTheme theme, VisualThemeMode mode, VisualCanvasStyleOptions? style = null) {
+    internal static ResolvedVisualCanvasStyle ResolveStyle(VisualTheme theme, ThemeMode mode, VisualCanvasStyleOptions? style = null) {
         if (theme == null) throw new ArgumentNullException(nameof(theme));
         var colors = theme.Resolve(mode);
         style ??= new VisualCanvasStyleOptions();

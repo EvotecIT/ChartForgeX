@@ -19,7 +19,7 @@ public sealed class TopologyPathDecorationGalleryFrameTests {
     [InlineData("compact", false)] [InlineData("compact", true)]
     [InlineData("compact-plain", false)] [InlineData("compact-plain", true)]
     public void TheActualRecipeAndDownloadFrameAdmitEveryVariantWithoutChangingAuthoredWideInk(string variant, bool dark) {
-        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light; var chart = TopologyPathDecorationRecipe.Create(variant, mode);
+        var mode = dark ? ThemeMode.Dark : ThemeMode.Light; var chart = TopologyPathDecorationRecipe.Create(variant, mode);
         var compact = variant.StartsWith("compact", StringComparison.Ordinal); var width = compact ? 390 : 760; var height = variant == "wide" ? 420 : 400;
         var input = chart.Nodes.Select(node => (node.Id, node.X, node.Y, node.Width, node.Height)).ToArray();
         var prepared = chart.Prepare(Context(width, height, mode)); Capture(variant + "-" + dark, prepared);
@@ -38,7 +38,7 @@ public sealed class TopologyPathDecorationGalleryFrameTests {
     [Fact]
     public void TheFormerFixedGalleryRequestRemainsAnHonestAdmissionFailureRatherThanImplicitlyFitting() {
         var chart = TopologyPathDecorationRecipe.Create("wide");
-        var failure = Record.Exception(() => chart.Prepare(Context(760, 400, VisualThemeMode.Light)));
+        var failure = Record.Exception(() => chart.Prepare(Context(760, 400, ThemeMode.Light)));
         if (Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY") is { Length: > 0 } output) {
             Directory.CreateDirectory(output); File.WriteAllText(Path.Combine(output, "path-decoration-old-fixed-frame.failure.json"),
                 JsonSerializer.Serialize(new { Type = failure?.GetType().FullName, failure?.Message }));
@@ -46,7 +46,7 @@ public sealed class TopologyPathDecorationGalleryFrameTests {
         var error = Assert.IsType<NotSupportedException>(failure); Assert.Contains("fixed viewport", error.Message, StringComparison.Ordinal);
         Assert.Null(chart.DefaultRenderOptions); Assert.Equal(400, chart.Viewport.Height);
     }
-    private static VisualRenderContext Context(int width, int height, VisualThemeMode mode) => new(
+    private static VisualRenderContext Context(int width, int height, ThemeMode mode) => new(
         new VisualLayoutOptions(new VisualSize(width, height)), VisualTheme.Graphite(), mode,
         new VisualFrame(Title, Subtitle, showLegend: null), FontSpec.FromFamily(BrowserProofFonts.Family));
     private static void Capture(string name, PreparedVisual prepared) {

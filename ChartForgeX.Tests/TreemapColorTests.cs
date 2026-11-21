@@ -72,9 +72,9 @@ public sealed class TreemapColorTests {
         Assert.True(Right(low) < middle.LineLeft(line) && middle.LineLeft(line) + line.Width < high.LineLeft(Assert.Single(high.Text.Lines)));
     }
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void NodeStateOutlinesPreserveQuantitativeFillGeometryAndPreparedFacts(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void NodeStateOutlinesPreserveQuantitativeFillGeometryAndPreparedFacts(ThemeMode mode) {
         var chart = Colored();
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(720, 460)), themeMode: mode, frame: new VisualFrame(showLegend: true));
         var original = chart.Prepare(context);
@@ -99,9 +99,9 @@ public sealed class TreemapColorTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void NodeStateWithoutColorScaleUsesSharedPaintAndExplicitOverrides(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void NodeStateWithoutColorScaleUsesSharedPaintAndExplicitOverrides(ThemeMode mode) {
         var chart = Chart.Create().WithDataLabels(false).AddTreemap("States", new[] {
             new ChartHierarchyItem("a", "Same", value: 9), new ChartHierarchyItem("b", "Same", value: 1)
         });
@@ -121,9 +121,9 @@ public sealed class TreemapColorTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void FixedScaleAndDiscreteBandsUseTheSamePaintInMarksLegendAndNativePixels(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void FixedScaleAndDiscreteBandsUseTheSamePaintInMarksLegendAndNativePixels(ThemeMode mode) {
         foreach (var scale in new[] {
             ChartColorScale.Sequential(Red, Blue).WithValueRange(0, 100).WithNoDataColor(Missing),
             ChartColorScale.Discrete(new[] { new ChartColorBand(50, Red, "Lower"), new ChartColorBand(null, Blue, "Upper") }).WithNoDataColor(Missing)

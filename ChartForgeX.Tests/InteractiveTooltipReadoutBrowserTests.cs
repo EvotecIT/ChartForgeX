@@ -26,7 +26,7 @@ public sealed class InteractiveTooltipReadoutBrowserTests {
         if (!Enabled) return;
         var width = dark ? 340 : 700;
         var chart = Chart.Create().WithSize(596, 338).WithXLabels("North", "South")
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         switch (family) {
             case "funnel": chart.AddFunnel("Requests", ChartPoints.FromValues(7, 3)); break;
             case "pie": chart.AddPie("Requests", ChartPoints.FromValues(7, 3)); break;
@@ -108,7 +108,7 @@ public sealed class InteractiveTooltipReadoutBrowserTests {
     public async Task PercentReadoutUsesReadableUnitsWhileRetainingFractionalMetadata(string family, bool dark, string expected) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(dark ? 316 : 596, 338).WithLegend(false).WithDataLabels(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         switch (family) {
             case "pie": chart.AddPie("Requests", ChartPoints.FromValues(8, 5)); break;
             case "gauge": chart.AddGauge("Capacity", 13, max: 13); break;
@@ -166,7 +166,7 @@ public sealed class InteractiveTooltipReadoutBrowserTests {
     public async Task CircleScalarUsesSeriesIdentityForTabPointerAndPercentageReadout(bool dark) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(dark ? 316 : 596, 338).WithLegend(true).WithDataLabels(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddSeries(ChartSeries.CreateCircle(new ChartSeriesId("capacity-source"), "Capacity", 8, max: 13));
         var html = chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = HtmlChartTooltipMode.Single)
             .Replace("<main ", "<button id='before-chart'>Before chart</button><main ", StringComparison.Ordinal);

@@ -18,7 +18,7 @@ public sealed class MermaidTreemapStyleMappingTests {
         "ChartForgeX.Examples", "Assets", "Mermaid", "treemap-native-styles.mmd"));
 
     internal static MermaidRenderOptions Options(int width, bool dark) => new() { Treemap = new MermaidTreemapRenderOptions {
-        Width = width, Height = 620, Presentation = new MermaidPresentationOptions { ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light, FontFamily = BrowserProofFonts.Family }
+        Width = width, Height = 620, Presentation = new MermaidPresentationOptions { ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light, FontFamily = BrowserProofFonts.Family }
     } };
 
     [Theory]
@@ -51,7 +51,7 @@ public sealed class MermaidTreemapStyleMappingTests {
         Assert.DoesNotContain(Node(xml, "node-3").Descendants(), item => (string?)item.Attribute("data-cfx-role") == "treemap-tile-mark");
         var png = artifact.ToPng(); Assert.Equal((width, 620), (PngReader.Decode(png).Width, PngReader.Decode(png).Height));
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, 620)),
-            themeMode: dark ? VisualThemeMode.Dark : VisualThemeMode.Light));
+            themeMode: dark ? ThemeMode.Dark : ThemeMode.Light));
         var pixels = PngReader.Decode(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
         var bounds = prepared.Regions.Single(item => item.Id == "series-0-node-node-2").Bounds;
         Assert.True(ContainsPixel(pixels, bounds, ChartColor.FromHex("#1D4ED8")));

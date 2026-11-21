@@ -50,7 +50,7 @@ public sealed class BubbleSizeKeyBrowserTests {
     [InlineData(true, true)]
     public async Task IndependentSizeReadoutsAndDescriptiveKeysSurviveAdaptiveHosting(bool dark, bool compact) {
         if (!Enabled) return;
-        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var chart = Chart.Create().WithTitle("Processing time and request volume")
             .WithSize(compact ? 340 : 900, 560).WithTheme(VisualTheme.Graphite(), mode)
             .WithXAxis("Workload batches").WithYAxis("Processing time")

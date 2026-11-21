@@ -15,7 +15,7 @@ public sealed class VisualArtifactInterchangeTreeViewArtifact {
     /// <summary>Gets or sets the immutable native theme, including typography and both palettes.</summary>
     public VisualTheme Theme { get; set; } = VisualTheme.Graphite();
     /// <summary>Gets or sets the native theme mode.</summary>
-    public VisualThemeMode ThemeMode { get; set; }
+    public ThemeMode ThemeMode { get; set; }
     /// <summary>Gets or sets configured content padding, retained even while the host owns the frame.</summary>
     public ChartPadding Padding { get; set; } = new(18, 16, 18, 12);
     /// <summary>Gets or sets whether the native background is transparent.</summary>

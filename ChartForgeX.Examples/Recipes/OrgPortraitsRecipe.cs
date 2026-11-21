@@ -1,7 +1,7 @@
 /// <summary>Uses fictional names and generated embedded artwork in the native team hierarchy.</summary>
 public static class OrgPortraitsRecipe {
     /// <summary>Creates a complete portrait-bearing organization diagram without external assets.</summary>
-    public static TopologyChart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static TopologyChart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "meet" or "slice" or "collapsed" or "horizontal" or "reordered")) throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = TopologyChart.Create().WithViewport(variant == "compact" ? 390 : 900, 480).WithLegend(null);
         chart.Theme = VisualTheme.Graphite(); chart.ThemeMode = mode;

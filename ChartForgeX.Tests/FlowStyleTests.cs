@@ -79,7 +79,7 @@ public sealed class FlowStyleTests {
     [InlineData(ChartSeriesKind.Sankey)]
     [InlineData(ChartSeriesKind.Chord)]
     public void SourceSemanticStateIsPublishedAndFlowNoneSuppressesInheritanceUntilCleared(ChartSeriesKind kind) {
-        var chart = Parallel(kind); var series = chart.Series[0]; var colors = Context().Theme.Resolve(VisualThemeMode.Light);
+        var chart = Parallel(kind); var series = chart.Series[0]; var colors = Context().Theme.Resolve(ThemeMode.Light);
         series.StateRole = ChartSeriesState.Info; series.WithNodeState("a", ChartSeriesState.Warning);
         var inherited = Prepare(chart);
         Assert.All(new[] { "standard", "Priority" }, id => Assert.Equal("Warning", (string?)Link(inherited, id).Attribute("data-cfx-state")));

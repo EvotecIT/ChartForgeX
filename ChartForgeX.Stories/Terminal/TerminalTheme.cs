@@ -47,10 +47,10 @@ internal sealed partial class ResolvedTerminalStyle {
     public static ResolvedTerminalStyle Dark() => new();
 
     /// <summary>Creates a terminal theme from the shared Graphite light design tokens.</summary>
-    public static ResolvedTerminalStyle GraphiteLight() => FromTheme(VisualTheme.Graphite(), VisualThemeMode.Light);
+    public static ResolvedTerminalStyle GraphiteLight() => FromTheme(VisualTheme.Graphite(), ThemeMode.Light);
 
     /// <summary>Creates a terminal theme from the shared Graphite dark design tokens.</summary>
-    public static ResolvedTerminalStyle GraphiteDark() => FromTheme(VisualTheme.Graphite(), VisualThemeMode.Dark);
+    public static ResolvedTerminalStyle GraphiteDark() => FromTheme(VisualTheme.Graphite(), ThemeMode.Dark);
 
     /// <summary>Creates a PowerShell-oriented dark theme.</summary>
     public static ResolvedTerminalStyle PowerShell() => new() {

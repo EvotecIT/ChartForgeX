@@ -6,7 +6,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualBlocks;
 using ChartForgeX.VisualArtifacts;
 
-{{FONT_SETUP}}var mode = VisualThemeMode.{{MODE}};
+{{FONT_SETUP}}var mode = ThemeMode.{{MODE}};
 var model = IshikawaDepthRecipe.Create({{VARIANT}}, mode);
 model.WithTheme(VisualTheme.Graphite(){{FONT_THEME}}, mode).WithNaturalSize({{WIDTH}}, 520);
 File.WriteAllText("fishbone.svg", model.ToSvg());

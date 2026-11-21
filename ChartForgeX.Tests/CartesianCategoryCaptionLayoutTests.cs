@@ -186,7 +186,7 @@ public sealed class CartesianCategoryCaptionLayoutTests {
     }
 
     private static Chart Create(ChartSeriesKind kind, int width, bool legacyWaterfall = false) {
-        var chart = Chart.Create().WithSize(width, 480).WithTheme(VisualTheme.Graphite(), width == 390 ? VisualThemeMode.Light : VisualThemeMode.Dark)
+        var chart = Chart.Create().WithSize(width, 480).WithTheme(VisualTheme.Graphite(), width == 390 ? ThemeMode.Light : ThemeMode.Dark)
             .WithTitle("Timing deviation by region").WithLegend(false).WithDataLabels(false).WithXLabels(Names)
             .WithValueFormat(ChartValueFormat.Number("0.## 'ms'")).ConfigureTickLabelStyle(style => style.FontSize = 12);
         switch (kind) {

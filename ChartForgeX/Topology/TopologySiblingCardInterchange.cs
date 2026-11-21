@@ -67,7 +67,7 @@ internal static class TopologySiblingCardInterchange {
     private static string Escape(string? value) => value == null ? "~" : Uri.EscapeDataString(value).Replace("~", "%7E");
     private static string? Unescape(string value) => value == "~" ? null : Uri.UnescapeDataString(value);
 
-    private static T Parse<T>(string? value) where T : struct =>
+    private static T Parse<T>(string? value) where T : struct, Enum =>
         value != null && Enum.TryParse(value, false, out T parsed) && Enum.IsDefined(typeof(T), parsed) ? parsed
             : throw new NotSupportedException("Unknown topology sibling member value '" + value + "' in interchange extensions.");
 }

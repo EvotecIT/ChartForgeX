@@ -1,13 +1,14 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using ChartForgeX.Interactivity.Html;
 
-var kind = {{KIND}}; var renderer = new HtmlInteractiveChartRenderer(); var chart = NativeReflowRecipe.Create(kind, {{WIDTH}}, VisualThemeMode.{{MODE}});
+var kind = {{KIND}}; var renderer = new HtmlInteractiveChartRenderer(); var chart = NativeReflowRecipe.Create(kind, {{WIDTH}}, ThemeMode.{{MODE}});
 var from = renderer.PrepareVisibilitySection(chart, NativeReflowRecipe.View(kind, false));
 var to = renderer.PrepareVisibilitySection(chart, NativeReflowRecipe.View(kind, true));
 var options = new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.LegendVisibility, 9);

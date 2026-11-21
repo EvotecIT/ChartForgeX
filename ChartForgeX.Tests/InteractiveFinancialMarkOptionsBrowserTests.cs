@@ -30,11 +30,11 @@ public sealed class InteractiveFinancialMarkOptionsBrowserTests {
 
     private static async Task ExerciseFinancialMarks(ChartSeriesKind kind, int width, bool dark, bool dashed) {
         if (!Enabled) return;
-        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var variant = dashed ? width == 360 ? "compact-dashed" : "dashed" : width == 360 ? "compact-options" : "options";
         var chart = V2GalleryModels.Create(kind, variant, mode)
             .WithSize(width, width == 360 ? 360 : 440).WithTitle(V2GalleryModels.Title(kind))
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithLegend(true);
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithLegend(true);
         var name = "financial-" + (dashed ? "dash-" : "") + kind.ToString().ToLowerInvariant() + "-" + width + "-" + (dark ? "dark" : "light");
         var directory = CaptureDirectory();
         if (directory != null) {
@@ -106,7 +106,7 @@ public sealed class InteractiveFinancialMarkOptionsBrowserTests {
     public async Task HollowCandleFragmentRetainsTheHostBackdropAndInteriorTarget(bool dark) {
         if (!Enabled) return;
         var chart = FinancialMarkOptionsTests.Prices(ChartSeriesKind.Candlestick).WithAxes(false).WithGrid(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithOverlay();
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithOverlay();
         chart.Series[0].ConfigureFinancial(financial => financial.Rising.FillOpacity = 0);
         var fragment = chart.ToInteractiveHtmlFragment(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
         var html = "<!doctype html><html><head><style>body{margin:0;padding:12px;background:repeating-linear-gradient(90deg,#a7b7bd 0 12px,#d5dfdc 12px 24px)}.report{width:320px}.report .cfx-interactive-chart,.report .cfx-stage,.report svg{background:transparent;border:0;padding:0}</style></head><body><main class='report'>"
@@ -167,7 +167,7 @@ public sealed class InteractiveFinancialMarkOptionsBrowserTests {
     public async Task FinancialPointLegendUsesTheReferencedObservationPrices(ChartSeriesKind kind, bool zero) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(360, 320).WithPointLegend().WithDataLabels().WithTitle("Financial legend facts")
-            .WithTheme(VisualTheme.Graphite(), zero ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .WithTheme(VisualTheme.Graphite(), zero ? ThemeMode.Dark : ThemeMode.Light);
         var source = new[] { new ChartCandlestick(1, 44, 58, 38, 53),
             zero ? new ChartCandlestick(2, 0, 0, 0, 0) : new ChartCandlestick(2, 100, 120, 80, 110) };
         if (kind == ChartSeriesKind.Candlestick) chart.AddCandlestick("Prices", source);

@@ -114,7 +114,7 @@ public sealed class InteractiveCrosshairTickCaptionBrowserTests {
         Enumerable.Range(0, 90).Select(step => new ChartPoint(Start.AddHours(step * 8), 20 + step * 11 % 30))));
 
     private static Chart Frame(bool dark) => Chart.Create().WithSize(900, 380).WithLegend(false).WithHeader(false)
-        .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
 
     private static async Task CaptureAsync(HtmlBrowserSession session, string name, JsonElement observation) {
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");

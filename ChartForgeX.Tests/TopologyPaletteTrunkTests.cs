@@ -18,13 +18,13 @@ public sealed class TopologyPaletteTrunkTests {
         var prepared = chart.Prepare(options);
         var svg = XDocument.Parse(prepared.ToSvg());
         var reference = FanIn(namedPort);
-        foreach (var edge in reference.Edges) { edge.Color = reference.Theme.Resolve(VisualThemeMode.Light).Palette[edge.PaletteIndex!.Value].ToCss(); edge.PaletteIndex = null; }
+        foreach (var edge in reference.Edges) { edge.Color = reference.Theme.Resolve(ThemeMode.Light).Palette[edge.PaletteIndex!.Value].ToCss(); edge.PaletteIndex = null; }
         var referencePixels = reference.ToPng(options);
         TopologyPaletteRegressionEvidence.Write("trunk-distinct-" + namedPort, prepared, Receipt(svg), referencePixels);
         Assert.Equal(0, Count(svg, "topology-shared-trunk-tail"));
         Assert.Equal(0, Count(svg, "topology-shared-trunk-hit"));
         Assert.Equal(3, Count(svg, "topology-marker"));
-        Assert.All(chart.Edges, edge => Assert.Equal(chart.Theme.Resolve(VisualThemeMode.Light).Palette[edge.PaletteIndex!.Value].ToCss(),
+        Assert.All(chart.Edges, edge => Assert.Equal(chart.Theme.Resolve(ThemeMode.Light).Palette[edge.PaletteIndex!.Value].ToCss(),
             (string?)Owner(svg, edge.Id).Descendants().Single(element => Role(element) == "topology-marker").Attribute("stroke")));
         Assert.Equal(referencePixels, prepared.ToPng());
     }
@@ -84,7 +84,7 @@ public sealed class TopologyPaletteTrunkTests {
         var prepared = chart.Prepare(Options()); var svg = XDocument.Parse(prepared.ToSvg());
         TopologyPaletteRegressionEvidence.Write("trunk-control-outgoing", prepared, Receipt(svg));
         Assert.Equal(0, Count(svg, "topology-shared-trunk-tail")); Assert.Equal(3, Count(svg, "topology-marker"));
-        Assert.All(chart.Edges, edge => Assert.Equal(chart.Theme.Resolve(VisualThemeMode.Light).Palette[edge.PaletteIndex!.Value].ToCss(),
+        Assert.All(chart.Edges, edge => Assert.Equal(chart.Theme.Resolve(ThemeMode.Light).Palette[edge.PaletteIndex!.Value].ToCss(),
             (string?)Owner(svg, edge.Id).Descendants().Single(element => Role(element) == "topology-edge-line").Attribute("stroke")));
     }
 
@@ -120,7 +120,7 @@ public sealed class TopologyPaletteTrunkTests {
     }
 
     private static TopologyChart FanIn(bool namedPort) {
-        var chart = TopologyRoutingFixtures.FanIn(namedPort).WithTheme(VisualTheme.Graphite().WithPalette(VisualThemeMode.Light,
+        var chart = TopologyRoutingFixtures.FanIn(namedPort).WithTheme(VisualTheme.Graphite().WithPalette(ThemeMode.Light,
             ChartColor.FromHex("#BE123C"), ChartColor.FromHex("#0F766E"), ChartColor.FromHex("#4338CA")));
         for (var index = 0; index < chart.Edges.Count; index++) chart.Edges[index].PaletteIndex = index;
         return chart;

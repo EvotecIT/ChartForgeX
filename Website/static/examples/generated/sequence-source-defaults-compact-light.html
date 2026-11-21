@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = SequenceSourceDefaultsRecipe.Create(&quot;compact&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Creates native fragment tabs, mirrored participants and canonical lifeline strokes.&lt;/summary&gt;
 public static class SequenceSourceDefaultsRecipe {
     /// &lt;summary&gt;Creates an explicitly tighter compact native view or a wide view of the same source facts.&lt;/summary&gt;
-    public static SequenceArtifact Create(string variant=&quot;wide&quot;,VisualThemeMode mode=VisualThemeMode.Light) {
+    public static SequenceArtifact Create(string variant=&quot;wide&quot;,ThemeMode mode=ThemeMode.Light) {
         if(variant is not (&quot;compact&quot; or &quot;wide&quot;))throw new ArgumentOutOfRangeException(nameof(variant));var compact=variant==&quot;compact&quot;;var model=SequenceArtifact.Create(&quot;sequence-source-defaults&quot;).WithSize(compact?390:1000,820).AddParticipant(&quot;A&quot;,&quot;Review&quot;).AddParticipant(&quot;B&quot;,&quot;Archive&quot;).AddMessage(&quot;A&quot;,&quot;A&quot;,&quot;Check&quot;).AddMessage(&quot;A&quot;,&quot;B&quot;,&quot;Save&quot;);model.AddBlock(SequenceArtifactBlockKind.Loop,&quot;Review work&quot;,0,1);model.AddNote(SequenceArtifactNotePlacement.Over,new[]{&quot;A&quot;,&quot;B&quot;},&quot;Complete note&quot;);model.Notes[0].StepIndex=1;
         model.Layout=new SequenceLayoutPolicy(participantMinimumWidth:compact?64:150,participantMinimumHeight:65,participantSpacing:compact?8:50,fragmentMargin:10,fragmentLabelPadding:5,mirrorParticipants:true,messageAlignment:TextAlignment.Center,noteAlignment:TextAlignment.Center,selfMessageRouting:SequenceSelfMessageRouting.Curved,footerBottomMargin:1,fragmentTabMinimumWidth:50,fragmentTabMinimumHeight:20);model.Typography=new SequenceTypography(participant:new TextStyleOverride{FontSize=14},message:new TextStyleOverride{FontSize=compact?12:16},note:new TextStyleOverride{FontSize=14},fragment:new TextStyleOverride{FontSize=compact?12:16});model.Paint.LifelineStroke=new ChartStrokeStyle(width:.5,dash:Array.Empty&lt;double&gt;());model.ThemeMode=mode;return model;
     }
@@ -121,6 +122,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -130,7 +132,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = SequenceSourceDefaultsRecipe.Create(&quot;compact&quot;, mode);
 var context = new VisualRenderContext(
@@ -145,7 +147,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Creates native fragment tabs, mirrored participants and canonical lifeline strokes.&lt;/summary&gt;
 public static class SequenceSourceDefaultsRecipe {
     /// &lt;summary&gt;Creates an explicitly tighter compact native view or a wide view of the same source facts.&lt;/summary&gt;
-    public static SequenceArtifact Create(string variant=&quot;wide&quot;,VisualThemeMode mode=VisualThemeMode.Light) {
+    public static SequenceArtifact Create(string variant=&quot;wide&quot;,ThemeMode mode=ThemeMode.Light) {
         if(variant is not (&quot;compact&quot; or &quot;wide&quot;))throw new ArgumentOutOfRangeException(nameof(variant));var compact=variant==&quot;compact&quot;;var model=SequenceArtifact.Create(&quot;sequence-source-defaults&quot;).WithSize(compact?390:1000,820).AddParticipant(&quot;A&quot;,&quot;Review&quot;).AddParticipant(&quot;B&quot;,&quot;Archive&quot;).AddMessage(&quot;A&quot;,&quot;A&quot;,&quot;Check&quot;).AddMessage(&quot;A&quot;,&quot;B&quot;,&quot;Save&quot;);model.AddBlock(SequenceArtifactBlockKind.Loop,&quot;Review work&quot;,0,1);model.AddNote(SequenceArtifactNotePlacement.Over,new[]{&quot;A&quot;,&quot;B&quot;},&quot;Complete note&quot;);model.Notes[0].StepIndex=1;
         model.Layout=new SequenceLayoutPolicy(participantMinimumWidth:compact?64:150,participantMinimumHeight:65,participantSpacing:compact?8:50,fragmentMargin:10,fragmentLabelPadding:5,mirrorParticipants:true,messageAlignment:TextAlignment.Center,noteAlignment:TextAlignment.Center,selfMessageRouting:SequenceSelfMessageRouting.Curved,footerBottomMargin:1,fragmentTabMinimumWidth:50,fragmentTabMinimumHeight:20);model.Typography=new SequenceTypography(participant:new TextStyleOverride{FontSize=14},message:new TextStyleOverride{FontSize=compact?12:16},note:new TextStyleOverride{FontSize=14},fragment:new TextStyleOverride{FontSize=compact?12:16});model.Paint.LifelineStroke=new ChartStrokeStyle(width:.5,dash:Array.Empty&lt;double&gt;());model.ThemeMode=mode;return model;
     }

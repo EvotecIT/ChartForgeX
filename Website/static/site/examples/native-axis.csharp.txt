@@ -9,7 +9,7 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 
 var mode = args.Contains("--dark")
-    ? VisualThemeMode.Dark : VisualThemeMode.Light;
+    ? ThemeMode.Dark : ThemeMode.Light;
 
 foreach (var variant in new[] { "positive-log", "negative-log", "ordinal", "calendar-month" }) {
     var chart = CreateChart(variant, mode);
@@ -17,7 +17,7 @@ foreach (var variant in new[] { "positive-log", "negative-log", "ordinal", "cale
     chart.SavePng("axis-" + variant + ".png");
 }
 
-static Chart CreateChart(string variant, VisualThemeMode mode) {
+static Chart CreateChart(string variant, ThemeMode mode) {
     var chart = Chart.Create().WithSize(760, 440).WithThemeMode(mode).WithLegend(false);
     if (variant is "positive-log" or "negative-log") {
         var negative = variant == "negative-log";

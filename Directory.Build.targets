@@ -1,0 +1,34 @@
+<Project>
+  <!--
+    PowerForge.Generators compiles its attributes (PowerForge.Fluent.*) into every project that uses it, as internal
+    types. The compiler still writes their doc comments to the XML documentation file, so each package would document
+    the same internal types and the API reference sees one type declared by several assemblies. Remove them from the
+    XML before it is copied to the output.
+  -->
+  <UsingTask TaskName="RemoveGeneratorDocumentation" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <Path ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.Linq" />
+      <Using Namespace="System.Xml.Linq" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        XDocument document = XDocument.Load(Path, LoadOptions.PreserveWhitespace);
+        var generated = document.Descendants("member")
+            .Where(member => ((string)member.Attribute("name") ?? string.Empty).Substring(System.Math.Min(2, ((string)member.Attribute("name") ?? string.Empty).Length)).StartsWith("PowerForge.Fluent.", System.StringComparison.Ordinal))
+            .ToList();
+        if (generated.Count > 0) {
+            foreach (XElement member in generated) {
+                if (member.PreviousNode is XText whitespace) { whitespace.Remove(); }
+                member.Remove();
+            }
+            document.Save(Path);
+        }
+      ]]></Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="RemoveGeneratorDocumentation" AfterTargets="CoreCompile" Condition="'@(DocFileItem)' != '' and Exists('@(DocFileItem)')">
+    <RemoveGeneratorDocumentation Path="@(DocFileItem->'%(FullPath)')" />
+  </Target>
+</Project>

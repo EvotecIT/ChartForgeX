@@ -49,7 +49,7 @@ var theme = VisualTheme.Graphite().Configure(builder => {
 
 var cpuChart = Chart.Create()
     .WithSize(220, 120)
-    .WithTheme(theme, VisualThemeMode.Dark)
+    .WithTheme(theme, ThemeMode.Dark)
     .WithTransparentBackground()
     .WithHeader(false)
     .WithCard(false)
@@ -63,7 +63,7 @@ var cpuChart = Chart.Create()
 
 var ramCard = MetricCard.Create()
     .WithSize(180, 104)
-    .WithTheme(theme, VisualThemeMode.Dark)
+    .WithTheme(theme, ThemeMode.Dark)
     .WithTransparentBackground()
     .WithCard(false)
     .WithMetric("RAM", "41%")
@@ -71,7 +71,7 @@ var ramCard = MetricCard.Create()
 
 var canvas = VisualCanvas.CreateSocialPreview()
     .WithTitle("PowerBGInfo social preview")
-    .WithTheme(theme, VisualThemeMode.Dark)
+    .WithTheme(theme, ThemeMode.Dark)
     .WithBackground(ChartColor.FromHex("#020713"), ChartColor.FromHex("#071A35"))
     .WithBackdrop(VisualCanvasBackdropStyle.TechHorizon)
     .AddInfoTile(58, 92, 250, 82, "PC", "HOSTNAME", "DEV-Workstation", accent: ChartColor.FromHex("#2F80FF"), iconKind: VisualCanvasInfoTileIconKind.Computer)
@@ -119,7 +119,7 @@ canvas
 
 The generated example gallery includes a native 1920x1080 endpoint wallpaper and a 1200x630 social preview, each as SVG, static HTML and 2x-density PNG. Use these examples to inspect composition at the dimensions your host consumes. SVG display uses the browser's fonts and rasterization; PNG uses ChartForgeX's renderer, so matching geometry does not imply identical pixels.
 
-`VisualCanvas` starts in dark mode. Share one immutable theme with its chart and block layers and pass the mode explicitly, as above. `WithThemeMode(VisualThemeMode.Light)` selects the other palette. Explicit layer colors and `WithBackground` remain authored overrides. To customize canvas chrome without creating another theme type, use local style options:
+`VisualCanvas` starts in dark mode. Share one immutable theme with its chart and block layers and pass the mode explicitly, as above. `WithThemeMode(ThemeMode.Light)` selects the other palette. Explicit layer colors and `WithBackground` remain authored overrides. To customize canvas chrome without creating another theme type, use local style options:
 
 ```csharp
 canvas.ConfigureStyle(style => {
@@ -378,7 +378,7 @@ FontRegistry.RegisterDirectory(Path.Combine(fonts, "brand")); // each file under
 FontRegistry.Register("sans-serif", Path.Combine(fonts, "Inter-Regular.ttf")); // fallback for stacks ending in sans-serif, and for hosts with no fonts
 
 var chart = Chart.Create().WithTheme(
-    VisualTheme.Graphite().WithFontFamily("Inter, sans-serif"), VisualThemeMode.Dark);
+    VisualTheme.Graphite().WithFontFamily("Inter, sans-serif"), ThemeMode.Dark);
 ```
 
 Hosts without filesystem font assets can register the same faces from bytes or embedded resource streams:

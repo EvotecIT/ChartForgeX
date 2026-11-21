@@ -20,7 +20,7 @@ public static class TopologyHierarchyExamples {
     public static TopologyChart CreateTopology(int width, bool dark) {
         TopologyRegionTypography.Register();
         var chart = Frame("service-regions", "Service topology", "Two regions · five services · six links", width, dark)
-            .WithTheme(RegionTheme(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(RegionTheme(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithViewport(width - 48, 500, 20).WithLayout(TopologyLayoutMode.Regions)
             .AddAutoGroup("north", "North region", TopologyHealthStatus.Healthy, "Primary processing · zone A")
             .AddAutoGroup("south", "South region", TopologyHealthStatus.Warning, "Recovery processing · zone B")
@@ -66,7 +66,7 @@ public static class TopologyHierarchyExamples {
 
     private static TopologyChart Frame(string id, string title, string subtitle, int width, bool dark) =>
         TopologyChart.Create().WithId(id).WithTitle(title).WithSubtitle(subtitle)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(ExampleTypography.FontFamily), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite().WithFontFamily(ExampleTypography.FontFamily), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithLegend(TopologyLegend.Create("Health and relationships")
                 .AddStatus("Healthy", TopologyHealthStatus.Healthy)
                 .AddStatus("Needs attention", TopologyHealthStatus.Warning)
@@ -118,8 +118,8 @@ public static class TopologyHierarchyExamples {
     }
 
     private static VisualTheme RegionTheme() => VisualTheme.Graphite().WithFontFamily(TopologyRegionTypography.Family).Configure(builder => {
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
-            var c = builder.Colors(mode); var dark = mode == VisualThemeMode.Dark;
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
+            var c = builder.Colors(mode); var dark = mode == ThemeMode.Dark;
             ChartColor Color(string light, string night) => ChartColor.FromHex(dark ? night : light);
             c.Background = Color("#f6f8f9", "#0f161b"); c.Surface = Color("#eef2f4", "#1b2730"); c.ElevatedSurface = Color("#ffffff", "#151f26");
             c.Border = Color("#d6dde1", "#2a3943"); c.Foreground = Color("#14202a", "#e3eaef"); c.MutedForeground = Color("#5b6b76", "#93a4af");

@@ -232,7 +232,7 @@ public sealed class TextStyleOverride {
         return fallback;
     }
 
-    private static void ValidateOptionalEnum<T>(T? value, string parameterName) where T : struct {
+    private static void ValidateOptionalEnum<T>(T? value, string parameterName) where T : struct, Enum {
         if (value.HasValue && !Enum.IsDefined(typeof(T), value.Value)) throw new ArgumentOutOfRangeException(parameterName, value, "Unknown text formatting value.");
     }
 }

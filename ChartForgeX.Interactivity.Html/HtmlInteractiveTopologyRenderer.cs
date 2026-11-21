@@ -95,15 +95,16 @@ public sealed partial class HtmlInteractiveTopologyRenderer {
         Func<PreparedTopology, string>? renderSvg) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         options = Prepare(options ?? chart.DefaultRenderOptions);
-        var theme = chart.ResolvedTheme;
+        var (page, pageStyle) = TopologyHtmlRenderer.PageTheme(chart, options);
         var title = string.IsNullOrWhiteSpace(chart.Title) ? chart.Labels.UntitledTopology : chart.Title!;
         var writer = new HtmlMarkupWriter();
         writer.Doctype().Line()
             .StartElement("html").Attribute("lang", Localization.ResolveLanguage(chart.Accessibility.Language)).Attribute("dir", Localization.DirectionAttribute).EndStartElement().Line()
             .StartElement("head").EndStartElement().Line();
-        HtmlChartRenderer.WriteDocumentHead(writer, title, TopologyHtmlRenderer.BuildPageStyle(options, theme));
+        HtmlChartRenderer.WriteDocumentHead(writer, title, pageStyle);
         writer.EndElement().Line()
-            .StartElement("body").EndStartElement().Line()
+            .StartElement("body").Attribute(ChartForgeX.Themes.AutoThemeStyle.ScopeAttribute, page?.Id)
+            .Attribute(ChartForgeX.Themes.AutoThemeStyle.Attribute, page == null ? null : ChartForgeX.Themes.AutoThemeStyle.AttributeValue).EndStartElement().Line()
             .RawTrusted(_staticRenderer.RenderInteractiveFragment(chart, options, includeAssets: false, assetSource: "document", renderSvg: renderSvg ?? DefaultSvg(chart), htmlText: Localization.ForTopology(chart.Accessibility.Language))).Line()
             .RawTrusted(externalAssets == null ? InteractionScriptTag(options) : string.Empty);
         if (externalAssets != null) HtmlInteractiveAssetFiles.WriteScript(writer, externalAssets, HtmlInteractiveAssetFiles.TopologyScript(options), TopologyHtmlRenderer.Nonce(options));

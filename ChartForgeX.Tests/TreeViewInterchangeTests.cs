@@ -18,7 +18,7 @@ public sealed class TreeViewInterchangeTests {
         var parsed = new MermaidParser().ParseTreeView(MermaidTreeViewNativeRowsTests.Source); Assert.Empty(parsed.Diagnostics);
         var artifact = parsed.Document!.ToVisualArtifact(new MermaidTreeViewRenderOptions {
             Width = width, Height = 320,
-            Presentation = new MermaidPresentationOptions { Theme = VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light }
+            Presentation = new MermaidPresentationOptions { Theme = VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light }
         });
         artifact.Metadata["host-note"] = "<tree> is inert data"; artifact.Accessibility.Name = "Portable build tree";
         artifact.Accessibility.Description = "Source and documentation"; artifact.Accessibility.Language = "en";
@@ -51,7 +51,7 @@ public sealed class TreeViewInterchangeTests {
     public void EveryRowKindIconAndInertMetadataValueRetainsItsAuthoredMeaningAndPresentation() {
         var classes = new List<string> { "external", "highlight" };
         var block = TreeViewBlock.Create().WithTitle("Native rows").WithSubtitle("Portable semantics").WithPadding(27, 19, 31, 17)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), VisualThemeMode.Dark)
+            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), ThemeMode.Dark)
             .WithTransparentBackground().WithCard(false).WithPngOutputScale(2);
         block.ShowIcons = true; block.RowIndent = 25; block.RowPadding = 7;
         block.Options.Accessibility.Name = "Native tree"; block.Options.Accessibility.Description = "Complete values";

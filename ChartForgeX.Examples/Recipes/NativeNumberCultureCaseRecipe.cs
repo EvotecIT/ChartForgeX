@@ -5,7 +5,7 @@ using ChartForgeX.Typography;
 
 /// <summary>Native built-in numeric cultures and actual caption case contexts with caller-supplied typography.</summary>
 internal static class NativeNumberCultureCaseRecipe {
-    internal static Chart Create(string kind, string policy, double reading, int width, VisualThemeMode mode, string family) {
+    internal static Chart Create(string kind, string policy, double reading, int width, ThemeMode mode, string family) {
         ChartSeries series; var id = new ChartSeriesId("revenue");
         if (kind == "treemap") series = ChartSeries.CreateTreemap(id, "Revenue", new[] { new ChartHierarchyItem("root", "Revenue"), new ChartHierarchyItem("primary", "Subscriptions", "root", reading), new ChartHierarchyItem("second", "Support", "root", .1), new ChartHierarchyItem("third", "Services", "root", .2) });
         else if (kind is "pie" or "donut") series = new ChartSeries(id, "Revenue", kind == "pie" ? ChartSeriesKind.Pie : ChartSeriesKind.Donut, new[] { new ChartForgeX.Primitives.ChartPoint(1, reading), new ChartForgeX.Primitives.ChartPoint(2, .1), new ChartForgeX.Primitives.ChartPoint(3, .2) }).WithObservationIds(new[] { new ChartObservationId("primary"), new ChartObservationId("second"), new ChartObservationId("third") });

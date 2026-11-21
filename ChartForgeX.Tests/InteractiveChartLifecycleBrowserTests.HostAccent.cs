@@ -31,7 +31,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
             """, new { html = Readings().ToInteractiveHtmlFragmentWithoutAssets(Configure), hostAccent });
         async Task AssertAccent(bool dark, string state) {
             // Without a host accent, focus uses the chrome focus ring and the host-highlight cue the default accent.
-            var colors = VisualTheme.Graphite().Resolve(dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            var colors = VisualTheme.Graphite().Resolve(dark ? ThemeMode.Dark : ThemeMode.Light);
             var expected = hostAccent ? "rgb(255, 0, 170)" : Css(colors.Chrome.FocusRing);
             var expectedHighlight = hostAccent ? expected : Css(colors.Palette[0]);
             await FocusWithKeyboardAsync(page, page.Locator("[data-cfx-reset]"));

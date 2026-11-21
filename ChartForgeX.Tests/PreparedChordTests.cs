@@ -9,7 +9,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class PreparedChordTests {
-    internal static VisualRenderContext Context(int width = 720, int height = 460, VisualThemeMode mode = VisualThemeMode.Light) =>
+    internal static VisualRenderContext Context(int width = 720, int height = 460, ThemeMode mode = ThemeMode.Light) =>
         new(new VisualLayoutOptions(new VisualSize(width, height)), theme: VisualTheme.Graphite(), themeMode: mode, frame: new VisualFrame(showLegend: false));
     internal static XElement[] Role(PreparedVisual visual, string role) => XDocument.Parse(visual.ToSvg()).Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == role).ToArray();
     private static double Number(XElement node, string name) => double.Parse(node.Attribute("data-cfx-" + name)!.Value, CultureInfo.InvariantCulture);
@@ -74,11 +74,11 @@ public sealed class PreparedChordTests {
     }
 
     [Theory]
-    [InlineData(320, 280, VisualThemeMode.Light)]
-    [InlineData(320, 280, VisualThemeMode.Dark)]
-    [InlineData(720, 460, VisualThemeMode.Light)]
-    [InlineData(720, 460, VisualThemeMode.Dark)]
-    public void ConfiguredChordUsesOneBoundedNativeSceneForSvgAndRaster(int width, int height, VisualThemeMode mode) {
+    [InlineData(320, 280, ThemeMode.Light)]
+    [InlineData(320, 280, ThemeMode.Dark)]
+    [InlineData(720, 460, ThemeMode.Light)]
+    [InlineData(720, 460, ThemeMode.Dark)]
+    public void ConfiguredChordUsesOneBoundedNativeSceneForSvgAndRaster(int width, int height, ThemeMode mode) {
         var chart = V2GalleryModels.Create(ChartSeriesKind.Chord, "options"); var prepared = chart.Prepare(Context(width, height, mode));
         var nodes = Role(prepared, "chord-node"); var links = Role(prepared, "chord-link");
         Assert.Equal(4, nodes.Length); Assert.Equal(9, links.Length);

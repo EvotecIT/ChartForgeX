@@ -19,7 +19,7 @@ public sealed class HostTypographyTokensBrowserTests {
     [InlineData(true)]
     public async Task OpenTooltipFollowsCanonicalHostLineHeightWhenLegacyAliasRemainsUnchanged(bool dark) {
         if (!BrowserTestPrerequisites.IsEnabled()) return;
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithSize(600, 320).WithXLabels("Monday", "Tuesday")
             .AddLine("Requests", ChartPoints.FromValues(11d, 18d));
         var html = chart.ToInteractiveHtmlPage().Replace("</head>", """

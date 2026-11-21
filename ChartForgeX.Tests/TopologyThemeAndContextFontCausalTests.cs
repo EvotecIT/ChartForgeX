@@ -16,12 +16,12 @@ public sealed class TopologyThemeAndContextFontCausalTests {
         var chart=Source(TopologyNodeDisplayMode.Icon);chart.Theme=VisualTheme.Graphite().Configure(theme=>{
             if(variant=="stroke")theme.AxisStrokeWidth=3.5;if(variant=="radius")theme.BarRadius=11;
             if(variant=="palette"){theme.Light.Palette=new[]{ChartColor.FromHex("#ef4444"),ChartColor.FromHex("#22c55e")};theme.Dark.Palette=new[]{ChartColor.FromHex("#a855f7"),ChartColor.FromHex("#06b6d4")};}
-        });if(variant=="dark")chart.ThemeMode=VisualThemeMode.Dark;
+        });if(variant=="dark")chart.ThemeMode=ThemeMode.Dark;
         var direct=chart.Prepare();var png=direct.ToPng();var json=direct.ToInterchangeEnvelope().ToJson();Capture("theme-"+variant,direct.Visual,json);
         var restored=VisualArtifactInterchangeEnvelope.FromJson(json).ToTopologyChart();var after=restored.Prepare();Capture("theme-"+variant+"-restored",after.Visual,after.ToInterchangeEnvelope().ToJson());
         if(variant=="stroke")Assert.Equal(chart.Theme.AxisStrokeWidth,restored.Theme.AxisStrokeWidth);
         if(variant=="radius")Assert.Equal(chart.Theme.BarRadius,restored.Theme.BarRadius);
-        if(variant=="palette")foreach(var mode in new[]{VisualThemeMode.Light,VisualThemeMode.Dark})Assert.Equal(chart.Theme.Resolve(mode).Palette,restored.Theme.Resolve(mode).Palette);
+        if(variant=="palette")foreach(var mode in new[]{ThemeMode.Light,ThemeMode.Dark})Assert.Equal(chart.Theme.Resolve(mode).Palette,restored.Theme.Resolve(mode).Palette);
         if(variant=="dark")Assert.Equal(chart.ThemeMode,restored.ThemeMode);
         Assert.Equal(png,after.ToPng());Assert.Equal(png,direct.ToPng());
     }

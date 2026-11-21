@@ -6,7 +6,7 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 
-var image = NativeGlassCompositionExample.Create({{VARIANT}}, VisualThemeMode.{{MODE}});
+var image = NativeGlassCompositionExample.Create({{VARIANT}}, ThemeMode.{{MODE}});
 File.WriteAllBytes("glass.png", image.ToPng());
 
 {{SOURCE}}

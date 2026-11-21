@@ -11,7 +11,7 @@ using ChartForgeX.Themes;
 /// <summary>The executable source for the website's first static chart.</summary>
 public static class DeploymentHealthWebsiteRecipe {
     /// <summary>Creates the same chart in either website theme.</summary>
-    public static Chart Create(VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(ThemeMode mode = ThemeMode.Light) {
 #region chart
         var chart = Chart.Create()
             .WithThemeMode(mode)

@@ -180,7 +180,7 @@ public sealed class GanttVerticalMarkerTests {
     [InlineData(true, 320)]
     public async Task MarkerLineAndCaptionSelectTheAuthoredSeriesWhileOrdinaryAnnotationsRemainIndependent(bool dark, int width) {
         var chart = Chart.Create().WithSize(width, 360).WithLegend(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddGanttTask("Work", Start, Start.AddDays(8)).AddSeries(ChartSeries.CreateGanttMarker(new ChartSeriesId("deadline-source"), "Deadline", Start.AddDays(3), Start.AddDays(5)))
             .AddVerticalLine(Start.AddDays(6).ToOADate(), "Reference");
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -230,7 +230,7 @@ public sealed class GanttVerticalMarkerTests {
     public async Task MarkerInkStaysVisibleAcrossTaskFillsInNativeAndBrowserOutput(bool dark, int width) {
         var document = new MermaidParser().ParseGantt(File.ReadAllText(Fixture("mmd"))).Document!;
         var chart = document.ToChart(new MermaidGanttRenderOptions { Width = width, Height = 360 })
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithLegend(false).WithDataLabels(false);
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithLegend(false).WithDataLabels(false);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var scene = prepared.Scene;
         var line = Assert.Single(scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "annotation-line");

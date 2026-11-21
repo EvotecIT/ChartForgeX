@@ -10,9 +10,9 @@ namespace ChartForgeX.Tests;
 
 public sealed partial class TopologyPaletteSelectionTests {
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void PaletteSlotsUseTheSelectedThemeAndCycleForSvgAndNativePixels(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void PaletteSlotsUseTheSelectedThemeAndCycleForSvgAndNativePixels(ThemeMode mode) {
         var chart = Diagram(mode);
         chart.Nodes[0].PaletteIndex = 0;
         chart.Nodes[1].PaletteIndex = 4;
@@ -36,9 +36,9 @@ public sealed partial class TopologyPaletteSelectionTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void ExplicitColorsBackgroundsAndStatusBadgesKeepTheirExistingMeaning(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void ExplicitColorsBackgroundsAndStatusBadgesKeepTheirExistingMeaning(ThemeMode mode) {
         var chart = Diagram(mode);
         chart.Nodes[0].PaletteIndex = 1;
         chart.Nodes[0].Color = "var(--authored-accent, #7C3AED)";
@@ -70,7 +70,7 @@ public sealed partial class TopologyPaletteSelectionTests {
     public void ResolvedIconColorsTakePrecedenceOverAPaletteSlot() {
         var catalog = TopologyIconCatalog.Default().AddPack(new TopologyIconPack("palette", "Palette")
             .AddIcon(new TopologyIconDefinition("palette", "owner", "Owner", TopologyNodeKind.Service, TopologyIconShape.Application) { Color = "#0F766E" }));
-        var chart = Diagram(VisualThemeMode.Light);
+        var chart = Diagram(ThemeMode.Light);
         chart.Nodes[0].IconId = "palette:owner";
         chart.Nodes[0].PaletteIndex = 2;
         var options = Options(); options.IconCatalog = catalog;
@@ -82,14 +82,14 @@ public sealed partial class TopologyPaletteSelectionTests {
 
     [Fact]
     public void PreparingSnapshotsPaletteAssignmentsAndRecompilingUsesTheUpdatedSource() {
-        var chart = Diagram(VisualThemeMode.Light);
+        var chart = Diagram(ThemeMode.Light);
         chart.Nodes[0].PaletteIndex = 0; chart.Nodes[1].PaletteIndex = 1; chart.Edges[0].PaletteIndex = 2;
         var options = Options();
         var prepared = chart.Prepare(options);
         var originalSvg = prepared.ToSvg(); var originalPng = prepared.ToPng();
         var original = XDocument.Parse(originalSvg);
-        Assert.Equal(chart.Theme.Resolve(VisualThemeMode.Light).Palette[0].ToCss(), (string?)Surface(original, "first").Attribute("stroke"));
-        Assert.Equal(chart.Theme.Resolve(VisualThemeMode.Light).Palette[2].ToCss(), (string?)Route(original).Attribute("stroke"));
+        Assert.Equal(chart.Theme.Resolve(ThemeMode.Light).Palette[0].ToCss(), (string?)Surface(original, "first").Attribute("stroke"));
+        Assert.Equal(chart.Theme.Resolve(ThemeMode.Light).Palette[2].ToCss(), (string?)Route(original).Attribute("stroke"));
         chart.Nodes[0].PaletteIndex = 2; chart.Nodes[1].PaletteIndex = 0; chart.Edges[0].PaletteIndex = 1;
         chart.ConfigureTheme(builder => builder.Light.Palette = ChartPalettes.FromHex("#831843", "#9D174D", "#BE185D"));
         var fresh = XDocument.Parse(chart.Prepare(options).ToSvg());
@@ -100,9 +100,9 @@ public sealed partial class TopologyPaletteSelectionTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void MermaidDepthSectionsReachCustomThemePaintAndPermitHostOverrides(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void MermaidDepthSectionsReachCustomThemePaintAndPermitHostOverrides(ThemeMode mode) {
         var parsed = new MermaidParser().ParseMindMap("%%{init: {'mindmap': {'colorBy': 'depth'}}}%%\nmindmap\n Root\n   Owner\n       Child");
         Assert.Empty(parsed.Diagnostics);
         var chart = parsed.Document!.ToTopologyChart().WithTheme(Theme(), mode);
@@ -137,7 +137,7 @@ public sealed partial class TopologyPaletteSelectionTests {
         builder.Dark.Palette = ChartPalettes.FromHex("#FDA4AF", "#5EEAD4", "#A5B4FC");
     });
 
-    private static TopologyChart Diagram(VisualThemeMode mode) => TopologyChart.Create().WithId("palette-selection")
+    private static TopologyChart Diagram(ThemeMode mode) => TopologyChart.Create().WithId("palette-selection")
         .WithTheme(Theme(), mode).WithViewport(500, 240, 20).WithLegend(null).WithLayout(TopologyLayoutMode.Manual)
         .AddNode("first", "First", 40, 80, width: 130, height: 60)
         .AddNode("second", "Second", 320, 80, width: 130, height: 60)

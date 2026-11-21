@@ -30,9 +30,9 @@ public sealed class CartesianAnnotationPlacementTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void DefaultReferenceLinesFollowThePreparedThemeAndRemainDistinctFromTheGrid(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void DefaultReferenceLinesFollowThePreparedThemeAndRemainDistinctFromTheGrid(ThemeMode mode) {
         var points = new[] { new ChartPoint(0, 2), new ChartPoint(1, 8) };
         var theme = VisualTheme.Graphite();
         var chart = Chart.Create().WithHeader(false).WithLegend(false).WithTheme(theme)
@@ -55,13 +55,13 @@ public sealed class CartesianAnnotationPlacementTests {
     }
 
     [Theory]
-    [InlineData(360, 12, VisualThemeMode.Light)]
-    [InlineData(360, 12, VisualThemeMode.Dark)]
-    [InlineData(320, 12, VisualThemeMode.Light)]
-    [InlineData(320, 12, VisualThemeMode.Dark)]
-    [InlineData(360, 16, VisualThemeMode.Light)]
-    [InlineData(360, 16, VisualThemeMode.Dark)]
-    public void NarrowZoomedThresholdKeepsItsCompleteShortCaptionClearOfBothLines(int width, int axisSize, VisualThemeMode mode) {
+    [InlineData(360, 12, ThemeMode.Light)]
+    [InlineData(360, 12, ThemeMode.Dark)]
+    [InlineData(320, 12, ThemeMode.Light)]
+    [InlineData(320, 12, ThemeMode.Dark)]
+    [InlineData(360, 16, ThemeMode.Light)]
+    [InlineData(360, 16, ThemeMode.Dark)]
+    public void NarrowZoomedThresholdKeepsItsCompleteShortCaptionClearOfBothLines(int width, int axisSize, ThemeMode mode) {
         var chart = NarrowThreshold(width, mode);
         if (axisSize != 12) chart.WithTheme(VisualTheme.Graphite().WithTypography(new VisualTypography(axisSize: axisSize)));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -84,13 +84,13 @@ public sealed class CartesianAnnotationPlacementTests {
     }
 
     [Theory]
-    [InlineData(false, VisualThemeMode.Light, false)]
-    [InlineData(false, VisualThemeMode.Dark, false)]
-    [InlineData(true, VisualThemeMode.Light, false)]
-    [InlineData(true, VisualThemeMode.Dark, false)]
-    [InlineData(false, VisualThemeMode.Light, true)]
-    [InlineData(false, VisualThemeMode.Dark, true)]
-    public void WideMeasuredThresholdUsesOnlyUnoccupiedTitleSpaceAndKeepsOmittedSourceFacts(bool occupiedTitle, VisualThemeMode mode, bool header) {
+    [InlineData(false, ThemeMode.Light, false)]
+    [InlineData(false, ThemeMode.Dark, false)]
+    [InlineData(true, ThemeMode.Light, false)]
+    [InlineData(true, ThemeMode.Dark, false)]
+    [InlineData(false, ThemeMode.Light, true)]
+    [InlineData(false, ThemeMode.Dark, true)]
+    public void WideMeasuredThresholdUsesOnlyUnoccupiedTitleSpaceAndKeepsOmittedSourceFacts(bool occupiedTitle, ThemeMode mode, bool header) {
         const string family = "CFX Threshold Wide Face";
         var glyphs = Enumerable.Range(32, 95).ToDictionary(value => value, _ => OpenTypeTestFonts.H);
         FontRegistry.Register(family, OpenTypeTestFonts.NameKeyed(extraGlyphs: glyphs));
@@ -147,11 +147,11 @@ public sealed class CartesianAnnotationPlacementTests {
     }
 
     [Theory]
-    [InlineData(320, VisualThemeMode.Light)]
-    [InlineData(320, VisualThemeMode.Dark)]
-    [InlineData(800, VisualThemeMode.Light)]
-    [InlineData(800, VisualThemeMode.Dark)]
-    public void LongReferenceCaptionCanShortenInTheMeasuredTitleStripWhenMarksBlockThePlot(int width, VisualThemeMode mode) {
+    [InlineData(320, ThemeMode.Light)]
+    [InlineData(320, ThemeMode.Dark)]
+    [InlineData(800, ThemeMode.Light)]
+    [InlineData(800, ThemeMode.Dark)]
+    public void LongReferenceCaptionCanShortenInTheMeasuredTitleStripWhenMarksBlockThePlot(int width, ThemeMode mode) {
         const string source = "A detailed service level objective for every selected region and its monitored production services, including all regional availability targets, response-time budgets and error-rate requirements";
         var chart = Chart.Create().WithSize(width, 300).WithPadding(64, 14, 20, 50)
             .WithHeader(false).WithLegend(true).WithDataLabels(false).WithThemeMode(mode)
@@ -257,7 +257,7 @@ public sealed class CartesianAnnotationPlacementTests {
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.annotation-label-overflow");
     }
 
-    private static Chart NarrowThreshold(int width, VisualThemeMode mode) {
+    private static Chart NarrowThreshold(int width, ThemeMode mode) {
         var start = new DateTime(2026, 9, 13, 0, 0, 0, DateTimeKind.Utc);
         return Chart.Create().WithSize(width, 260).WithTransparentBackground().WithHeader(false)
             .WithLegend(true).WithPadding(64, 14, 20, 74).WithThemeMode(mode)

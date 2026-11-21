@@ -40,7 +40,7 @@ public sealed class TreeViewInterchangeRejectionTests {
     [InlineData("\"rowPadding\":5", "\"rowPadding\":-1")]
     [InlineData("\"rowPadding\":5", "\"rowPadding\":65")]
     [InlineData("\"pngOutputScale\":1", "\"pngOutputScale\":5")]
-    [InlineData("\"themeMode\":\"Light\"", "\"themeMode\":\"99\"")]
+    [InlineData("\"themeMode\":\"Auto\"", "\"themeMode\":\"99\"")]
     [InlineData("\"kind\":\"Auto\"", "\"kind\":\"ExecuteCallback\"")]
     [InlineData("\"icon\":\"Auto\"", "\"icon\":\"FetchRemote\"")]
     [InlineData("\"rowIndent\":18", "\"rowIndent\":\"NaN\"")]

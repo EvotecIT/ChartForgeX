@@ -65,7 +65,7 @@ public sealed class RadialAreaEncodingBrowserTests {
             new[] { new ChartPoint(1, 10), new ChartPoint(2, 20), new ChartPoint(4, 80) });
         if (reordered) { series.WithStackGroup("requests"); peer.WithStackGroup("requests"); }
         var chart = Chart.Create().WithSize(width, 560).WithFontFamily(BrowserProofFonts.Family)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithTitle("Requests by intake channel").WithXLabels("North", "South", "East", "West").WithYAxisBounds(0, 140)
             .WithLegend().WithDataLabels(false).WithRadialGeometry(new(-90, 270, .15, .18, .1, valueEncoding: ChartRadialValueEncoding.Area));
         chart.Options.YAxis.TickCount = 4; chart.Options.YAxis.Reversed = reordered; chart.Options.XAxis.Reversed = reordered;

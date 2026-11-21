@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -12,7 +13,7 @@ using ChartForgeX.Interactivity.Html;
 if (args.Length != 1) throw new ArgumentException("Pass the path of a font licensed for this output.");
 FontRegistry.Register("Owned interval font", File.ReadAllBytes(args[0]));
 var initial = {{INITIAL}}; var renderer = new HtmlInteractiveChartRenderer();
-Chart Model(double lower, double upper) => NativeRangeComponentRecipe.Create(lower, upper, {{AREA}}, {{WIDTH}}, VisualThemeMode.{{MODE}}, "Owned interval font");
+Chart Model(double lower, double upper) => NativeRangeComponentRecipe.Create(lower, upper, {{AREA}}, {{WIDTH}}, ThemeMode.{{MODE}}, "Owned interval font");
 void Configure(HtmlChartInteractionOptions options) { options.CaptureNativeValueSource = true; options.Interaction.ChartId = "native-range-components"; }
 var from = renderer.PrepareSection(Model(10, 35), configure: Configure); var to = renderer.PrepareSection(Model(20, 60), configure: Configure);
 var payload = renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(initial ? HtmlNativeTransitionEffect.InitialValues : HtmlNativeTransitionEffect.Values, 5));

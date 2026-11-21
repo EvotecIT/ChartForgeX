@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -18,7 +19,7 @@ foreach (var fontPath in new[] { primaryPath, fallbackPath }) {
 }
 FontRegistry.Register("Example Primary", primaryPath); FontRegistry.Register("Example Fallback", fallbackPath);
 const string family = "Example Primary, Example Fallback";
-Chart Model(double value) => NativeRadialMotionRecipe.Create({{DONUT}}, false, value, {{WIDTH}}, VisualThemeMode.{{MODE}})
+Chart Model(double value) => NativeRadialMotionRecipe.Create({{DONUT}}, false, value, {{WIDTH}}, ThemeMode.{{MODE}})
     .WithFontFamily(family).WithXLabels("Asia", "Europe", "Americas").WithTitle(string.Empty).WithSubtitle(string.Empty).WithHeader(false).WithLegend(false)
     .WithDonutCenterLabel(false).WithPieSliceLabelContent(ChartPieSliceLabelContent.Value).WithDataLabelPlacement(ChartDataLabelPlacement.Inside).WithValueFormat(ChartValueFormat.Compact());
 var renderer = new HtmlInteractiveChartRenderer(); var from = renderer.PrepareSection(Model(900)); var to = renderer.PrepareSection(Model(1100));

@@ -1,15 +1,15 @@
 /// <summary>Saves, edits and explicitly replays a fixed-grid native mask with retained vector SVG and typed source facts.</summary>
 public static class NativeRetainedMaskExample {
     /// <summary>Creates the same detached retained presentation used by the downloadable Core-only program.</summary>
-    public static PreparedVisual Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static PreparedVisual Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var source = PrepareSource(variant, mode);
         return source.WithMask(CreateMask(source));
     }
 
     /// <summary>Prepares the ordinary source before presentation masking; its JSON remains source facts only.</summary>
-    public static PreparedVisual PrepareSource(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static PreparedVisual PrepareSource(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("compact" or "wide")) throw new ArgumentOutOfRangeException(nameof(variant));
-        if (!Enum.IsDefined(typeof(VisualThemeMode), mode)) throw new ArgumentOutOfRangeException(nameof(mode));
+        if (!Enum.IsDefined(typeof(ThemeMode), mode)) throw new ArgumentOutOfRangeException(nameof(mode));
         var width = variant == "compact" ? 390 : 1100;
         var theme = VisualTheme.Graphite();
         var sequence = SequenceArtifact.Create("native-retained-mask").WithSize(width, 620)
@@ -25,10 +25,10 @@ public static class NativeRetainedMaskExample {
 
     /// <summary>Restores editable source explicitly, optionally changes its first message, and reapplies the saved captured mask.</summary>
     /// <remarks>The caller retains the same authored example context; generic mask replay itself never chooses layout or theme.</remarks>
-    public static PreparedVisual Restore(string saved, string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light,
+    public static PreparedVisual Restore(string saved, string variant = "wide", ThemeMode mode = ThemeMode.Light,
         string? messageText = null) {
         if (variant is not ("compact" or "wide")) throw new ArgumentOutOfRangeException(nameof(variant));
-        if (!Enum.IsDefined(typeof(VisualThemeMode), mode)) throw new ArgumentOutOfRangeException(nameof(mode));
+        if (!Enum.IsDefined(typeof(ThemeMode), mode)) throw new ArgumentOutOfRangeException(nameof(mode));
         var captured = VisualArtifactInterchangeEnvelope.FromJson(saved);
         var sourceFacts = VisualArtifactInterchangeEnvelope.FromJson(saved);
         sourceFacts.Presentation!.CapturedEffects.Clear(); // Deliberate source-only editing on a detached copy.
@@ -39,7 +39,7 @@ public static class NativeRetainedMaskExample {
         return captured.ApplyCapturedEffects(source);
     }
 
-    private static VisualRenderContext Context(int width, VisualTheme theme, VisualThemeMode mode) =>
+    private static VisualRenderContext Context(int width, VisualTheme theme, ThemeMode mode) =>
         new(new VisualLayoutOptions(new VisualSize(width, 620), 24), theme, mode,
             new VisualFrame("Masked service review", "The right side fades; vector captions and links remain in the native SVG profile",
                 showLegend: false, transparentBackground: true));

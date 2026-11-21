@@ -4,7 +4,7 @@ using ChartForgeX.Themes;
 
 internal static class NativeTurbulenceExamples {
     internal static void Write(string output) {
-        foreach (var variant in new[] { "compact", "wide" }) foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var variant in new[] { "compact", "wide" }) foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             var source = NativeTurbulenceExample.Create(variant, mode);
             var stem = Path.Combine(output, "native-turbulence-" + variant + "-" + mode.ToString().ToLowerInvariant());
             File.WriteAllText(stem + ".native.svg", source.ToSvg(new VisualSvgOptions(effectProfile: VisualSvgEffectProfile.NativeFilters)));

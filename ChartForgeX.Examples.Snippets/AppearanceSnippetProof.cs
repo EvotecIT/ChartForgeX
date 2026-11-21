@@ -7,7 +7,7 @@ using ChartForgeX.Themes;
 
 internal static class AppearanceSnippetProof {
     internal static void Write(string output, List<RecipeResult> results) {
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             foreach (var variant in new[] { "compact", "wide" }) {
                 foreach (var effect in new[] { "outline", "bloom" }) {
                     var id = "native-appearance-" + effect + "-" + variant + "-" + mode;

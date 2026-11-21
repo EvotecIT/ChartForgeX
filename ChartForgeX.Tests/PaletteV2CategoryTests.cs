@@ -42,9 +42,9 @@ public sealed class PaletteV2CategoryTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void PartToWholeUsesValueRankAndKeepsOtherNeutralAndLast(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void PartToWholeUsesValueRankAndKeepsOtherNeutralAndLast(ThemeMode mode) {
         var theme = VisualTheme.Graphite();
         var chart = Chart.Create().WithSize(800, 520).WithTheme(theme, mode)
             .AddPie("Allocation", new[] { new ChartPoint(1, 2), new ChartPoint(2, 20), new ChartPoint(3, 40),
@@ -61,11 +61,11 @@ public sealed class PaletteV2CategoryTests {
     }
 
     [Theory]
-    [InlineData(ChartSeriesKind.Sunburst, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.Sunburst, VisualThemeMode.Dark)]
-    [InlineData(ChartSeriesKind.Treemap, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.Treemap, VisualThemeMode.Dark)]
-    public void ChildSegmentsInheritHueWhileSiblingLightnessVaries(ChartSeriesKind kind, VisualThemeMode mode) {
+    [InlineData(ChartSeriesKind.Sunburst, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.Sunburst, ThemeMode.Dark)]
+    [InlineData(ChartSeriesKind.Treemap, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.Treemap, ThemeMode.Dark)]
+    public void ChildSegmentsInheritHueWhileSiblingLightnessVaries(ChartSeriesKind kind, ThemeMode mode) {
         var items = new List<ChartHierarchyItem>();
         if (kind == ChartSeriesKind.Sunburst) items.Add(new ChartHierarchyItem("all", "All", value: 120));
         var parent = kind == ChartSeriesKind.Sunburst ? "all" : null;

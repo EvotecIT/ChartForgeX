@@ -1,6 +1,6 @@
 /// <summary>Aligned and ordered flows retain parallel-link identities and independent link paint.</summary>
 public static class SankeyOptionsRecipe {
-    public static Chart Create(string variant = "options", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "options", ThemeMode mode = ThemeMode.Light) {
         var requests = ChartSeries.CreateSankey(new ChartSeriesId("request-flows"), "Requests", new[] {
             new ChartNode("received", "Received"), new ChartNode("north", "North"), new ChartNode("south", "South"),
             new ChartNode("north-support", "Support"), new ChartNode("south-support", "Support"), new ChartNode("completed", "Completed"),

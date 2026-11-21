@@ -16,7 +16,7 @@ public sealed class TopologyQuietEdgeLabelTests {
     [InlineData(false)] [InlineData(true)]
     public void RelationshipCaptionChipIsBorderlessNearCanvasAndHugsItsText(bool dark) {
         var chart = Source(dark); var prepared = chart.Prepare(); var svg = XDocument.Parse(prepared.ToSvg());
-        var colors = chart.Theme.Resolve(dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        var colors = chart.Theme.Resolve(dark ? ThemeMode.Dark : ThemeMode.Light);
         var tone = ChartColorMath.Blend(colors.Background, colors.Foreground, TopologyRenderPrimitives.EdgeLabelQuietTint);
         var surface = Role(svg, "topology-edge-label-surface").Single();
         var reserved = surface.Parent!;
@@ -40,7 +40,7 @@ public sealed class TopologyQuietEdgeLabelTests {
     public void CaptionAndTechnologyLineShareOnePillWithTheSecondaryLineMuted(bool dark) {
         var chart = Source(dark); chart.Edges[0].SecondaryLabel = "HTTPS over the private link";
         var prepared = chart.Prepare(); var svg = XDocument.Parse(prepared.ToSvg());
-        var colors = chart.Theme.Resolve(dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        var colors = chart.Theme.Resolve(dark ? ThemeMode.Dark : ThemeMode.Light);
         var surface = Role(svg, "topology-edge-label-surface").Single();
         var top = Number(surface, "y"); var bottom = top + Number(surface, "height");
         var texts = Role(svg, "topology-edge-label-text").SelectMany(item => item.DescendantsAndSelf().Where(node => node.Name.LocalName == "text")).ToArray();
@@ -60,7 +60,7 @@ public sealed class TopologyQuietEdgeLabelTests {
     [InlineData(false)] [InlineData(true)]
     public void EndpointMultiplicitiesOnlyMaskTheirLineWithTheCanvasTone(bool dark) {
         var chart = Source(dark); var svg = XDocument.Parse(chart.Prepare().ToSvg());
-        var background = chart.Theme.Resolve(dark ? VisualThemeMode.Dark : VisualThemeMode.Light).Background;
+        var background = chart.Theme.Resolve(dark ? ThemeMode.Dark : ThemeMode.Light).Background;
         var surfaces = Role(svg, "topology-endpoint-label-surface").ToArray();
         Assert.Equal(2, surfaces.Length);
         Assert.All(surfaces, item => { Assert.True(ChartColor.TryParse((string?)item.Attribute("fill"), out var fill)); Assert.Equal(background, fill); });
@@ -70,7 +70,7 @@ public sealed class TopologyQuietEdgeLabelTests {
     [Fact]
     public void FittedCardsKeepTheirNaturalWidthBelowTheWrappingLimit() {
         var chart = TopologyChart.Create().WithId("fitted-cards").WithTitle("").WithViewport(900, 400, 24).WithLegend(null)
-            .WithLayout(TopologyLayoutMode.Manual).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), VisualThemeMode.Light);
+            .WithLayout(TopologyLayoutMode.Manual).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), ThemeMode.Light);
         chart.AddNode("short", "Cache", 40, 100, width: 60, height: 60, subtitle: "Redis");
         chart.AddNode("long", "Order service", 400, 100, width: 60, height: 60, subtitle: "Validates every order, reserves stock and coordinates the payment provider");
         foreach (var node in chart.Nodes) {
@@ -90,7 +90,7 @@ public sealed class TopologyQuietEdgeLabelTests {
     [Fact]
     public void DefaultConnectorsStayLegibleWhenAFittedDiagramScalesDown() {
         var chart = TopologyChart.Create().WithId("fitted-connector").WithTitle("").WithViewport(160, 120, 8).WithLegend(null)
-            .WithLayout(TopologyLayoutMode.Manual).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), VisualThemeMode.Light);
+            .WithLayout(TopologyLayoutMode.Manual).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), ThemeMode.Light);
         chart.AddNode("a", "Plan", 0, 0, width: 140, height: 80); chart.AddNode("b", "Deliver", 900, 0, width: 140, height: 80);
         chart.AddEdge("handoff", "a", "b", direction: VisualLinkDirection.Forward, routing: TopologyEdgeRouting.Straight);
         chart.Theme = DiagramTheme.Apply(chart.Theme);
@@ -101,7 +101,7 @@ public sealed class TopologyQuietEdgeLabelTests {
 
     private static TopologyChart Source(bool dark) {
         var chart = TopologyChart.Create().WithId("quiet-label").WithTitle("").WithViewport(760, 400, 24).WithLegend(null)
-            .WithLayout(TopologyLayoutMode.Manual).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .WithLayout(TopologyLayoutMode.Manual).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light);
         chart.AddNode("a", "Plan", 60, 100, width: 140, height: 80); chart.AddNode("b", "Deliver", 500, 100, width: 140, height: 80);
         foreach (var node in chart.Nodes) { node.Kind = TopologyNodeKind.Generic; node.Shape = TopologyNodeShape.Rectangle; node.ShowStatusBadge = false; }
         chart.AddEdge("handoff", "a", "b", "Transfer", direction: VisualLinkDirection.Forward, routing: TopologyEdgeRouting.Straight);

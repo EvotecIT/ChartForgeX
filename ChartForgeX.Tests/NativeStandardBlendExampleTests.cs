@@ -13,11 +13,11 @@ namespace ChartForgeX.Tests;
 [Collection(nameof(FontRegistryCollection))]
 public sealed class NativeStandardBlendExampleTests {
     [Theory]
-    [InlineData("compact", VisualThemeMode.Light)]
-    [InlineData("compact", VisualThemeMode.Dark)]
-    [InlineData("wide", VisualThemeMode.Light)]
-    [InlineData("wide", VisualThemeMode.Dark)]
-    public void CompleteProgramsUseTheirDeclaredCoreOrOptionalVisualsBoundary(string variant, VisualThemeMode mode) {
+    [InlineData("compact", ThemeMode.Light)]
+    [InlineData("compact", ThemeMode.Dark)]
+    [InlineData("wide", ThemeMode.Light)]
+    [InlineData("wide", ThemeMode.Dark)]
+    public void CompleteProgramsUseTheirDeclaredCoreOrOptionalVisualsBoundary(string variant, ThemeMode mode) {
         var core = ExampleRecipeSource.EmitNativeMask(variant, mode);
         var composition = ExampleRecipeSource.EmitNativeMaskComposition(variant, mode);
         var directory = Environment.GetEnvironmentVariable("CFX_NATIVE_CAPTURE_DIRECTORY");

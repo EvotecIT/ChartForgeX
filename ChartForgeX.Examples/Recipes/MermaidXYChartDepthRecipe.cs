@@ -1,7 +1,7 @@
 /// <summary>Authors the native Core counterpart to the separately parsed XY source fixture.</summary>
 public static class MermaidXYChartDepthRecipe {
     /// <summary>Creates the compact/wide horizontal or vertical chart without loading a source parser.</summary>
-    public static Chart Create(string variant = "wide-vertical", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide-vertical", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide-vertical" or "compact-vertical" or "wide-horizontal" or "compact-horizontal"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var horizontal = variant.EndsWith("-horizontal", StringComparison.Ordinal);

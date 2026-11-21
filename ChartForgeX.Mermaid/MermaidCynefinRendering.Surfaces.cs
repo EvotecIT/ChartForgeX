@@ -11,7 +11,7 @@ public static partial class MermaidCynefinRendering {
     private static readonly string[] DarkBackgrounds = { "#1B5E20", "#0D47A1", "#BF360C", "#F57F17", "#4A148C" };
 
     private static ChartColor DomainBackground(TopologyChart chart, MermaidCynefinSettings? settings, string name, int index, double opacity) {
-        var defaults = chart.ThemeMode == VisualThemeMode.Dark ? DarkBackgrounds : LightBackgrounds;
+        var defaults = chart.ThemeMode == ThemeMode.Dark ? DarkBackgrounds : LightBackgrounds;
         var color = settings?.Color(name + "Bg", ChartColor.FromHex(defaults[index])) ?? ChartColor.FromHex(defaults[index]);
         return color.WithOpacity(color.A / 255d * opacity);
     }

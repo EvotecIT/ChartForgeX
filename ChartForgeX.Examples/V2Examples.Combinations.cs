@@ -4,7 +4,7 @@ public static partial class V2Examples {
     /// <summary>Exercises ordinary and updated supported compositions with the same compiled recipe shown in the gallery.</summary>
     private static void WriteSupportedCombinations(string output, ICollection<ProofArtifact> artifacts) {
         var recipe = ExampleRecipes.Named("supported-combinations");
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             foreach (var variant in new[] { "vertical-secondary", "horizontal", "mixed-radial", "updated-vertical-secondary", "updated-horizontal", "updated-mixed-radial" }) {
                 foreach (var compact in new[] { false, true }) {
                     var chart = (Chart)recipe.Create(variant, mode);

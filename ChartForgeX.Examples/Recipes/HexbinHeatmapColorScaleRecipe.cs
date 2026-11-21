@@ -1,7 +1,7 @@
 /// <summary>Groups numeric hexbin measurements into named color bands.</summary>
 public static class HexbinHeatmapColorScaleRecipe {
     /// <summary>Creates low, medium and high measurement bands.</summary>
-    public static Chart Create(string variant = "color-scale", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "color-scale", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("color-scale" or "compact-color-scale")) throw new ArgumentOutOfRangeException(nameof(variant));
         var colors = VisualTheme.Graphite().Resolve(mode);
         return Chart.Create().WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat").WithDataLabels()

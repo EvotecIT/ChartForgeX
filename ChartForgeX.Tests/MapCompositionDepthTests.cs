@@ -10,11 +10,11 @@ namespace ChartForgeX.Tests;
 
 public sealed class MapCompositionDepthTests {
     [Theory]
-    [InlineData("arbitrary", VisualThemeMode.Light)]
-    [InlineData("arbitrary", VisualThemeMode.Dark)]
-    [InlineData("compact-arbitrary", VisualThemeMode.Light)]
-    [InlineData("compact-arbitrary", VisualThemeMode.Dark)]
-    public void ArbitraryRegionPeersRetainOneNumericFrameAndIndependentNativeValues(string variant, VisualThemeMode mode) {
+    [InlineData("arbitrary", ThemeMode.Light)]
+    [InlineData("arbitrary", ThemeMode.Dark)]
+    [InlineData("compact-arbitrary", ThemeMode.Light)]
+    [InlineData("compact-arbitrary", ThemeMode.Dark)]
+    public void ArbitraryRegionPeersRetainOneNumericFrameAndIndependentNativeValues(string variant, ThemeMode mode) {
         var chart = MapCompositionDepthRecipe.Create(variant, mode);
         var prepared = Prepare(chart);
         var frame = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneGroup>(), node => node.Role == "arbitrary-map");
@@ -32,11 +32,11 @@ public sealed class MapCompositionDepthTests {
     }
 
     [Theory]
-    [InlineData("wide", VisualThemeMode.Light)]
-    [InlineData("wide", VisualThemeMode.Dark)]
-    [InlineData("compact", VisualThemeMode.Light)]
-    [InlineData("compact", VisualThemeMode.Dark)]
-    public void GeographicTileInsetUsesExistingTilePaintAndKeepsItsOwnFactsKeysAndIdentity(string variant, VisualThemeMode mode) {
+    [InlineData("wide", ThemeMode.Light)]
+    [InlineData("wide", ThemeMode.Dark)]
+    [InlineData("compact", ThemeMode.Light)]
+    [InlineData("compact", ThemeMode.Dark)]
+    public void GeographicTileInsetUsesExistingTilePaintAndKeepsItsOwnFactsKeysAndIdentity(string variant, ThemeMode mode) {
         var chart = MapCompositionDepthRecipe.Create(variant, mode);
         var tile = chart.Series[2].WithObservationIds(new[] { new ChartObservationId("central"), new ChartObservationId("north"), new ChartObservationId("west") });
         var prepared = Prepare(chart);
@@ -69,7 +69,7 @@ public sealed class MapCompositionDepthTests {
     [InlineData(ChartMapGeoJsonProjection.Equirectangular)]
     [InlineData(ChartMapGeoJsonProjection.WebMercator)]
     public void TileInsetNeverChangesTheGeographicPeerProjectionOrNativePointPositions(ChartMapGeoJsonProjection projection) {
-        var chart = GeographicMapCompositionTests.Fixture(projection, 800, VisualThemeMode.Light).WithLegend(false);
+        var chart = GeographicMapCompositionTests.Fixture(projection, 800, ThemeMode.Light).WithLegend(false);
         var before = Prepare(chart).Scene.Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role == "dotted-map-point").ToArray();
         var tile = Tiles().WithMapInset(new ChartRect(.65, .65, .3, .3));
         chart.AddSeries(tile);

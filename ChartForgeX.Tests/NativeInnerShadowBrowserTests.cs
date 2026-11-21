@@ -16,11 +16,11 @@ namespace ChartForgeX.Tests;
 [Trait("BrowserSuite", "Compatibility")]
 public sealed class NativeInnerShadowBrowserTests {
     [BrowserTheory]
-    [InlineData("compact", VisualThemeMode.Light)]
-    [InlineData("compact", VisualThemeMode.Dark)]
-    [InlineData("wide", VisualThemeMode.Light)]
-    [InlineData("wide", VisualThemeMode.Dark)]
-    public async Task ExplicitNativeInsetKeepsVectorWordsAndSourceAlphaBesideItsBakedCompanion(string variant, VisualThemeMode mode) {
+    [InlineData("compact", ThemeMode.Light)]
+    [InlineData("compact", ThemeMode.Dark)]
+    [InlineData("wide", ThemeMode.Light)]
+    [InlineData("wide", ThemeMode.Dark)]
+    public async Task ExplicitNativeInsetKeepsVectorWordsAndSourceAlphaBesideItsBakedCompanion(string variant, ThemeMode mode) {
         var source = NativeAppearanceExample.PrepareSource(variant, mode);
         var layer = NativeAppearanceExample.Create("inner", variant, mode);
         var retained = source.WithInnerShadow(NativeAppearanceExample.InnerShadowPolicy(mode));
@@ -29,7 +29,7 @@ public sealed class NativeInnerShadowBrowserTests {
         var simple = InnerShadowFixture.Source(128).WithInnerShadow(new VisualInnerShadow(
             ChartColor.FromRgb(0, 0, 255), 0, 0, 0, orderedDither: false));
         var simpleSvg = simple.ToSvg(new VisualSvgOptions(idPrefix: "inner-sample", effectProfile: VisualSvgEffectProfile.NativeFilters));
-        var background = mode == VisualThemeMode.Dark ? "#0f172a" : "#f8fafc";
+        var background = mode == ThemeMode.Dark ? "#0f172a" : "#f8fafc";
         var html = "<style>body{margin:0;background:" + background + "}section svg{max-width:100%;height:auto}</style>"
             + "<section id='native'>" + svg + "</section><section id='baked'>" + layer.Visual.ToSvg() + "</section>"
             + "<section id='specimen'>" + simpleSvg + "</section><canvas id='sample'></canvas>";

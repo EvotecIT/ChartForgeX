@@ -62,7 +62,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         ChartSeriesKind kind, bool dark, int width, bool tooltips) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(720, 360)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithTitle("Covered area observations").WithXAxisBounds(1, 5).WithYAxisBounds(0, 60)
             .AddSeries(new ChartSeries(new ChartSeriesId("api"), "API", kind,
                 new[] { new ChartPoint(1, 20), new ChartPoint(2, 20), new ChartPoint(3, 20), new ChartPoint(4, 20), new ChartPoint(5, 20) })

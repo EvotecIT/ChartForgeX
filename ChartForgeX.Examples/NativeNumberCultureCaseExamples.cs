@@ -18,14 +18,14 @@ internal static class NativeNumberCultureCaseExamples {
             File.WriteAllText(prefix + ".html", html); File.WriteAllText(prefix + ".transition.json", forward); File.WriteAllText(prefix + ".from.svg", from.PreparedVisual.ToSvg()); File.WriteAllBytes(prefix + ".from.png", from.PreparedVisual.ToPng()); File.WriteAllText(prefix + ".to.svg", to.PreparedVisual.ToSvg()); File.WriteAllBytes(prefix + ".to.png", to.PreparedVisual.ToPng()); File.WriteAllText(prefix + ".program.cs", ExampleRecipeSource.EmitNativeNumberCultureCase(kind, policy, width, mode));
         }
     }
-    private static IEnumerable<(string Kind,string Policy,int Width,VisualThemeMode Mode)> Cases(bool richer) {
+    private static IEnumerable<(string Kind,string Policy,int Width,ThemeMode Mode)> Cases(bool richer) {
         if (richer) {
-            yield return ("pie","literal-ms",390,VisualThemeMode.Light); yield return ("donut","sections",760,VisualThemeMode.Dark);
-            yield return ("treemap","scaled",390,VisualThemeMode.Dark); yield return ("pie","permille",760,VisualThemeMode.Light);
-            yield return ("donut","scientific",390,VisualThemeMode.Dark); yield return ("treemap","escaped",760,VisualThemeMode.Light);
-            yield return ("donut","literal-ms",760,VisualThemeMode.Dark); yield return ("pie","sections",390,VisualThemeMode.Light); yield break;
+            yield return ("pie","literal-ms",390,ThemeMode.Light); yield return ("donut","sections",760,ThemeMode.Dark);
+            yield return ("treemap","scaled",390,ThemeMode.Dark); yield return ("pie","permille",760,ThemeMode.Light);
+            yield return ("donut","scientific",390,ThemeMode.Dark); yield return ("treemap","escaped",760,ThemeMode.Light);
+            yield return ("donut","literal-ms",760,ThemeMode.Dark); yield return ("pie","sections",390,ThemeMode.Light); yield break;
         }
         foreach (var kind in new[] { "pie", "donut", "treemap" }) foreach (var policy in new[] { "fr-number", "sv-currency", "ar-percent", "fr-compact", "title", "sentence", "toggle" })
-        foreach (var width in new[] { 390, 760 }) foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) yield return (kind,policy,width,mode);
+        foreach (var width in new[] { 390, 760 }) foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) yield return (kind,policy,width,mode);
     }
 }

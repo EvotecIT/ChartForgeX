@@ -26,7 +26,7 @@ public sealed class NativeErrorComponentBeforeControls {
         Assert.Equal(form.Contains('x'), chart.Series[0].ErrorBars[0].XBounds.HasValue); Assert.Equal(form.Contains('y'), chart.Series[0].ErrorBars[0].YBounds.HasValue); Assert.False(NativeRawValueSourceMotionTests.Metadata(first).TryGetProperty("nativeValueSource", out _));
     }
     internal static Chart Model(string form, bool labels, double y = 30, double xLower = .5, double xUpper = 1.5, double yLower = 20, double yUpper = 40, int width = 760, bool dark = false) {
-        var chart = Chart.Create().WithTitle("Actual uncertainty components").WithSize(width, 420).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithLegend(true).WithDataLabels(labels);
+        var chart = Chart.Create().WithTitle("Actual uncertainty components").WithSize(width, 420).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light).WithLegend(true).WithDataLabels(labels);
         foreach (var key in new[] { "delivery", "comparison" }) {
             var first = new ChartErrorBar(1, key == "delivery" ? y : 30, form.Contains('x') ? new ChartErrorBounds(key == "delivery" ? xLower : .5, key == "delivery" ? xUpper : 1.5) : null,
                 form.Contains('y') ? new ChartErrorBounds(key == "delivery" ? yLower : 20, key == "delivery" ? yUpper : 40) : null);

@@ -1,7 +1,7 @@
 /// <summary>A complete source-ordered cause tree renders through the native Fishbone owner.</summary>
 public static class IshikawaDepthRecipe {
     /// <summary>Creates complete measured cause captions; a compact host may scroll the natural frame.</summary>
-    public static FishboneDiagramBlock Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static FishboneDiagramBlock Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var block = FishboneDiagramBlock.Create("Delayed service release").WithTitle("Measured cause tree")
             .WithTheme(VisualTheme.Graphite(), mode).WithPadding(28);

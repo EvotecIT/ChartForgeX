@@ -11,9 +11,9 @@ namespace ChartForgeX.Tests;
 [Trait("BrowserSuite", "Compatibility")]
 public sealed class NativeVectorGlassBrowserTests {
     [BrowserTheory]
-    [InlineData("compact", VisualThemeMode.Light)] [InlineData("compact", VisualThemeMode.Dark)]
-    [InlineData("wide", VisualThemeMode.Light)] [InlineData("wide", VisualThemeMode.Dark)]
-    public async Task FilteredBackdropDoesNotReplaceOrDuplicateVisibleNativeForegroundWords(string variant, VisualThemeMode mode) {
+    [InlineData("compact", ThemeMode.Light)] [InlineData("compact", ThemeMode.Dark)]
+    [InlineData("wide", ThemeMode.Light)] [InlineData("wide", ThemeMode.Dark)]
+    public async Task FilteredBackdropDoesNotReplaceOrDuplicateVisibleNativeForegroundWords(string variant, ThemeMode mode) {
         var canvas = NativeVectorGlassExample.Create(variant, mode);
         var svg = canvas.ToSvg();
         await using var session = await BrowserProofFonts.OpenAsync("<style>body{margin:0}svg{max-width:100%;height:auto}</style>" + svg,

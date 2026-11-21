@@ -14,7 +14,7 @@ public sealed partial class MermaidFlowchartMembershipTests {
     internal static string Fixture(string family) => File.ReadAllText(Path.Combine(TestRepository.Root,
         "ChartForgeX.Tests", "Fixtures", "Mermaid", "flowchart-membership.mmd")).Replace("flowchart LR", family + " LR", StringComparison.Ordinal);
     internal static MermaidRenderOptions Options(bool dark, int width) => new() {
-        Presentation = new MermaidPresentationOptions { ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light, FontFamily = BrowserProofFonts.Family },
+        Presentation = new MermaidPresentationOptions { ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light, FontFamily = BrowserProofFonts.Family },
         Flowchart = new MermaidFlowchartRenderOptions { Width = width, Height = 700 }, Swimlane = new MermaidFlowchartRenderOptions { Width = width, Height = 700 }
     };
 

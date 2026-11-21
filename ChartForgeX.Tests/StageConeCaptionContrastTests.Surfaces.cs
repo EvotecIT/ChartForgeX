@@ -12,16 +12,16 @@ public sealed partial class StageConeCaptionContrastTests {
     public static IEnumerable<object[]> ComponentSurfaces() {
         foreach (var component in new[] { "category", "value", "retention", "dropoff" })
             foreach (var orientation in new[] { ChartOrientation.Vertical, ChartOrientation.Horizontal })
-                foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) yield return new object[] { component, orientation, mode };
+                foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) yield return new object[] { component, orientation, mode };
     }
 
     [Theory]
     [MemberData(nameof(ComponentSurfaces))]
-    public void EveryContainedConeComponentUsesTheRealIncomingOverrideOrHiddenFrame(string component, ChartOrientation orientation, VisualThemeMode mode) {
+    public void EveryContainedConeComponentUsesTheRealIncomingOverrideOrHiddenFrame(string component, ChartOrientation orientation, ThemeMode mode) {
         var chart = Component(false, ChartFunnelForm.Cone, orientation, mode, component);
         var raw = chart.Series[0].Points.ToArray(); var prior = StagePresentationOptionsTests.Prepare(chart); var oldSvg = prior.ToSvg(); var oldPng = prior.ToPng();
-        var inherited = mode == VisualThemeMode.Dark ? ChartColor.Black : ChartColor.White;
-        var overridden = mode == VisualThemeMode.Dark ? ChartColor.White : ChartColor.Black;
+        var inherited = mode == ThemeMode.Dark ? ChartColor.Black : ChartColor.White;
+        var overridden = mode == ThemeMode.Dark ? ChartColor.White : ChartColor.Black;
         chart.ConfigureFunnel(options => options.ConnectorStyle = new ChartFunnelConnectorStyle(fill: inherited, fillOpacity: 1));
         foreach (var variant in new[] { "hidden", "alpha", "opaque" }) {
             chart.Series[0].WithFunnelConnectorStyle(0, new ChartFunnelConnectorStyle(visible: variant != "hidden", fill: overridden,
@@ -44,17 +44,17 @@ public sealed partial class StageConeCaptionContrastTests {
     }
 
     [Theory]
-    [InlineData(false, ChartOrientation.Vertical, VisualThemeMode.Light)]
-    [InlineData(false, ChartOrientation.Vertical, VisualThemeMode.Dark)]
-    [InlineData(false, ChartOrientation.Horizontal, VisualThemeMode.Light)]
-    [InlineData(false, ChartOrientation.Horizontal, VisualThemeMode.Dark)]
-    [InlineData(true, ChartOrientation.Vertical, VisualThemeMode.Light)]
-    [InlineData(true, ChartOrientation.Vertical, VisualThemeMode.Dark)]
-    [InlineData(true, ChartOrientation.Horizontal, VisualThemeMode.Light)]
-    [InlineData(true, ChartOrientation.Horizontal, VisualThemeMode.Dark)]
-    public void AlphaFilledPartitionsUseTheirPaintedFrameWithoutChangingTheAuthoredAlpha(bool pyramid, ChartOrientation orientation, VisualThemeMode mode) {
+    [InlineData(false, ChartOrientation.Vertical, ThemeMode.Light)]
+    [InlineData(false, ChartOrientation.Vertical, ThemeMode.Dark)]
+    [InlineData(false, ChartOrientation.Horizontal, ThemeMode.Light)]
+    [InlineData(false, ChartOrientation.Horizontal, ThemeMode.Dark)]
+    [InlineData(true, ChartOrientation.Vertical, ThemeMode.Light)]
+    [InlineData(true, ChartOrientation.Vertical, ThemeMode.Dark)]
+    [InlineData(true, ChartOrientation.Horizontal, ThemeMode.Light)]
+    [InlineData(true, ChartOrientation.Horizontal, ThemeMode.Dark)]
+    public void AlphaFilledPartitionsUseTheirPaintedFrameWithoutChangingTheAuthoredAlpha(bool pyramid, ChartOrientation orientation, ThemeMode mode) {
         var chart = Component(pyramid, ChartFunnelForm.StageBars, orientation, mode, "value");
-        var fill = (mode == VisualThemeMode.Dark ? ChartColor.White : ChartColor.Black).WithAlpha(24); chart.Series[0].WithPointColor(0, fill);
+        var fill = (mode == ThemeMode.Dark ? ChartColor.White : ChartColor.Black).WithAlpha(24); chart.Series[0].WithPointColor(0, fill);
         var prepared = StagePresentationOptionsTests.Prepare(chart); var first = CaptionTexts(prepared, "value").Single(text => text.Id == "series-0-point-0-value-label");
         ScatterBubbleColorRenderingTests.Capture(prepared, $"stage-alpha-caption-{pyramid}-{orientation}-{mode}");
         Assert.False(first.Stroke.HasValue); var surface = Pixel(WithoutText(prepared), prepared.Regions.Single(region => region.Id == first.Id).Bounds);
@@ -68,7 +68,7 @@ public sealed partial class StageConeCaptionContrastTests {
     [InlineData(true, ChartOrientation.Vertical)]
     [InlineData(true, ChartOrientation.Horizontal)]
     public void OpaquePartitionsRetainTheIncumbentInkPaintAndHaveNoHalo(bool pyramid, ChartOrientation orientation) {
-        var chart = Component(pyramid, ChartFunnelForm.StageBars, orientation, VisualThemeMode.Dark, "value");
+        var chart = Component(pyramid, ChartFunnelForm.StageBars, orientation, ThemeMode.Dark, "value");
         var fill = ChartColor.FromHex("#C8A5EF"); chart.Series[0].WithColor(fill);
         var prepared = StagePresentationOptionsTests.Prepare(chart);
         Assert.Equal(3, CaptionTexts(prepared, "value").Length);
@@ -85,7 +85,7 @@ public sealed partial class StageConeCaptionContrastTests {
     [InlineData("series")]
     [InlineData("point")]
     public void ExplicitInkAtEachExistingLevelRemainsAuthoritativeWithoutAnAutomaticHalo(string level) {
-        var chart = Component(false, ChartFunnelForm.Cone, ChartOrientation.Horizontal, VisualThemeMode.Dark, "value");
+        var chart = Component(false, ChartFunnelForm.Cone, ChartOrientation.Horizontal, ThemeMode.Dark, "value");
         var ink = ChartColor.FromHex("#B94168");
         if (level == "component") chart.Options.Funnel.ValueLabel.Style.Color = ink;
         else if (level == "chart") chart.Options.DataLabelStyle.Color = ink;
@@ -96,11 +96,11 @@ public sealed partial class StageConeCaptionContrastTests {
     }
 
     [Theory]
-    [InlineData(ChartOrientation.Vertical, 390, VisualThemeMode.Light)]
-    [InlineData(ChartOrientation.Vertical, 800, VisualThemeMode.Dark)]
-    [InlineData(ChartOrientation.Horizontal, 390, VisualThemeMode.Dark)]
-    [InlineData(ChartOrientation.Horizontal, 800, VisualThemeMode.Light)]
-    public void PatternedConeSurfacesUseTheExistingRealGlyphHaloInBothStaticBackends(ChartOrientation orientation, int width, VisualThemeMode mode) {
+    [InlineData(ChartOrientation.Vertical, 390, ThemeMode.Light)]
+    [InlineData(ChartOrientation.Vertical, 800, ThemeMode.Dark)]
+    [InlineData(ChartOrientation.Horizontal, 390, ThemeMode.Dark)]
+    [InlineData(ChartOrientation.Horizontal, 800, ThemeMode.Light)]
+    public void PatternedConeSurfacesUseTheExistingRealGlyphHaloInBothStaticBackends(ChartOrientation orientation, int width, ThemeMode mode) {
         var chart = Component(false, ChartFunnelForm.Cone, orientation, mode, "value").WithSize(width, 640);
         chart.Series[0].WithFunnelConnectorStyle(0, new ChartFunnelConnectorStyle(fill: ChartColor.White, fillOpacity: 1, fillPattern: ChartFillPattern.Crosshatch));
         var prepared = StagePresentationOptionsTests.Prepare(chart); var text = CaptionTexts(prepared, "value").Single(item => item.Id == "series-0-point-1-value-label");
@@ -117,11 +117,11 @@ public sealed partial class StageConeCaptionContrastTests {
     }
 
     [Theory]
-    [InlineData(ChartOrientation.Vertical, VisualThemeMode.Light)]
-    [InlineData(ChartOrientation.Vertical, VisualThemeMode.Dark)]
-    [InlineData(ChartOrientation.Horizontal, VisualThemeMode.Light)]
-    [InlineData(ChartOrientation.Horizontal, VisualThemeMode.Dark)]
-    public void ZeroFunnelStagesKeepSourceFactsWhenTheRealZeroStrokePreventsAnInsideCaption(ChartOrientation orientation, VisualThemeMode mode) {
+    [InlineData(ChartOrientation.Vertical, ThemeMode.Light)]
+    [InlineData(ChartOrientation.Vertical, ThemeMode.Dark)]
+    [InlineData(ChartOrientation.Horizontal, ThemeMode.Light)]
+    [InlineData(ChartOrientation.Horizontal, ThemeMode.Dark)]
+    public void ZeroFunnelStagesKeepSourceFactsWhenTheRealZeroStrokePreventsAnInsideCaption(ChartOrientation orientation, ThemeMode mode) {
         var chart = Component(false, ChartFunnelForm.StageBars, orientation, mode, "value"); chart.Series[0].Points[0] = new ChartPoint(1, 0);
         var prepared = StagePresentationOptionsTests.Prepare(chart);
         ScatterBubbleColorRenderingTests.Capture(prepared, $"zero-stage-caption-{orientation}-{mode}");
@@ -133,7 +133,7 @@ public sealed partial class StageConeCaptionContrastTests {
         Assert.Equal(0, chart.Series[0].Points[0].Y); Assert.NotEmpty(prepared.ToPng());
     }
 
-    private static Chart Component(bool pyramid, ChartFunnelForm form, ChartOrientation orientation, VisualThemeMode mode, string component) {
+    private static Chart Component(bool pyramid, ChartFunnelForm form, ChartOrientation orientation, ThemeMode mode, string component) {
         var chart = StagePresentationOptionsTests.Create(pyramid, form, orientation, 900, 800).WithTheme(VisualTheme.Graphite(), mode);
         chart.ConfigureFunnel(options => {
             options.LabelContent = ChartStageLabelContent.Separate; options.CategoryLabel.Visible = options.ValueLabel.Visible = options.RetentionLabel.Visible = options.DropOffLabel.Visible = false;

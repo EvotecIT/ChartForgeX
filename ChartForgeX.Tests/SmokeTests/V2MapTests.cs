@@ -185,16 +185,16 @@ public sealed class V2MapTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void CanonicalThemeStateAndFractionalWeightsRemainVisibleAcrossModes(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void CanonicalThemeStateAndFractionalWeightsRemainVisibleAcrossModes(ThemeMode mode) {
         var chart = Chart.Create().AddDottedMap("Fractional observations", new[] { new ChartMapPoint("Low", -20, 20, .1), new ChartMapPoint("High", 20, 30, .2) });
         chart.Series[0].StateRole = ChartSeriesState.Warning;
         var context = new VisualRenderContext(themeMode: mode); var scene = Compile(chart, context: context);
         var points = scene.Nodes.OfType<VisualSceneEllipse>().Where(point => point.Role == "dotted-map-point").ToArray();
         Assert.True(points[1].Rx > points[0].Rx * 1.4);
         Assert.All(points, point => Assert.Equal(context.Theme.Resolve(mode).Status.Medium.Fill, point.Fill));
-        if (mode == VisualThemeMode.Light) Assert.DoesNotContain(scene.Nodes, node => node.Role == "dotted-map-land-dot");
+        if (mode == ThemeMode.Light) Assert.DoesNotContain(scene.Nodes, node => node.Role == "dotted-map-land-dot");
         else Assert.Contains(scene.Nodes, node => node.Role == "dotted-map-land-dot");
         chart.WithMapSurface(false); chart.Options.ShowGrid = false;
         Assert.DoesNotContain(Compile(chart, context: context).Nodes, node => node.Role is "dotted-map-surface" or "dotted-map-graticule");

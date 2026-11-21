@@ -50,7 +50,15 @@ public sealed partial class TopologyHtmlRenderer {
         var messages = htmlText ?? new TopologyHtmlText();
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         options = chart.ResolveRenderOptions(options).CloneForRendering();
-        if (chart.LayoutMode == TopologyLayoutMode.Regions) return RenderRegionFragment(chart, options, includeAssets, preparedSvg, preparedWidth, renderSvg);
+        // Auto follows the viewer: the clone paints with the scoped Auto properties; a host's own colour variables win.
+        var auto = AutoTheme(chart, options);
+        // Self-contained fragments and pages carry the scoped stylesheet; asset-free host fragments leave it to BuildAutoThemeStyle.
+        var writeAutoStyle = includeAssets || assetSource == "document";
+        if (auto != null) {
+            options.SvgColorVariables = auto.Variables;
+            if (preparedSvg != null) preparedSvg = auto.Variables.Apply(preparedSvg);
+        }
+        if (chart.LayoutMode == TopologyLayoutMode.Regions) return RenderRegionFragment(chart, options, includeAssets, preparedSvg, preparedWidth, renderSvg, auto, writeAutoStyle);
         var id = string.IsNullOrWhiteSpace(chart.Id) ? "topology" : chart.Id!;
         if (options.View != null && !string.IsNullOrWhiteSpace(options.View.Id)) id += "-" + options.View.Id;
         var theme = new TopologyPaint(chart.Theme, chart.ThemeMode, options.SvgColorVariables);
@@ -103,7 +111,7 @@ public sealed partial class TopologyHtmlRenderer {
         }
 
         writer.StartElement("div")
-            .Attribute("class", wrapperClass)
+            .Attribute("class", wrapperClass).Attribute(ChartForgeX.Themes.AutoThemeStyle.ScopeAttribute, auto?.Id)
             .Attribute("lang", messages.Language)
             .Attribute("dir", messages.Direction)
             .Attribute("data-cfx-ui", messages.Json)
@@ -127,12 +135,13 @@ public sealed partial class TopologyHtmlRenderer {
             .Attribute("data-cfx-active-scenario", string.IsNullOrWhiteSpace(activeScenarioId) ? null : activeScenarioId)
             .Attribute("data-cfx-sync-enabled", enableSync)
             .Attribute("data-cfx-sync-group", syncGroup)
-            .Attribute("data-cfx-theme-mode", chart.ThemeMode == VisualThemeMode.Dark ? "dark" : "light")
-            .Attribute("data-cfx-theme-adaptive", options.SvgColorVariables != null ? "true" : null)
+            .Attribute("data-cfx-theme-mode", auto != null ? AutoThemeStyle.AttributeValue : chart.ThemeMode == ThemeMode.Dark ? "dark" : "light")
+            .Attribute("data-cfx-theme-adaptive", options.SvgColorVariables != null && auto == null ? "true" : null)
             .Attribute("data-cfx-text-size", keepTextSize ? "kept" : null)
             .Attribute("style", ThemeVariables(theme) + (keepTextSize ? "--cfx-topology-min-width:" + (topologyWidth * MinimumTextScale).ToString("0.###", CultureInfo.InvariantCulture) + "px;" : string.Empty)
                 + "width:100%;max-width:" + displayWidth.ToString("0.###", CultureInfo.InvariantCulture) + "px;box-sizing:border-box;overflow:visible" + (enableViewportControls && options.HtmlNarrowMinimumHeight > 0 ? ";--cfx-topology-narrow-minimum-height:" + options.HtmlNarrowMinimumHeight.ToString("0.###", CultureInfo.InvariantCulture) + "px" : string.Empty))
             .EndStartElement();
+        if (auto != null && writeAutoStyle) writer.RawTrusted(auto.StyleElement);
         if (renderScenarioControls) WriteScenarioControls(writer, scenariosClass, chart, activeScenarioId, options.HtmlScenarioControlMode, messages);
         if (enableScenarioPanel) WriteScenarioPanel(writer, scenarioPanelClass, chart, activeScenarioId, enableScenarioUrlState, messages);
         if (enableForceGraphControls) WriteForceGraphControls(writer, forceControlsClass, forceControlsChart, options, messages);
@@ -222,15 +231,16 @@ public sealed partial class TopologyHtmlRenderer {
         options ??= chart.DefaultRenderOptions;
         EnsureStatic(options);
         options ??= new TopologyRenderOptions();
-        var theme = new TopologyPaint(chart.Theme, chart.ThemeMode, options.SvgColorVariables);
+        var (page, pageStyle) = PageTheme(chart, options);
         var title = string.IsNullOrWhiteSpace(chart.Title) ? chart.Labels.UntitledTopology : chart.Title!;
         var writer = new HtmlMarkupWriter();
         writer.Doctype().Line()
             .StartElement("html").Attribute("lang", string.IsNullOrWhiteSpace(chart.Accessibility.Language) ? "en" : chart.Accessibility.Language).EndStartElement().Line()
             .StartElement("head").EndStartElement().Line();
-        HtmlChartRenderer.WriteDocumentHead(writer, title, BuildPageStyle(options, theme));
+        HtmlChartRenderer.WriteDocumentHead(writer, title, pageStyle);
         writer.EndElement().Line()
-            .StartElement("body").EndStartElement().Line()
+            .StartElement("body").Attribute(ChartForgeX.Themes.AutoThemeStyle.ScopeAttribute, page?.Id)
+            .Attribute(AutoThemeStyle.Attribute, page == null ? null : AutoThemeStyle.AttributeValue).EndStartElement().Line()
             .RawTrusted(RenderFragmentCore(chart, options, includeAssets: false, assetSource: "document", preparedSvg, preparedWidth)).Line();
         writer.EndElement().Line()
             .EndElement().Line();
@@ -238,6 +248,27 @@ public sealed partial class TopologyHtmlRenderer {
     }
 
     internal static string? Nonce(TopologyRenderOptions? options) => string.IsNullOrWhiteSpace(options?.HtmlNonce) ? null : options!.HtmlNonce!.Trim();
+
+    /// <summary>
+    /// Builds the scoped stylesheet that lets a <see cref="ThemeMode.Auto"/> topology follow the viewer's colour scheme, or
+    /// returns null for an explicit mode or when the options carry their own SVG colour variables.
+    /// </summary>
+    /// <param name="chart">The topology the fragment is rendered from.</param>
+    /// <param name="options">The same render options passed to the fragment.</param>
+    /// <returns>Plain CSS for the fragment root's <c>data-cfx-auto-theme</c> scope, or null.</returns>
+    /// <remarks>Self-contained fragments and pages include it. Register it once per distinct theme for fragments from
+    /// <see cref="RenderFragmentWithoutAssets"/>, next to <see cref="BuildFragmentStyle"/>.</remarks>
+    public static string? BuildAutoThemeStyle(TopologyChart chart, TopologyRenderOptions? options = null) {
+        if (chart == null) throw new ArgumentNullException(nameof(chart));
+        return AutoTheme(chart, chart.ResolveRenderOptions(options))?.StyleSheet;
+    }
+
+    internal static AutoThemeStyle? AutoTheme(TopologyChart chart, TopologyRenderOptions options) {
+        var auto = AutoThemeStyle.ForHtml(chart.Theme, chart.ThemeMode, options.SvgColorVariables);
+        if (auto != null && chart.LayoutMode == TopologyLayoutMode.Regions && !options.RegionPrint)
+            auto.WithRule("&", mode => RegionColors(chart.Theme.Resolve(mode)).Substring(1));
+        return auto;
+    }
 
     /// <summary>
     /// Builds the renderer-owned stylesheet used by topology HTML fragments.
@@ -253,7 +284,7 @@ public sealed partial class TopologyHtmlRenderer {
     /// var fragment = renderer.RenderFragmentWithoutAssets(chart, options);
     /// // Register css once outside the asset-free fragments.
     /// </code></example>
-    public static string BuildFragmentStyle(TopologyRenderOptions? options = null, VisualTheme? theme = null, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static string BuildFragmentStyle(TopologyRenderOptions? options = null, VisualTheme? theme = null, ThemeMode mode = ThemeMode.Light) {
         options ??= new TopologyRenderOptions();
         var paint = new TopologyPaint(theme ?? VisualTheme.Graphite(), mode, options.SvgColorVariables);
         return StyleSheet(CssClassPrefix(options), CssFontFamily(paint.FontFamily), paint.Background, includePageShell: false);
@@ -446,6 +477,17 @@ public sealed partial class TopologyHtmlRenderer {
 
     private static string CssClassPrefix(TopologyRenderOptions options) {
         return NormalizeCssClassPrefix(options.CssClassPrefix, DefaultCssClassPrefix);
+    }
+
+    // A page of an Auto topology paints its polished background per mode from the scoped rule on its body.
+    internal static (AutoThemeStyle? Page, string Style) PageTheme(TopologyChart chart, TopologyRenderOptions options) {
+        var theme = new TopologyPaint(chart.Theme, chart.ThemeMode, options.SvgColorVariables);
+        var page = AutoThemeStyle.ForHtml(chart.Theme, chart.ThemeMode, options.SvgColorVariables);
+        if (page == null) return (null, BuildPageStyle(options, theme));
+        string Background(ThemeMode mode) => ChartForgeX.Rendering.ChartSurfacePolish.CssGradient(chart.Theme.Resolve(mode).Background);
+        page.WithPageBackground(Background);
+        return (page, ChartForgeX.Typography.ChartFontAssets.StyleSheet + StyleSheet(CssClassPrefix(options), CssFontFamily(theme.FontFamily),
+            AutoThemeStyle.Var(AutoThemeStyle.PageBackground, Background(ThemeMode.Light))) + page.StyleSheet);
     }
 
     internal static string BuildPageStyle(TopologyRenderOptions options, TopologyPaint theme) {

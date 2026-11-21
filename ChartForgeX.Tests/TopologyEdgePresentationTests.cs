@@ -95,7 +95,7 @@ public sealed class TopologyEdgePresentationTests {
     public void ChipsSitOnTheRouteClearOfNodesLabelsAndEachOther() {
         var chart = Sites();
         chart.WithEdgeEndpointLabels("link", "London uplink", "Paris edge");
-        chart.AddEdgeChip("link", "cost 100").AddEdgeChip("link", "lag 4m", TopologyTone.Warn).AddEdgeChip("link", "15.4W", TopologyTone.Good);
+        chart.AddEdgeChip("link", "cost 100").AddEdgeChip("link", "lag 4m", Tone.Warning).AddEdgeChip("link", "15.4W", Tone.Success);
         var options = Options(); options.IncludeEdgeLabelBackplates = true;
         var prepared = chart.Prepare(options);
         var document = XDocument.Parse(prepared.ToSvg());
@@ -153,7 +153,7 @@ public sealed class TopologyEdgePresentationTests {
     [Fact]
     public void EdgePresentationSurvivesAnInterchangeRoundTrip() {
         var chart = Sites().AddEdgeStripe("link", "#2563EB", "IP, primary").AddEdgeStripe("link", "rgb(249, 115, 22)")
-            .AddEdgeChip("link", "cost 100|a", TopologyTone.Warn, "server").WithEdgeEvidence("link", TopologyEdgeEvidence.Assumed, "KCC, inferred")
+            .AddEdgeChip("link", "cost 100|a", Tone.Warning, "server").WithEdgeEvidence("link", TopologyEdgeEvidence.Assumed, "KCC, inferred")
             .WithEdgeUplink("link", TopologyEdgeEnd.Target);
         chart.Edges[0].Metadata["owner"] = "ops";
         var restored = VisualArtifactInterchangeEnvelope.FromJson(chart.Prepare(Options()).ToInterchangeEnvelope().ToJson()).ToTopologyChart();
@@ -163,7 +163,7 @@ public sealed class TopologyEdgePresentationTests {
         Assert.Equal(TopologyEdgeEnd.Target, edge.UplinkEnd);
         Assert.Equal(new[] { "#2563EB|IP, primary", "rgb(249, 115, 22)|" }, edge.Stripes.Select(stripe => stripe.Color + "|" + stripe.Label));
         var chip = Assert.Single(edge.Chips);
-        Assert.Equal(("cost 100|a", TopologyTone.Warn, "server"), (chip.Text, chip.Tone, chip.IconId));
+        Assert.Equal(("cost 100|a", Tone.Warning, "server"), (chip.Text, chip.Tone, chip.IconId));
         Assert.Equal(new[] { "owner" }, edge.Metadata.Keys.Where(key => !key.StartsWith("layout.", StringComparison.Ordinal)));
     }
 

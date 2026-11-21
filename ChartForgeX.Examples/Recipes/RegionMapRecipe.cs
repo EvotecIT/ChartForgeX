@@ -1,7 +1,7 @@
 /// <summary>Creates a geographic map of regional service coverage or signed temperature measurements.</summary>
 public static class RegionMapRecipe {
     /// <summary>Creates the source model for a gallery variant without choosing an export backend.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "color-dimension" or "compact-color-dimension"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         if (variant is "color-dimension" or "compact-color-dimension") return Temperature(mode);
@@ -17,7 +17,7 @@ public static class RegionMapRecipe {
         return chart;
     }
 
-    private static Chart Temperature(VisualThemeMode mode) {
+    private static Chart Temperature(ThemeMode mode) {
         var colors = VisualTheme.Graphite().Resolve(mode);
         var values = new[] {
             new ChartRegionMapItem("CA", -25), new ChartRegionMapItem("TX", -3), new ChartRegionMapItem("NY", 0),

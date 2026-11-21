@@ -52,9 +52,9 @@ public sealed class V2DiagramTests {
         }
     }
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void TopologyAndSequenceShareCommonFrameThemeAndLogicalSize(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void TopologyAndSequenceShareCommonFrameThemeAndLogicalSize(ThemeMode mode) {
         var context = Context(mode);
         IVisualRenderable topology = Topology(); IVisualRenderable sequence = Sequence();
         var first = topology.Prepare(context); var second = sequence.Prepare(context);
@@ -132,7 +132,7 @@ public sealed class V2DiagramTests {
         Assert.Contains(new string('W', 100), prepared.ToArtifact("labels", VisualArtifactKind.Topology).ToInterchangeJson());
     }
 
-    private static VisualRenderContext Context(VisualThemeMode mode = VisualThemeMode.Light) => new(
+    private static VisualRenderContext Context(ThemeMode mode = ThemeMode.Light) => new(
         new VisualLayoutOptions(new VisualSize(640, 400)), themeMode: mode,
         frame: new VisualFrame("Shared diagrams", "Prepared static output", showLegend: false));
 

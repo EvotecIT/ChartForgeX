@@ -1,7 +1,7 @@
 /// <summary>Creates a tile map showing service coverage by state.</summary>
 public static class TileMapRecipe {
     /// <summary>Creates the source model for a gallery variant without choosing an export backend.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "compact-options"))
             throw new ArgumentOutOfRangeException(nameof(variant));
 

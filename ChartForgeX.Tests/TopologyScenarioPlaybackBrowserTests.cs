@@ -103,7 +103,7 @@ public sealed class TopologyScenarioPlaybackBrowserTests {
     [InlineData(true, null)]
     public async Task ScenarioControls_WithAccentFills_RetainTextAndBadgeContrast(bool dark, string? color) {
         var chart = TopologyScenarioPlaybackTests.ReplicationChart()
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         chart.Scenarios[0].Color = color;
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(
             new TopologyRenderOptions { ActiveScenarioId = "replicate" }.WithHtmlScenarioPanel()), 390, 900);

@@ -34,7 +34,7 @@ public sealed class V2ScalarProgressTests {
         chart.Options.CircleRadiusScale = 1.35; chart.Options.CircleStrokeScale = 1.8;
         var scene = Compile(chart, new ChartRect(0, 0, 180, 140));
         var second = Assert.Single(scene.Nodes.OfType<VisualSceneSlice>(), slice => slice.Role == "circle-value");
-        Assert.Equal(new VisualRenderContext().Theme.Resolve(VisualThemeMode.Light).Status.Info.Fill, second.Fill);
+        Assert.Equal(new VisualRenderContext().Theme.Resolve(ThemeMode.Light).Status.Info.Fill, second.Fill);
         Assert.NotEqual(first.Outer - first.Inner, second.Outer - second.Inner);
         Assert.True(second.Cx - second.Outer >= 0 && second.Cx + second.Outer <= 180 && second.Cy - second.Outer >= 0 && second.Cy + second.Outer <= 140);
         chart.Options.ShowCircleStatusLabel = false;

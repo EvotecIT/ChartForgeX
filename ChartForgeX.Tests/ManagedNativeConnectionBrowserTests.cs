@@ -15,9 +15,9 @@ namespace ChartForgeX.Tests;
 public sealed partial class ManagedNativeConnectionBrowserTests {
     [BrowserTheory]
     [Trait("BrowserSuite", "Compatibility")]
-    [InlineData(390, VisualThemeMode.Dark)]
-    [InlineData(900, VisualThemeMode.Light)]
-    public async Task ManagedConnectionCarriesOnlyCommittedBasisAcrossDeferredViewportAndAnnotationCommands(int width, VisualThemeMode mode) {
+    [InlineData(390, ThemeMode.Dark)]
+    [InlineData(900, ThemeMode.Light)]
+    public async Task ManagedConnectionCarriesOnlyCommittedBasisAcrossDeferredViewportAndAnnotationCommands(int width, ThemeMode mode) {
         if (!Enabled) return;
         var host = new NativeHost(width, mode);
         await using var session = await BrowserProofFonts.OpenAsync(host.Page, width + 24, 800);
@@ -77,7 +77,7 @@ public sealed partial class ManagedNativeConnectionBrowserTests {
     [Trait("BrowserSuite", "Compatibility")]
     public async Task ManagedConnectionRejectsUncommittedRepliesAndOwnsCrossChannelUpdateReconnectAndDisposal() {
         if (!Enabled) return;
-        var host = new NativeHost(900, VisualThemeMode.Light);
+        var host = new NativeHost(900, ThemeMode.Light);
         await using var session = await BrowserProofFonts.OpenAsync(host.Page, 924, 800);
         var page = session.Page;
         var pageErrors = new List<string>(); page.PageError += (_, error) => pageErrors.Add(error);
@@ -212,13 +212,13 @@ public sealed partial class ManagedNativeConnectionBrowserTests {
 
     private sealed class NativeHost {
         private readonly int _width;
-        private readonly VisualThemeMode _mode;
+        private readonly ThemeMode _mode;
         private readonly bool _typed;
         private readonly bool _navigation;
         private double _producerOffset;
         private readonly HtmlInteractiveChartRenderer _renderer = new();
         private readonly Dictionary<string, Snapshot> _snapshots = new();
-        internal NativeHost(int width, VisualThemeMode mode, bool typed = false, bool navigation = false) {
+        internal NativeHost(int width, ThemeMode mode, bool typed = false, bool navigation = false) {
             _width = width; _mode = mode; _typed = typed; _navigation = navigation;
             var chart = Model();
             _snapshots.Add("initial", new Snapshot(_renderer.PrepareSection(chart, configure: ConfigureForHost), chart.Annotations.ToArray()));

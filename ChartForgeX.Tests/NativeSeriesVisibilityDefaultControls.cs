@@ -32,7 +32,7 @@ public sealed class NativeSeriesVisibilityDefaultControls {
         var chart = Chart.Create().WithTitle("Native retained visibility").WithSize(width, 400)
             .WithXLabels("Opened", "Reviewed", "Released").WithDataLabels(family.EndsWith("labels", StringComparison.Ordinal));
         chart.Options.Theme = VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family);
-        chart.Options.ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        chart.Options.ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light;
         ChartSeries Add(string id, bool bar, double[] values) {
             var points = ChartPoints.FromValues(values);
             return (bar ? ChartSeries.CreateBar(new ChartSeriesId(id), id, points) : ChartSeries.CreateLine(new ChartSeriesId(id), id, points))

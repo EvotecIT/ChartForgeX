@@ -10,11 +10,11 @@ public sealed class TimeAxisReviewClosureTests {
     private static readonly DateTime Start = new(2026, 3, 2, 0, 0, 0, DateTimeKind.Utc);
 
     [Theory]
-    [InlineData(false, VisualThemeMode.Light)]
-    [InlineData(false, VisualThemeMode.Dark)]
-    [InlineData(true, VisualThemeMode.Light)]
-    [InlineData(true, VisualThemeMode.Dark)]
-    public void HorizontalAxesPreserveAutomaticAndAuthoredTickDensityThroughProjection(bool category, VisualThemeMode mode) {
+    [InlineData(false, ThemeMode.Light)]
+    [InlineData(false, ThemeMode.Dark)]
+    [InlineData(true, ThemeMode.Light)]
+    [InlineData(true, ThemeMode.Dark)]
+    public void HorizontalAxesPreserveAutomaticAndAuthoredTickDensityThroughProjection(bool category, ThemeMode mode) {
         var chart = Chart.Create().WithSize(category ? 360 : 1400, category ? 800 : 360).WithHeader(false).WithLegend(false)
             .WithThemeMode(mode).WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"))
             .AddLine("Dates", Enumerable.Range(0, 7).Select(index => category
@@ -37,11 +37,11 @@ public sealed class TimeAxisReviewClosureTests {
     }
 
     [Theory]
-    [InlineData(3, VisualThemeMode.Light)]
-    [InlineData(3, VisualThemeMode.Dark)]
-    [InlineData(5, VisualThemeMode.Light)]
-    [InlineData(5, VisualThemeMode.Dark)]
-    public void UnlistedRegularBarCadencesFitTheGeneratedGridBeforePaintingCaptions(int days, VisualThemeMode mode) {
+    [InlineData(3, ThemeMode.Light)]
+    [InlineData(3, ThemeMode.Dark)]
+    [InlineData(5, ThemeMode.Light)]
+    [InlineData(5, ThemeMode.Dark)]
+    public void UnlistedRegularBarCadencesFitTheGeneratedGridBeforePaintingCaptions(int days, ThemeMode mode) {
         var chart = Chart.Create().WithSize(360, 320).WithHeader(false).WithLegend(false).WithXAxisTimeScale().WithThemeMode(mode)
             .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"))
             .ConfigureGridStyle(style => style.ShowVerticalLines = true)

@@ -89,7 +89,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         for (var index = 0; index < ordered.Length; index++)
             series.WithObservationId(index, new ChartObservationId(ids[(int)ordered[index].X - 1]));
         return Chart.Create().WithSize(640, 380).WithTitle("Regional measurements")
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithXLabels(labels).WithLegend().WithPointLegend().WithDataLabels(false).AddSeries(series);
     }
 

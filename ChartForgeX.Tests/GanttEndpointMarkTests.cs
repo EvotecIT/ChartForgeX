@@ -115,7 +115,7 @@ public sealed class GanttEndpointMarkTests {
 
     private static Chart Milestones(int width, bool dark) {
         var chart = Chart.Create().WithSize(width, 360)
-        .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithLegend(false)
+        .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithLegend(false)
         .ConfigureGridStyle(style => style.ShowVerticalLines = true)
         .AddGanttTask("Work", Start, Finish, .5)
         .AddGanttMilestone("Start", Start, color: MilestoneColor).AddGanttMilestone("Delivery", Finish, color: MilestoneColor)

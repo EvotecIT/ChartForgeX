@@ -18,7 +18,7 @@ public sealed partial class MermaidNotationReferenceRenderingTests {
         Assert.Equal(reference.GetProperty("version").GetString(), installed.RootElement.GetProperty("version").GetString());
         // The shared YAML spelling retains the same native curve; compact metadata remains a native parser contract.
         var source = FlowchartCurveRecipe.Source("flowchart").Replace("curve:bumpX", "curve: bumpX", StringComparison.Ordinal);
-        var artifact = FlowchartCurveRecipe.Create("flowchart", variant, dark ? VisualThemeMode.Dark : VisualThemeMode.Light, BrowserProofFonts.Family);
+        var artifact = FlowchartCurveRecipe.Create("flowchart", variant, dark ? ThemeMode.Dark : ThemeMode.Light, BrowserProofFonts.Family);
         var svg = artifact.ToSvg(); var png = artifact.ToPng(); var semantics = artifact.ToInterchangeJson();
         var html = "<style>body{margin:0;padding:16px;box-sizing:border-box}section{max-width:100%;overflow:auto;margin-bottom:24px}svg,img{display:block;max-width:none}</style>"
             + "<h2>Pinned Mermaid</h2><section id='reference'></section><h2>ChartForgeX SVG</h2><section id='native'>" + svg

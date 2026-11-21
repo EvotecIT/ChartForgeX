@@ -36,11 +36,11 @@ public sealed partial class VisualDesignTokens {
     /// <exception cref="ArgumentNullException"><paramref name="json"/> is null.</exception>
     /// <exception cref="ArgumentException">The JSON is malformed, too large, has duplicate keys, lacks a required member,
     /// or holds a colour that is not <c>#rrggbb</c> or <c>#rrggbbaa</c>. Keys are case-sensitive.</exception>
-    public static VisualDesignTokens FromJson(string json, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static VisualDesignTokens FromJson(string json, ThemeMode mode = ThemeMode.Light) {
         if (json == null) throw new ArgumentNullException(nameof(json));
         if (json.Length > MaximumJsonCharacters) throw new ArgumentException("Design-token JSON exceeds the maximum supported size.", nameof(json));
-        if (!Enum.IsDefined(typeof(VisualThemeMode), mode)) throw new ArgumentOutOfRangeException(nameof(mode), mode, "Unknown theme mode.");
-        var name = mode == VisualThemeMode.Dark ? "dark" : "light";
+        if (!Enum.IsDefined(typeof(ThemeMode), mode)) throw new ArgumentOutOfRangeException(nameof(mode), mode, "Unknown theme mode.");
+        var name = mode == ThemeMode.Dark ? "dark" : "light";
         var root = GeoJsonValue.Parse(json, StringComparer.Ordinal, TokenJsonLimits).AsObject("design tokens");
         var set = Member(root, name, name);
         var surface = Member(set, "surface", name + ".surface");
@@ -107,7 +107,7 @@ public sealed partial class VisualDesignTokens {
     /// <returns>The loaded tokens.</returns>
     /// <exception cref="ArgumentException">The path is empty or the content is not a valid token document.</exception>
     /// <exception cref="IOException">The file cannot be read.</exception>
-    public static VisualDesignTokens FromJsonFile(string path, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static VisualDesignTokens FromJsonFile(string path, ThemeMode mode = ThemeMode.Light) {
         if (string.IsNullOrWhiteSpace(path)) throw new ArgumentException("Token file path must not be empty.", nameof(path));
         using var reader = new StreamReader(path);
         var buffer = new char[MaximumJsonCharacters + 1];

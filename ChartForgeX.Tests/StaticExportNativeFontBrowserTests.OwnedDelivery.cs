@@ -13,7 +13,7 @@ public sealed partial class StaticExportNativeFontBrowserTests {
     [BrowserTheory] [InlineData(760, false)] [InlineData(390, true)]
     public async Task AutomaticOwnedFacesLoadFromBinaryUnderSelfFontCspAndDetachedExportsKeepNativeInk(int width, bool dark) {
         if (!Enabled) return;
-        var html = OwnedPage(Model(width, dark ? VisualThemeMode.Dark : VisualThemeMode.Light).ToInteractiveHtmlFragment(OwnedOptions));
+        var html = OwnedPage(Model(width, dark ? ThemeMode.Dark : ThemeMode.Light).ToInteractiveHtmlFragment(OwnedOptions));
         await using var session = await OpenAsync(html, width + 24, 760); var page = session.Page;
         await page.WaitForFunctionAsync("()=>[...document.fonts].some(face=>face.family.includes('cfx-owned-')&&face.status==='loaded')&&[...document.querySelectorAll('[data-cfx-owned-font-text]')].some(node=>!node.hasAttribute('display'))");
         var observed = await page.EvaluateAsync<JsonElement>("()=>({violations:ownedFontViolations,fonts:[...document.fonts].map(face=>({family:face.family,status:face.status})),labels:[...document.querySelectorAll('[data-cfx-owned-font-text]')].map(node=>({text:node.textContent,family:getComputedStyle(node).fontFamily,display:getComputedStyle(node).display,width:node.getBBox().width})),resources:performance.getEntriesByType('resource').map(row=>row.name)})");
@@ -33,7 +33,7 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         var failure = rejected
             ? "const Actual=FontFace;window.FontFace=function(...args){const face=new Actual(...args);face.load=()=>Promise.reject(new Error('Intentional owned-font rejection'));return face;};"
             : "window.FontFace=undefined;";
-        var html=OwnedPage(Model(760,VisualThemeMode.Light).ToInteractiveHtmlFragment(OwnedOptions),failure);
+        var html=OwnedPage(Model(760,ThemeMode.Light).ToInteractiveHtmlFragment(OwnedOptions),failure);
         await using var session=await OpenAsync(html,784,760,waitForOwnedFonts:false);var page=session.Page;
         var observed=await page.EvaluateAsync<JsonElement>("()=>({violations:ownedFontViolations,fonts:document.fonts.size,visible:[...document.querySelectorAll('[data-cfx-owned-font-native]')].filter(node=>getComputedStyle(node).display!=='none').length,text:[...document.querySelectorAll('[data-cfx-owned-font-text]')].filter(node=>getComputedStyle(node).display!=='none').length})");
         HtmlOwnedFontDeliveryTests.Save("binary-failure-"+rejected+".page.html",html);HtmlOwnedFontDeliveryTests.Save("binary-failure-"+rejected+".observed.json",observed.GetRawText());
@@ -43,7 +43,7 @@ public sealed partial class StaticExportNativeFontBrowserTests {
     [BrowserFact]
     public async Task BinaryRegistrationDetachesCallerBytesAndChartDisposalKeepsAnIndependentlyOwnedFace() {
         if (!Enabled) return;
-        var html=OwnedPage(Model(760,VisualThemeMode.Light).ToInteractiveHtmlFragment(OwnedOptions));
+        var html=OwnedPage(Model(760,ThemeMode.Light).ToInteractiveHtmlFragment(OwnedOptions));
         await using var session=await OpenAsync(html,784,760,waitForOwnedFonts:false);var page=session.Page;
         await page.WaitForFunctionAsync("()=>[...document.fonts].some(face=>face.family.includes('cfx-owned-')&&face.status==='loaded')");
         var observed=await page.EvaluateAsync<JsonElement>("async()=>{const module=window[Symbol.for('ChartForgeX.nativeTextExport')],payload=document.querySelector('template[data-cfx-font-root]').content.textContent;const bytes=Uint8Array.from(atob(payload),c=>c.charCodeAt(0));const owner=module.registerBinary('Independent caller',bytes,{weight:'400'});bytes.fill(0);await owner.ready;const root=document.querySelector('.cfx-interactive-chart');ChartForgeXCharts.get(root).dispose();const after=[...document.fonts].map(face=>({family:face.family,status:face.status}));owner.release();return{after,final:document.fonts.size,violations:ownedFontViolations};}");
@@ -55,8 +55,8 @@ public sealed partial class StaticExportNativeFontBrowserTests {
     public async Task ReplacementBeforeAFontLoadCompletesCannotSwitchTheDetachedDrawingOrRetainItsFace() {
         if (!Enabled) return;
         const string delayed="window.pendingOwnedLoads=[];const Actual=FontFace;window.FontFace=function(...args){const face=new Actual(...args),load=face.load.bind(face);face.load=()=>new Promise((resolve,reject)=>pendingOwnedLoads.push(()=>load().then(resolve,reject)));return face;};";
-        var first=Model(760,VisualThemeMode.Light).ToInteractiveHtmlFragment(OwnedOptions);
-        var next=Model(760,VisualThemeMode.Light).WithTitle("A replacement drawing").ToInteractiveHtmlFragmentWithoutAssets(OwnedOptions);
+        var first=Model(760,ThemeMode.Light).ToInteractiveHtmlFragment(OwnedOptions);
+        var next=Model(760,ThemeMode.Light).WithTitle("A replacement drawing").ToInteractiveHtmlFragmentWithoutAssets(OwnedOptions);
         await using var session=await OpenAsync(OwnedPage(first,delayed),784,760,waitForOwnedFonts:false);var page=session.Page;
         await page.WaitForFunctionAsync("()=>pendingOwnedLoads.length>0");
         await page.EvaluateAsync("html=>{window.oldOwnedSvg=document.querySelector('.cfx-stage svg');window.oldOwnedCount=pendingOwnedLoads.length;ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart')).update(html);}",next);
@@ -70,7 +70,7 @@ public sealed partial class StaticExportNativeFontBrowserTests {
     [BrowserFact]
     public async Task FontObservationRejectsForeignRecordsAndNewMissingIdentitiesRetainContoursWithoutBorrowingTheOldFace() {
         if (!Enabled) return;
-        await using var session=await OpenAsync(OwnedPage(Model(760,VisualThemeMode.Light).ToInteractiveHtmlFragment(OwnedOptions)),784,760);var page=session.Page;
+        await using var session=await OpenAsync(OwnedPage(Model(760,ThemeMode.Light).ToInteractiveHtmlFragment(OwnedOptions)),784,760);var page=session.Page;
         await page.WaitForFunctionAsync("()=>[...document.fonts].some(face=>face.family.includes('cfx-owned-')&&face.status==='loaded')");
         var observed=await page.EvaluateAsync<JsonElement>("async()=>{const module=window[Symbol.for('ChartForgeX.nativeTextExport')],root=document.querySelector('.cfx-interactive-chart'),normal=module.observation(root,false),failures=[];for(const change of ['attribute','base64','empty','dangling']){const copy=root.cloneNode(true),record=copy.querySelector('template[data-cfx-font-root]');if(change==='attribute')record.setAttribute('onclick','foreign');if(change==='base64')record.content.textContent='?'+record.content.textContent.slice(1);if(change==='empty')record.content.replaceChildren();if(change==='dangling')record.dataset.cfxFontRoot='0'.repeat(64);try{module.observation(copy,false);failures.push(false);}catch(error){failures.push(error instanceof TypeError);}}const missing=root.cloneNode(true),record=missing.querySelector('template[data-cfx-font-root]'),old=record.dataset.cfxFontRoot;record.dataset.cfxFontRoot='0'.repeat(64);record.content.replaceChildren();for(const face of missing.querySelectorAll('template[data-cfx-font-face]'))if(face.dataset.cfxFontResource===old)face.dataset.cfxFontResource='0'.repeat(64);const different=!normal.isEqualNode(module.observation(missing,true));document.body.appendChild(missing);const releases=[];await module.mount(missing,release=>{releases.push(release);return release;});const aliases=new Set([...missing.querySelectorAll('template[data-cfx-font-face]')].filter(face=>face.dataset.cfxFontResource==='0'.repeat(64)).map(face=>face.dataset.cfxFontFace));const borrowed=[...missing.querySelectorAll('[data-cfx-owned-font-text]')].filter(node=>aliases.has(node.dataset.cfxOwnedFontText)&&!node.hasAttribute('display')).length;const native=[...missing.querySelectorAll('[data-cfx-owned-font-native]')].filter(node=>aliases.has(node.dataset.cfxOwnedFontNative)&&!node.hasAttribute('display')).length;for(const release of releases)release();missing.remove();return{failures,different,borrowed,native,violations:ownedFontViolations};}");
         HtmlOwnedFontDeliveryTests.Save("font-observation-malformed-and-missing.observed.json",observed.GetRawText());

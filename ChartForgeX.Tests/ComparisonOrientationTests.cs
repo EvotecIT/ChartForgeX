@@ -186,7 +186,7 @@ public sealed class ComparisonOrientationTests {
 
     private static Chart Bare() => Chart.Create().WithSize(800, 400).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false);
     private static VisualRenderContext Context(int width = 800, bool dark = false) => new(layout: new VisualLayoutOptions(new VisualSize(width, 400)),
-        theme: VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), themeMode: dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        theme: VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), themeMode: dark ? ThemeMode.Dark : ThemeMode.Light);
     private static VisualScene Scene(Chart chart) {
         var context = Context(); var builder = new VisualSceneBuilder(new VisualSize(800, 400), context.Font);
         VisualCartesianCompiler.Build(chart, context, builder, new ChartRect(0, 0, 800, 400)); return builder.Build();

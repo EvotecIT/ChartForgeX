@@ -7,13 +7,13 @@ namespace ChartForgeX.Markup;
 public sealed partial class MarkupChartParser {
     private sealed partial class ChartState {
         internal VisualTheme? Theme;
-        internal VisualThemeMode? ThemeMode;
+        internal ThemeMode? ThemeMode;
     }
 
     private static bool TryParseFamilyOption(ChartState state, string key, string value, int lineNumber) {
         switch (NormalizeKey(key)) {
             case "theme": ParseTheme(state, value); return true;
-            case "thememode": state.ThemeMode = VisualMarkupFenceOptions.ParseEnum<VisualThemeMode>(value, key); return true;
+            case "thememode": state.ThemeMode = VisualMarkupFenceOptions.ParseEnum<ThemeMode>(value, key); return true;
             case "heatmapvaluename":
                 state.HeatmapValueName = new ChartColorDimensionOptions { Name = value }.Name;
                 return true;
@@ -30,8 +30,8 @@ public sealed partial class MarkupChartParser {
     }
 
     private static void ParseTheme(ChartState state, string value) {
-        if (NormalizeKey(value) is "light" or "dark") {
-            state.ThemeMode = VisualMarkupFenceOptions.ParseEnum<VisualThemeMode>(value, "theme");
+        if (NormalizeKey(value) is "auto" or "light" or "dark") {
+            state.ThemeMode = VisualMarkupFenceOptions.ParseEnum<ThemeMode>(value, "theme");
             return;
         }
         state.Theme = NormalizeKey(value) switch {

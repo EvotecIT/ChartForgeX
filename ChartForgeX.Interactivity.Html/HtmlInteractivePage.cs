@@ -1,14 +1,29 @@
 using ChartForgeX.Html;
 using ChartForgeX.Core;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Interactivity.Html;
 
 internal static class HtmlInteractivePage {
-    internal static string ChartSurfaceStyle(Chart chart) => "background:" + chart.Options.ResolvedTheme.Background.ToCss()
-        + ";color:" + chart.Options.ResolvedTheme.Text.ToCss() + ";font-family:" + HtmlChartRenderer.CssFontFamily(chart.Options.ResolvedTheme.FontFamily);
+    internal static string ChartSurfaceStyle(Chart chart) => SurfaceColors(chart.Options.ResolvedTheme)
+        + ";font-family:" + HtmlChartRenderer.CssFontFamily(chart.Options.ResolvedTheme.FontFamily);
+
+    private static string SurfaceColors(ResolvedVisualTheme theme) => "background:" + theme.Background.ToCss() + ";color:" + theme.Text.ToCss();
+
+    /// <summary>
+    /// Returns the page surface of a chart's document. For an Auto chart without host colours the colours move from the
+    /// inline style into a scoped rule on the body and shell, so they follow the viewer's colour scheme.
+    /// </summary>
+    internal static (string Style, AutoThemeStyle? Auto) ChartSurface(Chart chart) {
+        var auto = AutoThemeStyle.ForHtml(chart.Options.Theme, chart.Options.ThemeMode, chart.Options.SvgColorVariables);
+        if (auto == null) return (ChartSurfaceStyle(chart), null);
+        string Colors(ThemeMode mode) => SurfaceColors(chart.Options.Theme.ResolvePresentation(mode));
+        auto.WithRule("&", Colors).WithRule("& .cfx-shell", Colors);
+        return ("font-family:" + HtmlChartRenderer.CssFontFamily(chart.Options.ResolvedTheme.FontFamily), auto);
+    }
 
     internal static HtmlMarkupWriter StartDocument(string title, HtmlAssetReferences? assets = null, string? bodyStyle = null,
-        string language = "en", string? direction = null, string? productFontStyle = null) {
+        string language = "en", string? direction = null, string? productFontStyle = null, AutoThemeStyle? autoTheme = null) {
         var writer = new HtmlMarkupWriter();
         writer.Doctype().Line()
             .StartElement("html").Attribute("lang", language).Attribute("dir", direction).EndStartElement().Line()
@@ -24,8 +39,11 @@ internal static class HtmlInteractivePage {
             writer.StartElement("style").Attribute("data-cfx-product-fonts", "true").EndStartElement()
                 .RawTrusted(productFontStyle).EndElement().Line();
 
+        if (autoTheme != null) writer.RawTrusted(autoTheme.StyleElement).Line();
         writer.EndElement().Line()
-            .StartElement("body").Attribute("style", bodyStyle).EndStartElement().Line();
+            .StartElement("body").Attribute(ChartForgeX.Themes.AutoThemeStyle.ScopeAttribute, autoTheme?.Id)
+            .Attribute(AutoThemeStyle.Attribute, autoTheme == null ? null : AutoThemeStyle.AttributeValue)
+            .Attribute("style", bodyStyle).EndStartElement().Line();
         return writer;
     }
 

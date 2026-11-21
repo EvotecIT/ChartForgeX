@@ -31,9 +31,9 @@ public sealed class RoundedRadialBrowserTests {
     public async Task GalleryRoundedCutawaysAndPaintedInteriorsRetainNativePointerAndKeyboardTargets(ChartSeriesKind kind, bool compact, bool dark, bool relativeLabels) {
         if (!Enabled) return;
         var width = compact ? 360 : 800; var height = compact ? 360 : 440;
-        var chart = V2GalleryModels.Create(kind, compact ? "compact-options" : "options", dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = V2GalleryModels.Create(kind, compact ? "compact-options" : "options", dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithSize(width, height).WithTitle(V2GalleryModels.Title(kind)).WithSubtitle("Rounded sectors retain source values")
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         if (relativeLabels) {
             chart.Options.XAxis.LabelOrientation = ChartAxisLabelOrientation.Parallel;
             chart.Options.YAxis.LabelOrientation = chart.Options.SecondaryYAxis.LabelOrientation = ChartAxisLabelOrientation.Perpendicular;

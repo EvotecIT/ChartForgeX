@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = AutomaticRadialBandsRecipe.Create(&quot;compact-automatic-rings&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Three independent service mixes use source-ordered automatic Donut bands.&lt;/summary&gt;
 public static class AutomaticRadialBandsRecipe {
     /// &lt;summary&gt;Creates immutable allocation without assigning or changing authored RadialBand values.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;automatic-rings&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;automatic-rings&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;automatic-rings&quot; or &quot;compact-automatic-rings&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create().WithXLabels(&quot;Subscriptions&quot;, &quot;Consulting&quot;, &quot;Support&quot;)
             .WithAutomaticRadialBands(new ChartRadialBandAllocation(.2, .04)).WithDonutCenterLabel(false)
@@ -136,6 +137,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -145,7 +147,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = AutomaticRadialBandsRecipe.Create(&quot;compact-automatic-rings&quot;, mode);
 var context = new VisualRenderContext(
@@ -160,7 +162,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Three independent service mixes use source-ordered automatic Donut bands.&lt;/summary&gt;
 public static class AutomaticRadialBandsRecipe {
     /// &lt;summary&gt;Creates immutable allocation without assigning or changing authored RadialBand values.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;automatic-rings&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;automatic-rings&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;automatic-rings&quot; or &quot;compact-automatic-rings&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create().WithXLabels(&quot;Subscriptions&quot;, &quot;Consulting&quot;, &quot;Support&quot;)
             .WithAutomaticRadialBands(new ChartRadialBandAllocation(.2, .04)).WithDonutCenterLabel(false)

@@ -5,7 +5,7 @@ using ChartForgeX.VisualArtifacts;
 /// <summary>Requirement role colors rendered through native topology, SVG and PNG.</summary>
 public static class RequirementThemeRecipe {
     /// <summary>Creates the same finite native drawing used by the complete source program.</summary>
-    public static VisualArtifact Create(string variant, VisualThemeMode mode, string? fontFamily = null) {
+    public static VisualArtifact Create(string variant, ThemeMode mode, string? fontFamily = null) {
         if (variant is not ("compact" or "wide")) throw new ArgumentOutOfRangeException(nameof(variant));
         var result = MermaidRenderer.Render(Source(mode), new MermaidRenderOptions {
             Presentation = new MermaidPresentationOptions { ThemeMode = mode, FontFamily = fontFamily },
@@ -17,8 +17,8 @@ public static class RequirementThemeRecipe {
     }
 
     /// <summary>Returns literal native role settings and requirements; it contains no external assets.</summary>
-    public static string Source(VisualThemeMode mode) {
-        var dark = mode == VisualThemeMode.Dark;
+    public static string Source(ThemeMode mode) {
+        var dark = mode == ThemeMode.Dark;
         return "%%{init:{\"themeVariables\":{\"requirementBackground\":\"" + (dark ? "#382535" : "#F5DBE4")
             + "\",\"requirementBorderColor\":\"" + (dark ? "#E986BC" : "#B71D62")
             + "\",\"requirementTextColor\":\"" + (dark ? "#F9EAF5" : "#28132B")

@@ -180,7 +180,7 @@ public sealed class ScatterBubbleColorLegendTests {
         var fonts = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito");
         FontRegistry.Register(family, Path.Combine(fonts, "Carlito-Regular.ttf"), 400);
         FontRegistry.Register(family, Path.Combine(fonts, "Carlito-Bold.ttf"), 700);
-        var chart = V2GalleryModels.Create(kind, "compact-color-scale", VisualThemeMode.Light);
+        var chart = V2GalleryModels.Create(kind, "compact-color-scale", ThemeMode.Light);
         var subtitle = kind == ChartSeriesKind.Scatter ? "Temperature has its own fixed color domain; processing time stays independent"
             : "Size shows requests; named color bands show temperature";
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 360)), VisualTheme.Graphite(),

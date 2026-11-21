@@ -18,9 +18,9 @@ public sealed class AreaDepthBrowserTests {
     [InlineData(ChartSeriesKind.DifferenceArea, "smooth-boundaries", true)]
     public async Task NativeAreaOptionsRetainSourceSelectionAndReadoutsAfterResponsiveResize(ChartSeriesKind kind, string variant, bool compactDark) {
         if (!Enabled) return;
-        var chart = ExampleRecipes.ForKind(kind, variant).Create(variant, compactDark ? VisualThemeMode.Dark : VisualThemeMode.Light) as Chart;
+        var chart = ExampleRecipes.ForKind(kind, variant).Create(variant, compactDark ? ThemeMode.Dark : ThemeMode.Light) as Chart;
         Assert.NotNull(chart);
-        chart!.WithSize(800, 440).WithTheme(VisualTheme.Graphite(), compactDark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        chart!.WithSize(800, 440).WithTheme(VisualTheme.Graphite(), compactDark ? ThemeMode.Dark : ThemeMode.Light);
         foreach (var series in chart.Series) series.ConfigureMarkers(markers => markers.Radius = 3);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit; options.Tooltip.Mode = HtmlChartTooltipMode.Single;

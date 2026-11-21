@@ -3,7 +3,7 @@ using ChartForgeX.Themes;
 
 internal static partial class MermaidExamples {
     private static void WriteGitGraphDepthExamples(string output) {
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark })
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark })
             foreach (var variant in new[] { "wide-lr", "compact-lr", "wide-tb", "compact-tb", "wide-bt", "compact-bt" }) {
                 var block = GitGraphDepthRecipe.Create(variant, mode).WithTheme(VisualTheme.Graphite().WithFontFamily(ExampleTypography.FontFamily), mode);
                 var id = "native-gitgraph-depth-" + variant + "-" + mode.ToString().ToLowerInvariant();

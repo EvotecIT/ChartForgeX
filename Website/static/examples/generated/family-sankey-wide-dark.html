@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = SankeyRecipe.Create(&quot;wide&quot;, mode);
 var context = new VisualRenderContext(
@@ -109,7 +110,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 
 /// &lt;summary&gt;Weighted requests flow from their channels through automatic and manual processing to an outcome.&lt;/summary&gt;
 public static class SankeyRecipe {
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         var requests = ChartSeries.CreateSankey(new ChartSeriesId(&quot;requests&quot;), &quot;Requests&quot;, new[] {
             new ChartNode(&quot;portal&quot;, &quot;Portal&quot;), new ChartNode(&quot;email&quot;, &quot;Email&quot;), new ChartNode(&quot;phone&quot;, &quot;Phone&quot;),
             new ChartNode(&quot;automatic&quot;, &quot;Automatic&quot;), new ChartNode(&quot;manual&quot;, &quot;Manual&quot;),
@@ -146,6 +147,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -155,7 +157,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = SankeyRecipe.Create(&quot;wide&quot;, mode);
 var context = new VisualRenderContext(
@@ -169,7 +171,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 
 /// &lt;summary&gt;Weighted requests flow from their channels through automatic and manual processing to an outcome.&lt;/summary&gt;
 public static class SankeyRecipe {
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         var requests = ChartSeries.CreateSankey(new ChartSeriesId(&quot;requests&quot;), &quot;Requests&quot;, new[] {
             new ChartNode(&quot;portal&quot;, &quot;Portal&quot;), new ChartNode(&quot;email&quot;, &quot;Email&quot;), new ChartNode(&quot;phone&quot;, &quot;Phone&quot;),
             new ChartNode(&quot;automatic&quot;, &quot;Automatic&quot;), new ChartNode(&quot;manual&quot;, &quot;Manual&quot;),

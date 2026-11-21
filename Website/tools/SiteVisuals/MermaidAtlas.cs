@@ -5,6 +5,7 @@
 //   site:<name>      Website/tools/SiteVisuals/Mermaid/<name>.mmd
 //   plugin-fixture:<path> source text from the isolated test corpus; no plugin is loaded or executed
 using System.Text.Json;
+using ChartForgeX;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Playground;
 using ChartForgeX.Themes;
@@ -113,7 +114,7 @@ internal static class MermaidAtlas {
         options ??= new MermaidRenderOptions();
         if (document.Theme == null) {
             options.Presentation ??= new MermaidPresentationOptions();
-            options.Presentation.ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+            options.Presentation.ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light;
         }
         var artifact = document.ToVisualArtifact(options);
         return artifact.ToSvg(null, $"cfx-mm-{id}-{(dark ? "d" : "l")}");

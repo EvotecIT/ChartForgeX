@@ -1,7 +1,7 @@
 /// <summary>Uses real typed observations and a fixed native value/size domain without an HTML dependency.</summary>
 public static class NativeBubbleComponentRecipe {
     /// <summary>Creates two independently identified Bubble bands with caller-owned typography.</summary>
-    public static Chart Create(double y, double size, bool area, bool reversed, int width, VisualThemeMode mode, string family) {
+    public static Chart Create(double y, double size, bool area, bool reversed, int width, ThemeMode mode, string family) {
         var chart = Chart.Create().WithTitle("Authored Bubble Y and Size").WithSize(width, 420)
             .WithTheme(VisualTheme.Graphite(), mode).WithFontFamily(family).WithDataLabels(true).WithLegend(true);
         foreach (var key in new[] { "delivery", "comparison" }) {

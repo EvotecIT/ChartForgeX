@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -10,7 +11,7 @@ using ChartForgeX.Interactivity.Html;
 
 var donut={{DONUT}};var kind={{KIND}};var renderer=new HtmlInteractiveChartRenderer();var readings=NativeRawValueRecipe.Readings(kind);
 void Configure(HtmlChartInteractionOptions options){options.CaptureNativeValueSource=true;options.Interaction.ChartId="native-raw-values";}
-Chart Model(double reading)=>NativeRawValueRecipe.Create(donut,kind,reading,{{WIDTH}},VisualThemeMode.{{MODE}});
+Chart Model(double reading)=>NativeRawValueRecipe.Create(donut,kind,reading,{{WIDTH}},ThemeMode.{{MODE}});
 var from=kind=="source-reflow"?renderer.PrepareVisibilitySection(Model(readings.First),NativeRawValueRecipe.View(false),configure:Configure):renderer.PrepareSection(Model(readings.First),configure:Configure);
 var to=kind=="source-reflow"?renderer.PrepareVisibilitySection(Model(readings.Last),NativeRawValueRecipe.View(true),configure:Configure):renderer.PrepareSection(Model(readings.Last),configure:Configure);
 var options=new HtmlNativeTransitionOptions(kind=="source-reflow"?HtmlNativeTransitionEffect.SourceReflow:kind=="initial"?HtmlNativeTransitionEffect.InitialValues:HtmlNativeTransitionEffect.Values,9);

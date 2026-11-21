@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -15,7 +16,7 @@ using ChartForgeX.VisualBlocks;
 
 // Native PNG and standalone SVG use bundled Archivo.
 // Add ChartFontAssets.StyleSheet once for other text on a host page.
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = BubbleMarkerOptionsRecipe.Create("custom-markers", mode);
 var context = new VisualRenderContext(
@@ -30,13 +31,13 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 /// <summary>Compares standard and priority observations with independent bubble markers.</summary>
 public static class BubbleMarkerOptionsRecipe {
     /// <summary>Creates the selected example without choosing a renderer or export backend.</summary>
-    public static Chart Create(string variant = "options", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "options", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("options" or "compact-options" or "custom-markers" or "compact-custom-markers"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         return MarkerOptions(variant.EndsWith("custom-markers", StringComparison.Ordinal), mode);
     }
 
-    private static Chart MarkerOptions(bool custom, VisualThemeMode mode) {
+    private static Chart MarkerOptions(bool custom, ThemeMode mode) {
         var standard = ChartSeries.CreateBubble(new ChartSeriesId("standard"), "Standard", new[] {
             new ChartBubble(1, 18, 9), new ChartBubble(2, 30, 36), new ChartBubble(3, 24, 81)
         }).ConfigureMarkers(markers => markers.Shape = ChartMarkerShape.Circle);
@@ -46,7 +47,7 @@ public static class BubbleMarkerOptionsRecipe {
         if (custom) priority.ConfigureMarkers(markers => {
             markers.CustomPath = ChartMarkerPath.Start(0, -1).CubicTo(1, -1, 1, 1, 0, 1)
                 .CubicTo(-1, 1, -1, -1, 0, -1);
-            var outline = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(226, 232, 240) : ChartColor.FromRgb(51, 65, 85);
+            var outline = mode == ThemeMode.Dark ? ChartColor.FromRgb(226, 232, 240) : ChartColor.FromRgb(51, 65, 85);
             markers.OutlineStroke = new ChartStrokeStyle(outline, 2, dash: new[] { 4d, 3d });
             markers.StrokeDashOffset = 1;
         });

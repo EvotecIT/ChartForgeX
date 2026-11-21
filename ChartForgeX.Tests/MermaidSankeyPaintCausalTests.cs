@@ -58,7 +58,7 @@ public sealed class MermaidSankeyPaintCausalTests {
     [InlineData(false)] [InlineData(true)]
     public void UnconfiguredSankeyRetainsItsNativePaintAndLabelDefaults(bool dark) {
         var parsed = new MermaidParser().ParseSankey("sankey-beta\nA,B,6"); Assert.Empty(parsed.Diagnostics);
-        var chart = parsed.Document!.ToChart().WithTheme(ChartForgeX.Themes.VisualTheme.Graphite(), dark ? ChartForgeX.Themes.VisualThemeMode.Dark : ChartForgeX.Themes.VisualThemeMode.Light);
+        var chart = parsed.Document!.ToChart().WithTheme(ChartForgeX.Themes.VisualTheme.Graphite(), dark ? ChartForgeX.ThemeMode.Dark : ChartForgeX.ThemeMode.Light);
         var prepared = SankeyFlowColorTests.Prepare(chart); Capture("causal-default-" + dark, prepared);
         Assert.Equal(ChartSankeyFlowColorMode.Source, chart.Options.Sankey.FlowColorMode);
         Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "sankey-ribbon");

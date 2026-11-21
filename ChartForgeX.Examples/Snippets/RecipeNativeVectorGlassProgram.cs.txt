@@ -6,7 +6,7 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 
-var canvas = NativeVectorGlassExample.Create({{VARIANT}}, VisualThemeMode.{{MODE}});
+var canvas = NativeVectorGlassExample.Create({{VARIANT}}, ThemeMode.{{MODE}});
 File.WriteAllText("glass.svg", canvas.ToSvg());
 File.WriteAllBytes("glass.png", canvas.ToPng());
 File.WriteAllText("glass.html", canvas.ToHtmlPage());

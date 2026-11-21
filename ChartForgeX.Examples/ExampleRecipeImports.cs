@@ -1,4 +1,5 @@
 global using System.Globalization;
+global using ChartForgeX;
 global using ChartForgeX.Core;
 global using ChartForgeX.Primitives;
 global using ChartForgeX.Rendering;

@@ -240,7 +240,7 @@ internal static class RetainedMaskFixture {
         var model = SequenceArtifact.Create("mask-sequence").WithSize(800, 600)
             .AddParticipant("A", "Review").AddParticipant("B", "Archive").AddMessage("A", "B", "Save");
         model.Participants[0].Href = "#guide";
-        model.ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        model.ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light;
         return model;
     }
 

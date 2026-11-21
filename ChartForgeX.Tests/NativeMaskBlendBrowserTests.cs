@@ -16,7 +16,7 @@ public sealed class NativeMaskBlendBrowserTests {
     [InlineData(false, false)] [InlineData(false, true)] [InlineData(true, false)] [InlineData(true, true)]
     public async Task NativeMasksAdditiveCompositionAndStandardsSourceMasksStayVisible(bool dark, bool compact) {
         if (!Enabled) return;
-        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var native = NativeMaskExample.Create(compact ? "compact" : "wide", mode);
         var report = NativeMaskBlendCompositionExample.Create(compact ? "compact" : "wide", mode);
         var builder = new VisualSceneBuilder(new VisualSize(8, 6), FontSpec.SystemSans());

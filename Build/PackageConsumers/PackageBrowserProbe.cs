@@ -8,29 +8,6 @@ using Microsoft.Playwright;
 
 /// <summary>Exercises the scripts and editor actually embedded in the restored HTML adapter package.</summary>
 internal static class PackageBrowserProbe {
-    internal static async Task RunDocumentAsync(string html) {
-        if (Environment.GetEnvironmentVariable("HFX_TEST_ENABLE_PLAYWRIGHT") != "1") {
-            Console.WriteLine("Public HTML document browser execution not requested; set HFX_TEST_ENABLE_PLAYWRIGHT=1 to qualify it.");
-            return;
-        }
-        foreach (var width in new[] { 390, 900 }) {
-            await using var session = await HtmlBrowser.OpenSessionAsync("about:blank", new HtmlBrowserLaunchOptions {
-                Browser = Engine(), Headless = true, ViewportWidth = width, ViewportHeight = 760, Timeout = 15000
-            });
-            var errors = new System.Collections.Generic.List<string>();
-            session.Page.PageError += (_, error) => errors.Add(error);
-            await session.Page.SetContentAsync(html);
-            PackageAssertions.Require(await session.Page.Locator("svg:visible g[data-cfx-role='pyramid-stage']").CountAsync() == 16,
-                "The public HTML adapter did not display every candidate partition at " + width + " pixels.");
-            PackageAssertions.Require(await session.Page.Locator("svg:visible [data-cfx-role='pyramid-label']").CountAsync() > 0,
-                "The public HTML adapter displayed no readable candidate captions.");
-            await Capture(session.Page, "public-html-adapter-" + width + "-" + Engine());
-            PackageAssertions.Require(errors.Count == 0 && !session.ConsoleLog.Any(entry => entry.Type == HtmlConsoleMessageType.Error),
-                "The public HTML adapter reported a runtime error: " + string.Join("; ", errors));
-        }
-        Console.WriteLine("Public HTML adapter displayed the staged SVG at compact and wide viewports in " + Engine() + ".");
-    }
-
     internal static async Task RunAsync(string chartHtml, string graphHtml) {
         if (Environment.GetEnvironmentVariable("HFX_TEST_ENABLE_PLAYWRIGHT") != "1") {
             Console.WriteLine("Packed HTML browser execution not requested; set HFX_TEST_ENABLE_PLAYWRIGHT=1 to qualify it.");

@@ -62,7 +62,7 @@ public sealed class HighlightObservationOwnershipBrowserTests {
 
         Chart Model(bool full, bool local, bool referenceArrived) {
             var chart = Chart.Create().WithSize(900, 390).WithLegend().WithDataLabels(false)
-                .WithTitle("Source identity through decimation").WithTheme(VisualTheme.Graphite(), local ? VisualThemeMode.Dark : VisualThemeMode.Light);
+                .WithTitle("Source identity through decimation").WithTheme(VisualTheme.Graphite(), local ? ThemeMode.Dark : ThemeMode.Light);
             if (local) {
                 if (full) chart.AddLine("Measured", source);
                 else chart.AddDecimatedLine("Measured", source, 6);

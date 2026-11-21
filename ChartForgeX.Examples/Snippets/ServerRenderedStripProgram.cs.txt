@@ -1,12 +1,13 @@
 using System;
 using System.IO;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 
-{{FONT_SETUP}}var mode = VisualThemeMode.{{MODE}};
+{{FONT_SETUP}}var mode = ThemeMode.{{MODE}};
 var theme = VisualTheme.Graphite().WithTypography(new VisualTypography(axisSize: 14, legendSize: 14, dataLabelSize: 14));
 var font = FontSpec.FromFamily("{{FONT}}");
 var frame = new VisualFrame("", "", showLegend: false, transparentBackground: true);

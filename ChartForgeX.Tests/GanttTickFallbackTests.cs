@@ -31,7 +31,7 @@ public sealed class GanttTickFallbackTests {
     public void DenseMermaidIntervalsUseTheAutomaticLabelFormatAndKeepExplicitOverrides(bool dark) {
         const string source = "gantt\ntickInterval 1millisecond\nTask :2026-01-01, 1d";
         var document = new MermaidParser().ParseGantt(source).Document!;
-        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var automatic = new MermaidParser().ParseGantt(source.Replace("tickInterval 1millisecond\n", "")).Document!.ToChart()
             .WithTheme(VisualTheme.Graphite(), mode);
         var chart = document.ToChart().WithTheme(VisualTheme.Graphite(), mode);

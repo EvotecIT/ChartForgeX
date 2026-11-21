@@ -4,7 +4,7 @@ public static class LegendControlRecipe {
     public static readonly string[] Options = { "legend-reference", "legend-values", "legend-keys" };
 
     /// <summary>Creates the selected legend option example.</summary>
-    public static Chart Create(string variant = "legend-reference", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "legend-reference", ThemeMode mode = ThemeMode.Light) {
         var option = variant.StartsWith("compact-", StringComparison.Ordinal) ? variant.Substring(8) : variant;
         if (!Options.Contains(option)) throw new ArgumentOutOfRangeException(nameof(variant));
         // Twelve months of revenue and cost, in dollars, against a 1.2M monthly target and a tolerance band.

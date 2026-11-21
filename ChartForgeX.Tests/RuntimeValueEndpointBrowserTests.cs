@@ -86,7 +86,7 @@ public sealed class RuntimeValueEndpointBrowserTests {
     public async Task PublicValueBoundsUseTheirOwningAxisInTargetsAndReadouts(string family, bool horizontal, bool secondary, bool dark) {
         if (!Enabled) return;
         var chart = ChartLinkedValueEndpointContractsTests.CreateChart(family, horizontal, secondary)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             options.Interaction.Enable(ChartInteractionFeatures.Selection | ChartInteractionFeatures.KeyboardNavigation | ChartInteractionFeatures.Tooltips);
             options.Tooltip.Mode = HtmlChartTooltipMode.Single;

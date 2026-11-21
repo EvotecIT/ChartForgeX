@@ -148,7 +148,7 @@ public sealed class PieDonutAutomaticBandTests {
 
     internal static Chart Fixture(bool dark, int width) {
         var chart = Chart.Create().WithSize(width, width < 500 ? 500 : 560).WithHeader(false).WithLegend(false)
-            .WithDonutCenterLabel(false).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithDonutCenterLabel(false).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithAutomaticRadialBands(new ChartRadialBandAllocation(.2, .04)).WithXLabels("Alpha", "Beta", "Gamma");
         for (var index = 0; index < 3; index++) {
             var series = PieDonutRadiusDepthTests.Source("period-" + index, ChartSeriesKind.Donut).WithDataLabels(false);

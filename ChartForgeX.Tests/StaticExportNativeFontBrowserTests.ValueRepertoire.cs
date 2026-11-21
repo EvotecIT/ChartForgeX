@@ -21,7 +21,7 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         var fallbackBytes = NativeValueRepertoireMotionTests.FallbackBytes(); FontRegistry.Register(NativeFallbackClusterBeforeControls.Fallback, fallbackBytes);
         var renderer = new HtmlInteractiveChartRenderer();
         HtmlChartSection Section(double value) => renderer.PrepareSection(NativeValueRepertoireBeforeControls.Model(donut, "compact", value).WithSize(width, 420)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(NativeFallbackClusterBeforeControls.Primary + ", " + NativeFallbackClusterBeforeControls.Fallback), dark ? VisualThemeMode.Dark : VisualThemeMode.Light),
+            .WithTheme(VisualTheme.Graphite().WithFontFamily(NativeFallbackClusterBeforeControls.Primary + ", " + NativeFallbackClusterBeforeControls.Fallback), dark ? ThemeMode.Dark : ThemeMode.Light),
             configure: options => { options.TextPresentation = HtmlChartTextPresentation.NativeContours; options.Interaction.ChartId = "value-text-repertoire"; options.Interaction.Enable(ChartInteractionFeatures.Export); });
         try {
             var from = Section(900); var to = Section(1100); var payload = renderer.PrepareNativeTransitionJson(from, to,

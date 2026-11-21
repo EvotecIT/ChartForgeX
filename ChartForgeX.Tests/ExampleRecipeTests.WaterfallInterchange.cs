@@ -11,12 +11,12 @@ namespace ChartForgeX.Tests;
 public sealed partial class ExampleRecipeTests {
     public static IEnumerable<object[]> PortableWaterfallSelections() {
         foreach (var variant in new[] { "portable", "compact-portable", "portable-horizontal", "compact-portable-horizontal" })
-            foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) yield return new object[] { variant, mode };
+            foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) yield return new object[] { variant, mode };
     }
 
     [Theory]
     [MemberData(nameof(PortableWaterfallSelections))]
-    public void PortableWaterfallRecipesExecuteTheSaveLoadEditWorkflowAndRetainStandaloneDeclarations(string variant, VisualThemeMode mode) {
+    public void PortableWaterfallRecipesExecuteTheSaveLoadEditWorkflowAndRetainStandaloneDeclarations(string variant, ThemeMode mode) {
         var selection = new ExampleFamilySelection(ChartSeriesKind.Waterfall, variant);
         Assert.Contains(selection, ExampleRecipes.FamilySelections(ChartSeriesKind.Waterfall));
         Assert.Contains(selection, ExampleRecipes.FamilySelections(ChartSeriesKind.Waterfall, curated: true));

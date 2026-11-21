@@ -1,7 +1,7 @@
 /// <summary>Builds the travel map with its original named locations and routes.</summary>
 public static class TravelDottedMapRecipe {
     /// <summary>Creates the dark report map shared by the gallery and standalone download.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Dark) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Dark) {
         if (variant != "wide") throw new ArgumentOutOfRangeException(nameof(variant));
         return Chart.Create()
             .WithTitle("Travel Map")

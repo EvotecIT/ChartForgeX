@@ -38,7 +38,7 @@ internal static class NativeRangeFlashFixture {
 
     internal static Chart Model(bool area, bool destination, string change = "lower", string policy = "styled", int width = 760, bool dark = false) {
         var chart = Chart.Create().WithTitle("Native interval flash").WithSize(width, 420)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(Family), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite().WithFontFamily(Family), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithLegend(true).WithDataLabels(true).WithLuminousLineStyle();
         foreach (var key in new[] { "delivery", "comparison" }) {
             var changed = destination && key == "delivery";

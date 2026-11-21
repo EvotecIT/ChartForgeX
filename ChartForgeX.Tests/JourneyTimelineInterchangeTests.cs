@@ -61,7 +61,7 @@ public sealed class JourneyTimelineInterchangeTests {
         IVisualBlock source = timeline
             ? TimelineDiagramBlock.Create().AddSection("phase", "Phase").AddPeriod("p", "Not a date", events, "phase")
             : JourneyDiagramBlock.Create().AddSection("phase", "Phase").AddTask("t", "Review", 3.5, actors, "phase");
-        source.Options.Padding = new ChartForgeX.Primitives.ChartPadding(31, 17, 23, 19); source.Options.ThemeMode = VisualThemeMode.Dark;
+        source.Options.Padding = new ChartForgeX.Primitives.ChartPadding(31, 17, 23, 19); source.Options.ThemeMode = ThemeMode.Dark;
         source.Options.Theme = VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family);
         source.Options.ShowCard = false; source.Options.TransparentBackground = true; source.Options.PngOutputScale = 2;
         source.Options.HostOwnsFrame = true; source.Options.Accessibility.IsDecorative = true;
@@ -97,7 +97,7 @@ public sealed class JourneyTimelineInterchangeTests {
         var source = kind == "journey" ? MermaidJourneyTimelineNativeTests.Journey : kind == "timeline-td"
             ? MermaidJourneyTimelineNativeTests.Timeline : MermaidJourneyTimelineNativeTests.Timeline.Replace("timeline TD", "timeline");
         var options = new MermaidRenderOptions {
-            Presentation = new MermaidPresentationOptions { ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light, FontFamily = BrowserProofFonts.Family },
+            Presentation = new MermaidPresentationOptions { ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light, FontFamily = BrowserProofFonts.Family },
             Journey = new MermaidJourneyRenderOptions { Width = width, Height = 640 },
             Timeline = new MermaidTimelineRenderOptions { Width = width, Height = 640 }
         };

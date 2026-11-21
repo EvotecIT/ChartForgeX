@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = SequenceParticipantViewsRecipe.Create(&quot;wide&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Creates a native sequence view with retained unused source records and measured participant footers.&lt;/summary&gt;
 public static class SequenceParticipantViewsRecipe {
     /// &lt;summary&gt;Creates compact or wide native source facts; natural exports retain measured minima and may scroll in a compact host.&lt;/summary&gt;
-    public static SequenceArtifact Create(string variant=&quot;wide&quot;,VisualThemeMode mode=VisualThemeMode.Light) {
+    public static SequenceArtifact Create(string variant=&quot;wide&quot;,ThemeMode mode=ThemeMode.Light) {
         if(variant is not (&quot;compact&quot; or &quot;wide&quot;))throw new ArgumentOutOfRangeException(nameof(variant));
         var model=SequenceArtifact.Create(&quot;sequence-participant-views&quot;).WithSize(variant==&quot;compact&quot;?390:1000,820)
             .WithTitle(&quot;Participant views&quot;).WithSubtitle(&quot;Unused records stay editable; footer occurrences share source identity&quot;)
@@ -131,6 +132,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -140,7 +142,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = SequenceParticipantViewsRecipe.Create(&quot;wide&quot;, mode);
 var context = new VisualRenderContext(
@@ -155,7 +157,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Creates a native sequence view with retained unused source records and measured participant footers.&lt;/summary&gt;
 public static class SequenceParticipantViewsRecipe {
     /// &lt;summary&gt;Creates compact or wide native source facts; natural exports retain measured minima and may scroll in a compact host.&lt;/summary&gt;
-    public static SequenceArtifact Create(string variant=&quot;wide&quot;,VisualThemeMode mode=VisualThemeMode.Light) {
+    public static SequenceArtifact Create(string variant=&quot;wide&quot;,ThemeMode mode=ThemeMode.Light) {
         if(variant is not (&quot;compact&quot; or &quot;wide&quot;))throw new ArgumentOutOfRangeException(nameof(variant));
         var model=SequenceArtifact.Create(&quot;sequence-participant-views&quot;).WithSize(variant==&quot;compact&quot;?390:1000,820)
             .WithTitle(&quot;Participant views&quot;).WithSubtitle(&quot;Unused records stay editable; footer occurrences share source identity&quot;)

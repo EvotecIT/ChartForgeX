@@ -104,7 +104,7 @@ public sealed class MermaidQuadrantRegionBrowserTests {
         var chart = new MermaidParser().ParseQuadrant("quadrantChart\ntitle Priorities\nquadrant-1 Plan\nquadrant-2 Prioritize\nquadrant-3 Consider\nquadrant-4 Reassess\n")
             .Document!.ToChart(new MermaidQuadrantRenderOptions { Width = width, Height = 440 });
         var palette = new[] { "#E02030", "#20B040", "#3040D0", "#D08010" }.Select(ChartColor.FromHex).ToArray();
-        chart.WithTheme(VisualTheme.Graphite().WithPalette(palette), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        chart.WithTheme(VisualTheme.Graphite().WithPalette(palette), dark ? ThemeMode.Dark : ThemeMode.Light);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var html = "<!doctype html><html><body style='margin:0'>" + prepared.ToSvg() + "</body></html>";
         await using var session = await OpenAsync(html, width, 440);

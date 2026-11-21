@@ -1,7 +1,7 @@
 /// <summary>Service revenue with optional slice labels and a two-line center caption.</summary>
 public static class DonutRecipe {
     /// <summary>Creates service revenue; the options variant adds labels, slice treatments and center text.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var revenue = new ChartSeries(new ChartSeriesId("revenue"), "Revenue", ChartSeriesKind.Donut, Observations(variant));

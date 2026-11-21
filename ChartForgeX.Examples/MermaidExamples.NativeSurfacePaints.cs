@@ -5,7 +5,7 @@ using ChartForgeX.VisualArtifacts;
 
 internal static partial class MermaidExamples {
     private static void WriteNativeSurfacePaintExamples(string output) {
-        foreach(var family in new[]{"flowchart","agentflow","native"})foreach(var mode in new[]{VisualThemeMode.Light,VisualThemeMode.Dark})foreach(var variant in new[]{"compact","wide"}) {
+        foreach(var family in new[]{"flowchart","agentflow","native"})foreach(var mode in new[]{ThemeMode.Light,ThemeMode.Dark})foreach(var variant in new[]{"compact","wide"}) {
             var width=variant=="compact"?390:1100;string source="";VisualArtifact artifact;
             if(family=="native") {
                 var chart=TopologyChart.Create().WithTitle("Native contour paints").WithViewport(width,360,24).WithLegend(null).WithTheme(VisualTheme.Graphite().WithFontFamily(ExampleTypography.FontFamily), mode);

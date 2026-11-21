@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -15,7 +16,7 @@ using ChartForgeX.VisualBlocks;
 
 // Native PNG and standalone SVG use bundled Archivo.
 // Add ChartFontAssets.StyleSheet once for other text on a host page.
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = ServerRenderedRecipe.Create("support-schedule", mode);
 var context = new VisualRenderContext(
@@ -31,7 +32,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 /// <summary>Illustrative page charts with mark navigation, a current schedule row and a shared strip domain.</summary>
 public static class ServerRenderedRecipe {
     /// <summary>Creates a catalog model; page hosts can prepare the shared-strip variant with <see cref="SharedScale"/>.</summary>
-    public static Chart Create(string variant = "linked-columns", VisualThemeMode mode = VisualThemeMode.Light) => variant switch {
+    public static Chart Create(string variant = "linked-columns", ThemeMode mode = ThemeMode.Light) => variant switch {
         "linked-columns" or "compact-linked-columns" => LinkedColumns(mode, GalleryPage(mode)),
         "support-schedule" or "compact-support-schedule" => SupportSchedule(mode, GalleryPage(mode)),
         "shared-strip" or "compact-shared-strip" => CreateStrip(1, mode, GalleryPage(mode)),
@@ -39,7 +40,7 @@ public static class ServerRenderedRecipe {
     };
 
     /// <summary>Creates five linked stacked columns. Publisher notes open separately from the local daily summaries.</summary>
-    public static Chart LinkedColumns(VisualThemeMode mode = VisualThemeMode.Light, string summaryPage = "") {
+    public static Chart LinkedColumns(ThemeMode mode = ThemeMode.Light, string summaryPage = "") {
         var updates = new[] { 8d, 12, 7, 16, 10 };
         var notes = new[] { 2d, 3, 2, 4, 1 };
         ChartPoint Point(int index, double value, bool publisher) {
@@ -66,14 +67,14 @@ public static class ServerRenderedRecipe {
     }
 
     /// <summary>Creates three support rows, including an open task and independently current row metadata.</summary>
-    public static Chart SupportSchedule(VisualThemeMode mode = VisualThemeMode.Light, string summaryPage = "") {
+    public static Chart SupportSchedule(ThemeMode mode = ThemeMode.Light, string summaryPage = "") {
         var chart = Schedule(mode);
         for (var row = 0; row < 3; row++) chart.AddSeries(SupportRow(row, mode, summaryPage));
         return chart.WithGanttToday(new DateTime(2026, 7, 15));
     }
 
     /// <summary>Creates one support row for plot-only preparation; HTML owns the row label.</summary>
-    public static Chart CreateStrip(int row, VisualThemeMode mode = VisualThemeMode.Light, string summaryPage = "") =>
+    public static Chart CreateStrip(int row, ThemeMode mode = ThemeMode.Light, string summaryPage = "") =>
         Schedule(mode).AddSeries(SupportRow(row, mode, summaryPage));
 
     /// <summary>Creates an explicit 1 January 2026 to 1 January 2027 domain shared by every strip and the axis.</summary>
@@ -83,7 +84,7 @@ public static class ServerRenderedRecipe {
         return new ChartStripScale(axis);
     }
 
-    private static Chart Schedule(VisualThemeMode mode) => Chart.Create().WithTheme(VisualTheme.Graphite(), mode)
+    private static Chart Schedule(ThemeMode mode) => Chart.Create().WithTheme(VisualTheme.Graphite(), mode)
         .WithLegend(false).WithGanttOpenEndStyle(ChartGanttOpenEndStyle.Fade)
         .WithXAxisBounds(new DateTime(2026, 1, 1).ToOADate(), new DateTime(2027, 1, 1).ToOADate())
         .ConfigureXAxis(ConfigureTimeAxis);
@@ -97,9 +98,9 @@ public static class ServerRenderedRecipe {
             axis.Labels.Add(new ChartAxisLabel(date.ToOADate(), date.ToString("MMM yy", CultureInfo.InvariantCulture)));
     }
 
-    private static string GalleryPage(VisualThemeMode mode) => "embedding/" + (mode == VisualThemeMode.Dark ? "dark" : "light") + ".html";
+    private static string GalleryPage(ThemeMode mode) => "embedding/" + (mode == ThemeMode.Dark ? "dark" : "light") + ".html";
 
-    private static ChartSeries SupportRow(int row, VisualThemeMode mode, string summaryPage) {
+    private static ChartSeries SupportRow(int row, ThemeMode mode, string summaryPage) {
         var (name, key, start, end) = row switch {
             0 => ("2025", "release-2025", new DateTime(2026, 1, 1), new DateTime(2026, 5, 31)),
             1 => ("2026", "release-2026", new DateTime(2026, 3, 1), new DateTime(2027, 1, 1)),
@@ -119,8 +120,8 @@ public static class ServerRenderedRecipe {
                 cssClass: "support-row", dataAttributes: new Dictionary<string, string> { ["data-release"] = key }, current: current));
     }
 
-    private static ChartColor Color(string token, VisualThemeMode mode) {
-        var dark = mode == VisualThemeMode.Dark;
+    private static ChartColor Color(string token, ThemeMode mode) {
+        var dark = mode == ThemeMode.Dark;
         return ChartColor.FromHex(token switch {
             "--updates" => dark ? "#6EAEFF" : "#2A78D6",
             "--publisher-notes" => dark ? "#F3B36B" : "#A95712",

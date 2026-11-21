@@ -1,7 +1,7 @@
 /// <summary>Creates a tile map whose temperature scale has authored numeric color stops.</summary>
 public static class TileMapPositionedColorScaleRecipe {
     /// <summary>Creates the source model for a gallery variant without choosing an export backend.</summary>
-    public static Chart Create(string variant = "positioned-color-scale", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "positioned-color-scale", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("positioned-color-scale" or "compact-positioned-color-scale"))
             throw new ArgumentOutOfRangeException(nameof(variant));
 

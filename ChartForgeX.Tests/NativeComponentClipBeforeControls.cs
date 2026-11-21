@@ -30,7 +30,7 @@ public sealed class NativeComponentClipBeforeControls {
         NativeRadialMotionBeforeControls.Capture(from, "clip-ordinary-" + family); Assert.Equal(from.Html, repeat.Html); Assert.Equal(from.PreparedVisual.ToSvg(), repeat.PreparedVisual.ToSvg()); Assert.Equal(from.PreparedVisual.ToPng(), repeat.PreparedVisual.ToPng()); Assert.False(NativeRawValueSourceMotionTests.Metadata(from).TryGetProperty("nativeValueSource", out _));
     }
     internal static Chart Model(string family, double value, int width = 760, bool dark = false) {
-        var chart = Chart.Create().WithTitle("Raw values through native clip").WithSize(width, 420).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithLegend(true).WithDataLabels(false);
+        var chart = Chart.Create().WithTitle("Raw values through native clip").WithSize(width, 420).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light).WithLegend(true).WithDataLabels(false);
         var id = new ChartSeriesId("delivery"); ChartSeries series;
         if (family == "bubble") {
             series = ChartSeries.CreateBubble(id, family, new[] { new ChartBubble(1, value, 20), new ChartBubble(3, 45, 30) });

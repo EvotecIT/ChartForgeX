@@ -20,13 +20,13 @@ public sealed class FactBlockBadgeTypographyTests {
     public void BadgesReserveTheDrawnBoldCaptionWidthBeforeFitting(string family, bool dark, bool dense) {
         var caption = family == "schedule" ? "WWWW" : "WWWWWW";
         var theme = VisualTheme.Graphite();
-        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         IVisualBlock block;
         string role;
         if (family == "table") {
             var table = ChartTable.Create().WithTheme(theme, mode).WithSize(480, 180).WithColumns("Name", "Status", "History")
                 .WithDenseMode(dense).AddRow("Configured", "Status", "History");
-            table.ConfigureRow(0, row => row.Cells[1].WithBadge(caption, VisualStatus.Positive));
+            table.ConfigureRow(0, row => row.Cells[1].WithBadge(caption, Tone.Success));
             block = table;
             role = "visual-badge";
         } else if (family == "activity") {
@@ -56,7 +56,7 @@ public sealed class FactBlockBadgeTypographyTests {
     [Fact]
     public void ConstrainedTableBadgesFitInsideTheCellAtTheirReadableFontSize() {
         var table = ChartTable.Create().WithSize(180, 120).AddColumn("Status", width: 76).AddRow("Status");
-        table.ConfigureRow(0, row => row.Cells[0].WithBadge("WWWWWW", VisualStatus.Positive));
+        table.ConfigureRow(0, row => row.Cells[0].WithBadge("WWWWWW", Tone.Success));
         var badge = Assert.Single(XDocument.Parse(table.ToSvg()).Descendants(), element =>
             (string?)element.Attribute("data-cfx-role") == "visual-badge");
         var text = badge.ElementsAfterSelf().First(element => element.Name.LocalName == "text");

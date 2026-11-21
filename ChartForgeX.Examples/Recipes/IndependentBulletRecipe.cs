@@ -1,6 +1,6 @@
 /// <summary>Different measurement units retain independent domains, captions and targets in horizontal or vertical bullet tracks.</summary>
 public static class IndependentBulletRecipe {
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "vertical" or "compact-vertical")) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant.StartsWith("compact", StringComparison.Ordinal); var vertical = variant.EndsWith("vertical", StringComparison.Ordinal);
         var load = ChartSeries.CreateBullet(new ChartSeriesId("load"), "Capacity", new ChartBulletValue(.72, .8, 0, 1, new[] { .5, .8 }))

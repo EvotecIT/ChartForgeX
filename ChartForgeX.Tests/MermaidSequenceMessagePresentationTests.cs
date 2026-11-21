@@ -53,8 +53,8 @@ public sealed class MermaidSequenceMessagePresentationTests {
         Assert.True(result.HasErrors);Assert.Null(result.Artifact);Assert.Contains(result.Diagnostics,item=>item.Message.Contains(name,StringComparison.Ordinal)&&item.Span.Line==1);
     }
     [Theory]
-    [InlineData("compact",VisualThemeMode.Light)] [InlineData("compact",VisualThemeMode.Dark)] [InlineData("wide",VisualThemeMode.Light)] [InlineData("wide",VisualThemeMode.Dark)]
-    public void CompleteNativeAndAdapterProgramsRemainInTheirActualCompileOwners(string variant,VisualThemeMode mode) {
+    [InlineData("compact",ThemeMode.Light)] [InlineData("compact",ThemeMode.Dark)] [InlineData("wide",ThemeMode.Light)] [InlineData("wide",ThemeMode.Dark)]
+    public void CompleteNativeAndAdapterProgramsRemainInTheirActualCompileOwners(string variant,ThemeMode mode) {
         var model=SequenceMessagePresentationRecipe.Create(variant,mode);var width=variant=="compact"?390:1000;
         // Ordinary exports grow the authored minimum frame; explicit Prepare(context) is deliberately strict.
         var prepared=SequencePreparedCompiler.PrepareDefault(model);SequenceMessageFixture.Capture("sequence-message-recipe-"+variant+"-"+mode,prepared);SequenceMessageFixture.AssertBadgeContainsInk(prepared);

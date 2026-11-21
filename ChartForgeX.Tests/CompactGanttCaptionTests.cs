@@ -8,10 +8,10 @@ namespace ChartForgeX.Tests;
 /// <summary>Gantt charts narrower than 400 px keep readable, complete captions.</summary>
 public sealed class CompactGanttCaptionTests {
     [Theory]
-    [InlineData(280, VisualThemeMode.Light)]
-    [InlineData(320, VisualThemeMode.Dark)]
-    [InlineData(360, VisualThemeMode.Light)]
-    public void CompactGanttDatesKeepOneEmApartAndTaskNamesNeverSplitAWord(int width, VisualThemeMode mode) {
+    [InlineData(280, ThemeMode.Light)]
+    [InlineData(320, ThemeMode.Dark)]
+    [InlineData(360, ThemeMode.Light)]
+    public void CompactGanttDatesKeepOneEmApartAndTaskNamesNeverSplitAWord(int width, ThemeMode mode) {
         var chart = GanttRecipe.Create("compact", mode).WithSize(width, 300).WithTitle("Delivery plan");
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var captions = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "schedule-tick-label").OrderBy(node => node.X).ToArray();

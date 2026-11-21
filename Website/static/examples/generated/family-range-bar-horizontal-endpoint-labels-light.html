@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = RangeBarRecipe.Create(&quot;horizontal-endpoint-labels&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Builds delivery-time intervals, grouped comparisons and endpoint labels.&lt;/summary&gt;
 public static class RangeBarRecipe {
     /// &lt;summary&gt;Creates the selected range-bar example with vertical or horizontal intervals.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot; or &quot;horizontal&quot; or &quot;compact-horizontal&quot;
             or &quot;endpoint-labels&quot; or &quot;compact-endpoint-labels&quot; or &quot;horizontal-endpoint-labels&quot; or &quot;compact-horizontal-endpoint-labels&quot;
             or &quot;independent-endpoint-labels&quot; or &quot;compact-independent-endpoint-labels&quot; or &quot;horizontal-independent-endpoint-labels&quot; or &quot;compact-horizontal-independent-endpoint-labels&quot;
@@ -162,7 +163,7 @@ public static class RangeBarRecipe {
         return chart;
     }
 
-    private static Chart EndpointLabels(string variant, VisualThemeMode mode) {
+    private static Chart EndpointLabels(string variant, ThemeMode mode) {
         var horizontal = variant.Contains(&quot;horizontal&quot;);
         var expected = ChartSeries.CreateRangeBar(new ChartSeriesId(&quot;expected&quot;), &quot;Expected&quot;, new[] {
             new ChartInterval(1, 15, 35), new ChartInterval(2, 10, 30), new ChartInterval(3, 25, 50)
@@ -176,8 +177,8 @@ public static class RangeBarRecipe {
                 options.LabelContent = ChartRangeBarLabelContent.Endpoints;
                 options.EndpointLabelFormatter = label =&gt; label.FormattedValue + (label.Endpoint == ChartRangeBarEndpoint.Start ? &quot; S&quot; : &quot; E&quot;);
                 if (variant.Contains(&quot;independent&quot;)) {
-                    options.StartLabel.Style.WithColor(mode == VisualThemeMode.Dark ? &quot;#82b8ff&quot; : &quot;#235b9f&quot;).WithFontSize(10);
-                    options.EndLabel.Style.WithColor(mode == VisualThemeMode.Dark ? &quot;#ffbe79&quot; : &quot;#975000&quot;).WithFontSize(12).WithWeight(&quot;700&quot;);
+                    options.StartLabel.Style.WithColor(mode == ThemeMode.Dark ? &quot;#82b8ff&quot; : &quot;#235b9f&quot;).WithFontSize(10);
+                    options.EndLabel.Style.WithColor(mode == ThemeMode.Dark ? &quot;#ffbe79&quot; : &quot;#975000&quot;).WithFontSize(12).WithWeight(&quot;700&quot;);
                     options.StartLabel.Placement = horizontal ? ChartDataLabelPlacement.Above : ChartDataLabelPlacement.Left;
                     options.EndLabel.Placement = horizontal ? ChartDataLabelPlacement.Below : ChartDataLabelPlacement.Right;
                 }
@@ -197,6 +198,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -206,7 +208,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = RangeBarRecipe.Create(&quot;horizontal-endpoint-labels&quot;, mode);
 var context = new VisualRenderContext(
@@ -221,7 +223,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Builds delivery-time intervals, grouped comparisons and endpoint labels.&lt;/summary&gt;
 public static class RangeBarRecipe {
     /// &lt;summary&gt;Creates the selected range-bar example with vertical or horizontal intervals.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot; or &quot;horizontal&quot; or &quot;compact-horizontal&quot;
             or &quot;endpoint-labels&quot; or &quot;compact-endpoint-labels&quot; or &quot;horizontal-endpoint-labels&quot; or &quot;compact-horizontal-endpoint-labels&quot;
             or &quot;independent-endpoint-labels&quot; or &quot;compact-independent-endpoint-labels&quot; or &quot;horizontal-independent-endpoint-labels&quot; or &quot;compact-horizontal-independent-endpoint-labels&quot;
@@ -273,7 +275,7 @@ public static class RangeBarRecipe {
         return chart;
     }
 
-    private static Chart EndpointLabels(string variant, VisualThemeMode mode) {
+    private static Chart EndpointLabels(string variant, ThemeMode mode) {
         var horizontal = variant.Contains(&quot;horizontal&quot;);
         var expected = ChartSeries.CreateRangeBar(new ChartSeriesId(&quot;expected&quot;), &quot;Expected&quot;, new[] {
             new ChartInterval(1, 15, 35), new ChartInterval(2, 10, 30), new ChartInterval(3, 25, 50)
@@ -287,8 +289,8 @@ public static class RangeBarRecipe {
                 options.LabelContent = ChartRangeBarLabelContent.Endpoints;
                 options.EndpointLabelFormatter = label =&gt; label.FormattedValue + (label.Endpoint == ChartRangeBarEndpoint.Start ? &quot; S&quot; : &quot; E&quot;);
                 if (variant.Contains(&quot;independent&quot;)) {
-                    options.StartLabel.Style.WithColor(mode == VisualThemeMode.Dark ? &quot;#82b8ff&quot; : &quot;#235b9f&quot;).WithFontSize(10);
-                    options.EndLabel.Style.WithColor(mode == VisualThemeMode.Dark ? &quot;#ffbe79&quot; : &quot;#975000&quot;).WithFontSize(12).WithWeight(&quot;700&quot;);
+                    options.StartLabel.Style.WithColor(mode == ThemeMode.Dark ? &quot;#82b8ff&quot; : &quot;#235b9f&quot;).WithFontSize(10);
+                    options.EndLabel.Style.WithColor(mode == ThemeMode.Dark ? &quot;#ffbe79&quot; : &quot;#975000&quot;).WithFontSize(12).WithWeight(&quot;700&quot;);
                     options.StartLabel.Placement = horizontal ? ChartDataLabelPlacement.Above : ChartDataLabelPlacement.Left;
                     options.EndLabel.Placement = horizontal ? ChartDataLabelPlacement.Below : ChartDataLabelPlacement.Right;
                 }

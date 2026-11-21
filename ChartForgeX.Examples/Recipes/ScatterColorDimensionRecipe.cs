@@ -1,12 +1,12 @@
 /// <summary>Formats a temperature color dimension independently from processing time.</summary>
 public static class ScatterColorDimensionRecipe {
     /// <summary>Creates the selected example without choosing a renderer or export backend.</summary>
-    public static Chart Create(string variant = "color-dimension", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "color-dimension", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("color-dimension" or "compact-color-dimension" or "gradient-color-legend" or "compact-gradient-color-legend" or "swatch-color-legend" or "compact-swatch-color-legend")) throw new ArgumentOutOfRangeException(nameof(variant));
         return ColorDimension(variant, mode);
     }
 
-    private static Chart ColorDimension(string variant, VisualThemeMode mode) {
+    private static Chart ColorDimension(string variant, ThemeMode mode) {
         var colors = VisualTheme.Graphite().Resolve(mode);
         var gradient = variant is "gradient-color-legend" or "compact-gradient-color-legend";
         var swatches = variant is "swatch-color-legend" or "compact-swatch-color-legend";

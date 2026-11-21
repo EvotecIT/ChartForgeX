@@ -103,7 +103,7 @@ public sealed class PolarViewportContractTests {
     [InlineData(360, false, false)] [InlineData(360, true, true)] [InlineData(800, false, true)] [InlineData(800, true, false)]
     public void DirectionalSectorMaskPaintsOnlyItsSectorAcrossBothNativeExports(int width, bool dark, bool reversed) {
         var points = Enumerable.Range(0, 12).Select(index => new ChartPoint(index * Math.PI / 6, 80)).ToArray();
-        var chart = Create(points).WithSize(width, 380).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        var chart = Create(points).WithSize(width, 380).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         chart.Options.TransparentBackground = true; chart.Options.ShowCard = false; chart.Options.ShowPlotBackground = false;
         chart.Options.XAxis.Reversed = reversed; chart.Options.PolarRotationDegrees = 25;
         chart.Series[0].ConfigurePolar(options => { options.Form = ChartLineAreaForm.Area; options.FillOpacity = 1; options.OutlineStroke = new ChartStrokeStyle(width: 0); });

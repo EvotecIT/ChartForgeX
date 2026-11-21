@@ -24,7 +24,7 @@ public sealed class ComparisonMarkupTests {
             else direct.AddLollipop("Comparison", new[] { new ChartPoint(1, 20), new ChartPoint(2, -5) });
             direct.Options.LollipopOrientation = direct.Options.DumbbellOrientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
             var context = new VisualRenderContext(layout: new VisualLayoutOptions(new VisualSize(width, 360)),
-                theme: VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), themeMode: dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+                theme: VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), themeMode: dark ? ThemeMode.Dark : ThemeMode.Light);
             var expected = direct.Prepare(context); var actual = parsed.Document!.Chart.Prepare(context);
             Assert.Equal(expected.ToSvg("comparison-parity"), actual.ToSvg("comparison-parity")); Assert.Equal(expected.ToPng(), actual.ToPng());
             Assert.Equal(horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical, actual.CartesianOrientation);

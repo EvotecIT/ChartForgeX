@@ -4,28 +4,11 @@ using System.Globalization;
 
 namespace ChartForgeX.Topology;
 
-/// <summary>Semantic presentation tones. Automatic uses the existing health status.</summary>
-public enum TopologyTone {
-    /// <summary>Use the model's health status.</summary>
-    Automatic,
-    /// <summary>A positive state.</summary>
-    Good,
-    /// <summary>A state requiring attention.</summary>
-    Warn,
-    /// <summary>A failing state.</summary>
-    Bad,
-    /// <summary>Informational context.</summary>
-    Info,
-    /// <summary>A neutral relationship or state.</summary>
-    Neutral
-}
-
 internal static class TopologyRegionMetadata {
-    internal static TopologyTone Tone(Dictionary<string, string> metadata) => metadata.TryGetValue("chartforgex.region.tone", out var text)
-        && Enum.TryParse(text, out TopologyTone tone) && Enum.IsDefined(typeof(TopologyTone), tone) ? tone : TopologyTone.Automatic;
-    internal static void Tone(Dictionary<string, string> metadata, TopologyTone tone) {
-        TopologyModelGuards.EnumDefined(tone, nameof(tone));
-        if (tone == TopologyTone.Automatic) metadata.Remove("chartforgex.region.tone"); else metadata["chartforgex.region.tone"] = tone.ToString();
+    internal static Tone Tone(Dictionary<string, string> metadata) => metadata.TryGetValue("chartforgex.region.tone", out var text)
+        && ChartForgeX.Tone.TryParse(text, out var tone) ? tone : ChartForgeX.Tone.None;
+    internal static void Tone(Dictionary<string, string> metadata, Tone tone) {
+        if (tone == ChartForgeX.Tone.None) metadata.Remove("chartforgex.region.tone"); else metadata["chartforgex.region.tone"] = tone.Name;
     }
 }
 
@@ -56,8 +39,8 @@ public sealed class TopologyNodeBadge {
 }
 
 public sealed partial class TopologyNode {
-    /// <summary>Gets or sets the semantic ring tone, independent of the full health status wording.</summary>
-    public TopologyTone Tone { get => TopologyRegionMetadata.Tone(Metadata); set => TopologyRegionMetadata.Tone(Metadata, value); }
+    /// <summary>Gets or sets the semantic ring tone, independent of the full health status wording. <see cref="Tone.None"/> follows the health status.</summary>
+    public Tone Tone { get => TopologyRegionMetadata.Tone(Metadata); set => TopologyRegionMetadata.Tone(Metadata, value); }
     // Presentation facts live in the existing bounded metadata contract. Cloning, detached
     // preparation and older interchange readers preserve them without a second source of truth.
     private const string RegionKey = "chartforgex.region.";
@@ -95,8 +78,8 @@ public sealed partial class TopologyNode {
 }
 
 public sealed partial class TopologyEdge {
-    /// <summary>Gets or sets the relationship tone. Automatic uses health, or information for overlays.</summary>
-    public TopologyTone Tone { get => TopologyRegionMetadata.Tone(Metadata); set => TopologyRegionMetadata.Tone(Metadata, value); }
+    /// <summary>Gets or sets the relationship tone. <see cref="Tone.None"/> uses health, or information for overlays.</summary>
+    public Tone Tone { get => TopologyRegionMetadata.Tone(Metadata); set => TopologyRegionMetadata.Tone(Metadata, value); }
     /// <summary>Gets or sets whether this relationship spans regions in an underlay curve, or a narrow-screen chip.</summary>
     public bool IsOverlay {
         get => Metadata.TryGetValue("chartforgex.region.overlay", out var value) && value == "true";

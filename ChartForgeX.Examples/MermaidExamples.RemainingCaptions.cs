@@ -4,7 +4,7 @@ using ChartForgeX.VisualArtifacts;
 internal static partial class MermaidExamples {
     private static void WriteRemainingCaptionExamples(string output) {
         foreach (var family in new[] { "class", "er", "flowchart", "requirement" })
-            foreach (var variant in new[] { "compact", "wide" }) foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+            foreach (var variant in new[] { "compact", "wide" }) foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
                 var artifact = MermaidRemainingCaptionRolesExample.Create(family, variant, mode, ExampleTypography.FontFamily);
                 var stem = Path.Combine(output, "remaining-caption-" + family + "-" + variant + "-" + mode.ToString().ToLowerInvariant());
                 artifact.SaveSvg(stem + ".svg"); File.WriteAllBytes(stem + ".png", artifact.ToPng());

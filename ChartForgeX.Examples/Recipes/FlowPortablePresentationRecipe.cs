@@ -9,13 +9,13 @@ using ChartForgeX.VisualBlocks;
 /// <summary>Shows an editable native flow retaining its source, caller frame and complete presentation.</summary>
 public static class FlowPortablePresentationRecipe {
     /// <summary>Creates a static workflow. An optional caller-owned native font uses the existing FontSpec owner.</summary>
-    public static VisualArtifact Create(string variant, VisualThemeMode mode, FontSpec? font = null) {
+    public static VisualArtifact Create(string variant, ThemeMode mode, FontSpec? font = null) {
         if (variant is not ("compact" or "wide")) throw new ArgumentException("Unknown flow recipe size.", nameof(variant));
         var width = variant == "compact" ? 640 : 1000; var height = variant == "compact" ? 520 : 620;
         var flow = FlowArtifact.Create("portable-review-flow").WithTitle("Request review").WithSubtitle("One editable workflow")
             .WithSize(width,height).AddLane("review","Review").AddLane("delivery","Delivery")
             .AddStep("receive","Receive request",FlowArtifactStepKind.Start,"review")
-            .AddStep("check","Check policy",FlowArtifactStepKind.Process,"review",VisualStatus.Positive)
+            .AddStep("check","Check policy",FlowArtifactStepKind.Process,"review",Tone.Success)
             .AddStep("publish","Publish result",FlowArtifactStepKind.End,"delivery")
             .AddConnector("receive","check","Review",FlowArtifactConnectorKind.Flow,VisualLinkDirection.Forward)
             .AddConnector("check","publish","Approved",FlowArtifactConnectorKind.Flow,VisualLinkDirection.Forward);

@@ -13,7 +13,7 @@ internal static partial class SmokeTests {
         var table = ChartTable.Create().WithTheme(VisualTheme.Graphite())
             .WithTitle("Drive summary")
             .WithSubtitle("Exact facts in a visual block, not a chart series")
-            .WithTheme(VisualTheme.TransparentOverlay(), VisualThemeMode.Dark)
+            .WithTheme(VisualTheme.TransparentOverlay(), ThemeMode.Dark)
             .WithTransparentBackground()
             .AddColumn("Drive")
             .AddColumn("Used", TextAlignment.Right, format: "0%")
@@ -23,8 +23,8 @@ internal static partial class SmokeTests {
             .AddRow("D:", 0.91, "34 GB", "Warning")
             .WithStatusColumn("Status")
             .WithDenseMode();
-        table.ConfigureRow(1, row => row.Cells[3].Status = VisualStatus.Warning);
-        table.ConfigureRow(0, row => row.Cells[1].WithBadge("72%", VisualStatus.Positive, ChartColor.FromHex("#22C55E")));
+        table.ConfigureRow(1, row => row.Cells[3].Status = Tone.Warning);
+        table.ConfigureRow(0, row => row.Cells[1].WithBadge("72%", Tone.Success, ChartColor.FromHex("#22C55E")));
         table.ConfigureRow(0, row => row.Cells[2].WithSparkline(new[] { 96d, 118d, 128d }, color: ChartColor.FromHex("#38BDF8")));
         table.ConfigureRow(1, row => row.Cells[2].WithMiniBars(new[] { 46d, 39d, 34d }, color: ChartColor.FromHex("#F97316")));
 
@@ -50,9 +50,9 @@ internal static partial class SmokeTests {
         var list = ChartList.Create().WithTheme(VisualTheme.Graphite())
             .WithTitle("Security checks")
             .WithMarker(VisualListMarker.Status)
-            .AddStatusItem("Disk encryption", VisualStatus.Positive, "ready")
-            .AddStatusItem("Patch window", VisualStatus.Warning, "due")
-            .AddStatusItem("Backup age", VisualStatus.Negative, "stale");
+            .AddStatusItem("Disk encryption", Tone.Success, "ready")
+            .AddStatusItem("Patch window", Tone.Warning, "due")
+            .AddStatusItem("Backup age", Tone.Danger, "stale");
         var listSvg = list.ToSvg("visual-block-list");
         Assert(listSvg.Contains("data-cfx-role=\"list-marker\"", StringComparison.Ordinal), "ChartList should render list markers.");
         Assert(list.ToPng().Length > 64, "ChartList should render PNG output.");
@@ -67,7 +67,7 @@ internal static partial class SmokeTests {
 
         var radialMetric = RadialMetricCard.Create().WithTheme(VisualTheme.Graphite())
             .WithMetric("Capacity left", "42%")
-            .WithIcon(VisualIcon.Flame)
+            .WithIcon(Icons.Flame)
             .AddLayer("Track", 100, color: ChartColor.FromHex("#E2E8F0"), configure: layer => layer.WithGeometry(1, 0.16).WithLineCap(ChartRadialLayerCap.Butt))
             .AddLayer("Current", 42, color: ChartColor.FromHex("#F97316"), configure: layer => layer.WithGeometry(1, 0.12));
         var radialSvg = radialMetric.ToSvg("visual-block-radial-metric");
@@ -81,8 +81,8 @@ internal static partial class SmokeTests {
             .WithTheme(VisualTheme.Graphite())
             .WithSize(620, 250)
             .WithHeaderSymbol("%")
-            .AddItem("Performing Progress", 89, segments: 44, color: ChartColor.FromHex("#34C77B"), delta: "+10.2%", status: VisualStatus.Positive)
-            .AddItem("Target Sales", 67, segments: 44, color: ChartColor.FromHex("#5EA2F6"), delta: "+2.2%", status: VisualStatus.Info)
+            .AddItem("Performing Progress", 89, segments: 44, color: ChartColor.FromHex("#34C77B"), delta: "+10.2%", status: Tone.Success)
+            .AddItem("Target Sales", 67, segments: 44, color: ChartColor.FromHex("#5EA2F6"), delta: "+2.2%", status: Tone.Info)
             .WithSubtitle("Up by 6% compared to last week");
         var segmentedSvg = segmented.ToSvg("visual-block-segmented-metric");
         Assert(segmentedSvg.Contains("data-cfx-role=\"segmented-metric-progress-rows\"", StringComparison.Ordinal), "SegmentedMetricBlock should render progress-row treatments.");
@@ -139,13 +139,13 @@ internal static partial class SmokeTests {
                 .WithColor(ChartColor.FromHex("#5EA2F6"))
                 .WithDisplayValue("132,034")
                 .WithDelta("+4.3%")
-                .WithStatus(VisualStatus.Positive))
+                .WithStatus(Tone.Success))
             .AddItem(new SegmentedMetricItem("Replies", 62)
                 .WithProgress(100, 44)
                 .WithColor(ChartColor.FromHex("#7894F8"))
                 .WithDisplayValue("56,234")
                 .WithDelta("-6.4%")
-                .WithStatus(VisualStatus.Negative));
+                .WithStatus(Tone.Danger));
         var performanceRowsSvg = performanceRows.ToSvg("visual-block-segmented-performance-rows");
         Assert(performanceRowsSvg.Contains("132,034", StringComparison.Ordinal), "SegmentedMetricBlock progress rows should render item display values when supplied.");
         Assert(performanceRowsSvg.Contains("+4.3%", StringComparison.Ordinal) && performanceRowsSvg.Contains("-6.4%", StringComparison.Ordinal), "SegmentedMetricBlock progress rows should render semantic deltas alongside exact values.");
@@ -244,7 +244,7 @@ internal static partial class SmokeTests {
             })
             .AddItem(new SegmentedMetricItem("Prebuilt", 4)
                 .WithProgress(8, 16)
-                .WithStatus(VisualStatus.Positive)
+                .WithStatus(Tone.Success)
                 .WithDelta("+2"));
         var configuredItemsSvg = configuredItems.ToSvg("visual-block-segmented-configured-items");
         Assert(configuredItemsSvg.Contains("data-cfx-segments=\"20\"", StringComparison.Ordinal), "SegmentedMetricBlock should support callback-configured items without growing AddItem overloads.");
@@ -280,9 +280,9 @@ internal static partial class SmokeTests {
             .WithTheme(VisualTheme.Graphite())
             .WithSize(620, 360)
             .WithMetric("Tasks", 23, "Task")
-            .AddItem("On Going", 12, color: ChartColor.FromHex("#5EA2F6"), status: VisualStatus.Info, pattern: ChartFillPattern.DiagonalForward)
-            .AddItem("Under Review", 6, color: ChartColor.FromHex("#FFB05C"), status: VisualStatus.Warning)
-            .AddItem("Finish", 4, color: ChartColor.FromHex("#34C77B"), status: VisualStatus.Positive);
+            .AddItem("On Going", 12, color: ChartColor.FromHex("#5EA2F6"), status: Tone.Info, pattern: ChartFillPattern.DiagonalForward)
+            .AddItem("Under Review", 6, color: ChartColor.FromHex("#FFB05C"), status: Tone.Warning)
+            .AddItem("Finish", 4, color: ChartColor.FromHex("#34C77B"), status: Tone.Success);
         var compositionSvg = composition.ToSvg("visual-block-composition-status");
         Assert(compositionSvg.Contains("data-cfx-role=\"segmented-metric-composition\"", StringComparison.Ordinal), "SegmentedMetricBlock should render a composition treatment.");
         Assert(compositionSvg.Contains("data-cfx-role=\"segmented-metric-composition-strip\"", StringComparison.Ordinal), "SegmentedMetricBlock should render a stacked composition strip.");
@@ -380,9 +380,9 @@ internal static partial class SmokeTests {
             .WithSubtitle("Capacity share by staff member")
             .WithTheme(VisualTheme.Graphite())
             .WithSize(620, 320)
-            .AddPerson("Panji Dwi", "Zumba Trainer", 4, 8, VisualStatus.Neutral, "PD", "4/8", ChartColor.FromHex("#0E7490"))
-            .AddPerson("Raihan Fikri", "Aerobik Trainer", 10, 8, VisualStatus.Negative, "RF", "10/8", ChartColor.FromHex("#DC2626"), "Overload")
-            .AddPerson("Mufti Hidayat", "Massage Specialist", 6, 8, VisualStatus.Positive);
+            .AddPerson("Panji Dwi", "Zumba Trainer", 4, 8, Tone.Neutral, "PD", "4/8", ChartColor.FromHex("#0E7490"))
+            .AddPerson("Raihan Fikri", "Aerobik Trainer", 10, 8, Tone.Danger, "RF", "10/8", ChartColor.FromHex("#DC2626"), "Overload")
+            .AddPerson("Mufti Hidayat", "Massage Specialist", 6, 8, Tone.Success);
         var workloadSvg = workload.ToSvg("visual-block-workload-list");
         Assert(workloadSvg.Contains("data-cfx-role=\"workload-list-block\"", StringComparison.Ordinal), "WorkloadListBlock should render a public block role.");
         Assert(workloadSvg.Contains("data-cfx-role=\"workload-avatar\"", StringComparison.Ordinal), "WorkloadListBlock should render avatar slots.");
@@ -398,13 +398,13 @@ internal static partial class SmokeTests {
             .WithSize(620, 620)
             .WithEventSurfaces(false)
             .AddSection("In-progress")
-            .AddEvent("Shipment", "Just now", VisualStatus.Info, "In-Progress", "Delivery by Royal Mail Standard", "S")
-            .AddEvent("Shipment 1", status: VisualStatus.Neutral)
+            .AddEvent("Shipment", "Just now", Tone.Info, "In-Progress", "Delivery by Royal Mail Standard", "S")
+            .AddEvent("Shipment 1", status: Tone.Neutral)
             .AddChecklistItem("Carrier confirmed", completed: true, muted: true)
             .AddChecklistItem("Packing in progress", completed: false)
             .AddHiddenSummary(6, "items hidden")
             .AddSection("Completed")
-            .AddEvent("Order created", "Mar 10, 2026 10:20 am", VisualStatus.Positive);
+            .AddEvent("Order created", "Mar 10, 2026 10:20 am", Tone.Success);
         var activitySvg = activity.ToSvg("visual-block-activity-timeline");
         Assert(activitySvg.Contains("data-cfx-role=\"activity-timeline-block\"", StringComparison.Ordinal), "ActivityTimelineBlock should render a public block role.");
         Assert(activitySvg.Contains("data-cfx-event-surfaces=\"false\"", StringComparison.Ordinal), "ActivityTimelineBlock should expose compact event surface mode.");
@@ -424,9 +424,9 @@ internal static partial class SmokeTests {
             .WithTimeRange(8, 17, 1)
             .WithCurrentTime(14.2)
             .WithSubtitle("12/Feb/2025")
-            .AddEvent("Meeting Brief Project", 8, 10, 0, ChartColor.FromHex("#5EA2F6"), VisualStatus.Info, avatars: new[] { "AM", "RF", "PD", "MR" })
-            .AddEvent("Research Analyze Content", 9, 11, 1, ChartColor.FromHex("#8B5CF6"), VisualStatus.Info, avatars: new[] { "SC", "MR" })
-            .AddEvent("Report Review", 16, 17.2, 0, ChartColor.FromHex("#5EA2F6"), VisualStatus.Info, badge: "Report", avatars: new[] { "MR", "SC" });
+            .AddEvent("Meeting Brief Project", 8, 10, 0, ChartColor.FromHex("#5EA2F6"), Tone.Info, avatars: new[] { "AM", "RF", "PD", "MR" })
+            .AddEvent("Research Analyze Content", 9, 11, 1, ChartColor.FromHex("#8B5CF6"), Tone.Info, avatars: new[] { "SC", "MR" })
+            .AddEvent("Report Review", 16, 17.2, 0, ChartColor.FromHex("#5EA2F6"), Tone.Info, badge: "Report", avatars: new[] { "MR", "SC" });
         var scheduleSvg = schedule.ToSvg("visual-block-schedule-timeline");
         Assert(scheduleSvg.Contains("data-cfx-role=\"schedule-timeline-block\"", StringComparison.Ordinal), "ScheduleTimelineBlock should render a public block role.");
         Assert(scheduleSvg.Contains("12/Feb/2025", StringComparison.Ordinal), "ScheduleTimelineBlock should preserve its factual date in the subtitle.");
@@ -453,12 +453,12 @@ internal static partial class SmokeTests {
             .WithStatusColumn("Status");
         var metric = MetricCard.Create()
             .WithMetric("Open items", 12)
-            .WithStatus(VisualStatus.Warning);
+            .WithStatus(Tone.Warning);
 
         var grid = VisualGrid.Create()
             .WithTitle("System snapshot")
             .WithSubtitle("Charts and exact-fact blocks share one export surface")
-            .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)
+            .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
             .WithColumns(2)
             .WithPanelSize(420, 260)
             .WithFrame()
@@ -578,7 +578,6 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(() => ChartTable.Create().WithColumns("A").AddRow("a").AddColumn("B"), "ChartTable should reject adding columns after rows exist.");
         AssertThrows<ArgumentNullException>(() => new ChartTableCell("ok").Text = null!, "ChartTable cells should reject null text through the public setter.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartTableCell("bad").Alignment = (TextAlignment)999, "ChartTable cells should reject unknown alignment overrides.");
-        AssertThrows<ArgumentOutOfRangeException>(() => new ChartTableCell("bad").Status = (VisualStatus)999, "ChartTable cells should reject unknown status values.");
         AssertThrows<ArgumentException>(() => new ChartTableCell("bad").WithMiniBars(Array.Empty<double>()), "ChartTable cell mini bars should reject empty value sets.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartTableCell("bad").WithMiniBars(new[] { double.NaN }), "ChartTable cell mini bars should reject non-finite values.");
         AssertThrows<InvalidOperationException>(() => ChartTable.Create().WithColumns("A").AddRow("a").ConfigureRow(0, row => row.Cells[0].WithSparkline(new[] { 1d })).ToSvg(), "ChartTable cell sparklines should require at least two values.");
@@ -591,9 +590,6 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartTableCell("bad").BadgeStyle = (VisualBadgeStyle)999, "ChartTable cells should reject unknown badge styles.");
         AssertThrows<ArgumentOutOfRangeException>(() => ChartList.Create().Marker = (VisualListMarker)999, "ChartList marker property should reject unknown marker values.");
         AssertThrows<ArgumentNullException>(() => new ChartListItem("ok").Text = null!, "ChartList items should reject null text through the public setter.");
-        AssertThrows<ArgumentOutOfRangeException>(() => new ChartListItem("bad").Status = (VisualStatus)999, "ChartList items should reject unknown status values.");
-        AssertThrows<ArgumentOutOfRangeException>(() => MetricCard.Create().Status = (VisualStatus)999, "MetricCard should reject unknown status values.");
-        AssertThrows<ArgumentOutOfRangeException>(() => MetricCard.Create().Icon = (VisualIcon)999, "MetricCard should reject unknown icon values.");
         AssertThrows<ArgumentOutOfRangeException>(() => MetricCard.Create().BadgePlacement = (MetricCardBadgePlacement)999, "MetricCard should reject unknown badge placements.");
         AssertThrows<ArgumentOutOfRangeException>(() => MetricCard.Create().MicroVisualPlacement = (MetricCardMicroVisualPlacement)999, "MetricCard should reject unknown micro visual placements.");
         AssertThrows<ArgumentOutOfRangeException>(() => MetricCard.Create().MiniSparklineStyle = (ChartLineAreaForm)999, "MetricCard should reject unknown mini sparkline styles.");
@@ -611,7 +607,6 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(() => RadialMetricCard.Create().WithMetric("Missing", "1").ToSvg(), "RadialMetricCard should require at least one layer.");
         AssertThrows<InvalidOperationException>(() => RadialMetricCard.Create().AddLayer("Bad", 1, configure: _ => null!).ToSvg(), "RadialMetricCard should reject null fluent layer configuration results.");
         AssertThrows<InvalidOperationException>(() => Chart.Create().AddLayeredRadial("Bad", _ => null!), "Layered radial builder should reject null fluent layer configuration results.");
-        AssertThrows<ArgumentOutOfRangeException>(() => RadialMetricCard.Create().Icon = (VisualIcon)999, "RadialMetricCard should reject unknown icon values.");
         AssertThrows<InvalidOperationException>(() => SegmentedMetricBlock.Create().ToSvg(), "SegmentedMetricBlock should require at least one item.");
         AssertThrows<InvalidOperationException>(() => SegmentedMetricBlock.Create().AddItem("Bad", -1).ToSvg(), "SegmentedMetricBlock should reject negative values.");
         AssertThrows<InvalidOperationException>(() => SegmentedMetricBlock.Create().AddItem("Bad", 1, maximum: 0).ToSvg(), "SegmentedMetricBlock should require a positive maximum for progress rows.");
@@ -645,7 +640,7 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(() => ActivityTimelineBlock.Create().AddEvent("").ToSvg(), "ActivityTimelineBlock should require item text.");
         AssertThrows<InvalidOperationException>(() => ActivityTimelineBlock.Create().AddHiddenSummary(-1, "items").ToSvg(), "ActivityTimelineBlock should reject negative hidden counts.");
         AssertThrows<InvalidOperationException>(() => ActivityTimelineBlock.Create().AddEvent("Bad", symbol: "TOOLONG").ToSvg(), "ActivityTimelineBlock item symbols should stay compact.");
-        AssertThrows<ArgumentOutOfRangeException>(() => ActivityTimelineItem.Event("Bad", null, VisualStatus.Neutral, null, null).Kind = (ActivityTimelineItemKind)999, "ActivityTimelineItem kind property should reject unknown kinds.");
+        AssertThrows<ArgumentOutOfRangeException>(() => ActivityTimelineItem.Event("Bad", null, Tone.Neutral, null, null).Kind = (ActivityTimelineItemKind)999, "ActivityTimelineItem kind property should reject unknown kinds.");
         AssertThrows<InvalidOperationException>(() => ScheduleTimelineBlock.Create().ToSvg(), "ScheduleTimelineBlock should require events.");
         AssertThrows<InvalidOperationException>(() => ScheduleTimelineBlock.Create().WithTimeRange(9, 8).AddEvent("Bad", 8, 9).ToSvg(), "ScheduleTimelineBlock should reject inverted ranges.");
         AssertThrows<InvalidOperationException>(() => ScheduleTimelineBlock.Create().WithTimeRange(8, 17, 0).AddEvent("Bad", 8, 9).ToSvg(), "ScheduleTimelineBlock should reject non-positive tick intervals.");
@@ -653,7 +648,6 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(() => ScheduleTimelineBlock.Create().AddEvent("", 8, 9).ToSvg(), "ScheduleTimelineBlock should require event titles.");
         AssertThrows<InvalidOperationException>(() => ScheduleTimelineBlock.Create().AddEvent("Bad", 9, 8).ToSvg(), "ScheduleTimelineBlock should reject inverted events.");
         AssertThrows<InvalidOperationException>(() => ScheduleTimelineBlock.Create().AddEvent("Bad", 8, 9, lane: -1).ToSvg(), "ScheduleTimelineBlock should reject negative lanes.");
-        AssertThrows<ArgumentOutOfRangeException>(() => new ScheduleTimelineEvent("Bad", 8, 9) { Status = (VisualStatus)999 }, "ScheduleTimelineEvent should reject unknown status values.");
         AssertThrows<ArgumentOutOfRangeException>(() => VisualGrid.Create().WithColumns(0), "VisualGrid should reject non-positive column counts.");
         AssertThrows<ArgumentOutOfRangeException>(() => VisualGrid.Create().PanelFit = (VisualPanelFit)999, "VisualGrid panel fit property should reject unknown values.");
         AssertThrows<InvalidOperationException>(() => VisualGrid.Create().ToSvg(), "VisualGrid should require at least one item.");

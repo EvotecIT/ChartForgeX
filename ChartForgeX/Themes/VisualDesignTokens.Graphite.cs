@@ -34,7 +34,7 @@ public sealed partial class VisualDesignTokens {
     public static VisualDesignTokens GraphiteDark() => Graphite(true);
 
     private static VisualDesignTokens Graphite(bool dark) {
-        var tokens = VisualTheme.Graphite().Resolve(dark ? VisualThemeMode.Dark : VisualThemeMode.Light).ToTokens();
+        var tokens = VisualTheme.Graphite().Resolve(dark ? ThemeMode.Dark : ThemeMode.Light).ToTokens();
         return tokens;
     }
 }

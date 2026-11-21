@@ -10,9 +10,9 @@ namespace ChartForgeX.Tests;
 [Collection(nameof(FontRegistryCollection))]
 public sealed class UseCaseAdvancedActorRecipeTests {
     [Theory]
-    [InlineData("wide", VisualThemeMode.Light)] [InlineData("wide", VisualThemeMode.Dark)]
-    [InlineData("compact", VisualThemeMode.Light)] [InlineData("compact", VisualThemeMode.Dark)]
-    public void OrdinaryCoreRecipeAndSharedParsedProgramRetainTheSameActorKindsStereotypesAndLinkedIdentity(string variant, VisualThemeMode mode) {
+    [InlineData("wide", ThemeMode.Light)] [InlineData("wide", ThemeMode.Dark)]
+    [InlineData("compact", ThemeMode.Light)] [InlineData("compact", ThemeMode.Dark)]
+    public void OrdinaryCoreRecipeAndSharedParsedProgramRetainTheSameActorKindsStereotypesAndLinkedIdentity(string variant, ThemeMode mode) {
         var source = UseCaseAdvancedActorFixture.Read(variant == "compact"); var parsed = new MermaidParser().ParseFlowchart(source); Assert.Empty(parsed.Diagnostics);
         var lowered = parsed.Document!.ToTopologyChart(); var native = UseCaseAdvancedActorsRecipe.Create(variant, mode);
         Assert.Equal(lowered.Nodes.Select(n => (n.Id, n.Label, n.Subtitle, n.Kind, n.Shape, n.IconShape, n.IconId)), native.Nodes.Select(n => (n.Id, n.Label, n.Subtitle, n.Kind, n.Shape, n.IconShape, n.IconId)));
@@ -29,9 +29,9 @@ public sealed class UseCaseAdvancedActorRecipeTests {
     }
 
     [Theory]
-    [InlineData("compact", VisualThemeMode.Light)] [InlineData("compact", VisualThemeMode.Dark)]
-    [InlineData("wide", VisualThemeMode.Light)] [InlineData("wide", VisualThemeMode.Dark)]
-    public void OrdinaryNativeSampleKeepsAuthoredGeometryInsteadOfShrinkingItsActorsToTheHostWidth(string variant, VisualThemeMode mode) {
+    [InlineData("compact", ThemeMode.Light)] [InlineData("compact", ThemeMode.Dark)]
+    [InlineData("wide", ThemeMode.Light)] [InlineData("wide", ThemeMode.Dark)]
+    public void OrdinaryNativeSampleKeepsAuthoredGeometryInsteadOfShrinkingItsActorsToTheHostWidth(string variant, ThemeMode mode) {
         var model = UseCaseAdvancedActorsRecipe.Create(variant, mode);
         model.WithTheme(model.Theme.WithFontFamily(BrowserProofFonts.Family), mode);
         var prepared = model.Prepare(); var facts = prepared.ToInterchangeEnvelope();

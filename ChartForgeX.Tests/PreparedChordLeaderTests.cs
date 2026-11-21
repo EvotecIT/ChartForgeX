@@ -11,15 +11,15 @@ namespace ChartForgeX.Tests;
 /// <summary>Source-to-caption leaders keep compact chord drawings readable without losing their authored flow facts.</summary>
 public sealed class PreparedChordLeaderTests {
     [Theory]
-    [InlineData(390, VisualThemeMode.Light, false)]
-    [InlineData(390, VisualThemeMode.Dark, false)]
-    [InlineData(760, VisualThemeMode.Light, false)]
-    [InlineData(760, VisualThemeMode.Dark, false)]
-    [InlineData(390, VisualThemeMode.Light, true)]
-    [InlineData(390, VisualThemeMode.Dark, true)]
-    [InlineData(760, VisualThemeMode.Light, true)]
-    [InlineData(760, VisualThemeMode.Dark, true)]
-    public void ChordLeadersAvoidEveryOtherCaptionAndKeepTheirNativeSource(int width, VisualThemeMode mode, bool shortLabels) {
+    [InlineData(390, ThemeMode.Light, false)]
+    [InlineData(390, ThemeMode.Dark, false)]
+    [InlineData(760, ThemeMode.Light, false)]
+    [InlineData(760, ThemeMode.Dark, false)]
+    [InlineData(390, ThemeMode.Light, true)]
+    [InlineData(390, ThemeMode.Dark, true)]
+    [InlineData(760, ThemeMode.Light, true)]
+    [InlineData(760, ThemeMode.Dark, true)]
+    public void ChordLeadersAvoidEveryOtherCaptionAndKeepTheirNativeSource(int width, ThemeMode mode, bool shortLabels) {
         var nodes = Enumerable.Range(0, 8).Select(index => new ChartNode("N" + index,
             shortLabels ? "R" + (index + 1) : "Regional processing and reconciliation " + (index + 1))).ToArray();
         var weights = new double[] { 1, 2, 3, 5, 8, 13, 21, 34 };

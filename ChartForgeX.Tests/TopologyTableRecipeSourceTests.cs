@@ -8,9 +8,9 @@ namespace ChartForgeX.Tests;
 
 public sealed class TopologyTableRecipeSourceTests {
     [Theory]
-    [InlineData("wide", VisualThemeMode.Light)] [InlineData("wide", VisualThemeMode.Dark)]
-    [InlineData("compact", VisualThemeMode.Light)] [InlineData("compact", VisualThemeMode.Dark)]
-    public void NativeRecipeAndCompleteParsedSourceProgramKeepOrdinaryPackageBoundaries(string variant, VisualThemeMode mode) {
+    [InlineData("wide", ThemeMode.Light)] [InlineData("wide", ThemeMode.Dark)]
+    [InlineData("compact", ThemeMode.Light)] [InlineData("compact", ThemeMode.Dark)]
+    public void NativeRecipeAndCompleteParsedSourceProgramKeepOrdinaryPackageBoundaries(string variant, ThemeMode mode) {
         var native = TopologyTableContentRecipe.Create(variant, mode);
         Assert.Equal("Release coordinator".Length, native.Nodes.Single(node => node.Id == "User").MaximumLabelCharacters);
         FullActorCaption(native.ToSvg());

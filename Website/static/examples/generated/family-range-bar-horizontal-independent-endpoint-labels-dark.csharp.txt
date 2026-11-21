@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -13,7 +14,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = RangeBarRecipe.Create("horizontal-independent-endpoint-labels", mode);
 var context = new VisualRenderContext(
@@ -28,7 +29,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 /// <summary>Builds delivery-time intervals, grouped comparisons and endpoint labels.</summary>
 public static class RangeBarRecipe {
     /// <summary>Creates the selected range-bar example with vertical or horizontal intervals.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "horizontal" or "compact-horizontal"
             or "endpoint-labels" or "compact-endpoint-labels" or "horizontal-endpoint-labels" or "compact-horizontal-endpoint-labels"
             or "independent-endpoint-labels" or "compact-independent-endpoint-labels" or "horizontal-independent-endpoint-labels" or "compact-horizontal-independent-endpoint-labels"
@@ -80,7 +81,7 @@ public static class RangeBarRecipe {
         return chart;
     }
 
-    private static Chart EndpointLabels(string variant, VisualThemeMode mode) {
+    private static Chart EndpointLabels(string variant, ThemeMode mode) {
         var horizontal = variant.Contains("horizontal");
         var expected = ChartSeries.CreateRangeBar(new ChartSeriesId("expected"), "Expected", new[] {
             new ChartInterval(1, 15, 35), new ChartInterval(2, 10, 30), new ChartInterval(3, 25, 50)
@@ -94,8 +95,8 @@ public static class RangeBarRecipe {
                 options.LabelContent = ChartRangeBarLabelContent.Endpoints;
                 options.EndpointLabelFormatter = label => label.FormattedValue + (label.Endpoint == ChartRangeBarEndpoint.Start ? " S" : " E");
                 if (variant.Contains("independent")) {
-                    options.StartLabel.Style.WithColor(mode == VisualThemeMode.Dark ? "#82b8ff" : "#235b9f").WithFontSize(10);
-                    options.EndLabel.Style.WithColor(mode == VisualThemeMode.Dark ? "#ffbe79" : "#975000").WithFontSize(12).WithWeight("700");
+                    options.StartLabel.Style.WithColor(mode == ThemeMode.Dark ? "#82b8ff" : "#235b9f").WithFontSize(10);
+                    options.EndLabel.Style.WithColor(mode == ThemeMode.Dark ? "#ffbe79" : "#975000").WithFontSize(12).WithWeight("700");
                     options.StartLabel.Placement = horizontal ? ChartDataLabelPlacement.Above : ChartDataLabelPlacement.Left;
                     options.EndLabel.Placement = horizontal ? ChartDataLabelPlacement.Below : ChartDataLabelPlacement.Right;
                 }

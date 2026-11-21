@@ -27,7 +27,7 @@ public sealed class NativeFinancialComponentBeforeControls {
         Assert.False(NativeRawValueSourceMotionTests.Metadata(first).TryGetProperty("nativeValueSource", out _)); Assert.Equal(2, chart.Series[0].FinancialValues.Count);
     }
     internal static Chart Model(bool ohlc, bool labels, double open = 40, double high = 70, double low = 20, double close = 60, int width = 760, bool dark = false, bool styled = true) {
-        var chart = Chart.Create().WithTitle("Actual financial components").WithSize(width, 420).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithLegend(true).WithDataLabels(labels);
+        var chart = Chart.Create().WithTitle("Actual financial components").WithSize(width, 420).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light).WithLegend(true).WithDataLabels(labels);
         foreach (var key in new[] { "delivery", "comparison" }) {
             var changed = key == "delivery"; var values = new[] { new ChartCandlestick(1, changed ? open : 40, changed ? high : 70, changed ? low : 20, changed ? close : 60), new ChartCandlestick(3, 50, 75, 25, 45) };
             var series = (ohlc ? ChartSeries.CreateOhlc(new ChartSeriesId(key), key, values) : ChartSeries.CreateCandlestick(new ChartSeriesId(key), key, values))

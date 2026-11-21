@@ -11,7 +11,7 @@ public static partial class V2Examples {
 
     private static void WriteEmbedding(string output, ICollection<ProofArtifact> artifacts) {
         var recipe = new ExampleRecipe(nameof(ServerRenderedRecipe), (variant, mode) => ServerRenderedRecipe.Create(variant, mode));
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             foreach (var compact in new[] { false, true }) {
                 var width = compact ? 390 : 800;
                 foreach (var example in new[] {
@@ -28,7 +28,7 @@ public static partial class V2Examples {
         }
     }
 
-    private static void WriteSharedStrip(string output, ICollection<ProofArtifact> artifacts, int width, bool compact, VisualThemeMode mode) {
+    private static void WriteSharedStrip(string output, ICollection<ProofArtifact> artifacts, int width, bool compact, ThemeMode mode) {
         var variant = compact ? "compact-shared-strip" : "shared-strip";
         var id = "embedding-" + variant + "-" + mode.ToString().ToLowerInvariant();
         var chart = ServerRenderedRecipe.Create(variant, mode);

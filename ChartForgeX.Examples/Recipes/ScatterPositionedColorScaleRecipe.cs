@@ -1,12 +1,12 @@
 /// <summary>Maps observed temperatures to explicitly positioned color stops.</summary>
 public static class ScatterPositionedColorScaleRecipe {
     /// <summary>Creates the selected example without choosing a renderer or export backend.</summary>
-    public static Chart Create(string variant = "positioned-color-scale", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "positioned-color-scale", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("positioned-color-scale" or "compact-positioned-color-scale")) throw new ArgumentOutOfRangeException(nameof(variant));
         return PositionedColorScale(mode);
     }
 
-    private static Chart PositionedColorScale(VisualThemeMode mode) {
+    private static Chart PositionedColorScale(ThemeMode mode) {
         var colors = VisualTheme.Graphite().Resolve(mode);
         var temperatures = new double?[] { -30, -20, -3, 0, 2.5, 5, 10, 22.5, 40, 55, null, null };
         var minutes = new[] { 24d, 36, 45, 20, 32, 50, 28, 41, 18, 35, 22, 48 };

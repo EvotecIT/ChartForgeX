@@ -11,11 +11,11 @@ namespace ChartForgeX.Tests;
 [Collection(nameof(FontRegistryCollection))]
 public sealed class TopologyActorCaptionRoutingCausalTests {
     [Theory]
-    [InlineData("wide", VisualThemeMode.Light)]
-    [InlineData("wide", VisualThemeMode.Dark)]
-    [InlineData("compact", VisualThemeMode.Light)]
-    [InlineData("compact", VisualThemeMode.Dark)]
-    public void OrdinaryNativeAssociationsKeepClearOfOtherActuallyMeasuredActorCaptions(string variant, VisualThemeMode mode) {
+    [InlineData("wide", ThemeMode.Light)]
+    [InlineData("wide", ThemeMode.Dark)]
+    [InlineData("compact", ThemeMode.Light)]
+    [InlineData("compact", ThemeMode.Dark)]
+    public void OrdinaryNativeAssociationsKeepClearOfOtherActuallyMeasuredActorCaptions(string variant, ThemeMode mode) {
         var model = UseCaseAdvancedActorsRecipe.Create(variant, mode);
         model.WithTheme(model.Theme.WithFontFamily(BrowserProofFonts.Family), mode);
         var prepared = model.Prepare(); var envelope = prepared.ToInterchangeEnvelope(); var json = envelope.ToJson();

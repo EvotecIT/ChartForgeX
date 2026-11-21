@@ -9,7 +9,7 @@ using ChartForgeX.VisualBlocks;
 internal static class JourneyTimelineInterchangeExamples {
     internal static void Write(string output) {
         foreach (var dark in new[] { false, true }) foreach (var width in new[] { 390, 1100 }) {
-            var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+            var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
             var theme = VisualTheme.Graphite().WithFontFamily(ExampleTypography.FontFamily);
             var journey = JourneyDiagramBlock.Create().WithTitle("Review journey").WithSize(width, 500).WithTheme(theme, mode)
                 .AddSection("draft", "Review").AddSection("accepted", "Review")

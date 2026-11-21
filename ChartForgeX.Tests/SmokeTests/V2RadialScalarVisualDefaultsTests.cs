@@ -11,9 +11,9 @@ namespace ChartForgeX.Tests;
 /// <summary>Protects deliberate scalar and part-to-whole defaults together with their authored overrides.</summary>
 public sealed class V2RadialScalarVisualDefaultsTests {
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void GaugeWithoutDeclaredSeverityUsesCategoricalPaintAndThemeArcAndValueTokens(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void GaugeWithoutDeclaredSeverityUsesCategoricalPaintAndThemeArcAndValueTokens(ThemeMode mode) {
         var context = new VisualRenderContext(themeMode: mode);
         var colors = context.Theme.Resolve(mode);
         foreach (var raw in new[] { 35d, 76d, 92d }) {
@@ -48,11 +48,11 @@ public sealed class V2RadialScalarVisualDefaultsTests {
     }
 
     [Theory]
-    [InlineData(ChartGaugeForm.Arc, VisualThemeMode.Light)]
-    [InlineData(ChartGaugeForm.Arc, VisualThemeMode.Dark)]
-    [InlineData(ChartGaugeForm.Needle, VisualThemeMode.Light)]
-    [InlineData(ChartGaugeForm.Needle, VisualThemeMode.Dark)]
-    public void ResolvedCarlitoGaugeRowsPaintTheScalarAndCaptionWithoutOverlapping(ChartGaugeForm form, VisualThemeMode mode) {
+    [InlineData(ChartGaugeForm.Arc, ThemeMode.Light)]
+    [InlineData(ChartGaugeForm.Arc, ThemeMode.Dark)]
+    [InlineData(ChartGaugeForm.Needle, ThemeMode.Light)]
+    [InlineData(ChartGaugeForm.Needle, ThemeMode.Dark)]
+    public void ResolvedCarlitoGaugeRowsPaintTheScalarAndCaptionWithoutOverlapping(ChartGaugeForm form, ThemeMode mode) {
         var path = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(path), "The gallery's Carlito fixture must be available.");
         var chart = Chart.Create().AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Capacity",
@@ -85,7 +85,7 @@ public sealed class V2RadialScalarVisualDefaultsTests {
     [Fact]
     public void ScalarGeometryAndTypographyAreThemeValuesWithDataLabelOverridesPreserved() {
         var graphite = VisualTheme.Graphite();
-        var theme = new VisualTheme(graphite.Resolve(VisualThemeMode.Light).ToTokens(), graphite.Resolve(VisualThemeMode.Dark).ToTokens(),
+        var theme = new VisualTheme(graphite.Resolve(ThemeMode.Light).ToTokens(), graphite.Resolve(ThemeMode.Dark).ToTokens(),
             new VisualTypography(scalarValueSize: 40, centerValueSize: 24), gaugeStrokeWidth: 8, gaugeBandWidth: 2);
         var context = new VisualRenderContext(theme: theme);
         var gauge = Chart.Create().AddGauge("Capacity", 75);
@@ -100,9 +100,9 @@ public sealed class V2RadialScalarVisualDefaultsTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void BulletRowsShareNeutralBandsAndForegroundMeasuresWithAlignedValueAndTargetText(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void BulletRowsShareNeutralBandsAndForegroundMeasuresWithAlignedValueAndTargetText(ThemeMode mode) {
         var context = new VisualRenderContext(themeMode: mode); var colors = context.Theme.Resolve(mode);
         var chart = Chart.Create().AddBullet("Below", 60, 80).AddBullet("Reached", 90, 80);
         var scene = Compile(chart, context);

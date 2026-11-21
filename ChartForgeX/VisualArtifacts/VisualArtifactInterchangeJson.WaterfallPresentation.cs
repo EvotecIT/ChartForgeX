@@ -62,7 +62,7 @@ internal static partial class VisualArtifactInterchangeJson {
         source.Padding = new ChartPadding(OptionalNumber(fields, "paddingLeft") ?? 24, OptionalNumber(fields, "paddingTop") ?? 24,
             OptionalNumber(fields, "paddingRight") ?? 24, OptionalNumber(fields, "paddingBottom") ?? 24);
         source.Orientation = OptionalEnum<ChartOrientation>(fields, "orientation") ?? ChartOrientation.Vertical;
-        source.ThemeMode = OptionalEnum<VisualThemeMode>(fields, "themeMode") ?? VisualThemeMode.Light;
+        source.ThemeMode = OptionalEnum<ThemeMode>(fields, "themeMode") ?? ThemeMode.Light;
         source.ExplicitPadding = OptionalBool(fields, "explicitPadding") ?? false;
         source.HostOwnsFrame = OptionalBool(fields, "hostOwnsFrame") ?? false;
         source.ShowHeader = OptionalBool(fields, "showHeader") ?? true;

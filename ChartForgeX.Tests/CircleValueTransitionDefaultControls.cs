@@ -16,7 +16,7 @@ public sealed class CircleValueTransitionDefaultControls {
     public void ExistingCirclePaintTypographyVisibilityAndCustomFormatPoliciesKeepOrdinaryNativeAndAssetFreeOutputs(int width, bool dark) {
         var renderer = new HtmlInteractiveChartRenderer();
         foreach (var variant in new[] { "paint", "label", "status-off", "labels-off" }) {
-            var chart = CircleRecipe.Create().WithSize(width, 400).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            var chart = CircleRecipe.Create().WithSize(width, 400).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
                 .WithFontFamily(BrowserProofFonts.Family);
             var series = chart.Series[0];
             if (variant == "paint") {

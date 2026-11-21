@@ -161,9 +161,9 @@ public sealed class BoxPlotLayoutTests {
     }
 
     [Theory]
-    [InlineData("horizontal", VisualThemeMode.Light)]
-    [InlineData("compact-horizontal", VisualThemeMode.Dark)]
-    public void HorizontalMedianLabelsHaveClearLanesBesideGroupedQuartileBodies(string variant, VisualThemeMode mode) {
+    [InlineData("horizontal", ThemeMode.Light)]
+    [InlineData("compact-horizontal", ThemeMode.Dark)]
+    public void HorizontalMedianLabelsHaveClearLanesBesideGroupedQuartileBodies(string variant, ThemeMode mode) {
         var chart = V2GalleryModels.Create(ChartSeriesKind.BoxPlot, variant, mode);
         chart.WithSize(variant.StartsWith("compact", StringComparison.Ordinal) ? 360 : 800, 440)
             .WithTitle("Delivery time by service").WithSubtitle("Expected and observed five-number summaries")

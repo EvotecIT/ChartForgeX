@@ -29,7 +29,7 @@ var page = new HtmlInteractiveTopologyRenderer().RenderPage(map,
 var printSvg = map.ToSvg(new TopologyRenderOptions { RegionPrint = true });
 ```
 
-Weights are `Primary`, `Standard` and `Minor`. `Tone` optionally overrides the health-derived presentation with `Good`, `Warn`, `Bad`, `Info` or `Neutral`; it does not replace the host's full `StatusText`. Named badges use the crown, star or lock anatomy. The first two are drawn; tooltips and accessible details retain every meaning. `IsOverlay` marks a spanning relationship. Node and group positions use the existing chart-coordinate overrides. Automatic nodes leave room for positioned nodes; overlapping manual node cores produce a clear error. Preparation does not mutate the source model.
+Weights are `Primary`, `Standard` and `Minor`. `Tone` optionally overrides the health-derived presentation with `Tone.Success`, `Tone.Warning`, `Tone.Danger`, `Tone.Info`, `Tone.Neutral`, `Tone.Muted` or a named theme role such as `Tone.Named("accent")`; `Tone.None` keeps the health status. It does not replace the host's full `StatusText`. Named badges use the crown, star or lock anatomy. The first two are drawn; tooltips and accessible details retain every meaning. `IsOverlay` marks a spanning relationship. Node and group positions use the existing chart-coordinate overrides. Automatic nodes leave room for positioned nodes; overlapping manual node cores produce a clear error. Preparation does not mutate the source model.
 
 The visual contract is split between `ChartForgeX/Topology/Assets/topology-regions.svg` and `topology-regions.css`. The SVG asset contains editable anatomy and theme-role substitutions, compiled into the shared native scene. The stylesheet owns responsive layout and browser states. Keep `.cfx-topo`, `.cfx-region`, `.cfx-node`, `.cfx-edge`, `.cfx-edge-label`, `.cfx-legend` and `tone-*` class names stable. Literal model text is substituted as data, not interpreted as SVG markup. The examples add licensed IBM Plex Sans reference faces so browser and native measurements match.
 
@@ -39,7 +39,7 @@ Print output uses the light theme and warning/failure dash patterns. `IncludeReg
 
 ## Shared themes
 
-Topology uses the same immutable `VisualTheme` as charts, grids and other visual models. Reuse one paired theme and select `VisualThemeMode.Light` or `Dark` explicitly for each model. `WithFontFamily(...)` and `Configure(...)` return new theme snapshots; assign the returned value when customizing a shared theme.
+Topology uses the same immutable `VisualTheme` as charts, grids and other visual models. Reuse one paired theme and select `ThemeMode.Light` or `Dark` explicitly for each model. `WithFontFamily(...)` and `Configure(...)` return new theme snapshots; assign the returned value when customizing a shared theme.
 
 ```csharp
 using ChartForgeX;
@@ -49,7 +49,7 @@ using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 
 var theme = VisualTheme.Graphite();
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var trend = Chart.Create().WithTheme(theme, mode)
     .AddLine("Requests", new[] { new ChartPoint(1, 12), new ChartPoint(2, 18) });
 var topology = TopologyChart.Create().WithTheme(theme, mode)
@@ -90,7 +90,7 @@ Set `node.ShowHealthRing = true` or call `chart.WithNodeHealthRing(id)` for a se
 
 ```csharp
 var hierarchy = TopologyChart.Create().WithViewport(800, 520)
-    .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Light)
+    .WithTheme(VisualTheme.Graphite(), ThemeMode.Light)
     .AddHierarchy(new[] {
         new TopologyHierarchyItem("reference", "Reference clock") {
             Status = TopologyHealthStatus.Healthy, Badge = "REF"
@@ -512,7 +512,7 @@ These edge properties change how a link looks in SVG, PNG and the interactive ru
 
 - **Evidence.** `WithEdgeEvidence(edgeId, TopologyEdgeEvidence.Assumed, "Inferred from KCC connection objects")` marks a link as assumed or inferred; `Confirmed` marks an observed one. An assumed link is drawn with a short even dash (`4 4`), so it reads apart from the longer warning/critical dash (`8 5`). The dash wins over the status dash, but not over an explicit `LineStyle` or `DashPattern`, and a `Disabled` link keeps its dotted `3 6` pattern. Muted assumed links stay dashed. The evidence and its text are appended to the edge tooltip (`Assumed link: …`) and exposed as `data-edge-evidence` and `data-edge-evidence-text`; the selection panel lists them.
 - **Stripes.** `AddEdgeStripe(edgeId, color, label)` adds one colour band. Two or more stripes replace the single edge colour with repeating 12 px bands, one dashed pass per colour, so a site link can show its transports or a trunk its VLANs. On a dashed (assumed or status) link each band is followed by a short gap. `data-edge-stripes` lists the colours.
-- **Chips.** `AddEdgeChip(edgeId, "cost 100", TopologyTone.Warn, iconId)` adds a small monospace value pill along the route: replication cost, lag, PoE watts. Chips of one edge form a row centred on the route near its middle; the row slides along the route, stacks into a column, or steps off the line to stay clear of nodes, edge labels, endpoint labels and other chips, and stays inside the frame. Layered layouts widen the rank gap for links that carry chips. When no such place exists, the edge's chips are not drawn and the prepared scene reports `topology.edge-chips-omitted`; the values stay in `data-edge-chips` and the selection panel. Each chip is a `topology-edge-chip` group with `data-chip-text` and `data-chip-tone`, and a semantic region with the same id.
+- **Chips.** `AddEdgeChip(edgeId, "cost 100", Tone.Warning, iconId)` adds a small monospace value pill along the route: replication cost, lag, PoE watts. Chips of one edge form a row centred on the route near its middle; the row slides along the route, stacks into a column, or steps off the line to stay clear of nodes, edge labels, endpoint labels and other chips, and stays inside the frame. Layered layouts widen the rank gap for links that carry chips. When no such place exists, the edge's chips are not drawn and the prepared scene reports `topology.edge-chips-omitted`; the values stay in `data-edge-chips` and the selection panel. Each chip is a `topology-edge-chip` group with `data-chip-text` and `data-chip-tone`, and a semantic region with the same id.
 - **Uplink marker.** `WithEdgeUplink(edgeId, TopologyEdgeEnd.Target)` prefixes the child end's endpoint label with `↑` (or shows `↑` alone), placed by the same collision-aware endpoint label layout.
 
 Whenever a legend is shown, it gains an `Assumed link` entry (and `Confirmed link` when both kinds are present) and one entry for each labelled stripe colour, unless the caller already listed that evidence or colour. The chart's own `Legend` is not changed. `TopologyLegend.AddEvidence` and `AddEdgeColor` add the same entries by hand. Evidence, stripes, chips and the uplink end travel through the interchange envelope as bounded `chartforgex.edge.*` extensions and are restored by `ToTopologyChart()`.

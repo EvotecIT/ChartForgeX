@@ -13,7 +13,7 @@ public static class FindingsRecipe {
         "Remote access", "Web servers", "Databases", "Hypervisors", "Storage", "Wireless"
     };
 
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var dense = variant == "dense";
         var count = variant == "empty" ? 0 : dense ? DenseCategories.Length : Categories.Length;
         // Dense findings fall off steeply, as they do in a real assessment: a few categories carry most of the work.

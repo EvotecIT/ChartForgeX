@@ -56,7 +56,7 @@ public sealed class TopologyGraphCardColorTests {
     [InlineData(TopologyNodeDisplayMode.Icon, false)]
     [InlineData(TopologyNodeDisplayMode.Icon, true)]
     public void StaticNonCardPaintRetainsTheProjectedSurfaceWithoutFreezingInteractivePaint(TopologyNodeDisplayMode display, bool dark) {
-        var chart = TopologyChart.Create().WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = TopologyChart.Create().WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddNode("node", "Service", 0, 0).WithNodeDisplay("node", display);
         var scene = chart.ToGraphScene();
         Assert.Null(scene.Nodes[0].Style.BackgroundColor);

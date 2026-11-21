@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -13,7 +14,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = ConcentricPieRecipe.Create("concentric", mode);
 var context = new VisualRenderContext(
@@ -28,7 +29,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 /// <summary>Two independent service mixes in explicit concentric Pie and Donut bands.</summary>
 public static class ConcentricPieRecipe {
     /// <summary>Creates independent totals and source identities without implying equal totals across rings.</summary>
-    public static Chart Create(string variant = "concentric", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "concentric", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("concentric" or "compact-concentric")) throw new ArgumentOutOfRangeException(nameof(variant));
         var prior = new ChartSeries(new ChartSeriesId("prior"), "Prior", ChartSeriesKind.Donut,
             new[] { new ChartPoint(1, 75), new ChartPoint(2, 25) })

@@ -152,7 +152,7 @@ public sealed class RuntimeReadableValuesBrowserTests {
 
     private static string CreatePage(bool dark) {
         Chart Frame(string title) => Chart.Create().WithSize(800, 360).WithDataLabels(false).WithTitle(title)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         var time = Frame("Requests over time").WithXAxisTimeScale().WithXAxisBounds(First.ToOADate(), First.AddDays(10).ToOADate())
             .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("time"), "Requests", new[] {
                 new ChartPoint(First, 17),new ChartPoint(First.AddDays(5), 27),new ChartPoint(First.AddDays(10), 21) })

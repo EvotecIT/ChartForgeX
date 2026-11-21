@@ -153,14 +153,14 @@ public sealed class StatePresentationTests {
         string[] Strokes(Chart chart) => ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell-shape-hatch")
             .Select(line => (string)line.Attribute("stroke")!).Distinct().ToArray();
 
-        var dark = Matrix().WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark);
+        var dark = Matrix().WithTheme(VisualTheme.Graphite(), ThemeMode.Dark);
         var darkStroke = PreparedSvgTestExtensions.ParseRenderedColor(Strokes(dark).Single());
         Assert.InRange(darkStroke.A, 1, 254);
         Assert.True(darkStroke.R < 96 && darkStroke.G < 96 && darkStroke.B < 96, "On a dark theme the lines are dark.");
         Assert.NotEqual(Matrix().ToPng(), dark.ToPng());
 
         // A theme without any opaque surface still gets visible lines, and the hatched cell still differs from a solid one.
-        var overlay = Matrix().WithTheme(VisualTheme.TransparentOverlay(), VisualThemeMode.Dark);
+        var overlay = Matrix().WithTheme(VisualTheme.TransparentOverlay(), ThemeMode.Dark);
         var overlayStroke = PreparedSvgTestExtensions.ParseRenderedColor(Strokes(overlay).Single());
         Assert.InRange(overlayStroke.A, 1, 254);
         var svg = XDocument.Parse(overlay.ToSvg());

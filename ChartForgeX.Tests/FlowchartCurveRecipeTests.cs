@@ -13,7 +13,7 @@ public sealed class FlowchartCurveRecipeTests {
     [InlineData("swimlane", "compact", false)] [InlineData("swimlane", "compact", true)]
     [InlineData("swimlane", "wide", false)] [InlineData("swimlane", "wide", true)]
     public void EmittedProgramAndGalleryUseOneCompiledNativeRecipe(string family, string variant, bool dark) {
-        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var artifact = FlowchartCurveRecipe.Create(family, variant, mode, BrowserProofFonts.Family);
         var program = ExampleRecipeSource.EmitFlowchartCurves(family, variant, mode);
         var svg = artifact.ToSvg(); var png = artifact.ToPng(); var json = artifact.ToInterchangeJson();

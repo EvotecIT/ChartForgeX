@@ -57,7 +57,7 @@ public sealed class RadarCustomMarkerLabelTests {
     private static Chart Create(int width, bool dark, ChartMarkerPath? shape, double radius, string label) {
         var chart = Chart.Create().WithSize(width, 300).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false)
             .WithYAxisBounds(0, 100).WithDataLabels(false).WithDataLabelPlacement(ChartDataLabelPlacement.Center)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddRadialColumn("Observed", Enumerable.Range(1, 4).Select(index => new ChartPoint(index, 40)))
             .AddRadarLine("Target", Enumerable.Range(1, 4).Select(index => new ChartPoint(index, 70)));
         var radar = chart.Series[1]; radar.ShowDataLabels = true; radar.Radar.OutlineStroke = new ChartStrokeStyle(width: 0);

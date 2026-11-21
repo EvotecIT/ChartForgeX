@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = ScatterPositionedColorScaleRecipe.Create(&quot;positioned-color-scale&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,12 +111,12 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Maps observed temperatures to explicitly positioned color stops.&lt;/summary&gt;
 public static class ScatterPositionedColorScaleRecipe {
     /// &lt;summary&gt;Creates the selected example without choosing a renderer or export backend.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;positioned-color-scale&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;positioned-color-scale&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;positioned-color-scale&quot; or &quot;compact-positioned-color-scale&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         return PositionedColorScale(mode);
     }
 
-    private static Chart PositionedColorScale(VisualThemeMode mode) {
+    private static Chart PositionedColorScale(ThemeMode mode) {
         var colors = VisualTheme.Graphite().Resolve(mode);
         var temperatures = new double?[] { -30, -20, -3, 0, 2.5, 5, 10, 22.5, 40, 55, null, null };
         var minutes = new[] { 24d, 36, 45, 20, 32, 50, 28, 41, 18, 35, 22, 48 };
@@ -140,6 +141,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -149,7 +151,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = ScatterPositionedColorScaleRecipe.Create(&quot;positioned-color-scale&quot;, mode);
 var context = new VisualRenderContext(
@@ -164,12 +166,12 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Maps observed temperatures to explicitly positioned color stops.&lt;/summary&gt;
 public static class ScatterPositionedColorScaleRecipe {
     /// &lt;summary&gt;Creates the selected example without choosing a renderer or export backend.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;positioned-color-scale&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;positioned-color-scale&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;positioned-color-scale&quot; or &quot;compact-positioned-color-scale&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         return PositionedColorScale(mode);
     }
 
-    private static Chart PositionedColorScale(VisualThemeMode mode) {
+    private static Chart PositionedColorScale(ThemeMode mode) {
         var colors = VisualTheme.Graphite().Resolve(mode);
         var temperatures = new double?[] { -30, -20, -3, 0, 2.5, 5, 10, 22.5, 40, 55, null, null };
         var minutes = new[] { 24d, 36, 45, 20, 32, 50, 28, 41, 18, 35, 22, 48 };

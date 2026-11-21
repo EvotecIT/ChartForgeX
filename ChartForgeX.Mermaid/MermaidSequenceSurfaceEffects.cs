@@ -13,7 +13,7 @@ internal static class MermaidSequenceSurfaceEffects {
         var neo = configuration.Look == "neo" || configuration.Look == null && MermaidThemePreset.IsPreset(configuration.Theme);
         if (neo) {
             var name = preset?.Name ?? (MermaidThemePreset.IsPreset(configuration.Theme) ? configuration.Theme : null) ??
-                (sequence.ThemeMode == ChartForgeX.Themes.VisualThemeMode.Dark ? "redux-dark-color" : "redux-color");
+                (sequence.ThemeMode == ChartForgeX.ThemeMode.Dark ? "redux-dark-color" : "redux-color");
             var tint = name is "redux" or "redux-color"
                 ? ChartColor.FromRgb(0, 0, 0) : ChartColor.FromRgb(255, 255, 255);
             // The pinned renderer inserts this filter independently of stylesheet dropShadow.

@@ -120,7 +120,7 @@ public sealed class VisualArtifactInterchangeSequenceArtifact {
     /// <summary>Gets or sets the immutable native theme captured only with a nonempty sequence presentation policy.</summary>
     public ChartForgeX.Themes.VisualTheme? Theme { get; set; }
     /// <summary>Gets or sets the paired mode accompanying the captured native theme.</summary>
-    public ChartForgeX.Themes.VisualThemeMode? ThemeMode { get; set; }
+    public ChartForgeX.ThemeMode? ThemeMode { get; set; }
     /// <summary>Gets or sets immutable optional native allocations; nonempty policies require version2.</summary>
     public SequenceLayoutPolicy? Layout { get; set; }
     /// <summary>Gets or sets captured detached role typography; nonempty roles require version2.</summary>
@@ -153,7 +153,7 @@ public sealed class VisualArtifactInterchangeTheme {
     /// <summary>Gets or sets the complete immutable paired native theme. When present it owns geometry, effects and typography; resolved legacy slots remain observations.</summary>
     public ChartForgeX.Themes.VisualTheme? Definition { get; set; }
     /// <summary>Gets or sets the selected native theme mode. Null preserves the legacy Light restoration contract; nonnull requires version2.</summary>
-    public ChartForgeX.Themes.VisualThemeMode? Mode { get; set; }
+    public ChartForgeX.ThemeMode? Mode { get; set; }
     /// <summary>Gets or sets an optional positive native topology title size. Null retains the ordinary Graphite size; non-null requires version 2.</summary>
     public double? TitleSize { get; set; }
     /// <summary>Gets or sets an optional positive topology data-label size. Null retains the ordinary Graphite size; non-null requires version2.</summary>

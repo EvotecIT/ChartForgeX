@@ -9,7 +9,7 @@ using ChartForgeX.Themes;
 internal static class NativePreparationBackpressureExamples {
     internal static void Write(string output) {
         Directory.CreateDirectory(output); ExampleTypography.Register();
-        foreach (var typed in new[] { false, true }) foreach (var width in new[] { 390, 900 }) foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var typed in new[] { false, true }) foreach (var width in new[] { 390, 900 }) foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             var chart = Model(typed, width, mode); var renderer = new HtmlInteractiveChartRenderer();
             var sections = Enumerable.Range(0, 4).ToDictionary(inset => inset.ToString(System.Globalization.CultureInfo.InvariantCulture),
                 inset => renderer.PrepareSection(chart, inset == 0 ? null : new ChartCartesianViewport(x: new ChartAxisWindow(inset, 10 - inset)), options => {
@@ -31,7 +31,7 @@ internal static class NativePreparationBackpressureExamples {
         }
     }
 
-    private static Chart Model(bool typed, int width, VisualThemeMode mode) {
+    private static Chart Model(bool typed, int width, ThemeMode mode) {
         var series = typed ? ChartSeries.CreateRangeBar(new ChartSeriesId("readings"), "Readings", Enumerable.Range(0, 11).Select(value => new ChartInterval(value, 20 + value * 5, 28 + value * 5)))
             : ChartSeries.CreateLine(new ChartSeriesId("readings"), "Readings", Enumerable.Range(0, 11).Select(value => new ChartPoint(value, 20 + value * 5)));
         series.WithObservationIds(Enumerable.Range(0, 11).Select(value => new ChartObservationId("reading-" + value)));

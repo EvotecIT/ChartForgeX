@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -14,7 +15,7 @@ using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 using static RangeBarRecipe;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 #endregion
 
@@ -32,7 +33,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 #endregion
 
 static class RangeBarRecipe {
-    internal static Chart EndpointLabels(VisualThemeMode mode) {
+    internal static Chart EndpointLabels(ThemeMode mode) {
         var expected = ChartSeries.CreateRangeBar(new ChartSeriesId("expected"), "Expected", new[] {
             new ChartInterval(1, 15, 35), new ChartInterval(2, 10, 30), new ChartInterval(3, 25, 50)
         });
@@ -44,8 +45,8 @@ static class RangeBarRecipe {
                 options.Orientation = ChartOrientation.Vertical;
                 options.LabelContent = ChartRangeBarLabelContent.Endpoints;
                 options.EndpointLabelFormatter = label => label.FormattedValue + (label.Endpoint == ChartRangeBarEndpoint.Start ? " S" : " E");
-                    options.StartLabel.Style.WithColor(mode == VisualThemeMode.Dark ? "#82b8ff" : "#235b9f").WithFontSize(10);
-                    options.EndLabel.Style.WithColor(mode == VisualThemeMode.Dark ? "#ffbe79" : "#975000").WithFontSize(12).WithWeight("700");
+                    options.StartLabel.Style.WithColor(mode == ThemeMode.Dark ? "#82b8ff" : "#235b9f").WithFontSize(10);
+                    options.EndLabel.Style.WithColor(mode == ThemeMode.Dark ? "#ffbe79" : "#975000").WithFontSize(12).WithWeight("700");
                     options.StartLabel.Placement = ChartDataLabelPlacement.Left;
                     options.EndLabel.Placement = ChartDataLabelPlacement.Right;
             }).WithBarStyle(ChartBarStyle.Flat).WithDataLabels();

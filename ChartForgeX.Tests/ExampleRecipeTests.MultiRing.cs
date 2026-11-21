@@ -9,12 +9,12 @@ namespace ChartForgeX.Tests;
 public sealed partial class ExampleRecipeTests {
     public static IEnumerable<object[]> MultiRingSelections() {
         foreach (var variant in new[] { "wide", "compact", "automatic", "compact-automatic", "vertical", "compact-vertical", "mixed", "compact-mixed" })
-            foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) yield return new object[] { variant, mode };
+            foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) yield return new object[] { variant, mode };
     }
 
     [Theory]
     [MemberData(nameof(MultiRingSelections))]
-    public void MultiRingDownloadIsCompleteAndPreservesEachSourceOwnedCalloutAndExplosion(string variant, VisualThemeMode mode) {
+    public void MultiRingDownloadIsCompleteAndPreservesEachSourceOwnedCalloutAndExplosion(string variant, ThemeMode mode) {
         var recipe = ExampleRecipes.Named("multi-ring-callouts"); var source = Source(recipe, variant);
         Assert.Contains("WithPointSliceOffset", source); Assert.Contains("WithObservationIds", source); Assert.Contains("WithAutomaticRadialBands", source);
         Assert.DoesNotContain("{{", source); Assert.DoesNotContain("ChartForgeX.Examples", source);

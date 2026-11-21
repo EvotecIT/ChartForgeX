@@ -97,7 +97,7 @@ public sealed class SequenceLayoutTypographyTests {
         Assert.Equal(18,model.Typography!.Participant!.FontSize);model.Participants[0].Label="Later";model.Messages[0].Text="Later message";model.Typography=new SequenceTypography();
         Assert.Equal(before,prepared.ToSvg());Assert.Equal(json,prepared.ToArtifact(model.Id,VisualArtifactKind.Sequence).ToInterchangeJson());
         var decoded=prepared.ToArtifact(model.Id,VisualArtifactKind.Sequence).ToInterchangeEnvelope();decoded.Sequence!.Typography!.Participant!.FontSize=77;
-        decoded.Sequence.Theme=VisualTheme.Graphite().Configure(builder=>builder.Spacing=77);decoded.Sequence.ThemeMode=VisualThemeMode.Dark;
+        decoded.Sequence.Theme=VisualTheme.Graphite().Configure(builder=>builder.Spacing=77);decoded.Sequence.ThemeMode=ThemeMode.Dark;
         Assert.Equal(json,prepared.ToArtifact(model.Id,VisualArtifactKind.Sequence).ToInterchangeJson());
     }
     [Fact]

@@ -14,19 +14,19 @@ namespace ChartForgeX.Tests;
 [Trait("BrowserSuite", "Compatibility")]
 public sealed class AlignedDifferenceBrowserTests {
     [BrowserTheory]
-    [InlineData("wide", 390, VisualThemeMode.Light)]
-    [InlineData("wide", 390, VisualThemeMode.Dark)]
-    [InlineData("wide", 800, VisualThemeMode.Light)]
-    [InlineData("wide", 800, VisualThemeMode.Dark)]
-    [InlineData("negative-log", 390, VisualThemeMode.Light)]
-    [InlineData("negative-log", 390, VisualThemeMode.Dark)]
-    [InlineData("negative-log", 800, VisualThemeMode.Light)]
-    [InlineData("negative-log", 800, VisualThemeMode.Dark)]
-    [InlineData("sym-log", 390, VisualThemeMode.Light)]
-    [InlineData("sym-log", 390, VisualThemeMode.Dark)]
-    [InlineData("sym-log", 800, VisualThemeMode.Light)]
-    [InlineData("sym-log", 800, VisualThemeMode.Dark)]
-    public async Task RealignedSourcesRetainBothProvenancesSelectionAndAcceptedNativeExports(string variant, int width, VisualThemeMode mode) {
+    [InlineData("wide", 390, ThemeMode.Light)]
+    [InlineData("wide", 390, ThemeMode.Dark)]
+    [InlineData("wide", 800, ThemeMode.Light)]
+    [InlineData("wide", 800, ThemeMode.Dark)]
+    [InlineData("negative-log", 390, ThemeMode.Light)]
+    [InlineData("negative-log", 390, ThemeMode.Dark)]
+    [InlineData("negative-log", 800, ThemeMode.Light)]
+    [InlineData("negative-log", 800, ThemeMode.Dark)]
+    [InlineData("sym-log", 390, ThemeMode.Light)]
+    [InlineData("sym-log", 390, ThemeMode.Dark)]
+    [InlineData("sym-log", 800, ThemeMode.Light)]
+    [InlineData("sym-log", 800, ThemeMode.Dark)]
+    public async Task RealignedSourcesRetainBothProvenancesSelectionAndAcceptedNativeExports(string variant, int width, ThemeMode mode) {
         if (!Enabled) return;
         var chart = Model(variant, width, mode); var updated = Model(variant, width, mode);
         var alignment = updated.Series[0].DifferenceAlignment!;
@@ -71,7 +71,7 @@ public sealed class AlignedDifferenceBrowserTests {
         }
         Assert.Empty(errors); AssertNoConsoleErrors(session);
     }
-    private static Chart Model(string variant, int width, VisualThemeMode mode) {
+    private static Chart Model(string variant, int width, ThemeMode mode) {
         var selected = width == 390 ? variant == "wide" ? "compact" : "compact-" + variant : variant;
         return AlignedDifferenceRecipe.Create(selected, mode).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), mode);
     }

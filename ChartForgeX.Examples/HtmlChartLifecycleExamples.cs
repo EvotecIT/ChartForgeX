@@ -33,7 +33,7 @@ public static class HtmlChartLifecycleExamples {
         const string controls = "<div class='cfx-toolbar cfx-lifecycle-controls' aria-label='Example host controls'><button class='cfx-tool' type='button' id='update-measurements'>Update measurements</button>"
             + "<button class='cfx-tool' type='button' id='dispose-chart'>Dispose chart</button><button class='cfx-tool' type='button' id='mount-chart' hidden>Mount again</button>"
             + "<span id='host-status' role='status'>Original measurements</span></div>";
-        var colors = VisualTheme.Graphite().Resolve(dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        var colors = VisualTheme.Graphite().Resolve(dark ? ThemeMode.Dark : ThemeMode.Light);
         var style = "<style>.cfx-lifecycle-demo{width:min(100%,1000px);min-width:0}"
             + ".cfx-lifecycle-controls{margin:0 0 16px;justify-content:flex-start;align-items:center;background:" + colors.Surface.ToCss() + ";border-color:" + colors.Border.ToCss() + "}"
             + ".cfx-lifecycle-controls .cfx-tool{background:" + colors.Surface.ToCss() + ";color:" + colors.Foreground.ToCss() + ";border-color:" + colors.Border.ToCss() + "}"
@@ -61,7 +61,7 @@ public static class HtmlChartLifecycleExamples {
             .WithObservationId(updated ? 0 : 1, new ChartObservationId("south"));
         var reference = ChartSeries.CreateLine(new ChartSeriesId("reference"), "Reference",
             new[] { new ChartPoint(0, 20), new ChartPoint(3, 20) });
-        var chart = Chart.Create().WithSize(800, 440).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = Chart.Create().WithSize(800, 440).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithTitle("Measurements that keep their identity")
             .WithSubtitle("Select a bubble or mute Reference, then update the measurements")
             .WithXAxisBounds(0, 3).WithYAxisBounds(0, 25).WithLegend().WithDataLabels(false);

@@ -5,7 +5,7 @@ internal static partial class MermaidExamples {
     private static void WriteMixedCaptionExamples(string output) {
         WriteRemainingCaptionExamples(output);
         foreach (var family in new[] { "native", "flowchart", "requirement", "mindmap" })
-            foreach (var variant in new[] { "compact", "wide" }) foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+            foreach (var variant in new[] { "compact", "wide" }) foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
                 var artifact = family == "native"
                     ? MixedCaptionRecipe.Create(variant, mode, ExampleTypography.FontFamily)
                     : MermaidMixedCaptionSourceExample.Create(family, variant, mode, ExampleTypography.FontFamily);

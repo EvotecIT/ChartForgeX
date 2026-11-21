@@ -197,7 +197,7 @@ public sealed partial class TopologyHierarchyNativeBrowserTests {
     private sealed class Host {
         private readonly TopologyChart _source; private int _sequence;
         private readonly HashSet<string> _bases = new() { "initial" };
-        internal Host(bool dark) { _source = TopologyHierarchySectionTests.Source(dark ? VisualThemeMode.Dark : VisualThemeMode.Light); Last = Section(null); }
+        internal Host(bool dark) { _source = TopologyHierarchySectionTests.Source(dark ? ThemeMode.Dark : ThemeMode.Light); Last = Section(null); }
         internal int SourceCount => _source.Nodes.Count;
         internal HtmlChartSection Last { get; private set; }
         internal HtmlChartSection Section(TopologyHierarchyView? view) => OrganizationHierarchyNavigationRecipe.PrepareSection(_source, view);

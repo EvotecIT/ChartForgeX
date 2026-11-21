@@ -1,6 +1,6 @@
 /// <summary>Tasks, progress and a milestone connected through chart-owned dependency handles.</summary>
 public static class GanttRecipe {
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var start = new DateTime(2026, 3, 2, 8, 0, 0, DateTimeKind.Utc);
         var discovery = ChartSeries.CreateGanttTask(new ChartSeriesId("discovery"), "Discovery", start, start.AddDays(3), .9);
         var implementation = ChartSeries.CreateGanttTask(new ChartSeriesId("implementation"), "Implementation", start.AddDays(3), start.AddDays(7), .55);

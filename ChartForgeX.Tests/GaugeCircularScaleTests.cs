@@ -74,7 +74,7 @@ public sealed class GaugeCircularScaleTests {
     [InlineData(ChartGaugeForm.Needle, false, false)]
     public void EquivalentDefaultAnglesAndTickCountsKeepTheSameExportedGeometry(ChartGaugeForm form, bool compact, bool dark) {
         Chart Baseline() => Chart.Create().WithSize(compact ? 360 : 800, compact ? 360 : 440).WithLegend(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Capacity",
                 new ChartGaugeValue(50, targets: new[] { new ChartGaugeTarget(75, "Goal") })))
             .ConfigureGauge(options => options.Form = form);
@@ -110,7 +110,7 @@ public sealed class GaugeCircularScaleTests {
 
     internal static Chart Create(ChartGaugeForm form, int requested, int width, int height, bool longFormat, bool dark, Action<double>? observe = null) =>
         Chart.Create().WithSize(width, height).WithHeader(false).WithLegend(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Capacity",
                 new ChartGaugeValue(50, targets: new[] { new ChartGaugeTarget(75, "Goal") })))
             .WithValueFormatter(value => { observe?.Invoke(value); return value.ToString(longFormat ? "0.00" : "0.0", CultureInfo.InvariantCulture)

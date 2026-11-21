@@ -1,7 +1,7 @@
 /// <summary>Colors dated activity from quiet to busy on a fixed numeric scale.</summary>
 public static class CalendarHeatmapColorScaleRecipe {
     /// <summary>Creates a Monday-first calendar with an explicit activity range and missing-data color.</summary>
-    public static Chart Create(string variant = "color-scale", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "color-scale", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("color-scale" or "compact-color-scale")) throw new ArgumentOutOfRangeException(nameof(variant));
         var colors = VisualTheme.Graphite().Resolve(mode);
         return Chart.Create().ConfigureCalendar(options => options.FirstDayOfWeek = DayOfWeek.Monday)

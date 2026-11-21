@@ -123,7 +123,7 @@ public sealed class ChartSankeyOptions {
         if (value.Value < 0) throw new ArgumentOutOfRangeException(nameof(value), value, "Sankey dimensions must be non-negative.");
     }
 
-    private static void Defined<T>(T value) where T : struct {
+    private static void Defined<T>(T value) where T : struct, Enum {
         if (!Enum.IsDefined(typeof(T), value)) throw new ArgumentOutOfRangeException(nameof(value));
     }
 }

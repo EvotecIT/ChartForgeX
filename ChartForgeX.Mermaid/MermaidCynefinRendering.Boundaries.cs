@@ -12,9 +12,9 @@ public static partial class MermaidCynefinRendering {
     private static void AddBoundaries(TopologyChart chart, MermaidCynefinSettings? settings, double x, double y, double width, double height) {
         var colors = chart.Theme.Resolve(chart.ThemeMode);
         var ink = settings?.Color("boundaryColor", colors.Border) ?? colors.Border;
-        var cliff = settings?.Color("cliffColor", chart.ThemeMode == ChartForgeX.Themes.VisualThemeMode.Dark
+        var cliff = settings?.Color("cliffColor", chart.ThemeMode == ChartForgeX.ThemeMode.Dark
             ? ChartColor.FromHex("#FF6B6B") : ChartColor.FromHex("#8B0000"))
-            ?? (chart.ThemeMode == ChartForgeX.Themes.VisualThemeMode.Dark ? ChartColor.FromHex("#FF6B6B") : ChartColor.FromHex("#8B0000"));
+            ?? (chart.ThemeMode == ChartForgeX.ThemeMode.Dark ? ChartColor.FromHex("#FF6B6B") : ChartColor.FromHex("#8B0000"));
         var amplitude = settings?.Number("boundaryAmplitude", 8) ?? 8;
         var seed = settings?.Number("seed", 0) ?? 0;
         if (seed == 0) seed = Hash(chart.Id ?? "mermaid-cynefin");

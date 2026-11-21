@@ -12,7 +12,7 @@ internal sealed class ResolvedVisualTheme {
     private readonly VisualThemeColors _colors;
     private readonly ChartColor[] _palette;
     private readonly ChartColor[]? _sequentialRamp;
-    internal ResolvedVisualTheme(VisualTheme theme, VisualThemeMode mode) {
+    internal ResolvedVisualTheme(VisualTheme theme, ThemeMode mode) {
         _theme = theme; _colors = theme.Resolve(mode); _palette = _colors.Palette.ToArray();
         _sequentialRamp = _colors.SequentialRamp.Count == 0 ? null : _colors.SequentialRamp.ToArray();
     }
@@ -37,6 +37,7 @@ internal sealed class ResolvedVisualTheme {
     internal ChartColor Neutral2 => _colors.Neutral2;
     internal ChartColor Neutral3 => _colors.Neutral3;
     internal ChartColor[] Palette => _palette;
+    internal ChartColor Role(VisualThemeColorToken token) => ToneRoles.Color(_colors, token);
     internal ChartColor CategoricalColor(int index) => _colors.CategoricalColor(index);
     internal ChartColor[]? SequentialRampValue => _sequentialRamp;
     internal ChartColor[]? SequentialRamp => SequentialRampValue;

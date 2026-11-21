@@ -137,19 +137,27 @@ var svg = chart.Prepare(new VisualRenderContext()).ToSvg(
 // fill="var(--hfx-color-chart-series-1, #2A78D6)", stroke="var(--hfx-color-surface-line, #E2E4E7)", ...
 ```
 
-That is all the page needs. Inside a CanopyX or HtmlForgeX page, the chart follows the page's theme, including its dark mode, without further configuration. A page that defines none of the properties shows the default Graphite colours and its own font. For a chart prepared with another theme or mode, pass them: `WithSharedDesignRoles(theme, VisualThemeMode.Dark)`. `chart.WithSvgColorVariables(SvgColorVariables.SharedRoles(theme, mode))` applies the same colours to `chart.ToSvg()`, and visual blocks accept them through `WithSvgColorVariables(...)`. PNG, email and Office output use the resolved theme colours.
+That is all the page needs. Inside a CanopyX or HtmlForgeX page, the chart follows the page's theme, including its dark mode, without further configuration. A page that defines none of the properties shows the default Graphite colours and its own font. For a chart prepared with another theme or mode, pass them: `WithSharedDesignRoles(theme, ThemeMode.Dark)`. `chart.WithSvgColorVariables(SvgColorVariables.SharedRoles(theme, mode))` applies the same colours to `chart.ToSvg()`, and visual blocks accept them through `WithSvgColorVariables(...)`. PNG, email and Office output use the resolved theme colours.
 
 Series keep their chart palette slot: series 3 writes `--hfx-color-chart-series-3`. Automatic allocation gives different series distinct colours, extending the base palette with shades when needed; explicit colours retain precedence. Light and dark are separate token sets selected by `ThemeMode`; nothing is inverted automatically. A brand theme is token values only:
 
 ```csharp
 var brand = VisualTheme.Graphite()
-    .WithPalette(VisualThemeMode.Light, ChartPalettes.FromHex("#0b5cad", "#00897b", "#6a4fd8", "#a0522d", "#b03a8c", "#4f7a00"))
-    .WithPalette(VisualThemeMode.Dark, ChartPalettes.FromHex("#4d8fe0", "#26a69a", "#8f7bf0", "#c06a42", "#cc5aa6", "#73a12a"));
+    .WithPalette(ThemeMode.Light, ChartPalettes.FromHex("#0b5cad", "#00897b", "#6a4fd8", "#a0522d", "#b03a8c", "#4f7a00"))
+    .WithPalette(ThemeMode.Dark, ChartPalettes.FromHex("#4d8fe0", "#26a69a", "#8f7bf0", "#c06a42", "#cc5aa6", "#73a12a"));
 chart.WithTheme(brand);
 // Or load a complete light/dark token document: VisualTheme.FromPaletteJson(File.ReadAllText("brand.tokens.json"))
 ```
 
 Validate a new categorical set in both modes before you ship it. The default order is the validated set from the design language. Status colours are kept out of the series cycle.
+
+## Auto theme mode in HTML
+
+A model whose `ThemeMode` is `Auto` (the default for charts, chart grids, topology, visual blocks and sequence diagrams) follows the viewer's `prefers-color-scheme` in HTML output, with no script. The SVG writes its colours as `--cfx-auto-*` properties with the light colours as fallbacks, and a stylesheet scoped to the output's root defines them: light by default, dark inside `@media (prefers-color-scheme: dark)`. The root keeps its usual class and carries `data-cfx-theme-mode="auto"` and `data-cfx-auto-theme="cfx-auto-<hash>"`, which the stylesheet selects. Each property reads the matching shared role first, for example `--cfx-auto-color-surface-card: var(--hfx-color-surface-card, #FFFFFF)`, so a CanopyX or HtmlForgeX page that defines its roles keeps them. Chrome around the drawing (page background, tooltips, topology controls, region colours) switches with it.
+
+Static images have no viewer: `ToSvg()`, `ToPng()`, `Save(...)` and raster output paint `Auto` as light. An explicit `ThemeMode.Light` or `Dark` writes the same literal HTML as before. Colour variables set on the model (`WithSvgColorVariables(...)`, `TopologyRenderOptions.SvgColorVariables`) take precedence, and no Auto stylesheet is written.
+
+Self-contained fragments and pages include the stylesheet in a plain `<style>` element. Asset-free output leaves it to the host, like its other assets: register `HtmlChartSection.AutoThemeStyleSheet` or `HtmlInteractiveChartRenderer.AutoThemeStyleSheet(chart)` for interactive sections, `TopologyHtmlRenderer.BuildAutoThemeStyle(chart, options)` for topology fragments without assets, and `HtmlResponsiveChartRenderer.AutoThemeStylesheet(chart)` for responsive fragments without assets. The scope is a hash of the stylesheet, so equal themes on one page share it and different themes never collide. Interactive SVG and PNG exports carry the colours the viewer currently sees.
 
 ## Time overlays and open support windows
 

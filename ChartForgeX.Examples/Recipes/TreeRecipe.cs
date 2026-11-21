@@ -1,6 +1,6 @@
 /// <summary>A connected team hierarchy with stable node identities independent of display labels.</summary>
 public static class TreeRecipe {
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var nodes = new[] {
             new ChartNode("all", "All teams"), new ChartNode("engineering", "Engineering"), new ChartNode("operations", "Operations"),
             new ChartNode("platform", "Platform"), new ChartNode("engineering-support", variant == "options" ? "Support" : "Services"),

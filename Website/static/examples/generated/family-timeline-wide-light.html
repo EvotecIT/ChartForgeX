@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = TimelineRecipe.Create(&quot;wide&quot;, mode);
 var context = new VisualRenderContext(
@@ -109,7 +110,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 
 /// &lt;summary&gt;Overlapping project activities in March 2026 with stable task identities and an explicitly configured time axis.&lt;/summary&gt;
 public static class TimelineRecipe {
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         var start = new DateTime(2026, 3, 2, 8, 0, 0, DateTimeKind.Utc);
         var chart = Chart.Create();
         // Each activity starts and ends a whole number of days after the kick-off on Monday 2 March.
@@ -131,6 +132,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -140,7 +142,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = TimelineRecipe.Create(&quot;wide&quot;, mode);
 var context = new VisualRenderContext(
@@ -154,7 +156,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 
 /// &lt;summary&gt;Overlapping project activities in March 2026 with stable task identities and an explicitly configured time axis.&lt;/summary&gt;
 public static class TimelineRecipe {
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         var start = new DateTime(2026, 3, 2, 8, 0, 0, DateTimeKind.Utc);
         var chart = Chart.Create();
         // Each activity starts and ends a whole number of days after the kick-off on Monday 2 March.

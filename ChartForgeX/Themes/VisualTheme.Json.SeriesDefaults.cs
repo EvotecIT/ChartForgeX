@@ -79,7 +79,7 @@ public sealed partial class VisualTheme {
         writer.EndObject();
     }
 
-    private static T ParseName<T>(string text, string what) where T : struct {
+    private static T ParseName<T>(string text, string what) where T : struct, Enum {
         // Names only: Enum.TryParse would also accept numeric strings and comma lists.
         if (text.Length == 0 || !text.All(char.IsLetter) || !Enum.TryParse<T>(text, true, out var value))
             throw new ArgumentException("Theme uses an unknown " + what + " '" + text + "'.");

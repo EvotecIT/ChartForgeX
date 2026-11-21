@@ -8,11 +8,11 @@ namespace ChartForgeX.Tests;
 
 public sealed class MapRouteClearanceTests {
     [Theory]
-    [InlineData(390, VisualThemeMode.Light)]
-    [InlineData(390, VisualThemeMode.Dark)]
-    [InlineData(800, VisualThemeMode.Light)]
-    [InlineData(800, VisualThemeMode.Dark)]
-    public void OptInClearanceUsesActualPeerEndpointMarksAndKeepsTheOriginalSourceRoute(int width, VisualThemeMode mode) {
+    [InlineData(390, ThemeMode.Light)]
+    [InlineData(390, ThemeMode.Dark)]
+    [InlineData(800, ThemeMode.Light)]
+    [InlineData(800, ThemeMode.Dark)]
+    public void OptInClearanceUsesActualPeerEndpointMarksAndKeepsTheOriginalSourceRoute(int width, ThemeMode mode) {
         var route = new ChartMapConnector("Peer-owned endpoints", -5, 45, 25, 55).WithEndpointClearance(4)
             .WithFeature(new ChartMapFeature("peer-route", "{\"active\":true}"));
         var chart = Chart.Create().WithSize(width, 400).WithTheme(VisualTheme.Graphite(), mode).WithMapViewport(ChartMapViewport.Europe())

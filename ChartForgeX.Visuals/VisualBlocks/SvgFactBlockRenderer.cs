@@ -67,7 +67,7 @@ public sealed partial class SvgFactBlockRenderer {
         var theme = options.ResolvedTheme;
         var content = VisualBlockRendering.ContentRect(options);
         var statusColor = VisualBlockRendering.StatusColor(theme, card.Status);
-        if (card.Status != VisualStatus.None) {
+        if (card.Status != Tone.None) {
             var left = Math.Max(content.X, ChartVisualPrimitives.MetricStatusBarWidth + 5);
             content = new ChartRect(left, content.Y, Math.Max(1, content.Right - left), content.Height);
         }
@@ -80,15 +80,15 @@ public sealed partial class SvgFactBlockRenderer {
         var valueYOffset = 0.0;
         var badgeBottom = content.Y;
         ChartRect? badgeBounds = null;
-        if (card.Status != VisualStatus.None) {
+        if (card.Status != Tone.None) {
             var barInset = options.ShowCard ? ChartVisualPrimitives.CardInnerHighlightInset : 0;
             writer.StartElement("rect").Attribute("data-cfx-role", "metric-status-bar").Attribute("x", barInset).Attribute("y", barInset).Attribute("width", ChartVisualPrimitives.MetricStatusBarWidth).Attribute("height", Math.Max(1, options.Size.Height - barInset * 2)).Attribute("fill", statusColor.ToCss());
             if (options.ShowCard) writer.Attribute("clip-path", "url(#" + id + "-visualCardClip)");
             writer.EndEmptyElement().Line();
         }
 
-        if (!valueInsetSurface && (card.Icon != VisualIcon.None || card.Symbol.Length > 0)) {
-            var badgeColor = card.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, 0) : statusColor;
+        if (!valueInsetSurface && (card.Icon != Icon.None || card.Symbol.Length > 0)) {
+            var badgeColor = card.Status == Tone.None ? VisualBlockRendering.PaletteAt(theme, 0) : statusColor;
             var badgeRadius = Math.Min(24, Math.Max(15, options.Size.Height * 0.11));
             var leftBadge = card.BadgePlacement == MetricCardBadgePlacement.TopLeft;
             var cx = leftBadge ? content.X + badgeRadius : options.Size.Width - options.Padding.Right - badgeRadius - 16;
@@ -106,7 +106,7 @@ public sealed partial class SvgFactBlockRenderer {
             var symbolSize = VisualBlockRendering.FitFontSize(card.Symbol, symbolMaxWidth, Math.Max(10, badgeRadius * 0.46), 7.5);
             var symbolColor = theme.Text;
             writer.StartElement("circle").Attribute("data-cfx-role", "metric-symbol-badge").Attribute("data-cfx-placement", leftBadge ? "top-left" : "top-right").Attribute("cx", cx).Attribute("cy", cy).Attribute("r", badgeRadius).Attribute("fill", badgeColor.WithAlpha(48).ToCss()).Attribute("stroke", badgeColor.ToCss()).EndEmptyElement().Line();
-            if (card.Icon != VisualIcon.None) WriteIcon(writer, card.Icon, cx, cy, badgeRadius * 0.62, badgeColor);
+            if (card.Icon != Icon.None) WriteIcon(writer, card.Icon, cx, cy, badgeRadius * 0.62, badgeColor);
             else writer.StartElement("text").Attribute("data-cfx-role", "metric-symbol").Attribute("x", cx).Attribute("y", cy).Attribute("text-anchor", "middle").Attribute("dominant-baseline", "central").Attribute("alignment-baseline", "central").Attribute("fill", symbolColor.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", symbolSize).Attribute("font-weight", "850").Text(VisualBlockRendering.FitText(card.Symbol, symbolSize, symbolMaxWidth)).EndElement().Line();
         }
 
@@ -116,7 +116,7 @@ public sealed partial class SvgFactBlockRenderer {
         var microHeight = heroMicroVisual ? Math.Min(66, Math.Max(50, options.Size.Height * 0.30)) : Math.Min(56, Math.Max(34, options.Size.Height * 0.24));
         var valueWidth = hasMicroVisual ? Math.Max(1, content.Width - microWidth - 18) : content.Width;
         if (heroMicroVisual) valueWidth = content.Width;
-        if (valueInsetSurface && (card.Icon != VisualIcon.None || card.Symbol.Length > 0)) valueWidth = Math.Max(1, content.Width - 106);
+        if (valueInsetSurface && (card.Icon != Icon.None || card.Symbol.Length > 0)) valueWidth = Math.Max(1, content.Width - 106);
         var valueSize = MetricValueFontSize(card, baseValueSize, valueWidth);
         var preferredDetailsTop = content.Y + labelSize + valueSize + 22 + valueYOffset;
         var textLayout = LayoutMetricText(card, content, labelSize, valueSize, valueYOffset, valueInsetSurface, valueWidth, badgeBounds);
@@ -129,7 +129,7 @@ public sealed partial class SvgFactBlockRenderer {
         var microX = heroMicroVisual ? content.X + 24 : content.X + content.Width - microWidth;
         var microY = heroMicroVisual ? content.Y + Math.Max(66, options.Size.Height * 0.36) : content.Y + labelSize + Math.Max(20, valueSize * 0.52) + valueYOffset;
         if (hasMicroVisual && !heroMicroVisual && card.BadgePlacement == MetricCardBadgePlacement.TopRight
-            && (card.Icon != VisualIcon.None || card.Symbol.Length > 0)) microY = Math.Max(microY, badgeBottom);
+            && (card.Icon != Icon.None || card.Symbol.Length > 0)) microY = Math.Max(microY, badgeBottom);
         if (heroMicroVisual && card.MicroVisualSurface == MetricCardMicroVisualSurface.Inset) {
             var surfaceX = content.X;
             var surfaceY = microY - 18;
@@ -289,7 +289,7 @@ public sealed partial class SvgFactBlockRenderer {
         writer.StartElement("g").Attribute("data-cfx-role", "workload-list-block").EndStartElement().Line();
         for (var i = 0; i < block.Rows.Count && y + rowHeight <= bottom + 1; i++) {
             var row = block.Rows[i];
-            var color = row.Color ?? (row.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, i) : VisualBlockRendering.StatusColor(theme, row.Status));
+            var color = row.Color ?? (row.Status == Tone.None ? VisualBlockRendering.PaletteAt(theme, i) : VisualBlockRendering.StatusColor(theme, row.Status));
             var avatarSize = Math.Min(34, rowHeight - 14);
             var avatarX = content.X;
             var centerY = y + rowHeight * 0.42;
@@ -308,7 +308,7 @@ public sealed partial class SvgFactBlockRenderer {
             WriteText(writer, row.Label, textX, y + 15, textWidth, TextAlignment.Left, theme.Text, theme.FontFamily, Math.Max(12, theme.SubtitleFontSize + 1), "750");
             if (row.Subtitle.Length > 0) WriteText(writer, row.Subtitle, textX, y + 31, textWidth, TextAlignment.Left, theme.MutedText, theme.FontFamily, Math.Max(10, theme.SubtitleFontSize - 1), "500");
             var valueText = row.Note.Length > 0 ? row.Note + "  " + VisualFactBlockRendering.WorkloadDisplayValue(row) : VisualFactBlockRendering.WorkloadDisplayValue(row);
-            WriteText(writer, valueText, content.X + content.Width - valueWidth, y + 19, valueWidth, TextAlignment.Right, row.Status == VisualStatus.Negative || row.Status == VisualStatus.Warning ? color : theme.Text, theme.FontFamily, theme.SubtitleFontSize, "750");
+            WriteText(writer, valueText, content.X + content.Width - valueWidth, y + 19, valueWidth, TextAlignment.Right, row.Status == Tone.Danger || row.Status == Tone.Warning ? color : theme.Text, theme.FontFamily, theme.SubtitleFontSize, "750");
             if (block.ShowProgressRails) {
                 var railY = y + rowHeight - 13;
                 var railX = textX;
@@ -366,7 +366,7 @@ public sealed partial class SvgFactBlockRenderer {
 
         var valueSize = Math.Min(48, Math.Max(23, outerRadius * 0.28));
         var labelSize = Math.Min(18, Math.Max(10, outerRadius * 0.115));
-        if (card.Icon != VisualIcon.None) WriteIcon(writer, card.Icon, cx, cy - valueSize * 1.02, Math.Max(12, outerRadius * 0.10), theme.MutedText);
+        if (card.Icon != Icon.None) WriteIcon(writer, card.Icon, cx, cy - valueSize * 1.02, Math.Max(12, outerRadius * 0.10), theme.MutedText);
         WriteText(writer, card.Value, cx - outerRadius * 0.72, cy - valueSize * 0.12, outerRadius * 1.44, TextAlignment.Center, theme.Text, theme.FontFamily, valueSize, "850");
         WriteText(writer, card.Label, cx - outerRadius * 0.72, cy + valueSize * 0.72, outerRadius * 1.44, TextAlignment.Center, theme.MutedText, theme.FontFamily, labelSize, "700");
         writer.EndElement().Line();
@@ -374,7 +374,7 @@ public sealed partial class SvgFactBlockRenderer {
 
     private static void WriteMarker(SvgMarkupWriter writer, ChartList list, ChartListItem item, int index, double x, double y, double scale) {
         var theme = list.Options.ResolvedTheme;
-        var color = item.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, 0) : VisualBlockRendering.StatusColor(theme, item.Status);
+        var color = item.Status == Tone.None ? VisualBlockRendering.PaletteAt(theme, 0) : VisualBlockRendering.StatusColor(theme, item.Status);
         if (list.Marker == VisualListMarker.None) return;
         if (list.Marker == VisualListMarker.Number) {
             writer.StartElement("text").Attribute("data-cfx-role", "list-marker").Attribute("x", x - 5 * scale).Attribute("y", y + 4 * scale).Attribute("fill", color.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", 11 * scale).Attribute("font-weight", "800").Text((index + 1).ToString(CultureInfo.InvariantCulture)).EndElement().Line();

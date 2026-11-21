@@ -74,7 +74,7 @@ public sealed class TopologyNestedHeaderSurfaceTests {
     [InlineData(true)]
     public void UnauthoredSingleLineGroupsRetainTheirIncumbentCoordinatesAndThemeInk(bool dark) {
         var chart = TopologyChart.Create().WithViewport(420, 300, 16).WithLegend(null)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddGroup("plain", "Plain", 32, 40, 300, 180, subtitle: "Description");
         var prepared = chart.Prepare(Options()); var captions = Captions(prepared);
         Assert.Equal(2, captions.Length);
@@ -139,7 +139,7 @@ public sealed class TopologyNestedHeaderSurfaceTests {
 
     internal static TopologyChart Fixture(bool dark, bool translucent) {
         var chart = TopologyChart.Create().WithViewport(660, 530, 16).WithLegend(null)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddGroup("domain", "Domain", 24, 30, 600, 440)
             .AddGroup("orders", "Order\nrecords", 60, 125, 500, 320, subtitle: "All facts\nretained")
             .AddNode("member", "Member", 100, 136, TopologyNodeKind.Generic, groupId: "orders", width: 80, height: 40)

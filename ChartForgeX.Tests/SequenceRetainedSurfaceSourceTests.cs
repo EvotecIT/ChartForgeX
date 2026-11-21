@@ -109,8 +109,8 @@ public sealed class SequenceRetainedSurfaceSourceTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)] [InlineData(VisualThemeMode.Dark)]
-    public void ExplicitNoneChangesNoStandaloneStylePixelsAndCannotDisableInsertedGlyphShadow(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)] [InlineData(ThemeMode.Dark)]
+    public void ExplicitNoneChangesNoStandaloneStylePixelsAndCannotDisableInsertedGlyphShadow(ThemeMode mode) {
         var options = new MermaidRenderOptions {
             WarningPolicy = MermaidWarningPolicy.Reject,
             Presentation = new MermaidPresentationOptions { ThemeMode = mode }

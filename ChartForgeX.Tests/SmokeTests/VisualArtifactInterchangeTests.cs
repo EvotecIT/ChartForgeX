@@ -350,7 +350,7 @@ internal static partial class SmokeTests {
     private static void VisualArtifactInterchangePreservesFlowAndSequenceSemantics() {
         var flow = FlowArtifact.Create("approval")
             .WithTitle("Approval")
-            .AddLane("requester", "Requester", VisualStatus.Positive)
+            .AddLane("requester", "Requester", Tone.Success)
             .AddStep("submit", "Submit", FlowArtifactStepKind.Start, "requester")
             .AddStep("approve", "Approve?", FlowArtifactStepKind.Decision, "requester")
             .AddConnector("submit", "approve", "Review", FlowArtifactConnectorKind.Flow);

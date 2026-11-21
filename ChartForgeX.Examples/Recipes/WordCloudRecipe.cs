@@ -1,6 +1,6 @@
 /// <summary>Deterministic placement of weighted service-observation terms.</summary>
 public static class WordCloudRecipe {
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         // How often each topic appeared in a quarter of service review notes.
         var terms = new (string Text, double Mentions)[] {
             ("Availability", 96), ("Identity", 81), ("Latency", 74), ("Network", 69), ("Storage", 61), ("Recovery", 57),

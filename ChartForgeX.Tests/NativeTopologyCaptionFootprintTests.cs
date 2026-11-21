@@ -36,7 +36,7 @@ public sealed class NativeTopologyCaptionFootprintTests {
             .AddNodeDetail("small", "Status", "Ready");
         Assert.Single(chart.Nodes).PreserveDisplayModeSize = preserveSize;
         var baseTheme = VisualTheme.Graphite();
-        var theme = new VisualTheme(baseTheme.Resolve(VisualThemeMode.Light).ToTokens(), baseTheme.Resolve(VisualThemeMode.Dark).ToTokens(),
+        var theme = new VisualTheme(baseTheme.Resolve(ThemeMode.Light).ToTokens(), baseTheme.Resolve(ThemeMode.Dark).ToTokens(),
             new VisualTypography(dataLabelSize: 40));
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 260), 20), theme,
             frame: new VisualFrame(showLegend: false)), new TopologyRenderOptions { IncludeLegend = false });
@@ -59,7 +59,7 @@ public sealed class NativeTopologyCaptionFootprintTests {
             .WithNodeDisplay("owner", TopologyNodeDisplayMode.Icon)
             .AddEdge("link", "left", "right", "64 ms", routing: TopologyEdgeRouting.Straight);
         var baseTheme = VisualTheme.Graphite();
-        var theme = new VisualTheme(baseTheme.Resolve(VisualThemeMode.Light).ToTokens(), baseTheme.Resolve(VisualThemeMode.Dark).ToTokens(),
+        var theme = new VisualTheme(baseTheme.Resolve(ThemeMode.Light).ToTokens(), baseTheme.Resolve(ThemeMode.Dark).ToTokens(),
             new VisualTypography(dataLabelSize: 28));
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(700, 380), 20), theme,
             frame: new VisualFrame(showLegend: false));

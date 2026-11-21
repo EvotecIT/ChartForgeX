@@ -11,7 +11,8 @@ namespace ChartForgeX.Tests;
 public sealed class HtmlDataTableTests {
     [Fact]
     public void DefaultModeRetainsTheExistingFragmentBytesAndSvgPolicy() {
-        var chart = Chart.Create().WithSize(640, 360).WithTitle("Requests").AddBar("Count", new[] { new ChartPoint(1, 12) });
+        // An explicit mode writes literal colours; Auto adds its scoped stylesheet (see AutoThemeHtmlTests).
+        var chart = Chart.Create().WithThemeMode(ThemeMode.Light).WithSize(640, 360).WithTitle("Requests").AddBar("Count", new[] { new ChartPoint(1, 12) });
         var renderer = new HtmlChartRenderer();
         var options = new VisualSvgOptions("requests", chart.Options.SvgColorVariables, responsive: true);
         var html = renderer.RenderFragment(chart, options);

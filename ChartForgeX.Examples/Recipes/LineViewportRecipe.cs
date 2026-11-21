@@ -1,6 +1,6 @@
 /// <summary>Authored requests and utilization retain outside observations while selecting X 2–8 for rendering.</summary>
 public static class LineViewportRecipe {
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var compact = variant.StartsWith("compact", StringComparison.Ordinal);
         var observed = new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.Line,
             Points(88, 44, 34, 56, 46, 64, 42, 58, 50, 38, 82)).ConfigureMarkers(markers => markers.Radius = 3);

@@ -10,7 +10,7 @@ internal static partial class VisualArtifactInterchangeValidation {
         var sequence = envelope.Sequence;
         if(sequence!=null) {
             if((sequence.Theme!=null)!=sequence.ThemeMode.HasValue)throw new ArgumentException("Sequence theme capture requires its matching palette mode.");
-            if(sequence.ThemeMode.HasValue&&!Enum.IsDefined(typeof(ChartForgeX.Themes.VisualThemeMode),sequence.ThemeMode.Value))throw new ArgumentOutOfRangeException(nameof(sequence));
+            if(sequence.ThemeMode.HasValue&&!Enum.IsDefined(typeof(ChartForgeX.ThemeMode),sequence.ThemeMode.Value))throw new ArgumentOutOfRangeException(nameof(sequence));
             if(sequence.Theme!=null && !SequencePresentationPolicy.IsCaptured(envelope))
                 throw new ArgumentException("Sequence native theme capture requires a nonempty presentation policy.");
         }

@@ -14,16 +14,16 @@ public sealed class MatrixRenderViewportTests {
         "ObservabilityPolicy", "SynchronizationPolicy", "InfrastructurePolicy", "RecoveryPolicy" };
 
     [Theory]
-    [InlineData(false, 240, 160, 900, 500, null, VisualThemeMode.Light)]
-    [InlineData(false, 900, 500, 320, 280, null, VisualThemeMode.Dark)]
-    [InlineData(true, 240, 160, 900, 500, null, VisualThemeMode.Dark)]
-    [InlineData(true, 900, 500, 320, 280, null, VisualThemeMode.Light)]
-    [InlineData(false, 240, 160, 900, 500, -45d, VisualThemeMode.Dark)]
-    [InlineData(false, 900, 500, 320, 280, 45d, VisualThemeMode.Light)]
-    [InlineData(true, 240, 160, 900, 500, 45d, VisualThemeMode.Light)]
-    [InlineData(true, 900, 500, 320, 280, -45d, VisualThemeMode.Dark)]
+    [InlineData(false, 240, 160, 900, 500, null, ThemeMode.Light)]
+    [InlineData(false, 900, 500, 320, 280, null, ThemeMode.Dark)]
+    [InlineData(true, 240, 160, 900, 500, null, ThemeMode.Dark)]
+    [InlineData(true, 900, 500, 320, 280, null, ThemeMode.Light)]
+    [InlineData(false, 240, 160, 900, 500, -45d, ThemeMode.Dark)]
+    [InlineData(false, 900, 500, 320, 280, 45d, ThemeMode.Light)]
+    [InlineData(true, 240, 160, 900, 500, 45d, ThemeMode.Light)]
+    [InlineData(true, 900, 500, 320, 280, -45d, ThemeMode.Dark)]
     public void RotatedCaptionsFollowContextSizeInsteadOfAuthoredSize(bool hexagonal, int modelWidth, int modelHeight,
-        int width, int height, double? authoredAngle, VisualThemeMode mode) {
+        int width, int height, double? authoredAngle, ThemeMode mode) {
         var chart = Create(hexagonal, modelWidth, modelHeight, authoredAngle);
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, height), new ChartPadding(31, 17, 43, 29)),
             VisualTheme.Graphite().WithTypography(new VisualTypography(axisSize: 13.5)), mode,

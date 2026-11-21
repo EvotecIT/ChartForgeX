@@ -87,7 +87,7 @@ internal static partial class Program {
 
     private static void ThemeSnapshots() {
         var canonical = VisualTheme.Graphite();
-        var dark = canonical.Resolve(VisualThemeMode.Dark);
+        var dark = canonical.Resolve(ThemeMode.Dark);
         PackageAssertions.Require(dark.Background.Equals(ChartColor.FromHex("#0c0d10"))
             && dark.ElevatedSurface.Equals(ChartColor.FromHex("#16181c")) && dark.Palette[0].Equals(ChartColor.FromHex("#4a90ea")),
             "The packed canonical dark palette does not match the shared theme resource.");
@@ -108,10 +108,10 @@ internal static partial class Program {
             "Complete paired theme JSON did not preserve colors, typography, geometry and effects.");
         retained!.Dark.Accent = ChartColor.FromHex("#ff0000"); retained.Spacing = 99;
         PackageAssertions.Require(custom.ToJson() == json, "A retained theme builder changed its immutable result.");
-        var chart = PackageAssertions.Chart().WithTheme(roundTrip, VisualThemeMode.Dark);
+        var chart = PackageAssertions.Chart().WithTheme(roundTrip, ThemeMode.Dark);
         chart.Options.TransparentBackground = false;
-        PackageAssertions.Require(ReferenceEquals(chart.Options.Theme, roundTrip) && chart.Options.ThemeMode == VisualThemeMode.Dark
-            && PackageAssertions.Contains(chart.ToSvg(), roundTrip.Resolve(VisualThemeMode.Dark).Background.ToCss()),
+        PackageAssertions.Require(ReferenceEquals(chart.Options.Theme, roundTrip) && chart.Options.ThemeMode == ThemeMode.Dark
+            && PackageAssertions.Contains(chart.ToSvg(), roundTrip.Resolve(ThemeMode.Dark).Background.ToCss()),
             "Explicit dark appearance did not use the packed paired theme.");
     }
 

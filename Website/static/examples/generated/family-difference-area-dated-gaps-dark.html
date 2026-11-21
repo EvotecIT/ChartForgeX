@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = DifferenceAreaRecipe.Create(&quot;dated-gaps&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Builds actual-versus-forecast areas with crossings, gaps and stepped boundaries.&lt;/summary&gt;
 public static class DifferenceAreaRecipe {
     /// &lt;summary&gt;Creates the selected difference-area example from paired authored observations.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot; or &quot;dated-gaps&quot; or &quot;compact-dated-gaps&quot;
             or &quot;step-start&quot; or &quot;step-middle&quot; or &quot;step-end&quot; or &quot;compact-step-middle&quot; or &quot;singleton&quot; or &quot;compact-singleton&quot; or &quot;dense&quot; or &quot;compact-dense&quot; or &quot;smooth-boundaries&quot; or &quot;compact-smooth-boundaries&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
@@ -177,6 +178,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -186,7 +188,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = DifferenceAreaRecipe.Create(&quot;dated-gaps&quot;, mode);
 var context = new VisualRenderContext(
@@ -201,7 +203,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Builds actual-versus-forecast areas with crossings, gaps and stepped boundaries.&lt;/summary&gt;
 public static class DifferenceAreaRecipe {
     /// &lt;summary&gt;Creates the selected difference-area example from paired authored observations.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot; or &quot;dated-gaps&quot; or &quot;compact-dated-gaps&quot;
             or &quot;step-start&quot; or &quot;step-middle&quot; or &quot;step-end&quot; or &quot;compact-step-middle&quot; or &quot;singleton&quot; or &quot;compact-singleton&quot; or &quot;dense&quot; or &quot;compact-dense&quot; or &quot;smooth-boundaries&quot; or &quot;compact-smooth-boundaries&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));

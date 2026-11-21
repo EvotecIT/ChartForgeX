@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = LicenceWasteRecipe.Create(&quot;compact-licence-waste&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Builds the bridge from purchased to effectively used Microsoft 365 licences, as a licence report shows it.&lt;/summary&gt;
 public static class LicenceWasteRecipe {
     /// &lt;summary&gt;Creates the licence waterfall; the compact variant keeps the same data.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;licence-waste&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;licence-waste&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;licence-waste&quot; or &quot;compact-licence-waste&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var bridge = ChartSeries.CreateWaterfall(new ChartSeriesId(&quot;licences&quot;), &quot;Licences&quot;, new[] {
             ChartWaterfallItem.OpeningBalance(1, 1200), ChartWaterfallItem.Delta(2, -86), ChartWaterfallItem.Delta(3, -142),
@@ -134,6 +135,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -143,7 +145,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = LicenceWasteRecipe.Create(&quot;compact-licence-waste&quot;, mode);
 var context = new VisualRenderContext(
@@ -158,7 +160,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Builds the bridge from purchased to effectively used Microsoft 365 licences, as a licence report shows it.&lt;/summary&gt;
 public static class LicenceWasteRecipe {
     /// &lt;summary&gt;Creates the licence waterfall; the compact variant keeps the same data.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;licence-waste&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;licence-waste&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;licence-waste&quot; or &quot;compact-licence-waste&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var bridge = ChartSeries.CreateWaterfall(new ChartSeriesId(&quot;licences&quot;), &quot;Licences&quot;, new[] {
             ChartWaterfallItem.OpeningBalance(1, 1200), ChartWaterfallItem.Delta(2, -86), ChartWaterfallItem.Delta(3, -142),

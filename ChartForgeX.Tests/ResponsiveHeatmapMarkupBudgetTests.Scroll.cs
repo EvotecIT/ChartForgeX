@@ -13,7 +13,7 @@ public sealed partial class ResponsiveHeatmapMarkupBudgetTests {
     [InlineData(ChartHeatmapColumnWindow.Latest, true, false)]
     [InlineData(ChartHeatmapColumnWindow.Squeeze, false, false)]
     public async Task PhoneViewportHonorsColumnWindowAndKeepsItsEdgeThroughResize(ChartHeatmapColumnWindow window, bool reversed, bool dark) {
-        var chart = Fixture(12).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = Fixture(12).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithHeatmapColumnWindow(window);
         chart.Options.XAxis.Reversed = reversed;
         var fragment = new HtmlResponsiveChartRenderer().RenderFragment(chart, 240, 1600);

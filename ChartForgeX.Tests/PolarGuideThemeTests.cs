@@ -16,7 +16,7 @@ public sealed class PolarGuideThemeTests {
     public void PolarGuidesUseConfiguredGridAndAxisColors(bool radar, bool dark) {
         var grid = ChartColor.FromHex("#DC2626");
         var axis = ChartColor.FromHex("#2563EB");
-        var chart = Chart.Create().WithThemeMode(dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = Chart.Create().WithThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithSize(520, 380).WithHeader(false).WithLegend(false)
             .WithDataLabels(false).WithYAxisBounds(0, 50);
         var points = new[] { new ChartPoint(1, 15), new ChartPoint(2, 35), new ChartPoint(3, 25) };
@@ -24,7 +24,7 @@ public sealed class PolarGuideThemeTests {
         else chart.AddPolar("Signal", points);
         var original = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         chart.WithTheme(VisualTheme.Graphite().Configure(theme => {
-            var colors = theme.Colors(dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            var colors = theme.Colors(dark ? ThemeMode.Dark : ThemeMode.Light);
             colors.Grid = grid; colors.Axis = axis;
         }));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);

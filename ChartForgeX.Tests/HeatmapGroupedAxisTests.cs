@@ -94,9 +94,9 @@ public sealed class HeatmapGroupedAxisTests {
     }
 
     internal static Chart Model(bool categorical, bool dark, int width, bool grouped = true) {
-        var chart = Chart.Create().WithSize(width, 560).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = Chart.Create().WithSize(width, 560).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithTitle("Grouped matrix axes").WithXAxis("Work windows").WithYAxis("Service slots").WithDataLabels(false);
-        var colors = chart.Options.Theme.Resolve(dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        var colors = chart.Options.Theme.Resolve(dark ? ThemeMode.Dark : ThemeMode.Light);
         if (categorical) {
             chart.WithStateCategories(new ChartStateCategory("pass", "Pass", colors.Status.Pass.Fill), new ChartStateCategory("warning", "Review", colors.Status.Medium.Fill));
             chart.AddSeries(StateRow("west", "West source", new[] { "pass", null, "warning", "pass" }));

@@ -115,7 +115,7 @@ public sealed class InteractiveMissingCategoryBrowserTests {
         var targetSeries = new ChartSeries(new ChartSeriesId("target-source"), "Target", ChartSeriesKind.Radar,
             peer ? target.AsEnumerable().Reverse() : target).ConfigureRadar(options => options.Form = ChartLineAreaForm.Line);
         var chart = Chart.Create().WithSize(620, 430).WithYAxisBounds(0, 10)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithTitle(peer ? "Peer with another category" : "Imputed Radar categories")
             .WithSubtitle("Missing categories retain distinct identities without source observations")
             .AddSeries(actualSeries).AddSeries(targetSeries);

@@ -49,7 +49,7 @@ public sealed class InteractiveTooltipRegressionBrowserTests {
     public async Task SolidBarSwatchesUseThePaintedGradientInsteadOfWhiteDecoration(bool dark, HtmlChartTooltipMode mode, int width) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(596, 338).WithBarStyle(ChartBarStyle.Solid).WithTitle("Decorated bar observations")
-            .WithTheme(VisualTheme.Graphite().WithPalette(ChartPalettes.FromHex("#176eaf", "#df4263")), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite().WithPalette(ChartPalettes.FromHex("#176eaf", "#df4263")), dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddBar("Current", ChartPoints.FromValues(3, 7, 5)).AddBar("Previous", ChartPoints.FromValues(1, 2, 1));
         chart.Series[0].WithPointColor(1, "#7b61e8").WithPointFillPattern(1, ChartFillPattern.Crosshatch);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = mode), width, 560);

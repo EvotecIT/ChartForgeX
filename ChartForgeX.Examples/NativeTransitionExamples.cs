@@ -10,10 +10,10 @@ using ChartForgeX.Themes;
 internal static class NativeTransitionExamples {
     internal static void Write(string output) {
         Directory.CreateDirectory(output); ExampleTypography.Register(); var renderer = new HtmlInteractiveChartRenderer();
-        foreach (var width in new[] { 390, 760 }) foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var width in new[] { 390, 760 }) foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             void Configure(HtmlChartInteractionOptions options) {
                 options.Interaction.ChartId = "native-presentation-example";
-                options.IdScope = mode == VisualThemeMode.Dark ? "Wyniki źródła:42" : "native-presentation-example";
+                options.IdScope = mode == ThemeMode.Dark ? "Wyniki źródła:42" : "native-presentation-example";
                 options.Interaction.Enable(ChartInteractionFeatures.Export | ChartInteractionFeatures.LegendToggles);
                 options.Interaction.Disable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan);
                 options.ResponsiveLayout = HtmlChartResponsiveLayout.Adaptive; options.Adaptive.NarrowWidth = 350; options.Adaptive.NarrowHeight = 420;

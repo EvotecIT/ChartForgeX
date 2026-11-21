@@ -74,7 +74,7 @@ public sealed class VennQuantitativeGeometryTests {
     [InlineData(true, 1100)]
     public void RealStyledOverlapUsesCircularArcGeometryAndTheSameDirectFencedSvgPng(bool dark, int width) {
         const string source = "venn-beta\nset A[First]: 100\nset B[Second]: 60\nunion A,B[Shared]: 25\nstyle A fill:#ee4455,fill-opacity:0.25,stroke-width:3\nstyle A,B fill:#2233ff,fill-opacity:1,stroke:#112233,stroke-width:2";
-        var options = new MermaidRenderOptions { Presentation = new MermaidPresentationOptions { ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light, FontFamily = BrowserProofFonts.Family }, Venn = new MermaidVennRenderOptions { Width = width, Height = 500 } };
+        var options = new MermaidRenderOptions { Presentation = new MermaidPresentationOptions { ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light, FontFamily = BrowserProofFonts.Family }, Venn = new MermaidVennRenderOptions { Width = width, Height = 500 } };
         var direct = MermaidRenderer.Render(source, options); Assert.Empty(direct.Diagnostics); var artifact = Assert.IsType<VisualArtifact>(direct.Artifact);
         var fence = new MermaidVisualMarkupParser(options).Parse("```mermaid\n" + source + "\n```"); Assert.Empty(fence.Diagnostics); var fenced = Assert.Single(fence.Artifacts);
         var svg = artifact.ToSvg(); var png = artifact.ToPng(); Assert.Equal(svg, fenced.ToSvg()); Assert.Equal(png, fenced.ToPng());

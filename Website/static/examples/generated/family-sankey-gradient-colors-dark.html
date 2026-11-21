@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = SankeyPaintRecipe.Create(&quot;gradient-colors&quot;, mode);
 var context = new VisualRenderContext(
@@ -109,7 +110,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 
 /// &lt;summary&gt;Endpoint gradients and outlined labels use the same native Sankey scene in SVG and PNG.&lt;/summary&gt;
 public static class SankeyPaintRecipe {
-    public static Chart Create(string variant = &quot;gradient-colors&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;gradient-colors&quot;, ThemeMode mode = ThemeMode.Light) {
         var chart = Chart.Create().AddSankey(&quot;Requests&quot;, new[] {
             new ChartNode(&quot;received&quot;, &quot;Received&quot;), new ChartNode(&quot;review&quot;, &quot;Review&quot;), new ChartNode(&quot;ready&quot;, &quot;Ready&quot;)
         }, new[] {
@@ -133,6 +134,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -142,7 +144,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = SankeyPaintRecipe.Create(&quot;gradient-colors&quot;, mode);
 var context = new VisualRenderContext(
@@ -156,7 +158,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 
 /// &lt;summary&gt;Endpoint gradients and outlined labels use the same native Sankey scene in SVG and PNG.&lt;/summary&gt;
 public static class SankeyPaintRecipe {
-    public static Chart Create(string variant = &quot;gradient-colors&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;gradient-colors&quot;, ThemeMode mode = ThemeMode.Light) {
         var chart = Chart.Create().AddSankey(&quot;Requests&quot;, new[] {
             new ChartNode(&quot;received&quot;, &quot;Received&quot;), new ChartNode(&quot;review&quot;, &quot;Review&quot;), new ChartNode(&quot;ready&quot;, &quot;Ready&quot;)
         }, new[] {

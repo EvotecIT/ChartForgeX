@@ -52,7 +52,7 @@ public sealed class DesignTokenJsonTests {
 
     [Fact]
     public void FromJson_GraphiteDark_LoadsTheDarkVariant() {
-        var tokens = VisualDesignTokens.FromJson(GraphiteJson, VisualThemeMode.Dark);
+        var tokens = VisualDesignTokens.FromJson(GraphiteJson, ThemeMode.Dark);
         Assert.Equal("#0C0D10", tokens.Background.ToHex());
         Assert.Equal("#16181C", tokens.ElevatedSurface.ToHex());
         Assert.Equal("#F2F3F5", tokens.Foreground.ToHex());
@@ -103,13 +103,13 @@ public sealed class DesignTokenJsonTests {
         Assert.NotEqual(GraphiteJson, missingInk);
         var error = Assert.Throws<ArgumentException>(() => VisualDesignTokens.FromJson(missingInk));
         Assert.Contains("light.severity.high.ink", error.Message, StringComparison.Ordinal);
-        Assert.NotNull(VisualDesignTokens.FromJson(missingInk, VisualThemeMode.Dark));
+        Assert.NotNull(VisualDesignTokens.FromJson(missingInk, ThemeMode.Dark));
 
         var badColour = GraphiteJson.Replace("\"page\": \"#f2f3f4\"", "\"page\": \"grey\"");
         Assert.Contains("light.surface.page", Assert.Throws<ArgumentException>(() => VisualDesignTokens.FromJson(badColour)).Message, StringComparison.Ordinal);
-        Assert.Contains("'dark'", Assert.Throws<ArgumentException>(() => VisualDesignTokens.FromJson("{\"light\":{}}", VisualThemeMode.Dark)).Message, StringComparison.Ordinal);
+        Assert.Contains("'dark'", Assert.Throws<ArgumentException>(() => VisualDesignTokens.FromJson("{\"light\":{}}", ThemeMode.Dark)).Message, StringComparison.Ordinal);
         Assert.Throws<ArgumentException>(() => VisualDesignTokens.FromJson("not json"));
-        Assert.Throws<ArgumentOutOfRangeException>(() => VisualDesignTokens.FromJson(GraphiteJson, (VisualThemeMode)7));
+        Assert.Throws<ArgumentOutOfRangeException>(() => VisualDesignTokens.FromJson(GraphiteJson, (ThemeMode)7));
     }
 
     [Fact]
@@ -155,7 +155,7 @@ public sealed class DesignTokenJsonTests {
         Assert.Equal(new[] { "#F0A39D", "#E0645B", "#B8292A" }, light.DivergingRamp!.Negative.Select(color => color.ToHex()).ToArray());
         Assert.Equal("#ECEEF0", light.DivergingRamp.Neutral.ToHex());
         Assert.Equal(new[] { "#9AB8DC", "#2A78D6", "#1C5CAB" }, light.DivergingRamp.Positive.Select(color => color.ToHex()).ToArray());
-        var dark = VisualDesignTokens.FromJson(GraphiteJson, VisualThemeMode.Dark);
+        var dark = VisualDesignTokens.FromJson(GraphiteJson, ThemeMode.Dark);
         Assert.Equal("#324C6E", dark.SequentialRamp![0].ToHex());
         Assert.Equal("#3987E5", dark.DivergingRamp!.Positive[1].ToHex());
         Assert.Equal("#2B2E34", dark.DivergingRamp!.Neutral.ToHex());
@@ -182,7 +182,7 @@ public sealed class DesignTokenJsonTests {
         Assert.Null(tokens.SequentialRamp);
         Assert.Null(tokens.DivergingRamp);
         Assert.Null(tokens.ToSequentialColorScale());
-        Assert.Empty(Chart.Create().WithDesignTokens(tokens).Options.Theme.Resolve(VisualThemeMode.Light).SequentialRamp);
+        Assert.Empty(Chart.Create().WithDesignTokens(tokens).Options.Theme.Resolve(ThemeMode.Light).SequentialRamp);
         var replaced = Chart.Create().WithDesignTokens(VisualDesignTokens.FromJson(GraphiteJson)).WithDesignTokens(tokens);
         Assert.Empty(replaced.Options.Theme.Resolve(replaced.Options.ThemeMode).SequentialRamp);
     }

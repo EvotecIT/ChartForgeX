@@ -41,7 +41,7 @@ public sealed partial class SvgFactBlockRenderer {
         for (var i = 0; i < block.Events.Count; i++) {
             var item = block.Events[i];
             if (!VisualFactBlockRendering.ScheduleEventIntersects(block, item)) continue;
-            var color = item.Color ?? (item.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, i) : VisualBlockRendering.StatusColor(theme, item.Status));
+            var color = item.Color ?? (item.Status == Tone.None ? VisualBlockRendering.PaletteAt(theme, i) : VisualBlockRendering.StatusColor(theme, item.Status));
             var x1 = content.X + content.Width * VisualFactBlockRendering.ScheduleRatio(block, item.Start);
             var x2 = content.X + content.Width * VisualFactBlockRendering.ScheduleRatio(block, item.End);
             var clippedStart = item.Start < block.Start;

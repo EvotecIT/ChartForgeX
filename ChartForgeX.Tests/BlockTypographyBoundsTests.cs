@@ -29,7 +29,7 @@ public sealed class BlockTypographyBoundsTests {
         var artifact = result.Artifact!;
         var packet = Assert.IsType<PacketLayoutBlock>(artifact.Model);
         packet.Options.ShowCard = card;
-        packet.Options.ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        packet.Options.ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light;
         if (!headings) packet.WithTitle("").WithSubtitle("");
         var svg = XDocument.Parse(packet.ToSvg());
         var fields = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "packet-field").ToArray();

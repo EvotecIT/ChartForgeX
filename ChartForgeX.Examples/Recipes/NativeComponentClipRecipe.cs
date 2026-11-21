@@ -1,7 +1,7 @@
 /// <summary>Retains full authored tuples while the native compiler owns plot clipping.</summary>
 public static class NativeComponentClipRecipe {
     /// <summary>Creates an explicit fixed native window and real values entering that window.</summary>
-    public static Chart Create(string family, bool finish, int width, VisualThemeMode mode, string fontFamily) {
+    public static Chart Create(string family, bool finish, int width, ThemeMode mode, string fontFamily) {
         if (family is not ("bubble" or "range" or "error" or "candlestick" or "ohlc")) throw new ArgumentOutOfRangeException(nameof(family));
         var value = finish ? 40d : 120d; var chart = Chart.Create().WithTitle("Raw values through native clip").WithSize(width, 420).WithTheme(VisualTheme.Graphite().WithFontFamily(fontFamily), mode).WithLegend(true).WithDataLabels(false);
         var id = new ChartSeriesId("delivery"); ChartSeries series;

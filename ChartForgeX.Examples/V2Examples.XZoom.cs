@@ -4,7 +4,7 @@ using ChartForgeX.Themes;
 public static partial class V2Examples {
     private static void WriteXZoom(string output, ICollection<ProofArtifact> artifacts) {
         foreach (var kind in new[] { ChartSeriesKind.Line, ChartSeriesKind.StepLine })
-            foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark })
+            foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark })
                 foreach (var compact in new[] { false, true }) {
                     var family = FamilyName(kind);
                     var variant = (compact ? "compact-" : "") + (kind == ChartSeriesKind.StepLine ? "step-" : "") + "x-zoom";

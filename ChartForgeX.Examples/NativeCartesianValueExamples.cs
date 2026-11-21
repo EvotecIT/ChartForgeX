@@ -5,7 +5,7 @@ internal static class NativeCartesianValueExamples {
     internal static void Write(string output) {
         Directory.CreateDirectory(output); var renderer = new HtmlInteractiveChartRenderer();
         foreach (var bar in new[] { false, true }) foreach (var width in new[] { 390, 760 })
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) foreach (var initial in new[] { false, true }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) foreach (var initial in new[] { false, true }) {
             var from = renderer.PrepareSection(NativeCartesianValueRecipe.Create(bar, 20, width, mode)); var to = renderer.PrepareSection(NativeCartesianValueRecipe.Create(bar, 80, width, mode));
             var payload = renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(initial ? HtmlNativeTransitionEffect.InitialValues : HtmlNativeTransitionEffect.Values, 12));
             var action = "const chart=ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'));document.querySelector('#play').onclick=()=>{";

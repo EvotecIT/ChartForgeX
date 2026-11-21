@@ -50,7 +50,7 @@ public sealed class MermaidElevenTopologyPresetRoleTests {
     [Fact]
     public void ExplicitBaseDarkModeDerivesItsLabelBackplateWithoutChangingHostModeOrNodeOverrides() {
         var result = Render("base", "\"secondaryColor\":\"#808080\",\"darkMode\":true,\"nodeBorder\":\"#123456\""); Capture("base-dark-mode", result); Assert.False(result.HasErrors);
-        var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model); Color("#343434ff", Assert.Single(chart.Edges).LabelBackgroundColor); Color("#123456", chart.Nodes[0].BorderColor); Assert.Equal(VisualThemeMode.Light, chart.ThemeMode);
+        var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model); Color("#343434ff", Assert.Single(chart.Edges).LabelBackgroundColor); Color("#123456", chart.Nodes[0].BorderColor); Assert.Equal(ThemeMode.Light, chart.ThemeMode);
     }
     private static MermaidRenderOptions Options() => new() { Flowchart = new MermaidFlowchartRenderOptions { Width = 640, Height = 440 }, Swimlane = new MermaidFlowchartRenderOptions { Width = 640, Height = 440 }, Agentflow = new MermaidTopologyRenderOptions { Width = 640, Height = 440 }, Presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family } };
     private static MermaidRenderResult Render(string preset, string? roles = null, string family = "flowchart", MermaidRenderOptions? options = null, string style = "") {

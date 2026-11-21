@@ -14,7 +14,7 @@ public sealed class GraphiteAxisTitleLayoutTests {
     [InlineData(true, false)]
     [InlineData(true, true)]
     public void RequestedYAxisTitleSurvivesHeaderAndTopLegendInSvgAndPng(bool dark, bool legend) {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithSize(900, 520).WithTitle("Mermaid XY chart").WithSubtitle("xychart")
             .WithYAxis("Revenue").WithYAxisBounds(0, 50).WithXLabels("Jan", "Feb", "Mar")
             .AddLine("Revenue", new[] { new ChartPoint(1, 10), new ChartPoint(2, 25), new ChartPoint(3, 40) });

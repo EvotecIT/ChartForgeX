@@ -44,7 +44,7 @@ internal sealed partial class MermaidThemePresetInputs {
     }
     internal bool HasAuthored(string name)=>_colors.ContainsKey(name);
     internal bool TryGetAuthored(string name,out ChartColor value){if(_colors.TryGetValue(name,out var color)){value=color.ToColor();return true;}value=default;return false;}
-    internal MermaidThemePreset Resolve(VisualThemeMode mode,bool hostTheme,string? currentName) {
+    internal MermaidThemePreset Resolve(ThemeMode mode,bool hostTheme,string? currentName) {
         var name=currentName;
         return MermaidThemePreset.Create(name,hostTheme,_colors,_darkMode,_backgrounds,_borders,_topology);
     }

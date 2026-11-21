@@ -95,4 +95,5 @@ The 3.0.0 authoring migration still has to reach its consumers. Candidate-packag
 - [ ] ImagePlayground: moved authoring types, typed series, grids and story exports through the packaged module.
 - [ ] OfficeIMO: paired themes and Mermaid on public packages, including Visio and PowerPoint export.
 - [ ] Private HTML bridge: host-versus-authored theme ownership and localization on public dependencies.
+- [ ] Downstream package probe: add HtmlForgeX's ChartForgeX bridge back once a release built against `ThemeMode`, `Tone` and `Icon` is public; 3.0.0 still references `VisualThemeMode`.
 - [ ] Publish the owner release and affected host releases only with release authority, and read the public packages back before announcing them.

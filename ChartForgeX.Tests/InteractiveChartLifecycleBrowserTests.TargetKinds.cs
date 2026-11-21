@@ -79,7 +79,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     [InlineData(true)]
     public async Task PublicAnnotationSelectionAndLassoContainNativeFactsWithoutSeriesWrappersOrPassiveGuidance(bool dark) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(640, 360).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = Chart.Create().WithSize(640, 360).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithLegend(false).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
             .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("observations"), "Observed", new[] { new ChartPoint(3, 4), new ChartPoint(7, 7) }))
             .AddHorizontalLine(6, "Reference guide")
@@ -135,7 +135,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         };
         if (family == "gauge") series.WithObservationId(0, new ChartObservationId("capacity"));
         return Chart.Create().WithSize(640, 360).WithLegend()
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).AddSeries(series);
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).AddSeries(series);
     }
 
     private static void NativeKindOptions(HtmlChartInteractionOptions options) {

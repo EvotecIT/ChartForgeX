@@ -19,6 +19,8 @@ public sealed partial class HtmlInteractiveChartRenderer {
         internal double IntrinsicWidth { get; set; }
         internal bool Narrow { get; set; }
         internal string ThemeTokens { get; set; } = string.Empty;
+        // Auto sections carry their scoped stylesheet; their theme tokens live in it instead of in ThemeTokens.
+        internal ChartForgeX.Themes.AutoThemeStyle? AutoTheme { get; set; }
         internal VisualSvgOptions SvgOptions { get; set; } = null!;
         internal string NativeNavigation { get; set; } = string.Empty;
         internal string HierarchyNavigation { get; set; } = string.Empty;
@@ -35,7 +37,8 @@ public sealed partial class HtmlInteractiveChartRenderer {
         var scenarioControls = options.Interaction.HasFeature(ChartForgeX.Interactivity.ChartInteractionFeatures.Scenarios) && options.Interaction.Scenarios.Count > 0;
         var writer = new HtmlMarkupWriter();
         writer.StartElement("section")
-            .Attribute("class", "cfx-interactive-chart")
+            .Attribute("class", "cfx-interactive-chart").Attribute(ChartForgeX.Themes.AutoThemeStyle.ScopeAttribute, source.AutoTheme?.Id)
+            .Attribute(ChartForgeX.Themes.AutoThemeStyle.Attribute, source.AutoTheme == null ? null : ChartForgeX.Themes.AutoThemeStyle.AttributeValue)
             .Attribute("data-cfx-look", "graphite")
             .Attribute("role", "group")
             .Attribute("aria-label", source.Title)
@@ -125,7 +128,9 @@ public sealed partial class HtmlInteractiveChartRenderer {
         }
         var fontPayloads = !source.Narrow ? HtmlCapturedFontAssets.Write(writer, emission.Fonts, narrowSection?.WideEmission?.Fonts) : null;
         writer.EndElement();
-        return new HtmlChartSection(writer.Build(), prepared, narrowSection?.PreparedVisual, svgOptions, emission, narrowSection?.WideEmission, fontPayloads);
+        return new HtmlChartSection(writer.Build(), prepared, narrowSection?.PreparedVisual, svgOptions, emission, narrowSection?.WideEmission, fontPayloads) {
+            AutoThemeStyleSheet = source.AutoTheme?.StyleSheet
+        };
     }
 
 }

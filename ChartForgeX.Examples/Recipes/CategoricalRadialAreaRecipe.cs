@@ -4,7 +4,7 @@ public static class CategoricalRadialAreaRecipe {
     /// <param name="variant">Use wide, compact, stacked, compact-stacked, radius or compact-radius.</param>
     /// <param name="mode">The paired visual theme mode.</param>
     /// <returns>A complete chart ready for the ordinary SVG, PNG and HTML output workflow.</returns>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "stacked" or "compact-stacked" or "radius" or "compact-radius"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant.StartsWith("compact", StringComparison.Ordinal);

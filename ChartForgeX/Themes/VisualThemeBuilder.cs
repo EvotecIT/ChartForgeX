@@ -13,7 +13,7 @@ public sealed class VisualThemeBuilder {
     /// <summary>Creates an independent editable copy of an existing theme.</summary>
     public VisualThemeBuilder(VisualTheme theme) {
         if (theme == null) throw new ArgumentNullException(nameof(theme));
-        Light = theme.Resolve(VisualThemeMode.Light).ToTokens(); Dark = theme.Resolve(VisualThemeMode.Dark).ToTokens();
+        Light = theme.Resolve(ThemeMode.Light).ToTokens(); Dark = theme.Resolve(ThemeMode.Dark).ToTokens();
         Typography = theme.Typography; Spacing = theme.Spacing; SeriesStrokeWidth = theme.SeriesStrokeWidth;
         MarkerRadius = theme.MarkerRadius; AreaOpacity = theme.AreaOpacity; BarRadius = theme.BarRadius;
         GridStrokeWidth = theme.GridStrokeWidth; AxisStrokeWidth = theme.AxisStrokeWidth; CardRadius = theme.CardRadius;
@@ -78,9 +78,9 @@ public sealed class VisualThemeBuilder {
     /// <summary>Gets or sets the gauge threshold band width.</summary>
     public double GaugeBandWidth { get; set; }
 
-    /// <summary>Gets the editable palette for an explicit mode.</summary>
-    public VisualDesignTokens Colors(VisualThemeMode mode) => mode switch {
-        VisualThemeMode.Light => Light, VisualThemeMode.Dark => Dark,
+    /// <summary>Gets the editable palette for a mode. <see cref="ThemeMode.Auto"/> edits the light palette, which static output paints for it.</summary>
+    public VisualDesignTokens Colors(ThemeMode mode) => mode switch {
+        ThemeMode.Auto or ThemeMode.Light => Light, ThemeMode.Dark => Dark,
         _ => throw new ArgumentOutOfRangeException(nameof(mode))
     };
 

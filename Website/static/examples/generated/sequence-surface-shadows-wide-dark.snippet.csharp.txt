@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -13,11 +14,11 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 #endregion
 
-var dark = mode == VisualThemeMode.Dark;
+var dark = mode == ThemeMode.Dark;
 var model = SequenceArtifact.Create("sequence-surface-shadows").WithSize(1100, 900)
     .AddParticipant("A", "Review", SequenceArtifactParticipantKind.Actor)
     .AddParticipant("B", "Archive", SequenceArtifactParticipantKind.Control)

@@ -57,7 +57,7 @@ public sealed class TopologyGroupHeaderCausalRegressionTests {
     [InlineData(true)]
     public void ExplicitInkAndOrdinarySingleLineDefaultInkKeepTheirAuthoredAndThemeContracts(bool dark) {
         var chart = TopologyChart.Create().WithViewport(640, 280, 16).WithLegend(null)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddGroup("plain", "Plain control", 24, 40, 280, 180)
             .AddGroup("explicit", "Explicit control", 328, 40, 280, 180);
         chart.Groups[1].BackgroundColor = "#DCFCE7"; chart.Groups[1].LabelColor = "#7C3AED";
@@ -74,7 +74,7 @@ public sealed class TopologyGroupHeaderCausalRegressionTests {
     private static MermaidRenderResult Render(bool dark) {
         var source = File.ReadAllText(Path.Combine(TestRepository.Root, "ChartForgeX.Examples", "Assets", "Mermaid", "er-native-captions.mmd"));
         return MermaidRenderer.Render(source, new MermaidRenderOptions {
-            Presentation = new MermaidPresentationOptions { ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light,
+            Presentation = new MermaidPresentationOptions { ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light,
                 FontFamily = BrowserProofFonts.Family, TopologySizing = MermaidTopologySizing.Natural },
             EntityRelationship = new MermaidTopologyRenderOptions { Width = 1100, Height = 620 }
         });

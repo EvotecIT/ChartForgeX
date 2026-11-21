@@ -89,7 +89,7 @@ internal static class PackageAssertions {
         Require(Contains(topology.ToSvg(), "<svg"), "Core topology SVG failed.");
         Png(topology.ToPng());
         var table = TableArtifact.Create("neutral-table").AddColumn("state", "State").AddRow("one", "Ready");
-        Require(table.Rows.Count == 1 && typeof(TableArtifact).Assembly == core && typeof(VisualStatus).Assembly == core,
+        Require(table.Rows.Count == 1 && typeof(TableArtifact).Assembly == core && typeof(Tone).Assembly == core,
             "Neutral table/status contracts moved out of core.");
         foreach (var name in new[] { "WardleyMapBlock", "VennDiagramBlock", "PacketLayoutBlock",
             "GitGraphBlock", "FishboneDiagramBlock", "BlockLayoutBlock" })

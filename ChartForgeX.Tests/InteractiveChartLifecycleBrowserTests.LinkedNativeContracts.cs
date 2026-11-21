@@ -145,7 +145,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
             .WithObservationIds((removeFirst ? ids.Skip(1) : ids).Select(id => new ChartObservationId(id)));
         series.ConfigureMarkers(markers => { markers.Enabled = true; markers.Radius = 4; });
         return Chart.Create().WithSize(640, 360).WithXAxisBounds(0, 10).WithYAxisBounds(0, 8)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).AddSeries(series);
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).AddSeries(series);
     }
 
     private static string NativeLinkedSection(Chart chart, ChartAxisWindow? viewport = null,

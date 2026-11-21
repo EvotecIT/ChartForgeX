@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -15,7 +16,7 @@ using ChartForgeX.VisualBlocks;
 
 // Native PNG and standalone SVG use bundled Archivo.
 // Add ChartFontAssets.StyleSheet once for other text on a host page.
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = FindingsRecipe.Create("compact", mode);
 var context = new VisualRenderContext(
@@ -42,7 +43,7 @@ public static class FindingsRecipe {
         "Remote access", "Web servers", "Databases", "Hypervisors", "Storage", "Wireless"
     };
 
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var dense = variant == "dense";
         var count = variant == "empty" ? 0 : dense ? DenseCategories.Length : Categories.Length;
         // Dense findings fall off steeply, as they do in a real assessment: a few categories carry most of the work.

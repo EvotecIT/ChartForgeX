@@ -44,7 +44,7 @@ public sealed class NativeRadialMotionBeforeControls {
             : new[] { new ChartPoint(1, value), new ChartPoint(2, 25), new ChartPoint(3, 10) };
         var series = new ChartSeries(new ChartSeriesId("parts"), "Parts", donut ? ChartSeriesKind.Donut : ChartSeriesKind.Pie, points);
         series.WithObservationIds(Enumerable.Range(0, points.Length).Select(index => new ChartObservationId(index == 0 ? "primary" : "part-" + index)));
-        var chart = Chart.Create().WithSize(width, 420).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithLegend(true).WithDataLabels(labels != "hidden")
+        var chart = Chart.Create().WithSize(width, 420).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light).WithLegend(true).WithDataLabels(labels != "hidden")
             .WithDataLabelPlacement(labels == "outside" ? ChartDataLabelPlacement.Outside : ChartDataLabelPlacement.Inside).AddSeries(series);
         chart.Options.MaximumPieSlices = other ? 3 : 8; chart.WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent);
         chart.ConfigureXAxis(axis => { for (var index = 0; index < points.Length; index++) axis.Labels.Add(new ChartAxisLabel(index + 1, "Part " + (index + 1))); });

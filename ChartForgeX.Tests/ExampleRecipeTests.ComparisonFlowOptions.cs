@@ -13,13 +13,13 @@ public sealed partial class ExampleRecipeTests {
             (ChartSeriesKind.Lollipop, "horizontal"), (ChartSeriesKind.Dumbbell, "horizontal"), (ChartSeriesKind.Dumbbell, "endpoint-markers"),
             (ChartSeriesKind.Sankey, "source-colors"), (ChartSeriesKind.Sankey, "target-colors"), (ChartSeriesKind.Sankey, "quantitative-colors")
         };
-        foreach (var (kind, variant) in variants) foreach (var compact in new[] { false, true }) foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark })
+        foreach (var (kind, variant) in variants) foreach (var compact in new[] { false, true }) foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark })
             yield return new object[] { kind, compact ? "compact-" + variant : variant, mode };
     }
 
     [Theory]
     [MemberData(nameof(ComparisonAndFlowPolicySelections))]
-    public void ComparisonAndFlowPoliciesHaveExecutableDownloadableSourcesAndNativeCompactWideBothThemeExports(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
+    public void ComparisonAndFlowPoliciesHaveExecutableDownloadableSourcesAndNativeCompactWideBothThemeExports(ChartSeriesKind kind, string variant, ThemeMode mode) {
         var selection = new ExampleFamilySelection(kind, variant);
         Assert.Contains(selection, ExampleRecipes.FamilySelections(kind));
         Assert.Contains(selection, ExampleRecipes.FamilySelections(kind, curated: true));

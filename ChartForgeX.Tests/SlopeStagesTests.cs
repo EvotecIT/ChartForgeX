@@ -192,7 +192,7 @@ public sealed class SlopeStagesTests {
     private static IEnumerable<ChartPoint> Interrupted() { yield return new ChartPoint(1, 2); yield return new ChartPoint(2, 3); throw new InvalidOperationException("Interrupted source."); }
     private static IEnumerable<ChartPoint> Nonfinite() { yield return new ChartPoint(1, 2); yield return new ChartPoint(2, double.NaN); }
     private static Chart Bare() => Chart.Create().WithSize(800, 400).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false);
-    internal static VisualRenderContext Context(int width = 800, VisualThemeMode mode = VisualThemeMode.Light) => new(new VisualLayoutOptions(new VisualSize(width, 400)),
+    internal static VisualRenderContext Context(int width = 800, ThemeMode mode = ThemeMode.Light) => new(new VisualLayoutOptions(new VisualSize(width, 400)),
         VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), mode);
     private static XElement[] Facts(PreparedVisual prepared) => XDocument.Parse(prepared.ToSvg()).Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "point").ToArray();
     internal static void Save(PreparedVisual prepared, string name) {

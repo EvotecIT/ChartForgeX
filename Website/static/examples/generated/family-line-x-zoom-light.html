@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = XZoomRecipe.Create(&quot;x-zoom&quot;, mode);
 var context = new VisualRenderContext(
@@ -109,7 +110,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 
 
 public static class XZoomRecipe {
-    public static IVisualRenderable Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) =&gt;
+    public static IVisualRenderable Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) =&gt;
         new View(Build(variant.Contains(&quot;step&quot;, StringComparison.Ordinal) ? ChartSeriesKind.StepLine : ChartSeriesKind.Line,
             variant.StartsWith(&quot;compact&quot;, StringComparison.Ordinal)));
 
@@ -158,6 +159,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -167,7 +169,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = XZoomRecipe.Create(&quot;x-zoom&quot;, mode);
 var context = new VisualRenderContext(
@@ -181,7 +183,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 
 
 public static class XZoomRecipe {
-    public static IVisualRenderable Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) =&gt;
+    public static IVisualRenderable Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) =&gt;
         new View(Build(variant.Contains(&quot;step&quot;, StringComparison.Ordinal) ? ChartSeriesKind.StepLine : ChartSeriesKind.Line,
             variant.StartsWith(&quot;compact&quot;, StringComparison.Ordinal)));
 

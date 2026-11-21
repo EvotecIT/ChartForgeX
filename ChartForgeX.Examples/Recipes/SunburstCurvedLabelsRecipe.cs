@@ -1,7 +1,7 @@
 /// <summary>Places complete supported primary names on captured native circular lanes without changing hierarchy allocation.</summary>
 public static class SunburstCurvedLabelsRecipe {
     /// <summary>Creates the source model for a compact or wide consumer, independently of the export backend.</summary>
-    public static Chart Create(string variant = "curved-labels", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "curved-labels", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("curved-labels" or "compact-curved-labels")) throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create().WithLegend(false).WithDataLabels().WithTransparentBackground(false)
             .AddSunburst("Regional allocation", new[] {

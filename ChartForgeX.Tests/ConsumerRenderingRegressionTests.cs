@@ -43,7 +43,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
     [InlineData(2)]
     public void CardStatusBarSpansTheLogicalCardAtEveryOutputScale(int scale) {
         var card = MetricCard.Create().WithSize(460, 200).WithCard(true).WithMetric("CPU", "38")
-            .WithStatus(VisualStatus.Warning).WithPngOutputScale(scale);
+            .WithStatus(Tone.Warning).WithPngOutputScale(scale);
         var image = card.RenderRgba();
         var svg = XDocument.Parse(card.ToSvg());
         var bar = svg.Descendants().Single(e => Role(e) == "metric-status-bar");
@@ -135,7 +135,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
         (XElement Surface, XElement Text) Render(double dataLabelSize) {
             var theme = VisualTheme.Graphite().WithTypography(new VisualTypography(dataLabelSize: dataLabelSize));
             var table = ChartTable.Create().WithTheme(theme).WithSize(420, 240).WithColumns("State").AddRow("placeholder");
-            table.ConfigureRow(0, row => row.Cells[0].WithBadge("Verified", VisualStatus.Positive));
+            table.ConfigureRow(0, row => row.Cells[0].WithBadge("Verified", Tone.Success));
             var nodes = XDocument.Parse(table.ToSvg()).Descendants().ToArray();
             return (nodes.Single(element => Role(element) == "visual-badge"),
                 nodes.Single(element => element.Name.LocalName == "text" && element.Value == "Verified"));
@@ -150,7 +150,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
 
     [Fact]
     public void MetricBadgeClearsInlineHistoryAndUsesThemeInk() {
-        var card = MetricCard.Create().WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark).WithSize(330, 150).WithPadding(0)
+        var card = MetricCard.Create().WithTheme(VisualTheme.Graphite(), ThemeMode.Dark).WithSize(330, 150).WithPadding(0)
             .WithMetric("CPU", "38").WithSymbol("CPU").WithMiniSparkline(new[] { 12d, 24, 18, 38 });
         var nodes = XDocument.Parse(card.ToSvg()).Descendants().ToArray();
         var badge = nodes.Single(e => Role(e) == "metric-symbol-badge");
@@ -158,14 +158,14 @@ public sealed partial class ConsumerRenderingRegressionTests {
         var points = ((string)line.Attribute("points")!).Split(' ').Select(p => double.Parse(p.Split(',')[1], CultureInfo.InvariantCulture));
         Assert.True(points.Min() >= N(badge, "cy") + N(badge, "r") + 4);
         var symbol = nodes.Single(e => Role(e) == "metric-symbol");
-        Assert.Equal(VisualTheme.Graphite().Resolve(VisualThemeMode.Dark).Foreground.ToCss(), (string?)symbol.Attribute("fill"));
+        Assert.Equal(VisualTheme.Graphite().Resolve(ThemeMode.Dark).Foreground.ToCss(), (string?)symbol.Attribute("fill"));
         Assert.Contains(nodes, e => Role(e) == "metric-value" && e.Value == "38" && (string?)e.Attribute("display") != "none");
     }
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
     public void MetricRoundBadgeStaysInsideCardPaddingAtEveryOutputScale(int scale) {
-        var card = MetricCard.Create().WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark).WithSize(330, 150)
+        var card = MetricCard.Create().WithTheme(VisualTheme.Graphite(), ThemeMode.Dark).WithSize(330, 150)
             .WithCard(true).WithPadding(0).WithMetric("CPU", "38").WithSymbol("CPU").WithPngOutputScale(scale);
         var nodes = XDocument.Parse(card.ToSvg()).Descendants().ToArray();
         var badge = nodes.Single(e => Role(e) == "metric-symbol-badge");
@@ -445,16 +445,16 @@ public sealed partial class ConsumerRenderingRegressionTests {
     [Fact]
     public void InfoStatusUsesThemeInfoAndListMarkersUseOnePaletteColor() {
         var theme = VisualTheme.Graphite().WithPalette(ChartColor.FromRgb(210, 30, 45), ChartColor.FromRgb(20, 170, 90), ChartColor.FromRgb(40, 90, 220));
-        var status = MetricCard.Create().WithTheme(theme).WithSize(260, 120).WithStatus(VisualStatus.Info).WithMetric("Replication", "Pending");
+        var status = MetricCard.Create().WithTheme(theme).WithSize(260, 120).WithStatus(Tone.Info).WithMetric("Replication", "Pending");
         var statusBar = XDocument.Parse(status.ToSvg()).Descendants().Single(e => Role(e) == "metric-status-bar");
-        Assert.Equal(theme.Resolve(VisualThemeMode.Light).Info.ToCss(), (string?)statusBar.Attribute("fill"));
+        Assert.Equal(theme.Resolve(ThemeMode.Light).Info.ToCss(), (string?)statusBar.Attribute("fill"));
 
         var list = ChartList.Create().WithTheme(theme).WithSize(360, 160)
             .AddItem("First").AddItem("Second").AddItem("Third");
         var markers = XDocument.Parse(list.ToSvg()).Descendants().Where(e => Role(e) == "list-marker")
             .Select(e => (string?)e.Attribute("fill")).Where(color => color != null).Distinct().ToArray();
         Assert.Single(markers);
-        Assert.Equal(theme.Resolve(VisualThemeMode.Light).Palette[0].ToCss(), markers[0]);
+        Assert.Equal(theme.Resolve(ThemeMode.Light).Palette[0].ToCss(), markers[0]);
     }
     [Theory]
     [InlineData(VisualListMarker.Bullet, "r", 4)]

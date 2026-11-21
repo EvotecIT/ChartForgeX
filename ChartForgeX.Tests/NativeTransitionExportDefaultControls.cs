@@ -28,7 +28,7 @@ public sealed class NativeTransitionExportDefaultControls {
         var chart = Chart.Create().WithTitle("Captured native export facts").WithSize(width, 400).WithDataLabels()
             .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("reviewed"), "Reviewed", ChartPoints.FromValues(18, 70, 44)));
         chart.Options.Theme = VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family);
-        chart.Options.ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        chart.Options.ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light;
         return new HtmlInteractiveChartRenderer().PrepareSection(chart, configure: options => {
             options.IdScope = scope; options.Interaction.ChartId = "native-export-facts";
             if (export) options.Interaction.Enable(ChartInteractionFeatures.Export); else options.Interaction.Disable(ChartInteractionFeatures.Export);

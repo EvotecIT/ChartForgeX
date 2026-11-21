@@ -12,10 +12,10 @@ namespace ChartForgeX.Tests;
 
 public sealed class MetricCardCompactLayoutTests {
     [Theory]
-    [InlineData(VisualStatus.Positive, true)]
-    [InlineData(VisualStatus.None, false)]
-    public void ShortMetricKeepsItsLabelValueAndUnitInsideTheFixedContent(VisualStatus status, bool unit) {
-        var card = Compact(55).WithMetric("Memory", 68, unit: unit ? "%" : null).WithStatus(status);
+    [InlineData("success", true)]
+    [InlineData("none", false)]
+    public void ShortMetricKeepsItsLabelValueAndUnitInsideTheFixedContent(string status, bool unit) {
+        var card = Compact(55).WithMetric("Memory", 68, unit: unit ? "%" : null).WithStatus(Tone.Parse(status));
         var text = Text(card);
         var label = Bounds(text["metric-label"]);
         var value = Bounds(text["metric-value"]);
@@ -67,7 +67,7 @@ public sealed class MetricCardCompactLayoutTests {
 
     [Fact]
     public void NormalMetricRetainsItsEstablishedLabelAndValueGeometry() {
-        var text = Text(Compact(140).WithMetric("Memory", 68, unit: "%").WithStatus(VisualStatus.Positive));
+        var text = Text(Compact(140).WithMetric("Memory", 68, unit: "%").WithStatus(Tone.Success));
         Assert.Equal(17.5, Number(text["metric-label"], "y"));
         Assert.Equal(11, Number(text["metric-label"], "font-size"));
         Assert.Equal(62.3, Number(text["metric-value"], "y"));
@@ -115,11 +115,11 @@ public sealed class MetricCardCompactLayoutTests {
         var inset = kind.StartsWith("inset", StringComparison.Ordinal);
         var card = Compact(55).WithMetric("Memory", kind == "top-right-long" ? "MMMMMMMMMMMMMM" :
                 kind == "top-right-unit-narrow" ? new string('i', 17) : "68", unit: "%")
-            .WithStatus(VisualStatus.Positive);
-        if (kind == "top-left") card.WithIcon(VisualIcon.Lightning).WithBadgePlacement(MetricCardBadgePlacement.TopLeft);
+            .WithStatus(Tone.Success);
+        if (kind == "top-left") card.WithIcon(Icons.Lightning).WithBadgePlacement(MetricCardBadgePlacement.TopLeft);
         else if (kind == "top-right-long" || kind == "top-right-unit-narrow") card.WithSymbol("RAM").WithBadgePlacement(MetricCardBadgePlacement.TopRight);
         else if (kind == "inset-symbol") card.WithSymbol("RAM").WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset);
-        else card.WithIcon(VisualIcon.Lightning).WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset);
+        else card.WithIcon(Icons.Lightning).WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset);
         var elements = XDocument.Parse(card.ToSvg()).Descendants().ToArray();
         var badge = Assert.Single(elements, element => (string?)element.Attribute("data-cfx-role") ==
             (inset ? "metric-value-surface-badge" : "metric-symbol-badge"));

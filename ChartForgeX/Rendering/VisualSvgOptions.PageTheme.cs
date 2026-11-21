@@ -51,7 +51,7 @@ public sealed partial class VisualSvgOptions {
     /// A page that defines none of the properties shows the prepared colours and its own font. Layout still uses the
     /// prepared font metrics; raster output keeps literal colours and prepared fonts.
     /// </remarks>
-    public VisualSvgOptions WithSharedDesignRoles(VisualTheme? theme = null, VisualThemeMode mode = VisualThemeMode.Light) {
+    public VisualSvgOptions WithSharedDesignRoles(VisualTheme? theme = null, ThemeMode mode = ThemeMode.Light) {
         var copy = WithPageFonts("var(" + SvgColorVariables.SharedFontFamily + ", inherit)", null);
         copy._colorVariables = SvgColorVariables.SharedRoles(theme, mode);
         return copy;

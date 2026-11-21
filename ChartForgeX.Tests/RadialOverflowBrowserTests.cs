@@ -22,7 +22,7 @@ public sealed class RadialOverflowBrowserTests {
             new[] { new ChartPoint(1, 1e308), new ChartPoint(2, 1e308), new ChartPoint(3, 1e308) });
         for (var index = 0; index < 3; index++) series.WithObservationId(index, new ChartObservationId("part-" + index));
         var chart = Chart.Create().WithSize(640, 400).WithXLabels("First", "Second", "Third").AddSeries(series)
-            .WithTheme(VisualTheme.Graphite(), donut ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), donut ? ThemeMode.Dark : ThemeMode.Light)
             .WithDataLabels().WithLegend();
         chart.Options.MaximumPieSlices = 2;
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(Configure),

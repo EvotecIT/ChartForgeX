@@ -56,7 +56,7 @@ public sealed class NativeCircleValueTransitionTests {
         }
         var from = renderer.PrepareSection(Create(40)); var to = renderer.PrepareSection(Create(90));
         var middle = AssertNativeMiddle(renderer, from, to, Create(65));
-        var colors = VisualTheme.Graphite().Resolve(VisualThemeMode.Light);
+        var colors = VisualTheme.Graphite().Resolve(ThemeMode.Light);
         var expectedColor = policy == "point" ? ChartColor.FromHex("#7B3294") : policy == "series" ? ChartColor.FromHex("#2468AC") : colors.Status.Info.Fill;
         Assert.Equal(expectedColor, Assert.Single(middle.Scene.Nodes.OfType<VisualSceneSlice>(), node => node.Role == "circle-value").Fill);
         Assert.Equal(colors.Status.Info.Fill, Assert.Single(middle.Scene.Nodes.OfType<VisualSceneEllipse>(), node => node.Role == "circle-status-marker").Fill);
@@ -92,7 +92,7 @@ public sealed class NativeCircleValueTransitionTests {
         var from = renderer.PrepareSection(Model(760, false, 40, family));
         var changed = Model(760, false, 100, family);
         changed.WithTheme(VisualTheme.Graphite().Configure(builder => builder.Light.Status.Medium =
-            new VisualTokenColor(ChartColor.FromHex("#7B3294"), builder.Light.Status.Medium.Ink)), VisualThemeMode.Light).WithFontFamily(family);
+            new VisualTokenColor(ChartColor.FromHex("#7B3294"), builder.Light.Status.Medium.Ink)), ThemeMode.Light).WithFontFamily(family);
         var to = renderer.PrepareSection(changed); var capture = from.PreparedVisual.Scene.ValueCapture!;
         Assert.Equal(to.PreparedVisual.ToSvg("same-circle-endpoint"), capture.Frame(from.PreparedVisual, new[] { 100d }).ToSvg("same-circle-endpoint"));
         Assert.Throws<NotSupportedException>(() => renderer.PrepareValueTransitionJson(from, to, 3));
@@ -122,7 +122,7 @@ public sealed class NativeCircleValueTransitionTests {
     }
 
     internal static Chart Model(int width, bool dark, double value, string family) {
-        var chart = CircleRecipe.Create().WithSize(width, 400).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = CircleRecipe.Create().WithSize(width, 400).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithFontFamily(family).WithLegend(false);
         var series = chart.Series[0]; series.WithObservationId(0, new ChartObservationId("current"));
         var reading = series.GaugeValues[0]; series.UpdateGaugeValue(0, new ChartGaugeValue(value, reading.Minimum, reading.Maximum));

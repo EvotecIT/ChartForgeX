@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = ProgressBarRecipe.Create(&quot;compact&quot;, mode);
 var context = new VisualRenderContext(
@@ -109,7 +110,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 
 /// &lt;summary&gt;Labeled progress rows with a shared maximum and optional track styling.&lt;/summary&gt;
 public static class ProgressBarRecipe {
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         var chart = Chart.Create().AddProgressBars(&quot;Delivery&quot;, new[] {
             new ChartProgressItem(&quot;Reviewed&quot;, 76), new ChartProgressItem(&quot;Verified&quot;, 58), new ChartProgressItem(&quot;Complete&quot;, 42)
         });
@@ -123,6 +124,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -132,7 +134,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = ProgressBarRecipe.Create(&quot;compact&quot;, mode);
 var context = new VisualRenderContext(
@@ -146,7 +148,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 
 /// &lt;summary&gt;Labeled progress rows with a shared maximum and optional track styling.&lt;/summary&gt;
 public static class ProgressBarRecipe {
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         var chart = Chart.Create().AddProgressBars(&quot;Delivery&quot;, new[] {
             new ChartProgressItem(&quot;Reviewed&quot;, 76), new ChartProgressItem(&quot;Verified&quot;, 58), new ChartProgressItem(&quot;Complete&quot;, 42)
         });

@@ -137,7 +137,7 @@ public sealed class NumericRadialSeriesTests {
         var x = (int)Math.Round(mark.Cx + Math.Cos(angle) * radius); var y = (int)Math.Round(mark.Cy + Math.Sin(angle) * radius);
         var offset = (y * image.Width + x) * 4;
         Assert.Equal(color.R, image.Pixels[offset]); Assert.Equal(color.G, image.Pixels[offset + 1]); Assert.Equal(color.B, image.Pixels[offset + 2]);
-        var colors = new VisualRenderContext().Theme.Resolve(VisualThemeMode.Light);
+        var colors = new VisualRenderContext().Theme.Resolve(ThemeMode.Light);
         var danger = ChartSeriesColours.State(ChartSeriesState.Danger, colors, color);
         var variables = new SvgColorVariables().Add("--point", color, SvgColorRole.Series).Add("--danger", danger, SvgColorRole.Status);
         var svg = VisualSceneSvgRenderer.Render(scene, options: new VisualSvgOptions(colorVariables: variables));

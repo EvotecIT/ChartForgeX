@@ -14,11 +14,11 @@ public sealed class BulletNumericCaptionTests {
     private static readonly double[] Values = { 0, 2611.111, 3722.222, 4833.333, 5944.444, 7055.555, 8166.666, 12345.6789 };
 
     [Theory]
-    [InlineData(390, VisualThemeMode.Light)]
-    [InlineData(390, VisualThemeMode.Dark)]
-    [InlineData(760, VisualThemeMode.Light)]
-    [InlineData(760, VisualThemeMode.Dark)]
-    public void DenseBulletNumbersStayCompleteAndScaleCaptionsDoNotOverlap(int width, VisualThemeMode mode) {
+    [InlineData(390, ThemeMode.Light)]
+    [InlineData(390, ThemeMode.Dark)]
+    [InlineData(760, ThemeMode.Light)]
+    [InlineData(760, ThemeMode.Dark)]
+    public void DenseBulletNumbersStayCompleteAndScaleCaptionsDoNotOverlap(int width, ThemeMode mode) {
         var chart = Create();
         var height = width == 390 ? 300 : 440;
         var prepared = chart.Prepare(Context(width, height, mode));
@@ -63,7 +63,7 @@ public sealed class BulletNumericCaptionTests {
     [Fact]
     public void HeightConstrainedBulletOmitsWholeNumbersInsteadOfPaintingMicroscopicFacts() {
         var chart = Create().WithAxes(false);
-        var prepared = chart.Prepare(Context(390, 80, VisualThemeMode.Light, frame: false));
+        var prepared = chart.Prepare(Context(390, 80, ThemeMode.Light, frame: false));
         Assert.DoesNotContain(prepared.Scene.Nodes, node => node is VisualSceneText && NumericRole(node.Role));
         Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "radial.text-overflow");
         Assert.Equal(Values.Length, prepared.Regions.Count(region => region.Role == "bullet-value-label"));
@@ -73,7 +73,7 @@ public sealed class BulletNumericCaptionTests {
     [Fact]
     public void AuthoredBulletNumberSizeRemainsIntactWhenCompleteCaptionsFit() {
         var chart = Create().ConfigureDataLabelStyle(style => style.WithFontSize(22));
-        var prepared = chart.Prepare(Context(760, 440, VisualThemeMode.Light));
+        var prepared = chart.Prepare(Context(760, 440, ThemeMode.Light));
         var values = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "bullet-value-label").ToArray();
         Assert.NotEmpty(values);
         Assert.All(values, text => Assert.Equal(22, text.Text.Size));
@@ -90,7 +90,7 @@ public sealed class BulletNumericCaptionTests {
         return chart;
     }
 
-    private static VisualRenderContext Context(int width, int height, VisualThemeMode mode, bool frame = true) {
+    private static VisualRenderContext Context(int width, int height, ThemeMode mode, bool frame = true) {
         var fonts = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito");
         FontRegistry.Register(ProofFont, Path.Combine(fonts, "Carlito-Regular.ttf"), 400);
         FontRegistry.Register(ProofFont, Path.Combine(fonts, "Carlito-Bold.ttf"), 700);

@@ -152,7 +152,7 @@ public sealed partial class ChordColorDimensionTests {
     }
     private static ChartNode[] Nodes() => new[] { new ChartNode("a", "Support"), new ChartNode("b", "Support") };
     private static PreparedVisual Prepare(Chart chart, bool legend = false) => chart.Prepare(new VisualRenderContext(
-        new VisualLayoutOptions(new VisualSize(720, 460)), VisualTheme.Graphite(), VisualThemeMode.Light, new VisualFrame(showLegend: legend),
+        new VisualLayoutOptions(new VisualSize(720, 460)), VisualTheme.Graphite(), ThemeMode.Light, new VisualFrame(showLegend: legend),
         new FontSpec { Family = "Carlito", FilePath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf") }));
     private static XElement[] Links(PreparedVisual prepared) => PreparedChordTests.Role(prepared, "chord-link");
     private static XElement Link(PreparedVisual prepared, string id) => Links(prepared).Single(node => (string?)node.Attribute("data-cfx-target-id") == id);

@@ -7,21 +7,21 @@ using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using ChartForgeX.VisualArtifacts;
 
-var source = NativeTurbulenceExample.Create({{VARIANT}}, VisualThemeMode.{{MODE}});
+var source = NativeTurbulenceExample.Create({{VARIANT}}, ThemeMode.{{MODE}});
 File.WriteAllText("noise.native.svg", source.ToSvg(new VisualSvgOptions(effectProfile: VisualSvgEffectProfile.NativeFilters)));
 File.WriteAllText("noise.baked.svg", source.ToSvg());
 File.WriteAllBytes("noise.png", source.ToPng());
 File.WriteAllBytes("noise.generated.png", NativeTurbulenceExample.Generate({{VARIANT}}).ToPng());
-var masked = NativeTurbulenceExample.MaskSource({{VARIANT}}, VisualThemeMode.{{MODE}});
+var masked = NativeTurbulenceExample.MaskSource({{VARIANT}}, ThemeMode.{{MODE}});
 File.WriteAllText("noise.masked-source.svg", masked.ToSvg(new VisualSvgOptions(effectProfile: VisualSvgEffectProfile.NativeFilters)));
 File.WriteAllBytes("noise.masked-source.png", masked.ToPng());
 
-var saved = NativeTurbulenceExample.Save({{VARIANT}}, VisualThemeMode.{{MODE}});
+var saved = NativeTurbulenceExample.Save({{VARIANT}}, ThemeMode.{{MODE}});
 File.WriteAllText("noise.source.json", saved);
-var loaded = NativeTurbulenceExample.Load(saved, {{VARIANT}}, VisualThemeMode.{{MODE}});
+var loaded = NativeTurbulenceExample.Load(saved, {{VARIANT}}, ThemeMode.{{MODE}});
 File.WriteAllText("noise.loaded.svg", loaded.ToSvg(new VisualSvgOptions(effectProfile: VisualSvgEffectProfile.NativeFilters)));
 File.WriteAllBytes("noise.loaded.png", loaded.ToPng());
-var edited = NativeTurbulenceExample.Edit(saved, 14, {{VARIANT}}, VisualThemeMode.{{MODE}});
+var edited = NativeTurbulenceExample.Edit(saved, 14, {{VARIANT}}, ThemeMode.{{MODE}});
 File.WriteAllText("noise.edited.svg", edited.ToSvg(new VisualSvgOptions(effectProfile: VisualSvgEffectProfile.NativeFilters)));
 File.WriteAllBytes("noise.edited.png", edited.ToPng());
 

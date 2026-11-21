@@ -40,7 +40,7 @@ internal static partial class SmokeTests {
         var darkBlock = MetricCard.Create()
             .WithMetric("Visual identity", "98.2%")
             .WithSize(280, 150)
-            .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark);
+            .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark);
         var contentVariant = MetricCard.Create()
             .WithMetric("Visual identity", "76.4%")
             .WithSize(280, 150)

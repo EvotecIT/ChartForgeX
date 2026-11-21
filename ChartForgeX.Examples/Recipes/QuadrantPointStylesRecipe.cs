@@ -1,7 +1,7 @@
 /// <summary>Native Core authoring for independent quadrant captions and source-owned Scatter marker styles.</summary>
 public static class QuadrantPointStylesRecipe {
     /// <summary>Creates the native example. The separately shared Mermaid fixture proves parsed-source mapping.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var observations = ChartSeries.CreateScatter(new ChartSeriesId("proposed-work"), "Proposed work", new[] {
             new ChartPoint(.22, .74), new ChartPoint(.76, .72), new ChartPoint(.28, .26), new ChartPoint(.72, .24)

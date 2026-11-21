@@ -40,12 +40,12 @@ public sealed partial class ZenUmlPresentationDepthTests {
     public void PreparedHostContextCaptureAndReaderMutationsCannotChangeTheNativePresentationSnapshot() {
         var model=Model("zenuml-native-presentation");var family=new FontSpec{Family=BrowserProofFonts.Family};
         var theme=VisualTheme.Graphite().WithTypography(new VisualTypography(BrowserProofFonts.Family,dataLabelSize:17));
-        var prepared=model.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(1400,1800),24),theme,VisualThemeMode.Dark,font:family));
+        var prepared=model.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(1400,1800),24),theme,ThemeMode.Dark,font:family));
         var artifact=prepared.ToArtifact();var clone=artifact.Clone();var svg=prepared.ToSvg();var png=prepared.ToPng();var json=artifact.ToInterchangeJson();
         var saved=artifact.ToInterchangeEnvelope();var restored=VisualArtifactInterchangeEnvelope.FromJson(json).ToSequenceArtifact();
         Assert.Equal(24,restored.Padding);Assert.Equal(17,restored.Theme.Typography.DataLabelSize);Assert.Equal(BrowserProofFonts.Family,restored.Theme.Typography.Family);
         var api=model.Participants.Single(item=>item.Id=="API");api.Symbol="changed";api.Stereotype="changed";api.Fill=ChartColor.FromHex("#000000");api.MinimumWidth=900;
-        model.Blocks.Single(item=>item.Kind==SequenceArtifactBlockKind.Reference).ParticipantIds.Clear();model.ThemeMode=VisualThemeMode.Light;family.Family="changed";
+        model.Blocks.Single(item=>item.Kind==SequenceArtifactBlockKind.Reference).ParticipantIds.Clear();model.ThemeMode=ThemeMode.Light;family.Family="changed";
         saved.Nodes.Single(item=>item.Extensions.TryGetValue("mermaid.id",out var id)&&id=="API").Sequence!.Symbol="reader mutation";saved.Annotations[0].TargetIds.Clear();clone.Metadata["new"]="host";
         Assert.Equal(svg,prepared.ToSvg());Assert.Equal(png,prepared.ToPng());Assert.Equal(json,artifact.ToInterchangeJson());
         Assert.Contains(restored.Participants,item=>item.Symbol=="🚀");Assert.Equal(2,restored.Blocks.Single(item=>item.Kind==SequenceArtifactBlockKind.Reference).ParticipantIds.Count);

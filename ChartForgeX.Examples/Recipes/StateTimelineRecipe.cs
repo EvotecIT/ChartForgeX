@@ -1,6 +1,6 @@
 /// <summary>Availability intervals retain state keys, details and lane grouping.</summary>
 public static class StateTimelineRecipe {
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var colors = VisualTheme.Graphite().Resolve(mode);
         var start = new DateTime(2026, 3, 2, 8, 0, 0, DateTimeKind.Utc);
         var primary = ChartSeries.CreateStateTimelineLane(new ChartSeriesId("primary"), "Primary", new[] {

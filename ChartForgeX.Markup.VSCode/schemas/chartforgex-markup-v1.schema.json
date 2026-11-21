@@ -95,13 +95,13 @@
         "theme": [
           "Graphite", "Report", "Executive", "Product", "Accessible", "Colorblind", "Aurora",
           "Editorial", "Candy", "PeopleInfographic", "Terminal", "TransparentOverlay", "Minimal",
-          "Dashboard", "SaasDashboard", "RestaurantDashboard", "light", "dark"
+          "Dashboard", "SaasDashboard", "RestaurantDashboard", "auto", "light", "dark"
         ],
-        "themeMode": ["light", "dark"]
+        "themeMode": ["auto", "light", "dark"]
       },
       "fenceAttributes": {
-        "theme": "A named preset or light/dark mode shorthand; payload commands take precedence.",
-        "themeMode": "Light or dark mode, independently of the selected preset."
+        "theme": "A named preset or auto/light/dark mode shorthand; payload commands take precedence.",
+        "themeMode": "Auto, light or dark mode, independently of the selected preset."
       },
       "options": {
         "theme": "Preset or light/dark mode shorthand, accepted as a command, option, options-table row or fence attribute.",

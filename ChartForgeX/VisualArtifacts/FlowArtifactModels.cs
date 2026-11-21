@@ -165,14 +165,14 @@ public sealed partial class FlowArtifact {
     }
 
     /// <summary>Adds a flow lane.</summary>
-    public FlowArtifact AddLane(string id, string label, VisualStatus status = VisualStatus.None, string? color = null) {
+    public FlowArtifact AddLane(string id, string label, Tone status = default, string? color = null) {
         if (ContainsLane(id)) throw new ArgumentException("Flow lane ids must be unique.", nameof(id));
         _lanes.Add(new FlowArtifactLane(id, label) { Status = status, Color = color });
         return this;
     }
 
     /// <summary>Adds a flow step.</summary>
-    public FlowArtifact AddStep(string id, string label, FlowArtifactStepKind kind = FlowArtifactStepKind.Step, string? laneId = null, VisualStatus status = VisualStatus.None) {
+    public FlowArtifact AddStep(string id, string label, FlowArtifactStepKind kind = FlowArtifactStepKind.Step, string? laneId = null, Tone status = default) {
         if (ContainsStep(id)) throw new ArgumentException("Flow step ids must be unique.", nameof(id));
         _steps.Add(new FlowArtifactStep(id, label, kind) { LaneId = laneId, Status = status });
         return this;
@@ -189,7 +189,7 @@ public sealed partial class FlowArtifact {
     }
 
     /// <summary>Adds a flow connector.</summary>
-    public FlowArtifact AddConnector(string sourceId, string targetId, string label = "", FlowArtifactConnectorKind kind = FlowArtifactConnectorKind.Flow, VisualLinkDirection direction = VisualLinkDirection.Forward, VisualStatus status = VisualStatus.None, string? color = null) {
+    public FlowArtifact AddConnector(string sourceId, string targetId, string label = "", FlowArtifactConnectorKind kind = FlowArtifactConnectorKind.Flow, VisualLinkDirection direction = VisualLinkDirection.Forward, Tone status = default, string? color = null) {
         if (!ContainsStep(sourceId)) throw new ArgumentException("Flow connector source step does not exist: " + sourceId + ".", nameof(sourceId));
         if (!ContainsStep(targetId)) throw new ArgumentException("Flow connector target step does not exist: " + targetId + ".", nameof(targetId));
         var id = sourceId + "-" + targetId + "-" + (_connectors.Count + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
@@ -262,7 +262,7 @@ public sealed class FlowArtifactLane {
     public string Label { get => _label; set => _label = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets or sets the lane status.</summary>
-    public VisualStatus Status { get; set; }
+    public Tone Status { get; set; }
 
     /// <summary>Gets or sets an optional accent color.</summary>
     public string? Color { get; set; }
@@ -298,7 +298,7 @@ public sealed class FlowArtifactStep {
     public string? LaneId { get; set; }
 
     /// <summary>Gets or sets the step status.</summary>
-    public VisualStatus Status { get; set; }
+    public Tone Status { get; set; }
 
     /// <summary>Gets or sets an optional subtitle.</summary>
     public string? Subtitle { get; set; }
@@ -373,7 +373,7 @@ public sealed class FlowArtifactConnector {
     public VisualLinkDirection Direction { get; set; } = VisualLinkDirection.Forward;
 
     /// <summary>Gets or sets connector status.</summary>
-    public VisualStatus Status { get; set; }
+    public Tone Status { get; set; }
 
     /// <summary>Gets or sets an optional accent color.</summary>
     public string? Color { get; set; }

@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = SourceDrawingsRecipe.Create(&quot;compact&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Places independent notes, finite lines and a source-Y-offset channel on an ordinary chart.&lt;/summary&gt;
 public static class SourceDrawingsRecipe {
     /// &lt;summary&gt;Creates the same authored geometry in a compact or wide native scene.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         return Chart.Create().WithSize(variant == &quot;compact&quot; ? 390 : 800, 520)
             .WithTheme(VisualTheme.Graphite(), mode).WithTitle(&quot;Review a measured trend&quot;)
@@ -128,6 +129,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -137,7 +139,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = SourceDrawingsRecipe.Create(&quot;compact&quot;, mode);
 var context = new VisualRenderContext(
@@ -152,7 +154,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Places independent notes, finite lines and a source-Y-offset channel on an ordinary chart.&lt;/summary&gt;
 public static class SourceDrawingsRecipe {
     /// &lt;summary&gt;Creates the same authored geometry in a compact or wide native scene.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         return Chart.Create().WithSize(variant == &quot;compact&quot; ? 390 : 800, 520)
             .WithTheme(VisualTheme.Graphite(), mode).WithTitle(&quot;Review a measured trend&quot;)

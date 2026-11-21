@@ -8,7 +8,7 @@ using ChartForgeX.VisualArtifacts;
 public static partial class V2Examples {
     private static void WriteDiagrams(string output, ICollection<ProofArtifact> artifacts) {
         foreach (var family in new[] { "topology", "sequence" }) {
-            foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+            foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
                 var id = family + "-feasibility-" + mode.ToString().ToLowerInvariant();
                 var title = family == "topology" ? "Service request route" : "Client and server exchange";
                 var recipe = ExampleRecipes.Named("simple-" + family);

@@ -36,7 +36,7 @@ public sealed class NativeBubbleComponentBeforeControls {
     }
     internal static Chart Model(double y, double size, bool area = false, bool reversed = false, int width = 760, bool dark = false, bool labels = false) {
         var chart = Chart.Create().WithTitle("Authored Bubble components").WithSize(width, 420)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithLegend(true).WithDataLabels(labels);
         foreach (var key in new[] { "delivery", "comparison" }) {
             var series = ChartSeries.CreateBubble(new ChartSeriesId(key), key, new[] {

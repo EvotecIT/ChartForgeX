@@ -1,7 +1,7 @@
 /// <summary>Retained series handles share categories while keeping their own configuration, identities and scales.</summary>
 public static class SupportedCombinationRecipe {
     /// <summary>Builds a grouped secondary-axis, horizontal bar/line or mixed radial chart, optionally after a data update.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var updated = variant.StartsWith("updated-", StringComparison.Ordinal);
         var layout = updated ? variant.Substring(8) : variant;
         if (layout is "wide" or "compact") layout = "vertical-secondary";

@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = FlowRecipe.Create(&quot;expanded&quot;, mode);
 var context = new VisualRenderContext(
@@ -112,7 +113,7 @@ public static class FlowRecipe {
     /// &lt;summary&gt;Creates the expanded workflow model.&lt;/summary&gt;
     /// &lt;param name=&quot;variant&quot;&gt;Use wide or expanded for the workflow.&lt;/param&gt;
     /// &lt;param name=&quot;mode&quot;&gt;The rendering mode; diagram colors are resolved when the model is prepared.&lt;/param&gt;
-    public static FlowArtifact Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static FlowArtifact Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;expanded&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant), variant, &quot;Use wide or expanded.&quot;);
 
@@ -121,8 +122,8 @@ public static class FlowRecipe {
             .AddStep(&quot;received&quot;, &quot;Request received&quot;, FlowArtifactStepKind.Start, &quot;service&quot;)
             .AddStep(&quot;decision&quot;, &quot;Automatic checks pass?&quot;, FlowArtifactStepKind.Decision, &quot;service&quot;)
             .ConfigureStep(&quot;decision&quot;, step =&gt; step.Width = 200)
-            .AddStep(&quot;manual&quot;, &quot;Review observations&quot;, FlowArtifactStepKind.Process, &quot;review&quot;, VisualStatus.Warning)
-            .AddStep(&quot;complete&quot;, &quot;Assessment complete&quot;, FlowArtifactStepKind.End, &quot;service&quot;, VisualStatus.Positive)
+            .AddStep(&quot;manual&quot;, &quot;Review observations&quot;, FlowArtifactStepKind.Process, &quot;review&quot;, Tone.Warning)
+            .AddStep(&quot;complete&quot;, &quot;Assessment complete&quot;, FlowArtifactStepKind.End, &quot;service&quot;, Tone.Success)
             .AddConnector(&quot;received&quot;, &quot;decision&quot;, &quot;Evaluate&quot;)
             .AddConnector(&quot;decision&quot;, &quot;manual&quot;, &quot;Review required&quot;)
             .AddConnector(&quot;decision&quot;, &quot;complete&quot;, &quot;Passed&quot;)
@@ -135,6 +136,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -144,7 +146,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = FlowRecipe.Create(&quot;expanded&quot;, mode);
 var context = new VisualRenderContext(
@@ -161,7 +163,7 @@ public static class FlowRecipe {
     /// &lt;summary&gt;Creates the expanded workflow model.&lt;/summary&gt;
     /// &lt;param name=&quot;variant&quot;&gt;Use wide or expanded for the workflow.&lt;/param&gt;
     /// &lt;param name=&quot;mode&quot;&gt;The rendering mode; diagram colors are resolved when the model is prepared.&lt;/param&gt;
-    public static FlowArtifact Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static FlowArtifact Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;expanded&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant), variant, &quot;Use wide or expanded.&quot;);
 
@@ -170,8 +172,8 @@ public static class FlowRecipe {
             .AddStep(&quot;received&quot;, &quot;Request received&quot;, FlowArtifactStepKind.Start, &quot;service&quot;)
             .AddStep(&quot;decision&quot;, &quot;Automatic checks pass?&quot;, FlowArtifactStepKind.Decision, &quot;service&quot;)
             .ConfigureStep(&quot;decision&quot;, step =&gt; step.Width = 200)
-            .AddStep(&quot;manual&quot;, &quot;Review observations&quot;, FlowArtifactStepKind.Process, &quot;review&quot;, VisualStatus.Warning)
-            .AddStep(&quot;complete&quot;, &quot;Assessment complete&quot;, FlowArtifactStepKind.End, &quot;service&quot;, VisualStatus.Positive)
+            .AddStep(&quot;manual&quot;, &quot;Review observations&quot;, FlowArtifactStepKind.Process, &quot;review&quot;, Tone.Warning)
+            .AddStep(&quot;complete&quot;, &quot;Assessment complete&quot;, FlowArtifactStepKind.End, &quot;service&quot;, Tone.Success)
             .AddConnector(&quot;received&quot;, &quot;decision&quot;, &quot;Evaluate&quot;)
             .AddConnector(&quot;decision&quot;, &quot;manual&quot;, &quot;Review required&quot;)
             .AddConnector(&quot;decision&quot;, &quot;complete&quot;, &quot;Passed&quot;)

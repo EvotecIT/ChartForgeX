@@ -13,15 +13,15 @@ public sealed class CalendarCaptionAcceptanceTests {
     private static readonly DateTime Finish = new(2026, 3, 19, 12, 0, 0, DateTimeKind.Utc);
 
     [Theory]
-    [InlineData("auto", VisualThemeMode.Light)]
-    [InlineData("auto", VisualThemeMode.Dark)]
-    [InlineData("rejected", VisualThemeMode.Light)]
-    [InlineData("rejected", VisualThemeMode.Dark)]
-    [InlineData("count", VisualThemeMode.Light)]
-    [InlineData("count", VisualThemeMode.Dark)]
-    [InlineData("window", VisualThemeMode.Light)]
-    [InlineData("window", VisualThemeMode.Dark)]
-    public void AnAutomaticGanttMonthCaptionIsAcceptedOnceWhenItCannotDistinguishTheProjectEnds(string policy, VisualThemeMode mode) {
+    [InlineData("auto", ThemeMode.Light)]
+    [InlineData("auto", ThemeMode.Dark)]
+    [InlineData("rejected", ThemeMode.Light)]
+    [InlineData("rejected", ThemeMode.Dark)]
+    [InlineData("count", ThemeMode.Light)]
+    [InlineData("count", ThemeMode.Dark)]
+    [InlineData("window", ThemeMode.Light)]
+    [InlineData("window", ThemeMode.Dark)]
+    public void AnAutomaticGanttMonthCaptionIsAcceptedOnceWhenItCannotDistinguishTheProjectEnds(string policy, ThemeMode mode) {
         var chart = Fixture(ChartSeriesKind.Gantt).WithThemeMode(mode);
         if (policy == "rejected") chart.WithGanttTickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Millisecond));
         if (policy == "count") chart.ConfigureXAxis(axis => axis.TickCount = 2);
@@ -125,11 +125,11 @@ public sealed class CalendarCaptionAcceptanceTests {
     }
 
     [BrowserTheory]
-    [InlineData(ChartSeriesKind.Gantt, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.Gantt, VisualThemeMode.Dark)]
-    [InlineData(ChartSeriesKind.Timeline, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.Timeline, VisualThemeMode.Dark)]
-    public async Task AcceptedMonthFallbackMatchesNativeSvgAndStaticBrowserPaint(ChartSeriesKind kind, VisualThemeMode mode) {
+    [InlineData(ChartSeriesKind.Gantt, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.Gantt, ThemeMode.Dark)]
+    [InlineData(ChartSeriesKind.Timeline, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.Timeline, ThemeMode.Dark)]
+    public async Task AcceptedMonthFallbackMatchesNativeSvgAndStaticBrowserPaint(ChartSeriesKind kind, ThemeMode mode) {
         if (!InteractiveChartBrowser.Enabled) return;
         var chart = Fixture(kind).WithThemeMode(mode);
         var prepared = Prepare(chart);

@@ -109,7 +109,7 @@ public sealed class RuntimeBrushPrecisionBrowserTests {
 
     private static Chart Frame(bool horizontal) => Chart.Create().WithSize(horizontal ? 340 : 760, 390)
         .WithHeader(false).WithLegend(false).WithDataLabels(false)
-        .WithTheme(VisualTheme.Graphite(), horizontal ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        .WithTheme(VisualTheme.Graphite(), horizontal ? ThemeMode.Dark : ThemeMode.Light);
 
     private static void ConfigureBrush(HtmlChartInteractionOptions options) {
         options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;

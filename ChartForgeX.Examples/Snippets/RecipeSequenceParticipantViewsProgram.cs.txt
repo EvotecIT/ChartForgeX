@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Themes;
 using ChartForgeX.VisualArtifacts;
 
 var source={{SOURCE_TEXT}};
-var artifact=SequenceParticipantViewsSourceRecipe.Create(source,{{VARIANT}},VisualThemeMode.{{MODE}});
+var artifact=SequenceParticipantViewsSourceRecipe.Create(source,{{VARIANT}},ThemeMode.{{MODE}});
 File.WriteAllText("sequence.mmd",source);File.WriteAllText("sequence.svg",artifact.ToSvg());File.WriteAllBytes("sequence.png",artifact.ToPng());
 File.WriteAllText("sequence.html",artifact.ToHtmlPage(new VisualArtifactRenderOptions{HtmlSizing=VisualArtifactHtmlSizing.PreserveSize}));
 File.WriteAllText("sequence.json",artifact.ToInterchangeJson());

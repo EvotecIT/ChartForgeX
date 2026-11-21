@@ -92,7 +92,7 @@ public sealed class NativeProgressTransitionTests {
     }
 
     internal static Chart Model(int width, bool dark, int row, double reading, string family) {
-        var chart = IndependentProgressRecipe.Create(width == 390 ? "compact" : "wide", dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = IndependentProgressRecipe.Create(width == 390 ? "compact" : "wide", dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithFontFamily(family).WithProgressHandles();
         chart.Series[0].ConfigureDataLabelStyle(style => style.WithItalic().WithUnderline(TextDecorationStyle.Dashed));
         var current = chart.Series[0].ProgressItems[row];

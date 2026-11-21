@@ -19,7 +19,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     public async Task AdaptiveUpdateCommitsItsActiveDrawingBeforeHostNotificationAndKeepsFocusAndExportControlsUntilResize(string layout) {
         if (!Enabled) return;
         var pageErrors = new List<string>();
-        await using var session = await OpenAsync(SupportedCombinationRecipe.Create(layout, VisualThemeMode.Dark)
+        await using var session = await OpenAsync(SupportedCombinationRecipe.Create(layout, ThemeMode.Dark)
             .ToInteractiveHtmlPage(options => ConfigureAdaptiveCommit(options)), 390, 760,
             configurePage: page => page.PageError += (_, error) => pageErrors.Add(error));
         var page = session.Page;
@@ -27,7 +27,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         await page.Locator("[data-cfx-role=legend-item][data-cfx-series-key=observed]").ClickAsync();
         await FocusWithKeyboardAsync(page, page.Locator(AdaptiveCommitSelected));
 
-        var committed = await ApplyAdaptiveCommitAsync(page, layout, theme: VisualThemeMode.Dark);
+        var committed = await ApplyAdaptiveCommitAsync(page, layout, theme: ThemeMode.Dark);
         await CaptureAsync(page, "adaptive-commit-" + layout + "-accepted", committed);
         AssertAdaptiveCommit(committed, "narrow", focused: true);
         Assert.Equal(360, committed.GetProperty("nativeWidth").GetDouble());
@@ -132,7 +132,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
             """);
     }
 
-    private static Task<JsonElement> ApplyAdaptiveCommitAsync(IPage page, string layout, int breakpoint = 640, string beforeUpdate = "", VisualThemeMode theme = VisualThemeMode.Light) =>
+    private static Task<JsonElement> ApplyAdaptiveCommitAsync(IPage page, string layout, int breakpoint = 640, string beforeUpdate = "", ThemeMode theme = ThemeMode.Light) =>
         page.EvaluateAsync<JsonElement>("html=>{" + beforeUpdate + "chartController.update(html);return {...adaptiveCommitAccepted,returnedDrawing:chartController.root.dataset.cfxAdaptiveDrawing};}",
             SupportedCombinationRecipe.Create("updated-" + layout, theme).ToInteractiveHtmlFragmentWithoutAssets(options => ConfigureAdaptiveCommit(options, breakpoint)));
 

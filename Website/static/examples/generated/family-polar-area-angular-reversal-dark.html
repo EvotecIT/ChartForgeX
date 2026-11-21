@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = PolarAreaRecipe.Create(&quot;angular-reversal&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Service revenue encoded by radial area, with an optional reversed category example.&lt;/summary&gt;
 public static class PolarAreaRecipe {
     /// &lt;summary&gt;Creates radial revenue segments; the reversal variant retains a zero-valued category and point paint.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot; or &quot;angular-reversal&quot; or &quot;compact-angular-reversal&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
         if (variant is &quot;angular-reversal&quot; or &quot;compact-angular-reversal&quot;) {
@@ -132,6 +133,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -141,7 +143,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = PolarAreaRecipe.Create(&quot;angular-reversal&quot;, mode);
 var context = new VisualRenderContext(
@@ -156,7 +158,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Service revenue encoded by radial area, with an optional reversed category example.&lt;/summary&gt;
 public static class PolarAreaRecipe {
     /// &lt;summary&gt;Creates radial revenue segments; the reversal variant retains a zero-valued category and point paint.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot; or &quot;angular-reversal&quot; or &quot;compact-angular-reversal&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
         if (variant is &quot;angular-reversal&quot; or &quot;compact-angular-reversal&quot;) {
