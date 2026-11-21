@@ -87,8 +87,8 @@ public sealed class NativeStandardBlendBrowserTests {
             File.WriteAllText(stem + ".html", html.ToString());
             File.WriteAllText(stem + ".observed.json", observed.GetRawText());
             File.WriteAllText(stem + ".native-rgba.json", JsonSerializer.Serialize(nativePixels));
-            File.WriteAllText(stem + ".core.csharp.txt", ExampleRecipeSource.EmitNativeMask(variant, dark ? ChartForgeX.Themes.VisualThemeMode.Dark : ChartForgeX.Themes.VisualThemeMode.Light));
-            File.WriteAllText(stem + ".visuals.csharp.txt", ExampleRecipeSource.EmitNativeMaskComposition(variant, dark ? ChartForgeX.Themes.VisualThemeMode.Dark : ChartForgeX.Themes.VisualThemeMode.Light));
+            File.WriteAllText(stem + ".core.csharp.txt", ExampleRecipeSource.EmitNativeMask(variant, dark ? ChartForgeX.ThemeMode.Dark : ChartForgeX.ThemeMode.Light));
+            File.WriteAllText(stem + ".visuals.csharp.txt", ExampleRecipeSource.EmitNativeMaskComposition(variant, dark ? ChartForgeX.ThemeMode.Dark : ChartForgeX.ThemeMode.Light));
             await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = stem + ".browser.png", FullPage = true });
         }
         var rows = observed.GetProperty("rows").EnumerateArray().ToArray();

@@ -1,7 +1,7 @@
 /// <summary>Creates a dotted map with service locations and routes across Europe.</summary>
 public static class DottedMapRecipe {
     /// <summary>Creates the source model for a gallery variant without choosing an export backend.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options"))
             throw new ArgumentOutOfRangeException(nameof(variant));
 

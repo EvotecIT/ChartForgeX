@@ -18,7 +18,7 @@ public sealed class InteractivePolarHitBrowserTests {
     public async Task NativeSectorHitRetainsObservationAndEmptyPolarSpaceHasNoInferredTarget(bool donut, bool dark, bool compact) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(compact ? 320 : 600, 340)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithLegend(false).WithDataLabels(false).WithXLabels("North", "South");
         var points = new[] { new ChartPoint(1, 1200), new ChartPoint(2, 300) };
         chart.AddSeries(new ChartSeries(new ChartSeriesId("requests"), "Requests", donut ? ChartSeriesKind.Donut : ChartSeriesKind.Pie, points));

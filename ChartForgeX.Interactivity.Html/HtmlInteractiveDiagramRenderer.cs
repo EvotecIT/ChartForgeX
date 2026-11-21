@@ -67,7 +67,7 @@ internal sealed class HtmlInteractiveDiagramRenderer {
             .Attribute("data-cfx-ui", Localization.ToDiagramJson()).Attribute("data-cfx-diagram-model", model)
             .Attribute("style", "--cfx-diagram-width:" + Number(width) + "px;--cfx-diagram-font:" + HtmlChartRenderer.CssFontFamily(fontFamily)
                 + ";--cfx-diagram-title-size:" + Number(theme.Typography.TitleSize * 1.2) + "px;--cfx-diagram-subtitle-size:" + Number(theme.Typography.SubtitleSize * 1.15)
-                + "px;color-scheme:" + (mode == VisualThemeMode.Dark ? "dark" : "light")
+                + "px;color-scheme:" + (mode == ThemeMode.Dark ? "dark" : "light")
                 + HtmlInteractiveChartRenderer.ThemeInteractionTokens(theme, mode, transparent))
             .EndStartElement().Line();
         if (!string.IsNullOrWhiteSpace(title) || !string.IsNullOrWhiteSpace(subtitle)) {

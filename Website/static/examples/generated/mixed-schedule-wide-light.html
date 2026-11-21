@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = MixedScheduleRecipe.Create(&quot;wide&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;One native time axis retains real ranges, tasks, state intervals and packed resource items.&lt;/summary&gt;
 public static class MixedScheduleRecipe {
     /// &lt;summary&gt;Creates eight numeric/date and ordinary/reversed compact/wide schedule presentations.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;reversed&quot; or &quot;compact-reversed&quot; or &quot;time&quot; or &quot;compact-time&quot; or &quot;time-reversed&quot; or &quot;compact-time-reversed&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant.StartsWith(&quot;compact&quot;, StringComparison.Ordinal); var time = variant.Contains(&quot;time&quot;, StringComparison.Ordinal);
@@ -146,6 +147,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -155,7 +157,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = MixedScheduleRecipe.Create(&quot;wide&quot;, mode);
 var context = new VisualRenderContext(
@@ -170,7 +172,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;One native time axis retains real ranges, tasks, state intervals and packed resource items.&lt;/summary&gt;
 public static class MixedScheduleRecipe {
     /// &lt;summary&gt;Creates eight numeric/date and ordinary/reversed compact/wide schedule presentations.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;reversed&quot; or &quot;compact-reversed&quot; or &quot;time&quot; or &quot;compact-time&quot; or &quot;time-reversed&quot; or &quot;compact-time-reversed&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant.StartsWith(&quot;compact&quot;, StringComparison.Ordinal); var time = variant.Contains(&quot;time&quot;, StringComparison.Ordinal);

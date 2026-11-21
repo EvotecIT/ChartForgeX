@@ -9,9 +9,9 @@ namespace ChartForgeX.Tests;
 
 public sealed class VisualCanvasBackdropBrowserTests {
     [BrowserTheory]
-    [InlineData(VisualThemeMode.Light, 960)]
-    [InlineData(VisualThemeMode.Dark, 640)]
-    public async Task AuthoredHorizonAndExplicitOrDisabledHaloRenderInBothStaticOutputs(VisualThemeMode mode, int width) {
+    [InlineData(ThemeMode.Light, 960)]
+    [InlineData(ThemeMode.Dark, 640)]
+    public async Task AuthoredHorizonAndExplicitOrDisabledHaloRenderInBothStaticOutputs(ThemeMode mode, int width) {
         if (!Enabled) return;
         var theme = VisualTheme.Graphite();
         var horizon = VisualCanvas.Create(800, 400).WithTheme(theme, mode).WithBackground(ChartColor.White)

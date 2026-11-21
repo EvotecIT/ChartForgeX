@@ -8,7 +8,7 @@ public static class TopologyAccentExamples {
     public static void Write(string output) {
         Directory.CreateDirectory(output);
         foreach (var width in new[] { 1440, 390 }) foreach (var dark in new[] { false, true }) foreach (var status in new[] { false, true }) {
-            var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+            var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
             var theme = VisualTheme.Graphite();
             var drawWidth = Math.Min(1120, width - 48);
             var chart = TopologyChart.Create().WithViewport(drawWidth, 260, 12).WithLegend(null)

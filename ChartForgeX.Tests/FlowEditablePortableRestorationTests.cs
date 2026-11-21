@@ -13,10 +13,10 @@ namespace ChartForgeX.Tests;
 [Collection(nameof(FontRegistryCollection))]
 public sealed class FlowEditablePortableRestorationTests : IDisposable {
     [Theory]
-    [InlineData(FlowArtifactLayoutMode.Layered,VisualThemeMode.Light)]
-    [InlineData(FlowArtifactLayoutMode.Dense,VisualThemeMode.Dark)]
-    [InlineData(FlowArtifactLayoutMode.Force,VisualThemeMode.Dark)]
-    public void OrderedNativeFlowRestoresSourceDimensionsCompleteThemeAndFourInsetCallerFrame(FlowArtifactLayoutMode mode,VisualThemeMode themeMode) {
+    [InlineData(FlowArtifactLayoutMode.Layered,ThemeMode.Light)]
+    [InlineData(FlowArtifactLayoutMode.Dense,ThemeMode.Dark)]
+    [InlineData(FlowArtifactLayoutMode.Force,ThemeMode.Dark)]
+    public void OrderedNativeFlowRestoresSourceDimensionsCompleteThemeAndFourInsetCallerFrame(FlowArtifactLayoutMode mode,ThemeMode themeMode) {
         TopologyOwnedFontPortableTests.Register();var flow=Source();flow.LayoutMode=mode;flow.Direction=FlowArtifactDirection.TopToBottom;
         var theme=VisualTheme.Graphite().WithFontFamily(TopologyOwnedFontPortableTests.Primary).Configure(builder=>{builder.Spacing=14;builder.AxisStrokeWidth=2.25;builder.Dark.Background=ChartColor.FromHex("#172431");builder.Light.Border=ChartColor.FromHex("#224466");});
         var role=new TextStyle{Font=FontSpec.FromFamily(TopologyOwnedFontPortableTests.Primary),FontSize=21,Color=ChartColor.FromHex("#447788"),TextCase=TextCaseTransform.Uppercase};
@@ -29,8 +29,8 @@ public sealed class FlowEditablePortableRestorationTests : IDisposable {
         Assert.Equal(flow.Connectors.Select(edge=>(edge.Id,edge.SourceId,edge.TargetId,edge.Label,edge.Kind,edge.Direction,edge.Status)),restored.Connectors.Select(edge=>(edge.Id,edge.SourceId,edge.TargetId,edge.Label,edge.Kind,edge.Direction,edge.Status)));
         Assert.All(saved.Edges, edge => { Assert.Null(edge.SecondaryLabel); Assert.Null(edge.TertiaryLabel); });
         Assert.Equal(flow.ExportFormats,restored.ExportFormats);Assert.Equal("flow-value",restored.Metadata["flow-key"]);Assert.Equal("step-value",restored.Steps[0].Metadata["step-key"]);Assert.Equal("edge-value",restored.Connectors[0].Metadata["edge-key"]);
-        Assert.Equal(theme.ToJson(),saved.Presentation!.Theme!.Definition!.ToJson());Assert.Equal(themeMode,saved.Presentation.Theme.Mode??VisualThemeMode.Light);
-        if(themeMode==VisualThemeMode.Light)Assert.Null(saved.Presentation.Theme.Mode);else Assert.Equal(themeMode,saved.Presentation.Theme.Mode);
+        Assert.Equal(theme.ToJson(),saved.Presentation!.Theme!.Definition!.ToJson());Assert.Equal(themeMode,saved.Presentation.Theme.Mode??ThemeMode.Light);
+        if(themeMode==ThemeMode.Light)Assert.Null(saved.Presentation.Theme.Mode);else Assert.Equal(themeMode,saved.Presentation.Theme.Mode);
         Assert.Equal(themeMode,restored.PreparedPresentation!.Mode);Assert.True(frame.SameRequest(saved.Presentation.Frame!));
         Assert.Equal(new ChartPadding(37,29,43,31),saved.Flow!.ViewportPadding);Assert.NotNull(saved.Nodes[0].Flow!.AuthoredWidth);Assert.Equal(2,saved.Version);
         Assert.Equal(TopologyStaticPaintObservation.Paint(before.ToSvg()),TopologyStaticPaintObservation.Paint(after.ToSvg()));Assert.Equal(before.ToPng(),after.ToPng());
@@ -79,9 +79,9 @@ public sealed class FlowEditablePortableRestorationTests : IDisposable {
     }
     private static FlowArtifact Source() {
         var flow=FlowArtifact.Create("flow-restoration").WithTitle("Source H").WithSubtitle("Source O").WithSize(900,620)
-            .AddLane("lane_a","H",VisualStatus.Positive,"#287A5F").AddLane("lane_b","O",VisualStatus.Warning,"#B58422")
+            .AddLane("lane_a","H",Tone.Success,"#287A5F").AddLane("lane_b","O",Tone.Warning,"#B58422")
             .AddStep("start","H",FlowArtifactStepKind.Start,"lane_a").AddStep("process","O",FlowArtifactStepKind.Process,"lane_a").AddStep("end","H",FlowArtifactStepKind.End,"lane_b")
-            .AddConnector("start","process","H",FlowArtifactConnectorKind.Data,VisualLinkDirection.Forward,VisualStatus.Positive,"#245C86")
+            .AddConnector("start","process","H",FlowArtifactConnectorKind.Data,VisualLinkDirection.Forward,Tone.Success,"#245C86")
             .AddConnector("process","end","O",FlowArtifactConnectorKind.Flow,VisualLinkDirection.Bidirectional);
         flow.ConfigureStep("start",step=>{step.Width=160;step.Height=74;step.FitLabelToContent=false;step.Metadata["step-key"]="step-value";});
         flow.ConfigureStep("process",step=>{step.Width=200;step.Height=100;step.Subtitle="H";});flow.ConfigureConnector(0,edge=>{edge.Id="source_edge";edge.Metadata["edge-key"]="edge-value";});

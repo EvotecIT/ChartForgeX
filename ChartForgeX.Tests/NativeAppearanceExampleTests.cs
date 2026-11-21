@@ -10,9 +10,9 @@ namespace ChartForgeX.Tests;
 [Collection(nameof(FontRegistryCollection))]
 public sealed class NativeAppearanceExampleTests {
     [Theory]
-    [InlineData("compact", VisualThemeMode.Light)] [InlineData("compact", VisualThemeMode.Dark)]
-    [InlineData("wide", VisualThemeMode.Light)] [InlineData("wide", VisualThemeMode.Dark)]
-    public void CompleteCoreAndOptionalVisualsProgramsShareTheDisplayedSourcesAndDetachedNativePixels(string variant, VisualThemeMode mode) {
+    [InlineData("compact", ThemeMode.Light)] [InlineData("compact", ThemeMode.Dark)]
+    [InlineData("wide", ThemeMode.Light)] [InlineData("wide", ThemeMode.Dark)]
+    public void CompleteCoreAndOptionalVisualsProgramsShareTheDisplayedSourcesAndDetachedNativePixels(string variant, ThemeMode mode) {
         foreach (var effect in new[] { "outline", "bloom", "glow", "inner" }) {
             var layer = NativeAppearanceExample.Create(effect, variant, mode);
             AppearanceFixture.Capture("appearance-example-" + effect + "-" + variant + "-" + mode, layer);

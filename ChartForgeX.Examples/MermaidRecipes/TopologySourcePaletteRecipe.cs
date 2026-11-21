@@ -5,7 +5,7 @@ using ChartForgeX.VisualArtifacts;
 /// <summary>Uses the source language's default palette for an ordinary review workflow.</summary>
 public static class TopologySourcePaletteRecipe {
     /// <summary>Creates the graph shared by the gallery and emitted standalone consumer.</summary>
-    public static VisualArtifact Create(string family, string variant, VisualThemeMode mode, string? fontFamily = null) {
+    public static VisualArtifact Create(string family, string variant, ThemeMode mode, string? fontFamily = null) {
         if (variant is not ("compact" or "wide")) throw new ArgumentException("Unknown palette recipe size.", nameof(variant));
         var width = variant == "compact" ? 640 : 1000;
         var result = MermaidRenderer.Render(Source(family), new MermaidRenderOptions {

@@ -14,7 +14,7 @@ public sealed class NativeTopologyThemePaintTests {
     [InlineData(true)]
     public void ThemeVariablesRetainDistinctTokenIdentityAndTheSameNativeFallbackPixels(bool dark) {
         var theme = VisualTheme.Graphite();
-        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         // Equal native values must still follow different host properties after a theme switch.
         theme = theme.Configure(builder => {
             var colors = builder.Colors(mode); colors.Surface = colors.Background;
@@ -78,9 +78,9 @@ public sealed class NativeTopologyThemePaintTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void NamedThemeBindingsUseTheSelectedConcretePaletteAsFallback(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void NamedThemeBindingsUseTheSelectedConcretePaletteAsFallback(ThemeMode mode) {
         var theme = VisualTheme.Graphite(); var chart = Diagram(theme, mode);
         var bindings = new SvgColorVariables().AddThemeToken(VisualThemeColorToken.Background, "--background");
         var options = new TopologyRenderOptions { IncludeLegend = false, SvgColorVariables = bindings };
@@ -174,7 +174,7 @@ public sealed class NativeTopologyThemePaintTests {
         Assert.Equal(chart.ToPng(options), prepared.ToPng());
     }
 
-    private static TopologyChart Diagram(VisualTheme theme, VisualThemeMode mode = VisualThemeMode.Light) {
+    private static TopologyChart Diagram(VisualTheme theme, ThemeMode mode = ThemeMode.Light) {
         var chart = TopologyChart.Create().WithId("theme-paints").WithTheme(theme, mode).WithTitle("Network").WithSubtitle("Host theme")
             .WithViewport(820, 240, 20).WithLegend(null);
         var statuses = new[] { TopologyHealthStatus.Healthy, TopologyHealthStatus.Warning, TopologyHealthStatus.Critical, TopologyHealthStatus.Unknown, TopologyHealthStatus.Disabled };

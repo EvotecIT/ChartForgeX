@@ -24,11 +24,11 @@ public sealed class UnifiedThemeContractTests {
         var detached = Assert.IsType<VisualThemeBuilder>(retained);
         detached.Light.Palette = new[] { ChartColor.Black };
         detached.Dark.Status.Pass = new VisualTokenColor(ChartColor.Black, ChartColor.White);
-        var returnedStatus = first.Options.Theme.Resolve(VisualThemeMode.Dark).Status;
+        var returnedStatus = first.Options.Theme.Resolve(ThemeMode.Dark).Status;
         returnedStatus.Pass = new VisualTokenColor(ChartColor.Black, ChartColor.White);
 
-        Assert.Equal(authored, Assert.Single(first.Options.Theme.Resolve(VisualThemeMode.Light).Palette));
-        Assert.Equal(authored, first.Options.Theme.Resolve(VisualThemeMode.Dark).Status.Pass.Fill);
+        Assert.Equal(authored, Assert.Single(first.Options.Theme.Resolve(ThemeMode.Light).Palette));
+        Assert.Equal(authored, first.Options.Theme.Resolve(ThemeMode.Dark).Status.Pass.Fill);
         Assert.Same(original, second.Options.Theme);
         Assert.Equal(originalJson, original.ToJson());
         var configured = first.Options.Theme;
@@ -60,11 +60,11 @@ public sealed class UnifiedThemeContractTests {
         Assert.Equal("Theme mono", imported.Typography.ToFontSpec(monospace: true).Family);
         Assert.Equal(9, imported.PlotRadius);
         Assert.Equal(4, imported.BarRadius);
-        Assert.Equal(ChartColor.FromHex("#12345678"), imported.Resolve(VisualThemeMode.Light).PlotBorder);
-        Assert.Equal(ChartColor.FromHex("#ABCDEF90"), imported.Resolve(VisualThemeMode.Dark).PlotBorder);
-        Assert.Equal(ChartColor.FromHex("#34567890"), imported.Resolve(VisualThemeMode.Dark).Positive);
-        Assert.Equal(ChartColor.FromHex("#10203040"), imported.Resolve(VisualThemeMode.Dark).Status.Pass.Fill);
-        Assert.Equal(ChartColor.FromHex("#50607080"), imported.Resolve(VisualThemeMode.Dark).Status.Pass.Ink);
+        Assert.Equal(ChartColor.FromHex("#12345678"), imported.Resolve(ThemeMode.Light).PlotBorder);
+        Assert.Equal(ChartColor.FromHex("#ABCDEF90"), imported.Resolve(ThemeMode.Dark).PlotBorder);
+        Assert.Equal(ChartColor.FromHex("#34567890"), imported.Resolve(ThemeMode.Dark).Positive);
+        Assert.Equal(ChartColor.FromHex("#10203040"), imported.Resolve(ThemeMode.Dark).Status.Pass.Fill);
+        Assert.Equal(ChartColor.FromHex("#50607080"), imported.Resolve(ThemeMode.Dark).Status.Pass.Ink);
         var chart = Chart.Create().WithSize(360, 240).WithTheme(imported)
             .AddBar("Observed", new[] { new ChartPoint(1, 12), new ChartPoint(2, 18) });
         chart.Options.ShowPlotBackground = true;
@@ -76,9 +76,9 @@ public sealed class UnifiedThemeContractTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void ConvenienceAndExplicitPreparationUseTheSameThemeAndHostContextWins(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void ConvenienceAndExplicitPreparationUseTheSameThemeAndHostContextWins(ThemeMode mode) {
         var authored = ChartColor.FromHex("#7C3AED80");
         var theme = VisualTheme.Graphite().Configure(builder => {
             builder.Light.Background = ChartColor.FromHex("#F0E0D0");
@@ -100,7 +100,7 @@ public sealed class UnifiedThemeContractTests {
         Assert.Equal(png, chart.ToPng());
         Assert.Contains(prepared.Scene.Nodes.OfType<VisualSceneMark>(), mark => mark.Fill.HasValue && mark.Fill.Value.Equals(authored));
 
-        chart.WithTheme(VisualTheme.Graphite(), mode == VisualThemeMode.Light ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        chart.WithTheme(VisualTheme.Graphite(), mode == ThemeMode.Light ? ThemeMode.Dark : ThemeMode.Light)
             .WithFontFamily("monospace");
         var overridden = chart.Prepare(request.Context);
         Assert.Equal(svg, overridden.ToSvg());

@@ -1,7 +1,7 @@
 /// <summary>Builds a week of hourly ping latency for three domain controllers, as a monitoring report shows it.</summary>
 public static class LatencyWeekRecipe {
     /// <summary>Creates the latency week; the compact variant keeps the same data.</summary>
-    public static Chart Create(string variant = "latency-week", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "latency-week", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("latency-week" or "compact-latency-week")) throw new ArgumentOutOfRangeException(nameof(variant));
         var start = new DateTime(2026, 10, 19, 0, 0, 0, DateTimeKind.Utc);
         var chart = Chart.Create().WithXAxisTimeScale(TimeZoneInfo.Utc).WithYAxis("Round-trip time (ms)").WithValueUnit("ms")

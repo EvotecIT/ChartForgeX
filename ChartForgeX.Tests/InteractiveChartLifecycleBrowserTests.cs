@@ -175,7 +175,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         if (explicitIdentity) samples.WithObservationId(updated ? 1 : 0, new ChartObservationId("north"))
             .WithObservationId(updated ? 0 : 1, new ChartObservationId("south"));
         var reference = ChartSeries.CreateLine(new ChartSeriesId("reference"), "Reference", new[] { new ChartPoint(0, 20), new ChartPoint(3, 20) });
-        var chart = Chart.Create().WithSize(640, 360).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = Chart.Create().WithSize(640, 360).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithTitle(updated ? "Updated observations" : "Measured observations").WithLegend()
             .WithXAxisBounds(0, 3).WithYAxisBounds(0, 25).WithDataLabels(false);
         return updated ? chart.AddSeries(reference).AddSeries(samples) : chart.AddSeries(samples).AddSeries(reference);

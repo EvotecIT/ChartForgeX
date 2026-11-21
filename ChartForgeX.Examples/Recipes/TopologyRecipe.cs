@@ -3,7 +3,7 @@ public static class TopologyRecipe {
     /// <summary>Creates the diagram model for an expanded, compact or shape-atlas view.</summary>
     /// <param name="variant">Use wide, expanded or compact for the service topology, or shapes for the shape atlas.</param>
     /// <param name="mode">The rendering mode; diagram colors are resolved when the model is prepared.</param>
-    public static TopologyChart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static TopologyChart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "expanded" or "compact" or "shapes"))
             throw new ArgumentOutOfRangeException(nameof(variant), variant, "Use wide, expanded, compact or shapes.");
 

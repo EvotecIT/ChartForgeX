@@ -51,7 +51,7 @@ public sealed class MapPeriodicRouteCopyTests {
     [InlineData(false, false)] [InlineData(true, false)]
     [InlineData(false, true)] [InlineData(true, true)]
     public void EndpointClearanceFollowsBothPeerClusterCopiesAndRetainsTheirRawIdentities(bool mercator, bool reverse) {
-        var chart = Clustered(800, VisualThemeMode.Light, mercator, reverse);
+        var chart = Clustered(800, ThemeMode.Light, mercator, reverse);
         var prepared = MapLabelClusterDepthTests.Prepare(chart);
         MapLabelClusterDepthTests.Capture(prepared, "near-world-cluster-clearance-" + mercator + "-" + reverse);
         var clusters = prepared.Scene.Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role == "dotted-map-cluster").OrderBy(node => node.Cx).ToArray();
@@ -100,7 +100,7 @@ public sealed class MapPeriodicRouteCopyTests {
     [Theory]
     [InlineData(false)] [InlineData(true)]
     public void VisibleLabelsKeepOneStableCaptionFactForDefaultAndPeriodicRoutePaint(bool periodic) {
-        var chart = periodic ? Clustered(800, VisualThemeMode.Light)
+        var chart = periodic ? Clustered(800, ThemeMode.Light)
             : Chart.Create().WithSize(800, 360).WithLegend(false).WithMapViewport(ChartMapViewport.Europe())
                 .AddDottedMap("Default source", new[] { new ChartMapPoint("Start", -5, 45), new ChartMapPoint("End", 25, 55) });
         if (!periodic) chart.Series[0].ReplaceMapConnectors(new[] { new ChartMapConnector("Default route", -5, 45, 25, 55) });
@@ -130,7 +130,7 @@ public sealed class MapPeriodicRouteCopyTests {
         Assert.Equal(retainedSvg, prepared.ToSvg()); Assert.Equal(retainedPng, prepared.ToPng());
     }
 
-    internal static Chart Clustered(int width, VisualThemeMode mode, bool mercator = false, bool reverse = false) {
+    internal static Chart Clustered(int width, ThemeMode mode, bool mercator = false, bool reverse = false) {
         var route = reverse ? new ChartMapConnector("Across the seam", -130, 0, 140, 0) : new ChartMapConnector("Across the seam", 140, 0, -130, 0);
         route = route.WithEndpointClearance(2).WithFeature(new ChartMapFeature("periodic-route", "{\"active\":true}"));
         var owner = ChartSeries.CreateDottedMap(new ChartSeriesId("routes"), "Route source", Array.Empty<ChartMapPoint>()).ReplaceMapConnectors(new[] { route });

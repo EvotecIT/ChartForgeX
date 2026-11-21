@@ -130,7 +130,7 @@ public sealed class CompoundReadoutFeedbackTests {
         if (!Enabled) return;
         var chart = CreateChart(family).WithSize(compact ? 316 : 596, 338)
             .WithPointLegend().WithLegend()
-            .WithTheme(VisualTheme.Graphite(), compact ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), compact ? ThemeMode.Dark : ThemeMode.Light)
             .WithValueFormatter(NativeCaption);
         ValueAxis(chart, family).LabelFormatter = value => AxisCaption(family, value);
         var html = chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = HtmlChartTooltipMode.Single);

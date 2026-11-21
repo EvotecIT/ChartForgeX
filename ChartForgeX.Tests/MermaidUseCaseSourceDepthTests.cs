@@ -16,7 +16,7 @@ public sealed class MermaidUseCaseSourceDepthTests {
         WarningPolicy = MermaidWarningPolicy.Reject,
         UseCase = new MermaidFlowchartRenderOptions { Width = width, Height = 620,
             Presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family,
-                ThemeMode = dark ? ChartForgeX.Themes.VisualThemeMode.Dark : ChartForgeX.Themes.VisualThemeMode.Light,
+                ThemeMode = dark ? ChartForgeX.ThemeMode.Dark : ChartForgeX.ThemeMode.Light,
                 TopologySizing = MermaidTopologySizing.FixedViewport } }
     };
 

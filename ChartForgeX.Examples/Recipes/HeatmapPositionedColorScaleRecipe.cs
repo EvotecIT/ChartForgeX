@@ -1,7 +1,7 @@
 /// <summary>Maps heatmap temperatures to explicitly positioned color stops.</summary>
 public static class HeatmapPositionedColorScaleRecipe {
     /// <summary>Creates temperature rows with fixed color-stop positions and masked cells.</summary>
-    public static Chart Create(string variant = "positioned-color-scale", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "positioned-color-scale", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("positioned-color-scale" or "compact-positioned-color-scale")) throw new ArgumentOutOfRangeException(nameof(variant));
         var colors = VisualTheme.Graphite().Resolve(mode);
         var values = new double?[] { -30, -20, -3, 0, 2.5, 5, 10, 22.5, 40, 55, null, null };

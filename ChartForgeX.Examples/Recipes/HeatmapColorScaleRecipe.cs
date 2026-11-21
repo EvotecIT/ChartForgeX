@@ -1,7 +1,7 @@
 /// <summary>Shows positive and negative measurements on a diverging heatmap scale.</summary>
 public static class HeatmapColorScaleRecipe {
     /// <summary>Creates the selected numeric color-scale example.</summary>
-    public static Chart Create(string variant = "color-scale", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "color-scale", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("color-scale" or "compact-color-scale")) throw new ArgumentOutOfRangeException(nameof(variant));
         var colors = VisualTheme.Graphite().Resolve(mode);
         var scale = variant == "color-scale"

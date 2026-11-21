@@ -57,7 +57,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
     }
 
     private static string PlacementClipChart(bool dark) {
-        var chart = Chart.Create().WithSize(596, 338).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = Chart.Create().WithSize(596, 338).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithTitle("Readout inside a clipped host").WithLegend(false).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
             .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("placement-reading"), "Reading", new[] { new ChartPoint(1, 9), new ChartPoint(5, 5), new ChartPoint(9, 1) }));
         return chart.ToInteractiveHtmlPage(options => {

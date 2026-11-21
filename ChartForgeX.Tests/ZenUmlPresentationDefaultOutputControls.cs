@@ -18,7 +18,7 @@ public sealed class ZenUmlPresentationDefaultOutputControls {
             var model=SequenceArtifact.Create("zen-ordinary").WithTitle("Ordinary sequence").WithSize(width,600)
                 .AddParticipant("a","Accept").AddParticipant("b","Build").AddMessage("a","b","Read")
                 .AddBlock(SequenceArtifactBlockKind.Loop,"repeat",0,0).AddNote(SequenceArtifactNotePlacement.Over,new[]{"a","b"},"Existing note");
-            model.ThemeMode=dark?VisualThemeMode.Dark:VisualThemeMode.Light;artifact=model.ToVisualArtifact();
+            model.ThemeMode=dark?ThemeMode.Dark:ThemeMode.Light;artifact=model.ToVisualArtifact();
         } else {
             var directory=family.StartsWith("zenuml",StringComparison.Ordinal)?Path.Combine("external-plugins","zenuml"):"fixtures";
             var source=File.ReadAllText(Path.Combine(TestRepository.Root,"tests","mermaid-conformance",directory,family+".mmd"));

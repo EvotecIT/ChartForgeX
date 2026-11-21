@@ -94,7 +94,7 @@ var options = new MermaidRenderOptions {
     Presentation = new MermaidPresentationOptions {
         FontFamily = ChartFontStacks.ProductSans,
         FontSize = 16,
-        ThemeMode = VisualThemeMode.Dark,
+        ThemeMode = ThemeMode.Dark,
         TopologySizing = MermaidTopologySizing.Natural
     },
     Sequence = new MermaidSequenceRenderOptions {
@@ -1942,7 +1942,7 @@ var result = new MermaidVisualMarkupParser().ParseBlocks(blocks);
 A host can supply a page fallback before Mermaid captures native appearance:
 
 ```csharp
-var parser = new MermaidVisualMarkupParser(new MermaidRenderOptions(), VisualThemeMode.Dark);
+var parser = new MermaidVisualMarkupParser(new MermaidRenderOptions(), ThemeMode.Dark);
 var result = parser.Parse(markdown);
 ```
 

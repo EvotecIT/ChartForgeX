@@ -1,17 +1,17 @@
 /// <summary>A complete Core-only prepared chart receives one captured spread/blurred alpha shadow.</summary>
 public static class NativeDropShadowExample {
     /// <summary>Creates compact or wide output with explicit paired theme, literal shadow and retained source identities.</summary>
-    public static CapturedVisualLayer Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static CapturedVisualLayer Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("compact" or "wide")) throw new ArgumentOutOfRangeException(nameof(variant));
         var width = variant == "compact" ? 320 : 740; var theme = VisualTheme.Graphite();
         var source = ChartFor(variant, mode).Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, 240), 24),
             theme, mode, new VisualFrame(showLegend: false, transparentBackground: true)));
-        var tint = mode == VisualThemeMode.Dark ? ChartColor.FromRgba(96, 165, 250, 96) : ChartColor.FromRgba(15, 23, 42, 112);
+        var tint = mode == ThemeMode.Dark ? ChartColor.FromRgba(96, 165, 250, 96) : ChartColor.FromRgba(15, 23, 42, 112);
         return source.CaptureLayer(new ChartForgeX.Effects.VisualDropShadow(tint, 3, 5, 2.5, 1.5, spread: 1),
             new VisualRenderOptions(supersampling: 2));
     }
     /// <summary>Creates the ordinary editable source chart separately from its static captured layer.</summary>
-    public static Chart ChartFor(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart ChartFor(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("compact" or "wide")) throw new ArgumentOutOfRangeException(nameof(variant));
         var series = new ChartSeries(new ChartSeriesId("finished"), "Finished", ChartSeriesKind.Line,
             new[] { new ChartPoint(1, 9), new ChartPoint(2, 24), new ChartPoint(3, 17), new ChartPoint(4, 31) })

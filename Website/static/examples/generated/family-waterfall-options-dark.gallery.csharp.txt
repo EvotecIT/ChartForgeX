@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -15,7 +16,7 @@ using ChartForgeX.VisualBlocks;
 
 // Native PNG and standalone SVG use bundled Archivo.
 // Add ChartFontAssets.StyleSheet once for other text on a host page.
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = WaterfallRecipe.Create("options", mode);
 var context = new VisualRenderContext(
@@ -30,7 +31,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 /// <summary>Builds running-balance waterfalls with signed changes and explicit checkpoints.</summary>
 public static class WaterfallRecipe {
     /// <summary>Creates the selected waterfall example and its orientation.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "horizontal" or "compact-horizontal" or "portable" or "compact-portable" or "portable-horizontal" or "compact-portable-horizontal"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         if (variant is "portable" or "compact-portable" or "portable-horizontal" or "compact-portable-horizontal") {

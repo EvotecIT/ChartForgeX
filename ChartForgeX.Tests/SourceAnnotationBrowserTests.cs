@@ -11,9 +11,9 @@ namespace ChartForgeX.Tests;
 
 public sealed partial class SourceAnnotationBrowserTests {
     [BrowserTheory]
-    [InlineData(390, VisualThemeMode.Dark)]
-    [InlineData(900, VisualThemeMode.Light)]
-    public async Task NativeSourceDrawingsKeepPaintedCaptionsAndAuthoredStateAcrossReplacement(int width, VisualThemeMode mode) {
+    [InlineData(390, ThemeMode.Dark)]
+    [InlineData(900, ThemeMode.Light)]
+    public async Task NativeSourceDrawingsKeepPaintedCaptionsAndAuthoredStateAcrossReplacement(int width, ThemeMode mode) {
         if (!Enabled) return;
         var initial = Model(width, mode, false);
         await using var session = await BrowserProofFonts.OpenAsync(initial.ToInteractiveHtmlFragment(Options), width + 24, 760);
@@ -43,7 +43,7 @@ public sealed partial class SourceAnnotationBrowserTests {
         Assert.Empty(errors); AssertNoConsoleErrors(session);
     }
 
-    private static Chart Model(int width, VisualThemeMode mode, bool updated) {
+    private static Chart Model(int width, ThemeMode mode, bool updated) {
         var chart = Chart.Create().WithSize(width, 520).WithTheme(VisualTheme.Graphite(), mode)
             .WithFontFamily(BrowserProofFonts.Family)
             .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"))
@@ -59,7 +59,7 @@ public sealed partial class SourceAnnotationBrowserTests {
         options.Interaction.ChartId = "source-drawings"; options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
         options.Tooltip.PinOnSelect = false;
     }
-    private static async Task Capture(IPage page, int width, VisualThemeMode mode, string state) {
+    private static async Task Capture(IPage page, int width, ThemeMode mode, string state) {
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (string.IsNullOrWhiteSpace(directory)) return;
         Directory.CreateDirectory(directory);

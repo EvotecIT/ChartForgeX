@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -15,7 +16,7 @@ using ChartForgeX.VisualBlocks;
 
 // Native PNG and standalone SVG use bundled Archivo.
 // Add ChartFontAssets.StyleSheet once for other text on a host page.
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = GaugeRecipe.Create("compact-full-circle", mode);
 var context = new VisualRenderContext(
@@ -30,7 +31,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 /// <summary>A measured value, target and qualitative bands on an arc, needle or precision scale.</summary>
 public static class GaugeRecipe {
     /// <summary>Creates capacity against its target, or a close-bound linear tolerance measurement.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is "dense-scale" or "compact-dense-scale") {
             var reading = new ChartGaugeValue(12500.125, 0, 20000, new[] {
                 new ChartGaugeTarget(1800, "Baseline"), new ChartGaugeTarget(9500, "Expected"),

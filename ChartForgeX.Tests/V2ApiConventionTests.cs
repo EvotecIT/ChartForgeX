@@ -160,7 +160,7 @@ public sealed class V2ApiConventionTests {
         var light = new VisualDesignTokens();
         var dark = VisualDesignTokens.Dark();
         var theme = new VisualTheme(light, dark);
-        var originalPalette = theme.Resolve(VisualThemeMode.Light).Palette.ToArray();
+        var originalPalette = theme.Resolve(ThemeMode.Light).Palette.ToArray();
         var font = FontSpec.SystemSans();
         var originalFamily = font.Family;
         var context = new VisualRenderContext(theme: theme, font: font, frame: new VisualFrame(showLegend: false));
@@ -168,8 +168,8 @@ public sealed class V2ApiConventionTests {
         context.Font.Family = "Changed returned family";
         light.Palette = new[] { ChartColor.FromHex("#112233") };
         Assert.Equal(originalFamily, context.Font.Family);
-        Assert.Equal(originalPalette, theme.Resolve(VisualThemeMode.Light).Palette);
-        var colors = theme.Resolve(VisualThemeMode.Light);
+        Assert.Equal(originalPalette, theme.Resolve(ThemeMode.Light).Palette);
+        var colors = theme.Resolve(ThemeMode.Light);
         var statusFill = colors.Status.Critical.Fill;
         colors.Status.Critical = colors.Status.Pass;
         Assert.Equal(statusFill, colors.Status.Critical.Fill);

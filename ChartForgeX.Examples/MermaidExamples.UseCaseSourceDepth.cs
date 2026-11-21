@@ -6,7 +6,7 @@ using ChartForgeX.VisualArtifacts;
 
 internal static partial class MermaidExamples {
     private static void WriteUseCaseSourceDepthExamples(string output) {
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark })
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark })
             foreach (var variant in new[] { "wide", "compact" }) {
                 var source = MermaidFixtureSources.Read("usecase-native-source-depth");
                 if (variant == "compact") source = source.Replace("direction LR", "direction TB", StringComparison.Ordinal);

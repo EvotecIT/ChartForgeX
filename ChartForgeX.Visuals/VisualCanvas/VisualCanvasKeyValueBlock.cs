@@ -102,7 +102,7 @@ public sealed class VisualCanvasKeyValueBlockLayer : VisualCanvasLayer {
     public double MeasureHeight() => VisualCanvasKeyValueBlockLayout.Build(this, VisualCanvas.Create(1, 1).ResolveStyle()).Height;
 
     /// <summary>Measures the block height with the font family the block draws with on a canvas using <paramref name="theme"/>.</summary>
-    public double MeasureHeight(ChartForgeX.Themes.VisualTheme theme, ChartForgeX.Themes.VisualThemeMode mode = ChartForgeX.Themes.VisualThemeMode.Light, VisualCanvasStyleOptions? style = null) {
+    public double MeasureHeight(ChartForgeX.Themes.VisualTheme theme, ChartForgeX.ThemeMode mode = ChartForgeX.ThemeMode.Light, VisualCanvasStyleOptions? style = null) {
         if (theme == null) throw new ArgumentNullException(nameof(theme));
         return VisualCanvasKeyValueBlockLayout.Build(this, VisualCanvas.ResolveStyle(theme, mode, style)).Height;
     }

@@ -67,7 +67,7 @@ public sealed class MultiRingDepthTests {
         var outer = new ChartSeries(new ChartSeriesId("outer"), "Outer", ChartSeriesKind.Donut, new[] { new ChartPoint(1, 1) })
             .WithRadialBand(new ChartRadialBand(.7, 1)).WithColor(outerColor);
         var chart = Chart.Create().WithSize(620, 500).WithHeader(false).WithLegend(false).WithDataLabels(false).WithDonutCenterLabel(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).AddSeries(inner).AddSeries(outer);
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).AddSeries(inner).AddSeries(outer);
         var before = Prepare(chart); var mark = before.Scene.Nodes.OfType<VisualSceneSlice>().Single(slice => slice.Id == "series-1-point-0");
         var innerMark = before.Scene.Nodes.OfType<VisualSceneSlice>().Single(slice => slice.Id == "series-0-point-0");
         Assert.Equal(.65 * mark.Outer, innerMark.Outer, 9); Assert.Equal(mark.Cy + innerMark.Outer * .35, innerMark.Cy, 9);
@@ -196,7 +196,7 @@ public sealed class MultiRingDepthTests {
     internal static Chart Fixture(bool dark, int width, bool automatic) {
         var chart = Chart.Create().WithSize(width, 540).WithHeader(false).WithLegend(false).WithDonutCenterLabel(false)
             .WithDataLabels().WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent).WithXLabels("Alpha", "Beta")
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light);
         if (automatic) chart.WithAutomaticRadialBands(new ChartRadialBandAllocation(.18, .14));
         for (var index = 0; index < 2; index++) {
             var series = new ChartSeries(new ChartSeriesId("ring-" + index), "Ring " + index, ChartSeriesKind.Donut,

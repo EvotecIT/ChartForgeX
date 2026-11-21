@@ -1,7 +1,7 @@
 /// <summary>Creates a treemap with task counts and independently formatted temperature colors.</summary>
 public static class TreemapColorDimensionRecipe {
     /// <summary>Creates the source model for a gallery variant without choosing an export backend.</summary>
-    public static Chart Create(string variant = "color-dimension", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "color-dimension", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("color-dimension" or "compact-color-dimension"))
             throw new ArgumentOutOfRangeException(nameof(variant));
 

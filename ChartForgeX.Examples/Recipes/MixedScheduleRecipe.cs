@@ -1,7 +1,7 @@
 /// <summary>One native time axis retains real ranges, tasks, state intervals and packed resource items.</summary>
 public static class MixedScheduleRecipe {
     /// <summary>Creates eight numeric/date and ordinary/reversed compact/wide schedule presentations.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "reversed" or "compact-reversed" or "time" or "compact-time" or "time-reversed" or "compact-time-reversed"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant.StartsWith("compact", StringComparison.Ordinal); var time = variant.Contains("time", StringComparison.Ordinal);

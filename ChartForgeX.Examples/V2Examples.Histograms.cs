@@ -2,7 +2,7 @@ using ChartForgeX.Themes;
 
 public static partial class V2Examples {
     private static void WriteHistograms(string output, ICollection<ProofArtifact> artifacts) {
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark })
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark })
             foreach (var variant in new[] { "wide", "compact", "density", "compact-density", "sum", "compact-sum", "mean", "compact-mean" }) {
                 var compact = IsCompactVariant(variant);
                 var width = compact ? 360 : 800; var height = compact ? 360 : 440;

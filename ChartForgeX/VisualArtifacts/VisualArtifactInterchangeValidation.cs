@@ -386,7 +386,7 @@ internal static partial class VisualArtifactInterchangeValidation {
         if (presentation.Theme != null) {
             if (presentation.Theme.Definition != null || presentation.Theme.Mode.HasValue) {
                 if(envelope.Family!=VisualArtifactInterchangeFamily.Topology&&envelope.Family!=VisualArtifactInterchangeFamily.Flow)throw new ArgumentException("Complete paired theme facts require Topology or Flow.");
-                if (presentation.Theme.Mode.HasValue && !System.Enum.IsDefined(typeof(ChartForgeX.Themes.VisualThemeMode), presentation.Theme.Mode.Value))
+                if (presentation.Theme.Mode.HasValue && !System.Enum.IsDefined(typeof(ChartForgeX.ThemeMode), presentation.Theme.Mode.Value))
                     throw new ArgumentException("Interchange theme mode is undefined.");
                 if (presentation.Theme.Definition != null) OptionalText(presentation.Theme.Definition.ToJson(), "complete native theme JSON");
             }
@@ -694,17 +694,17 @@ internal static partial class VisualArtifactInterchangeValidation {
         if (latitude.Value < -90 || latitude.Value > 90) throw new ArgumentOutOfRangeException(nameof(envelope), latitude.Value, context + " latitude must be between -90 and 90 degrees.");
     }
 
-    private static void Defined<TEnum>(TEnum value, string context, VisualArtifactInterchangeEnvelope envelope) where TEnum : struct {
+    private static void Defined<TEnum>(TEnum value, string context, VisualArtifactInterchangeEnvelope envelope) where TEnum : struct, Enum {
         if (!Enum.IsDefined(typeof(TEnum), value)) throw new ArgumentOutOfRangeException(nameof(envelope), value, context + " must be defined.");
     }
 
-    private static void DefinedFlags<TEnum>(TEnum value, TEnum allowedFlags, string context, VisualArtifactInterchangeEnvelope envelope) where TEnum : struct {
+    private static void DefinedFlags<TEnum>(TEnum value, TEnum allowedFlags, string context, VisualArtifactInterchangeEnvelope envelope) where TEnum : struct, Enum {
         ulong allowed = Convert.ToUInt64(allowedFlags);
         ulong actual = Convert.ToUInt64(value);
         if ((actual & ~allowed) != 0) throw new ArgumentOutOfRangeException(nameof(envelope), value, context + " contains undefined flag bits.");
     }
 
-    private static void OptionalDefined<TEnum>(TEnum? value, string context, VisualArtifactInterchangeEnvelope envelope) where TEnum : struct {
+    private static void OptionalDefined<TEnum>(TEnum? value, string context, VisualArtifactInterchangeEnvelope envelope) where TEnum : struct, Enum {
         if (value.HasValue) Defined(value.Value, context, envelope);
     }
 

@@ -109,11 +109,11 @@ public sealed class V2ScheduleTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light, ChartBarStyle.Flat)]
-    [InlineData(VisualThemeMode.Dark, ChartBarStyle.Flat)]
-    [InlineData(VisualThemeMode.Light, ChartBarStyle.Solid)]
-    [InlineData(VisualThemeMode.Dark, ChartBarStyle.Solid)]
-    public void GanttTaskBodiesRemainReadableAtEveryCompletion(VisualThemeMode mode, ChartBarStyle style) {
+    [InlineData(ThemeMode.Light, ChartBarStyle.Flat)]
+    [InlineData(ThemeMode.Dark, ChartBarStyle.Flat)]
+    [InlineData(ThemeMode.Light, ChartBarStyle.Solid)]
+    [InlineData(ThemeMode.Dark, ChartBarStyle.Solid)]
+    public void GanttTaskBodiesRemainReadableAtEveryCompletion(ThemeMode mode, ChartBarStyle style) {
         var chart = Chart.Create().AddGanttTask("Completed", 1, 3, 1)
             .AddGanttTask("In progress", 2, 4, .5).AddGanttTask("Planned", 3, 5).WithBarStyle(style);
         var color = ChartColor.FromHex("#3478E5");
@@ -145,7 +145,7 @@ public sealed class V2ScheduleTests {
         var chart = Chart.Create().AddGanttTask("Plan", 1, 3, .5);
         return chart.AddGanttTask("Build", 2, 4, .25, chart.Series[0]);
     }
-    private static VisualRenderContext Context() => new(new VisualLayoutOptions(new VisualSize(640, 400)), themeMode: VisualThemeMode.Dark,
+    private static VisualRenderContext Context() => new(new VisualLayoutOptions(new VisualSize(640, 400)), themeMode: ThemeMode.Dark,
         frame: new VisualFrame("Schedule", "Native scene", showLegend: false));
     private static XElement[] ByRole(XDocument document, string role) => document.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == role).ToArray();
 }

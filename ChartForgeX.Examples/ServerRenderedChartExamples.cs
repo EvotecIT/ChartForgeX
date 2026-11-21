@@ -14,18 +14,18 @@ internal static class ServerRenderedChartExamples {
         ExampleArtifactWriter.WriteText(Path.Combine(directory, "embedding.css"), Asset("ServerRenderedChartExamples.css"));
         ExampleArtifactWriter.WriteText(Path.Combine(directory, "ServerRenderedRecipe.cs.txt"), RecipeSource());
         ExampleArtifactWriter.WriteText(Path.Combine(directory, "shared-strip.csharp.txt"),
-            ExampleRecipeSource.EmitServerRenderedStrip("shared-strip", VisualThemeMode.Light, 720, 48));
+            ExampleRecipeSource.EmitServerRenderedStrip("shared-strip", ThemeMode.Light, 720, 48));
         ExampleArtifactWriter.WriteText(Path.Combine(directory, "compact-shared-strip.csharp.txt"),
-            ExampleRecipeSource.EmitServerRenderedStrip("compact-shared-strip", VisualThemeMode.Light, 320, 48));
+            ExampleRecipeSource.EmitServerRenderedStrip("compact-shared-strip", ThemeMode.Light, 320, 48));
         var template = Asset("ServerRenderedChartExamples.html");
-        var light = Page(template, VisualThemeMode.Light);
+        var light = Page(template, ThemeMode.Light);
         ExampleArtifactWriter.WriteText(Path.Combine(directory, "index.html"), light.Replace("{{THEME}}", "auto", StringComparison.Ordinal));
         ExampleArtifactWriter.WriteText(Path.Combine(directory, "light.html"), light.Replace("{{THEME}}", "light", StringComparison.Ordinal));
-        ExampleArtifactWriter.WriteText(Path.Combine(directory, "dark.html"), Page(template, VisualThemeMode.Dark).Replace("{{THEME}}", "dark", StringComparison.Ordinal));
+        ExampleArtifactWriter.WriteText(Path.Combine(directory, "dark.html"), Page(template, ThemeMode.Dark).Replace("{{THEME}}", "dark", StringComparison.Ordinal));
         WriteStory(directory);
     }
 
-    private static string Page(string template, VisualThemeMode mode) {
+    private static string Page(string template, ThemeMode mode) {
         var columns = ServerRenderedRecipe.LinkedColumns(mode);
         var schedule = ServerRenderedRecipe.SupportSchedule(mode);
         var scale = ServerRenderedRecipe.SharedScale();
@@ -41,12 +41,12 @@ internal static class ServerRenderedChartExamples {
         return page;
     }
 
-    internal static VisualRenderContext Context(int width, int height, VisualThemeMode mode, double padding = 8, string? family = null) =>
+    internal static VisualRenderContext Context(int width, int height, ThemeMode mode, double padding = 8, string? family = null) =>
         new(new VisualLayoutOptions(new VisualSize(width, height), padding),
             VisualTheme.Graphite().WithTypography(new VisualTypography(axisSize: 14, legendSize: 14, dataLabelSize: 14)), mode,
             new VisualFrame("", "", showLegend: false, transparentBackground: true), FontSpec.FromFamily(family ?? "system-ui, sans-serif"));
 
-    private static VisualSvgOptions Policy(string id, VisualThemeMode mode) {
+    private static VisualSvgOptions Policy(string id, ThemeMode mode) {
         var colors = VisualTheme.Graphite().Resolve(mode);
         var variables = new SvgColorVariables().Add("--page-ink", colors.Foreground, SvgColorRole.Text)
             .Add("--page-muted", colors.MutedForeground, SvgColorRole.Text)
@@ -70,7 +70,7 @@ internal static class ServerRenderedChartExamples {
     }
 
     private static void WriteStory(string directory) {
-        var mode = VisualThemeMode.Light;
+        var mode = ThemeMode.Light;
         var columns = ServerRenderedRecipe.LinkedColumns(mode).Prepare(Context(640, 300, mode));
         var gantt = ServerRenderedRecipe.SupportSchedule(mode).Prepare(Context(640, 300, mode));
         var strip = ServerRenderedRecipe.CreateStrip(1, mode).PrepareStrip(Context(640, 80, mode, padding: 0), ServerRenderedRecipe.SharedScale());

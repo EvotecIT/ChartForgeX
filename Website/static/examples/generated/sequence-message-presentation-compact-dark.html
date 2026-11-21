@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = SequenceMessagePresentationRecipe.Create(&quot;compact&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Creates a native sequence with aligned multiline captions and independently measured number badges.&lt;/summary&gt;
 public static class SequenceMessagePresentationRecipe {
     /// &lt;summary&gt;Creates compact or wide native message presentation through the shared preparation owner.&lt;/summary&gt;
-    public static SequenceArtifact Create(string variant=&quot;wide&quot;,VisualThemeMode mode=VisualThemeMode.Light) {
+    public static SequenceArtifact Create(string variant=&quot;wide&quot;,ThemeMode mode=ThemeMode.Light) {
         if(variant is not (&quot;compact&quot; or &quot;wide&quot;))throw new ArgumentOutOfRangeException(nameof(variant));
         var model=SequenceArtifact.Create(&quot;sequence-message-presentation&quot;).WithSize(variant==&quot;compact&quot;?390:1000,820)
             .WithTitle(&quot;Message presentation&quot;).WithSubtitle(&quot;Measured number badges and independent message/note alignment&quot;)
@@ -130,6 +131,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -139,7 +141,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = SequenceMessagePresentationRecipe.Create(&quot;compact&quot;, mode);
 var context = new VisualRenderContext(
@@ -154,7 +156,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Creates a native sequence with aligned multiline captions and independently measured number badges.&lt;/summary&gt;
 public static class SequenceMessagePresentationRecipe {
     /// &lt;summary&gt;Creates compact or wide native message presentation through the shared preparation owner.&lt;/summary&gt;
-    public static SequenceArtifact Create(string variant=&quot;wide&quot;,VisualThemeMode mode=VisualThemeMode.Light) {
+    public static SequenceArtifact Create(string variant=&quot;wide&quot;,ThemeMode mode=ThemeMode.Light) {
         if(variant is not (&quot;compact&quot; or &quot;wide&quot;))throw new ArgumentOutOfRangeException(nameof(variant));
         var model=SequenceArtifact.Create(&quot;sequence-message-presentation&quot;).WithSize(variant==&quot;compact&quot;?390:1000,820)
             .WithTitle(&quot;Message presentation&quot;).WithSubtitle(&quot;Measured number badges and independent message/note alignment&quot;)

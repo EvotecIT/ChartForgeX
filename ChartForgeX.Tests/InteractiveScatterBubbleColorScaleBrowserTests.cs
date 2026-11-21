@@ -28,7 +28,7 @@ public sealed class InteractiveScatterBubbleColorScaleBrowserTests {
             .WithTitle("Independent measured color").WithXAxis("Batch").WithYAxis("Energy (kWh)")
             .WithXAxisBounds(0, 4).WithYAxisBounds(0, 50)
             .WithValueFormat(ChartValueFormat.Number("0.0 'kWh'", CultureInfo.InvariantCulture))
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .ConfigureLabels(labels => { labels.Color = "Temperature (°C)"; labels.Size = "Volume (m³)"; labels.NoData = "Not sampled"; });
         var x = new[] { 1d, 2, 3 }; var y = new[] { 18d, 30, 24 }; var sizes = new[] { 9d, 36, 81 };
         var colors = new double?[] { -12, 0, null };

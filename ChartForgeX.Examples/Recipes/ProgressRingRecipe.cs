@@ -1,7 +1,7 @@
 /// <summary>Delivery-stage completion values rendered as independent progress rings.</summary>
 public static class ProgressRingRecipe {
     /// <summary>Creates stage completion rings; the options variant adjusts their radius and stroke.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var points = (variant == "sparse" ? new[] { 1, 3, 6 } : Enumerable.Range(1, 6))

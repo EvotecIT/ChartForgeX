@@ -9,7 +9,7 @@ using ChartForgeX.Themes;
 internal static class ConfigurabilityExamples {
     internal static void Write(string output, ChartPngOutputScale scale) {
         Directory.CreateDirectory(output);
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark })
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark })
             foreach (var compact in new[] { false, true }) {
                 var chart = Sales(mode, compact);
                 var name = "configurable-sales-" + (compact ? "compact" : "wide") + "-" + mode.ToString().ToLowerInvariant();
@@ -17,14 +17,14 @@ internal static class ConfigurabilityExamples {
             }
         // One theme file restyles every line and bar series; the charts below carry no per-kind styling code.
         var theme = VisualTheme.FromJson(ReadTheme("series-defaults.theme.json"));
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             var suffix = "-" + mode.ToString().ToLowerInvariant();
             ExampleArtifactWriter.SaveChart(ThemedTrend(theme, mode), output, "theme-series-defaults-line" + suffix, scale);
             ExampleArtifactWriter.SaveChart(ThemedRegions(theme, mode), output, "theme-series-defaults-bar" + suffix, scale);
         }
     }
 
-    private static Chart ThemedTrend(VisualTheme theme, VisualThemeMode mode) {
+    private static Chart ThemedTrend(VisualTheme theme, ThemeMode mode) {
         var weeks = new[] { "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8" };
         var signups = ChartSeries.CreateLine(new ChartSeriesId("signups"), "Sign-ups",
             new[] { 42d, 51, 48, 63, 58, 72, 69, 81 }.Select((value, index) => new ChartPoint(index + 1, value)));
@@ -40,7 +40,7 @@ internal static class ConfigurabilityExamples {
             .AddSeries(signups).AddSeries(trials).AddSeries(goal);
     }
 
-    private static Chart ThemedRegions(VisualTheme theme, VisualThemeMode mode) {
+    private static Chart ThemedRegions(VisualTheme theme, ThemeMode mode) {
         var regions = new[] { "North", "South", "East", "West", "Central" };
         var revenue = ChartSeries.CreateBar(new ChartSeriesId("revenue"), "Revenue",
             new[] { 84d, 62, 97, 71, 55 }.Select((value, index) => new ChartPoint(index + 1, value)));
@@ -56,7 +56,7 @@ internal static class ConfigurabilityExamples {
         return reader.ReadToEnd();
     }
 
-    private static Chart Sales(VisualThemeMode mode, bool compact) {
+    private static Chart Sales(ThemeMode mode, bool compact) {
         var blue = ChartColor.FromHex("#3979C6");
         var lightBlue = ChartColor.FromHex("#8DC7F3");
         var navy = ChartColor.FromHex("#214D80");

@@ -9,14 +9,14 @@ namespace ChartForgeX.Tests;
 
 public sealed partial class ExampleRecipeTests {
     [Theory]
-    [InlineData("wide", VisualThemeMode.Light)]
-    [InlineData("compact", VisualThemeMode.Dark)]
-    [InlineData("right", VisualThemeMode.Dark)]
-    [InlineData("bottom", VisualThemeMode.Light)]
-    [InlineData("top", VisualThemeMode.Dark)]
-    [InlineData("image", VisualThemeMode.Light)]
-    [InlineData("contour", VisualThemeMode.Dark)]
-    public void PictorialArtworkRecipeContainsCompleteSafeSourceAndRetainedFractionalFacts(string variant, VisualThemeMode mode) {
+    [InlineData("wide", ThemeMode.Light)]
+    [InlineData("compact", ThemeMode.Dark)]
+    [InlineData("right", ThemeMode.Dark)]
+    [InlineData("bottom", ThemeMode.Light)]
+    [InlineData("top", ThemeMode.Dark)]
+    [InlineData("image", ThemeMode.Light)]
+    [InlineData("contour", ThemeMode.Dark)]
+    public void PictorialArtworkRecipeContainsCompleteSafeSourceAndRetainedFractionalFacts(string variant, ThemeMode mode) {
         var recipe = ExampleRecipes.Named("pictorial-artwork"); var source = Source(recipe, variant);
         Assert.Equal(nameof(PictorialArtworkRecipe), recipe.Factory); Assert.Contains("public static class PictorialArtworkRecipe", source);
         Assert.Contains("ChartPictorialArtwork.FromSvg", source); Assert.Contains("ChartPictorialArtwork.FromImage", source);

@@ -82,7 +82,7 @@ public sealed class SankeyFlowColorTests {
     [InlineData(360, false)] [InlineData(360, true)] [InlineData(800, false)] [InlineData(800, true)]
     public void NumericKeyAndNativeExportsRetainAllColorFactsAcrossCompactWideAndBothThemes(int width, bool dark) {
         var chart = Model(-10, 0, null).WithSize(width, 400).WithDataLabels(true).WithLegend(true)
-            .WithHeader(true).WithTitle("Request volume and latency").WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .WithHeader(true).WithTitle("Request volume and latency").WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         chart.ConfigureSankey(options => { options.FlowColorMode = ChartSankeyFlowColorMode.Quantitative;
             options.ColorDimension.Name = "Latency (ms)"; options.ColorScale = ChartColorScale.Sequential(Low, High).WithNoDataColor(Missing); });
         var prepared = Prepare(chart);

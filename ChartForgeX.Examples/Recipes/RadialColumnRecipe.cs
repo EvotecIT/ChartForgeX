@@ -1,7 +1,7 @@
 /// <summary>Regional requests and follow-ups encoded as numeric radial columns.</summary>
 public static class RadialColumnRecipe {
     /// <summary>Creates radial columns with optional normalized stacking or explicit axis-caption density.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "axis-labels" or "compact-axis-labels" or "all-labels" or "compact-all-labels"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         if (variant is "all-labels" or "compact-all-labels") return AllLabels();

@@ -13,9 +13,9 @@ namespace ChartForgeX.Tests;
 [Trait("BrowserSuite", "Compatibility")]
 public sealed class InteractiveDiagramBrowserTests {
     [BrowserTheory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public async Task FlowStepsAndConnectorsAreExploredByKeyboardAndPointer(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public async Task FlowStepsAndConnectorsAreExploredByKeyboardAndPointer(ThemeMode mode) {
         if (!Enabled) return;
         var html = FlowRecipe.Create("expanded").ToInteractiveHtmlPage(Context(mode, "Assessment workflow", "Typed lanes, decisions and branched routes", 900, 600));
         await using var session = await OpenDiagramAsync(html);
@@ -43,9 +43,9 @@ public sealed class InteractiveDiagramBrowserTests {
     }
 
     [BrowserTheory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public async Task SequenceMessagesHighlightTheirParticipantsAndPlayInOrder(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public async Task SequenceMessagesHighlightTheirParticipantsAndPlayInOrder(ThemeMode mode) {
         if (!Enabled) return;
         var html = SequenceRecipe.Create("expanded").ToInteractiveHtmlPage(Context(mode, "Request processing sequence", "Participant notation, self calls, fragments and activation", 960, 760));
         await using var session = await OpenDiagramAsync(html);
@@ -86,7 +86,7 @@ public sealed class InteractiveDiagramBrowserTests {
         AssertNoErrors(session);
     }
 
-    private static VisualRenderContext Context(VisualThemeMode mode, string title, string subtitle, int width, int height) =>
+    private static VisualRenderContext Context(ThemeMode mode, string title, string subtitle, int width, int height) =>
         new(new VisualLayoutOptions(new VisualSize(width, height), fitHeightToContent: true), VisualTheme.Graphite(), mode,
             new VisualFrame(title, subtitle, showLegend: false));
 
@@ -128,7 +128,7 @@ public sealed class InteractiveDiagramBrowserTests {
     }
 
     // The tooltip carries the target's own text, stays inside the stage and uses the page's light or dark chrome.
-    private static async Task AssertTooltip(IPage page, VisualThemeMode mode, params string[] text) {
+    private static async Task AssertTooltip(IPage page, ThemeMode mode, params string[] text) {
         var tooltip = page.Locator(".cfx-diagram-tooltip");
         await Assertions.Expect(tooltip).ToBeVisibleAsync();
         foreach (var value in text) await Assertions.Expect(tooltip).ToContainTextAsync(value);
@@ -139,7 +139,7 @@ public sealed class InteractiveDiagramBrowserTests {
             """);
         Assert.True(facts.GetProperty("inside").GetBoolean(), facts.GetRawText());
         var luminance = facts.GetProperty("luminance").GetDouble();
-        Assert.True(mode == VisualThemeMode.Dark ? luminance < .5 : luminance > .5, facts.GetRawText());
+        Assert.True(mode == ThemeMode.Dark ? luminance < .5 : luminance > .5, facts.GetRawText());
     }
 
     private static void AssertNoErrors(HtmlTinkerX.HtmlBrowserSession session) =>

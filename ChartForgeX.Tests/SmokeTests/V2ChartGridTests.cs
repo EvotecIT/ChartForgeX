@@ -9,9 +9,9 @@ namespace ChartForgeX.Tests;
 
 public sealed class V2ChartGridTests {
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void GridRetainsSpanPackingSharedAxesAndScopedChildGeometryInFixedViewport(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void GridRetainsSpanPackingSharedAxesAndScopedChildGeometryInFixedViewport(ThemeMode mode) {
         var first = Line("First", 1, 4); var second = Line("Second", 2, 8); var third = Line("Third", 3, 6);
         var grid = ChartGrid.Create().WithTitle("Comparison").WithColumns(2).WithGap(12).WithPanelFit(VisualPanelFit.Stretch)
             .Add(first).Add(second).Add(third, columnSpan: 2).WithSharedAxes();

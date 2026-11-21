@@ -1,7 +1,7 @@
 public static partial class V2Examples {
     private static void WriteSequenceSurfaceShadows(string output, ICollection<ProofArtifact> artifacts) {
         var recipe = ExampleRecipes.Named("sequence-surface-shadows");
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             foreach (var variant in new[] { "compact", "wide" }) {
                 var compact = variant == "compact";
                 WriteModel(output, artifacts, recipe.Create(variant, mode),

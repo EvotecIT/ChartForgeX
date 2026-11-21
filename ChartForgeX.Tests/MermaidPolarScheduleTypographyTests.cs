@@ -26,7 +26,7 @@ public sealed class MermaidPolarScheduleTypographyTests {
         var rendered = MermaidRenderer.Render("%%{init: {'fontFamily':'" + BrowserProofFonts.Family + "','themeVariables':{'fontSize':256}}}%%\n" + body);
         Assert.False(rendered.HasErrors);
         var chart = Assert.IsType<Chart>(rendered.Artifact!.Model);
-        chart.WithSize(width, 460).WithThemeMode(dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        chart.WithSize(width, 460).WithThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         if (family == "gantt") chart.WithDataLabels();
         var authoredTickSize = chart.Options.Theme.Typography.AxisSize;
         chart.Options.XAxis.LabelAngle = angle;

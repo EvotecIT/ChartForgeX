@@ -127,7 +127,7 @@ public sealed partial class TopologyHtmlRenderer {
             .Attribute("data-cfx-active-scenario", string.IsNullOrWhiteSpace(activeScenarioId) ? null : activeScenarioId)
             .Attribute("data-cfx-sync-enabled", enableSync)
             .Attribute("data-cfx-sync-group", syncGroup)
-            .Attribute("data-cfx-theme-mode", chart.ThemeMode == VisualThemeMode.Dark ? "dark" : "light")
+            .Attribute("data-cfx-theme-mode", chart.ThemeMode == ThemeMode.Dark ? "dark" : "light")
             .Attribute("data-cfx-theme-adaptive", options.SvgColorVariables != null ? "true" : null)
             .Attribute("data-cfx-text-size", keepTextSize ? "kept" : null)
             .Attribute("style", ThemeVariables(theme) + (keepTextSize ? "--cfx-topology-min-width:" + (topologyWidth * MinimumTextScale).ToString("0.###", CultureInfo.InvariantCulture) + "px;" : string.Empty)
@@ -253,7 +253,7 @@ public sealed partial class TopologyHtmlRenderer {
     /// var fragment = renderer.RenderFragmentWithoutAssets(chart, options);
     /// // Register css once outside the asset-free fragments.
     /// </code></example>
-    public static string BuildFragmentStyle(TopologyRenderOptions? options = null, VisualTheme? theme = null, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static string BuildFragmentStyle(TopologyRenderOptions? options = null, VisualTheme? theme = null, ThemeMode mode = ThemeMode.Light) {
         options ??= new TopologyRenderOptions();
         var paint = new TopologyPaint(theme ?? VisualTheme.Graphite(), mode, options.SvgColorVariables);
         return StyleSheet(CssClassPrefix(options), CssFontFamily(paint.FontFamily), paint.Background, includePageShell: false);

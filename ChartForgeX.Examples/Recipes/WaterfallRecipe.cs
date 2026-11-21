@@ -1,7 +1,7 @@
 /// <summary>Builds running-balance waterfalls with signed changes and explicit checkpoints.</summary>
 public static class WaterfallRecipe {
     /// <summary>Creates the selected waterfall example and its orientation.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "horizontal" or "compact-horizontal" or "portable" or "compact-portable" or "portable-horizontal" or "compact-portable-horizontal"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         if (variant is "portable" or "compact-portable" or "portable-horizontal" or "compact-portable-horizontal") {

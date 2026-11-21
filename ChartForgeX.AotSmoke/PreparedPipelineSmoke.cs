@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -13,7 +14,7 @@ internal static class PreparedPipelineSmoke {
         string themeJson = VisualTheme.Graphite().WithFontFamily(fontFamily).ToJson();
         var theme = VisualTheme.FromJson(themeJson);
         Require(themeJson == theme.ToJson(), "Versioned paired theme roundtrip failed.");
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)), theme, mode,
                 new VisualFrame("Shared AOT output", "Prepared static pipeline", showLegend: false));
             var chart = Chart.Create().WithSize(640, 400).WithXLabels("First", "Second", "Third")

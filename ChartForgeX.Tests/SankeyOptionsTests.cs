@@ -73,9 +73,9 @@ public sealed class SankeyOptionsTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void FamilyPaintRespectsPointOverridesAndClampsRadiusInTheSharedScene(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void FamilyPaintRespectsPointOverridesAndClampsRadiusInTheSharedScene(ThemeMode mode) {
         var point = ChartColor.FromHex("#7356BD"); var nodeFill = ChartColor.FromHex("#365F63"); var ribbonFill = ChartColor.FromHex("#607DAA");
         var chart = OrderedBranches().ConfigureSankey(options => {
             options.NodeFill = nodeFill; options.RibbonFill = ribbonFill; options.RibbonOpacity = .6; options.NodeWidth = 18; options.NodeCornerRadius = 30;
@@ -149,7 +149,7 @@ public sealed class SankeyOptionsTests {
     private static Chart OrderedBranches() => Chart.Create().AddSankey("Order", new[] {
         new ChartNode("root", "Root"), new ChartNode("b", "Alpha"), new ChartNode("z", "alpha"), new ChartNode("a", "Alpha")
     }, new[] { new ChartFlowLink("to-z", "root", "z", 7), new ChartFlowLink("to-b", "root", "b", 4), new ChartFlowLink("to-a", "root", "a", 2) });
-    private static PreparedVisual Prepare(Chart chart, VisualThemeMode mode = VisualThemeMode.Light) {
+    private static PreparedVisual Prepare(Chart chart, ThemeMode mode = ThemeMode.Light) {
         chart.Series[0].WithDataLabels(false);
         return chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(720, 460)), themeMode: mode, frame: new VisualFrame(showLegend: false)));
     }

@@ -17,25 +17,25 @@ public sealed class ChartGridPanelThemeTests {
         var firstTheme = Theme("serif", "#CA3100", "#F07530");
         var secondTheme = Theme("monospace", "#007B53", "#4CD0A5");
         var outerTheme = Theme("sans-serif", "#3344CC", "#8899FF");
-        var first = ChartWithTheme("First panel", firstTheme, VisualThemeMode.Light);
-        var second = ChartWithTheme("Second panel", secondTheme, VisualThemeMode.Dark);
+        var first = ChartWithTheme("First panel", firstTheme, ThemeMode.Light);
+        var second = ChartWithTheme("Second panel", secondTheme, ThemeMode.Dark);
         var grid = ChartGrid.Create().WithTitle("Outer heading").WithPanelThemes(usePanelThemes).Add(first).Add(second);
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 350)), outerTheme,
-            VisualThemeMode.Dark, new VisualFrame(showCard: true), new FontSpec { Family = "Outer explicit font" });
+            ThemeMode.Dark, new VisualFrame(showCard: true), new FontSpec { Family = "Outer explicit font" });
 
         var prepared = grid.Prepare(context);
         var document = XDocument.Parse(prepared.ToSvg());
         Assert.Contains(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => Text(node) == "Outer heading"
             && node.Text.Style.Font.Family == "Outer explicit font");
         AssertPanel(document, 0, "First panel", usePanelThemes ? "serif" : "Outer explicit font",
-            (usePanelThemes ? firstTheme.Resolve(VisualThemeMode.Light) : outerTheme.Resolve(VisualThemeMode.Dark)).Palette[0]);
+            (usePanelThemes ? firstTheme.Resolve(ThemeMode.Light) : outerTheme.Resolve(ThemeMode.Dark)).Palette[0]);
         AssertPanel(document, 1, "Second panel", usePanelThemes ? "monospace" : "Outer explicit font",
-            (usePanelThemes ? secondTheme.Resolve(VisualThemeMode.Dark) : outerTheme.Resolve(VisualThemeMode.Dark)).Palette[0]);
+            (usePanelThemes ? secondTheme.Resolve(ThemeMode.Dark) : outerTheme.Resolve(ThemeMode.Dark)).Palette[0]);
         Assert.Same(firstTheme, first.Options.Theme);
-        Assert.Equal(VisualThemeMode.Dark, second.Options.ThemeMode);
+        Assert.Equal(ThemeMode.Dark, second.Options.ThemeMode);
 
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
-        first.WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark);
+        first.WithTheme(VisualTheme.Graphite(), ThemeMode.Dark);
         second.WithFontFamily("serif");
         grid.WithPanelThemes(!usePanelThemes);
         Assert.Equal(svg, prepared.ToSvg());
@@ -44,14 +44,14 @@ public sealed class ChartGridPanelThemeTests {
 
     [Fact]
     public void AuthoredPanelKeepsStandaloneNativePixelsAndFontRequest() {
-        var chart = ChartWithTheme("Panel", Theme("serif", "#A34200", "#F09530"), VisualThemeMode.Dark)
+        var chart = ChartWithTheme("Panel", Theme("serif", "#A34200", "#F09530"), ThemeMode.Dark)
             .WithHeader(false).WithCard(false).WithPlotBackground(false).WithLegend(false).WithTransparentBackground();
         chart.Options.Padding = ChartPadding.All(8);
         var request = VisualExportRequest.ForChart(chart);
         var expected = chart.Prepare(request.Context);
         var grid = ChartGrid.Create().WithColumns(1).WithPanelThemes().Add(chart);
         var prepared = grid.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 260), 0),
-            VisualTheme.Graphite(), VisualThemeMode.Light, new VisualFrame(showLegend: false, transparentBackground: true),
+            VisualTheme.Graphite(), ThemeMode.Light, new VisualFrame(showLegend: false, transparentBackground: true),
             new FontSpec { Family = "monospace" }));
         Assert.Equal(expected.ToRgba().Pixels, prepared.ToRgba().Pixels);
         Assert.All(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => Assert.Equal("serif", node.Text.Style.Font.Family));
@@ -73,8 +73,8 @@ public sealed class ChartGridPanelThemeTests {
         var gridVariables = new SvgColorVariables().Add("--outer-series", color, SvgColorRole.Series);
         var grid = ChartGrid.Create().WithTheme(theme).WithPanelThemes().WithPanelSize(360, 260)
             .WithSvgColorVariables(gridVariables)
-            .Add(ChartWithTheme("Literal", theme, VisualThemeMode.Light))
-            .Add(ChartWithTheme("Mapped", theme, VisualThemeMode.Light).WithSvgColorVariables(childVariables));
+            .Add(ChartWithTheme("Literal", theme, ThemeMode.Light))
+            .Add(ChartWithTheme("Mapped", theme, ThemeMode.Light).WithSvgColorVariables(childVariables));
         var prepared = grid.Prepare(VisualExportRequest.ForGrid(grid).Context);
         var svg = prepared.ToSvg();
         var document = XDocument.Parse(svg);
@@ -141,7 +141,7 @@ public sealed class ChartGridPanelThemeTests {
         builder.Light.Palette = new[] { ChartColor.FromHex(light) };
         builder.Dark.Palette = new[] { ChartColor.FromHex(dark) };
     });
-    private static Chart ChartWithTheme(string title, VisualTheme theme, VisualThemeMode mode) => Chart.Create()
+    private static Chart ChartWithTheme(string title, VisualTheme theme, ThemeMode mode) => Chart.Create()
         .WithTitle(title).WithTheme(theme, mode).WithSize(360, 260).WithDataLabels(false)
         .AddBar("Values", new[] { new ChartPoint(0, 2), new ChartPoint(1, 4) });
     private static string Text(VisualSceneText node) => string.Join("\n", node.Text.Lines.Select(line => line.Text));

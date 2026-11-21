@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = SequencePresetAppearanceRecipe.Create(&quot;wide&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,11 +111,11 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Authors native measured participant bands and independently retained row paints; source parsing lives in the adapter example.&lt;/summary&gt;
 public static class SequencePresetAppearanceRecipe {
     /// &lt;summary&gt;Creates a compact or wide static native sequence with portable edit facts.&lt;/summary&gt;
-    public static SequenceArtifact Create(string variant=&quot;wide&quot;,VisualThemeMode mode=VisualThemeMode.Light) {
+    public static SequenceArtifact Create(string variant=&quot;wide&quot;,ThemeMode mode=ThemeMode.Light) {
         if(variant is not (&quot;compact&quot; or &quot;wide&quot;))throw new ArgumentOutOfRangeException(nameof(variant));var compact=variant==&quot;compact&quot;;
         var model=SequenceArtifact.Create(&quot;sequence-preset-appearance&quot;).WithSize(compact?390:1100,860).AddParticipant(&quot;A&quot;,&quot;Review\nOwner&quot;,SequenceArtifactParticipantKind.Actor).AddParticipant(&quot;B&quot;,&quot;Archive&quot;,SequenceArtifactParticipantKind.Control).AddMessage(&quot;A&quot;,&quot;B&quot;,&quot;Save&quot;).AddMessage(&quot;B&quot;,&quot;A&quot;,&quot;Stored&quot;);
         model.ThemeMode=mode;model.Layout=new SequenceLayoutPolicy(participantMinimumWidth:compact?64:150,participantSpacing:compact?8:50,participantBands:new SequenceParticipantBands(),mirrorParticipants:true,fragmentMargin:10,fragmentTabMinimumWidth:50,fragmentTabMinimumHeight:35);model.Typography=new SequenceTypography(participant:new TextStyleOverride{FontSize=14},message:new TextStyleOverride{FontSize=compact?12:16});
-        var dark=mode==VisualThemeMode.Dark;model.Paint.ParticipantFill=ChartColor.FromHex(dark?&quot;#111113&quot;:&quot;#FFFFFF&quot;);model.Paint.ParticipantText=ChartColor.FromHex(dark?&quot;#E0DFDF&quot;:&quot;#28253D&quot;);model.Paint.FragmentTitleText=model.Paint.ParticipantText;
+        var dark=mode==ThemeMode.Dark;model.Paint.ParticipantFill=ChartColor.FromHex(dark?&quot;#111113&quot;:&quot;#FFFFFF&quot;);model.Paint.ParticipantText=ChartColor.FromHex(dark?&quot;#E0DFDF&quot;:&quot;#28253D&quot;);model.Paint.FragmentTitleText=model.Paint.ParticipantText;
         var a=model.Participants[0];a.Border=ChartColor.FromHex(&quot;#E879F9&quot;);a.ActivationBorder=a.Border;a.ActivationFill=ChartColor.FromHex(dark?&quot;#111113&quot;:&quot;#FDF4FF&quot;);var b=model.Participants[1];b.Border=ChartColor.FromHex(&quot;#2DD4BF&quot;);b.ActivationBorder=b.Border;b.ActivationFill=ChartColor.FromHex(dark?&quot;#111113&quot;:&quot;#F0FDFA&quot;);model.AddActivation(&quot;B&quot;,true,0).AddActivation(&quot;B&quot;,false,2).AddBlock(SequenceArtifactBlockKind.Loop,&quot;Audit&quot;,1,1);return model;
     }
 }
@@ -124,6 +125,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -133,7 +135,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = SequencePresetAppearanceRecipe.Create(&quot;wide&quot;, mode);
 var context = new VisualRenderContext(
@@ -148,11 +150,11 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Authors native measured participant bands and independently retained row paints; source parsing lives in the adapter example.&lt;/summary&gt;
 public static class SequencePresetAppearanceRecipe {
     /// &lt;summary&gt;Creates a compact or wide static native sequence with portable edit facts.&lt;/summary&gt;
-    public static SequenceArtifact Create(string variant=&quot;wide&quot;,VisualThemeMode mode=VisualThemeMode.Light) {
+    public static SequenceArtifact Create(string variant=&quot;wide&quot;,ThemeMode mode=ThemeMode.Light) {
         if(variant is not (&quot;compact&quot; or &quot;wide&quot;))throw new ArgumentOutOfRangeException(nameof(variant));var compact=variant==&quot;compact&quot;;
         var model=SequenceArtifact.Create(&quot;sequence-preset-appearance&quot;).WithSize(compact?390:1100,860).AddParticipant(&quot;A&quot;,&quot;Review\nOwner&quot;,SequenceArtifactParticipantKind.Actor).AddParticipant(&quot;B&quot;,&quot;Archive&quot;,SequenceArtifactParticipantKind.Control).AddMessage(&quot;A&quot;,&quot;B&quot;,&quot;Save&quot;).AddMessage(&quot;B&quot;,&quot;A&quot;,&quot;Stored&quot;);
         model.ThemeMode=mode;model.Layout=new SequenceLayoutPolicy(participantMinimumWidth:compact?64:150,participantSpacing:compact?8:50,participantBands:new SequenceParticipantBands(),mirrorParticipants:true,fragmentMargin:10,fragmentTabMinimumWidth:50,fragmentTabMinimumHeight:35);model.Typography=new SequenceTypography(participant:new TextStyleOverride{FontSize=14},message:new TextStyleOverride{FontSize=compact?12:16});
-        var dark=mode==VisualThemeMode.Dark;model.Paint.ParticipantFill=ChartColor.FromHex(dark?&quot;#111113&quot;:&quot;#FFFFFF&quot;);model.Paint.ParticipantText=ChartColor.FromHex(dark?&quot;#E0DFDF&quot;:&quot;#28253D&quot;);model.Paint.FragmentTitleText=model.Paint.ParticipantText;
+        var dark=mode==ThemeMode.Dark;model.Paint.ParticipantFill=ChartColor.FromHex(dark?&quot;#111113&quot;:&quot;#FFFFFF&quot;);model.Paint.ParticipantText=ChartColor.FromHex(dark?&quot;#E0DFDF&quot;:&quot;#28253D&quot;);model.Paint.FragmentTitleText=model.Paint.ParticipantText;
         var a=model.Participants[0];a.Border=ChartColor.FromHex(&quot;#E879F9&quot;);a.ActivationBorder=a.Border;a.ActivationFill=ChartColor.FromHex(dark?&quot;#111113&quot;:&quot;#FDF4FF&quot;);var b=model.Participants[1];b.Border=ChartColor.FromHex(&quot;#2DD4BF&quot;);b.ActivationBorder=b.Border;b.ActivationFill=ChartColor.FromHex(dark?&quot;#111113&quot;:&quot;#F0FDFA&quot;);model.AddActivation(&quot;B&quot;,true,0).AddActivation(&quot;B&quot;,false,2).AddBlock(SequenceArtifactBlockKind.Loop,&quot;Audit&quot;,1,1);return model;
     }
 }

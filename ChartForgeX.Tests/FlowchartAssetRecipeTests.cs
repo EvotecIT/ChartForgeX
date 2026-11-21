@@ -11,7 +11,7 @@ public sealed class FlowchartAssetRecipeTests {
     [Theory]
     [InlineData("compact",false)] [InlineData("compact",true)] [InlineData("wide",false)] [InlineData("wide",true)]
     public void EmittedGalleryRecipeUsesCapturedImagesAndFiniteNativeGlyphs(string variant,bool dark) {
-        var mode=dark?VisualThemeMode.Dark:VisualThemeMode.Light;
+        var mode=dark?ThemeMode.Dark:ThemeMode.Light;
         var artifact=FlowchartAssetRecipe.Create(variant,mode,BrowserProofFonts.Family);
         var svg=artifact.ToSvg();var png=artifact.ToPng();var json=artifact.ToInterchangeJson();
         var html=artifact.ToHtmlPage(new VisualArtifactRenderOptions{HtmlSizing=VisualArtifactHtmlSizing.PreserveSize});

@@ -11,7 +11,7 @@ public sealed partial class TopologyHtmlRenderer {
     private string RenderRegionFragment(TopologyChart chart, TopologyRenderOptions options, bool includeAssets,
         string? preparedSvg = null, double? preparedWidth = null, Func<PreparedTopology, string>? renderSvg = null) {
         var html = new StringBuilder();
-        var colors = chart.Theme.Resolve(options.RegionPrint ? VisualThemeMode.Light : chart.ThemeMode);
+        var colors = chart.Theme.Resolve(options.RegionPrint ? ThemeMode.Light : chart.ThemeMode);
         if (includeAssets) html.Append("<style>").Append(TopologyRegionTemplate.Styles.Value).Append("</style>");
         html.Append("<div class=\"").Append(WebUtility.HtmlEncode(CssClassPrefix(options)))
             .Append("-wrapper cfx-region-chart\" data-cfx-region-chart=\"true\" data-cfx-interactive=\"")
@@ -46,7 +46,7 @@ public sealed partial class TopologyHtmlRenderer {
             var variant = entry.Name;
             var source = TopologyLayoutEngine.Clone(chart);
             source.Viewport.Width = entry.Width;
-            if (variant == "print") source.ThemeMode = VisualThemeMode.Light;
+            if (variant == "print") source.ThemeMode = ThemeMode.Light;
             var policy = options.Clone(); policy.RegionPrint = options.RegionPrint || variant == "print"; policy.UseResponsiveSvg = true;
             policy.IdScope = (options.IdScope ?? chart.Id ?? "region") + "-" + variant + "-" + entry.Width.ToString("R", CultureInfo.InvariantCulture);
             html.Append("<div class=\"cfx-region-").Append(variant).Append("\"");
@@ -58,7 +58,7 @@ public sealed partial class TopologyHtmlRenderer {
                 html.Append("\"");
             }
             if (variant == "print") {
-                var light = chart.Theme.Resolve(VisualThemeMode.Light);
+                var light = chart.Theme.Resolve(ThemeMode.Light);
                 html.Append(" style=\"--cfx-good:").Append(light.Status.Pass.Fill.ToCss()).Append(";--cfx-warn:").Append(light.Status.Medium.Fill.ToCss())
                     .Append(";--cfx-bad:").Append(light.Status.Critical.Fill.ToCss()).Append(";--cfx-info:").Append(light.Info.ToCss())
                     .Append(";--cfx-neutral:").Append(light.Status.Neutral.Fill.ToCss()).Append("\"");

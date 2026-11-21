@@ -6,7 +6,7 @@ using ChartForgeX.Topology;
 /// <summary>A native crossing handoff with unchanged logical relationships and editable paint policy.</summary>
 public static class TopologyCrossingPaintRecipe {
     /// <summary>Creates compact or wide Arc, Gap or ordinary native paint in either theme.</summary>
-    public static TopologyChart Create(string variant = "wide-arc", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static TopologyChart Create(string variant = "wide-arc", ThemeMode mode = ThemeMode.Light) {
         variant = variant == "wide" ? "wide-arc" : variant == "compact" ? "compact-arc" : variant;
         if (variant is not ("wide-arc" or "compact-arc" or "wide-gap" or "compact-gap" or "wide-none" or "compact-none")) throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = TopologyChart.Create().WithId("native-crossing-handoff").WithTitle("Independent handoffs")
@@ -20,8 +20,8 @@ public static class TopologyCrossingPaintRecipe {
         chart.Edges[0].PathGeometry = new TopologyPathGeometry("M 170 225 L 590 225");
         chart.Edges[1].PathGeometry = new TopologyPathGeometry("M 385 100 L 385 350");
         foreach (var edge in chart.Edges) { edge.StrokeWidth = 3; edge.TargetMarkerStyle = new TopologyMarkerStyle { Scale = .8, StrokeWidth = 1 }; }
-        chart.Edges[0].Color = mode == VisualThemeMode.Dark ? "#38bdf8" : "#0369a1";
-        chart.Edges[1].Color = mode == VisualThemeMode.Dark ? "#fbbf24" : "#92400e";
+        chart.Edges[0].Color = mode == ThemeMode.Dark ? "#38bdf8" : "#0369a1";
+        chart.Edges[1].Color = mode == ThemeMode.Dark ? "#fbbf24" : "#92400e";
         if (!variant.EndsWith("none", StringComparison.Ordinal)) chart.CrossingPaint = new TopologyCrossingPaint(variant.EndsWith("gap", StringComparison.Ordinal) ? TopologyCrossingPaintStyle.Gap : TopologyCrossingPaintStyle.Arc);
         chart.WithRenderOptions(new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = variant.StartsWith("compact", StringComparison.Ordinal) });
         return chart;

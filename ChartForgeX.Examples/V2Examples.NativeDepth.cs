@@ -1,7 +1,7 @@
 /// <summary>Complete native-depth recipes use the existing gallery and standalone-source owner.</summary>
 public static partial class V2Examples {
     private static void WriteNativeDepth(string output, ICollection<ProofArtifact> artifacts) {
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             foreach (var variant in new[] { "wide", "compact", "plain", "compact-plain" }) {
                 var compact = variant.StartsWith("compact", StringComparison.Ordinal);
                 WriteNativeDepthModel(output, artifacts, "topology-path-decorations", variant, "topology", "Independent maintenance boundary",
@@ -104,7 +104,7 @@ public static partial class V2Examples {
     }
 
     private static void WriteNativeDepthModel(string output, ICollection<ProofArtifact> artifacts, string name, string variant, string family,
-        string title, string subtitle, VisualThemeMode mode, int width, int height, string? kind, bool compact) {
+        string title, string subtitle, ThemeMode mode, int width, int height, string? kind, bool compact) {
         var recipe = ExampleRecipes.Named(name);
         WriteModel(output, artifacts, recipe.Create(variant, mode), name + "-" + variant + "-" + mode.ToString().ToLowerInvariant(),
             family, title, variant, subtitle, mode, width, height, null, recipe, kind == null ? null : new[] { kind }, compact);

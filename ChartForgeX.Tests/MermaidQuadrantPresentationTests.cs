@@ -22,7 +22,7 @@ public sealed class MermaidQuadrantPresentationTests {
         var request = VisualExportRequest.ForChart(chart).Context;
         var tokens = new VisualDesignTokens { Palette = palette, Surface = dark ? ChartColor.Black : ChartColor.White };
         var context = explicitContext ? new VisualRenderContext(request.Layout, new VisualTheme(tokens, tokens),
-            dark ? VisualThemeMode.Dark : VisualThemeMode.Light, request.Frame, request.Font) : request;
+            dark ? ThemeMode.Dark : ThemeMode.Light, request.Frame, request.Font) : request;
         var prepared = chart.Prepare(context);
         var svg = XDocument.Parse(prepared.ToSvg());
         var fills = Paints(svg, "plot-region-fill");

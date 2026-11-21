@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = ComparisonRecipe.Create(&quot;wide&quot;, mode);
 var context = new VisualRenderContext(
@@ -109,7 +110,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 
 /// &lt;summary&gt;Bars, a forecast area and an observed line share daily categories, including explicit missing and empty states.&lt;/summary&gt;
 public static class ComparisonRecipe {
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         var count = variant == &quot;empty&quot; ? 0 : variant == &quot;dense&quot; ? 24 : 12;
         var names = variant == &quot;wrapped-legend&quot;
             ? new[] { &quot;Observed checks across all locations&quot;, &quot;Expected coverage of monitored services&quot;, &quot;Capacity available for the next assessment&quot; }
@@ -148,6 +149,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -157,7 +159,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = ComparisonRecipe.Create(&quot;wide&quot;, mode);
 var context = new VisualRenderContext(
@@ -171,7 +173,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 
 /// &lt;summary&gt;Bars, a forecast area and an observed line share daily categories, including explicit missing and empty states.&lt;/summary&gt;
 public static class ComparisonRecipe {
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         var count = variant == &quot;empty&quot; ? 0 : variant == &quot;dense&quot; ? 24 : 12;
         var names = variant == &quot;wrapped-legend&quot;
             ? new[] { &quot;Observed checks across all locations&quot;, &quot;Expected coverage of monitored services&quot;, &quot;Capacity available for the next assessment&quot; }

@@ -1,6 +1,6 @@
 /// <summary>Complete Core and optional Visuals programs use the same source types as the displayed examples.</summary>
 public static partial class ExampleRecipeSource {
-    public static string EmitNativeAppearance(string effect = "bloom", string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static string EmitNativeAppearance(string effect = "bloom", string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         ValidateAppearanceSelection(effect, variant, mode);
         return Template("RecipeNativeAppearanceProgram", new Dictionary<string, string>(StringComparer.Ordinal) {
             ["{{EFFECT}}"] = System.Text.Json.JsonSerializer.Serialize(effect),
@@ -8,9 +8,9 @@ public static partial class ExampleRecipeSource {
             ["{{SOURCE}}"] = ReadResource("ChartForgeX.Examples.NativeAppearanceExample.cs").TrimEnd()
         });
     }
-    private static void ValidateAppearanceSelection(string effect, string variant, VisualThemeMode mode) {
+    private static void ValidateAppearanceSelection(string effect, string variant, ThemeMode mode) {
         if (effect != "outline" && effect != "bloom" && effect != "glow" && effect != "inner") throw new ArgumentOutOfRangeException(nameof(effect));
         if (variant != "compact" && variant != "wide") throw new ArgumentOutOfRangeException(nameof(variant));
-        if (mode != VisualThemeMode.Light && mode != VisualThemeMode.Dark) throw new ArgumentOutOfRangeException(nameof(mode));
+        if (mode != ThemeMode.Light && mode != ThemeMode.Dark) throw new ArgumentOutOfRangeException(nameof(mode));
     }
 }

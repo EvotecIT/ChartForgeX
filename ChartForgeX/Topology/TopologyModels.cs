@@ -79,11 +79,11 @@ public sealed partial class TopologyChart {
     private VisualTheme _theme = VisualTheme.Graphite();
 
     /// <summary>Gets or sets the explicit shared theme mode.</summary>
-    public VisualThemeMode ThemeMode {
+    public ThemeMode ThemeMode {
         get => _themeMode;
-        set { if (!Enum.IsDefined(typeof(VisualThemeMode), value)) throw new ArgumentOutOfRangeException(nameof(value)); _themeMode = value; }
+        set { if (!Enum.IsDefined(typeof(ThemeMode), value)) throw new ArgumentOutOfRangeException(nameof(value)); _themeMode = value; }
     }
-    private VisualThemeMode _themeMode;
+    private ThemeMode _themeMode;
     internal TopologyPaint ResolvedTheme => new(Theme, ThemeMode);
 }
 
@@ -764,7 +764,7 @@ public sealed partial class TopologyNodeDetail {
 }
 
 internal static class TopologyModelGuards {
-    public static void EnumDefined<TEnum>(TEnum value, string parameterName) where TEnum : struct {
+    public static void EnumDefined<TEnum>(TEnum value, string parameterName) where TEnum : struct, Enum {
         if (typeof(TEnum) == typeof(TopologyEdgeLayoutInference)) {
             var mask = TopologyEdgeLayoutInference.SourcePort | TopologyEdgeLayoutInference.TargetPort | TopologyEdgeLayoutInference.RouteLane;
             var typed = (TopologyEdgeLayoutInference)(object)value;

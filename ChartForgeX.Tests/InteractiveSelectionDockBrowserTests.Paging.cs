@@ -94,7 +94,7 @@ public sealed partial class InteractiveSelectionDockBrowserTests {
             Enumerable.Range(0, count).Select(index => new ChartPoint(index + 1, (index % 4 + 1) * (updated ? 3 : 2))).ToArray());
         for (var index = 0; index < count; index++) series.WithObservationId(index, new ChartObservationId("reading-" + index));
         return Chart.Create().WithSize(680, 380).WithTitle("Selected observations")
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithXLabels(Enumerable.Range(1, count).Select(index => "Observation " + index.ToString("00")).ToArray())
             .WithLegend(false).AddSeries(series);
     }

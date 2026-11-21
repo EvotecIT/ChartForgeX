@@ -125,10 +125,10 @@ public sealed class VisualRenderContext {
     private readonly FontSpec _font;
     /// <summary>Creates a context with the canonical paired palette and Graphite geometry by default.</summary>
     public VisualRenderContext(VisualLayoutOptions? layout = null, VisualTheme? theme = null,
-        VisualThemeMode themeMode = VisualThemeMode.Light, VisualFrame? frame = null, FontSpec? font = null) {
-        if (!Enum.IsDefined(typeof(VisualThemeMode), themeMode)) throw new ArgumentOutOfRangeException(nameof(themeMode));
+        ThemeMode themeMode = ThemeMode.Light, VisualFrame? frame = null, FontSpec? font = null) {
+        if (!Enum.IsDefined(typeof(ThemeMode), themeMode)) throw new ArgumentOutOfRangeException(nameof(themeMode));
         Layout = layout ?? new VisualLayoutOptions(new VisualSize(640, 400));
-        Theme = theme ?? VisualTheme.Graphite(); ThemeMode = themeMode; Frame = frame ?? new VisualFrame();
+        Theme = theme ?? VisualTheme.Graphite(); ThemeMode = ThemeModes.Resolve(themeMode); Frame = frame ?? new VisualFrame();
         var typography = Theme.Typography.ForWidth(Layout.Size.Width);
         if (!ReferenceEquals(typography, Theme.Typography)) Theme = Theme.WithTypography(typography);
         _font = font?.Clone() ?? new FontSpec { Family = Theme.Typography.Family };
@@ -159,8 +159,8 @@ public sealed class VisualRenderContext {
     public VisualLayoutOptions Layout { get; }
     /// <summary>Gets the paired theme.</summary>
     public VisualTheme Theme { get; }
-    /// <summary>Gets the selected palette mode.</summary>
-    public VisualThemeMode ThemeMode { get; }
+    /// <summary>Gets the selected palette mode. Static rendering resolves <see cref="ThemeMode.Auto"/> to <see cref="ThemeMode.Light"/>.</summary>
+    public ThemeMode ThemeMode { get; }
     /// <summary>Gets the common frame.</summary>
     public VisualFrame Frame { get; }
     /// <summary>Gets an independent copy of the font request.</summary>

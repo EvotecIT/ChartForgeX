@@ -255,7 +255,7 @@ public sealed class TableArtifactColumn {
 /// </summary>
 public sealed class TableArtifactRow {
     private string _key;
-    private VisualStatus _status;
+    private Tone _status;
 
     /// <summary>Initializes a table artifact row.</summary>
     public TableArtifactRow(string key) => _key = key ?? throw new ArgumentNullException(nameof(key));
@@ -267,13 +267,7 @@ public sealed class TableArtifactRow {
     public List<TableArtifactCell> Cells { get; } = new();
 
     /// <summary>Gets or sets the row status.</summary>
-    public VisualStatus Status {
-        get => _status;
-        set {
-            TableArtifactGuards.EnumDefined(value, nameof(value));
-            _status = value;
-        }
-    }
+    public Tone Status { get => _status; set => _status = value; }
 
     /// <summary>Gets or sets whether this row can be selected by a host.</summary>
     public bool Selectable { get; set; } = true;
@@ -295,7 +289,7 @@ public sealed class TableArtifactRow {
 public sealed class TableArtifactCell {
     private string _displayText;
     private ChartForgeX.Typography.TextContent? _content;
-    private VisualStatus _status;
+    private Tone _status;
 
     /// <summary>Initializes a table artifact cell.</summary>
     public TableArtifactCell(string displayText) => _displayText = displayText ?? throw new ArgumentNullException(nameof(displayText));
@@ -319,13 +313,7 @@ public sealed class TableArtifactCell {
     public string? ExportText { get; set; }
 
     /// <summary>Gets or sets the cell status.</summary>
-    public VisualStatus Status {
-        get => _status;
-        set {
-            TableArtifactGuards.EnumDefined(value, nameof(value));
-            _status = value;
-        }
-    }
+    public Tone Status { get => _status; set => _status = value; }
 
     internal TableArtifactCell Clone() {
         var copy = new TableArtifactCell(DisplayText) {

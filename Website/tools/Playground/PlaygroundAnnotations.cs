@@ -69,7 +69,7 @@ public static class PlaygroundAnnotations {
         new Drawing(new ChartAnnotationId("target"), "ParallelChannel", new ChartPoint(2, 65), new ChartPoint(8, 75), 10, "Target")
     };
 
-    private static Chart Create(IEnumerable<Drawing> drawings, VisualThemeMode mode) {
+    private static Chart Create(IEnumerable<Drawing> drawings, ThemeMode mode) {
         var chart = Chart.Create().WithSize(800, 480)
             .WithTheme(VisualTheme.Graphite().WithFontFamily("Carlito, sans-serif"), mode)
             .WithTitle("Review a measured trend").WithSubtitle("Add, move or delete drawings; the engine re-prepares the chart")
@@ -94,7 +94,7 @@ public static class PlaygroundAnnotations {
         options.Tooltip.PinOnSelect = false;
     }
 
-    private static string Reply(Drawing[] drawings, VisualThemeMode mode) {
+    private static string Reply(Drawing[] drawings, ThemeMode mode) {
         PlaygroundFonts.EnsureRegistered();
         var html = Create(drawings, mode).ToInteractiveHtmlFragmentWithoutAssets(Options);
         var basis = "scene-" + (++_sequence);
@@ -107,9 +107,9 @@ public static class PlaygroundAnnotations {
     private static Drawing[] Scene(string basis) => Scenes.TryGetValue(basis, out var drawings) ? drawings
         : throw new ArgumentException("The scene '" + basis + "' is no longer held; reset the chart.");
 
-    private static VisualThemeMode Mode(string? theme) => theme switch {
-        "dark" => VisualThemeMode.Dark,
-        "light" or null or "" => VisualThemeMode.Light,
+    private static ThemeMode Mode(string? theme) => theme switch {
+        "dark" => ThemeMode.Dark,
+        "light" or null or "" => ThemeMode.Light,
         _ => throw new ArgumentException("Unknown theme '" + theme + "'. Use 'light' or 'dark'.")
     };
 

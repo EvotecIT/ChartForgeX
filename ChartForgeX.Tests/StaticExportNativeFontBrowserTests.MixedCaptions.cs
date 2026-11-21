@@ -9,11 +9,11 @@ namespace ChartForgeX.Tests;
 
 public sealed partial class StaticExportNativeFontBrowserTests {
     [BrowserTheory]
-    [InlineData(390, VisualThemeMode.Light)]
-    [InlineData(390, VisualThemeMode.Dark)]
-    [InlineData(1100, VisualThemeMode.Light)]
-    [InlineData(1100, VisualThemeMode.Dark)]
-    public async Task StructuredCaptionVectorAndPngRetainPermanentInkResources(int width, VisualThemeMode mode) {
+    [InlineData(390, ThemeMode.Light)]
+    [InlineData(390, ThemeMode.Dark)]
+    [InlineData(1100, ThemeMode.Light)]
+    [InlineData(1100, ThemeMode.Dark)]
+    public async Task StructuredCaptionVectorAndPngRetainPermanentInkResources(int width, ThemeMode mode) {
         if (!Enabled) return;
         var chart = TopologyChart.Create().WithViewport(width, 420).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), mode);
         chart.Nodes.Add(new TopologyNode { Id = "caption", X = 30, Y = 50, Width = width - 70, Height = 260, ShowStatusBadge = false,

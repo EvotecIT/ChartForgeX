@@ -81,7 +81,7 @@ public sealed class MermaidSafeInlineCaptionTests {
     internal static TextContent Content(TopologyChart chart, string family) => family == "requirement"
         ? chart.Nodes[0].Details.Single(detail => detail.Label == "text").ValueContent : chart.Nodes[0].LabelContent;
     private static MermaidRenderOptions Options(int width, bool dark) => new() {
-        Presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family, ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light },
+        Presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family, ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light },
         Flowchart = new MermaidFlowchartRenderOptions { Width = width, Height = 420 }, MindMap = new MermaidTopologyRenderOptions { Width = width, Height = 420 }, Requirement = new MermaidTopologyRenderOptions { Width = width, Height = 420 }
     };
 }

@@ -14,7 +14,7 @@ public sealed class SvgColorVariablesTests {
 
     [Fact]
     public void ThemeRampScaleCopiesRetainIdentityWithoutChangingAuthoredScalesOrNativeOutput() {
-        var theme = VisualTheme.Graphite(); var tokens = theme.Resolve(VisualThemeMode.Light).ToTokens();
+        var theme = VisualTheme.Graphite(); var tokens = theme.Resolve(ThemeMode.Light).ToTokens();
         var ramp = tokens.DivergingRamp!;
         ChartColorScale Configure(ChartColorScale scale) => scale.WithValueRange(-3, 3).WithMidpoint(0)
             .WithNoDataColor(ChartColor.FromRgb(128, 128, 128)).WithLabels("Low", "Mid", "High")
@@ -78,7 +78,7 @@ public sealed class SvgColorVariablesTests {
         Assert.NotEmpty(guides);
         Assert.All(guides, element => Assert.Equal("var(--cfx-surface-line, #E2E4E7)", (string?)element.Attribute("stroke")));
         Assert.Contains("fill=\"var(--cfx-text-secondary, #4D525B)\"", themed, StringComparison.Ordinal);
-        Assert.Contains("stroke=\"" + Lines().Options.Theme.Resolve(VisualThemeMode.Light).Grid.ToCss() + "\"", literal, StringComparison.Ordinal);
+        Assert.Contains("stroke=\"" + Lines().Options.Theme.Resolve(ThemeMode.Light).Grid.ToCss() + "\"", literal, StringComparison.Ordinal);
         Assert.Equal(NormalizeIdentity(literal), NormalizeIdentity(Strip(themed)));
         Assert.Equal(Lines().ToPng(), Lines().WithSvgColorVariables(Graphite.ToSvgColorVariables()).ToPng());
     }

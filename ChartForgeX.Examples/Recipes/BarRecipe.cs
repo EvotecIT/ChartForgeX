@@ -1,7 +1,7 @@
 /// <summary>Builds regional order bars and normalized grouped stacks.</summary>
 public static class BarRecipe {
     /// <summary>Creates the selected vertical-bar example.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create();

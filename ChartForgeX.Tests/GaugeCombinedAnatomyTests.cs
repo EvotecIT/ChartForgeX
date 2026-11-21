@@ -12,7 +12,7 @@ public sealed class GaugeCombinedAnatomyTests {
     [InlineData(390, false)]
     [InlineData(760, true)]
     public void CombinedReadingSharesOneClampedAngleAndRetainsStyledRawBands(int width, bool dark) {
-        var chart = CombinedGaugeRecipe.Create(width == 390 ? "compact" : "wide", dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        var chart = CombinedGaugeRecipe.Create(width == 390 ? "compact" : "wide", dark ? ThemeMode.Dark : ThemeMode.Light);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var track = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneSlice>(), node => node.Role == "gauge-track");
         var value = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneSlice>(), node => node.Role == "gauge-value");

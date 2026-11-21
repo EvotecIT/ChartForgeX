@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = TopologyTableContentRecipe.Create(&quot;wide&quot;, mode);
 var context = new VisualRenderContext(
@@ -111,7 +112,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;remarks&gt;The separate UseCase source example exercises parsing; this recipe needs only the Core package.&lt;/remarks&gt;
 public static class TopologyTableContentRecipe {
     /// &lt;summary&gt;Creates a complete native example in compact/wide and both theme modes.&lt;/summary&gt;
-    public static TopologyChart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static TopologyChart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant == &quot;compact&quot;;
         var chart = TopologyChart.Create().WithId(&quot;linked-table-content&quot;).WithTitle(&quot;Approve a captured release&quot;)
@@ -164,6 +165,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -173,7 +175,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = TopologyTableContentRecipe.Create(&quot;wide&quot;, mode);
 var context = new VisualRenderContext(
@@ -189,7 +191,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;remarks&gt;The separate UseCase source example exercises parsing; this recipe needs only the Core package.&lt;/remarks&gt;
 public static class TopologyTableContentRecipe {
     /// &lt;summary&gt;Creates a complete native example in compact/wide and both theme modes.&lt;/summary&gt;
-    public static TopologyChart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static TopologyChart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant == &quot;compact&quot;;
         var chart = TopologyChart.Create().WithId(&quot;linked-table-content&quot;).WithTitle(&quot;Approve a captured release&quot;)

@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = HeatmapColorScaleRecipe.Create(&quot;compact-color-scale&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Shows positive and negative measurements on a diverging heatmap scale.&lt;/summary&gt;
 public static class HeatmapColorScaleRecipe {
     /// &lt;summary&gt;Creates the selected numeric color-scale example.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;color-scale&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;color-scale&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;color-scale&quot; or &quot;compact-color-scale&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var colors = VisualTheme.Graphite().Resolve(mode);
         var scale = variant == &quot;color-scale&quot;
@@ -129,6 +130,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -138,7 +140,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = HeatmapColorScaleRecipe.Create(&quot;compact-color-scale&quot;, mode);
 var context = new VisualRenderContext(
@@ -153,7 +155,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Shows positive and negative measurements on a diverging heatmap scale.&lt;/summary&gt;
 public static class HeatmapColorScaleRecipe {
     /// &lt;summary&gt;Creates the selected numeric color-scale example.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;color-scale&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;color-scale&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;color-scale&quot; or &quot;compact-color-scale&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var colors = VisualTheme.Graphite().Resolve(mode);
         var scale = variant == &quot;color-scale&quot;

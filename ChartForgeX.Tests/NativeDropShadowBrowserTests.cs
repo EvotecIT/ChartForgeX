@@ -14,7 +14,7 @@ public sealed class NativeDropShadowBrowserTests {
     [InlineData(false, false)] [InlineData(false, true)] [InlineData(true, false)] [InlineData(true, true)]
     public async Task WholeNativeChartAndFiniteSourceShadowStayVisibleWithActualAlphaCoverage(bool dark, bool compact) {
         if (!Enabled) return;
-        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var chart = NativeDropShadowExample.Create(compact ? "compact" : "wide", mode);
         var nativeProbe = ShadowFilterFixture.Source().CaptureLayer(new VisualDropShadow(ChartColor.FromRgba(0, 0, 255, 128), 4, 2, 0,
             spread: 1, orderedDither: false), ShadowFilterFixture.Options);

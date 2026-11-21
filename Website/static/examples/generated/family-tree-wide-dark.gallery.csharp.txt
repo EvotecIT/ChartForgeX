@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -15,7 +16,7 @@ using ChartForgeX.VisualBlocks;
 
 // Native PNG and standalone SVG use bundled Archivo.
 // Add ChartFontAssets.StyleSheet once for other text on a host page.
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = TreeRecipe.Create("wide", mode);
 var context = new VisualRenderContext(
@@ -29,7 +30,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 
 /// <summary>A connected team hierarchy with stable node identities independent of display labels.</summary>
 public static class TreeRecipe {
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var nodes = new[] {
             new ChartNode("all", "All teams"), new ChartNode("engineering", "Engineering"), new ChartNode("operations", "Operations"),
             new ChartNode("platform", "Platform"), new ChartNode("engineering-support", variant == "options" ? "Support" : "Services"),

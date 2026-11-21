@@ -10,11 +10,11 @@ namespace ChartForgeX.Tests;
 
 public sealed class SourceAnnotationTests {
     [Theory]
-    [InlineData(390, VisualThemeMode.Light, false)]
-    [InlineData(390, VisualThemeMode.Dark, true)]
-    [InlineData(900, VisualThemeMode.Light, true)]
-    [InlineData(900, VisualThemeMode.Dark, false)]
-    public void SourceDrawingsFollowNativeMarksWithoutChangingDomainsAndKeepDetachedExports(int width, VisualThemeMode mode, bool reversed) {
+    [InlineData(390, ThemeMode.Light, false)]
+    [InlineData(390, ThemeMode.Dark, true)]
+    [InlineData(900, ThemeMode.Light, true)]
+    [InlineData(900, ThemeMode.Dark, false)]
+    public void SourceDrawingsFollowNativeMarksWithoutChangingDomainsAndKeepDetachedExports(int width, ThemeMode mode, bool reversed) {
         var chart = Fixture(); chart.Options.XAxis.Reversed = reversed;
         var context = Context(width, mode);
         var before = chart.Prepare(context);
@@ -52,10 +52,10 @@ public sealed class SourceAnnotationTests {
         chart.AddNote(new ChartPoint(3, .5), "Ratio review", id: new ChartAnnotationId("ratio"), yAxis: ChartAxisSide.Secondary)
             .AddLineSegment(new ChartPoint(-10, 50), new ChartPoint(20, 50), id: new ChartAnnotationId("crossing"))
             .AddParallelChannel(new ChartPoint(-10, 0), new ChartPoint(20, 600), 10, id: new ChartAnnotationId("outside"));
-        var full = chart.Prepare(Context(900, VisualThemeMode.Light));
+        var full = chart.Prepare(Context(900, ThemeMode.Light));
         var anchor = Assert.Single(full.Scene.Nodes.OfType<VisualSceneEllipse>(), node => node.Role == "annotation-anchor");
         Assert.Contains(full.Scene.Nodes.OfType<VisualSceneEllipse>(), node => node.Role == "marker" && Math.Abs(node.Cx - anchor.Cx) < 1e-7 && Math.Abs(node.Cy - anchor.Cy) < 1e-7);
-        var window = chart.Prepare(Context(390, VisualThemeMode.Dark), new ChartCartesianViewport(x: new ChartAxisWindow(4, 7)));
+        var window = chart.Prepare(Context(390, ThemeMode.Dark), new ChartCartesianViewport(x: new ChartAxisWindow(4, 7)));
         Assert.DoesNotContain(window.Scene.Nodes, node => node.Role == "annotation-anchor");
         var note = window.Scene.Nodes.OfType<VisualSceneGroup>().Single(group => group.Metadata.TryGetValue("data-cfx-annotation-id", out var id) && id == "ratio");
         Assert.Equal("false", note.Metadata["data-cfx-visible"]);
@@ -77,13 +77,13 @@ public sealed class SourceAnnotationTests {
         var duplicate = Fixture().AddNote(new ChartPoint(1, 2), "One", id: new ChartAnnotationId("same"));
         Assert.Throws<InvalidOperationException>(() => duplicate.AddLineSegment(new ChartPoint(1, 2), new ChartPoint(2, 3), id: new ChartAnnotationId("same")));
         var noSecondary = Fixture().AddNote(new ChartPoint(1, 2), "", yAxis: ChartAxisSide.Secondary);
-        Assert.Throws<InvalidOperationException>(() => noSecondary.Prepare(Context(390, VisualThemeMode.Light)));
+        Assert.Throws<InvalidOperationException>(() => noSecondary.Prepare(Context(390, ThemeMode.Light)));
         var logarithmic = Fixture().AddParallelChannel(new ChartPoint(1, 2), new ChartPoint(2, 3), -3);
         logarithmic.Options.YAxis.WithBounds(1, 100);
         logarithmic.Options.YAxis.Scale = ChartScaleKind.Logarithmic;
-        Assert.Throws<InvalidOperationException>(() => logarithmic.Prepare(Context(390, VisualThemeMode.Light)));
+        Assert.Throws<InvalidOperationException>(() => logarithmic.Prepare(Context(390, ThemeMode.Light)));
         var horizontal = Chart.Create().AddHorizontalBar("Values", new[] { new ChartPoint(1, 1), new ChartPoint(2, 2), new ChartPoint(3, 3) }).AddNote(new ChartPoint(1, 2), "");
-        Assert.Throws<NotSupportedException>(() => horizontal.Prepare(Context(390, VisualThemeMode.Light)));
+        Assert.Throws<NotSupportedException>(() => horizontal.Prepare(Context(390, ThemeMode.Light)));
     }
 
     private static Chart Fixture() {
@@ -91,7 +91,7 @@ public sealed class SourceAnnotationTests {
         chart.Series[0].ConfigureMarkers(options => options.Enabled = true);
         chart.Options.XAxis.WithBounds(0, 10); chart.Options.YAxis.WithBounds(0, 100); return chart;
     }
-    private static VisualRenderContext Context(int width, VisualThemeMode mode) => new(new VisualLayoutOptions(new VisualSize(width, 420), 14),
+    private static VisualRenderContext Context(int width, ThemeMode mode) => new(new VisualLayoutOptions(new VisualSize(width, 420), 14),
         VisualTheme.Graphite(), mode, new VisualFrame("Source drawings", "", showLegend: true),
         FontSpec.FromFile(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
 }

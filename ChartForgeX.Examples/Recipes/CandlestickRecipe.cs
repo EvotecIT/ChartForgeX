@@ -1,7 +1,7 @@
 /// <summary>Builds daily opening, closing, high and low prices as candlesticks.</summary>
 public static class CandlestickRecipe {
     /// <summary>Creates the selected candlestick example with optional authored body and wick styling.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "dashed" or "compact-dashed"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create();

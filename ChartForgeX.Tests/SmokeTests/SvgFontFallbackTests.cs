@@ -19,7 +19,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("font-family=\"" + Missing + ", sans-serif\"", StringComparison.Ordinal), "A single named family should fall back to sans-serif in SVG output.");
 
         var prepared = Chart.Create().AddBar("Values", Points(4, 5, 6)).Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(480, 300)),
-            VisualTheme.Graphite(), VisualThemeMode.Light, new VisualFrame("Prepared", "Registered proof fonts", showSurface: false), FontSpec.FromFamily(Missing)));
+            VisualTheme.Graphite(), ThemeMode.Light, new VisualFrame("Prepared", "Registered proof fonts", showSurface: false), FontSpec.FromFamily(Missing)));
         Assert(prepared.ToSvg().Contains("font-family=\"" + Missing + ", sans-serif\"", StringComparison.Ordinal), "Prepared-scene SVG should end registered proof font stacks with a generic family.");
 
         Assert(TypographyCss.FamilyWithGenericFallback("Consolas") == "Consolas, monospace", "Monospace faces should fall back to monospace.");

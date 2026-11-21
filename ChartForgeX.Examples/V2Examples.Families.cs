@@ -7,7 +7,7 @@ using ChartForgeX.VisualArtifacts;
 
 public static partial class V2Examples {
     private static void WriteFamilies(string output, ICollection<ProofArtifact> artifacts, bool curated) {
-        foreach (var kind in Enum.GetValues<ChartSeriesKind>()) foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var kind in Enum.GetValues<ChartSeriesKind>()) foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             foreach (var selection in ExampleRecipes.FamilySelections(kind, curated)) {
                 var variant = selection.Variant;
                 var precision = variant is "precision" or "compact-precision";
@@ -99,13 +99,13 @@ public static partial class V2Examples {
             }
             if (kind == ChartSeriesKind.RadialBar) WriteNumericRadialAxes(output, artifacts, mode);
         }
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) WriteMixedRadial(output, artifacts, mode);
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) WriteMixedRadial(output, artifacts, mode);
         WriteSupportedCombinations(output, artifacts);
         WriteExpandedDiagrams(output, artifacts, curated);
         WriteShowcaseFamilies(output, artifacts);
     }
 
-    private static void WriteMixedRadial(string output, ICollection<ProofArtifact> artifacts, VisualThemeMode mode) {
+    private static void WriteMixedRadial(string output, ICollection<ProofArtifact> artifacts, ThemeMode mode) {
         foreach (var compact in new[] { false, true }) {
           foreach (var curved in new[] { false, true }) {
             var variant = compact ? "compact-mixed" : "mixed";
@@ -122,7 +122,7 @@ public static partial class V2Examples {
         }
     }
 
-    private static void WriteNumericRadialAxes(string output, ICollection<ProofArtifact> artifacts, VisualThemeMode mode) {
+    private static void WriteNumericRadialAxes(string output, ICollection<ProofArtifact> artifacts, ThemeMode mode) {
         foreach (var compact in new[] { false, true }) {
             var variant = compact ? "compact-dual-axes" : "dual-axes";
             var id = "family-radial-bar-" + variant + "-" + mode.ToString().ToLowerInvariant();
@@ -172,7 +172,7 @@ public static partial class V2Examples {
     };
 
     private static void WriteModel(string output, ICollection<ProofArtifact> artifacts, IVisualRenderable model, string id, string family, string title,
-        string variant, string subtitle, VisualThemeMode mode, int width, int height, bool? legend, ExampleRecipe recipe, string[]? kinds = null, bool compact = false) {
+        string variant, string subtitle, ThemeMode mode, int width, int height, bool? legend, ExampleRecipe recipe, string[]? kinds = null, bool compact = false) {
         var context = GalleryContext(width, height, mode, title, subtitle, legend);
         if (model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
             // Keep the complete natural canvas; compact hosts scroll instead of shrinking authored actors.
@@ -211,7 +211,7 @@ public static partial class V2Examples {
             prepared.Diagnostics.Select(diagnostic => diagnostic.Message).ToArray(), compact, interactive));
     }
 
-    private static VisualRenderContext GalleryContext(int width, int height, VisualThemeMode mode, string title, string subtitle, bool? legend) =>
+    private static VisualRenderContext GalleryContext(int width, int height, ThemeMode mode, string title, string subtitle, bool? legend) =>
         new(new VisualLayoutOptions(new VisualSize(width, height), fitHeightToContent: true), VisualTheme.Graphite(), mode, new VisualFrame(title, subtitle, showLegend: legend), FontSpec.FromFamily(ProofFont));
     private static string FamilyName(ChartSeriesKind kind) => System.Text.RegularExpressions.Regex.Replace(kind.ToString(), "([a-z])([A-Z])", "$1-$2").ToLowerInvariant();
 }

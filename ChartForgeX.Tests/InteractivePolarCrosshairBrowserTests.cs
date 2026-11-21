@@ -19,7 +19,7 @@ public sealed class InteractivePolarCrosshairBrowserTests {
     public async Task PolarReaderShowsAngleAndRadiusForTheHoveredAndFocusedObservation(string runtime, bool radar, bool dark) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(600, 420).WithLegend(false).WithDataLabels(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         if (radar) {
             chart.WithXLabels("Speed", "Reliability", "Comfort", "Safety", "Efficiency")
                 .AddRadar("Model A", new[] { new ChartPoint(1, 80), new ChartPoint(2, 65), new ChartPoint(3, 90), new ChartPoint(4, 70), new ChartPoint(5, 55) })

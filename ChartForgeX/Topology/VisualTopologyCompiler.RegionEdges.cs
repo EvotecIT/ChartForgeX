@@ -9,7 +9,7 @@ namespace ChartForgeX.Topology;
 
 internal sealed partial class VisualTopologyCompiler {
     private void BuildRegionEdge(TopologyEdge edge) {
-        var points = _routes[edge]; var tone = edge.Tone == TopologyTone.Automatic && edge.IsOverlay ? TopologyTone.Info : edge.Tone;
+        var points = _routes[edge]; var tone = edge.Tone == Tone.None && edge.IsOverlay ? Tone.Info : edge.Tone;
         var color = Color(edge.Color, RegionToneColor(tone, edge.Status));
         var metadata = new Dictionary<string, string> {
             ["class"] = "cfx-edge " + RegionTone(tone, edge.Status) + (edge.LineStyle == TopologyEdgeLineStyle.Dashed ? " dashed" : ""),
@@ -63,7 +63,7 @@ internal sealed partial class VisualTopologyCompiler {
                     || !string.IsNullOrWhiteSpace(node.Subtitle) && RegionOverlap(bounds, new ChartRect(node.X + node.Width / 2 - 70, node.Y + node.Height + 4, 140, 18)))
                 || _chart.Groups.Any(group => RegionOverlap(bounds, new ChartRect(group.X, group.Y, group.Width, 60)))) continue;
             var values = RegionValues(); values["x"] = Number(x); values["y"] = Number(y); values["label"] = edge.Label!;
-            values["tone"] = RegionTone(edge.Tone == TopologyTone.Automatic && edge.IsOverlay ? TopologyTone.Info : edge.Tone, edge.Status); values["status"] = color.ToCss();
+            values["tone"] = RegionTone(edge.Tone == Tone.None && edge.IsOverlay ? Tone.Info : edge.Tone, edge.Status); values["status"] = color.ToCss();
             values["halo"] = _chart.Groups.Any(group => RegionOverlap(bounds, new ChartRect(group.X, group.Y, group.Width, group.Height)))
                 ? _colors.Surface.ToCss() : _colors.Background.ToCss();
             TopologyRegionTemplate.Draw(_regionPainter, "edge-label", values, new Dictionary<string, string> {
@@ -98,7 +98,7 @@ internal sealed partial class VisualTopologyCompiler {
         var points = _routes[edge]; var y = points[0].Y;
         var direction = edge.Direction == VisualLinkDirection.Bidirectional ? " ⇄ " : edge.Direction == VisualLinkDirection.Forward ? " → " : " — ";
         var label = _nodesById[edge.SourceNodeId].Label + direction + _nodesById[edge.TargetNodeId].Label + " · " + edge.Label;
-        var tone = edge.Tone == TopologyTone.Automatic ? TopologyTone.Info : edge.Tone;
+        var tone = edge.Tone == Tone.None ? Tone.Info : edge.Tone;
         var width = Math.Min(_regionUnitWidth - 40, _regionPainter.MeasureText(label, 12).Width + 24);
         using (_regionPainter.PushGroup(edge.Id, "topology-edge", RegionRelationshipMetadata(edge, new Dictionary<string, string> {
             ["class"] = "cfx-edge " + RegionTone(tone, edge.Status), ["data-edge-id"] = edge.Id, ["data-edge-label"] = edge.Label ?? "",
@@ -109,19 +109,18 @@ internal sealed partial class VisualTopologyCompiler {
         }
     }
     private IReadOnlyList<(string Label, TopologyHealthStatus? Status)> RegionLegendItems() {
-        TopologyHealthStatus? LegendStatus(TopologyTone tone, TopologyHealthStatus status) => tone switch {
-            TopologyTone.Automatic => status, TopologyTone.Good => TopologyHealthStatus.Healthy, TopologyTone.Warn => TopologyHealthStatus.Warning,
-            TopologyTone.Bad => TopologyHealthStatus.Critical, TopologyTone.Neutral => TopologyHealthStatus.Unknown, _ => null
-        };
+        TopologyHealthStatus? LegendStatus(Tone tone, TopologyHealthStatus status) => tone == Tone.None ? status
+            : tone == Tone.Success ? TopologyHealthStatus.Healthy : tone == Tone.Warning ? TopologyHealthStatus.Warning
+            : tone == Tone.Danger ? TopologyHealthStatus.Critical : tone == Tone.Neutral ? TopologyHealthStatus.Unknown : null;
         var states = _chart.Nodes.Select(node => LegendStatus(node.Tone, node.Status))
-            .Concat(_chart.Edges.Select(edge => LegendStatus(edge.Tone == TopologyTone.Automatic && edge.IsOverlay ? TopologyTone.Info : edge.Tone, edge.Status)));
+            .Concat(_chart.Edges.Select(edge => LegendStatus(edge.Tone == Tone.None && edge.IsOverlay ? Tone.Info : edge.Tone, edge.Status)));
         var used = new HashSet<TopologyHealthStatus>(states.Where(state => state.HasValue).Select(state => state!.Value));
         var entries = (_legend?.Items.Where(item => item.Status.HasValue && used.Contains(item.Status.Value))
             .Select(item => (item.Label, item.Status)) ?? Enumerable.Empty<(string Label, TopologyHealthStatus? Status)>()).ToList();
         foreach (var status in used.OrderBy(status => status)) if (!entries.Any(entry => entry.Status == status)) entries.Add((status.ToString(), status));
-        if (_chart.Nodes.Any(node => node.Tone == TopologyTone.Info) || _chart.Edges.Any(edge => edge.Tone == TopologyTone.Info || edge.IsOverlay && edge.Tone == TopologyTone.Automatic))
+        if (_chart.Nodes.Any(node => node.Tone == Tone.Info) || _chart.Edges.Any(edge => edge.Tone == Tone.Info || edge.IsOverlay && edge.Tone == Tone.None))
             entries.Add((_legend?.Items.FirstOrDefault(item => item.Status == null && item.EdgeKind.HasValue
-                && _chart.Edges.Any(edge => edge.Kind == item.EdgeKind.Value && (edge.Tone == TopologyTone.Info || edge.IsOverlay && edge.Tone == TopologyTone.Automatic)))?.Label
+                && _chart.Edges.Any(edge => edge.Kind == item.EdgeKind.Value && (edge.Tone == Tone.Info || edge.IsOverlay && edge.Tone == Tone.None)))?.Label
                 ?? (_chart.Edges.Any(edge => edge.IsOverlay) ? "Shared relationship" : "Informational"), null));
         entries.AddRange(_chart.Nodes.SelectMany(node => node.Badges).Select(badge => (badge.Meaning, (TopologyHealthStatus?)null)).Distinct());
         if (_chart.Nodes.Count > 0 && !string.IsNullOrWhiteSpace(_options.RegionRingLegendLabel)) entries.Add((_options.RegionRingLegendLabel, null));

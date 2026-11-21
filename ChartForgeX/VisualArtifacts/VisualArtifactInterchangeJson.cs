@@ -558,7 +558,7 @@ internal static partial class VisualArtifactInterchangeJson {
         return value.AsBoolean(name);
     }
 
-    private static TEnum RequiredEnum<TEnum>(Dictionary<string, GeoJsonValue> values, string name) where TEnum : struct {
+    private static TEnum RequiredEnum<TEnum>(Dictionary<string, GeoJsonValue> values, string name) where TEnum : struct, Enum {
         string value = RequiredString(values, name);
         foreach (string declaredName in Enum.GetNames(typeof(TEnum))) {
             if (string.Equals(declaredName, value, StringComparison.OrdinalIgnoreCase)) return (TEnum)Enum.Parse(typeof(TEnum), declaredName, ignoreCase: false);
@@ -566,7 +566,7 @@ internal static partial class VisualArtifactInterchangeJson {
         throw new ArgumentException("Unknown " + typeof(TEnum).Name + " value: " + value + ".");
     }
 
-    private static TEnum RequiredFlagsEnum<TEnum>(Dictionary<string, GeoJsonValue> values, string name) where TEnum : struct {
+    private static TEnum RequiredFlagsEnum<TEnum>(Dictionary<string, GeoJsonValue> values, string name) where TEnum : struct, Enum {
         string value = RequiredString(values, name);
         ulong combined = 0;
         foreach (string token in value.Split(',')) {
@@ -584,7 +584,7 @@ internal static partial class VisualArtifactInterchangeJson {
         return (TEnum)Enum.ToObject(typeof(TEnum), combined);
     }
 
-    private static TEnum? OptionalEnum<TEnum>(Dictionary<string, GeoJsonValue> values, string name) where TEnum : struct {
+    private static TEnum? OptionalEnum<TEnum>(Dictionary<string, GeoJsonValue> values, string name) where TEnum : struct, Enum {
         string? value = OptionalString(values, name);
         if (value == null) return null;
         foreach (string declaredName in Enum.GetNames(typeof(TEnum))) {

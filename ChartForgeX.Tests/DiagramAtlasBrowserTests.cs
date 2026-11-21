@@ -17,7 +17,7 @@ public sealed class DiagramAtlasBrowserTests {
     public async Task AtlasCaptionsRemainInsideTheirCanvasInBothAspectRatiosAndModes(string family) {
         if (!InteractiveChartBrowser.Enabled) return;
         foreach (var dark in new[] { false, true }) foreach (var wide in new[] { false, true }) {
-            var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+            var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
             var width = wide ? 1100 : 390;
             var artifact = family == "topology" ? TopologyRecipe.Create(wide ? "wide" : "compact", mode).ToVisualArtifact()
                 : MermaidRenderer.Render(File.ReadAllText(Path.Combine(TestRepository.Root, "Website", "static", "site", "atlas", family + ".mmd")), Options(width, mode)).Artifact!;
@@ -47,7 +47,7 @@ public sealed class DiagramAtlasBrowserTests {
         }
     }
 
-    private static MermaidRenderOptions Options(int width, VisualThemeMode mode) {
+    private static MermaidRenderOptions Options(int width, ThemeMode mode) {
         var topology = new MermaidTopologyRenderOptions { Width = width, Height = 620 };
         return new MermaidRenderOptions {
             Presentation = new MermaidPresentationOptions { ThemeMode = mode },

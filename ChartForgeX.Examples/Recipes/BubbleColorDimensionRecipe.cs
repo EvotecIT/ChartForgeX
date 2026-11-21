@@ -1,12 +1,12 @@
 /// <summary>Formats bubble temperature separately from processing time and request volume.</summary>
 public static class BubbleColorDimensionRecipe {
     /// <summary>Creates the selected example without choosing a renderer or export backend.</summary>
-    public static Chart Create(string variant = "color-dimension", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "color-dimension", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("color-dimension" or "compact-color-dimension")) throw new ArgumentOutOfRangeException(nameof(variant));
         return ColorDimension(mode);
     }
 
-    private static Chart ColorDimension(VisualThemeMode mode) {
+    private static Chart ColorDimension(ThemeMode mode) {
         var colors = VisualTheme.Graphite().Resolve(mode);
         var minutes = new[] { 18d, 30, 24, 44, 32 };
         var temperatures = new double?[] { -12, 0, null, 2.5, 22.5 };

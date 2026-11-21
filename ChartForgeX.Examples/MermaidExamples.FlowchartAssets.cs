@@ -3,7 +3,7 @@ using ChartForgeX.VisualArtifacts;
 
 internal static partial class MermaidExamples {
     private static void WriteFlowchartAssetExamples(string output) {
-        foreach (var variant in new[] { "compact", "wide" }) foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var variant in new[] { "compact", "wide" }) foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             var artifact = FlowchartAssetRecipe.Create(variant, mode, ExampleTypography.FontFamily);
             var name = "mermaid-assets-" + variant + "-" + mode.ToString().ToLowerInvariant();
             artifact.SaveSvg(Path.Combine(output,name+".svg"));File.WriteAllBytes(Path.Combine(output,name+".png"),artifact.ToPng());

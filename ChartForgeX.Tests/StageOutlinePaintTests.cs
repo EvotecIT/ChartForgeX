@@ -11,13 +11,13 @@ namespace ChartForgeX.Tests;
 
 public sealed class StageOutlinePaintTests {
     [Theory]
-    [InlineData(false, ChartFunnelForm.StageBars, 390, VisualThemeMode.Light)]
-    [InlineData(false, ChartFunnelForm.StageBars, 800, VisualThemeMode.Dark)]
-    [InlineData(false, ChartFunnelForm.Cone, 390, VisualThemeMode.Dark)]
-    [InlineData(false, ChartFunnelForm.Cone, 800, VisualThemeMode.Light)]
-    [InlineData(true, ChartFunnelForm.StageBars, 390, VisualThemeMode.Light)]
-    [InlineData(true, ChartFunnelForm.StageBars, 800, VisualThemeMode.Dark)]
-    public void OutlinesUseExistingPointPaintAndPreserveExactStageGeometry(bool pyramid, ChartFunnelForm form, int width, VisualThemeMode mode) {
+    [InlineData(false, ChartFunnelForm.StageBars, 390, ThemeMode.Light)]
+    [InlineData(false, ChartFunnelForm.StageBars, 800, ThemeMode.Dark)]
+    [InlineData(false, ChartFunnelForm.Cone, 390, ThemeMode.Dark)]
+    [InlineData(false, ChartFunnelForm.Cone, 800, ThemeMode.Light)]
+    [InlineData(true, ChartFunnelForm.StageBars, 390, ThemeMode.Light)]
+    [InlineData(true, ChartFunnelForm.StageBars, 800, ThemeMode.Dark)]
+    public void OutlinesUseExistingPointPaintAndPreserveExactStageGeometry(bool pyramid, ChartFunnelForm form, int width, ThemeMode mode) {
         var chart = StagePresentationOptionsTests.Create(pyramid, form, ChartOrientation.Vertical, width);
         chart.WithTheme(VisualTheme.Graphite(), mode).WithDataLabels(false);
         var original = StagePresentationOptionsTests.Prepare(chart);

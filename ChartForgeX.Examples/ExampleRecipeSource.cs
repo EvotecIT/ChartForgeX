@@ -7,7 +7,7 @@ public static partial class ExampleRecipeSource {
         + "// Add ChartFontAssets.StyleSheet once for other text on a host page.\n";
 
     /// <summary>Creates a standalone program with the selected viewport, frame, palette mode and optional gallery typography.</summary>
-    public static string Emit(ExampleRecipe recipe, string variant, string title, string subtitle, VisualThemeMode mode,
+    public static string Emit(ExampleRecipe recipe, string variant, string title, string subtitle, ThemeMode mode,
         int width, int height, bool? legend = null, string artifactKind = "Chart", bool surface = false,
         bool viewport = false, bool galleryTypography = false) {
         if (recipe == null) throw new ArgumentNullException(nameof(recipe));
@@ -41,7 +41,7 @@ public static partial class ExampleRecipeSource {
     }
 
     /// <summary>Creates a standalone chart program preserving the factory's own frame, theme, size and output names.</summary>
-    public static string EmitChart(ExampleRecipe recipe, string name, string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static string EmitChart(ExampleRecipe recipe, string name, string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (recipe == null) throw new ArgumentNullException(nameof(recipe));
         return Package(recipe, "RecipeChartProgram", new Dictionary<string, string>(StringComparer.Ordinal) {
             ["{{FACTORY}}"] = recipe.Factory,
@@ -52,7 +52,7 @@ public static partial class ExampleRecipeSource {
     }
 
     /// <summary>Packages the compiled native Git graph block through its existing static SVG/PNG owner, without a prepared-chart adapter.</summary>
-    public static string EmitGitGraph(string variant = "wide-lr", VisualThemeMode mode = VisualThemeMode.Light, bool galleryTypography = false) {
+    public static string EmitGitGraph(string variant = "wide-lr", ThemeMode mode = ThemeMode.Light, bool galleryTypography = false) {
         // Capture the exact public fixture's supported variants before emitting an executable program.
         _ = GitGraphDepthRecipe.Create(variant, mode);
         return Package(nameof(GitGraphDepthRecipe), "RecipeBlockProgram", new Dictionary<string, string>(StringComparer.Ordinal) {
@@ -63,7 +63,7 @@ public static partial class ExampleRecipeSource {
     }
 
     /// <summary>Packages the compiled native BlockLayout recipe through the existing static block program owner.</summary>
-    public static string EmitBlockLayout(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light, bool galleryTypography = false) {
+    public static string EmitBlockLayout(string variant = "wide", ThemeMode mode = ThemeMode.Light, bool galleryTypography = false) {
         if (variant != "wide" && variant != "compact") throw new ArgumentOutOfRangeException(nameof(variant));
         return Package(nameof(BlockLayoutDepthRecipe), "RecipeBlockProgram", new Dictionary<string, string>(StringComparer.Ordinal) {
             ["{{FACTORY}}"] = nameof(BlockLayoutDepthRecipe), ["{{VARIANT}}"] = JsonSerializer.Serialize(variant), ["{{MODE}}"] = mode.ToString(),
@@ -73,9 +73,9 @@ public static partial class ExampleRecipeSource {
     }
 
     /// <summary>Packages the maintained Kanban source as a complete ordinary Mermaid-package program.</summary>
-    public static string EmitKanban(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static string EmitKanban(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant), variant, "Use wide or compact.");
-        if (!Enum.IsDefined(typeof(VisualThemeMode), mode)) throw new ArgumentOutOfRangeException(nameof(mode));
+        if (!Enum.IsDefined(typeof(ThemeMode), mode)) throw new ArgumentOutOfRangeException(nameof(mode));
         return Template("RecipeKanbanProgram", new Dictionary<string, string>(StringComparer.Ordinal) {
             ["{{SOURCE_TEXT}}"] = JsonSerializer.Serialize(ReadResource("ChartForgeX.Examples.MermaidFixtures.kanban-source-geometry.mmd")),
             ["{{WIDTH}}"] = variant == "compact" ? "390" : "1100", ["{{MODE}}"] = mode.ToString()
@@ -83,7 +83,7 @@ public static partial class ExampleRecipeSource {
     }
 
     /// <summary>Packages the complete native cause tree as a Core-only ordinary SVG/PNG/HTML program.</summary>
-    public static string EmitIshikawa(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light, bool galleryTypography = false) {
+    public static string EmitIshikawa(string variant = "wide", ThemeMode mode = ThemeMode.Light, bool galleryTypography = false) {
         _ = IshikawaDepthRecipe.Create(variant, mode);
         return Package(nameof(IshikawaDepthRecipe), "RecipeFishboneProgram", new Dictionary<string, string>(StringComparer.Ordinal) {
             ["{{VARIANT}}"] = JsonSerializer.Serialize(variant), ["{{MODE}}"] = mode.ToString(), ["{{WIDTH}}"] = variant == "compact" ? "390" : "1100",
@@ -93,7 +93,7 @@ public static partial class ExampleRecipeSource {
     }
 
     /// <summary>Packages the compiled native Wardley block as an ordinary dependency-free C# program.</summary>
-    public static string EmitWardley(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light, bool galleryTypography = false) {
+    public static string EmitWardley(string variant = "wide", ThemeMode mode = ThemeMode.Light, bool galleryTypography = false) {
         _ = WardleyDepthRecipe.Create(variant, mode);
         return Package(nameof(WardleyDepthRecipe), "RecipeBlockProgram", new Dictionary<string, string>(StringComparer.Ordinal) {
             ["{{FACTORY}}"] = nameof(WardleyDepthRecipe), ["{{VARIANT}}"] = JsonSerializer.Serialize(variant), ["{{MODE}}"] = mode.ToString(),
@@ -103,7 +103,7 @@ public static partial class ExampleRecipeSource {
     }
 
     /// <summary>Packages the compiled native XY counterpart as a complete ordinary Core program.</summary>
-    public static string EmitXYChart(string variant = "wide-vertical", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static string EmitXYChart(string variant = "wide-vertical", ThemeMode mode = ThemeMode.Light) {
         _ = MermaidXYChartDepthRecipe.Create(variant, mode);
         return Package(nameof(MermaidXYChartDepthRecipe), "RecipeChartProgram", new Dictionary<string, string>(StringComparer.Ordinal) {
             ["{{FACTORY}}"] = nameof(MermaidXYChartDepthRecipe), ["{{VARIANT}}"] = JsonSerializer.Serialize(variant),

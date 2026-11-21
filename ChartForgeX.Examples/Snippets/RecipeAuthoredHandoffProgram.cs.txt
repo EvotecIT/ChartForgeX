@@ -1,12 +1,13 @@
 using System;
 using System.IO;
+using ChartForgeX;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 
-var chart = TopologyAuthoredPathBadgeRecipe.Create().WithTheme(VisualTheme.Graphite(), VisualThemeMode.{{MODE}});
+var chart = TopologyAuthoredPathBadgeRecipe.Create().WithTheme(VisualTheme.Graphite(), ThemeMode.{{MODE}});
 var artifact = chart.ToVisualArtifact();
 Directory.CreateDirectory("output");
 File.WriteAllText("output/handoff.svg", artifact.ToSvg());

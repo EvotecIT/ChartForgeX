@@ -8,11 +8,11 @@ namespace ChartForgeX.Tests;
 
 public sealed class ConeBoundaryCaptionTests {
     [Theory]
-    [InlineData(390, VisualThemeMode.Light)]
-    [InlineData(390, VisualThemeMode.Dark)]
-    [InlineData(800, VisualThemeMode.Light)]
-    [InlineData(800, VisualThemeMode.Dark)]
-    public void CombinedConeValuesAndRatiosStayBesideVisibleStageBoundaries(int width, VisualThemeMode mode) {
+    [InlineData(390, ThemeMode.Light)]
+    [InlineData(390, ThemeMode.Dark)]
+    [InlineData(800, ThemeMode.Light)]
+    [InlineData(800, ThemeMode.Dark)]
+    public void CombinedConeValuesAndRatiosStayBesideVisibleStageBoundaries(int width, ThemeMode mode) {
         var chart = Chart.Create().WithSize(width, 440).WithThemeMode(mode).WithLegend(false).WithDataLabels()
             .WithXLabels("Visits", "Qualified", "Reviewed", "Won", "Renewed")
             .ConfigureFunnel(options => options.Form = ChartFunnelForm.Cone)

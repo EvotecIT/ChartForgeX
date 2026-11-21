@@ -7,7 +7,7 @@ using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 
-var chart = {{FACTORY}}.Create({{VARIANT}}, VisualThemeMode.{{MODE}});
+var chart = {{FACTORY}}.Create({{VARIANT}}, ThemeMode.{{MODE}});
 var name = {{NAME}};
 chart.SaveSvg(name + ".svg");
 chart.SavePng(name + ".png");

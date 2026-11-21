@@ -22,11 +22,11 @@ public sealed class InteractivePositionedColorScaleBrowserTests {
     [InlineData(ChartSeriesKind.Scatter, 800, true)]
     public async Task PositionedPaintAndReadoutsRetainAuthoredValuesAndSourceIdentity(ChartSeriesKind kind, int width, bool dark) {
         if (!Enabled) return;
-        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var chart = V2GalleryModels.Create(kind, width == 360 ? "compact-positioned-color-scale" : "positioned-color-scale", mode)
             .WithSize(width, width == 360 ? 360 : 440).WithTitle(V2GalleryModels.Title(kind))
             .WithSubtitle("Absolute color anchors use uneven numeric intervals")
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         var scale = kind == ChartSeriesKind.TileMap ? chart.Options.MapColorScale!
             : kind == ChartSeriesKind.Heatmap ? chart.Options.HeatmapColorScale! : chart.Series[0].ColorScale!;
         var prefix = kind == ChartSeriesKind.TileMap ? "map-scale" : kind == ChartSeriesKind.Heatmap ? "heatmap-scale" : "color-scale-0";

@@ -85,7 +85,7 @@ public sealed class WaterfallInterchangeTests {
         Assert.Equal("de-DE", view.Options.XAxis.Culture?.Name);
         Assert.Equal("ms", view.Options.ValueUnit);
         Assert.Equal(ChartSeriesColorAssignment.Identity, view.Options.SeriesColorAssignment);
-        var colors = VisualTheme.Graphite().Resolve(VisualThemeMode.Light);
+        var colors = VisualTheme.Graphite().Resolve(ThemeMode.Light);
         Assert.Equal(ChartSeriesColours.Resolve(chart, 0, colors), ChartSeriesColours.Resolve(view, 0, colors));
         Assert.Equal(61d, view.Series[0].Points[1].Y);
         var point = XDocument.Parse(view.ToSvg()).Descendants().First(node => (string?)node.Attribute("data-cfx-role") == "point");
@@ -219,7 +219,7 @@ public sealed class WaterfallInterchangeTests {
             .WithPointLabel(0, "Opening <balance>").ConfigurePointDataLabelStyle(0, style => { style.FontSize = 13; style.Italic = true; })
             .ConfigureDataLabelStyle(style => style.FontWeight = "600");
         var chart = Chart.Create().WithSize(width, 440).WithTitle("Running balance").WithSubtitle("Portable authoring")
-            .WithPadding(18, 14, 18, 12).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithPadding(18, 14, 18, 12).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithValueFormat(ChartValueFormat.Number("0.00", CultureInfo.InvariantCulture)).WithDataLabels().WithLegend(false).AddSeries(series)
             .ConfigureWaterfall(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
         chart.Options.PinStateColorsInForcedColors = true;

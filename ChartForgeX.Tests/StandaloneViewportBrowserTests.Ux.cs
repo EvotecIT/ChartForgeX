@@ -42,7 +42,7 @@ public sealed partial class StandaloneViewportBrowserTests {
     [InlineData(ChartSeriesKind.Area)]
     public async Task CategoryAcquisitionUsesHorizontalDistanceAcrossTheWholePlot(ChartSeriesKind kind) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(800, 440).WithTheme(VisualTheme.Graphite(), VisualThemeMode.Light)
+        var chart = Chart.Create().WithSize(800, 440).WithTheme(VisualTheme.Graphite(), ThemeMode.Light)
             .WithXLabels("Monday", "Tuesday", "Wednesday").WithDataLabels(false)
             .AddSeries(new ChartSeries(new ChartSeriesId("week"), "Requests", kind, ChartPoints.FromValues(0, 100, 0)));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = HtmlChartTooltipMode.Single), 980, 800);
@@ -52,7 +52,7 @@ public sealed partial class StandaloneViewportBrowserTests {
         await page.Mouse.MoveAsync(second.X + second.Width / 2, first.Y + first.Height / 2 - 15);
         Assert.Contains("Tuesday", await TooltipTextAsync(page));
         Assert.Contains("100", await TooltipTextAsync(page));
-        var colour = VisualTheme.Graphite().Resolve(VisualThemeMode.Light).Palette[0];
+        var colour = VisualTheme.Graphite().Resolve(ThemeMode.Light).Palette[0];
         Assert.Equal($"rgb({colour.R}, {colour.G}, {colour.B})",
             await page.Locator(".cfx-tooltip__swatch").First.EvaluateAsync<string>("node=>getComputedStyle(node).backgroundColor"));
         AssertNoConsoleErrors(session);
@@ -63,7 +63,7 @@ public sealed partial class StandaloneViewportBrowserTests {
     [InlineData(false)]
     public async Task PaintedBarInteriorWinsOverAnOverlaidLine(bool tooltips) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(800, 440).WithTheme(VisualTheme.Graphite(), VisualThemeMode.Light)
+        var chart = Chart.Create().WithSize(800, 440).WithTheme(VisualTheme.Graphite(), ThemeMode.Light)
             .WithXLabels("Monday", "Tuesday", "Wednesday").WithDataLabels(false)
             .AddBar("Capacity", ChartPoints.FromValues(90, 90, 90))
             .AddLine("Requests", ChartPoints.FromValues(88, 88, 88));
@@ -100,7 +100,7 @@ public sealed partial class StandaloneViewportBrowserTests {
     [InlineData(true, 375)]
     public async Task RadarFillResolvesASpokeAndShowsEveryVisibleSeriesValue(bool dark, int width) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(800, 440).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = Chart.Create().WithSize(800, 440).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithXLabels("Speed", "Coverage", "Capacity", "Quality", "Recovery", "Support").WithDataLabels(false)
             .AddSeries(new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.Radar, ChartPoints.FromValues(27, 34, 41, 48, 26, 33)))
             .AddSeries(new ChartSeries(new ChartSeriesId("expected"), "Expected", ChartSeriesKind.Radar, ChartPoints.FromValues(39, 48, 55, 61, 40, 46)));

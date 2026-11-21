@@ -1,6 +1,6 @@
 /// <summary>A single reading shown with an arc, needle, explicit references and independently painted semantic bands.</summary>
 public static class CombinedGaugeRecipe {
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant == "compact";
         var series = ChartSeries.CreateGauge(new ChartSeriesId("pressure"), "Pressure",

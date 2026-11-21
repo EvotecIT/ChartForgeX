@@ -95,7 +95,7 @@ public sealed class MermaidInlineIdentityRegressionTests {
     public void StyledEntityEndpointsReachTheSameActualDirectAndFencedSvgPng(bool dark) {
         const string source = "erDiagram\nclassDef marked fill:#ff0000\n\"A:owner\":::marked ||--o{ \"B:child\":::marked : \"owns: safely\"";
         var options = new MermaidRenderOptions { Presentation = new MermaidPresentationOptions {
-            ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light, FontFamily = BrowserProofFonts.Family } };
+            ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light, FontFamily = BrowserProofFonts.Family } };
         var direct = MermaidRenderer.Render(source, options); Assert.Empty(direct.Diagnostics);
         var artifact = direct.Artifact!; var svg = artifact.ToSvg(); var png = artifact.ToPng();
         var xml = XDocument.Parse(svg);

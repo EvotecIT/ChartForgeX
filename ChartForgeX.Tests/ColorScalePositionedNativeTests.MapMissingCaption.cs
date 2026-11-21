@@ -79,7 +79,7 @@ public sealed partial class ColorScalePositionedNativeTests {
         FontRegistry.Register(font, Path.Combine(directory, "Carlito-Regular.ttf"), 400);
         FontRegistry.Register(font, Path.Combine(directory, "Carlito-Bold.ttf"), 700);
         return chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, width == 360 ? 360 : 440)),
-            VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light,
+            VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light,
             new VisualFrame("Temperature by state", "A sampled key keeps the continuous measurement and its color domain", showLegend: null),
             FontSpec.FromFamily(font)));
     }

@@ -1,6 +1,6 @@
 /// <summary>Overlapping project activities in March 2026 with stable task identities and an explicitly configured time axis.</summary>
 public static class TimelineRecipe {
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var start = new DateTime(2026, 3, 2, 8, 0, 0, DateTimeKind.Utc);
         var chart = Chart.Create();
         // Each activity starts and ends a whole number of days after the kick-off on Monday 2 March.

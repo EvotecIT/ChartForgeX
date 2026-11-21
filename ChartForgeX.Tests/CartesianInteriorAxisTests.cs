@@ -146,7 +146,7 @@ public sealed class CartesianInteriorAxisTests {
     [Theory]
     [InlineData(360, false)] [InlineData(360, true)] [InlineData(800, false)] [InlineData(800, true)]
     public void CompleteRecipeCapturesBothNativeFormatsBeforeAssertingInteriorAnatomy(int width, bool dark) {
-        var chart = QuadrantRegionDepthRecipe.Create(width == 360 ? "compact-interior-quadrants" : "interior-quadrants", dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        var chart = QuadrantRegionDepthRecipe.Create(width == 360 ? "compact-interior-quadrants" : "interior-quadrants", dark ? ThemeMode.Dark : ThemeMode.Light);
         var prepared = Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng();
         var path = Environment.GetEnvironmentVariable("CFX_NATIVE_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(path)) { Directory.CreateDirectory(path); var name = "quadrant-interior-axes-" + width + "-" + dark;

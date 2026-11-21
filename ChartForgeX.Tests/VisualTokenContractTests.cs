@@ -64,9 +64,9 @@ public sealed class VisualTokenContractTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void GraphiteChromeSurvivesIndependentThemeEditsAndJsonRoundTrip(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void GraphiteChromeSurvivesIndependentThemeEditsAndJsonRoundTrip(ThemeMode mode) {
         var graphite = VisualTheme.Graphite();
         var changed = graphite.Configure(builder => builder.Spacing = 19).WithFontFamily("Example host font");
         var imported = VisualTheme.FromJson(changed.ToJson());
@@ -75,8 +75,8 @@ public sealed class VisualTokenContractTests {
         Assert.Equal(6, graphite.PlotRadius);
         Assert.Equal(10, chrome.TooltipRadius);
         Assert.Equal(6, chrome.ControlRadius);
-        Assert.Equal(ChartColor.FromHex(mode == VisualThemeMode.Light ? "#cdd0d5" : "#363a42"), chrome.Line);
-        Assert.Equal(ChartColor.FromHex(mode == VisualThemeMode.Light ? "#02726a" : "#37c9b8"), chrome.FocusRing);
+        Assert.Equal(ChartColor.FromHex(mode == ThemeMode.Light ? "#cdd0d5" : "#363a42"), chrome.Line);
+        Assert.Equal(ChartColor.FromHex(mode == ThemeMode.Light ? "#02726a" : "#37c9b8"), chrome.FocusRing);
         Assert.Equal(graphite.Resolve(mode).Chrome, chrome);
         Assert.Equal("Example host font", imported.Typography.Family);
         Assert.Equal(19, imported.Spacing);

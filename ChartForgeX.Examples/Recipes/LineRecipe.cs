@@ -1,7 +1,7 @@
 /// <summary>Builds request-volume lines and a comparison of step positions and markers.</summary>
 public static class LineRecipe {
     /// <summary>Creates the selected line example with its authored observations and styling.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create();

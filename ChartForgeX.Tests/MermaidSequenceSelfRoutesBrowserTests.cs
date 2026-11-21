@@ -11,7 +11,7 @@ public sealed class MermaidSequenceSelfRoutesBrowserTests {
     [BrowserTheory] [InlineData(false,390)] [InlineData(true,390)] [InlineData(false,1100)] [InlineData(true,1100)]
     public async Task BothExplicitNativeSelfRoutesRemainCompleteInDirectAndFenceHosts(bool dark,int width) {
         foreach(var rightAngles in new[]{true,false}) {
-            var source=SequenceSelfSourceFixture.Source(rightAngles);var options=new MermaidRenderOptions{WarningPolicy=MermaidWarningPolicy.Reject,Presentation=new MermaidPresentationOptions{ThemeMode=dark?VisualThemeMode.Dark:VisualThemeMode.Light,FontFamily=BrowserProofFonts.Family},Sequence=new MermaidSequenceRenderOptions{Width=width-32,Height=820}};
+            var source=SequenceSelfSourceFixture.Source(rightAngles);var options=new MermaidRenderOptions{WarningPolicy=MermaidWarningPolicy.Reject,Presentation=new MermaidPresentationOptions{ThemeMode=dark?ThemeMode.Dark:ThemeMode.Light,FontFamily=BrowserProofFonts.Family},Sequence=new MermaidSequenceRenderOptions{Width=width-32,Height=820}};
             var direct=MermaidRenderer.Render(source,options);Assert.Empty(direct.Diagnostics);var fence=new MermaidVisualMarkupParser(options).Parse("```mermaid\n"+source+"\n```");Assert.Empty(fence.Diagnostics);
             foreach(var pair in new[]{("direct",direct.Artifact!),("fence",Assert.Single(fence.Artifacts))}) {
                 await using var session=await BrowserProofFonts.OpenAsync(pair.Item2.ToHtmlPage(new VisualArtifactRenderOptions{HtmlSizing=VisualArtifactHtmlSizing.PreserveSize}),width,900);var page=session.Page;

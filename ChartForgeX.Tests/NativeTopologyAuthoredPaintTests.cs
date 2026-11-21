@@ -14,7 +14,7 @@ public sealed class NativeTopologyAuthoredPaintTests {
     [InlineData(TopologyNodeDisplayMode.Card, false, true)]
     [InlineData(TopologyNodeDisplayMode.Tile, false, true)]
     public void AuthoredNodeTextPaintIncludesSubtitlesAcrossCardsShapesAndChips(TopologyNodeDisplayMode display, bool shape, bool chip) {
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             var chart = TopologyChart.Create().WithTheme(VisualTheme.Graphite(), mode).WithViewport(720, 400, 20).WithLegend(null)
                 .AddNode("styled", "Title", 70, 80, subtitle: "Subcaption", width: 240, height: 160)
                 .AddNode("focus", "Focus", 470, 80);
@@ -46,9 +46,9 @@ public sealed class NativeTopologyAuthoredPaintTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void AuthoredGroupPaintsSurviveThemeBindingsHighlightAndDetachedPreparation(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void AuthoredGroupPaintsSurviveThemeBindingsHighlightAndDetachedPreparation(ThemeMode mode) {
         var variable = Diagram(mode, true);
         var literal = Diagram(mode, false);
         var options = new TopologyRenderOptions { IncludeLegend = false, IncludeGroupStatusDots = false, DimmedOpacity = .5,
@@ -137,7 +137,7 @@ public sealed class NativeTopologyAuthoredPaintTests {
         Assert.Equal(chart.ToPng(options), prepared.ToPng());
     }
 
-    private static TopologyChart Diagram(VisualThemeMode mode, bool variables) {
+    private static TopologyChart Diagram(ThemeMode mode, bool variables) {
         string Paint(string name, string fallback) => variables ? "var(--" + name + ", " + fallback + ")" : fallback;
         var chart = TopologyChart.Create().WithTheme(VisualTheme.Graphite(), mode).WithViewport(780, 380, 20).WithLegend(null)
             .AddGroup("domain", "Domain", 20, 20, 520, 310, subtitle: "Native paints", color: "#a855f7")

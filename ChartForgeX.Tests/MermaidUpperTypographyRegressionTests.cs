@@ -16,7 +16,7 @@ public sealed class MermaidUpperTypographyRegressionTests {
     [InlineData(true, 3)]
     public async Task NativeVennLongSetAndRegionCaptionsShareMeasuredSpace(bool dark, int count) {
         var theme = VisualTheme.Graphite().WithFontFamily("Arial"); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: 256, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
-        var block = VennDiagramBlock.Create().WithSize(320, 460).WithTheme(theme, dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var block = VennDiagramBlock.Create().WithSize(320, 460).WithTheme(theme, dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddSet("A", "A collection", 60).AddSet("B", "B collection", 55)
             .AddIntersection(new[] { "A", "B" }, "Both", 18).AddText(new[] { "A" }, "note", "Data");
         var expected = new List<string> { "A collection", "B collection", "Both", "Data" };
@@ -60,10 +60,10 @@ public sealed class MermaidUpperTypographyRegressionTests {
         string svg; byte[] png;
         if (venn) {
             var block = Assert.IsType<MermaidVennDocument>(parsed.Document).ToVennDiagramBlock();
-            block.WithSize(width, 460).WithThemeMode(dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            block.WithSize(width, 460).WithThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
             svg = block.ToSvg(); png = block.ToPng();
         } else {
-            var chart = Assert.IsType<MermaidPieDocument>(parsed.Document).ToChart(new MermaidPieRenderOptions { Width = width, Height = 460 }).WithThemeMode(dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            var chart = Assert.IsType<MermaidPieDocument>(parsed.Document).ToChart(new MermaidPieRenderOptions { Width = width, Height = 460 }).WithThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
             svg = chart.ToSvg(); png = chart.ToPng();
         }
         var labels = XDocument.Parse(svg).Descendants().Where(element => element.Name.LocalName == "text").Select(element => element.Value).ToArray();

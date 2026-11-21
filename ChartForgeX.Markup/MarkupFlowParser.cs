@@ -394,8 +394,8 @@ public sealed class MarkupFlowParser {
         }
     }
 
-    private static VisualStatus ParseStatus(string value) {
-        if (string.IsNullOrWhiteSpace(value)) return VisualStatus.None;
+    private static Tone ParseStatus(string value) {
+        if (string.IsNullOrWhiteSpace(value)) return Tone.None;
         switch (NormalizeKey(value)) {
             case "ok":
             case "healthy":
@@ -405,13 +405,13 @@ public sealed class MarkupFlowParser {
             case "online":
             case "ready":
             case "positive":
-                return VisualStatus.Positive;
+                return Tone.Success;
             case "warn":
             case "warning":
             case "attention":
             case "degraded":
             case "partial":
-                return VisualStatus.Warning;
+                return Tone.Warning;
             case "error":
             case "failed":
             case "fail":
@@ -419,17 +419,20 @@ public sealed class MarkupFlowParser {
             case "down":
             case "offline":
             case "negative":
-                return VisualStatus.Negative;
+            case "danger":
+                return Tone.Danger;
             case "info":
             case "note":
             case "pending":
             case "unknown":
-                return VisualStatus.Info;
+                return Tone.Info;
             case "neutral":
             case "disabled":
-                return VisualStatus.Neutral;
+                return Tone.Neutral;
+            case "muted":
+                return Tone.Muted;
             default:
-                return VisualStatus.Neutral;
+                return Tone.Neutral;
         }
     }
 

@@ -23,7 +23,7 @@ public sealed class SupportedCombinationBrowserTests {
     [InlineData("mixed-radial", true, 390)]
     public async Task ReplacementRetainsSelectedSourceAndLegendStateAcrossSupportedCompositions(string layout, bool dark, int width) {
         if (!Enabled) return;
-        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var chart = SupportedCombinationRecipe.Create(layout, mode);
         var pageErrors = new List<string>();
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(Configure), width, 760,

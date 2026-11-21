@@ -1,7 +1,7 @@
 /// <summary>Creates a native sequence with aligned multiline captions and independently measured number badges.</summary>
 public static class SequenceMessagePresentationRecipe {
     /// <summary>Creates compact or wide native message presentation through the shared preparation owner.</summary>
-    public static SequenceArtifact Create(string variant="wide",VisualThemeMode mode=VisualThemeMode.Light) {
+    public static SequenceArtifact Create(string variant="wide",ThemeMode mode=ThemeMode.Light) {
         if(variant is not ("compact" or "wide"))throw new ArgumentOutOfRangeException(nameof(variant));
         var model=SequenceArtifact.Create("sequence-message-presentation").WithSize(variant=="compact"?390:1000,820)
             .WithTitle("Message presentation").WithSubtitle("Measured number badges and independent message/note alignment")

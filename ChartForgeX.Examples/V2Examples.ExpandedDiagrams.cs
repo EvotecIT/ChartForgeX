@@ -3,7 +3,7 @@ using ChartForgeX.Themes;
 
 public static partial class V2Examples {
     private static void WriteExpandedDiagrams(string output, ICollection<ProofArtifact> artifacts, bool curated) {
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             var suffix = mode.ToString().ToLowerInvariant();
             WriteModel(output, artifacts, V2GalleryModels.CreateGrid(), "chart-grid-wide-" + suffix, "chart-grid", "Requests and capacity", "wide",
                 "Three panels share the same axis domains", mode, 960, 700, true, ExampleRecipes.Named("chart-grid"), new[] { "Line", "Bar", "Area" });

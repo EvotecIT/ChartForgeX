@@ -8,7 +8,7 @@ internal static class PolarExamples {
         .WithSubtitle("True radian angles preserve irregular observation directions")
         .WithXAxis("Direction")
         .WithYAxis("Signal strength")
-        .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)
+        .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
         .WithSize(800, 487)
         .ConfigureXAxis(axis => axis.LabelFormatter = angle => (angle * 180 / System.Math.PI).ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "°")
         .AddPolar("Observed", new[] {

@@ -10,8 +10,8 @@ namespace ChartForgeX.Tests;
 /// <summary>A category or series named Other is the remainder: palette v2's neutral grey, never a hue.</summary>
 public sealed class NeutralOtherCategoryTests {
     [Theory]
-    [InlineData(ChartSeriesKind.Pie, VisualThemeMode.Light)] [InlineData(ChartSeriesKind.Donut, VisualThemeMode.Dark)]
-    public void PartToWholeOtherIsNeutralAndTheHuesStayContiguous(ChartSeriesKind kind, VisualThemeMode mode) {
+    [InlineData(ChartSeriesKind.Pie, ThemeMode.Light)] [InlineData(ChartSeriesKind.Donut, ThemeMode.Dark)]
+    public void PartToWholeOtherIsNeutralAndTheHuesStayContiguous(ChartSeriesKind kind, ThemeMode mode) {
         var chart = Chart.Create().WithSize(640, 360).WithTheme(VisualTheme.Graphite(), mode)
             .WithXLabels("Licenses", "Support", "Other", "Training")
             .AddSeries(new ChartSeries(new ChartSeriesId("revenue"), "Revenue", kind, new[] { new ChartPoint(1, 48), new ChartPoint(2, 41), new ChartPoint(3, 45), new ChartPoint(4, 26) }));

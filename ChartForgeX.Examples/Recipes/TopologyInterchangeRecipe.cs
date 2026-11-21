@@ -1,7 +1,7 @@
 /// <summary>Saves native topology semantics, loads editable owners and changes a detail without parsing source text.</summary>
 public static class TopologyInterchangeRecipe {
     /// <summary>Creates an edited graph after the same public JSON save/load boundary used by a file workflow.</summary>
-    public static TopologyChart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static TopologyChart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var source = Author(variant, mode);
         var envelope = VisualArtifactInterchangeEnvelope.FromJson(source.ToVisualArtifact().ToInterchangeJson());
         return Edit(envelope.ToTopologyChart());
@@ -12,7 +12,7 @@ public static class TopologyInterchangeRecipe {
     /// <param name="variant">Use wide or compact.</param>
     /// <param name="mode">The authored resolved color mode.</param>
     /// <returns>The detached edited model; the original JSON remains unchanged.</returns>
-    public static TopologyChart SaveLoadAndEdit(string directory, string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static TopologyChart SaveLoadAndEdit(string directory, string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (string.IsNullOrWhiteSpace(directory)) throw new ArgumentException("An output directory is required.", nameof(directory));
         Directory.CreateDirectory(directory);
         var path = Path.Combine(directory, "request-route.json");
@@ -34,7 +34,7 @@ public static class TopologyInterchangeRecipe {
         return chart;
     }
 
-    private static TopologyChart Author(string variant, VisualThemeMode mode) {
+    private static TopologyChart Author(string variant, ThemeMode mode) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant == "compact";
         var chart = TopologyChart.Create().WithId("saved-request-route").WithTitle("An editable saved route")

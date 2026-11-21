@@ -1,10 +1,10 @@
 /// <summary>Authors retained vector surfaces with native shadows, editable source facts and explicit SVG output profiles.</summary>
 public static class SequenceSurfaceShadowRecipe {
     /// <summary>Creates a compact or wide native sequence without a source parser or external assets.</summary>
-    public static SequenceArtifact Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static SequenceArtifact Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("compact" or "wide")) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant == "compact";
-        var dark = mode == VisualThemeMode.Dark;
+        var dark = mode == ThemeMode.Dark;
         var model = SequenceArtifact.Create("sequence-surface-shadows").WithSize(compact ? 390 : 1100, 900)
             .AddParticipant("A", "Review", SequenceArtifactParticipantKind.Actor)
             .AddParticipant("B", "Archive", SequenceArtifactParticipantKind.Control)

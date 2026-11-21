@@ -2,7 +2,7 @@ using ChartForgeX.Themes;
 
 public static partial class ExampleRecipeSource {
     /// <summary>Packages the compiled support-row factory with an actual plot-strip and matching-axis export program.</summary>
-    public static string EmitServerRenderedStrip(string variant, VisualThemeMode mode, int width, int height, bool galleryTypography = false) {
+    public static string EmitServerRenderedStrip(string variant, ThemeMode mode, int width, int height, bool galleryTypography = false) {
         if (variant is not ("shared-strip" or "compact-shared-strip")) throw new ArgumentException("Unknown shared-strip variant.", nameof(variant));
         return Package(nameof(ServerRenderedRecipe), "ServerRenderedStripProgram", new Dictionary<string, string> {
             ["{{MODE}}"] = mode.ToString(), ["{{VARIANT}}"] = System.Text.Json.JsonSerializer.Serialize(variant),

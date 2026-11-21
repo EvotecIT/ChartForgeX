@@ -83,7 +83,7 @@ public sealed class InteractiveTopologyPresentationTests {
     public async Task TopologyPresentationKeepsSelectionAndViewportControlsWorking(int width, bool dark, bool animate) {
         if (!InteractiveChartBrowser.Enabled) return;
         var chart = CreateTopology();
-        chart.WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        chart.WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         var renderer = new HtmlInteractiveTopologyRenderer();
         var html = animate
             ? renderer.RenderPresentationPage(chart,

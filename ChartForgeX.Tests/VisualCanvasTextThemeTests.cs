@@ -27,7 +27,7 @@ public sealed class VisualCanvasTextThemeTests {
 
     [Fact]
     public void BorrowedCanvasArtifactKeepsInheritedTextWhenItsThemeChanges() {
-        var canvas = VisualCanvas.Create(320, 100).WithTheme(VisualTheme.Graphite(), VisualThemeMode.Light)
+        var canvas = VisualCanvas.Create(320, 100).WithTheme(VisualTheme.Graphite(), ThemeMode.Light)
             .AddLayer(new VisualCanvasTextLayer(12, 12, 296, "Theme text", 36));
         var borrowed = canvas.ToVisualArtifact().Clone();
         var dark = VisualDesignTokens.GraphiteDark();
@@ -59,7 +59,7 @@ public sealed class VisualCanvasTextThemeTests {
         var layer = assignProperty
             ? new VisualCanvasTextLayer(12, 12, 296, "Explicit text", 36) { Color = color }
             : new VisualCanvasTextLayer(12, 12, 296, "Explicit text", 36, color);
-        var canvas = VisualCanvas.Create(320, 100).WithTheme(VisualTheme.Graphite(), VisualThemeMode.Light)
+        var canvas = VisualCanvas.Create(320, 100).WithTheme(VisualTheme.Graphite(), ThemeMode.Light)
             .WithBackdrop(VisualCanvasBackdropStyle.Transparent).AddLayer(layer);
         foreach (var tokens in new[] { VisualDesignTokens.GraphiteLight(), VisualDesignTokens.GraphiteDark() }) {
             canvas.WithTheme(new VisualTheme(tokens, tokens));

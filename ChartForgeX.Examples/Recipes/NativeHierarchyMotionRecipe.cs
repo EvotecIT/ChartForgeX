@@ -2,7 +2,7 @@
 internal static class NativeHierarchyMotionRecipe {
     // Five authored samples keep this caption-rich example within the existing transport cap.
     internal const int PresentationFrameCount = 5;
-    internal static Chart Create(string family, double reading, int width, VisualThemeMode mode, string fontFamily) {
+    internal static Chart Create(string family, double reading, int width, ThemeMode mode, string fontFamily) {
         if (family is not ("treemap" or "sunburst-leaf" or "sunburst-total")) throw new ArgumentOutOfRangeException(nameof(family));
         var authored = family == "sunburst-total";
         var items = new[] { new ChartHierarchyItem("revenue", "Revenue", value: authored ? 120 : null),

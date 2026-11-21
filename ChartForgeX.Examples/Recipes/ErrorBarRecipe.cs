@@ -1,7 +1,7 @@
 /// <summary>Builds domestic and international delivery times with their 10th to 90th percentile range.</summary>
 public static class ErrorBarRecipe {
     /// <summary>Creates the selected error-bar example from typed measurements.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create().WithXLabels("Same day", "Premium", "Express", "Standard", "Return", "Bulk").WithYAxis("Delivery time (hours)");

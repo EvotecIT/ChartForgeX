@@ -32,11 +32,11 @@ public sealed class AlphaGlowPresentationTests {
     }
 
     [Theory]
-    [InlineData("compact", VisualThemeMode.Light)]
-    [InlineData("compact", VisualThemeMode.Dark)]
-    [InlineData("wide", VisualThemeMode.Light)]
-    [InlineData("wide", VisualThemeMode.Dark)]
-    public void OrdinaryGlowRecipeReplaysTheExistingTypedShadowAndKeepsNativeVectorsSeparate(string variant, VisualThemeMode mode) {
+    [InlineData("compact", ThemeMode.Light)]
+    [InlineData("compact", ThemeMode.Dark)]
+    [InlineData("wide", ThemeMode.Light)]
+    [InlineData("wide", ThemeMode.Dark)]
+    public void OrdinaryGlowRecipeReplaysTheExistingTypedShadowAndKeepsNativeVectorsSeparate(string variant, ThemeMode mode) {
         var layer = NativeAppearanceExample.Create("glow", variant, mode);
         var policy = NativeAppearanceExample.AlphaGlowPolicy(mode);
         var fresh = NativeAppearanceExample.PrepareSource(variant, mode);

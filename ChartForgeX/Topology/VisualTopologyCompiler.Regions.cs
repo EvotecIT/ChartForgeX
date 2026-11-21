@@ -99,20 +99,35 @@ internal sealed partial class VisualTopologyCompiler {
     private static string RegionTone(TopologyHealthStatus status) => status switch {
         TopologyHealthStatus.Healthy => "tone-good", TopologyHealthStatus.Warning => "tone-warn", TopologyHealthStatus.Critical => "tone-bad", _ => "tone-neutral"
     };
-    private static string RegionTone(TopologyTone tone, TopologyHealthStatus status) => tone == TopologyTone.Automatic ? RegionTone(status) : "tone-" + tone.ToString().ToLowerInvariant();
-    private ChartColor RegionToneColor(TopologyTone tone, TopologyHealthStatus status) => tone switch {
-        TopologyTone.Good => Status(TopologyHealthStatus.Healthy), TopologyTone.Warn => Status(TopologyHealthStatus.Warning),
-        TopologyTone.Bad => Status(TopologyHealthStatus.Critical), TopologyTone.Info => _colors.Info,
-        TopologyTone.Neutral => _colors.Status.Neutral.Fill, _ => status == TopologyHealthStatus.Disabled ? _colors.Status.Neutral.Fill : Status(status)
-    };
-    private static VisualThemeColorToken RegionColorToken(TopologyTone tone, TopologyHealthStatus status) => tone switch {
-        TopologyTone.Info => VisualThemeColorToken.Info, TopologyTone.Good => VisualThemeColorToken.Positive,
-        TopologyTone.Warn => VisualThemeColorToken.Warning, TopologyTone.Bad => VisualThemeColorToken.Negative,
-        TopologyTone.Neutral => VisualThemeColorToken.Neutral, _ => status switch {
+    // Region classes keep their established names (tone-good, tone-warn, tone-bad) because the stylesheet and runtime use them.
+    private static string RegionTone(Tone tone, TopologyHealthStatus status) {
+        if (tone == Tone.None) return RegionTone(status);
+        if (tone == Tone.Success) return "tone-good";
+        if (tone == Tone.Warning) return "tone-warn";
+        if (tone == Tone.Danger) return "tone-bad";
+        return tone == Tone.Info ? "tone-info" : "tone-neutral";
+    }
+    private ChartColor RegionToneColor(Tone tone, TopologyHealthStatus status) {
+        if (tone == Tone.None) return status == TopologyHealthStatus.Disabled ? _colors.Status.Neutral.Fill : Status(status);
+        if (tone == Tone.Success) return Status(TopologyHealthStatus.Healthy);
+        if (tone == Tone.Warning) return Status(TopologyHealthStatus.Warning);
+        if (tone == Tone.Danger) return Status(TopologyHealthStatus.Critical);
+        if (tone == Tone.Info) return _colors.Info;
+        if (tone == Tone.Muted) return _colors.MutedForeground;
+        return ToneRoles.TryResolveNamed(_colors, tone, out _, out var named) ? named : _colors.Status.Neutral.Fill;
+    }
+    private static VisualThemeColorToken RegionColorToken(Tone tone, TopologyHealthStatus status) {
+        if (tone == Tone.None) return status switch {
             TopologyHealthStatus.Healthy => VisualThemeColorToken.Positive, TopologyHealthStatus.Warning => VisualThemeColorToken.Warning,
             TopologyHealthStatus.Critical => VisualThemeColorToken.Negative, _ => VisualThemeColorToken.Neutral
-        }
-    };
+        };
+        if (tone == Tone.Success) return VisualThemeColorToken.Positive;
+        if (tone == Tone.Warning) return VisualThemeColorToken.Warning;
+        if (tone == Tone.Danger) return VisualThemeColorToken.Negative;
+        if (tone == Tone.Info) return VisualThemeColorToken.Info;
+        if (tone == Tone.Muted) return VisualThemeColorToken.MutedForeground;
+        return ToneRoles.TryResolveNamed(tone, out var token) ? token : VisualThemeColorToken.Neutral;
+    }
     private string RegionFit(string value, double width, double size, int weight = 400) {
         if (_regionPainter.MeasureText(value, size, weight).Width <= width) return value;
         var length = value.Length;
@@ -134,7 +149,7 @@ internal sealed partial class VisualTopologyCompiler {
             values["chip-x"] = Number(x); values["chip-y"] = Number(group.Y + 14); values["chip-width"] = Number(chipWidth);
             values["chip-label-x"] = Number(x + 10); values["chip-label-y"] = Number(group.Y + 28);
             values["chip-label"] = chipText; values["tone"] = RegionTone(group.Status); values["status"] = Status(group.Status).ToCss();
-            values["status-token"] = RegionColorToken(TopologyTone.Automatic, group.Status).ToString();
+            values["status-token"] = RegionColorToken(Tone.None, group.Status).ToString();
             using (_regionPainter.PushTooltip(group.StatusText!)) TopologyRegionTemplate.Draw(_regionPainter, "region-status", values);
         });
     }

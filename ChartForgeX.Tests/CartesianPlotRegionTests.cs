@@ -75,7 +75,7 @@ public sealed partial class CartesianPlotRegionTests {
     [InlineData(false)]
     [InlineData(true)]
     public void OverlappingBackgroundCaptionsKeepOpaqueReadableInkWithinTheirRegion(bool dark) {
-        var chart = Bare().WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = Bare().WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
             .AddPlotRegion(new(new ChartColor(0, 0, 0), opacity: 1))
             .AddPlotRegion(new(new ChartColor(255, 255, 255, 128), label: "Review", opacity: .14));

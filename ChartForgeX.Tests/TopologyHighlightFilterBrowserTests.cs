@@ -18,7 +18,7 @@ public sealed class TopologyHighlightFilterBrowserTests {
     public async Task FilterVisibilityRefreshesRetainedNodeAndEdgeHighlights(bool force, bool dark) {
         if (!Enabled) return;
         var chart = TopologyChart.Create().WithViewport(900, 400, 20).WithLegend(null)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddNode("a", "API", 80, 140).AddNode("b", "Worker", 370, 140).AddNode("c", "Queue", 670, 140)
             .AddEdge("ab", "a", "b", "Dispatch");
         if (force) chart.LayoutMode = TopologyLayoutMode.ForceDirected;

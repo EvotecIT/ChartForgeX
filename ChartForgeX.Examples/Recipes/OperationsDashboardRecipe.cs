@@ -1,6 +1,6 @@
 /// <summary>An operations dashboard: one ChartGrid of a trend, a share, a heatmap and a gauge.</summary>
 public static class OperationsDashboardRecipe {
-    public static ChartGrid Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static ChartGrid Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var weeks = Enumerable.Range(1, 12).ToArray();
         var trend = Chart.Create().WithTitle("Tickets per week").WithSubtitle("Opened against resolved")

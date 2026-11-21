@@ -17,7 +17,7 @@ public sealed partial class MarkupChartFamiliesTests {
     [Theory]
     [MemberData(nameof(ThemePresetCases))]
     public void EveryNativeThemePresetResolvesThroughCommandsOptionsTablesAndFenceAttributes(string preset) {
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             const string body = "type gauge\nvalues 42";
             var name = preset.ToUpperInvariant();
             foreach (var source in new[] {
@@ -37,9 +37,9 @@ public sealed partial class MarkupChartFamiliesTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void ThemeModeShorthandPreservesTheChosenPresetAcrossAllInputForms(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void ThemeModeShorthandPreservesTheChosenPresetAcrossAllInputForms(ThemeMode mode) {
         const string body = "type gauge\nvalues 42\ntheme accessible";
         foreach (var source in new[] {
             body + "\ntheme " + mode,
@@ -62,11 +62,11 @@ public sealed partial class MarkupChartFamiliesTests {
     }
 
     [Theory]
-    [InlineData("graphite", 390, VisualThemeMode.Light)]
-    [InlineData("graphite", 1000, VisualThemeMode.Dark)]
-    [InlineData("accessible", 390, VisualThemeMode.Dark)]
-    [InlineData("transparent-overlay", 1000, VisualThemeMode.Light)]
-    public void AuthoredThemeAndModeReachConvenienceSvgAndDecodedPng(string preset, int width, VisualThemeMode mode) {
+    [InlineData("graphite", 390, ThemeMode.Light)]
+    [InlineData("graphite", 1000, ThemeMode.Dark)]
+    [InlineData("accessible", 390, ThemeMode.Dark)]
+    [InlineData("transparent-overlay", 1000, ThemeMode.Light)]
+    public void AuthoredThemeAndModeReachConvenienceSvgAndDecodedPng(string preset, int width, ThemeMode mode) {
         var actual = ParseChart(Fence("type lineargauge\nseries \"Reading\"\nvalues 42\nsize " + width + "x420",
             " theme=" + preset + " themeMode=" + mode));
         actual.WithFontFamily(BrowserProofFonts.Family);

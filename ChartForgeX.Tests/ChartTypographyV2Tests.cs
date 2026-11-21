@@ -57,9 +57,9 @@ public sealed class ChartTypographyV2Tests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void PublicChartPaintsSemanticWeightsAndKeepsAuthoredWeights(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void PublicChartPaintsSemanticWeightsAndKeepsAuthoredWeights(ThemeMode mode) {
         var chart = Chart.Create().WithSize(800, 520).WithTheme(VisualTheme.Graphite(), mode).WithTitle("Typography")
             .WithXLabels("First", "Second").AddPie("Allocation", new[] { new ChartPoint(1, 40), new ChartPoint(2, 60) });
         var document = XDocument.Parse(chart.ToSvg());
@@ -89,16 +89,16 @@ public sealed class ChartTypographyV2Tests {
         Assert.Equal(legend, context.Theme.Typography.LegendSize);
         var restored = VisualTheme.FromJson(context.Theme.ToJson());
         Assert.Equal(context.Theme.Typography.TitleSize, restored.Typography.TitleSize);
-        Assert.Equal(VisualTheme.Graphite().Resolve(VisualThemeMode.Light).Other, restored.Resolve(VisualThemeMode.Light).Other);
+        Assert.Equal(VisualTheme.Graphite().Resolve(ThemeMode.Light).Other, restored.Resolve(ThemeMode.Light).Other);
         var wide = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(960, 360)), restored.WithFontFamily(ChartFontStacks.ProductSans));
         Assert.Equal(17, wide.Theme.Typography.TitleSize);
         Assert.Equal(ChartFontStacks.ProductSans, wide.Theme.Typography.Family);
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void SubMinimumAuthoredChartTextIsHiddenButItsSemanticTitleSurvives(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void SubMinimumAuthoredChartTextIsHiddenButItsSemanticTitleSurvives(ThemeMode mode) {
         var chart = Chart.Create().WithSize(390, 320).WithTheme(VisualTheme.Graphite(), mode)
             .WithTitle("Revenue forecast").ConfigureTitleStyle(style => style.FontSize = 9)
             .AddLine("Revenue", new[] { new ChartPoint(1, 12), new ChartPoint(2, 18) });

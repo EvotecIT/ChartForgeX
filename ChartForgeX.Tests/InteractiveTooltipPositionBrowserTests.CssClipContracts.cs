@@ -13,7 +13,7 @@ namespace ChartForgeX.Tests;
 public sealed partial class InteractiveTooltipPositionBrowserTests {
     private static string CssClipChart(bool keyboard = true, bool dark = false, bool readable = false) {
         var chart = Chart.Create().WithSize(650, 338).WithHeader(false).WithLegend(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
             .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("css-reading"), "Reading", new[] { new ChartPoint(1, 5), new ChartPoint(5, 5), new ChartPoint(9, 5) }));
         return chart.ToInteractiveHtmlPage(options => {

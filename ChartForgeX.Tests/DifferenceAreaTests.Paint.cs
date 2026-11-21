@@ -45,9 +45,9 @@ public sealed partial class DifferenceAreaTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void BoundariesKeepDistinctColoursAndTheLegendNamesBothObservations(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void BoundariesKeepDistinctColoursAndTheLegendNamesBothObservations(ThemeMode mode) {
         var chart = Chart.Create().WithSize(600, 360).WithHeader(false).WithTheme(VisualTheme.Graphite(), mode)
             .AddDifferenceArea("Requests", new[] { new ChartDifferencePoint(0, 8, 2), new ChartDifferencePoint(1, 2, 5), new ChartDifferencePoint(2, 6, 4) });
         chart.Series[0].ConfigureDifferenceArea(options => { options.FirstName = "Actual"; options.SecondName = "Forecast"; });

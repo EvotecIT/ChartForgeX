@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = AvailabilityLanesRecipe.Create(&quot;availability&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Shows 24 hours of availability for nine targets in three sites, with the available share per lane.&lt;/summary&gt;
 public static class AvailabilityLanesRecipe {
     /// &lt;summary&gt;Creates grouped availability lanes; the compact variant keeps the same data.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;availability&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;availability&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;availability&quot; or &quot;compact-availability&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var colors = VisualTheme.Graphite().Resolve(mode);
         var start = new DateTime(2026, 10, 27, 0, 0, 0, DateTimeKind.Utc);
@@ -159,6 +160,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -168,7 +170,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = AvailabilityLanesRecipe.Create(&quot;availability&quot;, mode);
 var context = new VisualRenderContext(
@@ -183,7 +185,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Shows 24 hours of availability for nine targets in three sites, with the available share per lane.&lt;/summary&gt;
 public static class AvailabilityLanesRecipe {
     /// &lt;summary&gt;Creates grouped availability lanes; the compact variant keeps the same data.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;availability&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;availability&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;availability&quot; or &quot;compact-availability&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var colors = VisualTheme.Graphite().Resolve(mode);
         var start = new DateTime(2026, 10, 27, 0, 0, 0, DateTimeKind.Utc);

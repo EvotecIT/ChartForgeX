@@ -10,9 +10,9 @@ namespace ChartForgeX.Tests;
 
 public sealed class StageIndependentCaptionTests {
     [Theory]
-    [InlineData(VisualThemeMode.Dark, 12)]
-    [InlineData(VisualThemeMode.Light, 13.5)]
-    public void FiveStageConePaintsEverySeparateCaptionWhenTheMeasuredRailHasRoom(VisualThemeMode mode, double fontSize) {
+    [InlineData(ThemeMode.Dark, 12)]
+    [InlineData(ThemeMode.Light, 13.5)]
+    public void FiveStageConePaintsEverySeparateCaptionWhenTheMeasuredRailHasRoom(ThemeMode mode, double fontSize) {
         var names = new[] { "Visitors", "Sign-ups", "Trials", "Paid", "Renewed" };
         var chart = ConeFunnelRecipe.Create().WithSize(800, 480).ConfigureDataLabelStyle(style => style.WithFontSize(fontSize));
         RoundedRadialSeriesTests.UseFixtureFont(chart);
@@ -47,14 +47,14 @@ public sealed class StageIndependentCaptionTests {
     }
 
     [Theory]
-    [InlineData(false, ChartFunnelForm.StageBars, ChartOrientation.Vertical, 390, VisualThemeMode.Light)]
-    [InlineData(false, ChartFunnelForm.StageBars, ChartOrientation.Horizontal, 800, VisualThemeMode.Dark)]
-    [InlineData(false, ChartFunnelForm.Cone, ChartOrientation.Vertical, 800, VisualThemeMode.Light)]
-    [InlineData(false, ChartFunnelForm.Cone, ChartOrientation.Horizontal, 390, VisualThemeMode.Dark)]
-    [InlineData(true, ChartFunnelForm.StageBars, ChartOrientation.Vertical, 390, VisualThemeMode.Dark)]
-    [InlineData(true, ChartFunnelForm.StageBars, ChartOrientation.Horizontal, 800, VisualThemeMode.Light)]
+    [InlineData(false, ChartFunnelForm.StageBars, ChartOrientation.Vertical, 390, ThemeMode.Light)]
+    [InlineData(false, ChartFunnelForm.StageBars, ChartOrientation.Horizontal, 800, ThemeMode.Dark)]
+    [InlineData(false, ChartFunnelForm.Cone, ChartOrientation.Vertical, 800, ThemeMode.Light)]
+    [InlineData(false, ChartFunnelForm.Cone, ChartOrientation.Horizontal, 390, ThemeMode.Dark)]
+    [InlineData(true, ChartFunnelForm.StageBars, ChartOrientation.Vertical, 390, ThemeMode.Dark)]
+    [InlineData(true, ChartFunnelForm.StageBars, ChartOrientation.Horizontal, 800, ThemeMode.Light)]
     public void SeparateCaptionsRetainIndependentStylePlacementSourceIdentityAndCompleteDescriptions(bool pyramid, ChartFunnelForm form,
-        ChartOrientation orientation, int width, VisualThemeMode mode) {
+        ChartOrientation orientation, int width, ThemeMode mode) {
         var chart = StagePresentationOptionsTests.Create(pyramid, form, orientation, width, 640).WithTheme(VisualTheme.Graphite(), mode);
         var ink = ChartColor.FromHex("#A73761");
         chart.ConfigureFunnel(options => { options.LabelContent = ChartStageLabelContent.Separate; options.RetentionLabel.Visible = false; options.DropOffLabel.Visible = false;

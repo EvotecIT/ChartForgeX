@@ -1,9 +1,9 @@
 /// <summary>A complete Core-only SVG-source consumer uses one explicit finite flood and alpha-composition operation.</summary>
 public static class NativeCompositeSourceExample {
     /// <summary>Creates a script-free source document; its finite operator is explicit and independent of native blend modes.</summary>
-    public static string Source(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light, string operation = "in") {
+    public static string Source(string variant = "wide", ThemeMode mode = ThemeMode.Light, string operation = "in") {
         if (variant is not ("compact" or "wide")) throw new ArgumentOutOfRangeException(nameof(variant));
-        if (!Enum.IsDefined(typeof(VisualThemeMode), mode)) throw new ArgumentOutOfRangeException(nameof(mode));
+        if (!Enum.IsDefined(typeof(ThemeMode), mode)) throw new ArgumentOutOfRangeException(nameof(mode));
         if (operation is not ("over" or "in" or "out" or "atop" or "xor")) throw new ArgumentOutOfRangeException(nameof(operation));
         var width = variant == "compact" ? 390 : 760;
         var ink = VisualTheme.Graphite().Resolve(mode).Foreground.ToCss();
@@ -18,12 +18,12 @@ public static class NativeCompositeSourceExample {
     }
 
     /// <summary>Uses the incumbent Core rasterizer with explicit per-operation filter admission.</summary>
-    public static ChartForgeX.SvgRaster.SvgRasterizationResult Rasterize(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light,
+    public static ChartForgeX.SvgRaster.SvgRasterizationResult Rasterize(string variant = "wide", ThemeMode mode = ThemeMode.Light,
         string operation = "in") => ChartForgeX.SvgRaster.SvgRasterizer.Rasterize(Source(variant, mode, operation),
             strict: true, filters: new ChartForgeX.SvgRaster.SvgRasterFilterOptions());
 
     /// <summary>Captures one completed half-opacity vector group before the selected finite filter.</summary>
-    public static string SourceWithOpacity(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light,
+    public static string SourceWithOpacity(string variant = "wide", ThemeMode mode = ThemeMode.Light,
         string operation = "in") {
         var document = System.Xml.Linq.XDocument.Parse(Source(variant, mode, operation));
         var root = document.Root ?? throw new InvalidOperationException("The generated source has no SVG root.");
@@ -47,7 +47,7 @@ public static class NativeCompositeSourceExample {
 
     /// <summary>Uses the same rasterizer and explicit limits for the completed-opacity source.</summary>
     public static ChartForgeX.SvgRaster.SvgRasterizationResult RasterizeWithOpacity(string variant = "wide",
-        VisualThemeMode mode = VisualThemeMode.Light, string operation = "in") =>
+        ThemeMode mode = ThemeMode.Light, string operation = "in") =>
         ChartForgeX.SvgRaster.SvgRasterizer.Rasterize(SourceWithOpacity(variant, mode, operation),
             strict: true, filters: new ChartForgeX.SvgRaster.SvgRasterFilterOptions());
 

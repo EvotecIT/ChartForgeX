@@ -13,7 +13,7 @@ public static class HtmlCrosshairExamples {
     public static string CreatePage(HtmlChartCrosshairLineStyle lineStyle, bool dark = false) {
         var chart = Chart.Create().WithSize(800, 440).WithTitle(lineStyle + " crosshair lines")
             .WithSubtitle("Hover a reading or nearby plot space to see the guide")
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
             .AddScatter("Processing time", new[] { new ChartPoint(2, 7), new ChartPoint(5, 5), new ChartPoint(8, 3) });
         var html = chart.ToInteractiveHtmlPage(options => {

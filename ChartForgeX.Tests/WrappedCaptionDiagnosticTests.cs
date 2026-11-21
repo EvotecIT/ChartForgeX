@@ -10,9 +10,9 @@ namespace ChartForgeX.Tests;
 
 public sealed class WrappedCaptionDiagnosticTests {
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void CompletePyramidRailCaptionsDoNotReportTextLossWhenTheyWrap(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void CompletePyramidRailCaptionsDoNotReportTextLossWhenTheyWrap(ThemeMode mode) {
         var chart = Chart.Create().WithDataLabels().WithXLabels("Regional platform services in North America", "Regional platform services in South America", "Regional platform services in Western Europe")
             .AddPyramid("Allocation", new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20) });
         chart.Options.DataLabelPlacement = ChartDataLabelPlacement.Right;
@@ -53,10 +53,10 @@ public sealed class WrappedCaptionDiagnosticTests {
     }
 
     [Theory]
-    [InlineData(2, VisualThemeMode.Light)]
-    [InlineData(12, VisualThemeMode.Light)]
-    [InlineData(12, VisualThemeMode.Dark)]
-    public void MatrixRowsRetainCompleteMultilineNamesAndDiagnoseOmittedCaptions(int count, VisualThemeMode mode) {
+    [InlineData(2, ThemeMode.Light)]
+    [InlineData(12, ThemeMode.Light)]
+    [InlineData(12, ThemeMode.Dark)]
+    public void MatrixRowsRetainCompleteMultilineNamesAndDiagnoseOmittedCaptions(int count, ThemeMode mode) {
         const string source = "North\nAmerica\nservices";
         var chart = Chart.Create().WithLegend(false).ConfigureTickLabelStyle(style => style.WithFontSize(13.5));
         chart.Options.XAxis.Visible = false;
@@ -80,11 +80,11 @@ public sealed class WrappedCaptionDiagnosticTests {
     }
 
     [Theory]
-    [InlineData(ChartSeriesKind.GanttLane, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.GanttLane, VisualThemeMode.Dark)]
-    [InlineData(ChartSeriesKind.StateTimeline, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.StateTimeline, VisualThemeMode.Dark)]
-    public void ScheduleRowsKeepFullSourceNamesWhenTheirVisibleCaptionsWrapOrShorten(ChartSeriesKind kind, VisualThemeMode mode) {
+    [InlineData(ChartSeriesKind.GanttLane, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.GanttLane, ThemeMode.Dark)]
+    [InlineData(ChartSeriesKind.StateTimeline, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.StateTimeline, ThemeMode.Dark)]
+    public void ScheduleRowsKeepFullSourceNamesWhenTheirVisibleCaptionsWrapOrShorten(ChartSeriesKind kind, ThemeMode mode) {
         const string source = "North America regional platform services and infrastructure ownership";
         var chart = Chart.Create().WithLegend(false);
         if (kind == ChartSeriesKind.GanttLane) chart.AddGanttLane(source, new[] { new ChartGanttLaneItem(1, 3, "active") });
@@ -110,7 +110,7 @@ public sealed class WrappedCaptionDiagnosticTests {
     private static string CaptionText(XElement caption) => string.Join("\n", caption.Descendants()
         .Where(element => element.Name.LocalName == "text").Select(element => element.Value));
 
-    private static VisualRenderContext Context(VisualThemeMode mode) => new(
+    private static VisualRenderContext Context(ThemeMode mode) => new(
         new VisualLayoutOptions(new VisualSize(390, 180), 14), VisualTheme.Graphite(), mode,
         new VisualFrame("", "", showLegend: false), Font());
 

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -15,7 +16,7 @@ using ChartForgeX.VisualBlocks;
 
 // Native PNG and standalone SVG use bundled Archivo.
 // Add ChartFontAssets.StyleSheet once for other text on a host page.
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = SequenceNavigationRecipe.Create("compact", mode);
 var context = new VisualRenderContext(
@@ -30,7 +31,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 /// <summary>Creates reusable native participant link facts; an optional HTML consumer decides how to present them.</summary>
 public static class SequenceNavigationRecipe {
     /// <summary>Creates a compact or wide native sequence; SVG/PNG stays deterministic and menu-free.</summary>
-    public static SequenceArtifact Create(string variant="wide",VisualThemeMode mode=VisualThemeMode.Light) {
+    public static SequenceArtifact Create(string variant="wide",ThemeMode mode=ThemeMode.Light) {
         if(variant is not ("compact" or "wide"))throw new ArgumentOutOfRangeException(nameof(variant));var model=SequenceArtifact.Create("sequence-navigation").WithSize(variant=="compact"?390:1000,820).AddParticipant("A","Review").AddParticipant("B","Archive").AddMessage("A","B","Save");model.Layout=new SequenceLayoutPolicy(participantMinimumWidth:64,participantMinimumHeight:60,participantSpacing:8);model.Participants[0].NavigationLinks=new[]{new VisualNavigationLink("Guide","#guide"),new VisualNavigationLink("Status","#status")};model.ThemeMode=mode;return model;
     }
 }

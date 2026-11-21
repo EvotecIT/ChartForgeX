@@ -44,7 +44,7 @@ if (window.XProjection?.Scale != ChartScaleKind.Time) throw new InvalidOperation
 AssertContains(window.ToSvg(), "data-cfx-size=\"9\"", "AOT native window lost Bubble source facts.");
 AssertPng(window.ToPng(), "AOT area-sized marker failed.");
 
-foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
     var theme = VisualTheme.Graphite();
     var graphite = Chart.Create().WithSize(420, 300).WithTheme(theme, mode).WithTitle("Graphite AOT")
         .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness",
@@ -55,7 +55,7 @@ foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
     AssertPng(graphite.ToPng(), "Graphite gauge PNG failed.");
     var graphiteHeatmap = Chart.Create().WithTheme(theme, mode).WithXLabels("A", "B", "C")
         .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always).AddHeatmapRow("Counts", new[] { 0d, 4, 8 });
-    AssertContains(graphiteHeatmap.WithSvgColorVariables((mode == VisualThemeMode.Light
+    AssertContains(graphiteHeatmap.WithSvgColorVariables((mode == ThemeMode.Light
         ? VisualDesignTokens.GraphiteLight() : VisualDesignTokens.GraphiteDark()).ToSvgColorVariables()).ToSvg(), "ramps-sequential", "Graphite token mapping failed.");
     AssertPng(graphiteHeatmap.ToPng(), "Graphite heatmap PNG failed.");
 }
@@ -72,9 +72,9 @@ AssertPng(grid.ToPng(), "Grid PNG render failed.");
 
 var metric = MetricCard.Create()
     .WithMetric("Coverage", 0.982, "P1")
-    .WithIcon(VisualIcon.Lightning)
+    .WithIcon(Icons.Lightning)
     .WithTrend("+2.4 pp")
-    .WithStatus(VisualStatus.Positive)
+    .WithStatus(Tone.Success)
     .WithTheme(VisualTheme.Graphite())
     .WithSize(320, 170);
 AssertContains(metric.ToSvg("aot-metric"), "data-cfx-role=\"metric-label\"", "Metric card SVG render failed.");

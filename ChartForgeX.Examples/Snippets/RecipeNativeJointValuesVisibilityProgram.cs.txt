@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -10,7 +11,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.Interactivity.Html;
 
 if(args.Length!=1)throw new ArgumentException("Pass a font file licensed for this output.");FontRegistry.Register("Native joint font",File.ReadAllBytes(args[0]));
-var bar={{BAR}};var renderer=new HtmlInteractiveChartRenderer();Chart Model(double value)=>NativeJointValuesVisibilityRecipe.Create(bar,value,{{WIDTH}},VisualThemeMode.{{MODE}},"Native joint font");
+var bar={{BAR}};var renderer=new HtmlInteractiveChartRenderer();Chart Model(double value)=>NativeJointValuesVisibilityRecipe.Create(bar,value,{{WIDTH}},ThemeMode.{{MODE}},"Native joint font");
 var from=renderer.PrepareVisibilitySection(Model(30),NativeJointValuesVisibilityRecipe.View(false));var to=renderer.PrepareVisibilitySection(Model(40),NativeJointValuesVisibilityRecipe.View(true));
 var payload=renderer.PrepareNativeTransitionJson(from,to,new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.ValuesAndVisibility,5));
 var action="const chart=ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'));document.querySelector('#play').onclick=()=>chart.update("+JsonSerializer.Serialize(to.Html)+",{sceneRevision:chart.sceneRevision,transition:"+JsonSerializer.Serialize(payload)+",motion:{duration:650}});";

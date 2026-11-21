@@ -1,7 +1,7 @@
 /// <summary>Ticket resolution times as counts, shares and densities, and signed or weighted means, over unequal intervals.</summary>
 public static class HistogramRecipe {
     /// <summary>Creates a native histogram while retaining its source observations and raw bin aggregates.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var aggregation = variant.StartsWith("compact-", StringComparison.Ordinal) ? variant.Substring(8) : variant;
         if (aggregation == "compact") aggregation = "wide";
         var chart = Chart.Create().WithDataLabels();

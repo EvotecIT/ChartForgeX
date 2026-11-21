@@ -102,19 +102,19 @@ public sealed class TopologyRegionPresentationTests {
     public void ReverseParallelRelationshipsUseDistinctPreparedArcsAndPreserveInformationalTone() {
         var chart = TopologyHierarchyExamples.CreateTopology(1440, false);
         chart.AddEdge("ack", "worker", "gateway", "Ack");
-        chart.Edges.Last().Tone = TopologyTone.Info;
+        chart.Edges.Last().Tone = Tone.Info;
         var envelope = chart.Prepare().ToInterchangeEnvelope();
         var forward = envelope.Edges.Single(edge => edge.Id == "process").ResolvedRoute;
         var reverse = envelope.Edges.Single(edge => edge.Id == "ack").ResolvedRoute;
         Assert.True(forward.Count > 3 && reverse.Count > 3);
         Assert.NotEqual(forward[forward.Count / 2].Y, reverse[reverse.Count / 2].Y);
-        Assert.Equal("Info", envelope.Edges.Single(edge => edge.Id == "ack").Extensions["chartforgex.region.tone"]);
+        Assert.Equal("info", envelope.Edges.Single(edge => edge.Id == "ack").Extensions["chartforgex.region.tone"]);
     }
 
     [Fact]
     public void TemplatePaintsKeepThemeTokenIdentityAndStaticFallbacks() {
         var chart = TopologyHierarchyExamples.CreateTopology(1440, false);
-        chart.Nodes[0].Tone = TopologyTone.Info;
+        chart.Nodes[0].Tone = Tone.Info;
         var policy = new TopologyRenderOptions { SvgColorVariables = new ChartForgeX.Themes.SvgColorVariables()
             .AddThemeToken(ChartForgeX.Themes.VisualThemeColorToken.Info, "--host-info")
             .AddThemeToken(ChartForgeX.Themes.VisualThemeColorToken.ElevatedSurface, "--host-surface") };

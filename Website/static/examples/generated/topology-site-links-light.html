@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = TopologySiteLinksRecipe.Create(&quot;sites&quot;, mode);
 var context = new VisualRenderContext(
@@ -112,7 +113,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;remarks&gt;Shows sibling grouping, striped transports, value chips, uplink markers and assumed links in one diagram.&lt;/remarks&gt;
 public static class TopologySiteLinksRecipe {
     /// &lt;summary&gt;Creates the site map in either theme mode.&lt;/summary&gt;
-    public static TopologyChart Create(string variant = &quot;sites&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static TopologyChart Create(string variant = &quot;sites&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant != &quot;sites&quot;) throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = TopologyChart.Create().WithId(&quot;ad-site-links&quot;).WithTitle(&quot;Contoso replication sites&quot;)
             .WithSubtitle(&quot;Domain controllers grouped per site; links show transports, cost and evidence&quot;)
@@ -143,7 +144,7 @@ public static class TopologySiteLinksRecipe {
             .AddEdgeChip(&quot;hub-ber&quot;, &quot;cost 200&quot;).WithEdgeEvidence(&quot;hub-ber&quot;, TopologyEdgeEvidence.Confirmed);
         chart.AddEdge(&quot;hub-nyc&quot;, &quot;hub&quot;, &quot;nyc&quot;, kind: TopologyEdgeKind.Replication, status: TopologyHealthStatus.Warning)
             .AddEdgeStripe(&quot;hub-nyc&quot;, &quot;#2563EB&quot;, &quot;IP&quot;).AddEdgeStripe(&quot;hub-nyc&quot;, &quot;#F97316&quot;, &quot;SMTP&quot;)
-            .AddEdgeChip(&quot;hub-nyc&quot;, &quot;cost 300&quot;).AddEdgeChip(&quot;hub-nyc&quot;, &quot;lag 47m&quot;, TopologyTone.Warn)
+            .AddEdgeChip(&quot;hub-nyc&quot;, &quot;cost 300&quot;).AddEdgeChip(&quot;hub-nyc&quot;, &quot;lag 47m&quot;, Tone.Warning)
             .WithEdgeEvidence(&quot;hub-nyc&quot;, TopologyEdgeEvidence.Confirmed);
         chart.AddEdge(&quot;hub-tyo&quot;, &quot;hub&quot;, &quot;tyo&quot;, kind: TopologyEdgeKind.Replication, status: TopologyHealthStatus.Healthy)
             .AddEdgeChip(&quot;hub-tyo&quot;, &quot;cost 500&quot;)
@@ -175,6 +176,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -184,7 +186,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = TopologySiteLinksRecipe.Create(&quot;sites&quot;, mode);
 var context = new VisualRenderContext(
@@ -201,7 +203,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;remarks&gt;Shows sibling grouping, striped transports, value chips, uplink markers and assumed links in one diagram.&lt;/remarks&gt;
 public static class TopologySiteLinksRecipe {
     /// &lt;summary&gt;Creates the site map in either theme mode.&lt;/summary&gt;
-    public static TopologyChart Create(string variant = &quot;sites&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static TopologyChart Create(string variant = &quot;sites&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant != &quot;sites&quot;) throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = TopologyChart.Create().WithId(&quot;ad-site-links&quot;).WithTitle(&quot;Contoso replication sites&quot;)
             .WithSubtitle(&quot;Domain controllers grouped per site; links show transports, cost and evidence&quot;)
@@ -232,7 +234,7 @@ public static class TopologySiteLinksRecipe {
             .AddEdgeChip(&quot;hub-ber&quot;, &quot;cost 200&quot;).WithEdgeEvidence(&quot;hub-ber&quot;, TopologyEdgeEvidence.Confirmed);
         chart.AddEdge(&quot;hub-nyc&quot;, &quot;hub&quot;, &quot;nyc&quot;, kind: TopologyEdgeKind.Replication, status: TopologyHealthStatus.Warning)
             .AddEdgeStripe(&quot;hub-nyc&quot;, &quot;#2563EB&quot;, &quot;IP&quot;).AddEdgeStripe(&quot;hub-nyc&quot;, &quot;#F97316&quot;, &quot;SMTP&quot;)
-            .AddEdgeChip(&quot;hub-nyc&quot;, &quot;cost 300&quot;).AddEdgeChip(&quot;hub-nyc&quot;, &quot;lag 47m&quot;, TopologyTone.Warn)
+            .AddEdgeChip(&quot;hub-nyc&quot;, &quot;cost 300&quot;).AddEdgeChip(&quot;hub-nyc&quot;, &quot;lag 47m&quot;, Tone.Warning)
             .WithEdgeEvidence(&quot;hub-nyc&quot;, TopologyEdgeEvidence.Confirmed);
         chart.AddEdge(&quot;hub-tyo&quot;, &quot;hub&quot;, &quot;tyo&quot;, kind: TopologyEdgeKind.Replication, status: TopologyHealthStatus.Healthy)
             .AddEdgeChip(&quot;hub-tyo&quot;, &quot;cost 500&quot;)

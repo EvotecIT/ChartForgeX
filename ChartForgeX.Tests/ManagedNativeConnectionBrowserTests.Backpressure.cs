@@ -17,7 +17,7 @@ public sealed partial class ManagedNativeConnectionBrowserTests {
     [InlineData(900, false, true)] [InlineData(900, true, true)]
     public async Task NativeProducerAdmissionKeepsLatestTypedFactsBusyInputsResetSelectionAndFinalDownloads(int width, bool dark, bool typed) {
         if (!Enabled) return;
-        var host = new NativeHost(width, dark ? VisualThemeMode.Dark : VisualThemeMode.Light, typed, navigation: true);
+        var host = new NativeHost(width, dark ? ThemeMode.Dark : ThemeMode.Light, typed, navigation: true);
         await using var session = await BrowserProofFonts.OpenAsync(host.Page, width + 24, 800);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
         await ConnectLatestWindowAsync(page, host);

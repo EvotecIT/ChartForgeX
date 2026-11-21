@@ -11,17 +11,17 @@ namespace ChartForgeX.Tests;
 
 public sealed class ComfortableCalendarAxisTests {
     [Theory]
-    [InlineData("state-day", VisualThemeMode.Light)]
-    [InlineData("state-day", VisualThemeMode.Dark)]
-    [InlineData("state-ten-hours", VisualThemeMode.Light)]
-    [InlineData("state-ten-hours", VisualThemeMode.Dark)]
-    [InlineData("eighteen-days", VisualThemeMode.Light)]
-    [InlineData("eighteen-days", VisualThemeMode.Dark)]
-    [InlineData("threshold-month", VisualThemeMode.Light)]
-    [InlineData("threshold-month", VisualThemeMode.Dark)]
-    [InlineData("date-bars", VisualThemeMode.Light)]
-    [InlineData("date-bars", VisualThemeMode.Dark)]
-    public void AutomaticCalendarLabelsKeepMeasuredBreathingRoomAndTheirOwnTicks(string scenario, VisualThemeMode mode) {
+    [InlineData("state-day", ThemeMode.Light)]
+    [InlineData("state-day", ThemeMode.Dark)]
+    [InlineData("state-ten-hours", ThemeMode.Light)]
+    [InlineData("state-ten-hours", ThemeMode.Dark)]
+    [InlineData("eighteen-days", ThemeMode.Light)]
+    [InlineData("eighteen-days", ThemeMode.Dark)]
+    [InlineData("threshold-month", ThemeMode.Light)]
+    [InlineData("threshold-month", ThemeMode.Dark)]
+    [InlineData("date-bars", ThemeMode.Light)]
+    [InlineData("date-bars", ThemeMode.Dark)]
+    public void AutomaticCalendarLabelsKeepMeasuredBreathingRoomAndTheirOwnTicks(string scenario, ThemeMode mode) {
         var chart = Fixture(scenario).WithThemeMode(mode);
         var prepared = Prepare(chart);
         ScatterBubbleColorRenderingTests.Capture(prepared, "comfortable-calendar-" + scenario + "-" + mode);
@@ -86,9 +86,9 @@ public sealed class ComfortableCalendarAxisTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void AnAuthoredFormatterDoesNotOptIntoDenserAutomaticCalendarTicks(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void AnAuthoredFormatterDoesNotOptIntoDenserAutomaticCalendarTicks(ThemeMode mode) {
         var chart = Fixture("threshold-month").WithThemeMode(mode);
         var automatic = Labels(Prepare(chart), "axis-x-label");
         chart.ConfigureXAxis(axis => axis.WithLabelFormatter(value => DateTime.FromOADate(value).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)));
@@ -98,17 +98,17 @@ public sealed class ComfortableCalendarAxisTests {
     }
 
     [BrowserTheory]
-    [InlineData("state-ten-hours", VisualThemeMode.Light)]
-    [InlineData("state-ten-hours", VisualThemeMode.Dark)]
-    [InlineData("state-day", VisualThemeMode.Light)]
-    [InlineData("state-day", VisualThemeMode.Dark)]
-    [InlineData("eighteen-days", VisualThemeMode.Light)]
-    [InlineData("eighteen-days", VisualThemeMode.Dark)]
-    [InlineData("threshold-month", VisualThemeMode.Light)]
-    [InlineData("threshold-month", VisualThemeMode.Dark)]
-    [InlineData("date-bars", VisualThemeMode.Light)]
-    [InlineData("date-bars", VisualThemeMode.Dark)]
-    public async Task StaticBrowserCalendarCaptionsRetainTheNativeComfortableSpacing(string scenario, VisualThemeMode mode) {
+    [InlineData("state-ten-hours", ThemeMode.Light)]
+    [InlineData("state-ten-hours", ThemeMode.Dark)]
+    [InlineData("state-day", ThemeMode.Light)]
+    [InlineData("state-day", ThemeMode.Dark)]
+    [InlineData("eighteen-days", ThemeMode.Light)]
+    [InlineData("eighteen-days", ThemeMode.Dark)]
+    [InlineData("threshold-month", ThemeMode.Light)]
+    [InlineData("threshold-month", ThemeMode.Dark)]
+    [InlineData("date-bars", ThemeMode.Light)]
+    [InlineData("date-bars", ThemeMode.Dark)]
+    public async Task StaticBrowserCalendarCaptionsRetainTheNativeComfortableSpacing(string scenario, ThemeMode mode) {
         if (!InteractiveChartBrowser.Enabled) return;
         var chart = Fixture(scenario).WithThemeMode(mode);
         var role = scenario.StartsWith("state-", StringComparison.Ordinal) ? "schedule-tick-label" : "axis-x-label";

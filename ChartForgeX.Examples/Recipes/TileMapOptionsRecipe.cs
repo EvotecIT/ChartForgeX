@@ -1,7 +1,7 @@
 /// <summary>Creates a tile map with a diverging coverage scale beside the map.</summary>
 public static class TileMapOptionsRecipe {
     /// <summary>Creates the source model for a gallery variant without choosing an export backend.</summary>
-    public static Chart Create(string variant = "options", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "options", ThemeMode mode = ThemeMode.Light) {
         if (variant != "options") throw new ArgumentOutOfRangeException(nameof(variant));
 
         var colors = VisualTheme.Graphite().Resolve(mode);

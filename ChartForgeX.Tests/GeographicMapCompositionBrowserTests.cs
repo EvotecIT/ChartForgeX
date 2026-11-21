@@ -11,9 +11,9 @@ namespace ChartForgeX.Tests;
 /// <summary>Geographic datasets retain independent measurements and authored identity through actual native HTML interaction.</summary>
 public sealed class GeographicMapCompositionBrowserTests {
     [BrowserTheory]
-    [InlineData(390, VisualThemeMode.Light)]
-    [InlineData(800, VisualThemeMode.Dark)]
-    public async Task IndependentMapKeysReadoutsAndSelectionSurviveTypedReplacementAndDatasetOrder(int width, VisualThemeMode mode) {
+    [InlineData(390, ThemeMode.Light)]
+    [InlineData(800, ThemeMode.Dark)]
+    public async Task IndependentMapKeysReadoutsAndSelectionSurviveTypedReplacementAndDatasetOrder(int width, ThemeMode mode) {
         if (!Enabled) return;
         var initial = Fixture(width, mode);
         var updated = Fixture(width, mode);
@@ -57,7 +57,7 @@ public sealed class GeographicMapCompositionBrowserTests {
         Assert.Empty(errors); AssertNoConsoleErrors(session);
     }
 
-    private static Chart Fixture(int width, VisualThemeMode mode) {
+    private static Chart Fixture(int width, ThemeMode mode) {
         var chart = GeographicMapCompositionTests.Fixture(ChartMapGeoJsonProjection.Equirectangular, width, mode).WithSize(width, 600);
         chart.Series[1].ConfigureColorDimension(options => options.ValueFormat = ChartValueFormat.Number("0 'min'"));
         chart.Series[1].ConfigureMapPointSize(options => {
@@ -73,7 +73,7 @@ public sealed class GeographicMapCompositionBrowserTests {
     }
     private static string Mark(string id) => "[data-cfx-role='dotted-map-point-source'][data-cfx-series-key='gateways'][data-cfx-observation-id='" + id + "']";
     private static Task<string> Row(IPage page, string name) => page.Locator(".cfx-tooltip dt").Filter(new LocatorFilterOptions { HasText = name }).Locator("+ dd").InnerTextAsync();
-    private static async Task Capture(IPage page, int width, VisualThemeMode mode, string state) {
+    private static async Task Capture(IPage page, int width, ThemeMode mode, string state) {
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (string.IsNullOrWhiteSpace(directory)) return;
         if (!Path.IsPathRooted(directory)) throw new InvalidOperationException("Browser evidence requires an absolute task-owned path.");

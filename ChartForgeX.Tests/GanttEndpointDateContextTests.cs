@@ -13,15 +13,15 @@ public sealed class GanttEndpointDateContextTests {
     private static readonly DateTime Finish = new(2026, 3, 19, 12, 0, 0, DateTimeKind.Utc);
 
     [Theory]
-    [InlineData("automatic", VisualThemeMode.Light)]
-    [InlineData("automatic", VisualThemeMode.Dark)]
-    [InlineData("rejected", VisualThemeMode.Light)]
-    [InlineData("rejected", VisualThemeMode.Dark)]
-    [InlineData("counted", VisualThemeMode.Light)]
-    [InlineData("counted", VisualThemeMode.Dark)]
-    [InlineData("windowed", VisualThemeMode.Light)]
-    [InlineData("windowed", VisualThemeMode.Dark)]
-    public void DefaultDayScaleCaptionsStayOnCalendarBoundariesAndKeepExactTaskInstants(string policy, VisualThemeMode mode) {
+    [InlineData("automatic", ThemeMode.Light)]
+    [InlineData("automatic", ThemeMode.Dark)]
+    [InlineData("rejected", ThemeMode.Light)]
+    [InlineData("rejected", ThemeMode.Dark)]
+    [InlineData("counted", ThemeMode.Light)]
+    [InlineData("counted", ThemeMode.Dark)]
+    [InlineData("windowed", ThemeMode.Light)]
+    [InlineData("windowed", ThemeMode.Dark)]
+    public void DefaultDayScaleCaptionsStayOnCalendarBoundariesAndKeepExactTaskInstants(string policy, ThemeMode mode) {
         var chart = Fixture(mode); var first = Start; var last = Finish;
         if (policy == "rejected") chart.WithGanttTickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Millisecond));
         if (policy == "counted") chart.ConfigureXAxis(axis => axis.TickCount = 2);
@@ -65,7 +65,7 @@ public sealed class GanttEndpointDateContextTests {
     [InlineData("all")]
     [InlineData("subday")]
     public void AuthoredAndSubdayClockPoliciesKeepTheirExistingNotation(string policy) {
-        var chart = Fixture(VisualThemeMode.Light);
+        var chart = Fixture(ThemeMode.Light);
         Func<double, string> clock = value => DateTime.FromOADate(value).ToString("HH:mm", CultureInfo.InvariantCulture);
         if (policy == "formatter") chart.ConfigureXAxis(axis => axis.WithLabelFormatter(clock));
         if (policy == "value-format") chart.ConfigureXAxis(axis => axis.WithValueFormat(ChartValueFormat.Custom(clock)));
@@ -103,7 +103,7 @@ public sealed class GanttEndpointDateContextTests {
         Assert.Equal(Start.ToOADate(), chart.Series[0].GanttItems[0].Start);
     }
 
-    private static Chart Fixture(VisualThemeMode mode) => Chart.Create().WithSize(400, 300).WithHeader(false).WithLegend(false)
+    private static Chart Fixture(ThemeMode mode) => Chart.Create().WithSize(400, 300).WithHeader(false).WithLegend(false)
         .WithPngFont(Font()).WithTheme(VisualTheme.Graphite(), mode).ConfigureGridStyle(style => style.ShowVerticalLines = true)
         .AddGanttTask("Project", Start, Finish);
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);

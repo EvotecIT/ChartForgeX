@@ -1,7 +1,7 @@
 /// <summary>Authored Pie radii remain independent of each value's angular share.</summary>
 public static class PieSliceRadiusRecipe {
     /// <summary>Creates service shares with explicit source identities and normalized band-relative radii.</summary>
-    public static Chart Create(string variant = "variable-radius", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "variable-radius", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("variable-radius" or "compact-variable-radius")) throw new ArgumentOutOfRangeException(nameof(variant));
         var services = new ChartSeries(new ChartSeriesId("services"), "Services", ChartSeriesKind.Pie,
             new[] { new ChartPoint(1, 80), new ChartPoint(2, 60), new ChartPoint(3, 20) })

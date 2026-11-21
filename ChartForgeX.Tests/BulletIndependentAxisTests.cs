@@ -11,7 +11,7 @@ public sealed class BulletIndependentAxisTests {
     [InlineData(true, 760, true)]
     public void EachIdentifiedRowUsesItsOwnDomainReversalAndCompleteRawFacts(bool vertical, int width, bool dark) {
         var variant = vertical ? "vertical" : width == 390 ? "compact" : "wide";
-        var chart = IndependentBulletRecipe.Create(variant, dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        var chart = IndependentBulletRecipe.Create(variant, dark ? ThemeMode.Dark : ThemeMode.Light);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var rows = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(node => node.Role == "bullet-row").ToArray();
         Assert.Equal(new[] { "1", "1100" }, rows.Select(row => row.Metadata["data-cfx-scale-max"]));

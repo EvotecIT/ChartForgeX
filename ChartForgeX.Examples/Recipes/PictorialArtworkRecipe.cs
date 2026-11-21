@@ -1,7 +1,7 @@
 /// <summary>Captures self-contained artwork and retains fractional counts through the shared pictorial clip owner.</summary>
 public static class PictorialArtworkRecipe {
     /// <summary>Creates ordinary native SVG, PNG and HTML output without files or network resources.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "right" or "bottom" or "top" or "image" or "contour"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var series = new ChartSeries(new ChartSeriesId("assessments"), "Completed assessments", ChartSeriesKind.Pictorial,

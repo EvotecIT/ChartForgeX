@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -13,7 +14,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 #endregion
 
@@ -22,8 +23,8 @@ var chart = FlowArtifact.Create("assessment-flow").WithSize(800, 533)
     .AddStep("received", "Request received", FlowArtifactStepKind.Start, "service")
     .AddStep("decision", "Automatic checks pass?", FlowArtifactStepKind.Decision, "service")
     .ConfigureStep("decision", step => step.Width = 200)
-    .AddStep("manual", "Review observations", FlowArtifactStepKind.Process, "review", VisualStatus.Warning)
-    .AddStep("complete", "Assessment complete", FlowArtifactStepKind.End, "service", VisualStatus.Positive)
+    .AddStep("manual", "Review observations", FlowArtifactStepKind.Process, "review", Tone.Warning)
+    .AddStep("complete", "Assessment complete", FlowArtifactStepKind.End, "service", Tone.Success)
     .AddConnector("received", "decision", "Evaluate")
     .AddConnector("decision", "manual", "Review required")
     .AddConnector("decision", "complete", "Passed")

@@ -1,8 +1,9 @@
+using ChartForgeX;
 namespace SiteVisuals;
 
 /// <summary>Publishes named steps from the exact recipe files compiled into this generator.</summary>
 internal static class SiteRecipeSource {
-    private const string ThemeMode = "var mode = args.Contains(\"--dark\")\n    ? VisualThemeMode.Dark : VisualThemeMode.Light;";
+    private const string ThemeMode = "var mode = args.Contains(\"--dark\")\n    ? ThemeMode.Dark : ThemeMode.Light;";
 
     /// <summary>Reads uniquely named, non-nested source regions; incomplete recipes fail generation.</summary>
     internal static IReadOnlyDictionary<string, string> Read(string recipeName) {

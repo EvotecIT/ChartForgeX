@@ -4,7 +4,7 @@ using ChartForgeX.VisualArtifacts;
 internal static partial class MermaidExamples {
     private static void WriteFlowchartCurveExamples(string output) {
         foreach (var family in new[] { "flowchart", "swimlane" }) foreach (var variant in new[] { "compact", "wide" })
-            foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+            foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
                 var artifact = FlowchartCurveRecipe.Create(family, variant, mode, ExampleTypography.FontFamily);
                 var name = "mermaid-curves-" + family + "-" + variant + "-" + mode.ToString().ToLowerInvariant();
                 artifact.SaveSvg(Path.Combine(output, name + ".svg"));

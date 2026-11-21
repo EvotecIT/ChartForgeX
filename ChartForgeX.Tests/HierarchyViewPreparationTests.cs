@@ -12,7 +12,7 @@ namespace ChartForgeX.Tests;
 
 public sealed class HierarchyViewPreparationTests {
     internal static Chart Source(ChartSeriesKind kind, bool dark = false) {
-        var chart = Chart.Create().WithSize(720, 460).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = Chart.Create().WithSize(720, 460).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithTitle("Allocation").WithLegend(false).WithDataLabels(false);
         var items = new[] {
             new ChartHierarchyItem("root", "All work", value: kind == ChartSeriesKind.Sunburst ? 120 : null, colorValue: 0),
@@ -30,7 +30,7 @@ public sealed class HierarchyViewPreparationTests {
         return chart;
     }
     private static VisualRenderContext Context(bool dark = false, bool showLegend = false) => new(new VisualLayoutOptions(new VisualSize(720, 460)),
-        VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light, new VisualFrame(showLegend: showLegend));
+        VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light, new VisualFrame(showLegend: showLegend));
     private static XElement Node(PreparedVisual prepared, string id) => Assert.Single(XDocument.Parse(prepared.ToSvg()).Descendants(), node => (string?)node.Attribute("data-cfx-node") == id);
     private static double Number(XElement node, string attribute) => double.Parse(node.Attribute(attribute)!.Value, CultureInfo.InvariantCulture);
 

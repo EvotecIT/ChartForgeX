@@ -44,10 +44,10 @@ public sealed class MermaidXYChartConfigurationTests {
         var document = Assert.IsType<MermaidXYChartDocument>(parsed.Document);
         var chart = document.ToChart(); Assert.Equal(28, chart.Options.TitleStyle.FontSize); Assert.Equal(19, chart.Options.LegendStyle.FontSize);
         Assert.Equal(ChartColor.FromHex("#193c72"), chart.Options.TitleStyle.Color); Assert.False(chart.Options.TransparentBackground);
-        Assert.Equal(new[] { ChartColor.FromHex("#2563eb"), ChartColor.FromHex("#dc2626") }, chart.Options.Theme.Resolve(VisualThemeMode.Light).Palette);
+        Assert.Equal(new[] { ChartColor.FromHex("#2563eb"), ChartColor.FromHex("#dc2626") }, chart.Options.Theme.Resolve(ThemeMode.Light).Palette);
         var theme = VisualTheme.Graphite(); var host = document.ToChart(new MermaidXYChartRenderOptions { Presentation = new MermaidPresentationOptions { Theme = theme, FontSize = 15 } });
         Assert.False(host.Options.TitleStyle.HasOverrides); Assert.False(host.Options.LegendStyle.HasOverrides);
-        Assert.Equal(theme.Resolve(VisualThemeMode.Light).Background, host.Options.Theme.Resolve(VisualThemeMode.Light).Background);
+        Assert.Equal(theme.Resolve(ThemeMode.Light).Background, host.Options.Theme.Resolve(ThemeMode.Light).Background);
         Assert.False(host.Options.TransparentBackground);
     }
 

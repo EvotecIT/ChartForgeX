@@ -98,7 +98,7 @@ public sealed partial class MermaidSequenceParOverTests {
         var fenced = new MermaidVisualMarkupParser().Parse("```mermaid\n" + source + "\n```");
         Assert.Empty(fenced.Diagnostics); Assert.Equal(direct.Artifact!.ToSvg(), Assert.Single(fenced.Artifacts).ToSvg());
         var native = Native(SequenceArtifactBlockKind.ParOver); var nativeControl = Native(SequenceArtifactBlockKind.Par);
-        native.ThemeMode = nativeControl.ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        native.ThemeMode = nativeControl.ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light;
         Assert.Null(native.Blocks.Single().BackgroundColor);
         Assert.Equal(nativeControl.ToSvg(), native.ToSvg());
         Assert.Equal(SequenceArtifactBlockKind.ParOver, native.ToVisualArtifact().ToInterchangeEnvelope().Annotations.Single(annotation => annotation.Role == VisualArtifactInterchangeAnnotationRole.SequenceBlock).Sequence!.BlockKind);

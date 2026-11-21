@@ -12,7 +12,7 @@ public static partial class V2Examples {
     private static bool IsScenarioVariant(string variant) => variant is "latency-week" or "issuers" or "licence-waste" or "availability";
 
     /// <summary>Writes the gallery's live page: the same chart with tooltips, hover and legend toggles, sharing one runtime copy.</summary>
-    private static void WriteInteractive(string output, Chart chart, string id, string title, string subtitle, VisualThemeMode mode, int width, int height, bool? legend) {
+    private static void WriteInteractive(string output, Chart chart, string id, string title, string subtitle, ThemeMode mode, int width, int height, bool? legend) {
         chart.WithTitle(title).WithSubtitle(subtitle).WithTheme(VisualTheme.Graphite(), mode).WithSize(width, height);
         if (legend.HasValue) chart.WithLegend(legend.Value);
         ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".interactive.html"), chart.ToInteractiveHtmlPage(options => {
@@ -31,7 +31,7 @@ public static partial class V2Examples {
     }
 
     /// <summary>Writes a chart grid's live page: each panel as an interactive chart in the grid's columns, sharing one runtime copy.</summary>
-    private static void WriteInteractiveGrid(string output, ChartGrid grid, string id, string title, VisualThemeMode mode, int width) {
+    private static void WriteInteractiveGrid(string output, ChartGrid grid, string id, string title, ThemeMode mode, int width) {
         // Two columns at the gallery width keep each panel readable instead of stacking full-size charts down the page.
         var columns = Math.Max(1, Math.Min(2, grid.Charts.Count));
         var panelWidth = Math.Max(280, (width - 16 * (columns - 1)) / columns - 34);
@@ -48,7 +48,7 @@ public static partial class V2Examples {
     }
 
     /// <summary>Writes a diagram's live page: pan, zoom and node details with its runtime inlined (topology has no shared-asset option).</summary>
-    private static void WriteInteractiveTopology(string output, ChartForgeX.Topology.TopologyChart chart, string id, string title, string subtitle, VisualThemeMode mode) {
+    private static void WriteInteractiveTopology(string output, ChartForgeX.Topology.TopologyChart chart, string id, string title, string subtitle, ThemeMode mode) {
         chart.WithTitle(title).WithSubtitle(subtitle).WithTheme(VisualTheme.Graphite(), mode);
         ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".interactive.html"), chart.ToInteractiveHtmlPage(chart.DefaultRenderOptions));
     }

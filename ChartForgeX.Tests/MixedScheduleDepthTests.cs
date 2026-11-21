@@ -107,7 +107,7 @@ public sealed class MixedScheduleDepthTests {
 
     internal static Chart Fixture(int width, bool dark, bool reversed) {
         var chart = Chart.Create().WithSize(width, 640).WithHeader(false).WithLegend(false).WithDataLabels(false).WithXAxisBounds(0, 10)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithStateCategories(new ChartStateCategory("up", "Up", ChartColor.FromHex("#218A63")));
         chart.AddSeries(new ChartSeries(new ChartSeriesId("range"), "Preparation window", ChartSeriesKind.Timeline, new[] { new ChartPoint(1, 9) }));
         var first = ChartSeries.CreateGanttTask(new ChartSeriesId("task"), "Implement", 2, 4, .5); chart.AddSeries(first);

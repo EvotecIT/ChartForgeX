@@ -79,9 +79,9 @@ public sealed class MermaidConfigurationBoundaryTests {
     }
 
     [Theory]
-    [InlineData("Dark", VisualThemeMode.Dark)]
-    [InlineData("DEFAULT", VisualThemeMode.Light)]
-    public void ThemeDiagnosticsMatchTheNativePaletteForCasingVariants(string theme, VisualThemeMode mode) {
+    [InlineData("Dark", ThemeMode.Dark)]
+    [InlineData("DEFAULT", ThemeMode.Light)]
+    public void ThemeDiagnosticsMatchTheNativePaletteForCasingVariants(string theme, ThemeMode mode) {
         var rendered = MermaidRenderer.Render("%%{init: {'theme':'" + theme + "'}}%%\nflowchart LR\nA --> B");
         Assert.Empty(rendered.Diagnostics);
         var topology = Assert.IsType<TopologyChart>(rendered.Artifact!.Model);

@@ -15,7 +15,7 @@ public sealed class V2LinearGaugeLayoutTests {
     [InlineData(false, true)]
     [InlineData(true, true)]
     public void FramedLinearGaugeMeasuresItsSummaryAboveThePointerAndKeepsScaleRowsSeparate(bool dark, bool carlito) {
-        var chart = Chart.Create().WithSize(596, 230).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = Chart.Create().WithSize(596, 230).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithTitle("Linear readiness").WithSubtitle("Explicit target and bands")
             .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness", new ChartGaugeValue(87, targets: new[] { new ChartGaugeTarget(90) })))
             .ConfigureGauge(options => {

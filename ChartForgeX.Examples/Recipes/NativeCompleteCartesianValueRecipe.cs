@@ -2,7 +2,7 @@
 public static class NativeCompleteCartesianValueRecipe {
     internal static readonly string[] Variants = { "line-labels", "bar-labels", "step-line", "area", "step-area", "stacked-bar", "normalized-bar", "stacked-area-gap", "stacked-area-zero" };
     /// <summary>Creates one fixed-axis authored example; callers provide their actual retained font family.</summary>
-    public static Chart Create(string variant, double reading, int width, VisualThemeMode mode, string family) {
+    public static Chart Create(string variant, double reading, int width, ThemeMode mode, string family) {
         if (!Variants.Contains(variant, StringComparer.Ordinal)) throw new ArgumentOutOfRangeException(nameof(variant));
         var kind = variant is "bar-labels" or "stacked-bar" or "normalized-bar" ? ChartSeriesKind.Bar
             : variant == "step-line" ? ChartSeriesKind.StepLine : variant == "area" ? ChartSeriesKind.Area

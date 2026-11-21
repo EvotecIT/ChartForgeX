@@ -45,7 +45,7 @@ public sealed class V2PolarTests {
         Assert.Equal(2, missing.Length); Assert.All(missing, group => Assert.Equal("-1", group.Metadata["data-cfx-point"]));
         Assert.Contains(scene.Regions, region => region.Id == "series-1-missing-category-1" && region.Label == "East: 0");
         var secondArea = scene.Nodes.OfType<VisualScenePath>().Where(path => path.Role == "radar-area").Last();
-        Assert.Equal(ChartColorMath.WithOpacity(new VisualRenderContext().Theme.Resolve(VisualThemeMode.Light).Status.Medium.Fill, new VisualRenderContext().Theme.AreaOpacity), secondArea.Fill);
+        Assert.Equal(ChartColorMath.WithOpacity(new VisualRenderContext().Theme.Resolve(ThemeMode.Light).Status.Medium.Fill, new VisualRenderContext().Theme.AreaOpacity), secondArea.Fill);
         chart.Options.YAxis.Scale = ChartScaleKind.Logarithmic;
         Assert.NotEmpty(Compile(chart).Nodes);
     }
@@ -62,7 +62,7 @@ public sealed class V2PolarTests {
         Assert.True(zero.Inner > 0); Assert.Equal(segments[0].Outer, zero.Outer, 8);
         Assert.Contains(scene.Nodes, node => node.Role == "polar-area-pattern");
         Assert.Contains(scene.Regions, region => region.Label == "Zero: 0");
-        Assert.Equal(3, VisualPolarCompiler.LegendEntries(chart, new VisualRenderContext().Theme.Resolve(VisualThemeMode.Light)).Count);
+        Assert.Equal(3, VisualPolarCompiler.LegendEntries(chart, new VisualRenderContext().Theme.Resolve(ThemeMode.Light)).Count);
         chart.Series[0].Points[0] = new ChartPoint(1, 0); chart.Series[0].Points[1] = new ChartPoint(2, 0);
         Assert.Equal(3, Compile(chart).Nodes.Count(node => node.Role == "polar-area-zero-slot"));
         Assert.Contains(Compile(chart).Diagnostics, diagnostic => diagnostic.Code == "polar-area.all-zero");

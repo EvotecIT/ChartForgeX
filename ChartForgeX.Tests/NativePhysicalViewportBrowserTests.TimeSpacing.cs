@@ -14,12 +14,12 @@ namespace ChartForgeX.Tests;
 public sealed partial class NativePhysicalViewportBrowserTests {
     /// <summary>Proves discrete dates through physical input and accepted native scenes, without timing or a browser-side projection oracle.</summary>
     [BrowserTheory]
-    [InlineData(true, false, 390, VisualThemeMode.Dark)]
-    [InlineData(true, true, 900, VisualThemeMode.Light)]
-    [InlineData(false, false, 390, VisualThemeMode.Dark)]
-    [InlineData(false, true, 900, VisualThemeMode.Light)]
+    [InlineData(true, false, 390, ThemeMode.Dark)]
+    [InlineData(true, true, 900, ThemeMode.Light)]
+    [InlineData(false, false, 390, ThemeMode.Dark)]
+    [InlineData(false, true, 900, ThemeMode.Light)]
     public async Task DiscreteTimeSpacingKeepsCalendarAndOrdinalFactsThroughBrushNavigationExportsAndReset(
-        bool unit, bool reversed, int width, VisualThemeMode mode) {
+        bool unit, bool reversed, int width, ThemeMode mode) {
         if (!Enabled) return;
         var host = new TimeSpacingHost(unit, reversed, width, mode);
         await using var session = await BrowserProofFonts.OpenAsync(host.Page, width + 24, 1000);
@@ -171,7 +171,7 @@ public sealed partial class NativePhysicalViewportBrowserTests {
         private readonly HtmlInteractiveChartRenderer _renderer = new();
         private readonly Dictionary<string, HtmlChartSection> _sections = new();
         private readonly Chart _source;
-        internal TimeSpacingHost(bool unit, bool reversed, int width, VisualThemeMode mode) {
+        internal TimeSpacingHost(bool unit, bool reversed, int width, ThemeMode mode) {
             Name = unit ? "unit" : "ordinal"; Width = width;
             var dates = unit ? new[] { January.AddDays(9), January.AddMonths(2).AddDays(19), January.AddMonths(3).AddDays(9) }
                 : new[] { January, January.AddDays(1), January.AddDays(11), January.AddDays(30) };

@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -12,7 +13,7 @@ using ChartForgeX.Interactivity.Html;
 if (args.Length != 1) throw new ArgumentException("Pass the path of a font licensed for this output.");
 FontRegistry.Register("Owned Bubble font", File.ReadAllBytes(args[0]));
 var initial = {{INITIAL}}; var renderer = new HtmlInteractiveChartRenderer();
-Chart Model(double y, double size) => NativeBubbleComponentRecipe.Create(y, size, {{AREA}}, {{REVERSED}}, {{WIDTH}}, VisualThemeMode.{{MODE}}, "Owned Bubble font");
+Chart Model(double y, double size) => NativeBubbleComponentRecipe.Create(y, size, {{AREA}}, {{REVERSED}}, {{WIDTH}}, ThemeMode.{{MODE}}, "Owned Bubble font");
 void Configure(HtmlChartInteractionOptions options) { options.CaptureNativeValueSource = true; options.Interaction.ChartId = "native-bubble-components"; }
 var from = renderer.PrepareSection(Model(30, 10), configure: Configure); var to = renderer.PrepareSection(Model(50, 70), configure: Configure);
 var payload = renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(initial ? HtmlNativeTransitionEffect.InitialValues : HtmlNativeTransitionEffect.Values, 5));

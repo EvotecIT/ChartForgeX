@@ -28,7 +28,7 @@ public sealed class HtmlVisualStoryRenderer {
     }
 
     internal string RenderPage(VisualStory story, string animatedSvg) {
-        var light = story.ThemeMode == ChartForgeX.Themes.VisualThemeMode.Light;
+        var light = story.ThemeMode != ChartForgeX.ThemeMode.Dark;
         var html = new StringBuilder();
         html.Append("<!doctype html><html><head><meta charset=\"utf-8\">")
             .Append("<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">")

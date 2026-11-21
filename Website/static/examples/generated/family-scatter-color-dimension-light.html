@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = ScatterColorDimensionRecipe.Create(&quot;color-dimension&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,12 +111,12 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Formats a temperature color dimension independently from processing time.&lt;/summary&gt;
 public static class ScatterColorDimensionRecipe {
     /// &lt;summary&gt;Creates the selected example without choosing a renderer or export backend.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;color-dimension&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;color-dimension&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;color-dimension&quot; or &quot;compact-color-dimension&quot; or &quot;gradient-color-legend&quot; or &quot;compact-gradient-color-legend&quot; or &quot;swatch-color-legend&quot; or &quot;compact-swatch-color-legend&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         return ColorDimension(variant, mode);
     }
 
-    private static Chart ColorDimension(string variant, VisualThemeMode mode) {
+    private static Chart ColorDimension(string variant, ThemeMode mode) {
         var colors = VisualTheme.Graphite().Resolve(mode);
         var gradient = variant is &quot;gradient-color-legend&quot; or &quot;compact-gradient-color-legend&quot;;
         var swatches = variant is &quot;swatch-color-legend&quot; or &quot;compact-swatch-color-legend&quot;;
@@ -147,6 +148,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -156,7 +158,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = ScatterColorDimensionRecipe.Create(&quot;color-dimension&quot;, mode);
 var context = new VisualRenderContext(
@@ -171,12 +173,12 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Formats a temperature color dimension independently from processing time.&lt;/summary&gt;
 public static class ScatterColorDimensionRecipe {
     /// &lt;summary&gt;Creates the selected example without choosing a renderer or export backend.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;color-dimension&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;color-dimension&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;color-dimension&quot; or &quot;compact-color-dimension&quot; or &quot;gradient-color-legend&quot; or &quot;compact-gradient-color-legend&quot; or &quot;swatch-color-legend&quot; or &quot;compact-swatch-color-legend&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         return ColorDimension(variant, mode);
     }
 
-    private static Chart ColorDimension(string variant, VisualThemeMode mode) {
+    private static Chart ColorDimension(string variant, ThemeMode mode) {
         var colors = VisualTheme.Graphite().Resolve(mode);
         var gradient = variant is &quot;gradient-color-legend&quot; or &quot;compact-gradient-color-legend&quot;;
         var swatches = variant is &quot;swatch-color-legend&quot; or &quot;compact-swatch-color-legend&quot;;

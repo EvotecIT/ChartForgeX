@@ -14,11 +14,11 @@ namespace ChartForgeX.Tests;
 [Trait("BrowserSuite", "Compatibility")]
 public sealed class PictorialArtworkBrowserTests {
     [BrowserTheory]
-    [InlineData(390, VisualThemeMode.Light)]
-    [InlineData(390, VisualThemeMode.Dark)]
-    [InlineData(900, VisualThemeMode.Light)]
-    [InlineData(900, VisualThemeMode.Dark)]
-    public async Task CapturedArtworkAndPartialDirectionSurviveNativeReplacementSelectionAndExports(int width, VisualThemeMode mode) {
+    [InlineData(390, ThemeMode.Light)]
+    [InlineData(390, ThemeMode.Dark)]
+    [InlineData(900, ThemeMode.Light)]
+    [InlineData(900, ThemeMode.Dark)]
+    public async Task CapturedArtworkAndPartialDirectionSurviveNativeReplacementSelectionAndExports(int width, ThemeMode mode) {
         if (!Enabled) return;
         var chart = PictorialArtworkRecipe.Create("wide", mode).WithSize(width, 460).WithFontFamily(BrowserProofFonts.Family);
         var renderer = new HtmlInteractiveChartRenderer(); var first = renderer.PrepareSection(chart, configure: Options);
@@ -64,7 +64,7 @@ public sealed class PictorialArtworkBrowserTests {
     private static void Options(HtmlChartInteractionOptions options) {
         options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit; options.Interaction.Enable(ChartInteractionFeatures.Export); options.Tooltip.PinOnSelect = false;
     }
-    private static async Task Capture(IPage page, HtmlChartSection section, int width, VisualThemeMode mode, string phase) {
+    private static async Task Capture(IPage page, HtmlChartSection section, int width, ThemeMode mode, string phase) {
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY"); if (string.IsNullOrWhiteSpace(directory)) return;
         if (!Path.IsPathRooted(directory)) throw new InvalidOperationException("Captures require an absolute task-owned directory.");
         Directory.CreateDirectory(directory); var stem = Path.Combine(directory, "pictorial-artwork-" + width + "-" + mode + "-" + phase);

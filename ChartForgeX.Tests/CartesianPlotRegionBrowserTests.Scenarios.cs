@@ -82,7 +82,7 @@ public sealed partial class CartesianPlotRegionBrowserTests {
     public async Task ScenarioRevealLabelsSeparateNearbyNativeTargetsWithoutDimmingChartStructure(bool dark, int width) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(width < 500 ? 350 : 600, 360).WithTitle("Nearby observations")
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).WithLegend(false)
             .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("observations"), "Observed",
                 new[] { new ChartPoint(4.98, 5), new ChartPoint(5.02, 5), new ChartPoint(8, 1) }));
@@ -138,7 +138,7 @@ public sealed partial class CartesianPlotRegionBrowserTests {
 
     private static string ScenarioFixture(bool dark, int width) {
         var chart = PassiveChart().WithSize(width < 500 ? 350 : 600, 360).WithLegend(true)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         var html = chart.ToInteractiveHtmlPage(options => {
             options.Interaction.Features = ChartInteractionFeatures.RevealLabels | ChartInteractionFeatures.FocusTrail;
             options.Interaction.AddScenario("element-route", "Element route", scenario => scenario

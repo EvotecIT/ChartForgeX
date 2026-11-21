@@ -17,8 +17,8 @@ public sealed class SequenceParticipantViewsBeforeTests {
         Assert.False(result.HasErrors);Assert.NotNull(result.Artifact);Assert.Empty(result.Diagnostics);
     }
     [Theory]
-    [InlineData(VisualThemeMode.Light)] [InlineData(VisualThemeMode.Dark)]
-    public void UnconfiguredParticipantHeadersLifelinesAndDefaultPaintRemainAControl(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)] [InlineData(ThemeMode.Dark)]
+    public void UnconfiguredParticipantHeadersLifelinesAndDefaultPaintRemainAControl(ThemeMode mode) {
         var result=MermaidRenderer.Render(Body,new MermaidRenderOptions{Presentation=new MermaidPresentationOptions{ThemeMode=mode}});
         Capture("sequence-view-ordinary-"+mode,Body,result);
         Assert.Empty(result.Diagnostics);Assert.NotNull(result.Artifact);

@@ -12,13 +12,13 @@ public sealed class ScheduleRangeLifecycleTests {
     private static readonly ChartColor Paint = ChartColor.FromHex("#B02D64");
 
     [Theory]
-    [InlineData(0, VisualThemeMode.Light)]
-    [InlineData(1, VisualThemeMode.Light)]
-    [InlineData(2, VisualThemeMode.Light)]
-    [InlineData(0, VisualThemeMode.Dark)]
-    [InlineData(1, VisualThemeMode.Dark)]
-    [InlineData(2, VisualThemeMode.Dark)]
-    public void EmptyTimelinePeersKeepSourceIdentitiesAndPackOnlyObservedRows(int emptyIndex, VisualThemeMode mode) {
+    [InlineData(0, ThemeMode.Light)]
+    [InlineData(1, ThemeMode.Light)]
+    [InlineData(2, ThemeMode.Light)]
+    [InlineData(0, ThemeMode.Dark)]
+    [InlineData(1, ThemeMode.Dark)]
+    [InlineData(2, ThemeMode.Dark)]
+    public void EmptyTimelinePeersKeepSourceIdentitiesAndPackOnlyObservedRows(int emptyIndex, ThemeMode mode) {
         var chart = Chart.Create().WithSize(520, 320).WithHeader(false).WithLegend(false).WithDataLabels(false)
             .WithBarStyle(ChartBarStyle.Flat);
         for (var index = 0; index < 3; index++) {
@@ -62,7 +62,7 @@ public sealed class ScheduleRangeLifecycleTests {
 
     private static XElement[] Items(PreparedVisual prepared) => XDocument.Parse(prepared.ToSvg()).Descendants()
         .Where(node => node.Attribute("data-cfx-role")?.Value == "timeline-item").ToArray();
-    private static VisualRenderContext Context(VisualThemeMode mode) => new(new VisualLayoutOptions(new VisualSize(520, 320)),
+    private static VisualRenderContext Context(ThemeMode mode) => new(new VisualLayoutOptions(new VisualSize(520, 320)),
         VisualTheme.Graphite(), mode, frame: new VisualFrame(showLegend: false));
     private static VisualRenderOptions Raster() => new(supersampling: 1);
     private static void AssertNativePaint(PreparedVisual prepared, ChartRect bounds) {

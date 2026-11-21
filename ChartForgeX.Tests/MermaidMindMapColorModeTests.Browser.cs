@@ -13,11 +13,11 @@ namespace ChartForgeX.Tests;
 
 public sealed partial class MermaidMindMapColorModeTests {
     [BrowserTheory]
-    [InlineData(MermaidMindMapColorMode.Branch, VisualThemeMode.Light, 960)]
-    [InlineData(MermaidMindMapColorMode.Branch, VisualThemeMode.Dark, 640)]
-    [InlineData(MermaidMindMapColorMode.Depth, VisualThemeMode.Light, 640)]
-    [InlineData(MermaidMindMapColorMode.Depth, VisualThemeMode.Dark, 960)]
-    public async Task StaticMindmapHostsDisplaySvgAndNativePng(MermaidMindMapColorMode mode, VisualThemeMode themeMode, int width) {
+    [InlineData(MermaidMindMapColorMode.Branch, ThemeMode.Light, 960)]
+    [InlineData(MermaidMindMapColorMode.Branch, ThemeMode.Dark, 640)]
+    [InlineData(MermaidMindMapColorMode.Depth, ThemeMode.Light, 640)]
+    [InlineData(MermaidMindMapColorMode.Depth, ThemeMode.Dark, 960)]
+    public async Task StaticMindmapHostsDisplaySvgAndNativePng(MermaidMindMapColorMode mode, ThemeMode themeMode, int width) {
         if (!Enabled) return;
         var parsed = new MermaidParser().ParseMindMap(Configuration(mode, false) + Uneven);
         Assert.Empty(parsed.Diagnostics);

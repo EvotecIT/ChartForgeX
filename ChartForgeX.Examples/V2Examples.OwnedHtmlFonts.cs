@@ -2,7 +2,7 @@ using ChartForgeX.Interactivity.Html;
 
 public static partial class V2Examples {
     private static void WriteOwnedHtmlFonts(string output, ICollection<ProofArtifact> artifacts) {
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) foreach (var variant in new[] { "wide", "compact" }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) foreach (var variant in new[] { "wide", "compact" }) {
             var chart = HtmlOwnedFontRecipe.Create(variant, mode, ExampleTypography.FontFamily);
             var id = "owned-html-fonts-" + variant + "-" + mode.ToString().ToLowerInvariant();
             var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);

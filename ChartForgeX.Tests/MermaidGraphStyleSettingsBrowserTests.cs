@@ -16,7 +16,7 @@ public sealed class MermaidGraphStyleSettingsBrowserTests {
         foreach(var family in new[]{"flowchart","agentflow"}) {
             var source=MermaidGraphStyleSettingsRenderingTests.Fixture(family);
             // Theme remains a host option so the frontmatter stays the fixture's first statement.
-            var rendered=MermaidRenderer.Render(source,new MermaidRenderOptions{Presentation=new MermaidPresentationOptions{ThemeMode=dark?VisualThemeMode.Dark:VisualThemeMode.Light}});
+            var rendered=MermaidRenderer.Render(source,new MermaidRenderOptions{Presentation=new MermaidPresentationOptions{ThemeMode=dark?ThemeMode.Dark:ThemeMode.Light}});
             MermaidGraphStyleSettingsCausalTests.Capture(rendered,family+"-browser-source-"+width+(dark?"-dark":"-light"));Assert.Empty(rendered.Diagnostics);
             var artifact=rendered.Artifact!;
             await using var session=await BrowserProofFonts.OpenAsync(artifact.ToHtmlPage(new VisualArtifactRenderOptions{HtmlSizing=VisualArtifactHtmlSizing.PreserveSize}),width,700);

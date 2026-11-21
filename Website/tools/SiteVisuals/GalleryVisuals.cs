@@ -20,7 +20,7 @@ internal static class GalleryVisuals {
         // legend colour. Keys past six are hollow on the page; their bars reuse the first series colours.
         // Horizontal bars stack from the bottom, so rows are listed in reverse to read in filter order from the top.
         var rows = categories.Length;
-        Chart Composition(VisualThemeMode mode) {
+        Chart Composition(ThemeMode mode) {
             var palette = VisualTheme.Graphite().Resolve(mode).Palette;
             var chart = Chart.Create()
                 .WithThemeMode(mode)

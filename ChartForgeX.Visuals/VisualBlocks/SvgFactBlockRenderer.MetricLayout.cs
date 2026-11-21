@@ -60,7 +60,7 @@ public sealed partial class SvgFactBlockRenderer {
         var badgeY = 0.0;
         var measured = false;
         if (inset) {
-            if (card.Icon != VisualIcon.None || card.Symbol.Length > 0) {
+            if (card.Icon != Icon.None || card.Symbol.Length > 0) {
                 var preferredRadius = Math.Min(24, Math.Max(17, layout.SurfaceHeight * .30));
                 radius = Math.Min(preferredRadius, Math.Max(.5, (layout.SurfaceHeight - 1) / 2));
                 measured = radius < preferredRadius;

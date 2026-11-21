@@ -56,7 +56,7 @@ public sealed class TopologyLabelBackgroundPaintTests {
 
     private static TopologyChart Source(bool dark) {
         var chart = TopologyChart.Create().WithId("native-label-background").WithTitle("").WithViewport(760, 400, 24).WithLegend(null)
-            .WithLayout(TopologyLayoutMode.Manual).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .WithLayout(TopologyLayoutMode.Manual).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light);
         chart.AddNode("a", "Plan", 60, 100, width: 140, height: 80); chart.AddNode("b", "Deliver", 500, 100, width: 140, height: 80);
         foreach (var node in chart.Nodes) { node.Kind = TopologyNodeKind.Generic; node.Shape = TopologyNodeShape.Rectangle; node.ShowStatusBadge = false; }
         chart.AddEdge("handoff", "a", "b", "Transfer", direction: VisualLinkDirection.Forward, routing: TopologyEdgeRouting.Straight);

@@ -8,14 +8,14 @@ namespace ChartForgeX.Tests;
 
 [Collection(nameof(FontRegistryCollection))]
 public sealed class TopologyCompleteThemePortableTests {
-    [Theory] [InlineData(VisualThemeMode.Light)] [InlineData(VisualThemeMode.Dark)]
-    public void CompletePairedThemeRetainsEveryExistingValueAndNativeUnitPixels(VisualThemeMode mode) {
+    [Theory] [InlineData(ThemeMode.Light)] [InlineData(ThemeMode.Dark)]
+    public void CompletePairedThemeRetainsEveryExistingValueAndNativeUnitPixels(ThemeMode mode) {
         var chart=Source();chart.Theme=Complete();chart.ThemeMode=mode;var before=chart.Prepare();
         var svg=before.ToSvg();var png=before.ToPng();var envelope=before.ToInterchangeEnvelope();var json=envelope.ToJson();Capture("theme-complete-"+mode,svg,png,json);
         var restored=VisualArtifactInterchangeEnvelope.FromJson(json).ToTopologyChart();var after=restored.Prepare();Capture("theme-complete-restored-"+mode,after.ToSvg(),after.ToPng(),after.ToInterchangeEnvelope().ToJson());
         Assert.Equal(chart.Theme.ToJson(),restored.Theme.ToJson());Assert.Equal(mode,restored.ThemeMode);Assert.Equal(2,envelope.Version);
         Assert.NotNull(envelope.Presentation!.Theme!.Definition);Assert.Equal(png,after.ToPng());
-        foreach(var selected in new[]{VisualThemeMode.Light,VisualThemeMode.Dark}) {
+        foreach(var selected in new[]{ThemeMode.Light,ThemeMode.Dark}) {
             restored.ThemeMode=selected;var edited=restored.Prepare();var sibling=Source();sibling.Theme=chart.Theme;sibling.ThemeMode=selected;
             Assert.Equal(sibling.Prepare().ToPng(),edited.ToPng());
         }
@@ -43,7 +43,7 @@ public sealed class TopologyCompleteThemePortableTests {
 
     [Fact]
     public void UndefinedModesMalformedDefinitionAndHostCssRemainExplicitPortableErrors() {
-        var envelope=Source().Prepare().ToInterchangeEnvelope();envelope.Presentation!.Theme!.Mode=(VisualThemeMode)999;
+        var envelope=Source().Prepare().ToInterchangeEnvelope();envelope.Presentation!.Theme!.Mode=(ThemeMode)999;
         Assert.Throws<ArgumentException>(()=>envelope.Validate());envelope.Presentation.Theme.Mode=null;
         var json=envelope.ToJson().Replace("\"theme\":{","\"theme\":{\"themeJson\":\"{}\",",StringComparison.Ordinal);
         Assert.Throws<ArgumentException>(()=>VisualArtifactInterchangeEnvelope.FromJson(json));

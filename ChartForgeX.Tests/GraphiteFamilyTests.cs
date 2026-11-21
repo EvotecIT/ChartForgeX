@@ -14,7 +14,7 @@ public sealed class GraphiteFamilyTests {
     [InlineData(true)]
     public void FunnelLabelsFitTheirStagesAndRetainValuesAndRatios(bool dark) {
         var values = new[] { 1284d, 1012, 744, 521, 466 };
-        var chart = Chart.Create().WithSize(556, 324).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = Chart.Create().WithSize(556, 324).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithDataLabels().WithXLabels("Detected", "Triaged", "Assigned", "Fixed", "Verified")
             .AddFunnel("Findings", values.Select((value, index) => new ChartPoint(index + 1, value)));
         var prepared = Prepare(chart);
@@ -49,7 +49,7 @@ public sealed class GraphiteFamilyTests {
     [InlineData(false)]
     [InlineData(true)]
     public void DonutAggregatesAnExplicitBudgetWithoutLosingSourceIdentity(bool dark) {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithXLabels("A", "B", "C", "D", "E", "F", "G", "H")
             .AddDonut("Total", Enumerable.Range(1, 8).Select(index => new ChartPoint(index, index * 100)));
         chart.Options.MaximumPieSlices = 6;
@@ -108,7 +108,7 @@ public sealed class GraphiteFamilyTests {
         Assert.Equal(60d / 95, geometry[0].Bounds.Width / geometry[1].Bounds.Width, 12);
         for (var index = 0; index < geometry.Length; index++)
             Assert.InRange(Math.Abs(geometry[index].Bounds.Width - Number(marks[index], "width")), 0, .000501);
-        var colors = VisualExportRequest.ForChart(chart).Context.Theme.Resolve(VisualThemeMode.Light);
+        var colors = VisualExportRequest.ForChart(chart).Context.Theme.Resolve(ThemeMode.Light);
         Assert.All(geometry, mark => Assert.Equal(colors.Foreground, mark.Fill));
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(label => label.Role == "bullet-value-label").ToArray();
         // The value is a quantity: below-target stays in data-cfx-status, never in the ink (design rule 10).

@@ -14,7 +14,7 @@ public sealed partial class ResponsiveHeatmapMarkupBudgetTests {
     public ResponsiveHeatmapMarkupBudgetTests(ITestOutputHelper output) => this.output = output;
 
     private static Chart Fixture(int rows) {
-        var colors = VisualTheme.Graphite().Resolve(VisualThemeMode.Light);
+        var colors = VisualTheme.Graphite().Resolve(ThemeMode.Light);
         var days = Enumerable.Range(0, 30).Select(day => new DateTime(2026, 9, 29).AddDays(day).ToString("yyyy-MM-dd")).ToArray();
         string[] groups = { "Domain controllers", "DNS", "Certificates" };
         var chart = Chart.Create().WithSize(1100, 240 + rows * 48 + 3 * 30).WithAxes().WithYAxisVisible().WithPadding(24, 40, 20, 70)

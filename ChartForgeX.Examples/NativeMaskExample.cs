@@ -1,7 +1,7 @@
 /// <summary>A complete Core-only chart uses a detached alpha mask; source import is a separate explicit workflow.</summary>
 public static class NativeMaskExample {
     /// <summary>Creates compact/wide native captures in the selected paired theme.</summary>
-    public static CapturedVisualLayer Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static CapturedVisualLayer Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var source = PrepareSource(variant, mode); var width = variant == "compact" ? 320 : 740;
         var pixels = new byte[width * 240 * 4];
         for (var y = 0; y < 240; y++) for (var x = 0; x < width; x++) {
@@ -14,9 +14,9 @@ public static class NativeMaskExample {
             new VisualRenderOptions(supersampling: 2));
     }
     /// <summary>Returns the ordinary detached native chart before mask capture.</summary>
-    public static PreparedVisual PrepareSource(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static PreparedVisual PrepareSource(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("compact" or "wide")) throw new ArgumentOutOfRangeException(nameof(variant));
-        if (!Enum.IsDefined(typeof(VisualThemeMode), mode)) throw new ArgumentOutOfRangeException(nameof(mode));
+        if (!Enum.IsDefined(typeof(ThemeMode), mode)) throw new ArgumentOutOfRangeException(nameof(mode));
         var width = variant == "compact" ? 320 : 740; var theme = VisualTheme.Graphite();
         var series = ChartSeries.CreateLine(new ChartSeriesId("finished"), "Finished",
             new[] { new ChartPoint(1, 9), new ChartPoint(2, 24), new ChartPoint(3, 17), new ChartPoint(4, 31) })

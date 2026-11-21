@@ -12,7 +12,7 @@ namespace ChartForgeX.Tests;
 public sealed partial class ZenUmlPresentationDepthTests {
     internal static string Fixture(string name)=>File.ReadAllText(Path.Combine(TestRepository.Root,"tests","mermaid-conformance","external-plugins","zenuml",name+".mmd"));
     internal static MermaidRenderOptions Options(int width,bool dark)=>new(){Sequence=new MermaidSequenceRenderOptions{Width=width,Height=900},
-        Presentation=new MermaidPresentationOptions{FontFamily=BrowserProofFonts.Family,ThemeMode=dark?VisualThemeMode.Dark:VisualThemeMode.Light}};
+        Presentation=new MermaidPresentationOptions{FontFamily=BrowserProofFonts.Family,ThemeMode=dark?ThemeMode.Dark:ThemeMode.Light}};
     internal static SequenceArtifact Model(string fixture,int width=960,bool dark=false) {
         var result=MermaidRenderer.Render((dark?"%%{init: {'theme':'dark'}}%%\n":"")+Fixture(fixture),Options(width,dark));
         Assert.Empty(result.Diagnostics);return Assert.IsType<SequenceArtifact>(result.Artifact!.Model);

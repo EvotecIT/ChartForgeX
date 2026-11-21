@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;
@@ -12,7 +13,7 @@ var source = {{SOURCE_TEXT}};
 var result = MermaidRenderer.Render(source, new MermaidRenderOptions {
     WarningPolicy = MermaidWarningPolicy.Reject,
     UseCase = new MermaidFlowchartRenderOptions { Width = {{WIDTH}}, Height = {{HEIGHT}},
-        Presentation = new MermaidPresentationOptions { ThemeMode = VisualThemeMode.{{MODE}}, FontFamily = {{FONT_FAMILY}}, TopologySizing = MermaidTopologySizing.Natural } }
+        Presentation = new MermaidPresentationOptions { ThemeMode = ThemeMode.{{MODE}}, FontFamily = {{FONT_FAMILY}}, TopologySizing = MermaidTopologySizing.Natural } }
 });
 if (result.HasErrors || result.Artifact == null)
     throw new InvalidOperationException(string.Join("; ", result.Diagnostics.Select(diagnostic => diagnostic.Message)));

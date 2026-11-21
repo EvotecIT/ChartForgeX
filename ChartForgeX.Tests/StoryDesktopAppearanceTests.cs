@@ -80,13 +80,13 @@ public sealed class StoryDesktopAppearanceTests {
         var story = ReplayStory(theme, custom);
         var document = XDocument.Parse(story.Prepare().ToSvg());
         Assert.Empty(Roles(document, "story-window-chrome"));
-        Assert.Equal(custom.Resolve(VisualThemeMode.Dark).ElevatedSurface.ToCss(), (string?)Roles(document, "terminal-viewport").Single().Attribute("fill"));
+        Assert.Equal(custom.Resolve(ThemeMode.Dark).ElevatedSurface.ToCss(), (string?)Roles(document, "terminal-viewport").Single().Attribute("fill"));
         Assert.Single(Roles(document, "terminal-viewport-text"));
     }
 
     [Fact]
     public void NarrowDesktopPanelsHaveActionableChromeGuidance() {
-        var story = VisualStory.Create("Narrow windows").WithSize(540, 400).WithTheme(VisualStoryThemes.Windows(), VisualThemeMode.Dark).WithStyle(VisualStoryStyleOptions.Windows());
+        var story = VisualStory.Create("Narrow windows").WithSize(540, 400).WithTheme(VisualStoryThemes.Windows(), ThemeMode.Dark).WithStyle(VisualStoryStyleOptions.Windows());
         story.Scene("code", "Code", 1, VisualStorySceneLayout.Split)
             .Panel("code", new VisualStorySourceSurface(StorySourceText.Create("42")))
             .Panel("other", new VisualStoryTextSurface("Ready"));
@@ -97,7 +97,7 @@ public sealed class StoryDesktopAppearanceTests {
 
     [Fact]
     public void WindowStyleCanBeChosenWithoutChangingALightPalette() {
-        var theme = new StoryAppearance(VisualTheme.Graphite(), VisualThemeMode.Light, new VisualStoryStyleOptions());
+        var theme = new StoryAppearance(VisualTheme.Graphite(), ThemeMode.Light, new VisualStoryStyleOptions());
         theme.WindowStyle = TerminalWindowStyle.MacOS;
         Assert.Equal(theme.Panel, theme.WindowHeader);
         Assert.True(ChartColorMath.ContrastRatio(theme.Text, theme.WindowHeader) >= 4.5);
@@ -127,7 +127,7 @@ public sealed class StoryDesktopAppearanceTests {
     [InlineData(TerminalWindowStyle.WindowsTerminal)]
     [InlineData(TerminalWindowStyle.Linux)]
     public void OmittedReplayPaletteFollowsLightStoryRegardlessOfChrome(TerminalWindowStyle style) {
-        var theme = new StoryAppearance(VisualTheme.Graphite(), VisualThemeMode.Light, new VisualStoryStyleOptions()); theme.WindowStyle = style;
+        var theme = new StoryAppearance(VisualTheme.Graphite(), ThemeMode.Light, new VisualStoryStyleOptions()); theme.WindowStyle = style;
         var prepared = ReplayStory(theme).Prepare();
         var document = XDocument.Parse(prepared.ToSvg());
         Assert.Equal(theme.Panel.ToCss(), (string?)Roles(document, "terminal-viewport").Single().Attribute("fill"));
@@ -213,15 +213,15 @@ public sealed class StoryDesktopAppearanceTests {
         TerminalWindowStyle.MacOS => VisualStoryThemes.MacOS(),
         TerminalWindowStyle.WindowsTerminal => VisualStoryThemes.Windows(),
         _ => VisualStoryThemes.Linux()
-    }, light ? VisualThemeMode.Light : VisualThemeMode.Dark, style switch {
+    }, light ? ThemeMode.Light : ThemeMode.Dark, style switch {
         TerminalWindowStyle.MacOS => VisualStoryStyleOptions.MacOS(light),
         TerminalWindowStyle.WindowsTerminal => VisualStoryStyleOptions.Windows(light),
         _ => VisualStoryStyleOptions.Linux(light)
     });
     private sealed class StoryAppearance {
-        internal StoryAppearance(VisualTheme palette, VisualThemeMode mode, VisualStoryStyleOptions style) { Palette = palette; Mode = mode; Style = style; }
+        internal StoryAppearance(VisualTheme palette, ThemeMode mode, VisualStoryStyleOptions style) { Palette = palette; Mode = mode; Style = style; }
         internal VisualTheme Palette { get; set; }
-        internal VisualThemeMode Mode { get; }
+        internal ThemeMode Mode { get; }
         internal VisualStoryStyleOptions Style { get; }
         internal ChartColor Background => Palette.Resolve(Mode).Background;
         internal ChartColor Panel => Palette.Resolve(Mode).ElevatedSurface;

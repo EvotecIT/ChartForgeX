@@ -7,7 +7,7 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 
 var mode = args.Contains("--dark")
-    ? VisualThemeMode.Dark : VisualThemeMode.Light;
+    ? ThemeMode.Dark : ThemeMode.Light;
 
 var (series, weeks, values) = SignInData();
 var chart = Chart.Create()

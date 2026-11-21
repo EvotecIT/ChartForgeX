@@ -1,12 +1,12 @@
 /// <summary>Colors completion values with an observed lower bound and a fixed goal.</summary>
 public static class ScatterPartialColorRangeRecipe {
     /// <summary>Creates the selected example without choosing a renderer or export backend.</summary>
-    public static Chart Create(string variant = "partial-color-range", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "partial-color-range", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("partial-color-range" or "compact-partial-color-range")) throw new ArgumentOutOfRangeException(nameof(variant));
         return PartialColorRange(mode);
     }
 
-    private static Chart PartialColorRange(VisualThemeMode mode) {
+    private static Chart PartialColorRange(ThemeMode mode) {
         var colors = VisualTheme.Graphite().Resolve(mode);
         var duration = new[] { 18d, 30, 24, 44, 32 };
         var completion = new double?[] { 55, 82, null, 68, 95 };

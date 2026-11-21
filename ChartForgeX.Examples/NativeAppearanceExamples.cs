@@ -9,7 +9,7 @@ internal static class NativeAppearanceExamples {
         NativeVectorGlassExamples.Write(output);
         NativeRetainedAppearanceExamples.Write(output);
         NativeTurbulenceExamples.Write(output);
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             foreach (var variant in new[] { "compact", "wide" }) {
                 foreach (var effect in new[] { "outline", "bloom", "glow", "inner" }) {
                     var layer = NativeAppearanceExample.Create(effect, variant, mode);

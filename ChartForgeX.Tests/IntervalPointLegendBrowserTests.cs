@@ -17,7 +17,7 @@ public sealed class IntervalPointLegendBrowserTests {
     public async Task PointLegendAndMarkReadoutsRetainLocalizedTupleAndActualSeriesName(bool boxPlot, bool horizontal) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(360, 440).WithTitle("Delivery observations")
-            .WithTheme(VisualTheme.Graphite(), horizontal ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), horizontal ? ThemeMode.Dark : ThemeMode.Light)
             .WithXLabels("Express", "Standard").WithPointLegend().WithLegend();
         var seriesName = boxPlot ? "Distribution" : "Delivery window";
         if (boxPlot) chart.AddSeries(ChartSeries.CreateBoxPlot(new ChartSeriesId("delivery"), seriesName, new[] {

@@ -6,14 +6,14 @@ using ChartForgeX.Themes;
 /// <summary>Count charts with whole-number tick positions in vertical and horizontal layouts.</summary>
 public static class IntegerAxisExamples {
     /// <summary>Creates monthly counts whose complete short labels thin to the available width.</summary>
-    public static Chart CreateMonthlyCounts(int width, VisualThemeMode mode) => Chart.Create().WithSize(width, 280)
+    public static Chart CreateMonthlyCounts(int width, ThemeMode mode) => Chart.Create().WithSize(width, 280)
         .WithTheme(VisualTheme.Graphite(), mode).WithTitle("Monthly observations").WithLegend(false).WithDataLabels(false)
         .WithXLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
         .WithYAxisIntegerTicks().WithMaximumBarWidth(48)
         .AddBar("Count", Enumerable.Range(1, 12).Select(index => new ChartPoint(index, index % 4 + 1)).ToArray());
 
     /// <summary>Creates signed stacks with rounded exterior corners and square internal joins.</summary>
-    public static Chart CreateSignedStack(bool horizontal, int width, VisualThemeMode mode) {
+    public static Chart CreateSignedStack(bool horizontal, int width, ThemeMode mode) {
         var chart = Chart.Create().WithSize(width, 320).WithTheme(VisualTheme.Graphite(), mode)
             .WithTitle("Signed category adjustments").WithSubtitle("Square stack joins · rounded outer ends")
             .WithLegendPosition(ChartLegendPosition.TopLeft).WithStackedBars().WithMaximumBarWidth(48)
@@ -25,7 +25,7 @@ public static class IntegerAxisExamples {
             : chart.WithYAxisIntegerTicks().AddBar("First", first).AddBar("Second", second);
     }
     /// <summary>Creates a small count chart using the physical value axis's integer tick policy.</summary>
-    public static Chart Create(int maximum, bool horizontal, int width, VisualThemeMode mode) {
+    public static Chart Create(int maximum, bool horizontal, int width, ThemeMode mode) {
         if (maximum < 1) throw new ArgumentOutOfRangeException(nameof(maximum));
         var chart = Chart.Create().WithSize(width, 300).WithTheme(VisualTheme.Graphite(), mode)
             .WithTitle("Items by queue").WithSubtitle("Whole-number counts · maximum " + maximum)
@@ -39,7 +39,7 @@ public static class IntegerAxisExamples {
     /// <summary>Writes paired SVG, HTML and native PNG examples for small and large count domains.</summary>
     public static void Write(string output, ChartPngOutputScale scale) {
         TopologyAccentExamples.Write(output);
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             var sparse = Chart.Create().WithSize(800, 200).WithTheme(VisualTheme.Graphite(), mode)
                 .WithTitle("Sparse category counts").WithXLabels("January", "February")
                 .WithStackedBars().WithYAxisIntegerTicks().WithMaximumBarWidth(48)
@@ -59,7 +59,7 @@ public static class IntegerAxisExamples {
         }
         foreach (var maximum in new[] { 1, 2, 3, 4, 1000000 })
             foreach (var horizontal in new[] { false, true })
-                foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+                foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
                     var name = "integer-axis-" + (horizontal ? "x" : "y") + "-" + maximum + "-" + mode.ToString().ToLowerInvariant();
                     ExampleArtifactWriter.SaveChart(Create(maximum, horizontal, 640, mode), output, name, scale);
                 }

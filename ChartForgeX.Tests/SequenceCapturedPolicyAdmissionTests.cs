@@ -17,7 +17,7 @@ public sealed class SequenceCapturedPolicyAdmissionTests {
     public void RepresentedNonLayoutPolicyRestoresItsPairedThemeWithoutChangingStaticPaint(string policy) {
         var source = SequenceArtifact.Create("captured-non-layout").WithSize(1000,820)
             .AddParticipant("A","Review").AddParticipant("B","Archive").AddMessage("A","B","Save");
-        source.ThemeMode = VisualThemeMode.Dark;
+        source.ThemeMode = ThemeMode.Dark;
         source.Theme = VisualTheme.Graphite().Configure(builder => builder.Dark.Background = ChartColor.FromHex("#112233"));
         if (policy == "navigation") source.Participants[0].NavigationLinks = new[] { new VisualNavigationLink("Guide","#guide") };
         else if (policy == "lifeline") source.Paint.LifelineStroke = new ChartStrokeStyle(width:.5,dash:Array.Empty<double>());
@@ -26,7 +26,7 @@ public sealed class SequenceCapturedPolicyAdmissionTests {
         SequenceMessageFixture.Capture("captured-non-layout-"+policy,first);
         var raw = source.ToVisualArtifact().ToInterchangeEnvelope();
         Assert.Null(raw.Sequence!.Layout);Assert.Null(raw.Sequence.Typography);
-        Assert.NotNull(raw.Sequence.Theme);Assert.Equal(VisualThemeMode.Dark,raw.Sequence.ThemeMode);
+        Assert.NotNull(raw.Sequence.Theme);Assert.Equal(ThemeMode.Dark,raw.Sequence.ThemeMode);
         var restored = VisualArtifactInterchangeEnvelope.FromJson(raw.ToJson()).ToSequenceArtifact();
         Assert.Equal(source.ToSvg(),restored.ToSvg());Assert.Equal(source.ToPng(),restored.ToPng());
         Assert.Equal(first.ToSvg(),source.ToSvg());
@@ -37,7 +37,7 @@ public sealed class SequenceCapturedPolicyAdmissionTests {
         var source = SequenceArtifact.Create("bare-theme").AddParticipant("A").AddParticipant("B").AddMessage("A","B","Save");
         var envelope = source.ToVisualArtifact().ToInterchangeEnvelope();
         envelope.Sequence!.Theme = VisualTheme.Graphite();
-        envelope.Sequence.ThemeMode = VisualThemeMode.Light;
+        envelope.Sequence.ThemeMode = ThemeMode.Light;
         Assert.Throws<ArgumentException>(() => envelope.Validate());
     }
 }

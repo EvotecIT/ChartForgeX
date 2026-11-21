@@ -14,11 +14,11 @@ namespace ChartForgeX.Tests;
 [Trait("BrowserSuite", "Compatibility")]
 public sealed class MapLabelClusterDepthBrowserTests {
     [BrowserTheory]
-    [InlineData(390, VisualThemeMode.Light)]
-    [InlineData(390, VisualThemeMode.Dark)]
-    [InlineData(800, VisualThemeMode.Light)]
-    [InlineData(800, VisualThemeMode.Dark)]
-    public async Task DerivedCountSelectionExposesContributorsWhileRawClusteredSourcesStayNonTargetable(int width, VisualThemeMode mode) {
+    [InlineData(390, ThemeMode.Light)]
+    [InlineData(390, ThemeMode.Dark)]
+    [InlineData(800, ThemeMode.Light)]
+    [InlineData(800, ThemeMode.Dark)]
+    public async Task DerivedCountSelectionExposesContributorsWhileRawClusteredSourcesStayNonTargetable(int width, ThemeMode mode) {
         if (!Enabled) return;
         var chart = MapNavigationDepthRecipe.Create(width == 390 ? "compact" : "wide", mode);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(Options), width + 24, 900);

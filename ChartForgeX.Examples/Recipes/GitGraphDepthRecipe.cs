@@ -1,7 +1,7 @@
 /// <summary>One dependency-free native block retains complete source ancestry in three physical directions.</summary>
 public static class GitGraphDepthRecipe {
     /// <summary>Creates compact/wide LR, TB or BT exports; the caller may save the returned block directly as SVG or native PNG.</summary>
-    public static GitGraphBlock Create(string variant = "wide-lr", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static GitGraphBlock Create(string variant = "wide-lr", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide-lr" or "compact-lr" or "wide-tb" or "compact-tb" or "wide-bt" or "compact-bt"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var direction = variant.EndsWith("-tb", StringComparison.Ordinal) ? GitGraphDirection.TopToBottom

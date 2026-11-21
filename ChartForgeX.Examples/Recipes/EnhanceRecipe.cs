@@ -70,7 +70,7 @@ public static class EnhanceRecipe {
     }
 
     /// <summary>The last seven days as stacked columns; each segment carries its records' keys, its day and its kind.</summary>
-    public static Chart Week(IReadOnlyList<Record> records, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Week(IReadOnlyList<Record> records, ThemeMode mode = ThemeMode.Light) {
         var days = Enumerable.Range(23, 7).Select(d => Start.AddDays(d)).ToArray();
         var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithStackedBars().WithLegend(true)
             .WithXLabels(days.Select(d => d.ToString("ddd d", CultureInfo.InvariantCulture)).ToArray())
@@ -87,7 +87,7 @@ public static class EnhanceRecipe {
     }
 
     /// <summary>Records per day for the month on a time axis, all records as an area and updates as a line.</summary>
-    public static Chart Trend(IReadOnlyList<Record> records, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Trend(IReadOnlyList<Record> records, ThemeMode mode = ThemeMode.Light) {
         var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithLegend(true)
             .ConfigureXAxis(axis => {
                 axis.Scale = ChartScaleKind.Time; axis.TickCount = 5;
@@ -105,7 +105,7 @@ public static class EnhanceRecipe {
     }
 
     /// <summary>Records per product and week; each cell carries its records' keys, its product and its week.</summary>
-    public static Chart Heatmap(IReadOnlyList<Record> records, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Heatmap(IReadOnlyList<Record> records, ThemeMode mode = ThemeMode.Light) {
         var weeks = records.Select(r => r.Week).Distinct().OrderBy(w => w).ToArray();
         var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithLegend(false)
             .WithXLabels(weeks.Select(w => w.ToString("d MMM", CultureInfo.InvariantCulture)).ToArray())
@@ -123,7 +123,7 @@ public static class EnhanceRecipe {
     }
 
     /// <summary>Support windows with the current release as the current row; bars carry the product's records.</summary>
-    public static Chart Support(IReadOnlyList<Record> records, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Support(IReadOnlyList<Record> records, ThemeMode mode = ThemeMode.Light) {
         var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithLegend(false)
             .WithGanttOpenEndStyle(ChartGanttOpenEndStyle.Fade)
             .WithXAxisBounds(new DateTime(2024, 7, 1).ToOADate(), new DateTime(2030, 1, 1).ToOADate())
@@ -149,11 +149,11 @@ public static class EnhanceRecipe {
         new(keys: records.Select(r => r.Id).ToArray(), fields: fields);
 
     // Series colours name the shared --hfx-* role, with the Graphite value of the prepared mode as the fallback.
-    private static ChartColor Series(int slot, VisualThemeMode mode) {
-        var tokens = mode == VisualThemeMode.Dark ? VisualDesignTokens.GraphiteDark() : VisualDesignTokens.GraphiteLight();
+    private static ChartColor Series(int slot, ThemeMode mode) {
+        var tokens = mode == ThemeMode.Dark ? VisualDesignTokens.GraphiteDark() : VisualDesignTokens.GraphiteLight();
         return tokens.Palette[slot - 1].WithCssVariable("--hfx-color-series-" + slot.ToString(CultureInfo.InvariantCulture));
     }
 
-    private static ChartColor Secondary(VisualThemeMode mode) =>
-        (mode == VisualThemeMode.Dark ? VisualDesignTokens.GraphiteDark() : VisualDesignTokens.GraphiteLight()).MutedForeground.WithCssVariable("--hfx-color-text-secondary");
+    private static ChartColor Secondary(ThemeMode mode) =>
+        (mode == ThemeMode.Dark ? VisualDesignTokens.GraphiteDark() : VisualDesignTokens.GraphiteLight()).MutedForeground.WithCssVariable("--hfx-color-text-secondary");
 }

@@ -9,11 +9,11 @@ namespace ChartForgeX.Tests;
 /// <summary>Published native examples preserve the facts and request policies that their figures explain.</summary>
 public sealed class WebsiteNativeCapabilityRecipeTests {
     [Theory]
-    [InlineData(ChartSeriesKind.Treemap, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.Treemap, VisualThemeMode.Dark)]
-    [InlineData(ChartSeriesKind.Sunburst, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.Sunburst, VisualThemeMode.Dark)]
-    public void AreaHierarchyFiguresUseOneOriginalSourceForFullAndExistingRootViews(ChartSeriesKind kind, VisualThemeMode mode) {
+    [InlineData(ChartSeriesKind.Treemap, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.Treemap, ThemeMode.Dark)]
+    [InlineData(ChartSeriesKind.Sunburst, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.Sunburst, ThemeMode.Dark)]
+    public void AreaHierarchyFiguresUseOneOriginalSourceForFullAndExistingRootViews(ChartSeriesKind kind, ThemeMode mode) {
         var canonical = SunburstRecipe.Create("wide", mode).Series[0].HierarchyItems;
         var chart = NativeHierarchyWebsiteRecipe.Create(kind, mode);
         var original = chart.Series[0].HierarchyItems.Select(item => (item.Id, item.ParentId, item.Value, item.ColorValue)).ToArray();

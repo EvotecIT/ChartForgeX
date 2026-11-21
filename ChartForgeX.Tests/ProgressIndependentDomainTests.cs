@@ -12,7 +12,7 @@ public sealed class ProgressIndependentDomainTests {
     [InlineData(390, false)]
     [InlineData(760, true)]
     public void RowDomainsKeepRawMeasurementsAndIndependentClampedGeometry(int width, bool dark) {
-        var chart = IndependentProgressRecipe.Create(width == 390 ? "compact" : "wide", dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        var chart = IndependentProgressRecipe.Create(width == 390 ? "compact" : "wide", dark ? ThemeMode.Dark : ThemeMode.Light);
         chart.Series[0].UpdateProgressItem(1, new ChartProgressItem("Verified jobs", 2500, 0, 2000));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var rows = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(node => node.Role == "progress-row").ToArray();

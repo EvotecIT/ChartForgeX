@@ -5,7 +5,7 @@ using ChartForgeX.Themes;
 internal static class PolarViewportExamples {
     internal static void Write(string output) {
         Directory.CreateDirectory(output);
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) foreach (var width in new[] { 360, 800 }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) foreach (var width in new[] { 360, 800 }) {
             var chart = PolarViewportRecipe.Create(width, mode); var prepared = PolarViewportRecipe.Prepare(chart);
             var name = "polar-viewport-" + mode.ToString().ToLowerInvariant() + "-" + width;
             File.WriteAllText(Path.Combine(output, name + ".svg"), prepared.ToSvg()); File.WriteAllBytes(Path.Combine(output, name + ".png"), prepared.ToPng());

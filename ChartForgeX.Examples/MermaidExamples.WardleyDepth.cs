@@ -3,7 +3,7 @@ using ChartForgeX.Themes;
 
 internal static partial class MermaidExamples {
     private static void WriteWardleyDepthExamples(string output) {
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) foreach (var variant in new[] { "wide", "compact" }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) foreach (var variant in new[] { "wide", "compact" }) {
             var block = WardleyDepthRecipe.Create(variant, mode).WithTheme(VisualTheme.Graphite().WithFontFamily(ExampleTypography.FontFamily), mode);
             var id = "native-wardley-depth-" + variant + "-" + mode.ToString().ToLowerInvariant();
             block.SaveSvg(Path.Combine(output, id + ".svg")); block.SavePng(Path.Combine(output, id + ".png"));

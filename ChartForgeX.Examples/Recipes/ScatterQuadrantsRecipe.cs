@@ -1,7 +1,7 @@
 /// <summary>Places proposed work into effort and impact regions.</summary>
 public static class ScatterQuadrantsRecipe {
     /// <summary>Creates the selected example without choosing a renderer or export backend.</summary>
-    public static Chart Create(string variant = "quadrants", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "quadrants", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("quadrants" or "compact-quadrants")) throw new ArgumentOutOfRangeException(nameof(variant));
         return Quadrants();
     }

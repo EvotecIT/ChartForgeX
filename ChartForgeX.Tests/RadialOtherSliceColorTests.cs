@@ -11,11 +11,11 @@ namespace ChartForgeX.Tests;
 public sealed class RadialOtherSliceColorTests {
     public static IEnumerable<object[]> Themes() => typeof(VisualTheme).GetMethods(BindingFlags.Public | BindingFlags.Static)
         .Where(method => method.ReturnType == typeof(VisualTheme) && method.GetParameters().Length == 0)
-        .SelectMany(method => new[] { VisualThemeMode.Light, VisualThemeMode.Dark }.Select(mode => new object[] { method.Name, mode }));
+        .SelectMany(method => new[] { ThemeMode.Light, ThemeMode.Dark }.Select(mode => new object[] { method.Name, mode }));
 
     [Theory]
     [MemberData(nameof(Themes))]
-    public void OtherSlice_EveryBuiltInTheme_ContrastsWithThePlot(string theme, VisualThemeMode mode) {
+    public void OtherSlice_EveryBuiltInTheme_ContrastsWithThePlot(string theme, ThemeMode mode) {
         var colors = ((VisualTheme)typeof(VisualTheme).GetMethod(theme)!.Invoke(null, null)!).Resolve(mode);
         var chart = Chart.Create().WithSize(480, 320)
             .AddDonut("Licences", Enumerable.Range(0, 14).Select(index => new ChartPoint(index, index == 0 ? 8 : 6)));
@@ -29,9 +29,9 @@ public sealed class RadialOtherSliceColorTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void OtherSliceColor_CustomThemeWhoseNeutralsMatchTheSurface_StillContrasts(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void OtherSliceColor_CustomThemeWhoseNeutralsMatchTheSurface_StillContrasts(ThemeMode mode) {
         var builder = new VisualThemeBuilder();
         var tokens = builder.Colors(mode);
         tokens.Neutral = tokens.Surface; tokens.Neutral2 = tokens.Surface; tokens.Neutral3 = tokens.Surface;

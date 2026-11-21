@@ -11,13 +11,13 @@ namespace ChartForgeX.Tests;
 /// <summary>Dense pyramid rails retain useful complete captions without painting leaders to empty slots.</summary>
 public sealed class PyramidCaptionLayoutTests {
     [Theory]
-    [InlineData(390, 280, false, false, VisualThemeMode.Light)]
-    [InlineData(390, 280, false, true, VisualThemeMode.Dark)]
-    [InlineData(760, 440, false, false, VisualThemeMode.Dark)]
-    [InlineData(390, 280, true, false, VisualThemeMode.Light)]
-    [InlineData(760, 440, true, true, VisualThemeMode.Dark)]
+    [InlineData(390, 280, false, false, ThemeMode.Light)]
+    [InlineData(390, 280, false, true, ThemeMode.Dark)]
+    [InlineData(760, 440, false, false, ThemeMode.Dark)]
+    [InlineData(390, 280, true, false, ThemeMode.Light)]
+    [InlineData(760, 440, true, true, ThemeMode.Dark)]
     public void DenseStageCaptionsKeepCompleteNamesValuesSourceFactsAndOnlyUsefulLeaders(
-        int width, int height, bool horizontal, bool reversed, VisualThemeMode mode) {
+        int width, int height, bool horizontal, bool reversed, ThemeMode mode) {
         var names = Enumerable.Range(1, 16).Select(index => "Regional service " + index).ToArray();
         var chart = Chart.Create().WithSize(width, height).WithTitle("Allocation by service")
             .WithXLabels(names).WithDataLabels().ConfigureDataLabelStyle(style => style.FontSize = 13.5)

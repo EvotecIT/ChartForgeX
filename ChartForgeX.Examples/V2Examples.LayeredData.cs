@@ -3,7 +3,7 @@ using ChartForgeX.Themes;
 public static partial class V2Examples {
     /// <summary>Uses the same compiled sources for composed data previews and their ordinary-package downloads.</summary>
     private static void WriteLayeredData(string output, ICollection<ProofArtifact> artifacts) {
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             foreach (var name in new[] { "financial-layers", "geographic-datasets", "source-drawings" }) {
                 var geographic = name == "geographic-datasets";
                 var recipe = ExampleRecipes.Named(name);

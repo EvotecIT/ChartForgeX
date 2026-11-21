@@ -171,9 +171,9 @@ public sealed class InteractiveResetControlBrowserTests {
     [InlineData(true, 900, HtmlChartResponsiveLayout.Fit)]
     public async Task ResetControlDoesNotCoverTheTitleOrChartAfterNativeNodeSelection(bool dark, int width, HtmlChartResponsiveLayout layout) {
         if (!Enabled) return;
-        var chart = V2GalleryModels.Create(ChartSeriesKind.Sankey, "compact-options", dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = V2GalleryModels.Create(ChartSeriesKind.Sankey, "compact-options", dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithSize(360, 360).WithTitle("Requests across processing stages").WithSubtitle("Aligned and ordered weighted flows")
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = layout), width, 650);
         var page = session.Page;
         var target = page.Locator("[data-cfx-target-kind='node'][data-cfx-target-id='south-support']");

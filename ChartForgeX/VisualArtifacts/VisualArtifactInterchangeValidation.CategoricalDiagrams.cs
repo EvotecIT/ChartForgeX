@@ -44,7 +44,7 @@ internal static partial class VisualArtifactInterchangeValidation {
     }
 
     private static void ValidateNativeCategoricalFrame(VisualArtifactInterchangeEnvelope envelope, ChartForgeX.Themes.VisualTheme theme,
-        ChartForgeX.Themes.VisualThemeMode mode) {
+        ChartForgeX.ThemeMode mode) {
         if (theme == null) throw new ArgumentException("Categorical diagrams require a native theme.", nameof(envelope));
         Defined(mode, "categorical diagram theme mode", envelope);
         if (theme.ToJson().Length > 1024 * 1024) throw new ArgumentException("Categorical theme JSON exceeds the native input limit.", nameof(envelope));

@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = BoxPlotRecipe.Create(&quot;compact-horizontal-statistic-labels&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Builds delivery-time distributions from typed five-number summaries.&lt;/summary&gt;
 public static class BoxPlotRecipe {
     /// &lt;summary&gt;Creates the selected box-plot example and its orientation.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot; or &quot;horizontal&quot; or &quot;compact-horizontal&quot;
             or &quot;statistic-labels&quot; or &quot;compact-statistic-labels&quot; or &quot;horizontal-statistic-labels&quot; or &quot;compact-horizontal-statistic-labels&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
@@ -142,7 +143,7 @@ public static class BoxPlotRecipe {
         return chart;
     }
 
-    private static Chart StatisticLabels(string variant, VisualThemeMode mode) {
+    private static Chart StatisticLabels(string variant, ThemeMode mode) {
         var horizontal = variant.Contains(&quot;horizontal&quot;);
         var chart = Chart.Create().WithTitle(&quot;Five-number delivery summaries&quot;).WithXLabels(&quot;Standard&quot;, &quot;Express&quot;)
             .AddSeries(ChartSeries.CreateBoxPlot(new ChartSeriesId(&quot;delivery&quot;), &quot;Delivery time&quot;, new[] {
@@ -155,8 +156,8 @@ public static class BoxPlotRecipe {
                     label.Placement = horizontal ? ChartDataLabelPlacement.Above : ChartDataLabelPlacement.Right;
                     label.Style.WithFontSize(10);
                 }
-                options.MinimumLabel.Style.WithColor(mode == VisualThemeMode.Dark ? &quot;#82b8ff&quot; : &quot;#235b9f&quot;);
-                options.MaximumLabel.Style.WithColor(mode == VisualThemeMode.Dark ? &quot;#ffbe79&quot; : &quot;#975000&quot;);
+                options.MinimumLabel.Style.WithColor(mode == ThemeMode.Dark ? &quot;#82b8ff&quot; : &quot;#235b9f&quot;);
+                options.MaximumLabel.Style.WithColor(mode == ThemeMode.Dark ? &quot;#ffbe79&quot; : &quot;#975000&quot;);
                 options.MedianLabel.Style.WithFontSize(12).WithWeight(&quot;700&quot;);
             }).WithDataLabels();
         (horizontal ? chart.Options.XAxis : chart.Options.YAxis).WithBounds(0, 60);
@@ -169,6 +170,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -178,7 +180,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = BoxPlotRecipe.Create(&quot;compact-horizontal-statistic-labels&quot;, mode);
 var context = new VisualRenderContext(
@@ -193,7 +195,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Builds delivery-time distributions from typed five-number summaries.&lt;/summary&gt;
 public static class BoxPlotRecipe {
     /// &lt;summary&gt;Creates the selected box-plot example and its orientation.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot; or &quot;horizontal&quot; or &quot;compact-horizontal&quot;
             or &quot;statistic-labels&quot; or &quot;compact-statistic-labels&quot; or &quot;horizontal-statistic-labels&quot; or &quot;compact-horizontal-statistic-labels&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
@@ -225,7 +227,7 @@ public static class BoxPlotRecipe {
         return chart;
     }
 
-    private static Chart StatisticLabels(string variant, VisualThemeMode mode) {
+    private static Chart StatisticLabels(string variant, ThemeMode mode) {
         var horizontal = variant.Contains(&quot;horizontal&quot;);
         var chart = Chart.Create().WithTitle(&quot;Five-number delivery summaries&quot;).WithXLabels(&quot;Standard&quot;, &quot;Express&quot;)
             .AddSeries(ChartSeries.CreateBoxPlot(new ChartSeriesId(&quot;delivery&quot;), &quot;Delivery time&quot;, new[] {
@@ -238,8 +240,8 @@ public static class BoxPlotRecipe {
                     label.Placement = horizontal ? ChartDataLabelPlacement.Above : ChartDataLabelPlacement.Right;
                     label.Style.WithFontSize(10);
                 }
-                options.MinimumLabel.Style.WithColor(mode == VisualThemeMode.Dark ? &quot;#82b8ff&quot; : &quot;#235b9f&quot;);
-                options.MaximumLabel.Style.WithColor(mode == VisualThemeMode.Dark ? &quot;#ffbe79&quot; : &quot;#975000&quot;);
+                options.MinimumLabel.Style.WithColor(mode == ThemeMode.Dark ? &quot;#82b8ff&quot; : &quot;#235b9f&quot;);
+                options.MaximumLabel.Style.WithColor(mode == ThemeMode.Dark ? &quot;#ffbe79&quot; : &quot;#975000&quot;);
                 options.MedianLabel.Style.WithFontSize(12).WithWeight(&quot;700&quot;);
             }).WithDataLabels();
         (horizontal ? chart.Options.XAxis : chart.Options.YAxis).WithBounds(0, 60);

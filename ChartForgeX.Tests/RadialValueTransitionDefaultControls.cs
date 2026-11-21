@@ -12,7 +12,7 @@ public sealed class RadialValueTransitionDefaultControls {
     public void LayeredCircleAndProgressRingRecipesKeepExistingNativeAndAssetFreeOutputs(int width, bool dark) {
         var renderer = new HtmlInteractiveChartRenderer();
         foreach (var sample in new[] { ("layered", LayeredRadialRecipe.Create()), ("circle", CircleRecipe.Create()), ("rings", ProgressRingRecipe.Create()) }) {
-            var chart = sample.Item2.WithSize(width, 400).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            var chart = sample.Item2.WithSize(width, 400).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
                 .WithFontFamily(BrowserProofFonts.Family);
             var section = renderer.PrepareSection(chart);
             Assert.DoesNotContain("native-motion", section.Html); Assert.DoesNotContain("update-frame", section.Html);

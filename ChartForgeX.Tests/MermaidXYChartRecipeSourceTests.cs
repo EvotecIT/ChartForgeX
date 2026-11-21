@@ -6,13 +6,13 @@ namespace ChartForgeX.Tests;
 
 public sealed class MermaidXYChartRecipeSourceTests {
     [Theory]
-    [InlineData("wide-vertical", VisualThemeMode.Light)] [InlineData("wide-vertical", VisualThemeMode.Dark)]
-    [InlineData("compact-vertical", VisualThemeMode.Light)] [InlineData("compact-vertical", VisualThemeMode.Dark)]
-    [InlineData("wide-horizontal", VisualThemeMode.Light)] [InlineData("wide-horizontal", VisualThemeMode.Dark)]
-    [InlineData("compact-horizontal", VisualThemeMode.Light)] [InlineData("compact-horizontal", VisualThemeMode.Dark)]
-    public void DownloadPackagesTheExactCompiledSourceFactoryAsAnOrdinaryPublicProgram(string variant, VisualThemeMode mode) {
+    [InlineData("wide-vertical", ThemeMode.Light)] [InlineData("wide-vertical", ThemeMode.Dark)]
+    [InlineData("compact-vertical", ThemeMode.Light)] [InlineData("compact-vertical", ThemeMode.Dark)]
+    [InlineData("wide-horizontal", ThemeMode.Light)] [InlineData("wide-horizontal", ThemeMode.Dark)]
+    [InlineData("compact-horizontal", ThemeMode.Light)] [InlineData("compact-horizontal", ThemeMode.Dark)]
+    public void DownloadPackagesTheExactCompiledSourceFactoryAsAnOrdinaryPublicProgram(string variant, ThemeMode mode) {
         var source = ExampleRecipeSource.EmitXYChart(variant, mode); var chart = MermaidXYChartDepthRecipe.Create(variant, mode);
-        Assert.Contains("var chart = MermaidXYChartDepthRecipe.Create(\"" + variant + "\", VisualThemeMode." + mode + ");", source);
+        Assert.Contains("var chart = MermaidXYChartDepthRecipe.Create(\"" + variant + "\", ThemeMode." + mode + ");", source);
         Assert.Contains("public static class MermaidXYChartDepthRecipe", source); Assert.Contains("chart.AddLine(\"Completed\"", source);
         Assert.Contains("chart.SaveSvg", source); Assert.Contains("chart.SavePng", source); Assert.Contains("chart.SaveHtml", source);
         Assert.DoesNotContain("ChartForgeX.Mermaid", source); Assert.DoesNotContain("ParseXYChart", source);

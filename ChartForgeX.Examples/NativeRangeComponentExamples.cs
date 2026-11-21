@@ -6,7 +6,7 @@ internal static class NativeRangeComponentExamples {
         var font = NativeFallbackRadialExamples.RequiredFont(args, "--primary-font"); FontRegistry.Register("Owned interval font", font); Directory.CreateDirectory(output);
         var renderer = new HtmlInteractiveChartRenderer();
         foreach (var initial in new[] { false, true }) foreach (var area in new[] { false, true }) foreach (var width in new[] { 390, 760 }) {
-            var mode = width == 390 ? VisualThemeMode.Light : VisualThemeMode.Dark;
+            var mode = width == 390 ? ThemeMode.Light : ThemeMode.Dark;
             Chart Model(double lower, double upper) => NativeRangeComponentRecipe.Create(lower, upper, area, width, mode, "Owned interval font");
             void Configure(HtmlChartInteractionOptions options) { options.CaptureNativeValueSource = true; options.Interaction.ChartId = "native-range-components"; }
             var from = renderer.PrepareSection(Model(10, 35), configure: Configure); var to = renderer.PrepareSection(Model(20, 60), configure: Configure);

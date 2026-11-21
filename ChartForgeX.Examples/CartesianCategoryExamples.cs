@@ -29,15 +29,15 @@ internal static class CartesianCategoryExamples {
 
     /// <summary>Shows numeric category membership in two physical orientations and both paired palettes.</summary>
     internal static void WriteGrouped(string output, ChartPngOutputScale pngOutputScale) {
-        foreach (var width in new[] { 390, 960 }) foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
-            var suffix = width + (mode == VisualThemeMode.Dark ? "-dark" : "-light");
+        foreach (var width in new[] { 390, 960 }) foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
+            var suffix = width + (mode == ThemeMode.Dark ? "-dark" : "-light");
             ExampleArtifactWriter.SaveChart(CreateGroupedMonths(width, mode), output, "cartesian-grouped-months-" + suffix, pngOutputScale);
             ExampleArtifactWriter.SaveChart(CreateGroupedSites(width, mode), output, "cartesian-grouped-sites-" + suffix, pngOutputScale);
         }
     }
 
     /// <summary>Keeps a missing month in the catalog without inventing an observation or joining its line gap.</summary>
-    internal static Chart CreateGroupedMonths(int width, VisualThemeMode mode) {
+    internal static Chart CreateGroupedMonths(int width, ThemeMode mode) {
         var ids = new[] { "jan", "mar", "apr", "may", "jun" }.Select(value => new ChartObservationId(value)).ToArray();
         var actual = ChartSeries.CreateBar(new ChartSeriesId("monthly-actual"), "Actual", new[] {
             new ChartPoint(1.5, 48), new ChartPoint(4, 62), new ChartPoint(5.25, 53), new ChartPoint(6.75, 70), new ChartPoint(8.5, 68)
@@ -58,7 +58,7 @@ internal static class CartesianCategoryExamples {
     }
 
     /// <summary>Disambiguates repeated site names through their parent region while retaining authored numeric positions.</summary>
-    internal static Chart CreateGroupedSites(int width, VisualThemeMode mode) {
+    internal static Chart CreateGroupedSites(int width, ThemeMode mode) {
         var series = new ChartSeries(new ChartSeriesId("site-orders"), "Orders", ChartSeriesKind.HorizontalBar, new[] {
             new ChartPoint(1.5, 48), new ChartPoint(3.25, 62), new ChartPoint(7.5, 53), new ChartPoint(11, 70)
         }).WithObservationIds(new[] { "north-central", "north-harbor", "europe-central", "europe-harbor" }

@@ -36,7 +36,7 @@ public sealed class NativeRangeComponentBeforeControls {
         Assert.Equal("bubble-components", NativeRawValueSourceMotionTests.Metadata(from).GetProperty("nativeValueSource").GetProperty("kind").GetString());
     }
     internal static Chart Model(double lower, double upper, bool area, bool labels, int width = 760, bool dark = false) {
-        var chart = Chart.Create().WithTitle("Native interval components").WithSize(width, 420).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithLegend(true).WithDataLabels(labels);
+        var chart = Chart.Create().WithTitle("Native interval components").WithSize(width, 420).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light).WithLegend(true).WithDataLabels(labels);
         foreach (var key in new[] { "delivery", "comparison" }) {
             var values = new[] { new ChartRangeBand(.5, key == "delivery" ? lower : 35, key == "delivery" ? upper : 70), new ChartRangeBand(1.5, 25, 55), new ChartRangeBand(3, 30, 65, true) };
             var series = area ? ChartSeries.CreateRangeArea(new ChartSeriesId(key), key, values) : ChartSeries.CreateRangeBand(new ChartSeriesId(key), key, values);

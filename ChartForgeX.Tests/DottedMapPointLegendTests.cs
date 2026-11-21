@@ -119,7 +119,7 @@ public sealed class DottedMapPointLegendTests {
             if (ordered[index].Label == "North") series.WithPointColor(index, ChartColor.FromRgb(220, 70, 80));
         }
         return Chart.Create().WithSize(width, 420).WithTitle("Observed locations")
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithMapViewport(ChartMapViewport.Europe()).WithPointLegend().WithDataLabels(false).AddSeries(series);
     }
 

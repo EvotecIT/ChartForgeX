@@ -50,13 +50,13 @@ public sealed class TerminalExportContractTests {
     }
 
     [Theory]
-    [InlineData(TerminalWindowStyle.MacOS, VisualThemeMode.Dark)]
-    [InlineData(TerminalWindowStyle.MacOS, VisualThemeMode.Light)]
-    [InlineData(TerminalWindowStyle.WindowsTerminal, VisualThemeMode.Dark)]
-    [InlineData(TerminalWindowStyle.WindowsTerminal, VisualThemeMode.Light)]
-    [InlineData(TerminalWindowStyle.Linux, VisualThemeMode.Dark)]
-    [InlineData(TerminalWindowStyle.Linux, VisualThemeMode.Light)]
-    public void SvgChromeTitlesUseTheReviewedRegularPngTypography(TerminalWindowStyle style, VisualThemeMode mode) {
+    [InlineData(TerminalWindowStyle.MacOS, ThemeMode.Dark)]
+    [InlineData(TerminalWindowStyle.MacOS, ThemeMode.Light)]
+    [InlineData(TerminalWindowStyle.WindowsTerminal, ThemeMode.Dark)]
+    [InlineData(TerminalWindowStyle.WindowsTerminal, ThemeMode.Light)]
+    [InlineData(TerminalWindowStyle.Linux, ThemeMode.Dark)]
+    [InlineData(TerminalWindowStyle.Linux, ThemeMode.Light)]
+    public void SvgChromeTitlesUseTheReviewedRegularPngTypography(TerminalWindowStyle style, ThemeMode mode) {
         var story = TerminalStory.Create().WithWindowStyle(style).WithThemeMode(mode)
             .WithTitle("Terminal export").WithFinalPrompt(false).Output("ready");
         var document = System.Xml.Linq.XDocument.Parse(story.ToSvg());
@@ -99,6 +99,6 @@ public sealed class TerminalExportContractTests {
         Assert.Equal(ChartColor.FromHex("#0C0C0C"), story.ResolvedStyle.Background);
         Assert.Equal(ChartColor.FromHex("#1F2A3C"), story.ResolvedStyle.HeaderBackground);
         Assert.Equal(ChartColor.FromHex("#CCCCCC"), story.ResolvedStyle.Text);
-        Assert.Equal(ChartColor.FromHex("#FFFFFF"), TerminalStory.Create().WithThemeMode(VisualThemeMode.Light).ResolvedStyle.Background);
+        Assert.Equal(ChartColor.FromHex("#FFFFFF"), TerminalStory.Create().WithThemeMode(ThemeMode.Light).ResolvedStyle.Background);
     }
 }

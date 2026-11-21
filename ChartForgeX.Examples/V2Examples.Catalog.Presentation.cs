@@ -103,8 +103,8 @@ public static partial class V2Examples {
             .Append(Escape(title)).Append("</title>")
             // Inline artifacts leave product fonts to their host; the gallery registers them once per page.
             .Append(ExampleTypography.LinkedStyle).Append("<style>");
-        AppendThemeCss(page, ":root", VisualThemeMode.Light);
-        AppendThemeCss(page, "html[data-theme=dark]", VisualThemeMode.Dark);
+        AppendThemeCss(page, ":root", ThemeMode.Light);
+        AppendThemeCss(page, "html[data-theme=dark]", ThemeMode.Dark);
         page.Append("</style><style data-gallery-style>").Append(ReadCatalogAsset("gallery.css"))
             .Append("</style></head><body><a class=\"skip-link\" href=\"#main-content\">Skip to content</a>");
     }
@@ -112,9 +112,9 @@ public static partial class V2Examples {
     private static void EndPage(StringBuilder page) => page.Append("<script data-gallery-script>")
         .Append(ReadCatalogAsset("gallery.js")).Append("</script></body></html>");
 
-    private static void AppendThemeCss(StringBuilder page, string selector, VisualThemeMode mode) {
+    private static void AppendThemeCss(StringBuilder page, string selector, ThemeMode mode) {
         var colors = VisualTheme.Graphite().Resolve(mode);
-        page.Append(selector).Append("{color-scheme:").Append(mode == VisualThemeMode.Dark ? "dark" : "light")
+        page.Append(selector).Append("{color-scheme:").Append(mode == ThemeMode.Dark ? "dark" : "light")
             .Append(";--bg:").Append(colors.Background.ToHex()).Append(";--surface:").Append(colors.Surface.ToHex())
             .Append(";--ink:").Append(colors.Foreground.ToHex()).Append(";--muted:").Append(colors.MutedForeground.ToHex())
             .Append(";--line:").Append(colors.Border.ToHex()).Append(";--link:").Append(colors.Accent.ToHex()).Append('}');

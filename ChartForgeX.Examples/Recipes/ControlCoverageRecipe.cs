@@ -1,7 +1,7 @@
 /// <summary>Builds the report heatmap with its original domain groups, controls and percentages.</summary>
 public static class ControlCoverageRecipe {
     /// <summary>Creates the configured chart used by the legacy gallery and its standalone download.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Dark) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Dark) {
         if (variant != "wide") throw new ArgumentOutOfRangeException(nameof(variant));
         return Chart.Create()
             .WithTitle("Control Coverage Matrix")

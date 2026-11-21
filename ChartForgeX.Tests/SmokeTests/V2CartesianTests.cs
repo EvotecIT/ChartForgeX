@@ -9,9 +9,9 @@ namespace ChartForgeX.Tests;
 /// <summary>Protects Cartesian data geometry, explicit paint and immutable source identity.</summary>
 public sealed class V2CartesianTests {
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void ExplicitGridStyleSurvivesThemeAndModeChanges(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void ExplicitGridStyleSurvivesThemeAndModeChanges(ThemeMode mode) {
         var chart = Chart.Create().AddLine("Observed", Points(3, 8)).WithTheme(VisualTheme.Graphite(), mode);
         var defaults = Compile(chart);
         Assert.DoesNotContain(defaults.Nodes, node => node.Role == "grid-x");
@@ -23,7 +23,7 @@ public sealed class V2CartesianTests {
         Assert.All(configured, line => { Assert.Equal(3, line.StrokeWidth); Assert.Equal(new[] { 2d, 4d }, line.Dash); });
         chart.Options.GridLineStyle.ShowHorizontalLines = false;
         chart.Options.GridLineStyle.StrokeWidth = 4;
-        chart.WithTheme(VisualTheme.Graphite(), mode == VisualThemeMode.Light ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        chart.WithTheme(VisualTheme.Graphite(), mode == ThemeMode.Light ? ThemeMode.Dark : ThemeMode.Light);
         Assert.DoesNotContain(Compile(chart).Nodes, node => node.Role == "grid-y");
         Assert.Equal(4, chart.Options.GridLineStyle.StrokeWidth);
     }

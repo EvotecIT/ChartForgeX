@@ -48,7 +48,7 @@ public sealed class SequenceParticipantCaptionInkTests {
             theme.Light.Background=ChartColor.White;theme.Light.Foreground=ChartColor.FromHex("#172133");
             theme.Dark.Background=ChartColor.FromHex("#121724");theme.Dark.Foreground=ChartColor.FromHex("#E2E8F0");
         });
-        model.ThemeMode=dark?VisualThemeMode.Dark:VisualThemeMode.Light;
+        model.ThemeMode=dark?ThemeMode.Dark:ThemeMode.Light;
         if(bands)model.Layout=new SequenceLayoutPolicy(participantBands:new SequenceParticipantBands());
         return model;
     }

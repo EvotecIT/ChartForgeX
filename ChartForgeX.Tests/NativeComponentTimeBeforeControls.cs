@@ -28,7 +28,7 @@ public sealed class NativeComponentTimeBeforeControls {
     }
     internal static Chart Model(string family, string policy, double value, int width = 760, bool dark = false) {
         var first = new DateTime(2026, 1, 10, 12, 0, 0, DateTimeKind.Utc); var later = new DateTime(2026, 3, 10, 12, 0, 0, DateTimeKind.Utc);
-        var chart = Chart.Create().WithTitle("Captured time categories").WithSize(width, 420).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithLegend(true).WithDataLabels(true);
+        var chart = Chart.Create().WithTitle("Captured time categories").WithSize(width, 420).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light).WithLegend(true).WithDataLabels(true);
         var id = new ChartSeriesId("delivery"); ChartSeries series;
         if (family == "bubble") {
             series = ChartSeries.CreateBubble(id, family, new[] { new ChartBubble(first, value, 20), new ChartBubble(later, 45, 30) });

@@ -8,7 +8,7 @@ using ChartForgeX.Themes;
 /// <summary>Complete native radial forms: two disconnected smooth Polar areas and a rotated Radar with axis-relative captions.</summary>
 public static class RadialFormsRecipe {
     /// <summary>Creates source-ordered Polar runs; a break starts at the fourth observation without inventing a missing value.</summary>
-    public static Chart CreatePolar(int width = 800, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart CreatePolar(int width = 800, ThemeMode mode = ThemeMode.Light) {
         var points = new[] { new ChartPoint(0, 30), new ChartPoint(.8, 80), new ChartPoint(1.7, 55),
             new ChartPoint(3.1, 60, true), new ChartPoint(3.9, 40), new ChartPoint(4.8, 90) };
         var series = new ChartSeries(new ChartSeriesId("signal"), "Observed signal", ChartSeriesKind.Polar, points)
@@ -22,7 +22,7 @@ public static class RadialFormsRecipe {
     }
 
     /// <summary>Creates categorical Radar observations with a clockwise rotation and readable tangent/spoke caption policies.</summary>
-    public static Chart CreateRadar(int width = 800, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart CreateRadar(int width = 800, ThemeMode mode = ThemeMode.Light) {
         var chart = Frame(width, mode).WithTitle("Regional readiness").WithSubtitle("Rotated coordinates · axis-relative captions")
             .WithXLabels("North", "East", "South", "West").WithYAxisBounds(0, 100)
             .AddRadarLine("Readiness", new[] { new ChartPoint(1, 75), new ChartPoint(2, 60), new ChartPoint(3, 90), new ChartPoint(4, 65) });
@@ -33,7 +33,7 @@ public static class RadialFormsRecipe {
         return chart;
     }
 
-    private static Chart Frame(int width, VisualThemeMode mode) => Chart.Create().WithSize(width, 420).WithTheme(VisualTheme.Graphite(), mode)
+    private static Chart Frame(int width, ThemeMode mode) => Chart.Create().WithSize(width, 420).WithTheme(VisualTheme.Graphite(), mode)
         .WithLegend().WithDataLabels(false);
     private static string Degrees(double radians) => (radians * 180 / Math.PI).ToString("0", CultureInfo.InvariantCulture) + "°";
 }

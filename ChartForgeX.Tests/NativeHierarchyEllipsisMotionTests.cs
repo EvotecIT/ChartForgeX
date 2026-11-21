@@ -26,7 +26,7 @@ public sealed class NativeHierarchyEllipsisMotionTests {
     }
     internal static Chart Model(double reading, int width, bool dark) {
         var chart = NativeHierarchyMotionBeforeControls.Model(false, false, reading).WithSize(width, 420)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light);
         chart.Series[0].WithPointLabel(0, string.Concat(Enumerable.Repeat("Regional reconciliation ", 12)));
         chart.ConfigureTreemap(options => { options.LabelTrimming = TextTrimming.Ellipsis; options.MinimumLabelFontSize = 10; }); return chart;
     }

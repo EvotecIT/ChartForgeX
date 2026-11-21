@@ -13,13 +13,13 @@ public sealed class FamilyLabelLayoutRegressionTests {
     private static readonly string[] Categories = { "Identity", "Network", "Storage", "Backup", "Access", "Recovery" };
 
     [Theory]
-    [InlineData(false, 400, 280, VisualThemeMode.Light)]
-    [InlineData(false, 400, 280, VisualThemeMode.Dark)]
-    [InlineData(true, 400, 280, VisualThemeMode.Light)]
-    [InlineData(true, 400, 280, VisualThemeMode.Dark)]
-    [InlineData(false, 800, 440, VisualThemeMode.Light)]
-    [InlineData(true, 800, 440, VisualThemeMode.Dark)]
-    public void MatrixCategoriesRemainCompleteSeparatedAndReadableInBothPainters(bool hexagonal, int width, int height, VisualThemeMode mode) {
+    [InlineData(false, 400, 280, ThemeMode.Light)]
+    [InlineData(false, 400, 280, ThemeMode.Dark)]
+    [InlineData(true, 400, 280, ThemeMode.Light)]
+    [InlineData(true, 400, 280, ThemeMode.Dark)]
+    [InlineData(false, 800, 440, ThemeMode.Light)]
+    [InlineData(true, 800, 440, ThemeMode.Dark)]
+    public void MatrixCategoriesRemainCompleteSeparatedAndReadableInBothPainters(bool hexagonal, int width, int height, ThemeMode mode) {
         var chart = hexagonal ? HexbinHeatmapRecipe.Create() : HeatmapRecipe.Create();
         var prepared = Prepare(chart, width, height, mode);
         ScatterBubbleColorRenderingTests.Capture(prepared, $"family-matrix-{hexagonal}-{width}-{mode}");
@@ -55,14 +55,14 @@ public sealed class FamilyLabelLayoutRegressionTests {
     }
 
     [Theory]
-    [InlineData(320, 280, VisualThemeMode.Light)]
-    [InlineData(320, 280, VisualThemeMode.Dark)]
-    [InlineData(320, 360, VisualThemeMode.Light)]
-    [InlineData(400, 280, VisualThemeMode.Light)]
-    [InlineData(400, 280, VisualThemeMode.Dark)]
-    [InlineData(800, 440, VisualThemeMode.Light)]
-    [InlineData(800, 440, VisualThemeMode.Dark)]
-    public void FunnelCaptionStaysInsideItsBarOnTwoLinesBeforeUsingTheOutsideRail(int width, int height, VisualThemeMode mode) {
+    [InlineData(320, 280, ThemeMode.Light)]
+    [InlineData(320, 280, ThemeMode.Dark)]
+    [InlineData(320, 360, ThemeMode.Light)]
+    [InlineData(400, 280, ThemeMode.Light)]
+    [InlineData(400, 280, ThemeMode.Dark)]
+    [InlineData(800, 440, ThemeMode.Light)]
+    [InlineData(800, 440, ThemeMode.Dark)]
+    public void FunnelCaptionStaysInsideItsBarOnTwoLinesBeforeUsingTheOutsideRail(int width, int height, ThemeMode mode) {
         var prepared = Prepare(FunnelRecipe.Create(), width, height, mode);
         ScatterBubbleColorRenderingTests.Capture(prepared, $"family-funnel-{width}-{height}-{mode}");
         var final = Texts(prepared, "funnel-label").Last();
@@ -84,12 +84,12 @@ public sealed class FamilyLabelLayoutRegressionTests {
     }
 
     [Theory]
-    [InlineData(false, 400, 280, VisualThemeMode.Light)]
-    [InlineData(false, 800, 440, VisualThemeMode.Dark)]
-    [InlineData(true, 400, 280, VisualThemeMode.Light)]
-    [InlineData(true, 400, 280, VisualThemeMode.Dark)]
-    [InlineData(true, 800, 440, VisualThemeMode.Light)]
-    public void MapMissingSwatchAndCaptionFormOneMeasuredItemBesideAReadableColorKey(bool tiles, int width, int height, VisualThemeMode mode) {
+    [InlineData(false, 400, 280, ThemeMode.Light)]
+    [InlineData(false, 800, 440, ThemeMode.Dark)]
+    [InlineData(true, 400, 280, ThemeMode.Light)]
+    [InlineData(true, 400, 280, ThemeMode.Dark)]
+    [InlineData(true, 800, 440, ThemeMode.Light)]
+    public void MapMissingSwatchAndCaptionFormOneMeasuredItemBesideAReadableColorKey(bool tiles, int width, int height, ThemeMode mode) {
         var chart = tiles ? TileMapRecipe.Create() : RegionMapRecipe.Create();
         var prepared = Prepare(chart, width, height, mode);
         ScatterBubbleColorRenderingTests.Capture(prepared, $"family-map-{tiles}-{width}-{mode}");
@@ -228,7 +228,7 @@ public sealed class FamilyLabelLayoutRegressionTests {
         Assert.All(calls.Values, count => Assert.Equal(1, count));
     }
 
-    private static PreparedVisual Prepare(Chart chart, int width, int height, VisualThemeMode mode = VisualThemeMode.Light, VisualFrame? frame = null) => chart.Prepare(new VisualRenderContext(
+    private static PreparedVisual Prepare(Chart chart, int width, int height, ThemeMode mode = ThemeMode.Light, VisualFrame? frame = null) => chart.Prepare(new VisualRenderContext(
         new VisualLayoutOptions(new VisualSize(width, height), 14), VisualTheme.Graphite().WithTypography(new VisualTypography(axisSize: 13.5, legendSize: 13.5, dataLabelSize: 13.5)),
         mode, frame ?? new VisualFrame("", "", showLegend: true), FontSpec.FromFile(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"))));
 

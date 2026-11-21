@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -14,7 +15,7 @@ using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 using static TopologyInterchangeRecipe;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 #endregion
 
@@ -41,7 +42,7 @@ static class TopologyInterchangeRecipe {
         return chart;
     }
 
-    internal static TopologyChart Author(VisualThemeMode mode) {
+    internal static TopologyChart Author(ThemeMode mode) {
         var chart = TopologyChart.Create().WithId("saved-request-route").WithTitle("An editable saved route")
             .WithSubtitle("The loaded graph owns independent native data")
             .WithTheme(VisualTheme.Graphite(), mode).WithViewport(390, 520);

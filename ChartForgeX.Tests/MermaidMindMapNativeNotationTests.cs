@@ -158,7 +158,7 @@ public sealed class MermaidMindMapNativeNotationTests {
 
     internal static string Source => File.ReadAllText(Path.Combine(TestRepository.Root, "ChartForgeX.Examples", "Assets", "mindmap-native-notation.mmd"));
     internal static MermaidRenderOptions Options(bool dark, int width) => new() {
-        Presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family, FontSize = 12, ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light, TopologySizing = MermaidTopologySizing.Natural },
+        Presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family, FontSize = 12, ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light, TopologySizing = MermaidTopologySizing.Natural },
         MindMap = new MermaidTopologyRenderOptions { Width = width, Height = 560 }
     };
 }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -15,7 +16,7 @@ using ChartForgeX.VisualBlocks;
 
 // Native PNG and standalone SVG use bundled Archivo.
 // Add ChartFontAssets.StyleSheet once for other text on a host page.
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = HistogramRecipe.Create("compact-mean", mode);
 var context = new VisualRenderContext(
@@ -30,7 +31,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 /// <summary>Ticket resolution times as counts, shares and densities, and signed or weighted means, over unequal intervals.</summary>
 public static class HistogramRecipe {
     /// <summary>Creates a native histogram while retaining its source observations and raw bin aggregates.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var aggregation = variant.StartsWith("compact-", StringComparison.Ordinal) ? variant.Substring(8) : variant;
         if (aggregation == "compact") aggregation = "wide";
         var chart = Chart.Create().WithDataLabels();

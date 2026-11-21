@@ -26,7 +26,7 @@ public sealed class GaugeTargetsBrowserTests {
         var series = ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness", reading)
             .WithObservationId(0, new ChartObservationId("reading"));
         var chart = Chart.Create().WithSize(customFormatter ? 340 : 640, 360).WithLegend(false)
-            .WithTheme(VisualTheme.Graphite(), customFormatter ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), customFormatter ? ThemeMode.Dark : ThemeMode.Light)
             .WithTitle("Measured readiness").AddSeries(series).ConfigureGauge(options => options.Form = form);
         if (customFormatter) chart.WithValueFormatter(value => "Reading " + value.ToString("0.00", culture));
         else chart.WithValueFormat(ChartValueFormat.Number("0.00", culture));

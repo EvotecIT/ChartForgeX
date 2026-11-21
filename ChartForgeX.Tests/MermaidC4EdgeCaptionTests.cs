@@ -18,7 +18,7 @@ public sealed class MermaidC4EdgeCaptionTests {
         var source = File.ReadAllText(Path.Combine(TestRepository.Root, "tests", "mermaid-conformance", "fixtures", fixture + ".mmd"));
         var options = new MermaidRenderOptions {
             C4 = new MermaidTopologyRenderOptions { Width = width, Height = 800, Padding = 32 },
-            Presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family, ThemeMode = VisualThemeMode.Light }
+            Presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family, ThemeMode = ThemeMode.Light }
         };
         var result = MermaidRenderer.Render(source, options); Assert.False(result.HasErrors);
         var labels = XDocument.Parse(result.Artifact!.ToSvg()).Descendants()

@@ -61,7 +61,7 @@ public sealed class MermaidTimelineTextLayoutTests {
     }
 
     private static MermaidRenderOptions Options(bool dark, int width) => new() {
-        Presentation = new MermaidPresentationOptions { ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light, FontFamily = BrowserProofFonts.Family },
+        Presentation = new MermaidPresentationOptions { ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light, FontFamily = BrowserProofFonts.Family },
         Timeline = new MermaidTimelineRenderOptions { Width = width, Height = 640 }
     };
     private static XElement[] Roles(XDocument xml, string role) => xml.Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == role).ToArray();

@@ -21,7 +21,7 @@ public sealed class GaugeConfigurationBrowserTests {
         if (!Enabled) return;
         var fontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         var chart = GaugeConfigurationRenderingTests.Create(layout, dark, viewportWidth == 390)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily("CFX Gauge Carlito"), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithPngFont(fontPath);
+            .WithTheme(VisualTheme.Graphite().WithFontFamily("CFX Gauge Carlito"), dark ? ThemeMode.Dark : ThemeMode.Light).WithPngFont(fontPath);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var html = "<!doctype html><html><head><style>@font-face{font-family:'CFX Gauge Carlito';src:url(data:font/ttf;base64,"
             + Convert.ToBase64String(File.ReadAllBytes(fontPath)) + ") format('truetype');font-weight:400}body{margin:12px;background:"

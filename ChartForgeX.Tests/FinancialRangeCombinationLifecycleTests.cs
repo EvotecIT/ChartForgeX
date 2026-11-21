@@ -11,10 +11,10 @@ namespace ChartForgeX.Tests;
 
 public sealed class FinancialRangeCombinationLifecycleTests {
     [Theory]
-    [InlineData(ChartSeriesKind.Candlestick, 390, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.Ohlc, 800, VisualThemeMode.Dark)]
+    [InlineData(ChartSeriesKind.Candlestick, 390, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.Ohlc, 800, ThemeMode.Dark)]
     public void FinancialAndRangeCompanionsRetainIndependentExtremaStylesAndIdentityThroughReplacement(
-        ChartSeriesKind kind, int width, VisualThemeMode mode) {
+        ChartSeriesKind kind, int width, ThemeMode mode) {
         var prices = new[] { new ChartCandlestick(1, 30, 90, 10, 60), new ChartCandlestick(4, 60, 80, 20, 40) };
         var financial = kind == ChartSeriesKind.Candlestick
             ? ChartSeries.CreateCandlestick(new ChartSeriesId("prices"), "Prices", prices)

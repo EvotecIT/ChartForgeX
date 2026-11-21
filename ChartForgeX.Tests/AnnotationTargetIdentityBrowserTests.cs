@@ -219,7 +219,7 @@ public sealed partial class AnnotationTargetIdentityBrowserTests {
 
     private static Chart Model(bool dark, bool reversed = false) {
         var chart = Chart.Create().WithSize(640, 360).WithHeader(false).WithLegend(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10);
         chart.AddHorizontalLine(reversed ? 7 : 3, "Target").AddHorizontalLine(reversed ? 3 : 7, "Target")
             .AddVerticalLine(5).AddVerticalLine(5).AddHorizontalBand(4, 6, "annotation-0");

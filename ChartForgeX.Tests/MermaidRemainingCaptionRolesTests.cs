@@ -48,7 +48,7 @@ public sealed class MermaidRemainingCaptionRolesTests {
         chart.Edges[0].Label = "Changed relationship";
         Assert.Equal(capturedSvg, prepared.ToSvg()); Assert.Equal(capturedPng, prepared.ToPng()); Assert.Equal(snapshot, prepared.ToInterchangeEnvelope().ToJson());
         Assert.NotEqual(capturedSvg, chart.Prepare().ToSvg());
-        var emitted = ExampleRecipeSource.EmitRemainingCaptionRoles(family, width == 390 ? "compact" : "wide", dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        var emitted = ExampleRecipeSource.EmitRemainingCaptionRoles(family, width == 390 ? "compact" : "wide", dark ? ThemeMode.Dark : ThemeMode.Light);
         // The ordinary-program generator hoists imports and makes the shared factory public.
         // Complete programs are compiled and executed by the maintained consumer qualification.
         Assert.DoesNotContain("{{", emitted, StringComparison.Ordinal);
@@ -131,7 +131,7 @@ public sealed class MermaidRemainingCaptionRolesTests {
     internal static MermaidRenderOptions Options(int width, bool dark) {
         var topology = new MermaidTopologyRenderOptions { Width = width, Height = 620 };
         return new MermaidRenderOptions {
-            Presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family, ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light, TopologySizing = MermaidTopologySizing.Natural },
+            Presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family, ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light, TopologySizing = MermaidTopologySizing.Natural },
             Class = topology, EntityRelationship = topology, Requirement = topology, Flowchart = new MermaidFlowchartRenderOptions { Width = width, Height = 620 }
         };
     }

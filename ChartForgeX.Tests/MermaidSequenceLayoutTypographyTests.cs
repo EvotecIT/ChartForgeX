@@ -64,9 +64,9 @@ public sealed class MermaidSequenceLayoutTypographyTests {
         Assert.True(result.HasErrors);Assert.Null(result.Artifact);Assert.Contains(result.Diagnostics,item=>item.Message.Contains(name,StringComparison.Ordinal)&&item.Span.Line>0);
     }
     [Theory]
-    [InlineData("compact",ChartForgeX.Themes.VisualThemeMode.Light)] [InlineData("compact",ChartForgeX.Themes.VisualThemeMode.Dark)]
-    [InlineData("wide",ChartForgeX.Themes.VisualThemeMode.Light)] [InlineData("wide",ChartForgeX.Themes.VisualThemeMode.Dark)]
-    public void CompleteNativeAndAdapterProgramsUseTheirActualCompileOwners(string variant,ChartForgeX.Themes.VisualThemeMode mode) {
+    [InlineData("compact",ChartForgeX.ThemeMode.Light)] [InlineData("compact",ChartForgeX.ThemeMode.Dark)]
+    [InlineData("wide",ChartForgeX.ThemeMode.Light)] [InlineData("wide",ChartForgeX.ThemeMode.Dark)]
+    public void CompleteNativeAndAdapterProgramsUseTheirActualCompileOwners(string variant,ChartForgeX.ThemeMode mode) {
         var model=SequenceLayoutTypographyRecipe.Create(variant,mode);var width=variant=="compact"?390:1000;
         var prepared=model.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width,620)),themeMode:mode));
         SequencePolicyFixture.Capture("sequence-recipe-"+variant+"-"+mode,prepared);

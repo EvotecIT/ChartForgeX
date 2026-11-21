@@ -1,7 +1,7 @@
 /// <summary>Packages a complete adapter-owned sequence message source program without expanding Core-only snippets.</summary>
 public static partial class ExampleRecipeSource {
     /// <summary>Emits ordinary save/load/edit code sharing the canonical source and native preparation owner.</summary>
-    public static string EmitSequenceSourceDefaults(string variant="wide",VisualThemeMode mode=VisualThemeMode.Light) {
+    public static string EmitSequenceSourceDefaults(string variant="wide",ThemeMode mode=ThemeMode.Light) {
         if(variant is not ("compact" or "wide"))throw new ArgumentOutOfRangeException(nameof(variant));
         var source=ReadResource("ChartForgeX.Examples.MermaidRecipes.SequenceSourceDefaultsSourceRecipe.cs");
         return Template("RecipeSequenceSourceDefaultsProgram",new Dictionary<string,string>(StringComparer.Ordinal){

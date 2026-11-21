@@ -92,7 +92,7 @@ public sealed class SequenceLayoutPolicy {
             throw new ArgumentOutOfRangeException(name, "Sequence allocations must be finite and positive, or nonnegative for spacing.");
         return value;
     }
-    private static T? ValidateEnum<T>(T? value, string name) where T : struct {
+    private static T? ValidateEnum<T>(T? value, string name) where T : struct, Enum {
         if (value.HasValue && !Enum.IsDefined(typeof(T), value.Value)) throw new ArgumentOutOfRangeException(name);
         return value;
     }

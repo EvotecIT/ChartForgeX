@@ -18,7 +18,7 @@ public sealed class MermaidIshikawaDepthTests {
     }
     internal static MermaidRenderOptions Options(bool dark, int width, string? font = null) => new() {
         Ishikawa = new MermaidIshikawaRenderOptions { Width = width, Height = 520,
-            Presentation = new MermaidPresentationOptions { ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light, FontFamily = font } }
+            Presentation = new MermaidPresentationOptions { ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light, FontFamily = font } }
     };
 
     [Theory]
@@ -72,8 +72,8 @@ public sealed class MermaidIshikawaDepthTests {
     public void SafePaintIsFamilyScopedAndExplicitHostThemeRetainsPrecedence() {
         var source = Fixture(); var host = VisualTheme.Graphite(); var options = Options(false, 900); options.Ishikawa!.Presentation!.Theme = host;
         var rendered = MermaidRenderer.Render(source, options); Assert.Empty(rendered.Diagnostics); var block = Assert.IsType<FishboneDiagramBlock>(rendered.Artifact!.Model);
-        Assert.Equal(host.Resolve(VisualThemeMode.Light).Axis, block.Options.Theme.Resolve(VisualThemeMode.Light).Axis);
-        Assert.Equal(host.Resolve(VisualThemeMode.Light).Surface, block.Options.Theme.Resolve(VisualThemeMode.Light).Surface);
+        Assert.Equal(host.Resolve(ThemeMode.Light).Axis, block.Options.Theme.Resolve(ThemeMode.Light).Axis);
+        Assert.Equal(host.Resolve(ThemeMode.Light).Surface, block.Options.Theme.Resolve(ThemeMode.Light).Surface);
         var invalid = MermaidRenderer.Render(source.Replace("'#e2e8f0'", "'url(https://example.invalid/paint)'", StringComparison.Ordinal));
         Assert.True(invalid.HasErrors); Assert.Null(invalid.Artifact);
         // mainBkg is now a shared topology role; use a genuinely inactive Ishikawa-only setting for this scope guard.

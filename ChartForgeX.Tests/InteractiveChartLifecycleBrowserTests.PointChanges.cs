@@ -20,7 +20,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
             new[] { new ChartPoint(1, 10), new ChartPoint(2, 20), new ChartPoint(3, 30) })
             .WithObservationIds(new[] { new ChartObservationId("a"), new ChartObservationId("b"), new ChartObservationId("c") })
             .WithPointColor(1, "#123456").WithPointLabel(1, "Retained sample");
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithSize(640, 360).WithXAxisBounds(0, 6).WithYAxisBounds(0, 60).AddSeries(series);
         void Options(HtmlChartInteractionOptions options) { Fit(options); options.Interaction.Enable(ChartInteractionFeatures.Brush); }
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(Options), width, 850);

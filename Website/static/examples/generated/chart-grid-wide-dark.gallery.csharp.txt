@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -15,7 +16,7 @@ using ChartForgeX.VisualBlocks;
 
 // Native PNG and standalone SVG use bundled Archivo.
 // Add ChartFontAssets.StyleSheet once for other text on a host page.
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = ChartGridRecipe.Create("wide", mode);
 var context = new VisualRenderContext(
@@ -29,7 +30,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 
 /// <summary>A three-panel comparison with shared Cartesian axes.</summary>
 public static class ChartGridRecipe {
-    public static ChartGrid Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static ChartGrid Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var observations = Enumerable.Range(1, 6).Select(index => new ChartPoint(index, 20 + index * 7 % 29)).ToArray();
         var requests = Chart.Create().WithTitle("Observed requests").WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
             .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("requests"), "Requests", observations));

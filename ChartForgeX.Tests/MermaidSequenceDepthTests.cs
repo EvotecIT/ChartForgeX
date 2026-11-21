@@ -130,7 +130,7 @@ public sealed partial class MermaidSequenceDepthTests {
     public void ExplicitRolePaintsRemainAuthoredWhileNullRolesUseTheHostAndPreparedSnapshotsDetach() {
         var sequence = SequenceArtifact.Create("paint").AddParticipant("A").AddParticipant("B").AddMessage("A", "B", "Message");
         sequence.Paint.ParticipantFill = ChartColor.FromRgb(255, 0, 0);
-        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(720, 400)), VisualTheme.Graphite(), VisualThemeMode.Dark);
+        var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(720, 400)), VisualTheme.Graphite(), ThemeMode.Dark);
         var prepared = sequence.Prepare(context);
         var artifact = prepared.ToArtifact();
         var svg = prepared.ToSvg(); var json = artifact.ToInterchangeJson();

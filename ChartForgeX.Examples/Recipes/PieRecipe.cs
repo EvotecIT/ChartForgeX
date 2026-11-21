@@ -1,7 +1,7 @@
 /// <summary>Revenue shares with optional slice labels, an offset slice and a fill pattern.</summary>
 public static class PieRecipe {
     /// <summary>Creates revenue by service; the options variant labels and separates selected slices.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var revenue = new ChartSeries(new ChartSeriesId("revenue"), "Revenue", ChartSeriesKind.Pie, Observations(variant));

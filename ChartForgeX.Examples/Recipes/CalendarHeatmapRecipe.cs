@@ -1,7 +1,7 @@
 /// <summary>Shows dated activity in a calendar heatmap with Monday-first weeks.</summary>
 public static class CalendarHeatmapRecipe {
     /// <summary>Creates four months of observations, or a shorter sparse window.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options")) throw new ArgumentOutOfRangeException(nameof(variant));
         return Chart.Create().ConfigureCalendar(options => options.FirstDayOfWeek = DayOfWeek.Monday)
             .AddCalendarHeatmap("Observations", Enumerable.Range(0, variant == "sparse" ? 35 : 120)

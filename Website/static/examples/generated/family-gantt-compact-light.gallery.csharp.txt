@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -15,7 +16,7 @@ using ChartForgeX.VisualBlocks;
 
 // Native PNG and standalone SVG use bundled Archivo.
 // Add ChartFontAssets.StyleSheet once for other text on a host page.
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = GanttRecipe.Create("compact", mode);
 var context = new VisualRenderContext(
@@ -29,7 +30,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 
 /// <summary>Tasks, progress and a milestone connected through chart-owned dependency handles.</summary>
 public static class GanttRecipe {
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var start = new DateTime(2026, 3, 2, 8, 0, 0, DateTimeKind.Utc);
         var discovery = ChartSeries.CreateGanttTask(new ChartSeriesId("discovery"), "Discovery", start, start.AddDays(3), .9);
         var implementation = ChartSeries.CreateGanttTask(new ChartSeriesId("implementation"), "Implementation", start.AddDays(3), start.AddDays(7), .55);

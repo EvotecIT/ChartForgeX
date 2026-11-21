@@ -2,7 +2,7 @@
 /// <remarks>The separately shared Mermaid fixture proves source parsing; this Core recipe uses only native public APIs.</remarks>
 public static class UseCaseSourceDepthRecipe {
     /// <summary>Creates the complete native example in wide/compact and light/dark variants.</summary>
-    public static TopologyChart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static TopologyChart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant == "compact";
         var chart = TopologyChart.Create().WithId("native-usecase-depth").WithTitle("Publish prepared documents")

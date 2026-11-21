@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
+using ChartForgeX;
 using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Rendering;
@@ -14,7 +15,7 @@ internal static partial class Program {
             "create actor W as Worker\nAPI->>W: Start\ndestroy W\nW-->>API: Finished";
         var options = new MermaidRenderOptions {
             WarningPolicy = MermaidWarningPolicy.Reject,
-            Presentation = new MermaidPresentationOptions { ThemeMode = VisualThemeMode.Dark, FontSize = 15 },
+            Presentation = new MermaidPresentationOptions { ThemeMode = ThemeMode.Dark, FontSize = 15 },
             Sequence = new MermaidSequenceRenderOptions { Title = "Packed lifecycle" }
         };
         var rendered = RenderFixture(source, options);
@@ -22,7 +23,7 @@ internal static partial class Program {
             "Packed sequence lifecycle did not produce exact native output.");
         var artifact = rendered.Artifact ?? throw new InvalidOperationException("Packed sequence lifecycle omitted its artifact.");
         var sequence = artifact.Model as SequenceArtifact ?? throw new InvalidOperationException("Packed sequence lost its native owner.");
-        PackageAssertions.Require(sequence.Title == "Packed lifecycle" && sequence.ThemeMode == VisualThemeMode.Dark
+        PackageAssertions.Require(sequence.Title == "Packed lifecycle" && sequence.ThemeMode == ThemeMode.Dark
             && Math.Abs(sequence.Theme.Typography.DataLabelSize - 15) < 0.001 && sequence.ParticipantGroups.Count == 1,
             "Packed shared host presentation or participant box did not reach the native sequence model.");
         var worker = sequence.Participants.Single(participant => participant.Id == "W");

@@ -272,6 +272,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -281,7 +282,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = TopologyRecipe.Create(&quot;expanded&quot;, mode);
 if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
@@ -305,7 +306,7 @@ public static class TopologyRecipe {
     /// &lt;summary&gt;Creates the diagram model for an expanded, compact or shape-atlas view.&lt;/summary&gt;
     /// &lt;param name=&quot;variant&quot;&gt;Use wide, expanded or compact for the service topology, or shapes for the shape atlas.&lt;/param&gt;
     /// &lt;param name=&quot;mode&quot;&gt;The rendering mode; diagram colors are resolved when the model is prepared.&lt;/param&gt;
-    public static TopologyChart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static TopologyChart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;expanded&quot; or &quot;compact&quot; or &quot;shapes&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant), variant, &quot;Use wide, expanded, compact or shapes.&quot;);
 
@@ -397,6 +398,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -406,7 +408,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = TopologyRecipe.Create(&quot;expanded&quot;, mode);
 if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
@@ -430,7 +432,7 @@ public static class TopologyRecipe {
     /// &lt;summary&gt;Creates the diagram model for an expanded, compact or shape-atlas view.&lt;/summary&gt;
     /// &lt;param name=&quot;variant&quot;&gt;Use wide, expanded or compact for the service topology, or shapes for the shape atlas.&lt;/param&gt;
     /// &lt;param name=&quot;mode&quot;&gt;The rendering mode; diagram colors are resolved when the model is prepared.&lt;/param&gt;
-    public static TopologyChart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static TopologyChart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;expanded&quot; or &quot;compact&quot; or &quot;shapes&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant), variant, &quot;Use wide, expanded, compact or shapes.&quot;);
 

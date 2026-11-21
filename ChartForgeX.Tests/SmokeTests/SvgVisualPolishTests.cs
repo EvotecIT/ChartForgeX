@@ -44,7 +44,7 @@ internal static partial class SmokeTests {
             .WithTitle("Premium HTML")
             .AddSmoothLine("Values", Points(10, 30, 20), ChartColor.FromRgb(37, 99, 235))
             .ToHtmlPage();
-        AssertFlatHtmlBackground(html, VisualTheme.Graphite().Resolve(VisualThemeMode.Light).ElevatedSurface, "Standalone chart pages");
+        AssertFlatHtmlBackground(html, VisualTheme.Graphite().Resolve(ThemeMode.Light).ElevatedSurface, "Standalone chart pages");
         Assert(html.Contains("min-height:100svh", StringComparison.Ordinal), "Standalone HTML pages should use modern viewport sizing for browser previews.");
         Assert(html.Contains("@media print", StringComparison.Ordinal), "Standalone HTML pages should include print-friendly chart framing.");
     }
@@ -74,7 +74,7 @@ internal static partial class SmokeTests {
 
         var visualGrid = VisualGrid.Create()
             .WithTitle("Shell visual grid")
-            .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)
+            .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
             .WithColumns(2)
             .Add(chart)
             .Add(table);
@@ -84,7 +84,7 @@ internal static partial class SmokeTests {
     private static void SpecializedChartLayoutsKeepContentInsidePlotFrame() {
         var bulletChart = Chart.Create()
             .WithSize(920, 560)
-            .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)
+            .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
             .AddBullet("DMARC enforcement", 88, 95, 0, 100, new[] { 60d, 80d }, ChartColor.FromRgb(52, 211, 153))
             .AddBullet("DNSSEC coverage", 74, 90, 0, 100, new[] { 55d, 78d }, ChartColor.FromRgb(96, 165, 250));
         var bulletPrepared = PreparedFamily(bulletChart);
@@ -162,7 +162,7 @@ internal static partial class SmokeTests {
     private static void MetricStatusBarsRespectRoundedCards() {
         var metric = MetricCard.Create()
             .WithMetric("Monthly Recurring Revenue", "$120,400")
-            .WithStatus(VisualStatus.Positive)
+            .WithStatus(Tone.Success)
             .WithTheme(VisualTheme.Graphite().Configure(builder => { builder.CardRadius = 26; builder.PlotRadius = builder.BarRadius = 12; }))
             .WithSize(420, 190);
         var svg = metric.ToSvg("rounded-status-bar");
@@ -188,7 +188,7 @@ internal static partial class SmokeTests {
 
         var transparentMetric = MetricCard.Create()
             .WithMetric("Monthly Recurring Revenue", "$120,400")
-            .WithStatus(VisualStatus.Positive)
+            .WithStatus(Tone.Success)
             .WithTransparentBackground()
             .WithTheme(VisualTheme.Graphite().Configure(builder => { builder.CardRadius = 26; builder.PlotRadius = builder.BarRadius = 12; }))
             .WithSize(420, 190);
@@ -198,7 +198,7 @@ internal static partial class SmokeTests {
 
         var noCard = MetricCard.Create()
             .WithMetric("Monthly Recurring Revenue", "$120,400")
-            .WithStatus(VisualStatus.Positive)
+            .WithStatus(Tone.Success)
             .WithCard(false)
             .WithTheme(VisualTheme.Graphite().Configure(builder => { builder.CardRadius = 26; builder.PlotRadius = builder.BarRadius = 12; }))
             .WithSize(420, 190);
@@ -214,7 +214,7 @@ internal static partial class SmokeTests {
     private static void TransparentSurfacesKeepTheirAlphaContract() {
         var overlayChart = Chart.Create()
             .WithSize(360, 220)
-            .WithTheme(VisualTheme.TransparentOverlay(), VisualThemeMode.Dark)
+            .WithTheme(VisualTheme.TransparentOverlay(), ThemeMode.Dark)
             .WithPlotBackground()
             .AddLine("Signal", Points(12, 24, 18), ChartColor.FromRgb(96, 165, 250));
         Assert(!overlayChart.ToSvg().Contains("data-cfx-role=\"plot-inner-highlight\"", StringComparison.Ordinal), "Transparent plot backgrounds should not receive a visible SVG inner highlight.");
@@ -236,8 +236,8 @@ internal static partial class SmokeTests {
         Assert(transparentCardMetric.ToPng().Length > 64, "Transparent visual block cards should still render PNG output.");
 
         var transparentGrid = VisualGrid.CreateMetricStrip("Transparent", new[] {
-                MetricCard.Create().WithMetric("Patch Rate", "94%").WithStatus(VisualStatus.Positive).WithTheme(transparentCardTheme),
-                MetricCard.Create().WithMetric("Warnings", "18").WithStatus(VisualStatus.Warning).WithTheme(transparentCardTheme)
+                MetricCard.Create().WithMetric("Patch Rate", "94%").WithStatus(Tone.Success).WithTheme(transparentCardTheme),
+                MetricCard.Create().WithMetric("Warnings", "18").WithStatus(Tone.Warning).WithTheme(transparentCardTheme)
             }, columns: 2)
             .WithTheme(transparentCardTheme);
         var transparentGridSvg = transparentGrid.ToSvg("transparent-grid");

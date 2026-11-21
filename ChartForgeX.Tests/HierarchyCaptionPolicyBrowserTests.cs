@@ -10,15 +10,15 @@ namespace ChartForgeX.Tests;
 [Trait("BrowserSuite", "Compatibility")]
 public sealed class HierarchyCaptionPolicyBrowserTests {
     [BrowserTheory]
-    [InlineData(false, 420, VisualThemeMode.Light)]
-    [InlineData(false, 420, VisualThemeMode.Dark)]
-    [InlineData(false, 1100, VisualThemeMode.Light)]
-    [InlineData(false, 1100, VisualThemeMode.Dark)]
-    [InlineData(true, 420, VisualThemeMode.Light)]
-    [InlineData(true, 420, VisualThemeMode.Dark)]
-    [InlineData(true, 1100, VisualThemeMode.Light)]
-    [InlineData(true, 1100, VisualThemeMode.Dark)]
-    public async Task NativeArcAndTreemapPoliciesKeepBrowserGlyphInkInsideItsSourceMark(bool treemap, int width, VisualThemeMode mode) {
+    [InlineData(false, 420, ThemeMode.Light)]
+    [InlineData(false, 420, ThemeMode.Dark)]
+    [InlineData(false, 1100, ThemeMode.Light)]
+    [InlineData(false, 1100, ThemeMode.Dark)]
+    [InlineData(true, 420, ThemeMode.Light)]
+    [InlineData(true, 420, ThemeMode.Dark)]
+    [InlineData(true, 1100, ThemeMode.Light)]
+    [InlineData(true, 1100, ThemeMode.Dark)]
+    public async Task NativeArcAndTreemapPoliciesKeepBrowserGlyphInkInsideItsSourceMark(bool treemap, int width, ThemeMode mode) {
         if (!Enabled) return;
         var chart = treemap ? TreemapCaptionPoliciesRecipe.Create(mode: mode) : SunburstCurvedLabelsRecipe.Create(mode: mode);
         var family = BrowserProofFonts.Family;

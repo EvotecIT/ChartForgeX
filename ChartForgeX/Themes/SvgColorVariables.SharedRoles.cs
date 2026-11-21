@@ -42,6 +42,6 @@ public sealed partial class SvgColorVariables {
     /// <param name="theme">The theme the chart is prepared with; null uses <see cref="VisualTheme.Graphite"/>.</param>
     /// <param name="mode">The mode the chart is prepared in.</param>
     /// <returns>The colour variables, for <c>Chart.WithSvgColorVariables</c>, <c>ChartGrid.WithSvgColorVariables</c> or a <c>VisualSvgOptions</c>.</returns>
-    public static SvgColorVariables SharedRoles(VisualTheme? theme = null, VisualThemeMode mode = VisualThemeMode.Light) =>
+    public static SvgColorVariables SharedRoles(VisualTheme? theme = null, ThemeMode mode = ThemeMode.Light) =>
         (theme ?? VisualTheme.Graphite()).Resolve(mode).ToTokens().ToSvgColorVariables(SharedRoleName);
 }

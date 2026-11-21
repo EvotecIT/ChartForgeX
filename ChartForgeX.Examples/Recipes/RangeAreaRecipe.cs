@@ -1,7 +1,7 @@
 /// <summary>Builds an expected operating range with smooth or stepped area boundaries.</summary>
 public static class RangeAreaRecipe {
     /// <summary>Creates the selected range-area example from typed lower and upper limits.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "singleton" or "compact-singleton" or "independent-boundaries" or "compact-independent-boundaries"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create();

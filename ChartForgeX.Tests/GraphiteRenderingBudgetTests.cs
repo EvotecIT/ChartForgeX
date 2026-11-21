@@ -18,7 +18,7 @@ public sealed class GraphiteRenderingBudgetTests {
     [InlineData(false)]
     [InlineData(true)]
     public void GraphiteStaysWithinExistingChartReleaseBudgets(bool dark) {
-        Chart Create(VisualTheme theme) => Chart.Create().WithTheme(theme, dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithSize(960,540)
+        Chart Create(VisualTheme theme) => Chart.Create().WithTheme(theme, dark ? ThemeMode.Dark : ThemeMode.Light).WithSize(960,540)
             .WithTitle("Release performance chart").WithSubtitle("Representative line, area, and bar marks")
             .AddLine("Observed",Points(48,19)).AddArea("Forecast",Points(42,13)).AddBar("Capacity",Points(56,7));
         foreach(var chart in new[]{Create(VisualTheme.Graphite())}) {

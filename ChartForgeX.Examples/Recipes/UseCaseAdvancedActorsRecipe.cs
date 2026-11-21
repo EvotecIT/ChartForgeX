@@ -2,7 +2,7 @@
 /// <remarks>The separately shared .mmd fixture proves parsed-source consumption. This recipe has no Mermaid dependency.</remarks>
 public static class UseCaseAdvancedActorsRecipe {
     /// <summary>Creates wide/compact and light/dark examples with source-stable actors, glyphs, stereotypes, routes and notes.</summary>
-    public static TopologyChart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static TopologyChart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant == "compact";
         var chart = TopologyChart.Create().WithId("native-usecase-advanced-actors").WithTitle("Participants in a request")

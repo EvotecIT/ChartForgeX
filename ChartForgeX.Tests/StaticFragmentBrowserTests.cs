@@ -14,7 +14,7 @@ public sealed class StaticFragmentBrowserTests {
     public async Task ChartAndGridFragmentsScaleInsideCompactHostsWithoutPageCss(bool dark) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(640, 360).WithTitle("Capacity")
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddLine("Used", new[] { new ChartPoint(0, 2), new ChartPoint(1, 5), new ChartPoint(2, 3) });
         var grid = ChartGrid.Create().WithColumns(2).WithPanelSize(320, 200).Add(chart).Add(chart);
         var html = "<!doctype html><html><body style=\"margin:0;background:" + chart.Options.Theme.Resolve(chart.Options.ThemeMode).Background.ToCss() + "\">"

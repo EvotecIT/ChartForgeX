@@ -27,8 +27,8 @@ public sealed partial class MetricCard : FactualVisualBlock<MetricCard> {
     private double? _miniBarMaximum;
     private double? _miniSparklineMinimum;
     private double? _miniSparklineMaximum;
-    private VisualIcon _icon;
-    private VisualStatus _status;
+    private Icon _icon;
+    private Tone _status;
     private MetricCardBadgePlacement _badgePlacement;
     private MetricCardMicroVisualPlacement _microVisualPlacement;
     private ChartLineAreaForm _miniSparklineStyle;
@@ -138,23 +138,11 @@ public sealed partial class MetricCard : FactualVisualBlock<MetricCard> {
         }
     }
 
-    /// <summary>Gets or sets an optional built-in icon rendered as a badge.</summary>
-    public VisualIcon Icon {
-        get => _icon;
-        set {
-            VisualBlockGuards.EnumDefined(value, nameof(value));
-            _icon = value;
-        }
-    }
+    /// <summary>Gets or sets an optional icon rendered as a badge. <see cref="Icons"/> lists the keys drawn; another key draws the default mark.</summary>
+    public Icon Icon { get => _icon; set => _icon = value; }
 
     /// <summary>Gets or sets the metric status.</summary>
-    public VisualStatus Status {
-        get => _status;
-        set {
-            VisualBlockGuards.EnumDefined(value, nameof(value));
-            _status = value;
-        }
-    }
+    public Tone Status { get => _status; set => _status = value; }
 
     /// <summary>Gets or sets the badge placement when an icon or symbol is configured.</summary>
     public MetricCardBadgePlacement BadgePlacement {
@@ -207,7 +195,7 @@ public sealed partial class MetricCard : FactualVisualBlock<MetricCard> {
     public MetricCard WithTrend(string trend) { Trend = trend ?? throw new ArgumentNullException(nameof(trend)); return this; }
 
     /// <summary>Adds a compact detail row to the card.</summary>
-    public MetricCard AddDetail(string label, object? value, VisualStatus status = VisualStatus.Neutral, string? format = null) {
+    public MetricCard AddDetail(string label, object? value, Tone? status = null, string? format = null) {
         _details.Add(new MetricCardDetail(label, ChartTableCell.FromValue(value, format).Text, status));
         return this;
     }
@@ -218,7 +206,7 @@ public sealed partial class MetricCard : FactualVisualBlock<MetricCard> {
 
 
     /// <summary>Sets an optional built-in icon rendered as a badge.</summary>
-    public MetricCard WithIcon(VisualIcon icon) { Icon = icon; return this; }
+    public MetricCard WithIcon(Icon icon) { Icon = icon; return this; }
 
     /// <summary>Replaces compact bar values rendered inside the metric card.</summary>
     public MetricCard WithMiniBars(IEnumerable<double> values, double? minimum = null, double? maximum = null, ChartColor? color = null, ChartColor? mutedColor = null, int? highlightIndex = null) {
@@ -284,7 +272,7 @@ public sealed partial class MetricCard : FactualVisualBlock<MetricCard> {
     }
 
     /// <summary>Sets the metric status.</summary>
-    public MetricCard WithStatus(VisualStatus status) {
+    public MetricCard WithStatus(Tone status) {
         Status = status;
         return this;
     }
@@ -338,13 +326,13 @@ public sealed partial class MetricCard : FactualVisualBlock<MetricCard> {
 public sealed class MetricCardDetail {
     private string _label;
     private string _value;
-    private VisualStatus _status;
+    private Tone _status;
 
     /// <summary>Initializes a metric card detail.</summary>
-    public MetricCardDetail(string label, string value, VisualStatus status = VisualStatus.Neutral) {
+    public MetricCardDetail(string label, string value, Tone? status = null) {
         _label = label ?? throw new ArgumentNullException(nameof(label));
         _value = value ?? throw new ArgumentNullException(nameof(value));
-        Status = status;
+        Status = status ?? Tone.Neutral;
     }
 
     /// <summary>Gets or sets the detail label.</summary>
@@ -354,11 +342,5 @@ public sealed class MetricCardDetail {
     public string Value { get => _value; set => _value = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets or sets the semantic status color for the detail marker.</summary>
-    public VisualStatus Status {
-        get => _status;
-        set {
-            VisualBlockGuards.EnumDefined(value, nameof(value));
-            _status = value;
-        }
-    }
+    public Tone Status { get => _status; set => _status = value; }
 }

@@ -56,7 +56,7 @@ public sealed class TurbulenceSourcePortablePostTests {
         var saved=source.ToArtifact().ToInterchangeEnvelope();
         var theme=VisualTheme.Graphite().Configure(builder=>builder.Dark.Background=ChartColor.FromHex("#102030"));
         var fresh=new VisualRenderContext(new VisualLayoutOptions(oldContext.Layout.Size,new ChartPadding(7,9,11,13)),
-            theme,VisualThemeMode.Dark,new VisualFrame("", "",transparentBackground:true));
+            theme,ThemeMode.Dark,new VisualFrame("", "",transparentBackground:true));
         var result=saved.PrepareTurbulenceSource(fresh);
         TurbulencePortableFixture.Save("portable-noise-fresh-context",result,saved);
         var surface=Assert.Single(result.Scene.Nodes.OfType<VisualSceneProceduralSource>());

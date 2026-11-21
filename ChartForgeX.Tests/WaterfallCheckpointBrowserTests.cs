@@ -223,7 +223,7 @@ public sealed class WaterfallCheckpointBrowserTests {
     private static Chart Create(int width, bool dark, bool horizontal, double? opening) {
         var sign = opening < 0 ? -1 : 1;
         var chart = Chart.Create().WithSize(width, 440).WithTitle(opening.HasValue ? "Waterfall opening balance" : "Waterfall checkpoints")
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithFontFamily("Carlito")
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithFontFamily("Carlito")
             .WithPointLegend().WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside).WithBarStyle(ChartBarStyle.Flat)
             .WithXLabels("Open", "Adjust", "Stage", "Cost", "Costs", "Recover", "Balance", "Late", "Late sum")
             .AddSeries(ChartSeries.CreateWaterfall(new ChartSeriesId("movement"), "Movement", new[] {

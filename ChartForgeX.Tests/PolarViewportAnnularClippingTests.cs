@@ -62,7 +62,7 @@ public sealed class PolarViewportAnnularClippingTests {
     [InlineData(360, false)] [InlineData(360, true)] [InlineData(800, false)] [InlineData(800, true)]
     public void FilledOriginalAreaUsesTheSharedAnnularStencilWithoutInventingBoundaryPolygons(int width, bool dark) {
         var points = Enumerable.Range(0, 4).Select(index => new ChartPoint(Math.PI / 4 + index * Math.PI / 2, 100)).ToArray();
-        var chart = Bare(points).WithSize(width, 380).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        var chart = Bare(points).WithSize(width, 380).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         chart.Series[0].ConfigurePolar(options => { options.Form = ChartLineAreaForm.Area; options.FillOpacity = 1; options.OutlineStroke = new ChartStrokeStyle(width: 0); });
         var full = PolarViewportContractTests.Prepare(chart);
         var prepared = PolarViewportContractTests.Prepare(chart, new ChartPolarViewport(radius: new ChartAxisWindow(40, 80)));

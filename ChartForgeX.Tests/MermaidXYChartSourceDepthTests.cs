@@ -15,7 +15,7 @@ public sealed class MermaidXYChartSourceDepthTests {
     internal static string Source(bool horizontal = false) => XYChartSourceDepthFixture.Read(horizontal);
     internal static MermaidRenderOptions Options(int width, bool dark, bool? labels = null) => new() {
         XYChart = new MermaidXYChartRenderOptions { Width = width, Height = 520, ShowDataLabels = labels,
-            Presentation = new MermaidPresentationOptions { ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light, FontFamily = BrowserProofFonts.Family } }
+            Presentation = new MermaidPresentationOptions { ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light, FontFamily = BrowserProofFonts.Family } }
     };
 
     [Fact]

@@ -1,6 +1,6 @@
 /// <summary>Raw authored Pie/Donut rows retain native zero/Other membership and actual source layout.</summary>
 internal static class NativeRawValueRecipe {
-    internal static Chart Create(bool donut,string kind,double reading,int width,VisualThemeMode mode) {
+    internal static Chart Create(bool donut,string kind,double reading,int width,ThemeMode mode) {
         var values=kind is "other" or "source-reflow"?new[]{reading,25d,10d,4d,1d}:kind=="empty"?new[]{reading,0d,0d}:new[]{reading,25d,10d};
         var series=new ChartSeries(new ChartSeriesId("parts"),"Parts",donut?ChartSeriesKind.Donut:ChartSeriesKind.Pie,values.Select((value,index)=>new ChartPoint(index+1,value)))
             .WithObservationIds(values.Select((_,index)=>new ChartObservationId(index==0?"primary":"part-"+index)));

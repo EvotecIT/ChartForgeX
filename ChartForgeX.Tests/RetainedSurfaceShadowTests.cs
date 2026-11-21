@@ -162,7 +162,7 @@ internal static class RetainedSurfaceFixture {
             .AddParticipant("A", "Review", SequenceArtifactParticipantKind.Actor)
             .AddParticipant("B", "Archive", SequenceArtifactParticipantKind.Control)
             .AddMessage("A", "B", "Save").AddMessage("B", "A", "Stored");
-        sequence.ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        sequence.ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light;
         sequence.Layout = new SequenceLayoutPolicy(participantBands: new SequenceParticipantBands(),
             participantMinimumWidth: width == 390 ? 64 : 150, participantSpacing: width == 390 ? 8 : 50,
             fragmentTabMinimumWidth: 50, fragmentTabMinimumHeight: 35);

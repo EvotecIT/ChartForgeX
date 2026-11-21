@@ -1,7 +1,7 @@
 /// <summary>An organization chart: people, their roles and reporting lines laid out as cards.</summary>
 public static class OrgChartRecipe {
     /// <summary>Creates a three-level team; the compact variant stacks the deepest branch vertically.</summary>
-    public static TopologyChart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static TopologyChart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant == "compact";
         var chart = TopologyChart.Create().WithViewport(compact ? 390 : 960, compact ? 520 : 520).WithLegend(null);

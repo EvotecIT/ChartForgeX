@@ -126,7 +126,7 @@ public sealed class PolarDisconnectedCurveTests {
                 options.OutlineStroke = new ChartStrokeStyle(width: 2, dash: new[] { 5d, 3d }); });
         for (var index = 0; index < points.Length; index++) series.WithObservationId(index, new ChartObservationId("observation-" + index));
         var chart = Chart.Create().WithSize(width, 380).WithHeader(false).WithLegend().WithDataLabels(false).WithYAxisBounds(0, 100)
-            .WithAxes(false).WithGrid(false).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).AddSeries(series);
+            .WithAxes(false).WithGrid(false).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).AddSeries(series);
         chart.Options.PolarRotationDegrees = 25; return chart;
     }
 

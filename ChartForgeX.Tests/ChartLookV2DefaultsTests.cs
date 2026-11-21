@@ -30,9 +30,9 @@ public sealed class ChartLookV2DefaultsTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void CompactTreeWidensNodesForTheirLongestCaptionWord(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void CompactTreeWidensNodesForTheirLongestCaptionWord(ThemeMode mode) {
         var prepared = Prepare(TreeRecipe.Create("compact", mode), 360, 360, mode);
         var labels = Texts(prepared, "tree-node-label").Select(text => string.Join(" ", text.Text.Lines.Select(line => line.Text))).ToArray();
         Assert.Contains("Engineering", labels);
@@ -45,11 +45,11 @@ public sealed class ChartLookV2DefaultsTests {
     }
 
     [Theory]
-    [InlineData(ChartSeriesKind.Funnel, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.Funnel, VisualThemeMode.Dark)]
-    [InlineData(ChartSeriesKind.Pyramid, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.Pyramid, VisualThemeMode.Dark)]
-    public void OrderedStagesShareOneHueAndLightenInOrder(ChartSeriesKind kind, VisualThemeMode mode) {
+    [InlineData(ChartSeriesKind.Funnel, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.Funnel, ThemeMode.Dark)]
+    [InlineData(ChartSeriesKind.Pyramid, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.Pyramid, ThemeMode.Dark)]
+    public void OrderedStagesShareOneHueAndLightenInOrder(ChartSeriesKind kind, ThemeMode mode) {
         var chart = kind == ChartSeriesKind.Funnel ? FunnelRecipe.Create() : PyramidRecipe.Create();
         var prepared = Prepare(chart, 800, 440, mode);
         var role = kind == ChartSeriesKind.Funnel ? "funnel-segment" : "pyramid-segment";
@@ -77,7 +77,7 @@ public sealed class ChartLookV2DefaultsTests {
             Assert.Equal(segments[index - 1].Width, Math.Abs(separator.End.X - separator.Start.X), 1);
         }
 
-        var compact = Prepare(PyramidRecipe.Create("compact", VisualThemeMode.Dark), 360, 360, VisualThemeMode.Dark);
+        var compact = Prepare(PyramidRecipe.Create("compact", ThemeMode.Dark), 360, 360, ThemeMode.Dark);
         var labels = Texts(compact, "pyramid-label").Length;
         var leaders = compact.Scene.Nodes.Count(node => node.Role == "data-label-connector");
         Assert.Equal(3, labels);
@@ -141,12 +141,12 @@ public sealed class ChartLookV2DefaultsTests {
     }
 
     [Theory]
-    [InlineData(800, 440, VisualThemeMode.Light)]
-    [InlineData(800, 440, VisualThemeMode.Dark)]
-    [InlineData(360, 360, VisualThemeMode.Light)]
-    [InlineData(360, 360, VisualThemeMode.Dark)]
-    [InlineData(390, 420, VisualThemeMode.Light)]
-    public void PartToWholeLegendListsBesideAWidePlotOrInTwoCompactColumns(int width, int height, VisualThemeMode mode) {
+    [InlineData(800, 440, ThemeMode.Light)]
+    [InlineData(800, 440, ThemeMode.Dark)]
+    [InlineData(360, 360, ThemeMode.Light)]
+    [InlineData(360, 360, ThemeMode.Dark)]
+    [InlineData(390, 420, ThemeMode.Light)]
+    public void PartToWholeLegendListsBesideAWidePlotOrInTwoCompactColumns(int width, int height, ThemeMode mode) {
         var prepared = Prepare(PieRecipe.Create(width < 480 ? "compact" : "wide", mode), width, height, mode);
         var entries = prepared.Regions.Where(region => region.Role == "legend").Select(region => region.Bounds).ToArray();
         var slice = prepared.Scene.Nodes.OfType<VisualSceneSlice>().First(node => node.Role != null && node.Outer > 0);
@@ -174,9 +174,9 @@ public sealed class ChartLookV2DefaultsTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void CompactColumnsThatCannotFitShortenNamesButKeepEveryValue(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void CompactColumnsThatCannotFitShortenNamesButKeepEveryValue(ThemeMode mode) {
         // Three-digit revenue and long service names cannot fit two columns in 292 px, so names give up the width.
         var prepared = Prepare(DonutRecipe.Create("compact", mode), 320, 360, mode);
         Assert.Contains(Texts(prepared, "legend-label"), node => Assert.Single(node.Text.Lines).Text.EndsWith("…", StringComparison.Ordinal));
@@ -187,15 +187,15 @@ public sealed class ChartLookV2DefaultsTests {
     [Fact]
     public void WideRadialPlotLimitsItsDiameterToSixTenthsOfTheWidth() {
         // 572 x 372 is wider than 1.4:1 but not so wide that the height alone already limits the pie.
-        var prepared = PieRecipe.Create().Prepare(Context(600, 400, VisualThemeMode.Light, new VisualFrame("", "", showLegend: false)));
+        var prepared = PieRecipe.Create().Prepare(Context(600, 400, ThemeMode.Light, new VisualFrame("", "", showLegend: false)));
         var slice = prepared.Scene.Nodes.OfType<VisualSceneSlice>().First(node => node.Outer > 0);
         Assert.True(slice.Outer * 2 <= (600 - 2 * 14) * VisualRadialCompiler.WideDiameterShare + .001);
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void GaugeStatusBandsAreMutedAndHealthyBandsQuiet(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void GaugeStatusBandsAreMutedAndHealthyBandsQuiet(ThemeMode mode) {
         var prepared = Prepare(GaugeRecipe.Create("wide", mode), 800, 440, mode);
         var bands = prepared.Scene.Nodes.OfType<VisualSceneSlice>().Where(node => node.Role == "gauge-band").ToArray();
         Assert.NotEmpty(bands);
@@ -205,9 +205,9 @@ public sealed class ChartLookV2DefaultsTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void GanttLaneCaptionsClearHatchingAndOpenEndArrows(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void GanttLaneCaptionsClearHatchingAndOpenEndArrows(ThemeMode mode) {
         var prepared = Prepare(GanttLaneRecipe.Create("compact", mode), 360, 360, mode);
         var captions = Texts(prepared, "data-label");
         Assert.Contains(captions, text => text.Stroke.HasValue && text.StrokeWidth >= text.Text.Size * .25);
@@ -219,11 +219,11 @@ public sealed class ChartLookV2DefaultsTests {
         });
     }
 
-    private static VisualRenderContext Context(int width, int height, VisualThemeMode mode, VisualFrame? frame = null) => new(
+    private static VisualRenderContext Context(int width, int height, ThemeMode mode, VisualFrame? frame = null) => new(
         new VisualLayoutOptions(new VisualSize(width, height), 14), VisualTheme.Graphite(), mode, frame ?? new VisualFrame(""),
         FontSpec.FromFile(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
 
-    private static PreparedVisual Prepare(Chart chart, int width, int height, VisualThemeMode mode = VisualThemeMode.Light) =>
+    private static PreparedVisual Prepare(Chart chart, int width, int height, ThemeMode mode = ThemeMode.Light) =>
         chart.Prepare(Context(width, height, mode));
 
     private static VisualSceneText[] Texts(PreparedVisual prepared, string role) =>

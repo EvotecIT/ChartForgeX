@@ -96,7 +96,7 @@ public sealed partial class WordCloudTargetOwnershipBrowserTests {
     }
 
     private static Chart Frame() => Chart.Create().WithSize(640, 360).WithTitle("Word-cloud target ownership")
-        .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark);
+        .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark);
 
     private static void Options(HtmlChartInteractionOptions options, bool single) {
         options.Interaction.Features = ChartInteractionFeatures.Selection | ChartInteractionFeatures.KeyboardNavigation;

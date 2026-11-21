@@ -122,8 +122,8 @@ public sealed class EnhanceHookTests {
 
     [Fact]
     public void ContractAttributes_AreAllEmittedWithHooks() {
-        var charts = new IVisualRenderable[] { Activity(), Trend(), ExampleRecipes.ForKind(ChartSeriesKind.HorizontalBar).Create("wide", VisualThemeMode.Light),
-            ExampleRecipes.ForKind(ChartSeriesKind.Gantt).Create("wide", VisualThemeMode.Light), ExampleRecipes.ForKind(ChartSeriesKind.StateTimeline).Create("wide", VisualThemeMode.Light) };
+        var charts = new IVisualRenderable[] { Activity(), Trend(), ExampleRecipes.ForKind(ChartSeriesKind.HorizontalBar).Create("wide", ThemeMode.Light),
+            ExampleRecipes.ForKind(ChartSeriesKind.Gantt).Create("wide", ThemeMode.Light), ExampleRecipes.ForKind(ChartSeriesKind.StateTimeline).Create("wide", ThemeMode.Light) };
         var emitted = charts.Select((chart, i) => chart.Prepare(Context()).ToSvg(new VisualSvgOptions("c" + i).WithEnhanceHooks(includeData: true)))
             .SelectMany(svg => XDocument.Parse(svg).Descendants()).SelectMany(e => e.Attributes()).Select(a => a.Name.LocalName).ToHashSet(StringComparer.Ordinal);
         var attributes = typeof(ChartDomRoles).GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
@@ -136,7 +136,7 @@ public sealed class EnhanceHookTests {
     public void EveryChartFamily_ExposesMarksThroughTheHooks() {
         var rows = new List<string>();
         foreach (var family in ExampleRecipes.ChartFamilies) {
-            var visual = family.Value.Create("wide", VisualThemeMode.Light).Prepare(Context(720, 420));
+            var visual = family.Value.Create("wide", ThemeMode.Light).Prepare(Context(720, 420));
             var svg = XDocument.Parse(visual.ToSvg(new VisualSvgOptions("f-" + family.Key.ToString().ToLowerInvariant()).WithEnhanceHooks(includeData: true)));
             var marks = svg.Descendants().Where(e => (string?)e.Attribute(ChartDomRoles.MarkAttribute) == "true").ToArray();
             Assert.True(marks.Length > 0, family.Key + " exposes no interaction targets.");

@@ -14,7 +14,7 @@ public sealed class PolarAxisOrientationDepthTests {
     [InlineData(false, 360, false)] [InlineData(false, 360, true)] [InlineData(false, 800, false)] [InlineData(false, 800, true)]
     public void RelativeAndFixedAxisTextShareRotatedNativeFootprintsAndCompleteSourceCaptions(bool radar, int width, bool dark) {
         var chart = Chart.Create().WithSize(width, 420).WithHeader(false).WithLegend(false).WithDataLabels(false).WithYAxisBounds(0, 100)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         var points = Enumerable.Range(0, 4).Select(index => new ChartPoint(radar ? index + 1 : index * Math.PI / 2, 35 + index * 15)).ToArray();
         if (radar) chart.WithXLabels("North", "East", "South", "West").AddRadarLine("Signal", points); else chart.AddPolar("Signal", points);
         chart.Options.PolarRotationDegrees = 25;

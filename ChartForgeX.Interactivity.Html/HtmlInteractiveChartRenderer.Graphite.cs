@@ -18,7 +18,7 @@ public sealed partial class HtmlInteractiveChartRenderer {
     internal static string PreparedInteractionTokens(VisualRenderContext context) =>
         ThemeInteractionTokens(context.Theme, context.ThemeMode, context.Frame.TransparentBackground);
 
-    internal static string ThemeInteractionTokens(VisualTheme theme, VisualThemeMode mode, bool transparent) {
+    internal static string ThemeInteractionTokens(VisualTheme theme, ThemeMode mode, bool transparent) {
         var colors = theme.Resolve(mode);
         return InteractionTokens(colors.Background, colors.Axis, colors.Palette[0],
             theme.Typography.Family, transparent, colors.Chrome);

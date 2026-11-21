@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = SunburstRecipe.Create(&quot;compact-options&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Creates a sunburst showing allocation through a team hierarchy.&lt;/summary&gt;
 public static class SunburstRecipe {
     /// &lt;summary&gt;Creates the source model for a gallery variant without choosing an export backend.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;
             or &quot;authored-total&quot; or &quot;compact-authored-total&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
@@ -130,8 +131,8 @@ public static class SunburstRecipe {
         var chart = Chart.Create().WithDataLabels().AddSeries(allocation);
         if (configured) {
             var colors = VisualTheme.Graphite().Resolve(mode);
-            var low = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(153, 138, 224) : ChartColor.FromRgb(101, 78, 169);
-            var high = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(238, 157, 98) : ChartColor.FromRgb(191, 92, 34);
+            var low = mode == ThemeMode.Dark ? ChartColor.FromRgb(153, 138, 224) : ChartColor.FromRgb(101, 78, 169);
+            var high = mode == ThemeMode.Dark ? ChartColor.FromRgb(238, 157, 98) : ChartColor.FromRgb(191, 92, 34);
             chart.ConfigureSunburst(options =&gt; {
                 options.CornerRadius = 6;
                 options.SecondaryLabelFormatter = context =&gt; context.Item.Id == &quot;all&quot; ? &quot;Allocation&quot; : context.Item.Id == &quot;engineering&quot; ? &quot;Delivery teams&quot;
@@ -153,6 +154,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -162,7 +164,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = SunburstRecipe.Create(&quot;compact-options&quot;, mode);
 var context = new VisualRenderContext(
@@ -177,7 +179,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Creates a sunburst showing allocation through a team hierarchy.&lt;/summary&gt;
 public static class SunburstRecipe {
     /// &lt;summary&gt;Creates the source model for a gallery variant without choosing an export backend.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;
             or &quot;authored-total&quot; or &quot;compact-authored-total&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
@@ -197,8 +199,8 @@ public static class SunburstRecipe {
         var chart = Chart.Create().WithDataLabels().AddSeries(allocation);
         if (configured) {
             var colors = VisualTheme.Graphite().Resolve(mode);
-            var low = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(153, 138, 224) : ChartColor.FromRgb(101, 78, 169);
-            var high = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(238, 157, 98) : ChartColor.FromRgb(191, 92, 34);
+            var low = mode == ThemeMode.Dark ? ChartColor.FromRgb(153, 138, 224) : ChartColor.FromRgb(101, 78, 169);
+            var high = mode == ThemeMode.Dark ? ChartColor.FromRgb(238, 157, 98) : ChartColor.FromRgb(191, 92, 34);
             chart.ConfigureSunburst(options =&gt; {
                 options.CornerRadius = 6;
                 options.SecondaryLabelFormatter = context =&gt; context.Item.Id == &quot;all&quot; ? &quot;Allocation&quot; : context.Item.Id == &quot;engineering&quot; ? &quot;Delivery teams&quot;

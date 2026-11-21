@@ -16,7 +16,7 @@ public sealed class TopologyAccentSourceTests {
     public void StatusAccentSurvivesIconAssignmentLateThemeAndVariableBinding(bool graphite, bool dark) {
         var chart = Chart();
         var theme = graphite ? VisualTheme.Graphite() : VisualTheme.Graphite().Configure(b => { b.Light.Status.Critical = new VisualTokenColor(ChartColor.Parse("#AF1328"), ChartColor.Black); b.Dark.Status.Critical = new VisualTokenColor(ChartColor.Parse("#FA5376"), ChartColor.White); });
-        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         chart.WithTheme(theme).WithThemeMode(mode);
         chart.Nodes[0].Color = "#713CA6";
         chart.Nodes[0].PaletteIndex = 1;
@@ -79,7 +79,7 @@ public sealed class TopologyAccentSourceTests {
     [InlineData("   ", false)]
     [InlineData("   ", true)]
     public void AutoAccentSkipsBlankNodeColorForIconInSvgNativeAndGraph(string color, bool dark) {
-        var chart = Chart().WithThemeMode(dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        var chart = Chart().WithThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         chart.Nodes[0].Color = color;
         chart.Nodes[0].PaletteIndex = 1;
         var options = Options(TopologyAccentSource.Auto);

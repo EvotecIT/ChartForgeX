@@ -4,7 +4,7 @@ using ChartForgeX.VisualArtifacts;
 
 internal static partial class MermaidExamples {
     private static void WriteAdvancedActorExamples(string output) {
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) foreach (var variant in new[] { "wide", "compact" }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) foreach (var variant in new[] { "wide", "compact" }) {
             var source = MermaidFixtureSources.Read("usecase-advanced-actors");
             if (variant == "compact") source = source.Replace("direction TB", "direction LR", StringComparison.Ordinal);
             var result = MermaidRenderer.Render(source, new MermaidRenderOptions { WarningPolicy = MermaidWarningPolicy.Reject,

@@ -137,7 +137,7 @@ public sealed class InteractiveSourceCollectionBrowserTests {
             new ChartPoint(2.5, 12), new ChartPoint(6.1, -4), new ChartPoint(9, -8) };
         Chart Mean(IEnumerable<ChartPoint> source) {
             var chart = Chart.Create().WithSize(640, 400)
-                .WithTheme(ChartForgeX.Themes.VisualTheme.Graphite(), dark ? ChartForgeX.Themes.VisualThemeMode.Dark : ChartForgeX.Themes.VisualThemeMode.Light)
+                .WithTheme(ChartForgeX.Themes.VisualTheme.Graphite(), dark ? ChartForgeX.ThemeMode.Dark : ChartForgeX.ThemeMode.Light)
                 .ConfigureLabels(labels => { labels.NoData = noData; labels.SampleCount = sampleCount; })
                 .AddSeries(ChartSeries.CreateHistogram(new ChartSeriesId("quantity-source"), "Quantity", source, ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 1, 3, 6, 10 }), ChartHistogramAggregation.Mean));
             return chart;

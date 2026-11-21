@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = RangeAreaRecipe.Create(&quot;compact&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Builds an expected operating range with smooth or stepped area boundaries.&lt;/summary&gt;
 public static class RangeAreaRecipe {
     /// &lt;summary&gt;Creates the selected range-area example from typed lower and upper limits.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot; or &quot;singleton&quot; or &quot;compact-singleton&quot; or &quot;independent-boundaries&quot; or &quot;compact-independent-boundaries&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create();
@@ -148,6 +149,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -157,7 +159,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = RangeAreaRecipe.Create(&quot;compact&quot;, mode);
 var context = new VisualRenderContext(
@@ -172,7 +174,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Builds an expected operating range with smooth or stepped area boundaries.&lt;/summary&gt;
 public static class RangeAreaRecipe {
     /// &lt;summary&gt;Creates the selected range-area example from typed lower and upper limits.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot; or &quot;singleton&quot; or &quot;compact-singleton&quot; or &quot;independent-boundaries&quot; or &quot;compact-independent-boundaries&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create();

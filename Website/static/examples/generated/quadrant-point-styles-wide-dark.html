@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = QuadrantPointStylesRecipe.Create(&quot;wide&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Native Core authoring for independent quadrant captions and source-owned Scatter marker styles.&lt;/summary&gt;
 public static class QuadrantPointStylesRecipe {
     /// &lt;summary&gt;Creates the native example. The separately shared Mermaid fixture proves parsed-source mapping.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var observations = ChartSeries.CreateScatter(new ChartSeriesId(&quot;proposed-work&quot;), &quot;Proposed work&quot;, new[] {
             new ChartPoint(.22, .74), new ChartPoint(.76, .72), new ChartPoint(.28, .26), new ChartPoint(.72, .24)
@@ -152,6 +153,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -161,7 +163,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = QuadrantPointStylesRecipe.Create(&quot;wide&quot;, mode);
 var context = new VisualRenderContext(
@@ -176,7 +178,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Native Core authoring for independent quadrant captions and source-owned Scatter marker styles.&lt;/summary&gt;
 public static class QuadrantPointStylesRecipe {
     /// &lt;summary&gt;Creates the native example. The separately shared Mermaid fixture proves parsed-source mapping.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var observations = ChartSeries.CreateScatter(new ChartSeriesId(&quot;proposed-work&quot;), &quot;Proposed work&quot;, new[] {
             new ChartPoint(.22, .74), new ChartPoint(.76, .72), new ChartPoint(.28, .26), new ChartPoint(.72, .24)

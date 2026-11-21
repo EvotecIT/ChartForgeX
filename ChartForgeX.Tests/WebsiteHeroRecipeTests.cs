@@ -8,9 +8,9 @@ namespace ChartForgeX.Tests;
 /// <summary>Protects the authored homepage observations shared by its chart and Markdown presentation.</summary>
 public sealed class WebsiteHeroRecipeTests {
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void HomepageRecipeRetainsTheFullSeriesInNativeExports(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void HomepageRecipeRetainsTheFullSeriesInNativeExports(ThemeMode mode) {
         var (names, weeks, values) = HeroSignInsWebsiteRecipe.GetData();
         var chart = HeroSignInsWebsiteRecipe.Create(mode);
         Assert.Equal(new[] { "Passkey", "Authenticator app", "SMS code", "Password only" }, names);

@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = SequenceSelfRoutesRecipe.Create(&quot;compact&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Creates explicitly curved native self messages with measured badge and mirrored lifetime geometry.&lt;/summary&gt;
 public static class SequenceSelfRoutesRecipe {
     /// &lt;summary&gt;Creates a compact or wide native sequence; omitted self routing remains the ordinary 56/24 law.&lt;/summary&gt;
-    public static SequenceArtifact Create(string variant=&quot;wide&quot;,VisualThemeMode mode=VisualThemeMode.Light) {
+    public static SequenceArtifact Create(string variant=&quot;wide&quot;,ThemeMode mode=ThemeMode.Light) {
         if(variant is not (&quot;compact&quot; or &quot;wide&quot;))throw new ArgumentOutOfRangeException(nameof(variant));
         var model=SequenceArtifact.Create(&quot;sequence-self-routes&quot;).WithSize(variant==&quot;compact&quot;?390:1000,820).WithTitle(&quot;Self routes&quot;)
             .AddParticipant(&quot;A&quot;,&quot;Review&quot;).AddMessage(&quot;A&quot;,&quot;A&quot;,&quot;Check&quot;).AddMessage(&quot;A&quot;,&quot;A&quot;,&quot;Save&quot;);
@@ -124,6 +125,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -133,7 +135,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = SequenceSelfRoutesRecipe.Create(&quot;compact&quot;, mode);
 var context = new VisualRenderContext(
@@ -148,7 +150,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Creates explicitly curved native self messages with measured badge and mirrored lifetime geometry.&lt;/summary&gt;
 public static class SequenceSelfRoutesRecipe {
     /// &lt;summary&gt;Creates a compact or wide native sequence; omitted self routing remains the ordinary 56/24 law.&lt;/summary&gt;
-    public static SequenceArtifact Create(string variant=&quot;wide&quot;,VisualThemeMode mode=VisualThemeMode.Light) {
+    public static SequenceArtifact Create(string variant=&quot;wide&quot;,ThemeMode mode=ThemeMode.Light) {
         if(variant is not (&quot;compact&quot; or &quot;wide&quot;))throw new ArgumentOutOfRangeException(nameof(variant));
         var model=SequenceArtifact.Create(&quot;sequence-self-routes&quot;).WithSize(variant==&quot;compact&quot;?390:1000,820).WithTitle(&quot;Self routes&quot;)
             .AddParticipant(&quot;A&quot;,&quot;Review&quot;).AddMessage(&quot;A&quot;,&quot;A&quot;,&quot;Check&quot;).AddMessage(&quot;A&quot;,&quot;A&quot;,&quot;Save&quot;);

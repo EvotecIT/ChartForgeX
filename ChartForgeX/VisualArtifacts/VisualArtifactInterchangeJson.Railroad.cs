@@ -56,7 +56,7 @@ internal static partial class VisualArtifactInterchangeJson {
         var item = OptionalObject(root, "railroad"); if (item == null) return null;
         var railroad = new VisualArtifactInterchangeRailroadArtifact {
             RuleComparison = RequiredEnum<RailroadRuleComparison>(item, "ruleComparison"),
-            ThemeMode = OptionalEnum<VisualThemeMode>(item, "themeMode") ?? VisualThemeMode.Light,
+            ThemeMode = OptionalEnum<ThemeMode>(item, "themeMode") ?? ThemeMode.Light,
             Padding = new ChartPadding(OptionalNumber(item, "paddingLeft") ?? 18, OptionalNumber(item, "paddingTop") ?? 16,
                 OptionalNumber(item, "paddingRight") ?? 18, OptionalNumber(item, "paddingBottom") ?? 12),
             TransparentBackground = OptionalBool(item, "transparentBackground") ?? false,

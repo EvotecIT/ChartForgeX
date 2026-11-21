@@ -7,11 +7,11 @@ namespace ChartForgeX.Tests;
 
 public sealed class BlockLayoutRecipeTests {
     [Theory]
-    [InlineData("wide", VisualThemeMode.Light)]
-    [InlineData("wide", VisualThemeMode.Dark)]
-    [InlineData("compact", VisualThemeMode.Light)]
-    [InlineData("compact", VisualThemeMode.Dark)]
-    public void CompleteCoreProgramAndCompiledBlockFactoryRetainNativeHierarchy(string variant, VisualThemeMode mode) {
+    [InlineData("wide", ThemeMode.Light)]
+    [InlineData("wide", ThemeMode.Dark)]
+    [InlineData("compact", ThemeMode.Light)]
+    [InlineData("compact", ThemeMode.Dark)]
+    public void CompleteCoreProgramAndCompiledBlockFactoryRetainNativeHierarchy(string variant, ThemeMode mode) {
         var source = ExampleRecipeSource.EmitBlockLayout(variant, mode);
         Assert.Contains("public static class BlockLayoutDepthRecipe", source); Assert.Contains("BlockLayoutBlock.Create", source);
         Assert.Contains("model.ToSvg", source); Assert.Contains("model.ToPng", source); Assert.Contains("model.ToHtmlPage", source);

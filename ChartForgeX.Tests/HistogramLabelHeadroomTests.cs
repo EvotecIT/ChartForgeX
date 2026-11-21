@@ -10,13 +10,13 @@ namespace ChartForgeX.Tests;
 
 public sealed class HistogramLabelHeadroomTests {
     [Theory]
-    [InlineData(VisualThemeMode.Light, 3d)]
-    [InlineData(VisualThemeMode.Dark, 3d)]
-    [InlineData(VisualThemeMode.Light, 3.5d)]
-    [InlineData(VisualThemeMode.Dark, 3.5d)]
-    [InlineData(VisualThemeMode.Light, null)]
-    [InlineData(VisualThemeMode.Dark, null)]
-    public void CompactHistogramKeepsCompleteCountsAboveNarrowMaximumHeightBins(VisualThemeMode mode, double? maximum) {
+    [InlineData(ThemeMode.Light, 3d)]
+    [InlineData(ThemeMode.Dark, 3d)]
+    [InlineData(ThemeMode.Light, 3.5d)]
+    [InlineData(ThemeMode.Dark, 3.5d)]
+    [InlineData(ThemeMode.Light, null)]
+    [InlineData(ThemeMode.Dark, null)]
+    public void CompactHistogramKeepsCompleteCountsAboveNarrowMaximumHeightBins(ThemeMode mode, double? maximum) {
         var chart = NarrowPeakHistogram();
         if (maximum.HasValue) chart.Options.YAxis.WithBounds(0, maximum.Value);
         var prepared = chart.Prepare(Context(mode));
@@ -51,7 +51,7 @@ public sealed class HistogramLabelHeadroomTests {
             series.WithPointLabel(0, index == 0 ? "Upper edge" : "Lower edge");
             series.DataLabelPlacement = (index == 0) != reversed ? ChartDataLabelPlacement.Above : ChartDataLabelPlacement.Below;
         }
-        var prepared = chart.Prepare(Context(VisualThemeMode.Light));
+        var prepared = chart.Prepare(Context(ThemeMode.Light));
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label").ToArray();
         Assert.Equal(new[] { "Upper edge", "Lower edge" }, labels.Select(label => Assert.Single(label.Text.Lines).Text));
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "cartesian.data-label-overflow");
@@ -69,9 +69,9 @@ public sealed class HistogramLabelHeadroomTests {
     [Fact]
     public void ExplicitInsideLabelsDoNotReserveAnOutsideLane() {
         var chart = NarrowPeakHistogram().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
-        var inside = chart.Prepare(Context(VisualThemeMode.Light));
+        var inside = chart.Prepare(Context(ThemeMode.Light));
         chart.WithDataLabels(false);
-        var hidden = chart.Prepare(Context(VisualThemeMode.Light));
+        var hidden = chart.Prepare(Context(ThemeMode.Light));
         Assert.Equal(Assert.Single(hidden.Regions, region => region.Role == "cartesian-plot").Bounds,
             Assert.Single(inside.Regions, region => region.Role == "cartesian-plot").Bounds);
     }
@@ -82,7 +82,7 @@ public sealed class HistogramLabelHeadroomTests {
         var chart = Chart.Create().WithAxes(false).WithDataLabels()
             .AddBar("Requests", ChartPoints.FromValues(3, 4))
             .WithValueFormat(ChartValueFormat.Custom(value => { calls++; return value + " requests"; }));
-        var prepared = chart.Prepare(Context(VisualThemeMode.Light));
+        var prepared = chart.Prepare(Context(ThemeMode.Light));
         Assert.Equal(2, calls);
         chart.WithValueFormat(ChartValueFormat.Custom(_ => throw new InvalidOperationException("The source callback must stay detached.")));
         Assert.Contains("4 requests", prepared.ToSvg(), StringComparison.Ordinal);
@@ -100,7 +100,7 @@ public sealed class HistogramLabelHeadroomTests {
         return chart;
     }
 
-    private static VisualRenderContext Context(VisualThemeMode mode) {
+    private static VisualRenderContext Context(ThemeMode mode) {
         const string family = "CFX Histogram Caption Carlito";
         var fonts = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito");
         FontRegistry.Register(family, Path.Combine(fonts, "Carlito-Regular.ttf"), 400);

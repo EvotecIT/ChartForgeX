@@ -33,7 +33,7 @@ public sealed partial class ChartTableCell {
     private ChartTableCellMicroVisualKind _microVisualKind;
     private readonly List<double> _microVisualValues = new();
     private string _badgeText = string.Empty;
-    private VisualStatus _badgeStatus = VisualStatus.Neutral;
+    private Tone _badgeStatus = Tone.Neutral;
     private VisualBadgeStyle _badgeStyle = VisualBadgeStyle.Soft;
 
     /// <summary>Gets the configured cell microvisual kind.</summary>
@@ -68,13 +68,7 @@ public sealed partial class ChartTableCell {
     public string BadgeText { get => _badgeText; set => _badgeText = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets or sets optional badge status.</summary>
-    public VisualStatus BadgeStatus {
-        get => _badgeStatus;
-        set {
-            VisualBlockGuards.EnumDefined(value, nameof(value));
-            _badgeStatus = value;
-        }
-    }
+    public Tone BadgeStatus { get => _badgeStatus; set => _badgeStatus = value; }
 
     /// <summary>Gets or sets optional badge style.</summary>
     public VisualBadgeStyle BadgeStyle {
@@ -111,9 +105,9 @@ public sealed partial class ChartTableCell {
     }
 
     /// <summary>Sets a compact badge for this table cell.</summary>
-    public ChartTableCell WithBadge(string text, VisualStatus status = VisualStatus.Neutral, ChartColor? color = null, VisualBadgeStyle style = VisualBadgeStyle.Soft) {
+    public ChartTableCell WithBadge(string text, Tone? status = null, ChartColor? color = null, VisualBadgeStyle style = VisualBadgeStyle.Soft) {
         BadgeText = text ?? throw new ArgumentNullException(nameof(text));
-        BadgeStatus = status;
+        BadgeStatus = status ?? Tone.Neutral;
         BadgeColor = color;
         BadgeStyle = style;
         return this;

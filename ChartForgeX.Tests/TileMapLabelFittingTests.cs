@@ -20,11 +20,11 @@ public sealed class TileMapLabelFittingTests : IDisposable {
     }
 
     [Theory]
-    [InlineData(800, 440, VisualThemeMode.Light)]
-    [InlineData(800, 440, VisualThemeMode.Dark)]
-    [InlineData(360, 360, VisualThemeMode.Light)]
-    [InlineData(360, 360, VisualThemeMode.Dark)]
-    public void CatalogCodesAllFitTheirHexagonsAtReadableSizesAndNeverBecomePrefixes(int width, int height, VisualThemeMode mode) {
+    [InlineData(800, 440, ThemeMode.Light)]
+    [InlineData(800, 440, ThemeMode.Dark)]
+    [InlineData(360, 360, ThemeMode.Light)]
+    [InlineData(360, 360, ThemeMode.Dark)]
+    public void CatalogCodesAllFitTheirHexagonsAtReadableSizesAndNeverBecomePrefixes(int width, int height, ThemeMode mode) {
         var variant = width == 360 ? "compact-color-dimension" : "color-dimension";
         var chart = V2GalleryModels.Create(ChartSeriesKind.TileMap, variant, mode);
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, height)), VisualTheme.Graphite(), mode,
@@ -58,7 +58,7 @@ public sealed class TileMapLabelFittingTests : IDisposable {
 
     [Fact]
     public void CatalogThumbnailCodesKeepTheirRequestedSizeBeforeCssScaling() {
-        var chart = V2GalleryModels.Create(ChartSeriesKind.TileMap, "wide", VisualThemeMode.Light);
+        var chart = V2GalleryModels.Create(ChartSeriesKind.TileMap, "wide", ThemeMode.Light);
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(400, 280), 14),
             VisualTheme.Graphite().WithTypography(new VisualTypography(axisSize: 13.5)),
             frame: new VisualFrame("", "", showLegend: false), font: FontSpec.FromFamily(Family));
@@ -83,13 +83,13 @@ public sealed class TileMapLabelFittingTests : IDisposable {
             "cartesian" => V2Examples.Create("cartesian", "wide"),
             "chart-grid" => ChartGrid.Create().Add(Chart.Create().AddLine("Requests", new[] { new ChartPoint(1, 5), new ChartPoint(2, 10) })),
             "histogram" => V2GalleryModels.CreateHistogram("wide"),
-            _ => V2GalleryModels.Create(Enum.Parse<ChartSeriesKind>(family, true), "wide", VisualThemeMode.Light)
+            _ => V2GalleryModels.Create(Enum.Parse<ChartSeriesKind>(family, true), "wide", ThemeMode.Light)
         };
         var output = Path.Combine(Path.GetTempPath(), "ChartForgeX-thumbnail-readability-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(output);
         try {
             var write = typeof(V2Examples).GetMethod("WriteThumbnail", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!;
-            write.Invoke(null, new object?[] { output, model, "readable", "Readable overview", family, VisualThemeMode.Light, family != "histogram" });
+            write.Invoke(null, new object?[] { output, model, "readable", "Readable overview", family, ThemeMode.Light, family != "histogram" });
             var svg = XDocument.Load(Path.Combine(output, "readable.thumbnail.svg"));
             var labels = svg.Descendants().Where(node => (node.Name.LocalName == "text" || (string?)node.Attribute("data-cfx-native-text-ink") == "true")
                 && (string?)node.Attribute("display") != "none"

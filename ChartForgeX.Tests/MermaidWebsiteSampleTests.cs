@@ -160,9 +160,9 @@ public sealed class MermaidWebsiteSampleTests {
 
         var light = MermaidRenderer.Render(source.Substring(directive.Length)).Artifact!;
         // Diagrams draw on the Graphite card; Mermaid's dark theme selects the dark card.
-        var nativeLight = VisualTheme.Graphite().Resolve(VisualThemeMode.Light).ElevatedSurface;
-        var expected = directive.Length > 0 ? VisualTheme.Graphite().Resolve(VisualThemeMode.Dark).ElevatedSurface : nativeLight;
-        Assert.Equal(directive.Length > 0 ? VisualThemeMode.Dark : VisualThemeMode.Light, chart.ThemeMode);
+        var nativeLight = VisualTheme.Graphite().Resolve(ThemeMode.Light).ElevatedSurface;
+        var expected = directive.Length > 0 ? VisualTheme.Graphite().Resolve(ThemeMode.Dark).ElevatedSurface : nativeLight;
+        Assert.Equal(directive.Length > 0 ? ThemeMode.Dark : ThemeMode.Auto, chart.ThemeMode);
         Assert.Equal(expected, ChartColor.Parse(Background(svg)));
         Assert.Equal(expected, CornerColor(result.Artifact.ToPng()));
         Assert.Equal(nativeLight, ChartColor.Parse(Background(XDocument.Parse(light.ToSvg()))));
@@ -242,8 +242,8 @@ public sealed class MermaidWebsiteSampleTests {
         var lightSvg = light.ToSvg();
         Assert.NotEqual(darkSvg, lightSvg);
         // Mermaid's dark theme selects the Graphite dark card that every diagram draws on.
-        var expectedLight = VisualTheme.Graphite().Resolve(VisualThemeMode.Light).ElevatedSurface;
-        var expectedDark = VisualTheme.Graphite().Resolve(VisualThemeMode.Dark).ElevatedSurface;
+        var expectedLight = VisualTheme.Graphite().Resolve(ThemeMode.Light).ElevatedSurface;
+        var expectedDark = VisualTheme.Graphite().Resolve(ThemeMode.Dark).ElevatedSurface;
         Assert.Equal(expectedLight, ChartColor.Parse(Background(XDocument.Parse(lightSvg))));
         Assert.Equal(expectedDark, ChartColor.Parse(Background(XDocument.Parse(darkSvg))));
         var lightPng = light.ToPng(); var darkPng = dark.ToPng();

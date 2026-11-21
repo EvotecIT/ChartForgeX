@@ -118,6 +118,6 @@ public sealed partial class MermaidC4PresentationDepthTests {
     }
     internal static MermaidC4Document Parse(string source) { var parsed = new MermaidParser().ParseC4(source); Assert.False(parsed.HasErrors,string.Join("; ",parsed.Diagnostics.Select(item=>item.Message))); return parsed.Document!; }
     internal static string Fixture(string name) => File.ReadAllText(Path.Combine(TestRepository.Root,"tests","mermaid-conformance","fixtures",name+".mmd"));
-    internal static MermaidRenderOptions Options(bool dark,int width) => new() { C4 = new MermaidTopologyRenderOptions { Width=width,Height=800 }, Presentation=new MermaidPresentationOptions { ThemeMode=dark?VisualThemeMode.Dark:VisualThemeMode.Light,FontFamily=BrowserProofFonts.Family } };
+    internal static MermaidRenderOptions Options(bool dark,int width) => new() { C4 = new MermaidTopologyRenderOptions { Width=width,Height=800 }, Presentation=new MermaidPresentationOptions { ThemeMode=dark?ThemeMode.Dark:ThemeMode.Light,FontFamily=BrowserProofFonts.Family } };
     internal static void Capture(VisualArtifact artifact,string name) { if(Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY") is not { Length:>0 } output)return;Directory.CreateDirectory(output);var stem=Path.Combine(output,name);File.WriteAllText(stem+".svg",artifact.ToSvg());File.WriteAllBytes(stem+".png",artifact.ToPng());File.WriteAllText(stem+".json",artifact.ToInterchangeJson()); }
 }

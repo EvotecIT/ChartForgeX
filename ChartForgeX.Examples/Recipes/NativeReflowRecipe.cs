@@ -1,6 +1,6 @@
 /// <summary>Finite authored observation/group visibility using native layout and statistics.</summary>
 internal static class NativeReflowRecipe {
-    internal static Chart Create(string kind, int width, VisualThemeMode mode) {
+    internal static Chart Create(string kind, int width, ThemeMode mode) {
         ChartSeries series; var id = new ChartSeriesId("delivery");
         if (kind == "raw") {
             series = ChartSeries.CreateBoxPlot(id, "Delivery", new[] { new ChartBoxPlotSampleGroup(1, new double[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 }),

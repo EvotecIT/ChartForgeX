@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+using ChartForgeX;
 using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Primitives;
@@ -48,7 +49,7 @@ internal static partial class Program {
 
         // Topology's global text role is textColor; primaryTextColor has a separate source-preset role.
         const string themed = "%%{init: {'theme':'dark','themeVariables':{'background':'#112233','primaryColor':'#334455','textColor':'#FFEEDD','lineColor':'#CCDDEE'}}}%%\nflowchart LR\nA[Start] --> B[Finish]";
-        var theme = ((TopologyChart)PackedNativeDiagram("theme-roles", themed).Model!).Theme.Resolve(VisualThemeMode.Dark);
+        var theme = ((TopologyChart)PackedNativeDiagram("theme-roles", themed).Model!).Theme.Resolve(ThemeMode.Dark);
         PackageAssertions.Require(theme.Background.Equals(ChartColor.FromHex("#112233")) && theme.Surface.Equals(ChartColor.FromHex("#334455"))
             && theme.Foreground.Equals(ChartColor.FromHex("#FFEEDD")) && theme.Status.Neutral.Fill.Equals(ChartColor.FromHex("#CCDDEE")),
             "Packed source theme variables did not use the existing immutable native color roles.");

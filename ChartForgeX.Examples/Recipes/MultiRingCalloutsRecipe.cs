@@ -2,7 +2,7 @@
 public static class MultiRingCalloutsRecipe {
     /// <summary>Creates explicit or automatically allocated rings with shared outside caption lanes.</summary>
     /// <remarks>Shifted sectors may overlap; haloed caption leaders overlay enclosing rings. Exact typography requires registered or installed Carlito regular/bold.</remarks>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "automatic" or "compact-automatic" or "vertical" or "compact-vertical" or "mixed" or "compact-mixed"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant.StartsWith("compact", StringComparison.Ordinal);

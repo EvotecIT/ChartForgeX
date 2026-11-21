@@ -59,7 +59,7 @@ public sealed class HeatmapColorScaleLegendTests {
     [InlineData(ChartSeriesKind.CalendarHeatmap, 360, false, "diverging")]
     public void CanonicalLegendsFitAndMatchSvgAndNativeCellPaint(ChartSeriesKind kind, int width, bool dark, string mode) {
         var chart = HeatmapColorScaleTests.Create(kind, 0, 10, 20).WithSize(width, 400)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         chart.ConfigureLabels(labels => labels.Value = "wartość");
         var scale = mode == "discrete" ? ChartColorScale.Discrete(new[] {
             new ChartColorBand(10, Low, "Niski"), new ChartColorBand(20, Middle, "Średni"), new ChartColorBand(null, High, "Wysoki")
@@ -115,7 +115,7 @@ public sealed class HeatmapColorScaleLegendTests {
         var fonts = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito");
         FontRegistry.Register(family, Path.Combine(fonts, "Carlito-Regular.ttf"), 400);
         FontRegistry.Register(family, Path.Combine(fonts, "Carlito-Bold.ttf"), 700);
-        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var chart = V2GalleryModels.Create(ChartSeriesKind.HexbinHeatmap, "compact-color-scale", mode);
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 360)),
             VisualTheme.Graphite(), mode, new VisualFrame("Service coverage in hexagonal cells", "Named numeric intervals keep their exact boundaries"),
@@ -184,7 +184,7 @@ public sealed class HeatmapColorScaleLegendTests {
         var effectiveMidpoint = scale.EffectiveMidpoint(min, max);
         var chart = HeatmapColorScaleTests.Create(kind, min, effectiveMidpoint, max).WithSize(width, 400).WithHeatmapColorScale(scale);
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, 400)),
-            VisualTheme.Graphite(), VisualThemeMode.Light, new VisualFrame(), FontSpec.FromFamily(family)));
+            VisualTheme.Graphite(), ThemeMode.Light, new VisualFrame(), FontSpec.FromFamily(family)));
         var prefix = kind == ChartSeriesKind.CalendarHeatmap ? "calendar-scale" : "heatmap-scale";
         var document = XDocument.Parse(prepared.ToSvg()); var steps = Role(document, prefix + "-step");
         var swatches = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == prefix + "-swatch").ToArray();
@@ -282,7 +282,7 @@ public sealed class HeatmapColorScaleLegendTests {
     [InlineData(true, false)]
     [InlineData(true, true)]
     public void NoDataKeyPaintsLikeTheMissingCellsItExplains(bool authored, bool dark) {
-        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var scale = ChartColorScale.Discrete(new[] { new ChartColorBand(95, High, "Outage"), new ChartColorBand(null, Low, "Complete") });
         var chart = Chart.Create().WithSize(640, 320).WithTheme(VisualTheme.Graphite(), mode).WithXLabels("Mon", "Tue", "Wed")
             .AddHeatmapRow("dc1", new double?[] { 100, 99, 100 }).AddHeatmapRow("dc2", new double?[] { null, 90, 100 })

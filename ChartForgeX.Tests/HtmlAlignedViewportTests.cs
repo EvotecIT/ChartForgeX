@@ -186,7 +186,7 @@ public sealed class HtmlAlignedViewportTests {
             .WithObservationIds(Enumerable.Range(0, count).Select(index => new ChartObservationId("row-" + index.ToString(CultureInfo.InvariantCulture))));
         series.ConfigureMarkers(markers => { markers.Enabled = true; markers.Radius = 4; });
         return Chart.Create().WithSize(800, 440).WithPadding(24, 24, 24, 24).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithTheme(theme, VisualThemeMode.Light).WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"))
+            .WithTheme(theme, ThemeMode.Light).WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"))
             .AddSeries(series);
     }
     private static void ConfigureMetricDrawing(HtmlChartInteractionOptions options) {

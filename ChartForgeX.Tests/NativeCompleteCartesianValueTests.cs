@@ -58,5 +58,5 @@ public sealed class NativeCompleteCartesianValueTests {
         NativeRadialMotionBeforeControls.Save("complete-cartesian-reject-" + condition + ".facts.json", JsonSerializer.Serialize(new { error = error?.ToString() })); Assert.IsType<NotSupportedException>(error);
     }
 
-    internal static Chart Model(string variant, double reading, int width = 760, bool dark = false) => NativeCompleteCartesianValueRecipe.Create(variant, reading, width, dark ? VisualThemeMode.Dark : VisualThemeMode.Light, BrowserProofFonts.Family);
+    internal static Chart Model(string variant, double reading, int width = 760, bool dark = false) => NativeCompleteCartesianValueRecipe.Create(variant, reading, width, dark ? ThemeMode.Dark : ThemeMode.Light, BrowserProofFonts.Family);
 }

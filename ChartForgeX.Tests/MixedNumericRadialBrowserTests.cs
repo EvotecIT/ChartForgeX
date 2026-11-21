@@ -18,7 +18,7 @@ public sealed class MixedNumericRadialBrowserTests {
         if (!Enabled) return;
         var chart = V2GalleryModels.CreateMixedRadial()
             .WithSize(compact ? 360 : 800, compact ? 360 : 440)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithTitle("Regional counts and targets").WithLegend();
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var owner = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Single(group => group.Id == "series-1-point-0");

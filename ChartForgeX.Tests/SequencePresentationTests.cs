@@ -30,9 +30,9 @@ public sealed class SequencePresentationTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void AuthoredSequencePresentationReachesEveryConvenienceExportAndPortableEnvelope(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void AuthoredSequencePresentationReachesEveryConvenienceExportAndPortableEnvelope(ThemeMode mode) {
         var model = SequenceArtifact.Create("presentation").AddParticipant("a").AddParticipant("b").AddMessage("a", "b", "Request");
         model.Theme = VisualTheme.Graphite().WithTypography(new VisualTypography("Georgia, serif", dataLabelSize: 18));
         model.ThemeMode = mode;
@@ -57,9 +57,9 @@ public sealed class SequencePresentationTests {
     public void ExplicitHostContextOverridesAuthoredDefaultsAndDetachesTheResolvedPresentation() {
         var model = SequenceArtifact.Create("host").AddParticipant("a").AddParticipant("b").AddMessage("a", "b", "Request");
         model.Theme = VisualTheme.Graphite().WithTypography(new VisualTypography("Georgia, serif"));
-        model.ThemeMode = VisualThemeMode.Dark;
+        model.ThemeMode = ThemeMode.Dark;
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)),
-            VisualTheme.Graphite(), VisualThemeMode.Light, font: new FontSpec { Family = "Courier New, monospace" });
+            VisualTheme.Graphite(), ThemeMode.Light, font: new FontSpec { Family = "Courier New, monospace" });
         var prepared = model.Prepare(context);
         var artifact = prepared.ToArtifact("host", VisualArtifactKind.Sequence);
         var originalJson = artifact.ToInterchangeJson();
@@ -70,7 +70,7 @@ public sealed class SequencePresentationTests {
         Assert.Equal("Courier New, monospace", theme.FontFamily);
         AssertStatusColors(context.Theme.Resolve(context.ThemeMode), theme);
         Assert.Contains("Courier New", originalSvg);
-        model.ThemeMode = VisualThemeMode.Light;
+        model.ThemeMode = ThemeMode.Light;
         model.Theme = VisualTheme.Graphite();
         theme.Background = "#000000";
         Assert.Equal(originalJson, artifact.ToInterchangeJson());
@@ -78,9 +78,9 @@ public sealed class SequencePresentationTests {
     }
 
     [Theory]
-    [InlineData("dark", VisualThemeMode.Dark)]
-    [InlineData("default", VisualThemeMode.Light)]
-    public void SourceSettingsReachDirectRendererTypedConversionAndMarkdownFences(string theme, VisualThemeMode mode) {
+    [InlineData("dark", ThemeMode.Dark)]
+    [InlineData("default", ThemeMode.Light)]
+    public void SourceSettingsReachDirectRendererTypedConversionAndMarkdownFences(string theme, ThemeMode mode) {
         var source = Source(theme);
         var rendered = MermaidRenderer.Render(source);
         Assert.Empty(rendered.Diagnostics);

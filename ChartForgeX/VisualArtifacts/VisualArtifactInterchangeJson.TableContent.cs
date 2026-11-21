@@ -53,17 +53,22 @@ internal static partial class VisualArtifactInterchangeJson {
         }
         foreach (var entry in OptionalArray(item, "rows")) {
             var row = entry.AsObject("embedded table row"); var copy = new VisualArtifactInterchangeTableRow { Key = RequiredString(row, "key"),
-                Status = RequiredEnum<VisualStatus>(row, "status"), Selectable = OptionalBool(row, "selectable") ?? true };
+                Status = RequiredTone(row, "status"), Selectable = OptionalBool(row, "selectable") ?? true };
             ReadExtensions(row, copy.Extensions);
             foreach (var cellEntry in OptionalArray(row, "cells")) {
                 var cell = cellEntry.AsObject("embedded table cell"); var value = new VisualArtifactInterchangeTableCell { ColumnId = RequiredString(cell, "columnId"),
                     DisplayText = RequiredStringAllowEmpty(cell, "displayText"), SearchText = OptionalString(cell, "searchText"), SortText = OptionalString(cell, "sortText"),
-                    CopyText = OptionalString(cell, "copyText"), ExportText = OptionalString(cell, "exportText"), Status = RequiredEnum<VisualStatus>(cell, "status") };
+                    CopyText = OptionalString(cell, "copyText"), ExportText = OptionalString(cell, "exportText"), Status = RequiredTone(cell, "status") };
                 value.Content = ReadCaptionRuns(cell, "textRuns");
                 ReadExtensions(cell, value.Extensions); copy.Cells.Add(value);
             }
             table.Rows.Add(copy);
         }
         return table;
+    }
+
+    private static Tone RequiredTone(Dictionary<string, GeoJsonValue> values, string name) {
+        var value = RequiredString(values, name);
+        return Tone.TryParse(value, out var tone) ? tone : throw new System.ArgumentException("Unknown tone value: " + value + ".");
     }
 }

@@ -6,7 +6,7 @@ using ChartForgeX.Topology;
 /// <remarks>Shows sibling grouping, striped transports, value chips, uplink markers and assumed links in one diagram.</remarks>
 public static class TopologySiteLinksRecipe {
     /// <summary>Creates the site map in either theme mode.</summary>
-    public static TopologyChart Create(string variant = "sites", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static TopologyChart Create(string variant = "sites", ThemeMode mode = ThemeMode.Light) {
         // "wide" is the shared recipe registry default; this example has a single wide site map.
         if (variant is not ("sites" or "wide")) throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = TopologyChart.Create().WithId("ad-site-links").WithTitle("Contoso replication sites")
@@ -38,7 +38,7 @@ public static class TopologySiteLinksRecipe {
             .AddEdgeChip("hub-ber", "cost 200").WithEdgeEvidence("hub-ber", TopologyEdgeEvidence.Confirmed);
         chart.AddEdge("hub-nyc", "hub", "nyc", kind: TopologyEdgeKind.Replication, status: TopologyHealthStatus.Warning)
             .AddEdgeStripe("hub-nyc", "#2563EB", "IP").AddEdgeStripe("hub-nyc", "#F97316", "SMTP")
-            .AddEdgeChip("hub-nyc", "cost 300").AddEdgeChip("hub-nyc", "lag 47m", TopologyTone.Warn)
+            .AddEdgeChip("hub-nyc", "cost 300").AddEdgeChip("hub-nyc", "lag 47m", Tone.Warning)
             .WithEdgeEvidence("hub-nyc", TopologyEdgeEvidence.Confirmed);
         chart.AddEdge("hub-tyo", "hub", "tyo", kind: TopologyEdgeKind.Replication, status: TopologyHealthStatus.Healthy)
             .AddEdgeChip("hub-tyo", "cost 500")

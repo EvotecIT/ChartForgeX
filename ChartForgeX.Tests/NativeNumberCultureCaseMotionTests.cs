@@ -86,7 +86,7 @@ public sealed class NativeNumberCultureCaseMotionTests : IDisposable {
             chart.Series[0].ReplaceHierarchyItems(new[] { new ChartHierarchyItem("root", "HH"), new ChartHierarchyItem("first", "HH", "root", reading), new ChartHierarchyItem("second", "HH", "root", .1), new ChartHierarchyItem("third", "HH", "root", .2) });
         } else { chart = NativeValueRepertoireBeforeControls.Model(kind == "donut", "compact", reading).WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndValue);
             chart.Series[0].Points[1] = new ChartForgeX.Primitives.ChartPoint(2, .1); chart.Series[0].Points[2] = new ChartForgeX.Primitives.ChartPoint(3, .2); chart.WithXLabels("HH", "HH", "HH"); }
-        chart.WithFontFamily(NativeFallbackClusterBeforeControls.Primary + ", " + NativeFallbackClusterBeforeControls.Fallback).WithSize(width, 420).WithThemeMode(dark ? ChartForgeX.Themes.VisualThemeMode.Dark : ChartForgeX.Themes.VisualThemeMode.Light);
+        chart.WithFontFamily(NativeFallbackClusterBeforeControls.Primary + ", " + NativeFallbackClusterBeforeControls.Fallback).WithSize(width, 420).WithThemeMode(dark ? ChartForgeX.ThemeMode.Dark : ChartForgeX.ThemeMode.Light);
         var (format, textCase) = Policy(policy); return chart.WithValueFormat(format).ConfigureDataLabelStyle(style => style.TextCase = textCase);
     }
     internal static (ChartValueFormat Format, TextCaseTransform Case) Policy(string policy) => policy switch {

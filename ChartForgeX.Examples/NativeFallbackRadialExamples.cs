@@ -7,7 +7,7 @@ internal static class NativeFallbackRadialExamples {
         var primaryPath = RequiredFont(args, "--primary-font"); var fallbackPath = RequiredFont(args, "--fallback-font");
         FontRegistry.Register("Example Primary", primaryPath); FontRegistry.Register("Example Fallback", fallbackPath);
         const string family = "Example Primary, Example Fallback"; Directory.CreateDirectory(output); var renderer = new HtmlInteractiveChartRenderer();
-        foreach (var donut in new[] { false, true }) foreach (var width in new[] { 390, 760 }) foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var donut in new[] { false, true }) foreach (var width in new[] { 390, 760 }) foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             Chart Model(double reading) {
                 var model = NativeRadialMotionRecipe.Create(donut, false, reading, width, mode).WithFontFamily(family).WithXLabels("Asia 世界", "Europe", "Americas");
                 return numericValueText ? model.WithTitle(string.Empty).WithSubtitle(string.Empty).WithHeader(false).WithLegend(false).WithDonutCenterLabel(false)

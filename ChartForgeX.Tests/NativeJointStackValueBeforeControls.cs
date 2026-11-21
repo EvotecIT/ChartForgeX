@@ -52,7 +52,7 @@ public sealed class NativeJointStackValueBeforeControls {
 
     internal static Chart Model(string variant, double value, bool labels, int width = 760, bool dark = false) {
         var mapped = variant == "default-stacked" || variant == "negative-stack" ? "stacked-bar" : variant == "negative-normalized" ? "normalized-bar" : variant;
-        var chart = NativeCompleteCartesianValueRecipe.Create(mapped, value, width, dark ? VisualThemeMode.Dark : VisualThemeMode.Light, BrowserProofFonts.Family).WithDataLabels(labels);
+        var chart = NativeCompleteCartesianValueRecipe.Create(mapped, value, width, dark ? ThemeMode.Dark : ThemeMode.Light, BrowserProofFonts.Family).WithDataLabels(labels);
         if (variant == "default-stacked") { foreach (var row in chart.Series) row.WithStackGroup(null); chart.WithBarMode(ChartBarMode.Stacked); }
         if (variant.StartsWith("negative-", StringComparison.Ordinal)) {
             foreach (var row in chart.Series) for (var index = 0; index < row.Points.Count; index++) { var point = row.Points[index]; row.Points[index] = new ChartForgeX.Primitives.ChartPoint(point.X, -Math.Abs(point.Y), point.BreakBefore); }

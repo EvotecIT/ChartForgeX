@@ -58,17 +58,17 @@ public sealed class GalleryPngSurfaceTests {
             png = prepared.ToPng(new VisualRenderOptions(scale: scale));
         } else if (surface == "variable-frame") {
             var tokens = VisualDesignTokens.Dark();
-            chart.WithTheme(new VisualTheme(tokens, tokens), VisualThemeMode.Dark)
+            chart.WithTheme(new VisualTheme(tokens, tokens), ThemeMode.Dark)
                 .WithSvgColorVariables(tokens.ToSvgColorVariables()).WithPngOutputScale(scale);
             svg = chart.ToSvg(); png = chart.ToPng();
             Assert.Contains("var(--cfx-surface-card,", svg);
             Assert.Contains("var(--cfx-surface-line,", svg);
         } else if (surface == "shadow") {
-            chart.WithTheme(VisualTheme.Graphite().Configure(builder => { builder.CardShadowOpacity = .24; }), VisualThemeMode.Dark).WithPngOutputScale(scale);
+            chart.WithTheme(VisualTheme.Graphite().Configure(builder => { builder.CardShadowOpacity = .24; }), ThemeMode.Dark).WithPngOutputScale(scale);
             svg = chart.ToSvg(); png = chart.ToPng();
             Assert.Contains("frame-card-shadow", svg);
         } else {
-            var grid = ChartGrid.Create().WithColumns(2).WithTheme(VisualTheme.Graphite(), VisualThemeMode.Light)
+            var grid = ChartGrid.Create().WithColumns(2).WithTheme(VisualTheme.Graphite(), ThemeMode.Light)
                 .WithPngOutputScale(scale).Add(chart).Add(Chart.Create().WithSize(320, 220)
                     .AddLine("Trend", new[] { new ChartPoint(1, 10), new ChartPoint(2, 30) }));
             svg = grid.ToSvg(); png = grid.ToPng();

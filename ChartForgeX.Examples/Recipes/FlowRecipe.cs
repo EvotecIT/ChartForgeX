@@ -3,7 +3,7 @@ public static class FlowRecipe {
     /// <summary>Creates the expanded workflow model.</summary>
     /// <param name="variant">Use wide or expanded for the workflow.</param>
     /// <param name="mode">The rendering mode; diagram colors are resolved when the model is prepared.</param>
-    public static FlowArtifact Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static FlowArtifact Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "expanded"))
             throw new ArgumentOutOfRangeException(nameof(variant), variant, "Use wide or expanded.");
 
@@ -12,8 +12,8 @@ public static class FlowRecipe {
             .AddStep("received", "Request received", FlowArtifactStepKind.Start, "service")
             .AddStep("decision", "Automatic checks pass?", FlowArtifactStepKind.Decision, "service")
             .ConfigureStep("decision", step => step.Width = 200)
-            .AddStep("manual", "Review observations", FlowArtifactStepKind.Process, "review", VisualStatus.Warning)
-            .AddStep("complete", "Assessment complete", FlowArtifactStepKind.End, "service", VisualStatus.Positive)
+            .AddStep("manual", "Review observations", FlowArtifactStepKind.Process, "review", Tone.Warning)
+            .AddStep("complete", "Assessment complete", FlowArtifactStepKind.End, "service", Tone.Success)
             .AddConnector("received", "decision", "Evaluate")
             .AddConnector("decision", "manual", "Review required")
             .AddConnector("decision", "complete", "Passed")

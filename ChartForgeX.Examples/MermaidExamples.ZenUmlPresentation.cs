@@ -3,7 +3,7 @@ using ChartForgeX.VisualArtifacts;
 
 internal static partial class MermaidExamples {
     private static void WriteZenUmlPresentationExamples(string output) {
-        foreach(var family in new[]{"presentation","order"})foreach(var variant in new[]{"compact","wide"})foreach(var mode in new[]{VisualThemeMode.Light,VisualThemeMode.Dark}) {
+        foreach(var family in new[]{"presentation","order"})foreach(var variant in new[]{"compact","wide"})foreach(var mode in new[]{ThemeMode.Light,ThemeMode.Dark}) {
             var artifact=ZenUmlPresentationRecipe.Create(family,variant,mode,ExampleTypography.FontFamily);
             var name="zenuml-"+family+"-"+variant+"-"+mode.ToString().ToLowerInvariant();
             artifact.SaveSvg(Path.Combine(output,name+".svg"));File.WriteAllBytes(Path.Combine(output,name+".png"),artifact.ToPng());

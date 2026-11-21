@@ -47,7 +47,7 @@ public sealed class TopologyPreparedClipAndUnitRegressionTests {
                 legendMaximumHeightFraction: frame.LegendMaximumHeightFraction, showCard: frame.ShowCard, legendTitle: frame.LegendTitle);
             visual = chart.Prepare(new VisualRenderContext(context.Layout,
                 edit == "context-theme" ? context.Theme.WithPalette(ChartColor.FromHex("#ef4444"), ChartColor.FromHex("#22c55e")) : context.Theme,
-                edit == "context-mode" ? VisualThemeMode.Dark : context.ThemeMode, frame, context.Font), options);
+                edit == "context-mode" ? ThemeMode.Dark : context.ThemeMode, frame, context.Font), options);
         }
         else visual = chart.Prepare().Visual;
         Capture("clip-frame-edit-" + edit, visual);
@@ -114,7 +114,7 @@ public sealed class TopologyPreparedClipAndUnitRegressionTests {
         var theme = chart.Theme; var mode = chart.ThemeMode;
         var after = chart.Prepare(new VisualRenderContext(context.Layout,
             modeOnly ? context.Theme : context.Theme.WithPalette(ChartColor.FromHex("#ef4444"), ChartColor.FromHex("#22c55e")),
-            modeOnly ? VisualThemeMode.Dark : context.ThemeMode, context.Frame, context.Font), options);
+            modeOnly ? ThemeMode.Dark : context.ThemeMode, context.Frame, context.Font), options);
         Capture("note-explicit-context-witness-" + modeOnly, after);
         Assert.Same(theme, chart.Theme); Assert.Equal(mode, chart.ThemeMode);
         Assert.Null(after.ToArtifact().ToInterchangeEnvelope().Annotations[0].TopologyDefaultUnits);

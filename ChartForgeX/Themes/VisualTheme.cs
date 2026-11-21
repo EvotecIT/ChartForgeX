@@ -57,7 +57,7 @@ public sealed partial class VisualTheme {
     /// Gets the area wash for a mode (design rule 6): <see cref="AreaOpacity"/> on light surfaces and half as much again
     /// on dark ones (0.12 / 0.18 by default), where the same opacity reads weaker.
     /// </summary>
-    internal double AreaWash(VisualThemeMode mode) => mode == VisualThemeMode.Dark ? Math.Min(1, AreaOpacity * 1.5) : AreaOpacity;
+    internal double AreaWash(ThemeMode mode) => mode == ThemeMode.Dark ? Math.Min(1, AreaOpacity * 1.5) : AreaOpacity;
     /// <summary>Gets the bar corner radius.</summary>
     public double BarRadius { get; }
     /// <summary>Gets the maximum regular bar thickness in drawing pixels (64 by default).</summary>
@@ -78,9 +78,9 @@ public sealed partial class VisualTheme {
     public double GaugeStrokeWidth { get; }
     /// <summary>Gets the gauge threshold band width.</summary>
     public double GaugeBandWidth { get; }
-    /// <summary>Resolves the selected immutable color snapshot.</summary>
-    public VisualThemeColors Resolve(VisualThemeMode mode) => mode switch {
-        VisualThemeMode.Light => _light, VisualThemeMode.Dark => _dark,
+    /// <summary>Resolves the selected immutable color snapshot. <see cref="ThemeMode.Auto"/> resolves to the light colors.</summary>
+    public VisualThemeColors Resolve(ThemeMode mode) => mode switch {
+        ThemeMode.Auto or ThemeMode.Light => _light, ThemeMode.Dark => _dark,
         _ => throw new ArgumentOutOfRangeException(nameof(mode))
     };
     /// <summary>Gets the Graphite layout preset with the canonical HtmlForgeX light/dark colors.</summary>
@@ -104,13 +104,13 @@ public sealed partial class VisualTheme {
     /// <summary>Creates a theme whose readable diagram layouts keep text at or above <paramref name="size"/> pixels.</summary>
     public VisualTheme WithMinimumReadableTextSize(double size) => WithTypography(Typography.WithMinimumReadableTextSize(size));
     /// <summary>Creates a theme with a categorical palette for one explicit mode.</summary>
-    public VisualTheme WithPalette(VisualThemeMode mode, params ChartColor[] colors) => Configure(builder => builder.Colors(mode).Palette = colors);
+    public VisualTheme WithPalette(ThemeMode mode, params ChartColor[] colors) => Configure(builder => builder.Colors(mode).Palette = colors);
     /// <summary>Creates a theme with the supplied categorical palette in both modes.</summary>
     public VisualTheme WithPalette(params ChartColor[] colors) => Configure(builder => { builder.Light.Palette = colors; builder.Dark.Palette = colors; });
     /// <summary>Creates a theme from generated HtmlForgeX palettes and optional shared visual primitives.</summary>
     /// <remarks>Colour-only documents retain the ordinary geometry defaults. Explicit typography overrides the exported scale.</remarks>
     public static VisualTheme FromPaletteJson(string json, VisualTypography? typography = null) => FromVisualContract(json, typography);
-    internal ResolvedVisualTheme ResolvePresentation(VisualThemeMode mode) => new(this, mode);
+    internal ResolvedVisualTheme ResolvePresentation(ThemeMode mode) => new(this, mode);
     private static VisualTheme CreateGraphite() {
         return FromPaletteJson(VisualDesignTokens.CanonicalJson);
     }

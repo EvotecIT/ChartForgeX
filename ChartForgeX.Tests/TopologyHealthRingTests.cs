@@ -10,10 +10,10 @@ namespace ChartForgeX.Tests;
 
 public sealed class TopologyHealthRingTests {
     [Theory]
-    [InlineData(VisualThemeMode.Light, TopologyHealthStatus.Healthy)]
-    [InlineData(VisualThemeMode.Dark, TopologyHealthStatus.Warning)]
-    [InlineData(VisualThemeMode.Light, TopologyHealthStatus.Critical)]
-    public void RingUsesSemanticStatusIndependentlyOfAccentAndSurvivesPreparation(VisualThemeMode mode, TopologyHealthStatus status) {
+    [InlineData(ThemeMode.Light, TopologyHealthStatus.Healthy)]
+    [InlineData(ThemeMode.Dark, TopologyHealthStatus.Warning)]
+    [InlineData(ThemeMode.Light, TopologyHealthStatus.Critical)]
+    public void RingUsesSemanticStatusIndependentlyOfAccentAndSurvivesPreparation(ThemeMode mode, TopologyHealthStatus status) {
         var chart = Diagram(mode, status);
         var options = new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, IncludeStatusBadges = false };
         var prepared = chart.Prepare(options);
@@ -35,7 +35,7 @@ public sealed class TopologyHealthRingTests {
 
     [Fact]
     public void NodeAccessibleNameRetainsFullLabelAndCallerCanLocalizeIt() {
-        var chart = Diagram(VisualThemeMode.Light, TopologyHealthStatus.Warning);
+        var chart = Diagram(ThemeMode.Light, TopologyHealthStatus.Warning);
         chart.Nodes[0].Subtitle = "Last update 42 seconds ago";
         chart.Nodes[0].Badge = "LEAD";
         chart.Nodes[0].MaximumLabelCharacters = 3;
@@ -48,7 +48,7 @@ public sealed class TopologyHealthRingTests {
     [Fact]
     public void RingAndLocalizedAccessibleNameSurviveDirectAndPreparedInterchangeSnapshots() {
         const string name = "Brama — ostrzeżenie <42>";
-        var chart = Diagram(VisualThemeMode.Dark, TopologyHealthStatus.Warning);
+        var chart = Diagram(ThemeMode.Dark, TopologyHealthStatus.Warning);
         chart.Nodes[0].AccessibleName = name;
         var prepared = chart.Prepare();
         var direct = chart.ToVisualArtifact().ToInterchangeEnvelope();
@@ -71,7 +71,7 @@ public sealed class TopologyHealthRingTests {
 
     [Fact]
     public void OlderInterchangeWithoutOptionalRingOrNameKeepsTheDefaults() {
-        var chart = Diagram(VisualThemeMode.Light, TopologyHealthStatus.Unknown);
+        var chart = Diagram(ThemeMode.Light, TopologyHealthStatus.Unknown);
         chart.Nodes[0].ShowHealthRing = false;
         var json = chart.ToVisualArtifact().ToInterchangeJson();
         using var document = JsonDocument.Parse(json);
@@ -85,7 +85,7 @@ public sealed class TopologyHealthRingTests {
 
     [Fact]
     public void InterchangeAccessibleNameUsesTheExistingTextBudgetInBothDirections() {
-        var envelope = Diagram(VisualThemeMode.Light, TopologyHealthStatus.Healthy).ToVisualArtifact().ToInterchangeEnvelope();
+        var envelope = Diagram(ThemeMode.Light, TopologyHealthStatus.Healthy).ToVisualArtifact().ToInterchangeEnvelope();
         var name = new string('x', VisualArtifactInterchangeValidation.MaximumTextCharacters);
         envelope.Nodes[0].Topology!.AccessibleName = name;
         var json = envelope.ToJson();
@@ -98,7 +98,7 @@ public sealed class TopologyHealthRingTests {
     // Static SVG keeps the name as host data; explorable output promotes it to aria-label.
     internal static string? AccessibleName(XElement element) => (string?)(element.Attribute("aria-label") ?? element.Attribute("data-cfx-description"));
 
-    private static TopologyChart Diagram(VisualThemeMode mode, TopologyHealthStatus status) {
+    private static TopologyChart Diagram(ThemeMode mode, TopologyHealthStatus status) {
         var chart = TopologyChart.Create().WithId("health-ring").WithViewport(240, 200)
             .WithTheme(VisualTheme.Graphite(), mode).WithLegend(null)
             .AddNode("gateway", "Gateway service", 60, 50, width: 80, height: 80, color: "#673AB7", status: status)

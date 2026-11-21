@@ -1,7 +1,7 @@
 /// <summary>Packages the adapter-owned participant-view program separately from native Core recipes.</summary>
 public static partial class ExampleRecipeSource {
     /// <summary>Emits a complete ordinary Core/Mermaid save, restore and edit program.</summary>
-    public static string EmitSequenceParticipantViews(string variant="wide",VisualThemeMode mode=VisualThemeMode.Light) {
+    public static string EmitSequenceParticipantViews(string variant="wide",ThemeMode mode=ThemeMode.Light) {
         if(variant is not ("compact" or "wide"))throw new ArgumentOutOfRangeException(nameof(variant));
         var source=ReadResource("ChartForgeX.Examples.MermaidRecipes.SequenceParticipantViewsSourceRecipe.cs");
         return Template("RecipeSequenceParticipantViewsProgram",new Dictionary<string,string>(StringComparer.Ordinal){

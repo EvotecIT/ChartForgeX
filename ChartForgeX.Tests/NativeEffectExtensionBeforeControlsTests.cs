@@ -15,9 +15,9 @@ namespace ChartForgeX.Tests;
 /// <summary>Ordinary public exports retained before adding a new complete-child effect plan.</summary>
 public sealed class NativeEffectExtensionBeforeControlsTests {
     [Theory]
-    [InlineData(320, VisualThemeMode.Light, 1)] [InlineData(320, VisualThemeMode.Dark, 2)]
-    [InlineData(800, VisualThemeMode.Light, 2)] [InlineData(800, VisualThemeMode.Dark, 1)]
-    public void OrdinarySourceZeroBlurNonzeroBlurAndImperativeShadowProvideDetachedBeforeArtifacts(int width, VisualThemeMode mode, int density) {
+    [InlineData(320, ThemeMode.Light, 1)] [InlineData(320, ThemeMode.Dark, 2)]
+    [InlineData(800, ThemeMode.Light, 2)] [InlineData(800, ThemeMode.Dark, 1)]
+    public void OrdinarySourceZeroBlurNonzeroBlurAndImperativeShadowProvideDetachedBeforeArtifacts(int width, ThemeMode mode, int density) {
         var series = new ChartSeries(new ChartSeriesId("completed"), "Completed", ChartSeriesKind.Line,
             new[] { new ChartPoint(1, 7), new ChartPoint(2, 19), new ChartPoint(3, 11), new ChartPoint(4, 24) })
             .WithObservationId(1, new ChartObservationId("cycle-2"));

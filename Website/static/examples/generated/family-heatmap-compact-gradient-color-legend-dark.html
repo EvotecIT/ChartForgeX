@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = HeatmapColorDimensionRecipe.Create(&quot;compact-gradient-color-legend&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Formats heatmap temperatures with independent color-dimension captions and legends.&lt;/summary&gt;
 public static class HeatmapColorDimensionRecipe {
     /// &lt;summary&gt;Creates a temperature dimension with automatic, gradient or swatch legend presentation.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;color-dimension&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;color-dimension&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;color-dimension&quot; or &quot;compact-color-dimension&quot; or &quot;gradient-color-legend&quot; or &quot;compact-gradient-color-legend&quot;
             or &quot;swatch-color-legend&quot; or &quot;compact-swatch-color-legend&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var colors = VisualTheme.Graphite().Resolve(mode);
@@ -139,6 +140,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -148,7 +150,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = HeatmapColorDimensionRecipe.Create(&quot;compact-gradient-color-legend&quot;, mode);
 var context = new VisualRenderContext(
@@ -163,7 +165,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Formats heatmap temperatures with independent color-dimension captions and legends.&lt;/summary&gt;
 public static class HeatmapColorDimensionRecipe {
     /// &lt;summary&gt;Creates a temperature dimension with automatic, gradient or swatch legend presentation.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;color-dimension&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;color-dimension&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;color-dimension&quot; or &quot;compact-color-dimension&quot; or &quot;gradient-color-legend&quot; or &quot;compact-gradient-color-legend&quot;
             or &quot;swatch-color-legend&quot; or &quot;compact-swatch-color-legend&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var colors = VisualTheme.Graphite().Resolve(mode);

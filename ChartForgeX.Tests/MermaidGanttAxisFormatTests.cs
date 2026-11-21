@@ -69,7 +69,7 @@ public sealed class MermaidGanttAxisFormatTests {
         if (!InteractiveChartBrowser.Enabled) return;
         var document = new MermaidParser().ParseGantt("gantt\naxisFormat %a %d %b\nFirst :first, 2026-01-04, 4d").Document!;
         var chart = document.ToChart(new MermaidGanttRenderOptions { Width = width, Height = 360 })
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .ConfigureGridStyle(style => style.ShowVerticalLines = true);
         var source = chart.Series[0].GanttItems[0];
         Assert.Equal("Sun 04 Jan", chart.Options.XAxisValueFormatter!(source.Start));

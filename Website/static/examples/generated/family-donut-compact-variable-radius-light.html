@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = DonutSliceRadiusRecipe.Create(&quot;compact-variable-radius&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Authored Donut radii remain independent of each value&#39;s angular share.&lt;/summary&gt;
 public static class DonutSliceRadiusRecipe {
     /// &lt;summary&gt;Creates service shares with explicit source identities and normalized band-relative radii.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;variable-radius&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;variable-radius&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;variable-radius&quot; or &quot;compact-variable-radius&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var services = new ChartSeries(new ChartSeriesId(&quot;services&quot;), &quot;Services&quot;, ChartSeriesKind.Donut,
             new[] { new ChartPoint(1, 80), new ChartPoint(2, 60), new ChartPoint(3, 20) })
@@ -128,6 +129,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -137,7 +139,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = DonutSliceRadiusRecipe.Create(&quot;compact-variable-radius&quot;, mode);
 var context = new VisualRenderContext(
@@ -152,7 +154,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Authored Donut radii remain independent of each value&#39;s angular share.&lt;/summary&gt;
 public static class DonutSliceRadiusRecipe {
     /// &lt;summary&gt;Creates service shares with explicit source identities and normalized band-relative radii.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;variable-radius&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;variable-radius&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;variable-radius&quot; or &quot;compact-variable-radius&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var services = new ChartSeries(new ChartSeriesId(&quot;services&quot;), &quot;Services&quot;, ChartSeriesKind.Donut,
             new[] { new ChartPoint(1, 80), new ChartPoint(2, 60), new ChartPoint(3, 20) })

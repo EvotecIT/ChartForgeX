@@ -77,8 +77,8 @@ public static class ExampleSnippetSource {
         // Other Create parameters keep their defaults; the theme mode comes from the setup's mode.
         foreach (var parameter in create.ParameterList.Parameters.Skip(1)) {
             var parameterName = parameter.Identifier.Text;
-            if (parameterName == "mode" && parameter.Type?.ToString() == "VisualThemeMode") continue;
-            var value = parameter.Type?.ToString() == "VisualThemeMode" ? "mode" : parameter.Default?.Value.ToString();
+            if (parameterName == "mode" && parameter.Type?.ToString() == "ThemeMode") continue;
+            var value = parameter.Type?.ToString() == "ThemeMode" ? "mode" : parameter.Default?.Value.ToString();
             if (value == null) return null;
             text.Append(parameter.Type).Append(' ').Append(parameterName).Append(" = ").Append(value).Append(";\n");
         }

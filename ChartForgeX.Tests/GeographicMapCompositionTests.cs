@@ -20,12 +20,12 @@ public sealed class GeographicMapCompositionTests {
         """;
 
     [Theory]
-    [InlineData(ChartMapGeoJsonProjection.Equirectangular, 390, VisualThemeMode.Light)]
-    [InlineData(ChartMapGeoJsonProjection.Equirectangular, 800, VisualThemeMode.Dark)]
-    [InlineData(ChartMapGeoJsonProjection.WebMercator, 390, VisualThemeMode.Dark)]
-    [InlineData(ChartMapGeoJsonProjection.WebMercator, 800, VisualThemeMode.Light)]
+    [InlineData(ChartMapGeoJsonProjection.Equirectangular, 390, ThemeMode.Light)]
+    [InlineData(ChartMapGeoJsonProjection.Equirectangular, 800, ThemeMode.Dark)]
+    [InlineData(ChartMapGeoJsonProjection.WebMercator, 390, ThemeMode.Dark)]
+    [InlineData(ChartMapGeoJsonProjection.WebMercator, 800, ThemeMode.Light)]
     public void IndependentRegionAndWeightedSiteDatasetsShareProjectionKeysAndDetachedIdentity(
-        ChartMapGeoJsonProjection projection, int width, VisualThemeMode mode) {
+        ChartMapGeoJsonProjection projection, int width, ThemeMode mode) {
         var chart = Fixture(projection, width, mode);
         var regions = chart.Series[0]; var sites = chart.Series[1];
         var prepared = Prepare(chart);
@@ -74,7 +74,7 @@ public sealed class GeographicMapCompositionTests {
 
     [Fact]
     public void DatasetFormattingIsCapturedOnceAcrossPointLegendsKeysAndMarksAndRegionKeysMayInheritChartScale() {
-        var chart = Fixture(ChartMapGeoJsonProjection.Equirectangular, 760, VisualThemeMode.Light).WithPointLegend();
+        var chart = Fixture(ChartMapGeoJsonProjection.Equirectangular, 760, ThemeMode.Light).WithPointLegend();
         var calls = new Dictionary<double, int>();
         chart.Series[1].ConfigureColorDimension(options => options.ValueFormat = ChartValueFormat.Custom(value => {
             calls[value] = calls.TryGetValue(value, out var count) ? count + 1 : 1;
@@ -97,9 +97,9 @@ public sealed class GeographicMapCompositionTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void CaptionsOverRegionLayersUseContrastingHalosInNativeSvgAndPng(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void CaptionsOverRegionLayersUseContrastingHalosInNativeSvgAndPng(ThemeMode mode) {
         var blue = ChartColor.FromHex("#2255CC");
         var definition = new ChartMapDefinition("zone", "Zone", new ChartRect(-10, -65, 30, 25), new[] {
             new ChartMapRegion("all", "All", "M-10 -65H20V-40H-10Z")
@@ -133,7 +133,7 @@ public sealed class GeographicMapCompositionTests {
 
     [Fact]
     public void DatasetNumericKeyVisibilityOverridesChartPolicyWithoutCategoricalEntries() {
-        var chart = Fixture(ChartMapGeoJsonProjection.Equirectangular, 760, VisualThemeMode.Light);
+        var chart = Fixture(ChartMapGeoJsonProjection.Equirectangular, 760, ThemeMode.Light);
         chart.Options.MapColorDimension.ShowLegend = false;
         foreach (var series in chart.Series) { series.ShowInLegend = false; series.ConfigureColorDimension(options => options.ShowLegend = false); }
         chart.Series[0].ConfigureColorDimension(options => options.ShowLegend = true);
@@ -244,7 +244,7 @@ public sealed class GeographicMapCompositionTests {
         Assert.Equal(3, chart.Series.Sum(series => series.MapPoints.Count));
     }
 
-    internal static Chart Fixture(ChartMapGeoJsonProjection projection, int width, VisualThemeMode mode) {
+    internal static Chart Fixture(ChartMapGeoJsonProjection projection, int width, ThemeMode mode) {
         var definition = ChartMapGeoJson.ToMapDefinition("districts", "Districts", Geometry, new ChartMapGeoJsonOptions { Projection = projection, CoordinatePrecision = CoordinatePrecision });
         var regions = ChartSeries.CreateRegionMap(new ChartSeriesId("coverage"), "District coverage", definition,
             new[] { new ChartRegionMapItem("A", 0), new ChartRegionMapItem("B", 100) })

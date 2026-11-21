@@ -9,13 +9,13 @@ namespace ChartForgeX.Tests;
 public sealed partial class ExampleRecipeTests {
     public static IEnumerable<object[]> HierarchyCaptionPolicySelections() {
         foreach (var (kind, variant) in new[] { (ChartSeriesKind.Sunburst, "curved-labels"), (ChartSeriesKind.Treemap, "caption-policies") })
-            foreach (var compact in new[] { false, true }) foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark })
+            foreach (var compact in new[] { false, true }) foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark })
                 yield return new object[] { kind, compact ? "compact-" + variant : variant, mode };
     }
 
     [Theory]
     [MemberData(nameof(HierarchyCaptionPolicySelections))]
-    public void HierarchyCaptionPoliciesHaveCompleteCompiledDownloadsAndNativeBothThemePoses(ChartSeriesKind kind, string variant, VisualThemeMode mode) {
+    public void HierarchyCaptionPoliciesHaveCompleteCompiledDownloadsAndNativeBothThemePoses(ChartSeriesKind kind, string variant, ThemeMode mode) {
         var selection = new ExampleFamilySelection(kind, variant);
         Assert.Contains(selection, ExampleRecipes.FamilySelections(kind));
         Assert.Contains(selection, ExampleRecipes.FamilySelections(kind, curated: true));

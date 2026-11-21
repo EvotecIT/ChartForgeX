@@ -47,11 +47,11 @@ public sealed class ChartLookV2LayoutTests {
     }
 
     [Theory]
-    [InlineData("progress", 390, VisualThemeMode.Light)]
-    [InlineData("progress", 960, VisualThemeMode.Dark)]
-    [InlineData("bullet", 390, VisualThemeMode.Dark)]
-    [InlineData("timeline", 960, VisualThemeMode.Light)]
-    public void RowContextsFitTheirContentWhileFixedHostsKeepTheirViewport(string family, int width, VisualThemeMode mode) {
+    [InlineData("progress", 390, ThemeMode.Light)]
+    [InlineData("progress", 960, ThemeMode.Dark)]
+    [InlineData("bullet", 390, ThemeMode.Dark)]
+    [InlineData("timeline", 960, ThemeMode.Light)]
+    public void RowContextsFitTheirContentWhileFixedHostsKeepTheirViewport(string family, int width, ThemeMode mode) {
         var chart = Chart.Create().WithTitle("Quarterly delivery").WithLegend(false).WithSize(width, 560).WithTheme(VisualTheme.Graphite(), mode);
         if (family == "progress") chart.AddProgressBars("Delivery", new[] { new ChartProgressItem("North", 72), new ChartProgressItem("South", 58) });
         else if (family == "bullet") chart.AddBullet("North", 72, 80).AddBullet("South", 58, 65);
@@ -76,9 +76,9 @@ public sealed class ChartLookV2LayoutTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void FinancialValueAxesFitPricesWhileStackedColumnsKeepTheirBandWidth(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void FinancialValueAxesFitPricesWhileStackedColumnsKeepTheirBandWidth(ThemeMode mode) {
         var candles = Chart.Create().WithSize(920, 520).WithLegend(false).WithTheme(VisualTheme.Graphite(), mode)
             .AddCandlestick("Price", new[] { new ChartCandlestick(1, 102, 110, 98, 108), new ChartCandlestick(2, 108, 114, 104, 106), new ChartCandlestick(3, 112, 120, 108, 118) });
         var prices = candles.Prepare(VisualExportRequest.ForChart(candles).Context);
@@ -96,10 +96,10 @@ public sealed class ChartLookV2LayoutTests {
     }
 
     [Theory]
-    [InlineData(360, VisualThemeMode.Light)]
-    [InlineData(360, VisualThemeMode.Dark)]
-    [InlineData(800, VisualThemeMode.Light)]
-    public void GaugeTargetCaptionSitsOnItsRayClearOfTheTick(int width, VisualThemeMode mode) {
+    [InlineData(360, ThemeMode.Light)]
+    [InlineData(360, ThemeMode.Dark)]
+    [InlineData(800, ThemeMode.Light)]
+    public void GaugeTargetCaptionSitsOnItsRayClearOfTheTick(int width, ThemeMode mode) {
         var chart = Chart.Create().WithSize(width, width == 360 ? 360 : 440).WithLegend(false).WithTheme(VisualTheme.Graphite(), mode)
             .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Available capacity",
                 new ChartGaugeValue(76, targets: new[] { new ChartGaugeTarget(85) })));

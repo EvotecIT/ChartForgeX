@@ -18,7 +18,7 @@ public sealed class InteractiveDerivedEquivalenceBrowserTests {
         Chart Histogram(string name, double[] boundaries, ChartHistogramAggregation aggregation = ChartHistogramAggregation.Count,
             ChartHistogramEncoding encoding = ChartHistogramEncoding.Value, bool pointLegend = false) {
             var chart = Chart.Create().WithSize(640, 360).WithTitle(name)
-                .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+                .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
                 .AddSeries(ChartSeries.CreateHistogram(new ChartSeriesId("shared-observations"), "Observations", source, ChartHistogramBinLayout.FromBoundaries(boundaries), aggregation, encoding));
             if (pointLegend) chart.WithPointLegend();
             return chart;

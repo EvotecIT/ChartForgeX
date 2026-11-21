@@ -4,7 +4,7 @@ namespace ChartForgeX.Topology;
 
 // CSS-facing colors are a view of the shared immutable theme, never a second configurable theme.
 internal sealed class TopologyPaint {
-    internal TopologyPaint(VisualTheme theme, VisualThemeMode mode, SvgColorVariables? bindings = null) {
+    internal TopologyPaint(VisualTheme theme, ThemeMode mode, SvgColorVariables? bindings = null) {
         var colors = theme.Resolve(mode);
         string Paint(VisualThemeColorToken token, ChartForgeX.Primitives.ChartColor color) => bindings?.ResolveThemeToken(token, color) ?? color.ToCss();
         Background = Paint(VisualThemeColorToken.Background, colors.Background); Foreground = Paint(VisualThemeColorToken.Foreground, colors.Foreground);
@@ -15,7 +15,7 @@ internal sealed class TopologyPaint {
         Critical = Paint(VisualThemeColorToken.Negative, status.Critical.Fill); Unknown = Paint(VisualThemeColorToken.Neutral, status.Neutral.Fill); Disabled = Paint(VisualThemeColorToken.Maintenance, status.Maintenance.Fill);
         Typography = theme.Typography;
     }
-    internal static TopologyPaint Default => new(VisualTheme.Graphite(), VisualThemeMode.Light);
+    internal static TopologyPaint Default => new(VisualTheme.Graphite(), ThemeMode.Light);
     internal string Background { get; }
     internal string Foreground { get; }
     internal string MutedForeground { get; }

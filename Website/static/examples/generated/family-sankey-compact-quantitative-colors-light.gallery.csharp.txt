@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -15,7 +16,7 @@ using ChartForgeX.VisualBlocks;
 
 // Native PNG and standalone SVG use bundled Archivo.
 // Add ChartFontAssets.StyleSheet once for other text on a host page.
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = SankeyOptionsRecipe.Create("compact-quantitative-colors", mode);
 var context = new VisualRenderContext(
@@ -29,7 +30,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 
 /// <summary>Aligned and ordered flows retain parallel-link identities and independent link paint.</summary>
 public static class SankeyOptionsRecipe {
-    public static Chart Create(string variant = "options", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "options", ThemeMode mode = ThemeMode.Light) {
         var requests = ChartSeries.CreateSankey(new ChartSeriesId("request-flows"), "Requests", new[] {
             new ChartNode("received", "Received"), new ChartNode("north", "North"), new ChartNode("south", "South"),
             new ChartNode("north-support", "Support"), new ChartNode("south-support", "Support"), new ChartNode("completed", "Completed"),

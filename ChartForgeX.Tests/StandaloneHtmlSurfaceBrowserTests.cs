@@ -18,7 +18,7 @@ public sealed class StandaloneHtmlSurfaceBrowserTests {
     [InlineData("visual-grid", true)]
     public async Task ReportPagesPaintTheirResolvedSurfaceAtCompactAndWideWidths(string producer, bool dark) {
         Assert.True(Enabled);
-        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         // Graphite now paints an opaque background; the overlay preset keeps the transparent page this contract covers.
         var theme = VisualTheme.TransparentOverlay();
         var colors = theme.Resolve(mode);
@@ -48,12 +48,12 @@ public sealed class StandaloneHtmlSurfaceBrowserTests {
         }
     }
 
-    private static string Page(string producer, VisualTheme theme, VisualThemeMode mode) {
+    private static string Page(string producer, VisualTheme theme, ThemeMode mode) {
         var chart = Chart.Create().WithSize(640, 360).WithTitle("Observed work")
             .WithTheme(theme, mode).WithXLabels("Mon", "Tue", "Wed")
             .AddLine("Completed", new[] { new ChartPoint(1, 18), new ChartPoint(2, 32), new ChartPoint(3, 27) });
         var card = MetricCard.Create().WithSize(640, 360).WithTheme(theme, mode)
-            .WithMetric("Readiness", "74%").WithStatus(VisualStatus.Positive).WithCaption("Completed checks");
+            .WithMetric("Readiness", "74%").WithStatus(Tone.Success).WithCaption("Completed checks");
         return producer switch {
             "chart" => chart.ToHtmlPage(),
             "chart-grid" => ChartGrid.Create().WithTheme(theme, mode).WithColumns(1).Add(chart).ToHtmlPage(),

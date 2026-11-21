@@ -3,7 +3,7 @@ using ChartForgeX.Themes;
 
 internal static partial class MermaidExamples {
     private static void WriteXYSourceDepthExamples(string output) {
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark })
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark })
             foreach (var variant in new[] { "wide-vertical", "compact-vertical", "wide-horizontal", "compact-horizontal" }) {
                 var source = MermaidFixtureSources.Read("xychart-native-source-depth");
                 if (variant.EndsWith("-horizontal", StringComparison.Ordinal))

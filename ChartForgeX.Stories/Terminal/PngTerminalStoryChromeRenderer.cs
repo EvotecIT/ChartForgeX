@@ -40,7 +40,7 @@ internal static class PngTerminalStoryChromeRenderer {
     }
 
     private static ChartColor TrafficLight(TerminalStory story, string light, string dark) =>
-        ChartColor.FromHex(story.Tabs[0].ThemeMode == ChartForgeX.Themes.VisualThemeMode.Light ? light : dark);
+        ChartColor.FromHex(story.Tabs[0].ThemeMode != ChartForgeX.ThemeMode.Dark ? light : dark);
 
     private static void DrawMacOS(RgbaCanvas canvas, TerminalStory story, TerminalStoryLayout layout, TerminalTabRasterFonts fonts, double? elapsedSeconds) {
         canvas.DrawCircle(26, 22, 6, TrafficLight(story, "#FF5F57", "#CE534C"));

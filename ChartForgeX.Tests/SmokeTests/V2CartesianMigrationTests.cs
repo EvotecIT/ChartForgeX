@@ -11,9 +11,9 @@ namespace ChartForgeX.Tests;
 /// <summary>Protects the Cartesian options migrated from the separate legacy export paths.</summary>
 public sealed class V2CartesianMigrationTests {
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void StatePaintAndDrawingPriority_PreserveExplicitOverridesAndSeriesIdentity(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void StatePaintAndDrawingPriority_PreserveExplicitOverridesAndSeriesIdentity(ThemeMode mode) {
         var chart = Chart.Create().AddScatter("Danger", Points(3)).AddScatter("Quiet", Points(4)).AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("forecast-data"), "Warning", Points(5)));
         chart.Series[0].StateRole = ChartSeriesState.Danger;
         chart.Series[1].StateRole = ChartSeriesState.Quiet;
@@ -209,7 +209,7 @@ public sealed class V2CartesianMigrationTests {
         chart.Options.XAxis.Labels.Add(new ChartAxisLabel(1, "First observation"));
         chart.Series[0].WithPointColor(0, ChartColor.FromHex("#AD376A")).WithPointFillPattern(0, ChartFillPattern.Crosshatch);
         chart.Series[0].StateRole = ChartSeriesState.Info;
-        var colors = VisualTheme.Graphite().Resolve(VisualThemeMode.Light);
+        var colors = VisualTheme.Graphite().Resolve(ThemeMode.Light);
         var entries = VisualCartesianCompiler.LegendEntries(chart, colors);
         Assert.Equal(2, entries.Count);
         Assert.Equal("First observation", entries[0].Label); Assert.Equal("Item 2", entries[1].Label);

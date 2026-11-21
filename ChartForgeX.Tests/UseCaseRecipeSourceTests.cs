@@ -10,9 +10,9 @@ namespace ChartForgeX.Tests;
 [Collection(nameof(FontRegistryCollection))]
 public sealed class UseCaseRecipeSourceTests {
     [Theory]
-    [InlineData("wide", VisualThemeMode.Light)] [InlineData("wide", VisualThemeMode.Dark)]
-    [InlineData("compact", VisualThemeMode.Light)] [InlineData("compact", VisualThemeMode.Dark)]
-    public void NativeCoreAndParsedSourceRecipesExposeTheSameAuthoredGraphFactsThroughSeparatePublicConsumers(string variant, VisualThemeMode mode) {
+    [InlineData("wide", ThemeMode.Light)] [InlineData("wide", ThemeMode.Dark)]
+    [InlineData("compact", ThemeMode.Light)] [InlineData("compact", ThemeMode.Dark)]
+    public void NativeCoreAndParsedSourceRecipesExposeTheSameAuthoredGraphFactsThroughSeparatePublicConsumers(string variant, ThemeMode mode) {
         var native = UseCaseSourceDepthRecipe.Create(variant, mode);
         native.WithTheme(native.Theme.WithFontFamily(BrowserProofFonts.Family), mode);
         var source = UseCaseSourceDepthFixture.Read(variant == "compact");

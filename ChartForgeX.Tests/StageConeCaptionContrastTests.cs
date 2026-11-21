@@ -10,11 +10,11 @@ namespace ChartForgeX.Tests;
 
 public sealed partial class StageConeCaptionContrastTests {
     [Theory]
-    [InlineData(ChartOrientation.Vertical, 390, VisualThemeMode.Light)]
-    [InlineData(ChartOrientation.Vertical, 800, VisualThemeMode.Dark)]
-    [InlineData(ChartOrientation.Horizontal, 390, VisualThemeMode.Dark)]
-    [InlineData(ChartOrientation.Horizontal, 800, VisualThemeMode.Light)]
-    public void AutomaticFirstConeValueContrastsWithItsActualUnpaintedFrameRatherThanAnOpaqueStage(ChartOrientation orientation, int width, VisualThemeMode mode) {
+    [InlineData(ChartOrientation.Vertical, 390, ThemeMode.Light)]
+    [InlineData(ChartOrientation.Vertical, 800, ThemeMode.Dark)]
+    [InlineData(ChartOrientation.Horizontal, 390, ThemeMode.Dark)]
+    [InlineData(ChartOrientation.Horizontal, 800, ThemeMode.Light)]
+    public void AutomaticFirstConeValueContrastsWithItsActualUnpaintedFrameRatherThanAnOpaqueStage(ChartOrientation orientation, int width, ThemeMode mode) {
         var chart = StagePresentationOptionsTests.Create(false, ChartFunnelForm.Cone, orientation, width, 640).WithTheme(VisualTheme.Graphite(), mode);
         chart.ConfigureFunnel(options => {
             options.LabelContent = ChartStageLabelContent.Separate; options.CategoryLabel.Visible = false;

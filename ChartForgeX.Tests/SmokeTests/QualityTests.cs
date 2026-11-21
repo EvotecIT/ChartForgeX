@@ -535,7 +535,7 @@ internal static partial class SmokeTests {
         var chart = Chart.Create()
             .WithSize(360, 220)
             .WithPadding(70, 24, 24, 50)
-            .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)
+            .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
             .WithXAxis("Schedule")
             .WithYAxis("Workstream")
             .WithDataLabels()

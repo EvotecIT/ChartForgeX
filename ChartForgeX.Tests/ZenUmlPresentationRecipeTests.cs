@@ -11,7 +11,7 @@ public sealed class ZenUmlPresentationRecipeTests {
     [InlineData("order","compact",false)] [InlineData("order","compact",true)]
     [InlineData("order","wide",false)] [InlineData("order","wide",true)]
     public void CompleteEmittedConsumerProgramUsesTheSameCompiledFiniteNativeRecipe(string family,string variant,bool dark) {
-        var mode=dark?VisualThemeMode.Dark:VisualThemeMode.Light;var artifact=ZenUmlPresentationRecipe.Create(family,variant,mode);
+        var mode=dark?ThemeMode.Dark:ThemeMode.Light;var artifact=ZenUmlPresentationRecipe.Create(family,variant,mode);
         var program=ExampleRecipeSource.EmitZenUmlPresentation(family,variant,mode);
         Assert.Contains("var artifact=ZenUmlPresentationRecipe.Create",program,StringComparison.Ordinal);
         Assert.DoesNotContain("ChartForgeX.Examples",program,StringComparison.Ordinal);Assert.DoesNotContain("node_modules",program,StringComparison.Ordinal);

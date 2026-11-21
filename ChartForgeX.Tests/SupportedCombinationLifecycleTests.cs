@@ -10,13 +10,13 @@ namespace ChartForgeX.Tests;
 /// <summary>Uses the downloadable recipe to qualify supported compositions through public preparation and both native exporters.</summary>
 public sealed class SupportedCombinationLifecycleTests {
     [Theory]
-    [InlineData("vertical-secondary", VisualThemeMode.Light, 800)]
-    [InlineData("vertical-secondary", VisualThemeMode.Dark, 390)]
-    [InlineData("horizontal", VisualThemeMode.Light, 800)]
-    [InlineData("horizontal", VisualThemeMode.Dark, 390)]
-    [InlineData("mixed-radial", VisualThemeMode.Light, 800)]
-    [InlineData("mixed-radial", VisualThemeMode.Dark, 390)]
-    public void RetainedHandlesKeepMissingZeroAndIndependentAxesThroughConfigurationAndExport(string layout, VisualThemeMode mode, int width) {
+    [InlineData("vertical-secondary", ThemeMode.Light, 800)]
+    [InlineData("vertical-secondary", ThemeMode.Dark, 390)]
+    [InlineData("horizontal", ThemeMode.Light, 800)]
+    [InlineData("horizontal", ThemeMode.Dark, 390)]
+    [InlineData("mixed-radial", ThemeMode.Light, 800)]
+    [InlineData("mixed-radial", ThemeMode.Dark, 390)]
+    public void RetainedHandlesKeepMissingZeroAndIndependentAxesThroughConfigurationAndExport(string layout, ThemeMode mode, int width) {
         var chart = Assert.IsType<Chart>(ExampleRecipes.Named("supported-combinations").Create(layout, mode)).WithSize(width, 460);
         var observed = chart.Series.Single(series => series.Id.Value == "observed");
         var reference = chart.Series.Single(series => series.Id.Value == "reference");
@@ -52,7 +52,7 @@ public sealed class SupportedCombinationLifecycleTests {
             Assert.Empty(reference.ObservationIds);
             reference.WithObservationIds(new[] { "south-central", "north-central", "south-remote" }.Select(id => new ChartObservationId(id)));
         } else reference.Points[0] = new ChartPoint(1, 48);
-        chart.MoveSeries(reference, 0).WithTheme(VisualTheme.Graphite(), mode == VisualThemeMode.Light ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        chart.MoveSeries(reference, 0).WithTheme(VisualTheme.Graphite(), mode == ThemeMode.Light ? ThemeMode.Dark : ThemeMode.Light);
         Assert.Equal(beforeSvg, before.ToSvg()); Assert.Equal(beforePng, before.ToPng());
         var after = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var changed = Assert.Single(Targets(after), point => Fact(point, "series-key") == "reference" && Fact(point, "observation-id") == "north-central");

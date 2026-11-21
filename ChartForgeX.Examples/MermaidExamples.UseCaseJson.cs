@@ -4,7 +4,7 @@ using ChartForgeX.VisualArtifacts;
 internal static partial class MermaidExamples {
     private static void WriteUseCaseJsonExamples(string output) {
         var source = MermaidFixtureSources.Read("usecase-json-table-content");
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) foreach (var variant in new[] { "wide", "compact" }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) foreach (var variant in new[] { "wide", "compact" }) {
             var artifact = MermaidUseCaseJsonSourceExample.Create(source, variant, mode, ExampleTypography.FontFamily);
             var name = "mermaid-usecase-json-" + variant + "-" + mode.ToString().ToLowerInvariant();
             File.WriteAllText(Path.Combine(output, name + ".mmd"), variant == "compact" ? source.Replace("direction LR", "direction TB", StringComparison.Ordinal) : source);

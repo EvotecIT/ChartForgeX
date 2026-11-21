@@ -28,7 +28,7 @@ public sealed class InteractiveNumericReadoutBrowserTests {
         var expectedTitles = new[] { "0.025", "1E-10", "0.1" };
         var compact = mode == HtmlChartTooltipMode.SharedX;
         var chart = Chart.Create().WithSize(compact ? 316 : 596, 338).WithLegend(false)
-            .WithTheme(VisualTheme.Graphite(), compact ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), compact ? ThemeMode.Dark : ThemeMode.Light)
             .WithTitle("Observed numeric values").AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("observed"), "Observed", values));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = mode), compact ? 340 : 700, 500);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);

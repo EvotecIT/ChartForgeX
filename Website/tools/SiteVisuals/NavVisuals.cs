@@ -60,9 +60,9 @@ internal static class NavVisuals {
 
     private static ChartPoint[] Points(params double[] values) => values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();
 
-    private static Chart Mini(VisualThemeMode mode) => Chart.Create().WithThemeMode(mode).WithSparkline().WithTransparentBackground();
+    private static Chart Mini(ThemeMode mode) => Chart.Create().WithThemeMode(mode).WithSparkline().WithTransparentBackground();
 
-    private static ChartGrid GalleryGrid(VisualThemeMode mode) {
+    private static ChartGrid GalleryGrid(ThemeMode mode) {
         var bars = Mini(mode).WithXLabels("A", "B", "C", "D", "E").AddBar("Orders", Points(42, 61, 54, 78, 70));
         var line = Mini(mode).AddSmoothLine("Latency", Points(182, 176, 190, 168, 150, 142, 139))
             .AddSmoothLine("Target", Points(160, 160, 160, 160, 160, 160, 160));
@@ -75,7 +75,7 @@ internal static class NavVisuals {
             .Add(bars).Add(line).Add(donut).Add(area);
     }
 
-    private static ChartGrid SmallMultiples(VisualThemeMode mode) {
+    private static ChartGrid SmallMultiples(ThemeMode mode) {
         var sites = new[] {
             ("Warsaw", new double[] { 35, 42, 39, 51, 47, 58 }),
             ("London", new double[] { 48, 61, 57, 63, 70, 66 }),
@@ -99,7 +99,7 @@ internal static class NavVisuals {
             .ToArray();
         var story = TerminalStory.Create()
             .WithDialect(TerminalDialect.PowerShell)
-            .WithThemeMode(dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithWorkingDirectory(@"C:\Reports")
             .WithWidth(Width * 3)
             .WithPngOutputScale(1)

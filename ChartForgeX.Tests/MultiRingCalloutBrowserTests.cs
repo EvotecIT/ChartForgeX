@@ -14,13 +14,13 @@ namespace ChartForgeX.Tests;
 [Trait("BrowserSuite", "Compatibility")]
 public sealed class MultiRingCalloutBrowserTests {
     [BrowserTheory]
-    [InlineData(390, VisualThemeMode.Light)]
-    [InlineData(390, VisualThemeMode.Dark)]
-    [InlineData(900, VisualThemeMode.Light)]
-    [InlineData(900, VisualThemeMode.Dark)]
-    public async Task InnerCalloutsAndExplosionKeepRingSelectionThroughResponsiveUpdateAndNativeExports(int width, VisualThemeMode mode) {
+    [InlineData(390, ThemeMode.Light)]
+    [InlineData(390, ThemeMode.Dark)]
+    [InlineData(900, ThemeMode.Light)]
+    [InlineData(900, ThemeMode.Dark)]
+    public async Task InnerCalloutsAndExplosionKeepRingSelectionThroughResponsiveUpdateAndNativeExports(int width, ThemeMode mode) {
         if (!Enabled) return;
-        var chart = MultiRingDepthTests.Fixture(mode == VisualThemeMode.Dark, width, false);
+        var chart = MultiRingDepthTests.Fixture(mode == ThemeMode.Dark, width, false);
         chart.Series[0].WithPointSliceOffset(0, .16); chart.Series[1].WithPointSliceOffset(1, .1);
         var prepared = MultiRingDepthTests.Prepare(chart); MultiRingDepthTests.AssertCalloutAssociations(prepared);
         await using var session = await BrowserProofFonts.OpenAsync(chart.ToInteractiveHtmlFragment(Options), width + 24, 800);

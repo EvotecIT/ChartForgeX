@@ -15,7 +15,7 @@ public sealed class MermaidHostPolicyTests {
     public void SharedHostPresentationOverridesSourceAndFamilyOverridesOnlyAuthoredFields(string diagram) {
         var source = "---\nconfig:\n  theme: dark\n  fontFamily: Source Font\n  themeVariables:\n    fontSize: 15\n---\n" + diagram;
         var options = new MermaidRenderOptions {
-            Presentation = new() { ThemeMode = VisualThemeMode.Light, FontFamily = "Host Font", FontSize = 19,
+            Presentation = new() { ThemeMode = ThemeMode.Light, FontFamily = "Host Font", FontSize = 19,
                 TopologySizing = MermaidTopologySizing.FixedViewport },
             Flowchart = new() { Presentation = new() { FontSize = 23 } },
             MindMap = new() { Presentation = new() { FontSize = 23 } }
@@ -23,7 +23,7 @@ public sealed class MermaidHostPolicyTests {
         var result = MermaidRenderer.Render(source, options);
         Assert.False(result.HasErrors);
         var model = Assert.IsType<TopologyChart>(result.Artifact!.Model);
-        Assert.Equal(VisualThemeMode.Light, model.ThemeMode);
+        Assert.Equal(ThemeMode.Light, model.ThemeMode);
         Assert.Equal("Host Font", model.Theme.Typography.Family);
         Assert.Equal(23, model.Theme.Typography.DataLabelSize);
         Assert.True(model.DefaultRenderOptions!.FitContentToViewport);
@@ -48,7 +48,7 @@ public sealed class MermaidHostPolicyTests {
     [InlineData("gantt\ndateFormat YYYY-MM-DD\nTask : 2026-01-01, 2d")]
     public void SharedTypographyAndModeReachDifferentNativeOwners(string source) {
         var result = MermaidRenderer.Render(source, new MermaidRenderOptions {
-            Presentation = new() { ThemeMode = VisualThemeMode.Dark, FontFamily = "CFXProofCarlito", FontSize = 18 }
+            Presentation = new() { ThemeMode = ThemeMode.Dark, FontFamily = "CFXProofCarlito", FontSize = 18 }
         });
         Assert.False(result.HasErrors);
         var svg = result.Artifact!.ToSvg();
@@ -110,15 +110,15 @@ public sealed class MermaidHostPolicyTests {
     [Fact]
     public void MarkupParserCapturesSharedAndFamilyPresentation() {
         var options = new MermaidRenderOptions { Presentation = new() { FontFamily = "Original Font" },
-            Flowchart = new() { Presentation = new() { ThemeMode = VisualThemeMode.Dark } } };
+            Flowchart = new() { Presentation = new() { ThemeMode = ThemeMode.Dark } } };
         var parser = new MermaidVisualMarkupParser(options);
         options.Presentation.FontFamily = "Changed Font";
-        options.Flowchart.Presentation.ThemeMode = VisualThemeMode.Light;
+        options.Flowchart.Presentation.ThemeMode = ThemeMode.Light;
         var result = parser.Parse("```mermaid\nflowchart LR\nA-->B\n```");
         Assert.False(result.HasErrors);
         var model = Assert.IsType<TopologyChart>(Assert.Single(result.Artifacts).Model);
         Assert.Equal("Original Font", model.Theme.Typography.Family);
-        Assert.Equal(VisualThemeMode.Dark, model.ThemeMode);
+        Assert.Equal(ThemeMode.Dark, model.ThemeMode);
     }
 
     [Fact]

@@ -34,7 +34,7 @@ public sealed class TerminalTab {
         string workingDirectory,
         string customPrompt,
         VisualTheme theme,
-        TerminalTabIcon icon, VisualThemeMode themeMode = VisualThemeMode.Dark, TerminalStyleOptions? style = null) {
+        TerminalTabIcon icon, ThemeMode themeMode = ThemeMode.Dark, TerminalStyleOptions? style = null) {
         Id = id;
         Title = title;
         Dialect = dialect;
@@ -62,9 +62,9 @@ public sealed class TerminalTab {
 
     /// <summary>Gets the independent color palette used by this tab.</summary>
     public VisualTheme Theme { get; internal set; }
-    private VisualThemeMode _themeMode;
+    private ThemeMode _themeMode;
     /// <summary>Gets the explicit appearance of this tab.</summary>
-    public VisualThemeMode ThemeMode { get => _themeMode; internal set { if (!System.Enum.IsDefined(typeof(VisualThemeMode), value)) throw new System.ArgumentOutOfRangeException(nameof(value)); _themeMode = value; } }
+    public ThemeMode ThemeMode { get => _themeMode; internal set { if (!System.Enum.IsDefined(typeof(ThemeMode), value)) throw new System.ArgumentOutOfRangeException(nameof(value)); _themeMode = value; } }
     /// <summary>Gets local title-bar and cursor treatments.</summary>
     public TerminalStyleOptions Style { get; internal set; }
     internal ResolvedTerminalStyle ResolvedStyle => TerminalThemeProjection.Resolve(Theme, ThemeMode, Style);

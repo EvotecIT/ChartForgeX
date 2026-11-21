@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -15,7 +16,7 @@ using ChartForgeX.VisualBlocks;
 
 // Native PNG and standalone SVG use bundled Archivo.
 // Add ChartFontAssets.StyleSheet once for other text on a host page.
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = CategoricalRadialAreaRecipe.Create("compact-radius", mode);
 var context = new VisualRenderContext(
@@ -33,7 +34,7 @@ public static class CategoricalRadialAreaRecipe {
     /// <param name="variant">Use wide, compact, stacked, compact-stacked, radius or compact-radius.</param>
     /// <param name="mode">The paired visual theme mode.</param>
     /// <returns>A complete chart ready for the ordinary SVG, PNG and HTML output workflow.</returns>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "stacked" or "compact-stacked" or "radius" or "compact-radius"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant.StartsWith("compact", StringComparison.Ordinal);

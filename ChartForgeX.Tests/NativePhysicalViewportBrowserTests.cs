@@ -15,10 +15,10 @@ namespace ChartForgeX.Tests;
 [Trait("BrowserSuite", "Compatibility")]
 public sealed partial class NativePhysicalViewportBrowserTests {
     [BrowserTheory]
-    [InlineData(false, 390, VisualThemeMode.Dark, false)]
-    [InlineData(true, 900, VisualThemeMode.Light, false)]
-    [InlineData(false, 390, VisualThemeMode.Dark, true)]
-    public async Task SecondaryPhysicalWindowsKeepPrimaryAxesBookmarksExportsAndAcceptedBasis(bool horizontal, int width, VisualThemeMode mode, bool secondaryOnly) {
+    [InlineData(false, 390, ThemeMode.Dark, false)]
+    [InlineData(true, 900, ThemeMode.Light, false)]
+    [InlineData(false, 390, ThemeMode.Dark, true)]
+    public async Task SecondaryPhysicalWindowsKeepPrimaryAxesBookmarksExportsAndAcceptedBasis(bool horizontal, int width, ThemeMode mode, bool secondaryOnly) {
         if (!Enabled) return;
         var host = new Host(horizontal, width, mode, secondaryOnly);
         await using var session = await BrowserProofFonts.OpenAsync(host.Page, width + 24, 1000);
@@ -104,10 +104,10 @@ public sealed partial class NativePhysicalViewportBrowserTests {
     }
 
     private sealed class Host {
-        private readonly bool _horizontal; private readonly int _width; private readonly VisualThemeMode _mode; private readonly bool _secondaryOnly;
+        private readonly bool _horizontal; private readonly int _width; private readonly ThemeMode _mode; private readonly bool _secondaryOnly;
         private readonly HtmlInteractiveChartRenderer _renderer = new();
         private readonly Dictionary<string, HtmlChartSection> _sections = new();
-        internal Host(bool horizontal, int width, VisualThemeMode mode, bool secondaryOnly = false) {
+        internal Host(bool horizontal, int width, ThemeMode mode, bool secondaryOnly = false) {
             _horizontal = horizontal; _width = width; _mode = mode; _secondaryOnly = secondaryOnly;
             _sections.Add("initial", _renderer.PrepareSection(Model(), configure: Configure));
         }

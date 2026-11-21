@@ -4,7 +4,7 @@ public static class NativeTurbulenceExample {
         ChartForgeX.Effects.VisualTurbulenceType.FractalNoise, stitchTiles: true,
         colorSpace: ChartForgeX.Effects.VisualFilterColorSpace.Srgb);
 
-    public static PreparedVisual Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static PreparedVisual Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var width = Width(variant);
         return Policy().Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, 300), 24),
             VisualTheme.Graphite(), mode,
@@ -14,7 +14,7 @@ public static class NativeTurbulenceExample {
     public static ChartForgeX.Raster.RgbaImage Generate(string variant = "wide") =>
         Policy().Generate(new VisualSize(Width(variant), 160));
 
-    public static PreparedVisual MaskSource(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static PreparedVisual MaskSource(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var width = Width(variant);
         var chart = Chart.Create().WithSize(width, 160).WithTheme(VisualTheme.Graphite(), mode)
             .WithLegend(false).WithDataLabels(false).AddLine("Signal", new[] {
@@ -27,18 +27,18 @@ public static class NativeTurbulenceExample {
     }
 
     /// <summary>Saves immutable source policy and source identity through the common typed envelope.</summary>
-    public static string Save(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static string Save(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var envelope = Create(variant,mode).ToArtifact("noise-source").ToInterchangeEnvelope();
         envelope.Extensions["sample-origin"] = "native-procedural-source";
         return envelope.ToJson();
     }
 
     /// <summary>Loads through an explicit fresh same-size native context, without decoding paint into a scene.</summary>
-    public static PreparedVisual Load(string json, string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) =>
+    public static PreparedVisual Load(string json, string variant = "wide", ThemeMode mode = ThemeMode.Light) =>
         VisualArtifactInterchangeEnvelope.FromJson(json).PrepareTurbulenceSource(SourceContext(variant,mode));
 
     /// <summary>Rebuilds one immutable authored seed and prepares again through the same source owner.</summary>
-    public static PreparedVisual Edit(string json, double seed, string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static PreparedVisual Edit(string json, double seed, string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var envelope = VisualArtifactInterchangeEnvelope.FromJson(json);
         var presentation = envelope.Presentation ?? throw new ArgumentException("A typed source is required.",nameof(json));
         var policy = presentation.TurbulenceSource ?? throw new ArgumentException("A typed source is required.",nameof(json));
@@ -49,7 +49,7 @@ public static class NativeTurbulenceExample {
         return envelope.PrepareTurbulenceSource(SourceContext(variant,mode));
     }
 
-    private static VisualRenderContext SourceContext(string variant, VisualThemeMode mode) =>
+    private static VisualRenderContext SourceContext(string variant, ThemeMode mode) =>
         new(new VisualLayoutOptions(new VisualSize(Width(variant),300),24),VisualTheme.Graphite(),mode,
             new VisualFrame("Noise as a source","One retained four-channel procedural surface",showLegend:false));
 

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -13,7 +14,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = SequenceRecipe.Create("expanded", mode);
 var context = new VisualRenderContext(
@@ -30,7 +31,7 @@ public static class SequenceRecipe {
     /// <summary>Creates the expanded request-processing sequence model.</summary>
     /// <param name="variant">Use wide or expanded for the sequence.</param>
     /// <param name="mode">The rendering mode; diagram colors are resolved when the model is prepared.</param>
-    public static SequenceArtifact Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static SequenceArtifact Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "expanded"))
             throw new ArgumentOutOfRangeException(nameof(variant), variant, "Use wide or expanded.");
 

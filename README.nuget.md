@@ -199,7 +199,7 @@ orders.ConfigureMarkers(markers => markers.Radius = 4);
 
 var chart = Chart.Create()
     .WithTitle("Weekly orders")
-    .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)
+    .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
     .AddSeries(orders);
 
 orders.WithName("Completed orders");
@@ -225,7 +225,7 @@ var chart = Chart.Create()
 
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(800, 440)),
-    themeMode: VisualThemeMode.Dark,
+    themeMode: ThemeMode.Dark,
     frame: new VisualFrame("Orders by region"));
 
 var prepared = chart.Prepare(context);

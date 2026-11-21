@@ -1,11 +1,11 @@
 /// <summary>Optional Visuals report: explicitly captured backdrop, local blur replacement, then tint, stroke and sharp foreground.</summary>
 public static class NativeGlassCompositionExample {
-    public static ChartForgeX.Composition.ImageComposition Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static ChartForgeX.Composition.ImageComposition Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant != "compact" && variant != "wide") throw new ArgumentOutOfRangeException(nameof(variant));
-        if (mode != VisualThemeMode.Light && mode != VisualThemeMode.Dark) throw new ArgumentOutOfRangeException(nameof(mode));
+        if (mode != ThemeMode.Light && mode != ThemeMode.Dark) throw new ArgumentOutOfRangeException(nameof(mode));
         var width = variant == "compact" ? 390 : 1100;
         var height = 400;
-        var dark = mode == VisualThemeMode.Dark;
+        var dark = mode == ThemeMode.Dark;
         var background = ChartColor.FromHex(dark ? "#102338" : "#E2E8F0");
         var ink = ChartColor.FromHex(dark ? "#F8FAFC" : "#0F172A");
         var accent = ChartColor.FromHex(dark ? "#38BDF8" : "#0369A1");

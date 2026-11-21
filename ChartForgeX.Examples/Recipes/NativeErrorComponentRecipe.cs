@@ -1,7 +1,7 @@
 /// <summary>Uses authored optional uncertainty intervals and the native whisker/cap owner.</summary>
 public static class NativeErrorComponentRecipe {
     /// <summary>Creates one fixed numeric source with real nullable interval shape and caller-owned typography.</summary>
-    public static Chart Create(string form, bool finish, int width, VisualThemeMode mode, string family) {
+    public static Chart Create(string form, bool finish, int width, ThemeMode mode, string family) {
         if (form is not ("x" or "y" or "xy")) throw new ArgumentOutOfRangeException(nameof(form));
         var chart = Chart.Create().WithTitle("Actual uncertainty values").WithSize(width, 420).WithTheme(VisualTheme.Graphite(), mode).WithFontFamily(family).WithLegend(true).WithDataLabels(true);
         foreach (var key in new[] { "delivery", "comparison" }) {

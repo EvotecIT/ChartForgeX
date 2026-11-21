@@ -1,6 +1,6 @@
 /// <summary>Identified progress rows retain their own measurement domain and source units.</summary>
 public static class IndependentProgressRecipe {
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var rows = ChartSeries.CreateProgressBars(new ChartSeriesId("delivery"), "Delivery", new[] {
             new ChartProgressItem("Reviewed fraction", .72, 0, 1),

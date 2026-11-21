@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = CertificatesByIssuerRecipe.Create(&quot;issuers&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Builds certificates issued per month by issuer over the last year, as a certificate report shows it.&lt;/summary&gt;
 public static class CertificatesByIssuerRecipe {
     /// &lt;summary&gt;Creates stacked monthly issuance; the compact variant keeps the same data.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;issuers&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;issuers&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;issuers&quot; or &quot;compact-issuers&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var months = Enumerable.Range(0, 12).Select(month =&gt; new DateTime(2025, 11, 1).AddMonths(month).ToString(&quot;MMM&quot;, CultureInfo.InvariantCulture)).ToArray();
         var chart = Chart.Create().WithXLabels(months).WithStackedBars().WithYAxis(&quot;Certificates&quot;)
@@ -130,6 +131,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -139,7 +141,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = CertificatesByIssuerRecipe.Create(&quot;issuers&quot;, mode);
 var context = new VisualRenderContext(
@@ -154,7 +156,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Builds certificates issued per month by issuer over the last year, as a certificate report shows it.&lt;/summary&gt;
 public static class CertificatesByIssuerRecipe {
     /// &lt;summary&gt;Creates stacked monthly issuance; the compact variant keeps the same data.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;issuers&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;issuers&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;issuers&quot; or &quot;compact-issuers&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var months = Enumerable.Range(0, 12).Select(month =&gt; new DateTime(2025, 11, 1).AddMonths(month).ToString(&quot;MMM&quot;, CultureInfo.InvariantCulture)).ToArray();
         var chart = Chart.Create().WithXLabels(months).WithStackedBars().WithYAxis(&quot;Certificates&quot;)

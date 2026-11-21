@@ -10,7 +10,7 @@ using ChartForgeX.Themes;
 /// <summary>The executable source for the website's typed-record report grid.</summary>
 public static class CpuBySiteWebsiteRecipe {
     /// <summary>Creates all four panels with the selected grid theme.</summary>
-    public static ChartGrid Create(VisualThemeMode mode = VisualThemeMode.Light) {
+    public static ChartGrid Create(ThemeMode mode = ThemeMode.Light) {
 #region records
         var samples = ChartDataset<CpuSample>.From(new CpuSample[] {
             new("Warsaw", 1, 35), new("Warsaw", 2, 42),

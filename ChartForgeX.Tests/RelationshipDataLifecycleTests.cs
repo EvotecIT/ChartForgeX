@@ -10,9 +10,9 @@ namespace ChartForgeX.Tests;
 
 public sealed class RelationshipDataLifecycleTests {
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void ATreeWithOneRootNeedsNoBranchesAndCanClearAndRefillWithoutInventedLinks(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void ATreeWithOneRootNeedsNoBranchesAndCanClearAndRefillWithoutInventedLinks(ThemeMode mode) {
         var nodes = new[] { new ChartNode("only", "Only node") };
         var series = ChartSeries.CreateTree(new ChartSeriesId("one-root"), "Tree", nodes, Array.Empty<ChartTreeLink>());
         var chart = Chart.Create().WithHeader(false).WithLegend(false).WithDataLabels(false).AddSeries(series);

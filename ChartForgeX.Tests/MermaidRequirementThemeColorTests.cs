@@ -31,7 +31,7 @@ public sealed partial class MermaidRequirementThemeColorTests {
         Assert.False(result.HasErrors); Assert.Empty(result.Diagnostics); Assert.NotNull(result.Artifact);
     }
     private static MermaidRenderOptions Options(int width, bool dark) => new() {
-        Presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family, ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light },
+        Presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family, ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light },
         Requirement = new MermaidTopologyRenderOptions { Width = width, Height = 640 }
     };
     private static void Capture(string stem, MermaidRenderResult result) {

@@ -1,6 +1,6 @@
 /// <summary>Overlapping and open incidents share a deliberate current instant.</summary>
 public static class GanttLaneRecipe {
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var colors = VisualTheme.Graphite().Resolve(mode);
         var start = new DateTime(2026, 3, 2, 8, 0, 0, DateTimeKind.Utc);
         var primary = ChartSeries.CreateGanttLane(new ChartSeriesId("primary"), "Primary", new[] {

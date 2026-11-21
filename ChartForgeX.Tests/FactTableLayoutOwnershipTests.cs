@@ -10,7 +10,7 @@ public sealed class FactTableLayoutOwnershipTests {
     [InlineData(false)]
     [InlineData(true)]
     public void FittedTableHeaderAndLastCaptionRemainVisibleOnLargeLogicalCanvases(bool dark) {
-        var table = ChartTable.Create().WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var table = ChartTable.Create().WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithSize(6790, 3772).WithPadding(6).WithCard(false).WithTransparentBackground().WithColumns("Service");
         for (var i = 0; i < 120; i++) table.AddRow(i == 119 ? "XXXXXXXXXXXXXXXXXXXX" : "service " + i);
 

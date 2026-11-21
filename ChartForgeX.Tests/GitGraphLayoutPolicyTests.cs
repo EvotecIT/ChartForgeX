@@ -59,10 +59,10 @@ public sealed class GitGraphLayoutPolicyTests {
     }
 
     [Theory]
-    [InlineData("wide-lr", VisualThemeMode.Light)] [InlineData("compact-lr", VisualThemeMode.Dark)]
-    [InlineData("wide-tb", VisualThemeMode.Dark)] [InlineData("compact-tb", VisualThemeMode.Light)]
-    [InlineData("wide-bt", VisualThemeMode.Light)] [InlineData("compact-bt", VisualThemeMode.Dark)]
-    public void NativeAndStrictSvgRetainTypedCommitFillAndVisibleCherryPickInkWithTiltedCaptions(string variant, VisualThemeMode mode) {
+    [InlineData("wide-lr", ThemeMode.Light)] [InlineData("compact-lr", ThemeMode.Dark)]
+    [InlineData("wide-tb", ThemeMode.Dark)] [InlineData("compact-tb", ThemeMode.Light)]
+    [InlineData("wide-bt", ThemeMode.Light)] [InlineData("compact-bt", ThemeMode.Dark)]
+    public void NativeAndStrictSvgRetainTypedCommitFillAndVisibleCherryPickInkWithTiltedCaptions(string variant, ThemeMode mode) {
         var graph = GitGraphDepthRecipe.Create(variant, mode); graph.RotateCommitLabels = true;
         var svg = graph.ToSvg(); var nativePng = graph.ToPng(); var native = PngReader.Decode(nativePng); var fromSvg = SvgRasterizer.Rasterize(svg, strict: true).Image;
         var xml = XDocument.Parse(svg); var count = 0;

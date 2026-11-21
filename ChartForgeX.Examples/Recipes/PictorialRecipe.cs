@@ -1,6 +1,6 @@
 /// <summary>Assessment counts shown through repeated person symbols.</summary>
 public static class PictorialRecipe {
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var chart = Chart.Create().AddPictorial("Assessments", new[] {
             new ChartPictorialItem("Team A", 74), new ChartPictorialItem("Team B", 46), new ChartPictorialItem("Team C", 61)
         }, ChartPictorialShape.Person).WithPictorialMaximum(100).WithPictorialValuePerSymbol(10).WithPictorialColumns(10);

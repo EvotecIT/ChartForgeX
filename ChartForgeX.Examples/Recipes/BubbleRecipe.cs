@@ -1,7 +1,7 @@
 /// <summary>Plots weekly request volume as bubble size against batch size and processing time for three service tiers.</summary>
 public static class BubbleRecipe {
     /// <summary>Creates the selected example without choosing a renderer or export backend.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse")) throw new ArgumentOutOfRangeException(nameof(variant));
         return variant == "sparse" ? Sparse() : RequestVolume();
     }

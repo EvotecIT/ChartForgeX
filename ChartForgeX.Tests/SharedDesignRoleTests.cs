@@ -25,11 +25,11 @@ public sealed class SharedDesignRoleTests {
     public void DefaultCategoricalOrder_IsTheValidatedOrderInBothModes_AndHoldsNoStatusColour() {
         Assert.Equal(LightOrder, ChartPalettes.Categorical.Select(color => color.ToHex()));
         Assert.Equal(DarkOrder, ChartPalettes.CategoricalDark.Select(color => color.ToHex()));
-        Assert.Equal(LightOrder, VisualTheme.Graphite().Resolve(VisualThemeMode.Light).Palette.Select(color => color.ToHex()));
-        Assert.Equal(DarkOrder, VisualTheme.Graphite().Resolve(VisualThemeMode.Dark).Palette.Select(color => color.ToHex()));
+        Assert.Equal(LightOrder, VisualTheme.Graphite().Resolve(ThemeMode.Light).Palette.Select(color => color.ToHex()));
+        Assert.Equal(DarkOrder, VisualTheme.Graphite().Resolve(ThemeMode.Dark).Palette.Select(color => color.ToHex()));
         Assert.Equal(LightOrder, new VisualDesignTokens().Palette.Select(color => color.ToHex()));
         Assert.Equal(DarkOrder, VisualDesignTokens.Dark().Palette.Select(color => color.ToHex()));
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             var colors = VisualTheme.Graphite().Resolve(mode);
             var status = colors.Status;
             var reserved = new[] { status.Critical.Fill, status.High.Fill, status.Medium.Fill, status.Low.Fill, status.Info.Fill, status.Pass.Fill, status.Neutral.Fill, status.Maintenance.Fill };
@@ -39,9 +39,9 @@ public sealed class SharedDesignRoleTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light, "#737373")]
-    [InlineData(VisualThemeMode.Dark, "#929292")]
-    public void OtherSlice_IsNeutralGrayAndLast_EvenWithSourceOrder(VisualThemeMode mode, string gray) {
+    [InlineData(ThemeMode.Light, "#737373")]
+    [InlineData(ThemeMode.Dark, "#929292")]
+    public void OtherSlice_IsNeutralGrayAndLast_EvenWithSourceOrder(ThemeMode mode, string gray) {
         var colors = VisualTheme.Graphite().Resolve(mode);
         Assert.Equal(gray, colors.Other.ToHex());
         Assert.DoesNotContain(colors.Other, colors.Palette);
@@ -116,9 +116,9 @@ public sealed class SharedDesignRoleTests {
         Assert.Contains(fills, fill => fill.Contains("color-mix(", StringComparison.Ordinal) && fill.Contains("var(--hfx-color-chart-series-3, #336699)", StringComparison.Ordinal));
         Assert.Equal(fills.Count(fill => fill.Contains("series-1,", StringComparison.Ordinal)), fills.Count(fill => fill.Contains("series-3,", StringComparison.Ordinal)));
         // A caller can use a ramp step as a series colour without losing the series role.
-        var rampTheme = VisualTheme.Graphite().WithPalette(VisualTheme.Graphite().Resolve(VisualThemeMode.Light).SequentialRamp[2]);
+        var rampTheme = VisualTheme.Graphite().WithPalette(VisualTheme.Graphite().Resolve(ThemeMode.Light).SequentialRamp[2]);
         var graphite = Chart.Create().WithTheme(rampTheme).AddBar("A", Points(1, 2)).WithSvgColorVariables(SvgColorVariables.SharedRoles(rampTheme)).ToSvg();
-        Assert.Contains("var(--hfx-color-chart-series-1, " + rampTheme.Resolve(VisualThemeMode.Light).Palette[0].ToHex() + ")", graphite, StringComparison.Ordinal);
+        Assert.Contains("var(--hfx-color-chart-series-1, " + rampTheme.Resolve(ThemeMode.Light).Palette[0].ToHex() + ")", graphite, StringComparison.Ordinal);
         Assert.DoesNotContain("--hfx-ramp-sequential-3", graphite, StringComparison.Ordinal);
     }
 
@@ -139,7 +139,7 @@ public sealed class SharedDesignRoleTests {
     [Theory]
     [MemberData(nameof(Families))]
     public void EveryPaint_IsASharedRoleOrAnAllowedDerivedLiteral(string family) {
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             var svg = Render(family, mode);
             Assert.Contains("var(--hfx-", svg, StringComparison.Ordinal);
             var leaks = Literals(svg).Where(leak => !AllowedLiteral(leak.Value)).ToArray();
@@ -155,7 +155,7 @@ public sealed class SharedDesignRoleTests {
         return color.R == color.G && color.G == color.B && color.R is 0 or 255;
     }
 
-    private static string Render(string family, VisualThemeMode mode) {
+    private static string Render(string family, ThemeMode mode) {
         var theme = VisualTheme.Graphite();
         var variables = SvgColorVariables.SharedRoles(theme, mode);
         if (family == "topology")
@@ -178,7 +178,7 @@ public sealed class SharedDesignRoleTests {
         return Build(family, mode).WithTheme(theme).WithThemeMode(mode).WithSvgColorVariables(variables).ToSvg();
     }
 
-    private static Chart Build(string family, VisualThemeMode mode) {
+    private static Chart Build(string family, ThemeMode mode) {
         var start = new DateTime(2026, 9, 1);
         var chart = Chart.Create().WithSize(640, 360).WithTitle("Roles");
         switch (family) {

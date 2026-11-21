@@ -1,7 +1,7 @@
 /// <summary>A measured value, target and qualitative bands on an arc, needle or precision scale.</summary>
 public static class GaugeRecipe {
     /// <summary>Creates capacity against its target, or a close-bound linear tolerance measurement.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is "dense-scale" or "compact-dense-scale") {
             var reading = new ChartGaugeValue(12500.125, 0, 20000, new[] {
                 new ChartGaugeTarget(1800, "Baseline"), new ChartGaugeTarget(9500, "Expected"),

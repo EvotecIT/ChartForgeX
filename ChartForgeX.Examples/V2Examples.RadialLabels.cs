@@ -9,7 +9,7 @@ public static partial class V2Examples {
     private static void WriteRadialLabels(string output, ICollection<ProofArtifact> artifacts) {
         foreach (var kind in new[] { ChartSeriesKind.Pie, ChartSeriesKind.Donut }) {
             foreach (var placement in new[] { ChartDataLabelPlacement.Above, ChartDataLabelPlacement.Below }) {
-                foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+                foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
                     var family = kind.ToString().ToLowerInvariant();
                     var variant = placement.ToString().ToLowerInvariant() + "-labels";
                     var id = family + "-" + variant + "-" + mode.ToString().ToLowerInvariant();

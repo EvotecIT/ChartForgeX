@@ -93,7 +93,7 @@ internal static partial class SmokeTests {
             ("dense heatmap", Chart.Create()
                 .WithTitle("Coverage Matrix Stress")
                 .WithSubtitle("Compact cell text at print density")
-                .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)
+                .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
                 .WithSize(360, 240)
                 .WithXLabels("SPF", "DKIM", "DMARC", "TLS", "DNSSEC")
                 .WithValueFormatter(v => v.ToString("0") + "%")

@@ -14,7 +14,7 @@ public sealed class StandaloneHtmlSurfaceTests {
     [InlineData(false, 96)]
     [InlineData(true, 96)]
     public void StandalonePagesUseVisibleFallbackWithoutChangingAuthoredAlphaOrNativeExports(bool dark, byte alpha) {
-        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var lightBackground = ChartColor.FromRgba(40, 70, 100, alpha);
         var darkBackground = ChartColor.FromRgba(16, 32, 48, alpha);
         var lightSurface = ChartColor.FromHex("#F4F7FA");

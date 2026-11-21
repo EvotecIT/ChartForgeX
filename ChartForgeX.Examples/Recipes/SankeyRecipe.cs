@@ -1,6 +1,6 @@
 /// <summary>Weighted requests flow from their channels through automatic and manual processing to an outcome.</summary>
 public static class SankeyRecipe {
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var requests = ChartSeries.CreateSankey(new ChartSeriesId("requests"), "Requests", new[] {
             new ChartNode("portal", "Portal"), new ChartNode("email", "Email"), new ChartNode("phone", "Phone"),
             new ChartNode("automatic", "Automatic"), new ChartNode("manual", "Manual"),

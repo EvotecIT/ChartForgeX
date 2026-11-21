@@ -17,7 +17,7 @@ public sealed partial class FlowArtifact : IVisualRenderable {
             var step = Steps[i]; var node = topology.Nodes[i];
             node.DisplayMode = TopologyNodeDisplayMode.Card;
             node.PreserveDisplayModeSize = true;
-            node.ShowStatusBadge = step.Status != VisualBlocks.VisualStatus.None;
+            node.ShowStatusBadge = step.Status != Tone.None;
             node.Shape = step.Kind switch {
                 FlowArtifactStepKind.Decision => TopologyNodeShape.Diamond,
                 FlowArtifactStepKind.Start or FlowArtifactStepKind.End => TopologyNodeShape.Stadium,

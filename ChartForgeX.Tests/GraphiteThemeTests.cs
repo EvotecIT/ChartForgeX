@@ -20,7 +20,7 @@ public sealed class GraphiteThemeTests {
         var graphite = new System.Text.Json.Nodes.JsonObject();
         foreach (var entry in roles) graphite[entry.Key] = entry.Value;
         document["light"]!["graphite"] = graphite;
-        var theme = VisualTheme.FromPaletteJson(document.ToJsonString()).Resolve(VisualThemeMode.Light);
+        var theme = VisualTheme.FromPaletteJson(document.ToJsonString()).Resolve(ThemeMode.Light);
         Assert.Equal(ChartColor.FromHex(roles["quietLine"]), theme.QuietLine);
         Assert.Equal(ChartColor.FromHex(roles["neutral3"]), theme.Neutral3);
         Assert.Equal(ChartColor.FromHex(roles["axis"]), theme.Axis);
@@ -31,9 +31,9 @@ public sealed class GraphiteThemeTests {
     [InlineData(true)]
     public void GraphiteTokensPreserveRolesThroughThemesAndSvgVariables(bool dark) {
         var tokens = dark ? VisualDesignTokens.GraphiteDark() : VisualDesignTokens.GraphiteLight();
-        var canonical = VisualTheme.Graphite().Resolve(dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        var canonical = VisualTheme.Graphite().Resolve(dark ? ThemeMode.Dark : ThemeMode.Light);
         var theme = new VisualTheme(VisualDesignTokens.GraphiteLight(), VisualDesignTokens.GraphiteDark())
-            .Resolve(dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .Resolve(dark ? ThemeMode.Dark : ThemeMode.Light);
         Assert.Equal(tokens.ElevatedSurface, theme.ElevatedSurface);
         Assert.Equal(tokens.MutedForeground, theme.MutedForeground);
         Assert.Equal(tokens.Muted ?? tokens.MutedForeground, theme.Muted);

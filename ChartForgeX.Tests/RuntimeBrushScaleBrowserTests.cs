@@ -20,7 +20,7 @@ public sealed class RuntimeBrushScaleBrowserTests {
         var minimum = symmetric ? -18d : 10;
         var maximum = symmetric ? 18d : 100;
         var chart = Chart.Create().WithSize(reversed ? 330 : 700, 360).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithTheme(VisualTheme.Graphite(), reversed ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), reversed ? ThemeMode.Dark : ThemeMode.Light)
             .WithXAxisBounds(minimum, maximum).WithYAxisBounds(0, 10)
             .WithXAxisScale(symmetric ? ChartScaleKind.SymmetricLogarithmic : ChartScaleKind.Logarithmic)
             .AddLine("Measurements", new[] {new ChartPoint(minimum, 2), new ChartPoint(symmetric ? 0 : 30, 5), new ChartPoint(maximum, 8)});

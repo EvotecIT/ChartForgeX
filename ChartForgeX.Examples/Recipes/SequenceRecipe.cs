@@ -3,7 +3,7 @@ public static class SequenceRecipe {
     /// <summary>Creates the expanded request-processing sequence model.</summary>
     /// <param name="variant">Use wide or expanded for the sequence.</param>
     /// <param name="mode">The rendering mode; diagram colors are resolved when the model is prepared.</param>
-    public static SequenceArtifact Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static SequenceArtifact Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "expanded"))
             throw new ArgumentOutOfRangeException(nameof(variant), variant, "Use wide or expanded.");
 

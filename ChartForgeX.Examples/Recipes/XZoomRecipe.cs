@@ -7,7 +7,7 @@ using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 
 public static class XZoomRecipe {
-    public static IVisualRenderable Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) =>
+    public static IVisualRenderable Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) =>
         new View(Build(variant.Contains("step", StringComparison.Ordinal) ? ChartSeriesKind.StepLine : ChartSeriesKind.Line,
             variant.StartsWith("compact", StringComparison.Ordinal)));
 

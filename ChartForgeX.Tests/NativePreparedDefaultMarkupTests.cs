@@ -19,7 +19,7 @@ public sealed class NativePreparedDefaultMarkupTests {
             new ChartPoint(0, 4), new ChartPoint(1, 6), new ChartPoint(2, 5)
         });
         var chart = Chart.Create().WithTitle("Ordinary chart control").WithSize(640, 400).WithLegend(false).WithDataLabels(false).AddSeries(series);
-        chart.Options.Theme = VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family); chart.Options.ThemeMode = VisualThemeMode.Light;
+        chart.Options.Theme = VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family); chart.Options.ThemeMode = ThemeMode.Light;
         var renderer = new HtmlInteractiveChartRenderer();
         void Configure(HtmlChartInteractionOptions options) {
             options.IdScope = "default2-chart"; options.Interaction.ChartId = "default2-chart";
@@ -41,7 +41,7 @@ public sealed class NativePreparedDefaultMarkupTests {
         var chart = TopologyChart.Create().WithId("default2-topology").WithViewport(640, 400).WithLegend(null).AddHierarchy(new[] {
             new TopologyHierarchyItem("lead", "Example lead"), new TopologyHierarchyItem("member", "Example member", "lead")
         }, new TopologyHierarchyOptions { NodeDisplayMode = TopologyNodeDisplayMode.Card });
-        chart.Theme = VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family); chart.ThemeMode = VisualThemeMode.Light;
+        chart.Theme = VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family); chart.ThemeMode = ThemeMode.Light;
         var options = new TopologyRenderOptions { IdScope = "default2-topology-svg", IncludeLegend = false };
         var renderer = new HtmlInteractiveTopologyRenderer();
         var first = renderer.RenderFragmentWithoutAssets(chart, options); var second = renderer.RenderFragmentWithoutAssets(chart, options);

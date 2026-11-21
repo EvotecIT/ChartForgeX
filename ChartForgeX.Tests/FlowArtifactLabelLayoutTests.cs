@@ -23,9 +23,9 @@ public sealed class FlowArtifactLabelLayoutTests : IDisposable {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void DefaultShortConnectorLabelStaysNearItsOwnRouteAndClearsPaintedCaptions(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void DefaultShortConnectorLabelStaysNearItsOwnRouteAndClearsPaintedCaptions(ThemeMode mode) {
         var flow = FlowRecipe.Create();
         // Keep the library-default short run even if the gallery later chooses a larger decision.
         flow.ConfigureStep("decision", step => { step.Width = 130; step.Height = 68; });
@@ -108,9 +108,9 @@ public sealed class FlowArtifactLabelLayoutTests : IDisposable {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void GalleryDecisionDisplaysItsCompleteQuestionAtTheAuthoredExampleSize(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void GalleryDecisionDisplaysItsCompleteQuestionAtTheAuthoredExampleSize(ThemeMode mode) {
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(900, 600)), VisualTheme.Graphite(), mode,
             new VisualFrame("Assessment workflow", "Typed lanes, decisions and branched routes", showLegend: false), FontSpec.FromFamily(Family));
         var prepared = FlowRecipe.Create().Prepare(context);

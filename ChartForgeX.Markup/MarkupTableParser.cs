@@ -308,31 +308,34 @@ public sealed class MarkupTableParser {
         }
     }
 
-    private static VisualStatus ParseStatus(string value) {
+    private static Tone ParseStatus(string value) {
         switch (NormalizeKey(value)) {
             case "healthy":
             case "ok":
             case "success":
             case "positive":
             case "enabled":
-                return VisualStatus.Positive;
+                return Tone.Success;
             case "warning":
             case "warn":
             case "attention":
-                return VisualStatus.Warning;
+                return Tone.Warning;
             case "negative":
+            case "danger":
             case "error":
             case "failed":
             case "disabled":
             case "critical":
-                return VisualStatus.Negative;
+                return Tone.Danger;
             case "info":
             case "information":
-                return VisualStatus.Info;
+                return Tone.Info;
             case "neutral":
-                return VisualStatus.Neutral;
+                return Tone.Neutral;
+            case "muted":
+                return Tone.Muted;
             default:
-                return VisualStatus.None;
+                return Tone.None;
         }
     }
 

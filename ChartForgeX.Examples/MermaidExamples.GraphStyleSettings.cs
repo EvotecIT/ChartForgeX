@@ -4,7 +4,7 @@ using ChartForgeX.VisualArtifacts;
 
 internal static partial class MermaidExamples {
     private static void WriteGraphStyleSettingsExamples(string output) {
-        foreach(var family in new[]{"flowchart","agentflow"})foreach(var mode in new[]{VisualThemeMode.Light,VisualThemeMode.Dark})foreach(var variant in new[]{"compact","wide"}) {
+        foreach(var family in new[]{"flowchart","agentflow"})foreach(var mode in new[]{ThemeMode.Light,ThemeMode.Dark})foreach(var variant in new[]{"compact","wide"}) {
             var source=MermaidFixtureSources.Read(family+"-style-settings");var width=variant=="compact"?390:1100;
             var rendered=MermaidRenderer.Render(source,new MermaidRenderOptions{WarningPolicy=MermaidWarningPolicy.Reject,
                 Presentation=new MermaidPresentationOptions{ThemeMode=mode,FontFamily=ExampleTypography.FontFamily,TopologySizing=MermaidTopologySizing.Natural},

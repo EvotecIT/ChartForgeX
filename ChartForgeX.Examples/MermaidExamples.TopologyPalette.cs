@@ -4,7 +4,7 @@ using ChartForgeX.VisualArtifacts;
 internal static partial class MermaidExamples {
     private static void WriteTopologyPaletteExamples(string output) {
         foreach (var family in new[] { "flowchart", "swimlane", "agentflow" }) foreach (var variant in new[] { "compact", "wide" })
-            foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+            foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
                 var artifact = TopologySourcePaletteRecipe.Create(family, variant, mode, ExampleTypography.FontFamily);
                 var name = "mermaid-palette-" + family + "-" + variant + "-" + mode.ToString().ToLowerInvariant();
                 artifact.SaveSvg(Path.Combine(output, name + ".svg")); File.WriteAllBytes(Path.Combine(output, name + ".png"), artifact.ToPng());

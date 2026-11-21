@@ -5,7 +5,7 @@ internal static class NativeRadialMotionExamples {
     internal static void Write(string output) {
         Directory.CreateDirectory(output); var renderer = new HtmlInteractiveChartRenderer();
         foreach (var donut in new[] { false, true }) foreach (var kind in new[] { "values", "initial", "other" })
-        foreach (var width in new[] { 390, 760 }) foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var width in new[] { 390, 760 }) foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             var other = kind == "other"; var chart = NativeRadialMotionRecipe.Create(donut, other, 60, width, mode);
             var from = other ? renderer.PrepareVisibilitySection(chart, NativeRadialMotionRecipe.View(false)) : renderer.PrepareSection(chart);
             var to = other ? renderer.PrepareVisibilitySection(chart, NativeRadialMotionRecipe.View(true)) : renderer.PrepareSection(NativeRadialMotionRecipe.Create(donut, false, 80, width, mode));

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -15,7 +16,7 @@ using ChartForgeX.VisualBlocks;
 
 // Native PNG and standalone SVG use bundled Archivo.
 // Add ChartFontAssets.StyleSheet once for other text on a host page.
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = BubbleColorDimensionRecipe.Create("color-dimension", mode);
 var context = new VisualRenderContext(
@@ -30,12 +31,12 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 /// <summary>Formats bubble temperature separately from processing time and request volume.</summary>
 public static class BubbleColorDimensionRecipe {
     /// <summary>Creates the selected example without choosing a renderer or export backend.</summary>
-    public static Chart Create(string variant = "color-dimension", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "color-dimension", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("color-dimension" or "compact-color-dimension")) throw new ArgumentOutOfRangeException(nameof(variant));
         return ColorDimension(mode);
     }
 
-    private static Chart ColorDimension(VisualThemeMode mode) {
+    private static Chart ColorDimension(ThemeMode mode) {
         var colors = VisualTheme.Graphite().Resolve(mode);
         var minutes = new[] { 18d, 30, 24, 44, 32 };
         var temperatures = new double?[] { -12, 0, null, 2.5, 22.5 };

@@ -77,7 +77,7 @@ public sealed class NativeLayeredValueTransitionTests {
     }
 
     internal static Chart Model(int width, bool dark, int index, double value, string family) {
-        var chart = LayeredRadialRecipe.Create().WithSize(width, 400).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = LayeredRadialRecipe.Create().WithSize(width, 400).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithFontFamily(family).WithLegend(false);
         var series = chart.Series[0];
         for (var row = 0; row < 3; row++) series.WithObservationId(row, new ChartObservationId(new[] { "reviewed", "verified", "complete" }[row]));

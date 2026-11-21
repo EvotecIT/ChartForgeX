@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = SlopeStagesRecipe.Create(&quot;stages&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Compares complete stage observations without inventing values for unrecorded stages.&lt;/summary&gt;
 public static class SlopeStagesRecipe {
     /// &lt;summary&gt;Creates ordered stage lines, including one explicit disconnected interval, on either physical orientation.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;stages&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;stages&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;stages&quot; or &quot;compact-stages&quot; or &quot;horizontal-stages&quot; or &quot;compact-horizontal-stages&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithXLabels(&quot;Received&quot;, &quot;Prepared&quot;, &quot;Reviewed&quot;, &quot;Accepted&quot;)
@@ -133,6 +134,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -142,7 +144,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = SlopeStagesRecipe.Create(&quot;stages&quot;, mode);
 var context = new VisualRenderContext(
@@ -157,7 +159,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Compares complete stage observations without inventing values for unrecorded stages.&lt;/summary&gt;
 public static class SlopeStagesRecipe {
     /// &lt;summary&gt;Creates ordered stage lines, including one explicit disconnected interval, on either physical orientation.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;stages&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;stages&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;stages&quot; or &quot;compact-stages&quot; or &quot;horizontal-stages&quot; or &quot;compact-horizontal-stages&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithXLabels(&quot;Received&quot;, &quot;Prepared&quot;, &quot;Reviewed&quot;, &quot;Accepted&quot;)

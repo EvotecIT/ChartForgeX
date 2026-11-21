@@ -1,7 +1,7 @@
 /// <summary>Shows assessment states as categorical heatmap cells.</summary>
 public static class HeatmapCategoryRecipe {
     /// <summary>Creates status rows with explicit category colors and a production group.</summary>
-    public static Chart Create(string variant = "options", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "options", ThemeMode mode = ThemeMode.Light) {
         if (variant != "options") throw new ArgumentOutOfRangeException(nameof(variant));
         var colors = VisualTheme.Graphite().Resolve(mode);
         var primary = ChartSeries.CreateHeatmapCategoryRow(new ChartSeriesId("primary"), "Primary", new ChartHeatmapCell?[] {
