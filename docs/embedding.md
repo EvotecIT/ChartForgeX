@@ -151,6 +151,14 @@ chart.WithTheme(brand);
 
 Validate a new categorical set in both modes before you ship it. The default order is the validated set from the design language. Status colours are kept out of the series cycle.
 
+## Following the viewer's colour scheme
+
+A model whose `ThemeMode` is `Auto` (the default for charts, chart grids, topology, visual blocks and sequence diagrams) follows the viewer's `prefers-color-scheme` in HTML output, with no script. The SVG writes its colours as `--cfx-auto-*` properties with the light colours as fallbacks, and a stylesheet scoped to the output's root defines them: light by default, dark inside `@media (prefers-color-scheme: dark)`. The root keeps its usual class and carries `data-cfx-theme-mode="auto"` and `data-cfx-auto-theme="cfx-auto-<hash>"`, which the stylesheet selects. Each property reads the matching shared role first, for example `--cfx-auto-color-surface-card: var(--hfx-color-surface-card, #FFFFFF)`, so a CanopyX or HtmlForgeX page that defines its roles keeps them. Chrome around the drawing (page background, tooltips, topology controls, region colours) switches with it.
+
+Static images have no viewer: `ToSvg()`, `ToPng()`, `Save(...)` and raster output paint `Auto` as light. An explicit `ThemeMode.Light` or `Dark` writes the same literal HTML as before. Colour variables set on the model (`WithSvgColorVariables(...)`, `TopologyRenderOptions.SvgColorVariables`) take precedence, and no Auto stylesheet is written.
+
+Self-contained fragments and pages include the stylesheet in a plain `<style>` element. Asset-free output leaves it to the host, like its other assets: register `HtmlChartSection.AutoThemeStyleSheet` or `HtmlInteractiveChartRenderer.AutoThemeStyleSheet(chart)` for interactive sections, `TopologyHtmlRenderer.BuildAutoThemeStyle(chart, options)` for topology fragments without assets, and `HtmlResponsiveChartRenderer.AutoThemeStylesheet(chart)` for responsive fragments without assets. The scope is a hash of the stylesheet, so equal themes on one page share it and different themes never collide. Interactive SVG and PNG exports carry the colours the viewer currently sees.
+
 ## Time overlays and open support windows
 
 Existing `WithGanttToday(...)` and `WithGanttLaneNow(...)` supply an explicit current instant. `AddVerticalBand(start, end, ...)` highlights a selected interval behind schedule marks as well as Cartesian marks. Supply dates using the chart family's documented time convention; classic Gantt uses wall-clock OLE dates, while Gantt lanes use UTC instants.
