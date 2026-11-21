@@ -272,6 +272,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -281,7 +282,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = UseCaseAdvancedActorsRecipe.Create(&quot;compact&quot;, mode);
 if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
@@ -304,7 +305,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;remarks&gt;The separately shared .mmd fixture proves parsed-source consumption. This recipe has no Mermaid dependency.&lt;/remarks&gt;
 public static class UseCaseAdvancedActorsRecipe {
     /// &lt;summary&gt;Creates wide/compact and light/dark examples with source-stable actors, glyphs, stereotypes, routes and notes.&lt;/summary&gt;
-    public static TopologyChart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static TopologyChart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant == &quot;compact&quot;;
         var chart = TopologyChart.Create().WithId(&quot;native-usecase-advanced-actors&quot;).WithTitle(&quot;Participants in a request&quot;)
@@ -343,6 +344,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -352,7 +354,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = UseCaseAdvancedActorsRecipe.Create(&quot;compact&quot;, mode);
 if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
@@ -375,7 +377,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;remarks&gt;The separately shared .mmd fixture proves parsed-source consumption. This recipe has no Mermaid dependency.&lt;/remarks&gt;
 public static class UseCaseAdvancedActorsRecipe {
     /// &lt;summary&gt;Creates wide/compact and light/dark examples with source-stable actors, glyphs, stereotypes, routes and notes.&lt;/summary&gt;
-    public static TopologyChart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static TopologyChart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant == &quot;compact&quot;;
         var chart = TopologyChart.Create().WithId(&quot;native-usecase-advanced-actors&quot;).WithTitle(&quot;Participants in a request&quot;)

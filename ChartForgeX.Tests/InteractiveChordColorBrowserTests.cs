@@ -174,7 +174,7 @@ public sealed class InteractiveChordColorBrowserTests {
         """);
     private static Chart Model(int width, bool dark, bool updated = false) {
         var chart = V2GalleryModels.Create(ChartSeriesKind.Chord, width == 360 ? "compact-color-dimension" : "color-dimension")
-            .WithSize(width, width == 360 ? 360 : 440).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithSize(width, width == 360 ? 360 : 440).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithTitle("Transfer volume and latency");
         if (updated) {
             var series = chart.Series[0];

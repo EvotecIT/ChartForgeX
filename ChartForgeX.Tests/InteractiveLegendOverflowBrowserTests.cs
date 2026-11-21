@@ -163,7 +163,7 @@ public sealed partial class InteractiveLegendOverflowBrowserTests {
     private static Chart DenseSeries(bool dark, int count = 13, bool reverse = false, bool longLabel = false) {
         var chart = Chart.Create().WithSize(680, 380).WithTitle("Service observations").WithLegend()
             .WithLegendPosition(ChartLegendPosition.Right).WithLegendBudget(maximumRows: 1)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         var indices = Enumerable.Range(0, count);
         if (reverse) indices = indices.Reverse();
         foreach (var index in indices) chart.AddSeries(ChartSeries.CreateLine(new ChartSeriesId("series-" + index),

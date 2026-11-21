@@ -17,8 +17,8 @@ public sealed class SequenceParticipantBandTests {
     [Fact] public void ShortAndMultilineIconLabelsEndAtTheSameLifelineDatum() {
         var model=Native(SequenceArtifactParticipantKind.Actor);model.Participants[0].Stereotype=null;model.Participants[1].Kind=SequenceArtifactParticipantKind.Control;model.Layout=new SequenceLayoutPolicy(participantBands:new SequenceParticipantBands());var prepared=model.Prepare(SequencePresetFixture.Context());SequencePresetFixture.Capture("participant-bands-datum",prepared);var labels=prepared.Regions.Where(r=>r.Role=="sequence-participant-label").ToArray();Assert.Equal(labels[0].Bounds.Bottom,labels[1].Bounds.Bottom,8);Assert.True(labels[0].Bounds.Top<labels[1].Bounds.Top);var glyphs=prepared.Regions.Where(r=>r.Role=="sequence-participant-glyph").ToArray();Assert.True(glyphs[0].Bounds.Bottom<glyphs[1].Bounds.Bottom);
     }
-    [Theory] [InlineData(VisualThemeMode.Light)] [InlineData(VisualThemeMode.Dark)]
-    public void NativeNullAndEmptyPoliciesKeepSvgPngAndPortableBytes(VisualThemeMode mode) {
+    [Theory] [InlineData(ThemeMode.Light)] [InlineData(ThemeMode.Dark)]
+    public void NativeNullAndEmptyPoliciesKeepSvgPngAndPortableBytes(ThemeMode mode) {
         var model=Native(SequenceArtifactParticipantKind.Actor);model.ThemeMode=mode;var svg=model.ToSvg();var png=model.ToPng();var json=model.ToVisualArtifact().ToInterchangeJson();var first=model.Prepare(SequencePresetFixture.Context());SequencePresetFixture.Capture("participant-bands-null-"+mode,first);model.Layout=new SequenceLayoutPolicy();var second=model.Prepare(SequencePresetFixture.Context());SequencePresetFixture.Capture("participant-bands-empty-"+mode,second);Assert.Equal(svg,model.ToSvg());Assert.Equal(png,model.ToPng());Assert.Equal(json,model.ToVisualArtifact().ToInterchangeJson());Assert.Equal(first.ToSvg(),second.ToSvg());Assert.Equal(first.ToPng(),second.ToPng());Assert.DoesNotContain("participantBands",json);
     }
     [Fact] public void StyledParticipantAndActivationFactsRoundTripAndStayDetachedFromCallerMutations() {

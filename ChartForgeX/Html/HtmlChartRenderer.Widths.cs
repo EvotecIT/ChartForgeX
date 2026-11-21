@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Html;
 
@@ -28,14 +29,18 @@ public sealed partial class HtmlChartRenderer {
             throw new ArgumentOutOfRangeException(nameof(widths), "A width set needs at least two widths from 160 to 8192 pixels.");
         var size = chart.Options.Size;
         var writer = new HtmlMarkupWriter();
+        // An Auto chart follows the viewer's colour scheme in every drawing, unless the caller supplied colour variables.
+        var auto = AutoThemeStyle.ForHtml(chart.Options.Theme, chart.Options.ThemeMode, chart.Options.SvgColorVariables);
         try {
-            writer.StartElement("style").EndStartElement().RawTrusted(WidthSetCss(ordered)).EndElement();
-            writer.StartElement("div").Attribute("class", "chartforgex-widths").Attribute("data-cfx-widths", string.Join(" ", ordered.Select(N))).EndStartElement();
+            writer.StartElement("style").EndStartElement().RawTrusted(WidthSetCss(ordered)).EndElement().RawTrusted(auto?.StyleElement);
+            writer.StartElement("div").Attribute("class", "chartforgex-widths").Attribute("data-cfx-widths", string.Join(" ", ordered.Select(N)))
+                .Attribute(AutoThemeStyle.ScopeAttribute, auto?.Id).Attribute(AutoThemeStyle.Attribute, auto == null ? null : AutoThemeStyle.AttributeValue).EndStartElement();
             for (var i = 0; i < ordered.Length; i++) {
                 var width = ordered[i];
                 chart.WithSize(width, size.Height);
                 var scope = VisualSvgOptions.NamespaceFromExternalId(idScope + "|w" + N(width));
-                var svg = chart.Prepare(VisualExportRequest.ForChart(chart).Context).ToSvg(new VisualSvgOptions(scope, chart.Options.SvgColorVariables, responsive: true));
+                var options = new VisualSvgOptions(scope, chart.Options.SvgColorVariables, responsive: true);
+                var svg = chart.Prepare(VisualExportRequest.ForChart(chart).Context).ToSvg(auto == null ? options : options.WithColorScope(auto.Variables));
                 writer.StartElement("div").Attribute("class", "chartforgex-chart")
                     .Attribute("data-cfx-width", N(width))
                     .Attribute("data-cfx-from", i == ordered.Length - 1 ? "0" : N(width))

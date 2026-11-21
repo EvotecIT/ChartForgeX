@@ -171,7 +171,7 @@ public sealed class MermaidKanbanNativeBoardTests {
 
     internal static string Source => File.ReadAllText(Path.Combine(TestRepository.Root, "ChartForgeX.Examples", "Assets", "Mermaid", "kanban-native-board.mmd"));
     internal static MermaidRenderOptions Options(bool dark, int width) => new() {
-        Presentation = new MermaidPresentationOptions { ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light,
+        Presentation = new MermaidPresentationOptions { ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light,
             FontFamily = BrowserProofFonts.Family, FontSize = 12, TopologySizing = MermaidTopologySizing.Natural },
         Kanban = new MermaidTopologyRenderOptions { Width = width, Height = 700 }
     };

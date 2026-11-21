@@ -40,7 +40,7 @@ public sealed class MermaidC4NativeSemanticsTests {
     [InlineData(false, 1100)]
     [InlineData(true, 1100)]
     public void NestedC4DirectFencedSvgPngRetainShellsLinksAndNativePaint(bool dark, int width) {
-        var options = new MermaidRenderOptions { Presentation = new MermaidPresentationOptions { ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light, FontFamily = BrowserProofFonts.Family }, C4 = new MermaidTopologyRenderOptions { Width = width, Height = 700 } };
+        var options = new MermaidRenderOptions { Presentation = new MermaidPresentationOptions { ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light, FontFamily = BrowserProofFonts.Family }, C4 = new MermaidTopologyRenderOptions { Width = width, Height = 700 } };
         var direct = MermaidRenderer.Render(Source, options); Assert.False(direct.HasErrors);
         var artifact = Assert.IsType<VisualArtifact>(direct.Artifact); var fence = new MermaidVisualMarkupParser(options).Parse("```mermaid\n" + Source + "\n```"); Assert.False(fence.HasErrors);
         var fenced = Assert.Single(fence.Artifacts); var svg = artifact.ToSvg(); var png = artifact.ToPng();

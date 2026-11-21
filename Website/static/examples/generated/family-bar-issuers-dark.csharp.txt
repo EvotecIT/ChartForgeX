@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -13,7 +14,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = CertificatesByIssuerRecipe.Create("issuers", mode);
 var context = new VisualRenderContext(
@@ -28,7 +29,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 /// <summary>Builds certificates issued per month by issuer over the last year, as a certificate report shows it.</summary>
 public static class CertificatesByIssuerRecipe {
     /// <summary>Creates stacked monthly issuance; the compact variant keeps the same data.</summary>
-    public static Chart Create(string variant = "issuers", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "issuers", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("issuers" or "compact-issuers")) throw new ArgumentOutOfRangeException(nameof(variant));
         var months = Enumerable.Range(0, 12).Select(month => new DateTime(2025, 11, 1).AddMonths(month).ToString("MMM", CultureInfo.InvariantCulture)).ToArray();
         var chart = Chart.Create().WithXLabels(months).WithStackedBars().WithYAxis("Certificates")

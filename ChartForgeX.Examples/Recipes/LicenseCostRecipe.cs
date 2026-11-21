@@ -1,7 +1,7 @@
 /// <summary>Builds actual and projected license spend with currency captions.</summary>
 public static class LicenseCostRecipe {
     /// <summary>Creates the configured chart used by the legacy gallery and its standalone download.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant != "wide") throw new ArgumentOutOfRangeException(nameof(variant));
         return Chart.Create()
             .WithTitle("License Cost Trend")

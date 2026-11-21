@@ -16,9 +16,9 @@ namespace ChartForgeX.Tests;
 [Trait("BrowserSuite", "Compatibility")]
 public sealed class SlopeStagesBrowserTests {
     [BrowserTheory]
-    [InlineData(390, VisualThemeMode.Dark)]
-    [InlineData(900, VisualThemeMode.Light)]
-    public async Task HorizontalStagesUseNativePhysicalWindowsAndKeepMiddleIdentityInCurrentExports(int width, VisualThemeMode mode) {
+    [InlineData(390, ThemeMode.Dark)]
+    [InlineData(900, ThemeMode.Light)]
+    public async Task HorizontalStagesUseNativePhysicalWindowsAndKeepMiddleIdentityInCurrentExports(int width, ThemeMode mode) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(width, 400).WithFontFamily(BrowserProofFonts.Family).WithTheme(VisualTheme.Graphite(), mode)
             .WithLegend(false).WithXLabels("First", "Second", "Third", "Fourth")

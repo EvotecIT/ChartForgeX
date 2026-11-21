@@ -109,7 +109,7 @@ public sealed class ScheduleReversalDepthTests {
 
     internal static Chart Fixture(ChartSeriesKind kind, int width, bool dark) {
         var chart = Chart.Create().WithSize(width, 460).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false).WithDataLabels(false)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithXAxisBounds(0, 10).WithStateCategories(new ChartStateCategory("up", "Up", ChartColor.FromHex("#218A63")));
         if (kind == ChartSeriesKind.Timeline) chart.AddTimelineRange("First", 1, 4).AddTimelineRange("Second", 6, 9);
         else if (kind == ChartSeriesKind.Gantt) chart.AddGanttTask("First", 1, 4, .5).AddGanttTask("Second", 6, 9);

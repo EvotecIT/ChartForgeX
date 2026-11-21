@@ -13,7 +13,7 @@ public sealed class RailroadInterchangeTests {
     public void FourFrontendArtifactsSerializeImportEditAndRenderThroughTheNativeRuleOwner(string dialect, string source) {
         var parsed = new MermaidParser().ParseRailroad(source); Assert.Empty(parsed.Diagnostics);
         var artifact = parsed.Document!.ToVisualArtifact(new MermaidRailroadRenderOptions {
-            Presentation = new MermaidPresentationOptions { Theme = VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), ThemeMode = VisualThemeMode.Dark }
+            Presentation = new MermaidPresentationOptions { Theme = VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), ThemeMode = ThemeMode.Dark }
         });
         artifact.Metadata["host-note"] = "<grammar> is inert data"; artifact.Accessibility.Name = "Portable grammar";
         artifact.Accessibility.Description = "Two symbolic rules"; artifact.Accessibility.Language = "en";

@@ -59,7 +59,7 @@ public sealed class VisualArtifactInterchangeTableRow {
     /// <summary>Gets or sets the source row identity or JSON pointer.</summary>
     public string Key { get; set; } = "";
     /// <summary>Gets or sets the row status.</summary>
-    public VisualStatus Status { get; set; }
+    public Tone Status { get; set; }
     /// <summary>Gets or sets host selection participation.</summary>
     public bool Selectable { get; set; } = true;
     /// <summary>Gets cells whose identities are the row key and ColumnId pair.</summary>
@@ -84,7 +84,7 @@ public sealed class VisualArtifactInterchangeTableCell {
     /// <summary>Gets or sets host export text.</summary>
     public string? ExportText { get; set; }
     /// <summary>Gets or sets its semantic status.</summary>
-    public VisualStatus Status { get; set; }
+    public Tone Status { get; set; }
     /// <summary>Gets opaque cell facts; retained raw values do not replace display text.</summary>
     public Dictionary<string, string> Extensions { get; } = new(System.StringComparer.Ordinal);
 }

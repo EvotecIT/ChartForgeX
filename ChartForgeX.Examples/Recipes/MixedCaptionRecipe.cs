@@ -1,7 +1,7 @@
 /// <summary>Ordinary Core-only editable native strong/italic captions with script-free SVG/PNG exports.</summary>
 public static class MixedCaptionRecipe {
     /// <summary>Creates one compact/wide light/dark native artifact without a parser or adapter dependency.</summary>
-    public static VisualArtifact Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light, string? fontFamily = null) {
+    public static VisualArtifact Create(string variant = "wide", ThemeMode mode = ThemeMode.Light, string? fontFamily = null) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var width = variant == "compact" ? 390 : 1100;
         var chart = TopologyChart.Create().WithViewport(width, 420).WithTheme(VisualTheme.Graphite(), mode);

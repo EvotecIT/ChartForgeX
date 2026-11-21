@@ -58,7 +58,7 @@ public sealed class SankeyTinyFlowTests {
     public void CompactAndWideTinyFlowCapturesRetainReadableFactsWithoutInflatingRibbons(int width, bool dark) {
         var chart = Model(999, 1).WithSize(width, 400).WithDataLabels(true).WithLegend(true)
             .WithHeader(true).WithTitle("Large and small request flows")
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         chart.ConfigureSankey(options => { options.RibbonVisibilityThreshold = 2; options.ColorDimension.Name = "Latency (ms)"; });
         var prepared = SankeyFlowColorTests.Prepare(chart);
         Assert.Equal("below-paint-threshold", (string?)SankeyFlowColorTests.Link(prepared, "small").Attribute("data-cfx-geometry-status"));

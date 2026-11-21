@@ -32,9 +32,9 @@ public sealed class PreparedTopologySvgPolicyTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void TopologyRetainsScopedHostPolicyAndHiddenHeadingAccessibilityWithoutChangingPixels(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void TopologyRetainsScopedHostPolicyAndHiddenHeadingAccessibilityWithoutChangingPixels(ThemeMode mode) {
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(560, 310)), themeMode: mode,
             frame: new VisualFrame(showLegend: false, transparentBackground: true));
         var colors = context.Theme.Resolve(mode);

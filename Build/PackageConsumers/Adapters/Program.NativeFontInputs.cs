@@ -1,4 +1,5 @@
 using System.Threading;
+using ChartForgeX;
 using ChartForgeX.Markup.Mermaid;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Themes;
@@ -15,6 +16,6 @@ internal static partial class Program {
     private static MermaidRenderResult RenderFixture(string source, MermaidRenderOptions? options = null, CancellationToken cancellationToken = default) =>
         MermaidRenderer.Render(source, FixtureOptions(options), cancellationToken);
 
-    private static MermaidVisualMarkupParser CreateFixtureParser(MermaidRenderOptions? options = null, VisualThemeMode? fallback = null) =>
+    private static MermaidVisualMarkupParser CreateFixtureParser(MermaidRenderOptions? options = null, ThemeMode? fallback = null) =>
         new(FixtureOptions(options), fallback);
 }

@@ -1,7 +1,7 @@
 /// <summary>Two independent service mixes in explicit concentric Pie and Donut bands.</summary>
 public static class ConcentricPieRecipe {
     /// <summary>Creates independent totals and source identities without implying equal totals across rings.</summary>
-    public static Chart Create(string variant = "concentric", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "concentric", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("concentric" or "compact-concentric")) throw new ArgumentOutOfRangeException(nameof(variant));
         var prior = new ChartSeries(new ChartSeriesId("prior"), "Prior", ChartSeriesKind.Donut,
             new[] { new ChartPoint(1, 75), new ChartPoint(2, 25) })

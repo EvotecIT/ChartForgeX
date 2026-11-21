@@ -45,7 +45,7 @@ internal static class ExampleVisuals {
     }
 
     private static Dictionary<string, object> Save(VisualOutput output, string slug, string recipe, string[] sections,
-        Func<VisualThemeMode, string> svg, Func<VisualThemeMode, byte[]> png, Func<VisualThemeMode, string> html) {
+        Func<ThemeMode, string> svg, Func<ThemeMode, byte[]> png, Func<ThemeMode, string> html) {
         var entry = output.Pair("examples/" + slug, (mode, _) => svg(mode));
         long pngBytes = 0;
         foreach (var (name, mode, _) in output.Modes()) {
@@ -62,8 +62,8 @@ internal static class ExampleVisuals {
     }
 
     // Documentation figures reuse these entry points; model source lives in the compiled recipes.
-    public static Chart StaticChart(VisualThemeMode mode) => DeploymentHealthWebsiteRecipe.Create(mode);
-    public static ChartGrid ReportGrid(VisualThemeMode mode) => CpuBySiteWebsiteRecipe.Create(mode);
-    public static TopologyChart TeamHierarchy(VisualThemeMode mode) => PlatformTeamWebsiteRecipe.Create(mode);
+    public static Chart StaticChart(ThemeMode mode) => DeploymentHealthWebsiteRecipe.Create(mode);
+    public static ChartGrid ReportGrid(ThemeMode mode) => CpuBySiteWebsiteRecipe.Create(mode);
+    public static TopologyChart TeamHierarchy(ThemeMode mode) => PlatformTeamWebsiteRecipe.Create(mode);
     public static GraphScene Estate() => EstateExplorerWebsiteRecipe.Create();
 }

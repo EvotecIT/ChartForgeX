@@ -18,7 +18,7 @@ public sealed class TurbulenceNativeSourceBrowserTests {
     [InlineData("compact", false)] [InlineData("wide", false)]
     [InlineData("compact", true)] [InlineData("wide", true)]
     public async Task FiniteProceduralSourceProfilesRetainOneSurfaceAndUnfilteredCommonFrameWords(string variant, bool dark) {
-        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var width = variant == "compact" ? 390 : 760;
         var saved=NativeTurbulenceExample.Save(variant,mode);
         var prepared = NativeTurbulenceExample.Load(saved,variant,mode);

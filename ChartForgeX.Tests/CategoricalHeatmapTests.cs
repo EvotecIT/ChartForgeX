@@ -45,8 +45,8 @@ public sealed class CategoricalHeatmapTests {
 
     [Fact]
     public void MissingCellOutlinesRemainVisibleOnDarkCards() {
-        var chart = CreateChart().WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark);
-        var colors = chart.Options.Theme.Resolve(VisualThemeMode.Dark);
+        var chart = CreateChart().WithTheme(VisualTheme.Graphite(), ThemeMode.Dark);
+        var colors = chart.Options.Theme.Resolve(ThemeMode.Dark);
         var missing = Assert.Single(ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-missing-cell"));
         var stroke = ChartColor.FromHex((string)missing.Attribute("stroke")!);
         var contrast = ChartColorMath.ContrastRatio(stroke, colors.ElevatedSurface);

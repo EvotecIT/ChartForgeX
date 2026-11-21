@@ -259,7 +259,7 @@ public sealed class TopologyGraphLinkedBrowserTests {
         "(root,request)=>root.dispatchEvent(new CustomEvent(request.name,{detail:request.detail||{}}))", new { name, detail });
 
     private static TopologyChart Topology(bool dark) => TopologyChart.Create().WithId("linked-topology")
-        .WithViewport(1060, 372, 0).WithLegend(null).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        .WithViewport(1060, 372, 0).WithLegend(null).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
         .AddNode("a", "API", 80, 120, width: 140, height: 80)
         .AddNode("b", "Database", 460, 120, width: 140, height: 80)
         .AddNode("c", "Queue", 840, 120, width: 140, height: 80)

@@ -33,9 +33,9 @@ public sealed class MapPointSizeTests {
     }
 
     [Theory]
-    [InlineData(390, VisualThemeMode.Light)]
-    [InlineData(800, VisualThemeMode.Dark)]
-    public void OptionalMapSizeKeyUsesTheSameMeasuredReferenceCirclesAsMarks(int width, VisualThemeMode mode) {
+    [InlineData(390, ThemeMode.Light)]
+    [InlineData(800, ThemeMode.Dark)]
+    public void OptionalMapSizeKeyUsesTheSameMeasuredReferenceCirclesAsMarks(int width, ThemeMode mode) {
         var chart = GeographicMapCompositionTests.Fixture(ChartMapGeoJsonProjection.Equirectangular, width, mode).WithSize(width, 600);
         var sites = chart.Series[1];
         var calls = new Dictionary<double, int>();

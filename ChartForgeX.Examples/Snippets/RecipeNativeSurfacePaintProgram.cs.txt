@@ -1,4 +1,5 @@
 using System.IO;
+using ChartForgeX;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Themes;
 using ChartForgeX.Topology;
@@ -9,7 +10,7 @@ VisualArtifact artifact;
 if (source != null) {
     var rendered = MermaidRenderer.Render(source, new MermaidRenderOptions {
         WarningPolicy = MermaidWarningPolicy.Reject,
-        Presentation = new MermaidPresentationOptions { ThemeMode = VisualThemeMode.{{MODE}}, TopologySizing = MermaidTopologySizing.Natural },
+        Presentation = new MermaidPresentationOptions { ThemeMode = ThemeMode.{{MODE}}, TopologySizing = MermaidTopologySizing.Natural },
         Flowchart = new MermaidFlowchartRenderOptions { Width = {{WIDTH}}, Height = 700 },
         Agentflow = new MermaidTopologyRenderOptions { Width = {{WIDTH}}, Height = 700 }
     });
@@ -17,7 +18,7 @@ if (source != null) {
     artifact = rendered.Artifact;
 } else {
     var chart = TopologyChart.Create().WithTitle("Native contour paints").WithViewport({{WIDTH}}, 360, 24).WithLegend(null);
-    chart.ThemeMode = VisualThemeMode.{{MODE}};
+    chart.ThemeMode = ThemeMode.{{MODE}};
     chart.Groups.Add(new TopologyGroup { Id = "scope", Label = "Own container ink", X = 16, Y = 16, Width = 310, Height = 240, StrokeWidth = 4, Opacity = .5, SurfaceOpacity = .8, BackgroundColor = "#ffd8b8" });
     chart.Groups[0].DashPattern.AddRange(new double[] { 7, 3 });
     chart.Nodes.Add(new TopologyNode { Id = "node", Label = "Independent node ink", X = 50, Y = 85, Width = 220, Height = 100, Shape = TopologyNodeShape.Rectangle, GroupId = "scope", StrokeWidth = 3, Opacity = .6, SurfaceOpacity = .7, BackgroundColor = "#b8d8ff", ShowStatusBadge = false });

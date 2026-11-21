@@ -6,7 +6,7 @@ using ChartForgeX.Themes;
 /// <summary>Effort/impact observations with native quadrant borders, deliberate captions and rules through an authored pivot.</summary>
 public static class QuadrantRegionDepthRecipe {
     /// <summary>Creates a complete public-API chart; exports use the same native prepared scene.</summary>
-    public static Chart Create(string variant = "pivot-quadrants", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "pivot-quadrants", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("pivot-quadrants" or "compact-pivot-quadrants" or "interior-quadrants" or "compact-interior-quadrants")) throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create().WithSize(variant.StartsWith("compact-", StringComparison.Ordinal) ? 360 : 800, 440)
             .WithTheme(VisualTheme.Graphite(), mode).WithTitle("Effort and impact").WithSubtitle("Authored 4-day / 6-point pivot")

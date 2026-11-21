@@ -57,7 +57,7 @@ internal sealed partial class TopologyPreparedFramePadding {
         private readonly VisualRenderContext _context; // Immutable frame/font request only; no source graph or callbacks.
         private readonly string? _title, _subtitle;
         private readonly VisualTheme _theme;
-        private readonly VisualThemeMode _mode;
+        private readonly ThemeMode _mode;
         private readonly string?[] _legendLabels;
         internal FrameWitness(TopologyChart chart, TopologyRenderOptions options, VisualRenderContext context) {
             _context = new VisualRenderContext(context.Layout, context.Theme, context.ThemeMode, context.Frame.RequestValues(), context.Font.RequestValues()); _title = chart.Title; _subtitle = chart.Subtitle; _theme = chart.Theme; _mode = chart.ThemeMode;

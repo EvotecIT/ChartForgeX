@@ -24,7 +24,7 @@ var editor = StorySourceTimeline.Create(StorySourceText.Create("", "csharp"))
     .Pause(TimeSpan.FromSeconds(2));
 
 var story = VisualStory.Create("Write and run")
-    .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)
+    .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
     .WithFormat(VisualStoryFormat.Widescreen);
 story.Scene("write", "Write the source", 4)
     .Panel("source", new VisualStorySourceSurface(editor,

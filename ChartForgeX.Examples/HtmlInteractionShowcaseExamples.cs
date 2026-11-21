@@ -57,7 +57,7 @@ public static class HtmlInteractionShowcaseExamples {
 
     internal static Chart CreateChart(ChartSeriesKind kind, bool dark) {
         var chart = Chart.Create().WithSize(800, 440)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithLegend().WithDataLabels(false);
         switch (kind) {
             case ChartSeriesKind.Line:

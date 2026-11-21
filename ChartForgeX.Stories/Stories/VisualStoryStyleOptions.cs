@@ -56,7 +56,7 @@ public static class VisualStoryThemes {
 }
 
 internal sealed partial class ResolvedVisualStoryStyle {
-    internal static ResolvedVisualStoryStyle FromTheme(VisualTheme theme, VisualThemeMode mode, VisualStoryStyleOptions? style = null) {
+    internal static ResolvedVisualStoryStyle FromTheme(VisualTheme theme, ThemeMode mode, VisualStoryStyleOptions? style = null) {
         if (theme == null) throw new ArgumentNullException(nameof(theme));
         var colors = theme.Resolve(mode);
         var panel = ChartColorMath.CompositeOverOpaque(colors.ElevatedSurface, colors.Background);
@@ -79,14 +79,14 @@ internal sealed partial class ResolvedVisualStoryStyle {
 }
 
 public sealed partial class VisualStory {
-    private VisualThemeMode _themeMode = VisualThemeMode.Dark;
+    private ThemeMode _themeMode = ThemeMode.Dark;
     private VisualStoryStyleOptions _style = new();
     /// <summary>Gets or sets the explicit light or dark appearance.</summary>
-    public VisualThemeMode ThemeMode { get => _themeMode; set { if (!Enum.IsDefined(typeof(VisualThemeMode), value)) throw new ArgumentOutOfRangeException(nameof(value)); _themeMode = value; } }
+    public ThemeMode ThemeMode { get => _themeMode; set { if (!Enum.IsDefined(typeof(ThemeMode), value)) throw new ArgumentOutOfRangeException(nameof(value)); _themeMode = value; } }
     /// <summary>Gets or sets local window and source styling.</summary>
     public VisualStoryStyleOptions Style { get => _style; set => _style = value ?? throw new ArgumentNullException(nameof(value)); }
     /// <summary>Changes appearance without replacing the immutable theme snapshot.</summary>
-    public VisualStory WithThemeMode(VisualThemeMode mode) { ThemeMode = mode; return this; }
+    public VisualStory WithThemeMode(ThemeMode mode) { ThemeMode = mode; return this; }
     /// <summary>Sets local desktop, window and syntax controls.</summary>
     public VisualStory WithStyle(VisualStoryStyleOptions style) { Style = style; return this; }
     internal ResolvedVisualStoryStyle ResolvedStyle => ResolvedVisualStoryStyle.FromTheme(Theme, ThemeMode, Style);

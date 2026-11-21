@@ -12,15 +12,15 @@ namespace ChartForgeX.Tests;
 /// <summary>Protects the compact and wide calendar rhythm together, including mixed date/clock captions.</summary>
 public sealed class CompactCalendarAxisTests {
     [Theory]
-    [InlineData("state", 400, VisualThemeMode.Light, 6)]
-    [InlineData("state", 400, VisualThemeMode.Dark, 6)]
-    [InlineData("state", 800, VisualThemeMode.Light, 6)]
+    [InlineData("state", 400, ThemeMode.Light, 6)]
+    [InlineData("state", 400, ThemeMode.Dark, 6)]
+    [InlineData("state", 800, ThemeMode.Light, 6)]
     // Short date captions below 400 px keep one em clear, so the nine-day plan steps by three days.
-    [InlineData("gantt", 400, VisualThemeMode.Light, 4)]
-    [InlineData("gantt", 400, VisualThemeMode.Dark, 4)]
-    [InlineData("timeline", 400, VisualThemeMode.Light, 4)]
-    [InlineData("lane", 400, VisualThemeMode.Light, 4)]
-    public void ShortScheduleCaptionsKeepUsefulCalendarStepsWithoutMovingOffTheirGrid(string family, int width, VisualThemeMode mode, int minimum) {
+    [InlineData("gantt", 400, ThemeMode.Light, 4)]
+    [InlineData("gantt", 400, ThemeMode.Dark, 4)]
+    [InlineData("timeline", 400, ThemeMode.Light, 4)]
+    [InlineData("lane", 400, ThemeMode.Light, 4)]
+    public void ShortScheduleCaptionsKeepUsefulCalendarStepsWithoutMovingOffTheirGrid(string family, int width, ThemeMode mode, int minimum) {
         var chart = family switch {
             "state" => StateTimelineRecipe.Create(mode: mode),
             "gantt" => GanttRecipe.Create(mode: mode),
@@ -54,10 +54,10 @@ public sealed class CompactCalendarAxisTests {
     }
 
     [Theory]
-    [InlineData(400, VisualThemeMode.Light)]
-    [InlineData(400, VisualThemeMode.Dark)]
-    [InlineData(420, VisualThemeMode.Light)]
-    public void NarrowFullIsoDatesUseARegularSourceDayStrideBeforeFallingBackToTwoLabels(int width, VisualThemeMode mode) {
+    [InlineData(400, ThemeMode.Light)]
+    [InlineData(400, ThemeMode.Dark)]
+    [InlineData(420, ThemeMode.Light)]
+    public void NarrowFullIsoDatesUseARegularSourceDayStrideBeforeFallingBackToTwoLabels(int width, ThemeMode mode) {
         var start = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
         var chart = Chart.Create().WithSize(width, 260).WithTransparentBackground().WithHeader(false).WithLegend(false)
             .WithPadding(64, 14, 20, 46).WithXAxisTimeScale(TimeZoneInfo.Utc, true, "UTC").WithThemeMode(mode).WithPngFont(Font())
@@ -74,10 +74,10 @@ public sealed class CompactCalendarAxisTests {
     }
 
     [Theory]
-    [InlineData(480, VisualThemeMode.Light)]
-    [InlineData(480, VisualThemeMode.Dark)]
-    [InlineData(720, VisualThemeMode.Light)]
-    public void ADateBesideAClockCaptionUsesTheirMeasuredMeanAndKeepsSixHourBoundaries(int width, VisualThemeMode mode) {
+    [InlineData(480, ThemeMode.Light)]
+    [InlineData(480, ThemeMode.Dark)]
+    [InlineData(720, ThemeMode.Light)]
+    public void ADateBesideAClockCaptionUsesTheirMeasuredMeanAndKeepsSixHourBoundaries(int width, ThemeMode mode) {
         var start = new DateTime(2026, 10, 13, 0, 0, 0, DateTimeKind.Utc);
         var chart = Chart.Create().WithSize(width, 160).WithTransparentBackground().WithHeader(false).WithPadding(0, 10, 16, 0)
             .WithXAxisTimeScale(TimeZoneInfo.Utc, true, "UTC").WithThemeMode(mode).WithPngFont(Font())
@@ -101,11 +101,11 @@ public sealed class CompactCalendarAxisTests {
     }
 
     [Theory]
-    [InlineData(false, VisualThemeMode.Light)]
-    [InlineData(false, VisualThemeMode.Dark)]
-    [InlineData(true, VisualThemeMode.Light)]
-    [InlineData(true, VisualThemeMode.Dark)]
-    public void UnresolvedFontsKeepNonMidnightTasksAndRegularDayCaptionsInTheSameMeasuredProjection(bool fixedDays, VisualThemeMode mode) {
+    [InlineData(false, ThemeMode.Light)]
+    [InlineData(false, ThemeMode.Dark)]
+    [InlineData(true, ThemeMode.Light)]
+    [InlineData(true, ThemeMode.Dark)]
+    public void UnresolvedFontsKeepNonMidnightTasksAndRegularDayCaptionsInTheSameMeasuredProjection(bool fixedDays, ThemeMode mode) {
         var start = new DateTime(2026, 3, 2, 10, 0, 0, DateTimeKind.Utc); var end = start.AddDays(17);
         var chart = Chart.Create().WithSize(900, 300).WithHeader(false).WithLegend(false)
             .WithThemeMode(mode).ConfigureGridStyle(style => style.ShowVerticalLines = true).AddGanttTask("Project", start, end);

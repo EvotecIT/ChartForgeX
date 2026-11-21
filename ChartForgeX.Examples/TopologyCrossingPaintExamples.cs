@@ -4,7 +4,7 @@ using ChartForgeX.VisualArtifacts;
 /// <summary>Native and source-backed static output plus complete public consumer programs.</summary>
 internal static class TopologyCrossingPaintExamples {
     internal static void Write(string output) {
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) foreach (var variant in new[] { "compact", "wide" }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) foreach (var variant in new[] { "compact", "wide" }) {
             foreach (var policy in new[] { "arc", "gap", "none" }) {
                 var name = "crossing-native-" + variant + "-" + policy + "-" + mode; var form = variant + "-" + policy;
                 var chart = TopologyCrossingPaintRecipe.Create(form, mode); Save(chart.ToVisualArtifact(), name);

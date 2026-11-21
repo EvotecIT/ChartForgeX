@@ -19,7 +19,7 @@ public sealed class InteractiveLinkedReadableValueBrowserTests {
     public async Task ZonedPointTooltipsRetainCalendarDatesAndRawInstants(string zone, string expected, bool dark, int width) {
         if (!Enabled) return;
         var chart = ChartLinkedReadableValueContractsTests.ZonedTimeChart(zone)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
             options.Tooltip.Mode = HtmlChartTooltipMode.Single;

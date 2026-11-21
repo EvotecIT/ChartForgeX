@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = PictorialArtworkRecipe.Create(&quot;bottom&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Captures self-contained artwork and retains fractional counts through the shared pictorial clip owner.&lt;/summary&gt;
 public static class PictorialArtworkRecipe {
     /// &lt;summary&gt;Creates ordinary native SVG, PNG and HTML output without files or network resources.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;right&quot; or &quot;bottom&quot; or &quot;top&quot; or &quot;image&quot; or &quot;contour&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var series = new ChartSeries(new ChartSeriesId(&quot;assessments&quot;), &quot;Completed assessments&quot;, ChartSeriesKind.Pictorial,
@@ -151,6 +152,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -160,7 +162,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = PictorialArtworkRecipe.Create(&quot;bottom&quot;, mode);
 var context = new VisualRenderContext(
@@ -175,7 +177,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Captures self-contained artwork and retains fractional counts through the shared pictorial clip owner.&lt;/summary&gt;
 public static class PictorialArtworkRecipe {
     /// &lt;summary&gt;Creates ordinary native SVG, PNG and HTML output without files or network resources.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;right&quot; or &quot;bottom&quot; or &quot;top&quot; or &quot;image&quot; or &quot;contour&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var series = new ChartSeries(new ChartSeriesId(&quot;assessments&quot;), &quot;Completed assessments&quot;, ChartSeriesKind.Pictorial,

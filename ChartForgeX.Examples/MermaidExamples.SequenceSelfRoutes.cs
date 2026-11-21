@@ -4,7 +4,7 @@ using ChartForgeX.VisualArtifacts;
 internal static partial class MermaidExamples {
     private static void WriteSequenceSelfRoutesExamples(string output) {
         var source=MermaidFixtureSources.Read("sequence-self-routes");
-        foreach(var mode in new[]{VisualThemeMode.Light,VisualThemeMode.Dark})foreach(var variant in new[]{"compact","wide"}) {
+        foreach(var mode in new[]{ThemeMode.Light,ThemeMode.Dark})foreach(var variant in new[]{"compact","wide"}) {
             var artifact=SequenceSelfRoutesSourceRecipe.Create(source,variant,mode,ExampleTypography.FontFamily);
             var stem=Path.Combine(output,"mermaid-sequence-self-routes-"+variant+"-"+mode.ToString().ToLowerInvariant());
             File.WriteAllText(stem+".mmd",source);artifact.SaveSvg(stem+".svg");File.WriteAllBytes(stem+".png",artifact.ToPng());File.WriteAllText(stem+".json",artifact.ToInterchangeJson());

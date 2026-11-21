@@ -10,9 +10,9 @@ namespace ChartForgeX.Tests;
 
 public sealed class VisualCanvasRolePaintTests {
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void IndependentTileAndBadgePaintsReachSvgAndNativePngWithoutChangingSharedText(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void IndependentTileAndBadgePaintsReachSvgAndNativePngWithoutChangingSharedText(ThemeMode mode) {
         var canvas = CreateCanvas(mode);
         var colors = new[] { ChartColor.FromHex("#D01327"), ChartColor.FromHex("#19A64E"), ChartColor.FromHex("#2163D8"), ChartColor.FromHex("#A21FC3") };
         canvas.ConfigureStyle(style => {
@@ -23,7 +23,7 @@ public sealed class VisualCanvasRolePaintTests {
         });
 
         AssertRolePaints(canvas, colors);
-        canvas.WithThemeMode(mode == VisualThemeMode.Light ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        canvas.WithThemeMode(mode == ThemeMode.Light ? ThemeMode.Dark : ThemeMode.Light);
         AssertRolePaints(canvas, colors);
         Assert.Equal(canvas.Theme.Resolve(canvas.ThemeMode).Foreground.ToCss(), TextPaint(canvas.ToSvg(), "Shared text"));
 
@@ -39,7 +39,7 @@ public sealed class VisualCanvasRolePaintTests {
 
     [Fact]
     public void ConfiguredRolePaintsAreDetachedFromRetainedCallbackValuesAndFailedEdits() {
-        var canvas = CreateCanvas(VisualThemeMode.Dark);
+        var canvas = CreateCanvas(ThemeMode.Dark);
         VisualCanvasStyleOptions? retained = null;
         canvas.ConfigureStyle(style => {
             retained = style;
@@ -63,7 +63,7 @@ public sealed class VisualCanvasRolePaintTests {
         AssertRolePaints(canvas, new[] { ChartColors.Red, ChartColors.Green, ChartColors.Blue, ChartColors.Magenta });
     }
 
-    private static VisualCanvas CreateCanvas(VisualThemeMode mode) => VisualCanvas.Create(620, 220)
+    private static VisualCanvas CreateCanvas(ThemeMode mode) => VisualCanvas.Create(620, 220)
         .WithTheme(VisualTheme.Graphite(), mode)
         .WithBackdrop(VisualCanvasBackdropStyle.Transparent)
         .AddInfoTile(12, 12, 360, 150, "", "Capacity label", "256 GB", "Calibrated detail")

@@ -126,7 +126,9 @@ internal static partial class SmokeTests {
         foreach (var packageReference in GetXmlElements(libraryProject, "PackageReference")) {
             var include = packageReference.Attribute("Include")?.Value ?? string.Empty;
             var privateAssets = packageReference.Attribute("PrivateAssets")?.Value ?? string.Empty;
-            var allowedBuildPackage = string.Equals(include, "Microsoft.NETFramework.ReferenceAssemblies.net472", StringComparison.OrdinalIgnoreCase) &&
+            // Reference assemblies and the build-time vocabulary generator never reach consumers.
+            var allowedBuildPackage = (string.Equals(include, "Microsoft.NETFramework.ReferenceAssemblies.net472", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(include, "PowerForge.Generators", StringComparison.OrdinalIgnoreCase)) &&
                 string.Equals(privateAssets, "all", StringComparison.OrdinalIgnoreCase);
             Assert(allowedBuildPackage, "Runtime package dependencies are not allowed in the core library: " + include);
         }

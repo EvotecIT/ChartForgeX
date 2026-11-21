@@ -11,7 +11,7 @@ public static class HtmlLocalizedChartExamples {
     public static string CreatePage(bool dark = false) {
         var chart = Chart.Create().WithSize(800, 440).WithTitle("Czas przetwarzania")
             .WithSubtitle("Wybierz pomiary, aby porównać wyniki")
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .ConfigureAccessibility(options => options.Language = "pl-PL")
             .WithXAxis("Pomiar").WithYAxis("Sekundy")
             .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("measurements"), "Pomiary",

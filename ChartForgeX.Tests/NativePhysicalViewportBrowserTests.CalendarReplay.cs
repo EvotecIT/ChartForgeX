@@ -8,9 +8,9 @@ namespace ChartForgeX.Tests;
 
 public sealed partial class NativePhysicalViewportBrowserTests {
     [BrowserTheory]
-    [InlineData(false, 390, VisualThemeMode.Dark)]
-    [InlineData(true, 900, VisualThemeMode.Light)]
-    public async Task CalendarExclusiveEdgeSurvivesNativeBookmarkReplayAndKeyboardNavigation(bool reversed, int width, VisualThemeMode mode) {
+    [InlineData(false, 390, ThemeMode.Dark)]
+    [InlineData(true, 900, ThemeMode.Light)]
+    public async Task CalendarExclusiveEdgeSurvivesNativeBookmarkReplayAndKeyboardNavigation(bool reversed, int width, ThemeMode mode) {
         if (!Enabled) return;
         var host = new TimeSpacingHost(true, reversed, width, mode);
         await using var session = await BrowserProofFonts.OpenAsync(host.Page, width + 24, 1000);

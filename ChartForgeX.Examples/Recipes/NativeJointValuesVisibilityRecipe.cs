@@ -1,6 +1,6 @@
 /// <summary>One native source for joint values and absolute whole-series Preserve visibility.</summary>
 internal static class NativeJointValuesVisibilityRecipe {
-    internal static Chart Create(bool bar,double reading,int width,VisualThemeMode mode,string family) {
+    internal static Chart Create(bool bar,double reading,int width,ThemeMode mode,string family) {
         ChartSeries Series(string key,string name,double[] values)=>new ChartSeries(new ChartSeriesId(key),name,bar?ChartSeriesKind.Bar:ChartSeriesKind.Line,values.Select((value,index)=>new ChartPoint(index,value)))
             .WithObservationIds(new[]{new ChartObservationId("earlier"),new ChartObservationId("current"),new ChartObservationId("later")});
         var chart=Chart.Create().WithSize(width,420).WithTheme(VisualTheme.Graphite().WithFontFamily(family),mode).WithHeader(false).WithLegend(true).WithDataLabels(false)

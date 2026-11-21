@@ -11,11 +11,11 @@ namespace ChartForgeX.Tests;
 
 public sealed class MapLabelClusterDepthTests {
     [Theory]
-    [InlineData("compact", VisualThemeMode.Light)]
-    [InlineData("compact", VisualThemeMode.Dark)]
-    [InlineData("wide", VisualThemeMode.Light)]
-    [InlineData("wide", VisualThemeMode.Dark)]
-    public void GridBadgesRetainEveryRawIdentityFeatureWeightColorAndViewportFact(string variant, VisualThemeMode mode) {
+    [InlineData("compact", ThemeMode.Light)]
+    [InlineData("compact", ThemeMode.Dark)]
+    [InlineData("wide", ThemeMode.Light)]
+    [InlineData("wide", ThemeMode.Dark)]
+    public void GridBadgesRetainEveryRawIdentityFeatureWeightColorAndViewportFact(string variant, ThemeMode mode) {
         var chart = MapNavigationDepthRecipe.Create(variant, mode);
         var prepared = Prepare(chart); Capture(prepared, "map-navigation-" + variant + "-" + mode);
         var sources = Groups(prepared, "dotted-map-point-source"); Assert.Equal(5, sources.Length);
@@ -42,11 +42,11 @@ public sealed class MapLabelClusterDepthTests {
     }
 
     [Theory]
-    [InlineData("compact", VisualThemeMode.Light)]
-    [InlineData("compact", VisualThemeMode.Dark)]
-    [InlineData("wide", VisualThemeMode.Light)]
-    [InlineData("wide", VisualThemeMode.Dark)]
-    public void SharedCalloutsRetainFullNamesBoundLeaderReachAndPreventCaptionIntersections(string variant, VisualThemeMode mode) {
+    [InlineData("compact", ThemeMode.Light)]
+    [InlineData("compact", ThemeMode.Dark)]
+    [InlineData("wide", ThemeMode.Light)]
+    [InlineData("wide", ThemeMode.Dark)]
+    public void SharedCalloutsRetainFullNamesBoundLeaderReachAndPreventCaptionIntersections(string variant, ThemeMode mode) {
         var chart = MapNavigationDepthRecipe.Create(variant, mode); var prepared = Prepare(chart);
         var callouts = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Metadata.ContainsKey("data-cfx-callout")).ToArray();
         Assert.True(callouts.Length >= 3);

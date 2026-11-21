@@ -12,7 +12,7 @@ internal static partial class SmokeTests {
     private static void PairedThemesApplyReusablePresentation() {
         var theme = VisualTheme.Graphite().WithPalette(ChartPalettes.FromHex("#123456", "#EC4899"))
             .WithFontFamily(ChartFontStacks.Mono).Configure(builder => {
-                foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+                foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
                     var colors = builder.Colors(mode);
                     colors.Foreground = ChartColor.FromRgb(17, 17, 17);
                     colors.MutedForeground = ChartColor.FromRgb(34, 34, 34);
@@ -31,7 +31,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("#123456", StringComparison.Ordinal) && svg.Contains(ChartFontStacks.Mono, StringComparison.Ordinal),
             "A reusable theme should supply its palette and font to charts.");
         var card = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Single(node => node.Role == "frame-card");
-        Assert(card.Radius == 8 && card.Fill.Equals(theme.Resolve(VisualThemeMode.Light).ElevatedSurface),
+        Assert(card.Radius == 8 && card.Fill.Equals(theme.Resolve(ThemeMode.Light).ElevatedSurface),
             "The native frame should retain its authored radius and card fill.");
         var legendLabels = FamilyLabels(prepared, "legend-label");
         Assert(prepared.Scene.Nodes.OfType<VisualSceneMark>().Any(mark => mark.Stroke.Equals(ChartColor.FromHex("#123456")))
@@ -55,8 +55,8 @@ internal static partial class SmokeTests {
                 && preset.PlotRadius == graphite.PlotRadius && preset.BarRadius == graphite.BarRadius,
                 "Every named theme should keep Graphite's typography and geometry.");
 
-        var accessible = VisualTheme.Accessible().Resolve(VisualThemeMode.Light);
-        Assert(accessible.Palette.SequenceEqual(ChartPalettes.Colorblind) && !accessible.Palette.SequenceEqual(graphite.Resolve(VisualThemeMode.Light).Palette),
+        var accessible = VisualTheme.Accessible().Resolve(ThemeMode.Light);
+        Assert(accessible.Palette.SequenceEqual(ChartPalettes.Colorblind) && !accessible.Palette.SequenceEqual(graphite.Resolve(ThemeMode.Light).Palette),
             "The Accessible theme should differ from Graphite only by its colorblind-safe palette.");
         var accessibleSvg = Chart.Create().WithTheme(VisualTheme.Accessible()).AddBar("Adoption", Points(42, 58, 71)).ToSvg();
         Assert(accessibleSvg.Contains(ChartPalettes.Colorblind[0].ToHex(), StringComparison.OrdinalIgnoreCase),

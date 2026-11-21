@@ -25,28 +25,6 @@ public enum VisualListMarker {
 }
 
 /// <summary>
-/// Built-in compact icons for metric and radial metric visual blocks.
-/// </summary>
-public enum VisualIcon {
-    /// <summary>Do not render an icon.</summary>
-    None,
-    /// <summary>Food or intake icon.</summary>
-    ForkKnife,
-    /// <summary>Heat, burn, or activity icon.</summary>
-    Flame,
-    /// <summary>Energy, activity, or alert icon.</summary>
-    Lightning,
-    /// <summary>Water, hydration, or liquid icon.</summary>
-    Droplet,
-    /// <summary>Walking, running, or movement icon.</summary>
-    Runner,
-    /// <summary>Cycling or bike activity icon.</summary>
-    Bicycle,
-    /// <summary>Person, member, owner, or user icon.</summary>
-    Person
-}
-
-/// <summary>
 /// Badge placement used by metric visual blocks.
 /// </summary>
 public enum MetricCardBadgePlacement {
@@ -230,7 +208,7 @@ public sealed class ChartTableRow {
 public sealed partial class ChartTableCell {
     private string _text;
     private TextAlignment? _alignment;
-    private VisualStatus _status;
+    private Tone _status;
 
     /// <summary>Initializes a table cell.</summary>
     public ChartTableCell(string text) => _text = text ?? throw new ArgumentNullException(nameof(text));
@@ -257,13 +235,7 @@ public sealed partial class ChartTableCell {
     public ChartColor? Background { get; set; }
 
     /// <summary>Gets or sets an optional explicit status.</summary>
-    public VisualStatus Status {
-        get => _status;
-        set {
-            VisualBlockGuards.EnumDefined(value, nameof(value));
-            _status = value;
-        }
-    }
+    public Tone Status { get => _status; set => _status = value; }
 
     /// <summary>Creates a cell from any value.</summary>
     public static ChartTableCell FromValue(object? value, string? format = null) {
@@ -305,7 +277,7 @@ public sealed class ChartList : FactualVisualBlock<ChartList> {
     }
 
     /// <summary>Adds a status-colored list item.</summary>
-    public ChartList AddStatusItem(string text, VisualStatus status, string? value = null) {
+    public ChartList AddStatusItem(string text, Tone status, string? value = null) {
         _items.Add(new ChartListItem(text, value) { Status = status });
         return this;
     }
@@ -332,7 +304,7 @@ public sealed class ChartList : FactualVisualBlock<ChartList> {
 /// </summary>
 public sealed class ChartListItem {
     private string _text;
-    private VisualStatus _status;
+    private Tone _status;
 
     /// <summary>Initializes a list item.</summary>
     public ChartListItem(string text, string? value = null) {
@@ -350,13 +322,7 @@ public sealed class ChartListItem {
     public string? Value { get; set; }
 
     /// <summary>Gets or sets an optional status.</summary>
-    public VisualStatus Status {
-        get => _status;
-        set {
-            VisualBlockGuards.EnumDefined(value, nameof(value));
-            _status = value;
-        }
-    }
+    public Tone Status { get => _status; set => _status = value; }
 
     /// <summary>Gets or sets an optional checklist state.</summary>
     public bool? IsChecked { get; set; }
@@ -369,7 +335,7 @@ public sealed class RadialMetricCard : FactualVisualBlock<RadialMetricCard> {
     private readonly List<ChartRadialLayer> _layers = new();
     private string _label = string.Empty;
     private string _value = string.Empty;
-    private VisualIcon _icon;
+    private Icon _icon;
 
     /// <summary>Gets radial progress layers.</summary>
     public IReadOnlyList<ChartRadialLayer> Layers => _layers;
@@ -380,14 +346,8 @@ public sealed class RadialMetricCard : FactualVisualBlock<RadialMetricCard> {
     /// <summary>Gets or sets the center value.</summary>
     public string Value { get => _value; set => _value = value ?? throw new ArgumentNullException(nameof(value)); }
 
-    /// <summary>Gets or sets an optional built-in icon rendered above the center metric.</summary>
-    public VisualIcon Icon {
-        get => _icon;
-        set {
-            VisualBlockGuards.EnumDefined(value, nameof(value));
-            _icon = value;
-        }
-    }
+    /// <summary>Gets or sets an optional icon rendered above the center metric. <see cref="Icons"/> lists the keys drawn; another key draws the default mark.</summary>
+    public Icon Icon { get => _icon; set => _icon = value; }
 
     /// <summary>Gets a concise accessibility label.</summary>
     public override string AccessibleName => Options.Accessibility.Name ?? (Label.Length == 0 ? base.AccessibleName : Label);
@@ -403,7 +363,7 @@ public sealed class RadialMetricCard : FactualVisualBlock<RadialMetricCard> {
     }
 
     /// <summary>Sets an optional built-in icon rendered above the center metric.</summary>
-    public RadialMetricCard WithIcon(VisualIcon icon) { Icon = icon; return this; }
+    public RadialMetricCard WithIcon(Icon icon) { Icon = icon; return this; }
 
     /// <summary>Replaces all radial layers.</summary>
     public RadialMetricCard WithLayers(IEnumerable<ChartRadialLayer> layers) {
@@ -496,13 +456,13 @@ public sealed class VisualGrid : ChartForgeX.Rendering.IStaticVisualSource {
     public bool AdaptiveRowHeights { get => _adaptiveRowHeights; set => _adaptiveRowHeights = value; }
 
     private VisualTheme _theme = VisualTheme.Graphite();
-    private VisualThemeMode _themeMode;
+    private ThemeMode _themeMode;
 
     /// <summary>Gets or sets the immutable theme shared by the grid's frame and headings.</summary>
     public VisualTheme Theme { get => _theme; set => _theme = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets or sets the explicit light or dark appearance.</summary>
-    public VisualThemeMode ThemeMode { get => _themeMode; set { VisualBlockGuards.EnumDefined(value, nameof(value)); _themeMode = value; } }
+    public ThemeMode ThemeMode { get => _themeMode; set { VisualBlockGuards.EnumDefined(value, nameof(value)); _themeMode = value; } }
 
     internal ResolvedVisualTheme ResolvedTheme => Theme.ResolvePresentation(ThemeMode);
 
@@ -550,10 +510,10 @@ public sealed class VisualGrid : ChartForgeX.Rendering.IStaticVisualSource {
     public VisualGrid WithPadding(int padding) { Padding = padding; return this; }
 
     /// <summary>Sets the grid theme.</summary>
-    public VisualGrid WithTheme(VisualTheme theme, VisualThemeMode? mode = null) { Theme = theme; if (mode.HasValue) ThemeMode = mode.Value; return this; }
+    public VisualGrid WithTheme(VisualTheme theme, ThemeMode? mode = null) { Theme = theme; if (mode.HasValue) ThemeMode = mode.Value; return this; }
 
     /// <summary>Chooses the light or dark appearance without replacing the shared theme.</summary>
-    public VisualGrid WithThemeMode(VisualThemeMode mode) { ThemeMode = mode; return this; }
+    public VisualGrid WithThemeMode(ThemeMode mode) { ThemeMode = mode; return this; }
 
     /// <summary>Sets a fixed panel size.</summary>
     public VisualGrid WithPanelSize(int width, int height) { PanelSize = new ChartSize(width, height); return this; }

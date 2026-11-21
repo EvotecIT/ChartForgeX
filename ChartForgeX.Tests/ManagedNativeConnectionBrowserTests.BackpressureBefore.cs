@@ -14,7 +14,7 @@ public sealed partial class ManagedNativeConnectionBrowserTests {
     [InlineData(390, false, true)] [InlineData(390, true, true)]
     [InlineData(900, false, true)] [InlineData(900, true, true)]
     public void NativeNumericAndTypedProducerControlsRetainDetachedAssetFreeSections(int width, bool dark, bool typed) {
-        var host = new NativeHost(width, dark ? VisualThemeMode.Dark : VisualThemeMode.Light, typed);
+        var host = new NativeHost(width, dark ? ThemeMode.Dark : ThemeMode.Light, typed);
         var section = host.Section("initial"); var html = section.Html; var svg = section.PreparedVisual.ToSvg(); var png = section.PreparedVisual.ToPng();
         var output = Environment.GetEnvironmentVariable("CFX_NATIVE_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(output)) {
@@ -40,7 +40,7 @@ public sealed partial class ManagedNativeConnectionBrowserTests {
     [InlineData(390, true, true)] [InlineData(900, false, true)]
     public async Task LatestWindowCausalKeepsOneIgnoredAbortProducerAndTheLatestAcceptedNativeSource(int width, bool dark, bool typed) {
         if (!Enabled) return;
-        var host = new NativeHost(width, dark ? VisualThemeMode.Dark : VisualThemeMode.Light, typed);
+        var host = new NativeHost(width, dark ? ThemeMode.Dark : ThemeMode.Light, typed);
         await using var session = await BrowserProofFonts.OpenAsync(host.Page, width + 24, 800);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
         await ConnectAsync(page, host, "x");

@@ -9,7 +9,7 @@ using ChartForgeX.VisualArtifacts;
 public static partial class V2Examples {
     private static void WriteViewports(string output, ICollection<ProofArtifact> artifacts) {
         foreach (var kind in new[] { ChartSeriesKind.Line, ChartSeriesKind.StepLine })
-            foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark })
+            foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark })
                 foreach (var compact in new[] { false, true }) {
                     var steps = kind == ChartSeriesKind.StepLine;
                     var family = FamilyName(kind);

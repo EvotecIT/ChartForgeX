@@ -115,7 +115,7 @@ public sealed class MermaidRailroadFrontendCompletionTests {
         foreach (var source in new[] { Abnf, Peg }) {
             var options = new MermaidRenderOptions {
                 WarningPolicy = MermaidWarningPolicy.Reject,
-                Presentation = new MermaidPresentationOptions { ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light, FontFamily = BrowserProofFonts.Family },
+                Presentation = new MermaidPresentationOptions { ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light, FontFamily = BrowserProofFonts.Family },
                 Railroad = new MermaidRailroadRenderOptions { Width = width, Height = 220 }
             };
             var direct = MermaidRenderer.Render(source, options); Assert.Empty(direct.Diagnostics);

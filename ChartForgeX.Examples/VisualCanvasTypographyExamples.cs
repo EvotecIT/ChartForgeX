@@ -9,21 +9,21 @@ internal static class VisualCanvasTypographyExamples {
 
     public static void Write(string output) {
         Directory.CreateDirectory(output);
-        Save(output, VisualThemeMode.Light);
-        Save(output, VisualThemeMode.Dark);
-        SaveFallback(output, VisualThemeMode.Light);
-        SaveFallback(output, VisualThemeMode.Dark);
+        Save(output, ThemeMode.Light);
+        Save(output, ThemeMode.Dark);
+        SaveFallback(output, ThemeMode.Light);
+        SaveFallback(output, ThemeMode.Dark);
     }
 
     public static void WriteProofMatrix(string output) {
         Directory.CreateDirectory(output);
         foreach (var size in new[] { (Width: 1920, Height: 1080), (Width: 2560, Height: 1440) }) {
-            foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+            foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
                 foreach (var scale in ProofScales) SaveProof(output, size.Width, size.Height, mode, scale);
             }
         }
 
-        var tooSmall = CreateCanvas(1920, 1080, VisualThemeMode.Dark)
+        var tooSmall = CreateCanvas(1920, 1080, ThemeMode.Dark)
             .AddInfoTileWithTextOptions(48, 64, 320, 72, "PC", "HOSTNAME",
                 "A very long workstation name",
                 new VisualCanvasInfoTileTextOptions(textScale: 1.5),
@@ -32,7 +32,7 @@ internal static class VisualCanvasTypographyExamples {
         tooSmall.SaveSvg(Path.Combine(output, "tile-text-too-small-1.5-dark.svg"));
     }
 
-    private static void Save(string output, VisualThemeMode mode) {
+    private static void Save(string output, ThemeMode mode) {
         var canvas = CreateCanvas(1200, 630, mode)
             .AddInfoTile(48, 100, 520, 164, "PC", "WORKSTATION", "DEV-WKS-01", "Windows 11 Enterprise",
                 ChartColor.FromHex("#2F80FF"), surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Raised)
@@ -43,13 +43,13 @@ internal static class VisualCanvasTypographyExamples {
                 surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Raised,
                 miniChartKind: VisualCanvasInfoTileMiniChartKind.Sparkline,
                 miniChartValues: new[] { 18d, 26d, 22d, 37d, 29d, 23d });
-        var suffix = mode == VisualThemeMode.Dark ? "dark" : "light";
+        var suffix = mode == ThemeMode.Dark ? "dark" : "light";
         canvas.SaveSvg(Path.Combine(output, "visual-canvas-tile-text-" + suffix + ".svg"));
         canvas.SavePng(Path.Combine(output, "visual-canvas-tile-text-" + suffix + ".png"));
         canvas.SaveHtml(Path.Combine(output, "visual-canvas-tile-text-" + suffix + ".html"));
     }
 
-    private static void SaveProof(string output, int width, int height, VisualThemeMode mode,
+    private static void SaveProof(string output, int width, int height, ThemeMode mode,
         double scale) {
         var canvas = CreateCanvas(width, height, mode)
             .AddInfoTileWithTextOptions(48, 64, 680, 168, "CPU", "PROCESSOR",
@@ -60,14 +60,14 @@ internal static class VisualCanvasTypographyExamples {
                 surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Raised,
                 miniChartKind: VisualCanvasInfoTileMiniChartKind.Sparkline,
                 miniChartValues: new[] { 18d, 26d, 22d, 37d, 29d, 23d });
-        var suffix = mode == VisualThemeMode.Dark ? "dark" : "light";
+        var suffix = mode == ThemeMode.Dark ? "dark" : "light";
         var name = "tile-text-" + scale.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)
             + "-" + width + "x" + height + "-" + suffix;
         canvas.SavePng(Path.Combine(output, name + ".png"));
         canvas.SaveSvg(Path.Combine(output, name + ".svg"));
     }
 
-    private static void SaveFallback(string output, VisualThemeMode mode) {
+    private static void SaveFallback(string output, ThemeMode mode) {
         var canvas = CreateCanvas(420, 100, mode)
             .AddInfoTileWithTextOptions(48, 26, 320, 48, string.Empty,
                 "HOSTNAME", "WORKSTATION-01",
@@ -75,18 +75,18 @@ internal static class VisualCanvasTypographyExamples {
                 "Windows desktop", ChartColor.FromHex("#38BDF8"),
                 surfaceStyle: VisualCanvasInfoTileSurfaceStyle.Outline,
                 iconKind: VisualCanvasInfoTileIconKind.Computer);
-        var suffix = mode == VisualThemeMode.Dark ? "dark" : "light";
+        var suffix = mode == ThemeMode.Dark ? "dark" : "light";
         var name = "visual-canvas-tile-text-fallback-" + suffix;
         canvas.SaveSvg(Path.Combine(output, name + ".svg"));
         canvas.SavePng(Path.Combine(output, name + ".png"));
         canvas.SaveHtml(Path.Combine(output, name + ".html"));
     }
 
-    private static VisualCanvas CreateCanvas(int width, int height, VisualThemeMode mode) =>
+    private static VisualCanvas CreateCanvas(int width, int height, ThemeMode mode) =>
         VisualCanvas.Create(width, height)
             .WithTheme(VisualTheme.Graphite(), mode)
             .WithBackdrop(VisualCanvasBackdropStyle.Plain)
             .WithBackground(
-                mode == VisualThemeMode.Dark ? ChartColor.FromHex("#071426") : ChartColor.FromHex("#EAF1FA"),
-                mode == VisualThemeMode.Dark ? ChartColor.FromHex("#020713") : ChartColor.FromHex("#F8FAFC"));
+                mode == ThemeMode.Dark ? ChartColor.FromHex("#071426") : ChartColor.FromHex("#EAF1FA"),
+                mode == ThemeMode.Dark ? ChartColor.FromHex("#020713") : ChartColor.FromHex("#F8FAFC"));
 }

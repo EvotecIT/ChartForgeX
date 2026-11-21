@@ -11,7 +11,7 @@ internal static class StoryAppearanceExamples {
                 var theme = appearance == "macos" ? VisualStoryThemes.MacOS()
                     : appearance == "windows" ? VisualStoryThemes.Windows() : VisualStoryThemes.Linux();
                 var style = appearance == "macos" ? VisualStoryStyleOptions.MacOS(light) : appearance == "windows" ? VisualStoryStyleOptions.Windows(light) : VisualStoryStyleOptions.Linux(light);
-                var prepared = Create(theme, light ? VisualThemeMode.Light : VisualThemeMode.Dark, style).Prepare(new VisualStoryPlaybackOptions(TimeSpan.FromSeconds(1), TimeSpan.Zero, 0));
+                var prepared = Create(theme, light ? ThemeMode.Light : ThemeMode.Dark, style).Prepare(new VisualStoryPlaybackOptions(TimeSpan.FromSeconds(1), TimeSpan.Zero, 0));
                 var name = "desktop-" + appearance + (light ? "-light" : "-dark");
                 var svg = prepared.ToAnimatedSvg(new VisualStoryFrameOptions(4));
                 File.WriteAllText(Path.Combine(output, name + ".svg"), svg);
@@ -24,7 +24,7 @@ internal static class StoryAppearanceExamples {
         }
     }
 
-    private static VisualStory Create(VisualTheme theme, VisualThemeMode mode, VisualStoryStyleOptions style) {
+    private static VisualStory Create(VisualTheme theme, ThemeMode mode, VisualStoryStyleOptions style) {
         const string text = "$name = 'Stories'\nWrite-Output \"Hello, $name!\"";
         var source = StorySourceText.Create(text, "powershell")
             .AddSpan(0, 5, StorySyntaxKind.Variable).AddSpan(6, 1, StorySyntaxKind.Operator)

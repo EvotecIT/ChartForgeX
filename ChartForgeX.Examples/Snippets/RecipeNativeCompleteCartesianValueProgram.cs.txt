@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -11,7 +12,7 @@ using ChartForgeX.Interactivity.Html;
 
 if(args.Length!=1)throw new ArgumentException("Pass the path of a font licensed for this output.");FontRegistry.Register("Owned complete-value font",File.ReadAllBytes(args[0]));
 var kind={{KIND}};var raw=false;var initial=false;var renderer=new HtmlInteractiveChartRenderer();
-Chart Model(double value)=>NativeCompleteCartesianValueRecipe.Create(kind,value,{{WIDTH}},VisualThemeMode.{{MODE}},"Owned complete-value font");
+Chart Model(double value)=>NativeCompleteCartesianValueRecipe.Create(kind,value,{{WIDTH}},ThemeMode.{{MODE}},"Owned complete-value font");
 void Configure(HtmlChartInteractionOptions options){options.CaptureNativeValueSource=raw;options.Interaction.ChartId="native-complete-values";}
 var from=renderer.PrepareSection(Model(30),configure:Configure);var to=renderer.PrepareSection(Model(40),configure:Configure);
 var payload=renderer.PrepareNativeTransitionJson(from,to,new HtmlNativeTransitionOptions(initial?HtmlNativeTransitionEffect.InitialValues:HtmlNativeTransitionEffect.Values,5));

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -15,7 +16,7 @@ using ChartForgeX.VisualBlocks;
 
 // Native PNG and standalone SVG use bundled Archivo.
 // Add ChartFontAssets.StyleSheet once for other text on a host page.
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = TimelineRecipe.Create("wide", mode);
 var context = new VisualRenderContext(
@@ -29,7 +30,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 
 /// <summary>Overlapping project activities in March 2026 with stable task identities and an explicitly configured time axis.</summary>
 public static class TimelineRecipe {
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var start = new DateTime(2026, 3, 2, 8, 0, 0, DateTimeKind.Utc);
         var chart = Chart.Create();
         // Each activity starts and ends a whole number of days after the kick-off on Monday 2 March.

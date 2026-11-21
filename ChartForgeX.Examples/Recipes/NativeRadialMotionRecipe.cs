@@ -1,6 +1,6 @@
 /// <summary>Positive native Pie/Donut value frames and captured full-source Other visibility.</summary>
 internal static class NativeRadialMotionRecipe {
-    internal static Chart Create(bool donut, bool other, double value, int width, VisualThemeMode mode) {
+    internal static Chart Create(bool donut, bool other, double value, int width, ThemeMode mode) {
         var values = other ? new[] { value, 25d, 10d, 4d, 1d } : new[] { value, 25d, 10d };
         var series = new ChartSeries(new ChartSeriesId("parts"), "Parts", donut ? ChartSeriesKind.Donut : ChartSeriesKind.Pie,
             values.Select((reading, index) => new ChartPoint(index + 1, reading)))

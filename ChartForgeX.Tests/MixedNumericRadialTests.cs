@@ -179,11 +179,11 @@ public sealed class MixedNumericRadialTests {
     }
 
     [Theory]
-    [InlineData(360, 360, VisualThemeMode.Light)]
-    [InlineData(360, 360, VisualThemeMode.Dark)]
-    [InlineData(800, 440, VisualThemeMode.Light)]
-    [InlineData(800, 440, VisualThemeMode.Dark)]
-    public void GalleryModelExportsAllThreeFormsWithBoundedNativeGeometry(int width, int height, VisualThemeMode mode) {
+    [InlineData(360, 360, ThemeMode.Light)]
+    [InlineData(360, 360, ThemeMode.Dark)]
+    [InlineData(800, 440, ThemeMode.Light)]
+    [InlineData(800, 440, ThemeMode.Dark)]
+    public void GalleryModelExportsAllThreeFormsWithBoundedNativeGeometry(int width, int height, ThemeMode mode) {
         var chart = V2GalleryModels.CreateMixedRadial().WithSize(width, height).WithHeader(false).WithLegend();
         var request = VisualExportRequest.ForChart(chart).Context;
         var prepared = chart.Prepare(new VisualRenderContext(request.Layout, request.Theme, mode, request.Frame, request.Font));

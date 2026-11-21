@@ -16,8 +16,8 @@ namespace ChartForgeX.Tests;
 /// </summary>
 public sealed class ThemedSvgShareTests {
     private static readonly string Json = File.ReadAllText(FixturePath("tokens", "palette-v1-graphite.json"));
-    private static readonly VisualDesignTokens Light = VisualDesignTokens.FromJson(Json, VisualThemeMode.Light);
-    private static readonly VisualDesignTokens Dark = VisualDesignTokens.FromJson(Json, VisualThemeMode.Dark);
+    private static readonly VisualDesignTokens Light = VisualDesignTokens.FromJson(Json, ThemeMode.Light);
+    private static readonly VisualDesignTokens Dark = VisualDesignTokens.FromJson(Json, ThemeMode.Dark);
     private static readonly Regex Variable = new(@"var\((?<name>--[A-Za-z0-9_-]+), #[0-9A-Fa-f]{6}(?:[0-9A-Fa-f]{2})?\)", RegexOptions.CultureInvariant);
     private static readonly Regex Ids = new(@"\bcfx(?:-v2-[0-9a-f]{64}|[0-9a-f]{8})", RegexOptions.CultureInvariant);
     private static readonly Regex Definition = new(@"<(?<tag>linearGradient|radialGradient|pattern|filter|clipPath|mask|marker)\b[^>]*(?<![\w:-])id=""(?<id>[^""]+)""[^>]*?(?:/>|>.*?</\k<tag>>)", RegexOptions.CultureInvariant | RegexOptions.Singleline);

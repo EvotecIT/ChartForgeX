@@ -197,7 +197,7 @@ public enum VisualCanvasInfoTileMiniChartKind {
 public sealed partial class VisualCanvas {
     private readonly List<VisualCanvasLayer> _layers = new();
     private VisualTheme _theme = CreateDefaultTheme();
-    private VisualThemeMode _themeMode = VisualThemeMode.Dark;
+    private ThemeMode _themeMode = ThemeMode.Dark;
     private VisualCanvasStyleOptions _style = new();
     private ChartColor? _backgroundTop;
     private ChartColor? _backgroundBottom;
@@ -278,7 +278,7 @@ public sealed partial class VisualCanvas {
     public VisualCanvas WithBackdrop(VisualCanvasBackdropStyle style) { ValidateEnum(style, nameof(style)); BackdropStyle = style; return this; }
 
     /// <summary>Sets the theme used by built-in visual canvas layers.</summary>
-    public VisualCanvas WithTheme(VisualTheme theme, VisualThemeMode? mode = null) { Theme = theme; if (mode.HasValue) ThemeMode = mode.Value; return this; }
+    public VisualCanvas WithTheme(VisualTheme theme, ThemeMode? mode = null) { Theme = theme; if (mode.HasValue) ThemeMode = mode.Value; return this; }
 
     /// <summary>Sets the PNG output pixel multiplier.</summary>
     public VisualCanvas WithPngOutputScale(int scale) { PngOutputScale = scale; return this; }
@@ -455,7 +455,7 @@ public sealed partial class VisualCanvas {
         return AddFeatureStrip(bounds.X, bounds.Y, bounds.Width, bounds.Height, items);
     }
 
-    internal static void ValidateEnum<TEnum>(TEnum value, string parameterName) where TEnum : struct {
+    internal static void ValidateEnum<TEnum>(TEnum value, string parameterName) where TEnum : struct, Enum {
         if (!Enum.IsDefined(typeof(TEnum), value)) throw new ArgumentOutOfRangeException(parameterName, value, "Unknown " + typeof(TEnum).Name + " value.");
     }
 

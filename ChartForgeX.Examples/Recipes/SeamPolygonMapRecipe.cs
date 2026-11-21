@@ -10,7 +10,7 @@ public static class SeamPolygonMapRecipe {
         """;
 
     /// <summary>Creates compact/wide light/dark scenes with either existing geographic projection.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "mercator" or "compact-mercator")) throw new ArgumentOutOfRangeException(nameof(variant));
         var width = variant.StartsWith("compact", StringComparison.Ordinal) ? 390 : 800;
         var projection = variant.EndsWith("mercator", StringComparison.Ordinal) ? ChartMapGeoJsonProjection.WebMercator : ChartMapGeoJsonProjection.Equirectangular;

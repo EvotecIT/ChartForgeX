@@ -2,7 +2,7 @@ using System.Text.Json;
 
 public static partial class ExampleRecipeSource {
     /// <summary>Packages the canonical actor source as an ordinary Mermaid-package program; Core native authoring stays separate.</summary>
-    public static string EmitAdvancedActorSource(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light, bool galleryTypography = false) {
+    public static string EmitAdvancedActorSource(string variant = "wide", ThemeMode mode = ThemeMode.Light, bool galleryTypography = false) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var source = ReadResource("ChartForgeX.Examples.MermaidFixtures.usecase-advanced-actors.mmd");
         if (variant == "compact") source = source.Replace("direction TB", "direction LR", StringComparison.Ordinal);

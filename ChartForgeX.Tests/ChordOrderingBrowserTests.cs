@@ -14,11 +14,11 @@ namespace ChartForgeX.Tests;
 [Trait("BrowserSuite", "Compatibility")]
 public sealed class ChordOrderingBrowserTests {
     [BrowserTheory]
-    [InlineData(390, VisualThemeMode.Light)]
-    [InlineData(390, VisualThemeMode.Dark)]
-    [InlineData(800, VisualThemeMode.Light)]
-    [InlineData(800, VisualThemeMode.Dark)]
-    public async Task DisplayOrderAndTensionKeepSourceKeyboardSelectionAndCurrentNativeExports(int width, VisualThemeMode mode) {
+    [InlineData(390, ThemeMode.Light)]
+    [InlineData(390, ThemeMode.Dark)]
+    [InlineData(800, ThemeMode.Light)]
+    [InlineData(800, ThemeMode.Dark)]
+    public async Task DisplayOrderAndTensionKeepSourceKeyboardSelectionAndCurrentNativeExports(int width, ThemeMode mode) {
         if (!Enabled) return;
         var chart = Model(width, mode); var updated = Model(width, mode);
         updated.ConfigureChord(options => {
@@ -71,7 +71,7 @@ public sealed class ChordOrderingBrowserTests {
         Assert.Empty(errors); AssertNoConsoleErrors(session);
     }
 
-    private static Chart Model(int width, VisualThemeMode mode) => ChordDepthRecipe.Create(width == 390 ? "compact" : "wide", mode)
+    private static Chart Model(int width, ThemeMode mode) => ChordDepthRecipe.Create(width == 390 ? "compact" : "wide", mode)
         .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), mode);
     private static void Options(HtmlChartInteractionOptions options) {
         options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;

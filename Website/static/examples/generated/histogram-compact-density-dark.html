@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = HistogramRecipe.Create(&quot;compact-density&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Ticket resolution times as counts, shares and densities, and signed or weighted means, over unequal intervals.&lt;/summary&gt;
 public static class HistogramRecipe {
     /// &lt;summary&gt;Creates a native histogram while retaining its source observations and raw bin aggregates.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         var aggregation = variant.StartsWith(&quot;compact-&quot;, StringComparison.Ordinal) ? variant.Substring(8) : variant;
         if (aggregation == &quot;compact&quot;) aggregation = &quot;wide&quot;;
         var chart = Chart.Create().WithDataLabels();
@@ -164,6 +165,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -173,7 +175,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = HistogramRecipe.Create(&quot;compact-density&quot;, mode);
 var context = new VisualRenderContext(
@@ -188,7 +190,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Ticket resolution times as counts, shares and densities, and signed or weighted means, over unequal intervals.&lt;/summary&gt;
 public static class HistogramRecipe {
     /// &lt;summary&gt;Creates a native histogram while retaining its source observations and raw bin aggregates.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         var aggregation = variant.StartsWith(&quot;compact-&quot;, StringComparison.Ordinal) ? variant.Substring(8) : variant;
         if (aggregation == &quot;compact&quot;) aggregation = &quot;wide&quot;;
         var chart = Chart.Create().WithDataLabels();

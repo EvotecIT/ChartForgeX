@@ -1,7 +1,7 @@
 /// <summary>Builds triangular allocation partitions with independent category/value captions and source-owned borders.</summary>
 public static class PyramidPresentationRecipe {
     /// <summary>Creates the full allocation example. Exact documentation typography needs Carlito regular/bold installed or registered; other hosts use normal font fallback.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "horizontal" or "compact-horizontal" or "reversed" or "compact-reversed")) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant.StartsWith("compact", StringComparison.Ordinal);
         var horizontal = variant.EndsWith("horizontal", StringComparison.Ordinal);

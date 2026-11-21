@@ -36,7 +36,7 @@ public sealed class MermaidVennFrameRegressionTests {
     public void ExplicitLargerFrameFitsOutlineAndKeepsDirectFencedSvgPngIdentical(bool dark) {
         const string source = "venn-beta\nset A [Alpha] : 10\nstyle A stroke-width:500";
         var options = new MermaidRenderOptions {
-            Presentation = new MermaidPresentationOptions { ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light, FontFamily = BrowserProofFonts.Family },
+            Presentation = new MermaidPresentationOptions { ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light, FontFamily = BrowserProofFonts.Family },
             Venn = new MermaidVennRenderOptions { Width = 900, Height = 900 } };
         var direct = MermaidRenderer.Render(source, options); Assert.Empty(direct.Diagnostics);
         var artifact = direct.Artifact!; var svg = artifact.ToSvg(); var png = artifact.ToPng();

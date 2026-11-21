@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -14,7 +15,7 @@ using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 using static RegionMapRecipe;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 #endregion
 
@@ -31,7 +32,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 #endregion
 
 static class RegionMapRecipe {
-    internal static Chart Temperature(VisualThemeMode mode) {
+    internal static Chart Temperature(ThemeMode mode) {
         var colors = VisualTheme.Graphite().Resolve(mode);
         var values = new[] {
             new ChartRegionMapItem("CA", -25), new ChartRegionMapItem("TX", -3), new ChartRegionMapItem("NY", 0),

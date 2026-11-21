@@ -22,7 +22,7 @@ public sealed partial class ChartGrid {
     private ChartSize? _panelSize;
     private VisualPanelFit _panelFit = VisualPanelFit.Contain;
     private VisualTheme _theme = VisualTheme.Graphite();
-    private VisualThemeMode _themeMode;
+    private ThemeMode _themeMode;
     private ResolvedVisualTheme? _resolvedTheme;
 
     /// <summary>
@@ -120,9 +120,9 @@ public sealed partial class ChartGrid {
     }
 
     /// <summary>Gets or sets the explicit palette mode for the grid frame and shared panels.</summary>
-    public VisualThemeMode ThemeMode {
+    public ThemeMode ThemeMode {
         get => _themeMode;
-        set { if (!Enum.IsDefined(typeof(VisualThemeMode), value)) throw new ArgumentOutOfRangeException(nameof(value)); _themeMode = value; _resolvedTheme = null; }
+        set { if (!Enum.IsDefined(typeof(ThemeMode), value)) throw new ArgumentOutOfRangeException(nameof(value)); _themeMode = value; _resolvedTheme = null; }
     }
     internal ResolvedVisualTheme ResolvedTheme => _resolvedTheme ??= Theme.ResolvePresentation(ThemeMode);
 
@@ -255,13 +255,13 @@ public sealed partial class ChartGrid {
     /// <param name="theme">The grid theme.</param>
     /// <param name="mode">Optional explicit palette mode; omitted keeps the current mode.</param>
     /// <returns>The current chart grid.</returns>
-    public ChartGrid WithTheme(VisualTheme theme, VisualThemeMode? mode = null) {
+    public ChartGrid WithTheme(VisualTheme theme, ThemeMode? mode = null) {
         if (theme == null) throw new ArgumentNullException(nameof(theme));
-        if (mode.HasValue && !Enum.IsDefined(typeof(VisualThemeMode), mode.Value)) throw new ArgumentOutOfRangeException(nameof(mode));
+        if (mode.HasValue && !Enum.IsDefined(typeof(ThemeMode), mode.Value)) throw new ArgumentOutOfRangeException(nameof(mode));
         Theme = theme; if (mode.HasValue) ThemeMode = mode.Value; return this;
     }
     /// <summary>Sets the explicit palette mode for the comparison.</summary>
-    public ChartGrid WithThemeMode(VisualThemeMode mode) { ThemeMode = mode; return this; }
+    public ChartGrid WithThemeMode(ThemeMode mode) { ThemeMode = mode; return this; }
 
     /// <summary>Retains each chart's authored theme, mode and font inside the grid.</summary>
     /// <param name="enabled">True uses panel presentation; false shares the grid context's theme, mode and font.</param>

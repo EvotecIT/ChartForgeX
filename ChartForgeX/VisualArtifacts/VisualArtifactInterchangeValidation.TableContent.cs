@@ -28,7 +28,7 @@ internal static partial class VisualArtifactInterchangeValidation {
         }
         foreach (var row in table.Rows) {
             if (row == null) throw new ArgumentException("Embedded table rows must not be null.", nameof(table));
-            RequiredId(row.Key, "embedded table row key"); TableArtifactGuards.EnumDefined(row.Status, nameof(table));
+            RequiredId(row.Key, "embedded table row key");
             if (!rows.Add(row.Key)) throw new ArgumentException("Embedded table row keys must be unique.", nameof(table));
             Extensions(row.Extensions, "embedded table row metadata");
             if (row.Cells.Count != table.Columns.Count) throw new ArgumentException("Embedded rows must carry every column exactly once in source column order.", nameof(table));
@@ -39,7 +39,7 @@ internal static partial class VisualArtifactInterchangeValidation {
                 Text(cell.DisplayText, "embedded table cell display text"); OptionalText(cell.SearchText, "embedded table search text");
                 ValidateCaptionContent(cell.Content, cell.DisplayText, "embedded table cell runs");
                 OptionalText(cell.SortText, "embedded table sort text"); OptionalText(cell.CopyText, "embedded table copy text");
-                OptionalText(cell.ExportText, "embedded table export text"); TableArtifactGuards.EnumDefined(cell.Status, nameof(table));
+                OptionalText(cell.ExportText, "embedded table export text");
                 Extensions(cell.Extensions, "embedded table cell metadata");
             }
         }

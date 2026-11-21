@@ -90,7 +90,7 @@ public sealed class InteractivePolarIdentityBrowserTests {
 
     private static Chart CreateChart(bool radar, bool dark) {
         var chart = Chart.Create().WithSize(596, 420).WithLegend()
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithTitle(radar ? "Radar series identities" : "Polar series identities")
             .WithSubtitle("Actual and Target have distinct source identities");
         var coordinates = radar ? new[] { 1d, 2, 3, 4 } : new[] { 0d, Math.PI / 2, Math.PI, 3 * Math.PI / 2 };

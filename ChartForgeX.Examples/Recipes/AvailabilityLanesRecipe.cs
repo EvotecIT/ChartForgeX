@@ -1,7 +1,7 @@
 /// <summary>Shows 24 hours of availability for nine targets in three sites, with the available share per lane.</summary>
 public static class AvailabilityLanesRecipe {
     /// <summary>Creates grouped availability lanes; the compact variant keeps the same data.</summary>
-    public static Chart Create(string variant = "availability", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "availability", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("availability" or "compact-availability")) throw new ArgumentOutOfRangeException(nameof(variant));
         var colors = VisualTheme.Graphite().Resolve(mode);
         var start = new DateTime(2026, 10, 27, 0, 0, 0, DateTimeKind.Utc);

@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = SunburstCurvedLabelsRecipe.Create(&quot;curved-labels&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Places complete supported primary names on captured native circular lanes without changing hierarchy allocation.&lt;/summary&gt;
 public static class SunburstCurvedLabelsRecipe {
     /// &lt;summary&gt;Creates the source model for a compact or wide consumer, independently of the export backend.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;curved-labels&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;curved-labels&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;curved-labels&quot; or &quot;compact-curved-labels&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create().WithLegend(false).WithDataLabels().WithTransparentBackground(false)
             .AddSunburst(&quot;Regional allocation&quot;, new[] {
@@ -137,6 +138,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -146,7 +148,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = SunburstCurvedLabelsRecipe.Create(&quot;curved-labels&quot;, mode);
 var context = new VisualRenderContext(
@@ -161,7 +163,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Places complete supported primary names on captured native circular lanes without changing hierarchy allocation.&lt;/summary&gt;
 public static class SunburstCurvedLabelsRecipe {
     /// &lt;summary&gt;Creates the source model for a compact or wide consumer, independently of the export backend.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;curved-labels&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;curved-labels&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;curved-labels&quot; or &quot;compact-curved-labels&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create().WithLegend(false).WithDataLabels().WithTransparentBackground(false)
             .AddSunburst(&quot;Regional allocation&quot;, new[] {

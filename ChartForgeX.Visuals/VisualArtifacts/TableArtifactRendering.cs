@@ -39,7 +39,7 @@ public static class TableArtifactRendering {
             preview.AddRow(values);
             preview.ConfigureRow(rowIndex, targetRow => {
                 for (var cellIndex = 0; cellIndex < row.Cells.Count; cellIndex++) {
-                    targetRow.Cells[cellIndex].Status = row.Cells[cellIndex].Status == VisualStatus.None ? row.Status : row.Cells[cellIndex].Status;
+                    targetRow.Cells[cellIndex].Status = row.Cells[cellIndex].Status == Tone.None ? row.Status : row.Cells[cellIndex].Status;
                 }
             });
         }

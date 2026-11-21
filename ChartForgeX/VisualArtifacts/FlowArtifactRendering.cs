@@ -139,19 +139,12 @@ public static class FlowArtifactRendering {
         }
     }
 
-    private static TopologyHealthStatus ToTopologyStatus(VisualStatus status) {
-        switch (status) {
-            case VisualStatus.Positive:
-                return TopologyHealthStatus.Healthy;
-            case VisualStatus.Warning:
-                return TopologyHealthStatus.Warning;
-            case VisualStatus.Negative:
-                return TopologyHealthStatus.Critical;
-            case VisualStatus.Neutral:
-                return TopologyHealthStatus.Disabled;
-            default:
-                return TopologyHealthStatus.Unknown;
-        }
+    private static TopologyHealthStatus ToTopologyStatus(Tone status) {
+        if (status == Tone.Success) return TopologyHealthStatus.Healthy;
+        if (status == Tone.Warning) return TopologyHealthStatus.Warning;
+        if (status == Tone.Danger) return TopologyHealthStatus.Critical;
+        if (status == Tone.Neutral || status == Tone.Muted) return TopologyHealthStatus.Disabled;
+        return TopologyHealthStatus.Unknown;
     }
 
     private static TopologyNodeKind ToTopologyKind(FlowArtifactStepKind kind) {

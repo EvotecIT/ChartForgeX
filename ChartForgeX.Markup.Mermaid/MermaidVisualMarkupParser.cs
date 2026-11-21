@@ -27,7 +27,7 @@ public sealed class MermaidVisualMarkupParser {
     /// <summary>Initializes a parser with a host fallback for Mermaid fences without an authored theme.</summary>
     /// <param name="renderOptions">Rendering defaults captured independently for this parser.</param>
     /// <param name="defaultThemeMode">Fallback applied before native appearance capture; null retains native defaults.</param>
-    public MermaidVisualMarkupParser(MermaidRenderOptions renderOptions, VisualThemeMode? defaultThemeMode) {
+    public MermaidVisualMarkupParser(MermaidRenderOptions renderOptions, ThemeMode? defaultThemeMode) {
         if (renderOptions == null) throw new ArgumentNullException(nameof(renderOptions));
         _parser = new VisualMarkupParser(new MermaidVisualMarkupBlockParser(renderOptions, defaultThemeMode));
     }

@@ -163,7 +163,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     private static Chart LinkedBars(bool dark = false) {
         var series = ChartSeries.CreateBar(new ChartSeriesId("orders"), "Orders", new[] { new ChartPoint(0, 34), new ChartPoint(1, 52), new ChartPoint(2, 41) })
             .WithObservationIds(new[] { new ChartObservationId("north"), new ChartObservationId("south"), new ChartObservationId("west") });
-        return Chart.Create().WithSize(640, 360).WithTheme(ChartForgeX.Themes.VisualTheme.Graphite(), dark ? ChartForgeX.Themes.VisualThemeMode.Dark : ChartForgeX.Themes.VisualThemeMode.Light)
+        return Chart.Create().WithSize(640, 360).WithTheme(ChartForgeX.Themes.VisualTheme.Graphite(), dark ? ChartForgeX.ThemeMode.Dark : ChartForgeX.ThemeMode.Light)
             .WithXLabels(new[] { new ChartAxisLabel(0, "North"), new ChartAxisLabel(1, "South"), new ChartAxisLabel(2, "West") }).WithYAxisBounds(0, 60).AddSeries(series);
     }
     private static string LinkedPoint(string id) => "[data-cfx-role=point][data-cfx-observation-id=" + id + "]";

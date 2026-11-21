@@ -177,7 +177,7 @@ public sealed class GaugeConfigurationRenderingTests {
     internal static Chart Create(string layout, bool dark, bool compact) {
         var reading = new ChartGaugeValue(30, -20, 80, new[] { new ChartGaugeTarget(10, "Baseline"), new ChartGaugeTarget(60, "Goal") });
         return Chart.Create().WithSize(compact ? 360 : 800, compact ? 360 : 440).WithLegend(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithTitle("Available capacity")
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithTitle("Available capacity")
             .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Capacity", reading)).ConfigureGauge(options => {
                 options.Caption = "Declared range -20 to 80";
                 options.Bands.Add(new ChartGaugeBand(-20, 20, ChartSeriesState.Warning)); options.Bands.Add(new ChartGaugeBand(20, 80, ChartSeriesState.Success));

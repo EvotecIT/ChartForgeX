@@ -17,14 +17,14 @@ public sealed class OptionalConfigurationOwnershipTests {
         previous.Background = ChartColor.FromHex("#203040");
         previous.Foreground = ChartColor.FromHex("#F0F1F2");
         previous.Cells[0].Alignment = TextAlignment.Right;
-        previous.Cells[1].WithBadge("Ready", VisualStatus.Positive, ChartColor.FromHex("#20D080"), VisualBadgeStyle.Outline);
+        previous.Cells[1].WithBadge("Ready", Tone.Success, ChartColor.FromHex("#20D080"), VisualBadgeStyle.Outline);
         previous.Cells[2].WithSparkline(new SparklineData(new double?[] { 2, null, 5 }, minimum: 0, maximum: 6), ChartColor.FromHex("#10A0FF"));
         ChartTableRow? candidate = null;
         table.ConfigureRow(0, row => {
             candidate = row;
             row.Cells[0].Text = "Configured";
             row.Cells[0].Foreground = ChartColor.FromHex("#00FF80");
-            row.Cells[0].Status = VisualStatus.Info;
+            row.Cells[0].Status = Tone.Info;
             row.Cells[2].Background = ChartColor.FromHex("#102030");
         });
         var installed = table.Rows[0];
@@ -32,10 +32,10 @@ public sealed class OptionalConfigurationOwnershipTests {
         Assert.Equal(previous.Foreground, installed.Foreground);
         Assert.Equal(TextAlignment.Right, installed.Cells[0].Alignment);
         Assert.Equal("Ready", installed.Cells[1].BadgeText);
-        Assert.Equal(VisualStatus.Positive, installed.Cells[1].BadgeStatus);
+        Assert.Equal(Tone.Success, installed.Cells[1].BadgeStatus);
         Assert.Equal(VisualBadgeStyle.Outline, installed.Cells[1].BadgeStyle);
         Assert.Equal(ChartColor.FromHex("#20D080"), installed.Cells[1].BadgeColor);
-        Assert.Equal(VisualStatus.Info, installed.Cells[0].Status);
+        Assert.Equal(Tone.Info, installed.Cells[0].Status);
         Assert.Equal(ChartColor.FromHex("#00FF80"), installed.Cells[0].Foreground);
         Assert.Equal(ChartColor.FromHex("#102030"), installed.Cells[2].Background);
         Assert.Equal(ChartTableCellMicroVisualKind.Sparkline, installed.Cells[2].MicroVisualKind);

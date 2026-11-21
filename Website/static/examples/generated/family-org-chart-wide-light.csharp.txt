@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -13,7 +14,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = OrgChartRecipe.Create("wide", mode);
 var context = new VisualRenderContext(
@@ -28,7 +29,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 /// <summary>An organization chart: people, their roles and reporting lines laid out as cards.</summary>
 public static class OrgChartRecipe {
     /// <summary>Creates a three-level team; the compact variant stacks the deepest branch vertically.</summary>
-    public static TopologyChart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static TopologyChart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant == "compact";
         var chart = TopologyChart.Create().WithViewport(compact ? 390 : 960, compact ? 520 : 520).WithLegend(null);

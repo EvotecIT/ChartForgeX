@@ -116,7 +116,7 @@ public sealed class IntegerAxisTickTests {
         foreach (var maximum in new[] { 1, 2, 3, 4 }) foreach (var dark in new[] { false, true }) {
             var chart = Chart.Create().WithSize(640, 300).WithHeader(false).WithLegend(false)
                 .WithPadding(20, 20, 20, 20)
-                .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+                .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
                 .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
             ChartAxis axis;
             if (location == "horizontal-value") {

@@ -6,7 +6,7 @@ internal static class NativeComponentTimeExamples {
         var font = NativeFallbackRadialExamples.RequiredFont(args, "--primary-font"); FontRegistry.Register("Owned temporal font", font); Directory.CreateDirectory(output); var renderer = new HtmlInteractiveChartRenderer();
         (string Family, string Policy, bool Initial)[] cases = { ("candlestick", "elapsed", true), ("candlestick", "sessions", false), ("candlestick", "ordinal", false), ("candlestick", "calendar", false), ("ohlc", "sessions", true), ("bubble", "ordinal", false), ("range", "calendar", true), ("error", "elapsed", false) };
         foreach (var item in cases) foreach (var width in new[] { 390, 760 }) {
-            var mode = width == 390 ? VisualThemeMode.Light : VisualThemeMode.Dark;
+            var mode = width == 390 ? ThemeMode.Light : ThemeMode.Dark;
             void Configure(HtmlChartInteractionOptions options) { options.CaptureNativeValueSource = true; options.Interaction.ChartId = "native-time-components"; }
             var from = renderer.PrepareSection(NativeComponentTimeRecipe.Create(item.Family, item.Policy, false, width, mode, "Owned temporal font"), configure: Configure);
             var to = renderer.PrepareSection(NativeComponentTimeRecipe.Create(item.Family, item.Policy, true, width, mode, "Owned temporal font"), configure: Configure);

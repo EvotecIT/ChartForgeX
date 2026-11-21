@@ -13,10 +13,10 @@ using ChartForgeX.Themes;
 /// <summary>Ordinary axis examples keep source signs and UTC instants while selecting an explicit native projection.</summary>
 public static class NativeAxisWebsiteRecipe {
     /// <summary>Creates a positive/negative logarithmic, ordinal or calendar-month sample.</summary>
-    public static Chart Create(string variant, VisualThemeMode mode = VisualThemeMode.Light) => CreateChart(variant, mode);
+    public static Chart Create(string variant, ThemeMode mode = ThemeMode.Light) => CreateChart(variant, mode);
 
     /// <summary>Writes the same four source-backed examples shown in the API guide.</summary>
-    public static void Save(VisualThemeMode mode = VisualThemeMode.Light) {
+    public static void Save(ThemeMode mode = ThemeMode.Light) {
 #region views
         foreach (var variant in new[] { "positive-log", "negative-log", "ordinal", "calendar-month" }) {
             var chart = CreateChart(variant, mode);
@@ -27,7 +27,7 @@ public static class NativeAxisWebsiteRecipe {
     }
 
 #region helpers
-    static Chart CreateChart(string variant, VisualThemeMode mode) {
+    static Chart CreateChart(string variant, ThemeMode mode) {
         var chart = Chart.Create().WithSize(800, 463).WithThemeMode(mode).WithLegend(false);
         if (variant is "positive-log" or "negative-log") {
             var negative = variant == "negative-log";

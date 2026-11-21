@@ -16,7 +16,7 @@ public sealed partial class TopologyPaletteSelectionTests {
     public async Task ExplicitVariablesWithoutFallbackKeepStatusPixelsAndResolveInTheHost(string source) {
         if (!Enabled) return;
         var (chart, options) = VariableNode(source, true);
-        var prepared = chart.Prepare(options); var status = chart.Theme.Resolve(VisualThemeMode.Light).Status.Pass.Fill;
+        var prepared = chart.Prepare(options); var status = chart.Theme.Resolve(ThemeMode.Light).Status.Pass.Fill;
         var (referenceChart, referenceOptions) = VariableNode(source, false);
         var reference = referenceChart.ToPng(referenceOptions);
         var sceneSurface = prepared.Visual.Scene.Nodes.OfType<VisualSceneMark>().First(node => node.Role == "topology-node-surface");
@@ -35,7 +35,7 @@ public sealed partial class TopologyPaletteSelectionTests {
         var resolved = await node.Locator("[data-cfx-role=topology-node-surface]").EvaluateAsync<string>("mark=>getComputedStyle(mark).stroke");
         await TopologyPaletteRegressionEvidence.CaptureAsync(session.Page, "explicit-variable-" + source + "-resolved");
         TopologyPaletteRegressionEvidence.Write("explicit-variable-" + source, prepared, new {
-            source, status = status.ToCss(), palette = chart.Theme.Resolve(VisualThemeMode.Light).Palette[1].ToCss(),
+            source, status = status.ToCss(), palette = chart.Theme.Resolve(ThemeMode.Light).Palette[1].ToCss(),
             nativeSurface = new { stroke = sceneSurface.Stroke?.ToCss(), fill = sceneSurface.Fill?.ToCss() },
             nativeGlyphs = glyphSurfaces.Select(mark => new { stroke = mark.Stroke?.ToCss(), fill = mark.Fill?.ToCss() }),
             undefined, resolved, nativePngMatchesWithoutPalette = prepared.ToPng().SequenceEqual(reference)
@@ -55,7 +55,7 @@ public sealed partial class TopologyPaletteSelectionTests {
             .AddArtworkNode("external", "External", TopologyIconArtwork.Image("/assets/owner.png"), 250, 50, width: 100, height: 70);
         foreach (var node in chart.Nodes) { node.Color = "var(--custom)"; node.PaletteIndex = 1; node.Status = TopologyHealthStatus.Healthy; }
         var options = Options(); options.SelectedNodeIds.Add("embedded"); options.SelectedNodeIds.Add("external");
-        var prepared = chart.Prepare(options); var status = chart.Theme.Resolve(VisualThemeMode.Light).Status.Pass.Fill;
+        var prepared = chart.Prepare(options); var status = chart.Theme.Resolve(ThemeMode.Light).Status.Pass.Fill;
         var outlines = prepared.Visual.Scene.Nodes.OfType<VisualSceneMark>().Where(mark => mark.Role == "topology-node-artwork-selection").ToArray();
         var fallback = prepared.Visual.Scene.Nodes.OfType<VisualSceneMark>().Where(mark => mark.Role == "topology-icon-surface").ToArray();
         foreach (var node in chart.Nodes) node.PaletteIndex = null;
@@ -70,7 +70,7 @@ public sealed partial class TopologyPaletteSelectionTests {
     }
 
     private static (TopologyChart Chart, TopologyRenderOptions Options) VariableNode(string source, bool palette) {
-        var chart = Diagram(VisualThemeMode.Light); var options = Options();
+        var chart = Diagram(ThemeMode.Light); var options = Options();
         chart.Nodes[0].Kind = TopologyNodeKind.Service; chart.Nodes[0].Status = TopologyHealthStatus.Healthy;
         chart.Nodes[0].PaletteIndex = palette ? 1 : null;
         if (source == "node") chart.Nodes[0].Color = "var(--custom)";

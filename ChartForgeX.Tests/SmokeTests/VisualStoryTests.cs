@@ -246,7 +246,7 @@ internal static partial class SmokeTests {
 
         var lightStory = VisualStory.Create("Light documentation")
             .WithSize(480, 320)
-            .WithTheme(VisualStoryThemes.Premium(), VisualThemeMode.Light);
+            .WithTheme(VisualStoryThemes.Premium(), ThemeMode.Light);
         lightStory.Scene("result", "Completed", 0.25)
             .Panel("result", new VisualStoryTextSurface("ready", emphasized: true));
         lightStory.Outcome("ready", "The result is visible", "result");

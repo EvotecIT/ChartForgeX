@@ -52,7 +52,7 @@ public sealed class MermaidBoundImageCaptionTests {
     }
 
     private static MermaidRenderOptions Options(byte[] pixels)=>new(){Flowchart=new MermaidFlowchartRenderOptions{Width=480,Height=320,FitContent=false,ImageBindings=new(){["owned-image"]=new RgbaImage(2,1,pixels)}},
-        Presentation=new MermaidPresentationOptions{FontFamily=BrowserProofFonts.Family,ThemeMode=VisualThemeMode.Light},WarningPolicy=MermaidWarningPolicy.Reject};
+        Presentation=new MermaidPresentationOptions{FontFamily=BrowserProofFonts.Family,ThemeMode=ThemeMode.Light},WarningPolicy=MermaidWarningPolicy.Reject};
     private static void Capture(string source,MermaidRenderResult result,string name){
         if(Environment.GetEnvironmentVariable("CFX_FLOWCHART_ASSET_CAPTURE_DIRECTORY") is {Length:>0} output){Directory.CreateDirectory(output);File.WriteAllText(Path.Combine(output,name+".mmd"),source);File.WriteAllText(Path.Combine(output,name+".diagnostics.json"),JsonSerializer.Serialize(result.Diagnostics.Select(item=>new{item.Code,item.Message,item.Severity,item.Span.Line,item.Span.Column,item.Span.Length})));}
         if(result.Artifact!=null)TopologyExternalCaptionPolicyTests.Capture(name,result.Artifact.ToSvg(),result.Artifact.ToPng(),result.Artifact.ToInterchangeJson());

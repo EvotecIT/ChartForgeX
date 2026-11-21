@@ -10,11 +10,11 @@ namespace ChartForgeX.Tests;
 
 public sealed class HierarchyCaptionPolicyTests {
     [Theory]
-    [InlineData(420, VisualThemeMode.Light)]
-    [InlineData(420, VisualThemeMode.Dark)]
-    [InlineData(1100, VisualThemeMode.Light)]
-    [InlineData(1100, VisualThemeMode.Dark)]
-    public void CurvedPrimaryCaptionsRetainCompleteClustersInsideActualRoundedAnnularMarks(int width, VisualThemeMode mode) {
+    [InlineData(420, ThemeMode.Light)]
+    [InlineData(420, ThemeMode.Dark)]
+    [InlineData(1100, ThemeMode.Light)]
+    [InlineData(1100, ThemeMode.Dark)]
+    public void CurvedPrimaryCaptionsRetainCompleteClustersInsideActualRoundedAnnularMarks(int width, ThemeMode mode) {
         var chart = SunburstCurvedLabelsRecipe.Create(mode: mode);
         var context = Context(width, mode); var prepared = chart.Prepare(context);
         ScatterBubbleColorRenderingTests.Capture(prepared, "sunburst-curved-" + width + "-" + mode);
@@ -66,7 +66,7 @@ public sealed class HierarchyCaptionPolicyTests {
             if (kind == "secondary") options.SecondaryLabelFormatter = context => context.Item.Id == "target" ? "Detail" : null;
         });
         if (kind == "decorated") chart.Series[0].ConfigureDataLabelStyle(style => style.Underline = true);
-        var prepared = chart.Prepare(Context(520, VisualThemeMode.Light));
+        var prepared = chart.Prepare(Context(520, ThemeMode.Light));
         Assert.DoesNotContain(prepared.Scene.Nodes.OfType<VisualSceneGroup>(), group => group.Metadata.ContainsKey("data-cfx-caption-placement"));
         Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "hierarchy.curved-label-fallback");
         Assert.Contains(prepared.Regions, region => region.Id == "series-0-node-target" && region.Label!.Contains(chart.Series[0].HierarchyItems[1].Label, StringComparison.Ordinal));
@@ -93,9 +93,9 @@ public sealed class HierarchyCaptionPolicyTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void TreemapPrimaryFloorFitsCompleteNamesBeforeOptionalEllipsisAndKeepsRawFacts(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void TreemapPrimaryFloorFitsCompleteNamesBeforeOptionalEllipsisAndKeepsRawFacts(ThemeMode mode) {
         const string name = "Regional reconciliation";
         var chart = Chart.Create().WithLegend(false).WithDataLabels().AddTreemap("Teams", new[] {
             new ChartHierarchyItem("root", name), new ChartHierarchyItem("leaf", "Leaf", "root", 7)
@@ -118,7 +118,7 @@ public sealed class HierarchyCaptionPolicyTests {
         var chart = Chart.Create().WithLegend(false).WithDataLabels().AddTreemap("Names", new[] {
             new ChartHierarchyItem("root", name), new ChartHierarchyItem("leaf", "Leaf", "root", 7)
         }).ConfigureTreemap(options => { options.MinimumLabelFontSize = 10; options.LabelTrimming = TextTrimming.Ellipsis; });
-        var prepared = chart.Prepare(Context(240, VisualThemeMode.Light));
+        var prepared = chart.Prepare(Context(240, ThemeMode.Light));
         ScatterBubbleColorRenderingTests.Capture(prepared, "treemap-caption-whole-element-ellipsis");
         var label = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), text => text.Role == "treemap-group-label");
         var displayed = Assert.Single(label.Text.Lines).Text;
@@ -132,7 +132,7 @@ public sealed class HierarchyCaptionPolicyTests {
 
     [Fact]
     public void DefaultCaptionOptionsRetainBytesAndInvalidOrWrongFamilyPoliciesReject() {
-        var chart = SunburstRecipe.Create().WithLegend(false); var context = Context(520, VisualThemeMode.Light);
+        var chart = SunburstRecipe.Create().WithLegend(false); var context = Context(520, ThemeMode.Light);
         var before = chart.Prepare(context);
         Assert.False(chart.Options.Sunburst.CurvedLabels); chart.ConfigureSunburst(options => options.CurvedLabels = false);
         Assert.Equal(before.ToSvg(), chart.Prepare(context).ToSvg()); Assert.Equal(before.ToPng(), chart.Prepare(context).ToPng());
@@ -146,7 +146,7 @@ public sealed class HierarchyCaptionPolicyTests {
         Assert.Throws<InvalidOperationException>(() => Chart.Create().AddLine("Line", new[] { new ChartPoint(0, 1) }).ConfigureTreemap(value => value.LabelTrimming = TextTrimming.Ellipsis).Prepare(context));
     }
 
-    internal static VisualRenderContext Context(int width, VisualThemeMode mode, string? family = null) => new(
+    internal static VisualRenderContext Context(int width, ThemeMode mode, string? family = null) => new(
         new VisualLayoutOptions(new VisualSize(width, 520)), VisualTheme.Graphite(), mode,
         new VisualFrame(showLegend: false), family == null ? Font() : FontSpec.FromFamily(family));
 

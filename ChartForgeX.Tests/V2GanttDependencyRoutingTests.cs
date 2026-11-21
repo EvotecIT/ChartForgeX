@@ -95,7 +95,7 @@ public sealed class V2GanttDependencyRoutingTests {
             var chart = Chart.Create().WithHeader(false).WithLegend(false).WithDataLabels(false);
             chart.AddSeries(upward ? target : source).AddSeries(middle).AddSeries(upward ? source : target).AddGanttDependency(source, target);
             var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, 240)),
-                VisualTheme.Graphite(), upward ? VisualThemeMode.Dark : VisualThemeMode.Light, new VisualFrame("", "", showLegend: false), FontSpec.FromFile(font)));
+                VisualTheme.Graphite(), upward ? ThemeMode.Dark : ThemeMode.Light, new VisualFrame("", "", showLegend: false), FontSpec.FromFile(font)));
             ScatterBubbleColorRenderingTests.Capture(prepared, $"gantt-skip-row-{upward}-{overlapping}-{milestone}-{width}");
             var scene = prepared.Scene;
             var surfaces = scene.Regions.Where(region => region.Role is "gantt-task" or "gantt-milestone").Select(region => region.Bounds).ToArray();
@@ -223,7 +223,7 @@ public sealed class V2GanttDependencyRoutingTests {
         var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(font));
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(500, 25), 0),
-            VisualTheme.Graphite().Configure(builder => builder.AxisStrokeWidth = 6), VisualThemeMode.Light,
+            VisualTheme.Graphite().Configure(builder => builder.AxisStrokeWidth = 6), ThemeMode.Light,
             new VisualFrame("", "", showLegend: false), FontSpec.FromFile(font)));
         ScatterBubbleColorRenderingTests.Capture(prepared, "gantt-dense-clear-interior");
         var scene = prepared.Scene;
@@ -250,7 +250,7 @@ public sealed class V2GanttDependencyRoutingTests {
         var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(font));
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(500, height), 0),
-            VisualTheme.Graphite().Configure(builder => builder.AxisStrokeWidth = 4), VisualThemeMode.Light,
+            VisualTheme.Graphite().Configure(builder => builder.AxisStrokeWidth = 4), ThemeMode.Light,
             new VisualFrame("", "", showLegend: false), FontSpec.FromFile(font)));
         var scene = prepared.Scene;
         var schedule = Assert.Single(scene.Nodes.OfType<VisualSceneGroup>(), group => group.Role == "gantt-chart");
@@ -288,7 +288,7 @@ public sealed class V2GanttDependencyRoutingTests {
         var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(font));
         return chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(500, height), 0),
-            VisualTheme.Graphite().Configure(builder => builder.AxisStrokeWidth = stroke), upward ? VisualThemeMode.Dark : VisualThemeMode.Light,
+            VisualTheme.Graphite().Configure(builder => builder.AxisStrokeWidth = stroke), upward ? ThemeMode.Dark : ThemeMode.Light,
             new VisualFrame("", "", showLegend: false), FontSpec.FromFile(font)));
     }
 

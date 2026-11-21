@@ -13,9 +13,9 @@ namespace ChartForgeX.Tests;
 
 public sealed partial class SourceAnnotationBrowserTests {
     [BrowserTheory]
-    [InlineData(390, VisualThemeMode.Dark)]
-    [InlineData(900, VisualThemeMode.Light)]
-    public async Task ConnectedSourceCommandsCommitNativeFactsKeepReaderStateAndExportTheCommittedDrawing(int width, VisualThemeMode mode) {
+    [InlineData(390, ThemeMode.Dark)]
+    [InlineData(900, ThemeMode.Light)]
+    public async Task ConnectedSourceCommandsCommitNativeFactsKeepReaderStateAndExportTheCommittedDrawing(int width, ThemeMode mode) {
         if (!Enabled) return;
         var host = new AnnotationHost(width, mode);
         await using var session = await BrowserProofFonts.OpenAsync(host.Initial, width + 24, 900);
@@ -62,7 +62,7 @@ public sealed partial class SourceAnnotationBrowserTests {
     [BrowserFact]
     public async Task SourceCommandsRejectInvalidRepliesAndShareCancellationWithViewportUpdateAndDisposal() {
         if (!Enabled) return;
-        var host = new AnnotationHost(800, VisualThemeMode.Light);
+        var host = new AnnotationHost(800, ThemeMode.Light);
         await using var session = await BrowserProofFonts.OpenAsync(host.Initial, 900, 900);
         var page = session.Page; await ConnectAnnotations(page, host);
         var invalid = await page.EvaluateAsync<string[]>("""
@@ -116,7 +116,7 @@ public sealed partial class SourceAnnotationBrowserTests {
     [BrowserFact]
     public async Task ExplicitSecondarySourceCommandsDoNotRequireAnAmbiguousPrimaryYInverse() {
         if (!Enabled) return;
-        var host = new AnnotationHost(800, VisualThemeMode.Light, secondary: true);
+        var host = new AnnotationHost(800, ThemeMode.Light, secondary: true);
         await using var session = await BrowserProofFonts.OpenAsync(host.Initial, 900, 900);
         var page = session.Page; await ConnectAnnotations(page, host);
         Assert.True(await page.EvaluateAsync<bool>("() => drawings.getYWindow()!==null&&JSON.parse(drawings.root.dataset.cfxPreparedChart).secondaryYProjection!==undefined"));
@@ -159,11 +159,11 @@ public sealed partial class SourceAnnotationBrowserTests {
     }
     private sealed class AnnotationHost {
         private readonly int _width;
-        private readonly VisualThemeMode _mode;
+        private readonly ThemeMode _mode;
         private readonly bool _secondary;
         private readonly bool _references;
         private readonly Dictionary<string, ChartAnnotation[]> _scenes = new();
-        internal AnnotationHost(int width, VisualThemeMode mode, bool secondary = false, bool references = false) {
+        internal AnnotationHost(int width, ThemeMode mode, bool secondary = false, bool references = false) {
             _width = width; _mode = mode; _secondary = secondary; _references = references; _scenes.Add("initial", Create().Annotations.ToArray());
         }
         internal string Initial => Create().ToInteractiveHtmlFragment(CommandOptions);

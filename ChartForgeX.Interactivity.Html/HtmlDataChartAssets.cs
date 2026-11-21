@@ -20,7 +20,7 @@ public static class HtmlDataChartAssets {
         // Ship ScriptFile, which contains this resolved policy, rather than the resource template.
         var theme = VisualTheme.Graphite();
         var options = new ChartForgeX.Core.ChartOptions(); var gauge = new ChartForgeX.Core.ChartGaugeOptions();
-        var palette = string.Join(",", theme.Resolve(VisualThemeMode.Light).Palette.Select(color =>
+        var palette = string.Join(",", theme.Resolve(ThemeMode.Light).Palette.Select(color =>
             "\"#" + color.R.ToString("x2") + color.G.ToString("x2") + color.B.ToString("x2") + "\""));
         var policy = FormattableString.Invariant($$"""
             {"bandFill":{{ChartMarkSurface.BandFill}},"gap":{{ChartMarkSurface.SurfaceGap}},"separator":{{ChartMarkSurface.StackSeparator}},"minimumSegment":{{ChartMarkSurface.MinimumSegmentExtent}},"columnMaximum":{{theme.MaximumBarWidth}},"barMaximum":{{ChartMarkSurface.MaximumThickness(theme.MaximumBarWidth, true)}},"palette":[{{palette}}],"lineWidth":{{theme.SeriesStrokeWidth}},"markerRadius":{{theme.MarkerRadius}},"areaOpacity":{{theme.AreaOpacity}},"donutInner":{{options.DonutInnerRadiusRatio}},"gaugeStart":{{gauge.StartAngleDegrees}},"gaugeSweep":{{gauge.SweepAngleDegrees}}}

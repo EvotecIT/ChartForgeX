@@ -138,13 +138,13 @@ public sealed partial class Chart {
     /// <param name="theme">The theme to use.</param>
     /// <param name="mode">Optional explicit palette mode; omitted keeps the current mode.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithTheme(VisualTheme theme, VisualThemeMode? mode = null) {
+    public Chart WithTheme(VisualTheme theme, ThemeMode? mode = null) {
         if (theme == null) throw new ArgumentNullException(nameof(theme));
-        if (mode.HasValue && !Enum.IsDefined(typeof(VisualThemeMode), mode.Value)) throw new ArgumentOutOfRangeException(nameof(mode));
+        if (mode.HasValue && !Enum.IsDefined(typeof(ThemeMode), mode.Value)) throw new ArgumentOutOfRangeException(nameof(mode));
         Options.Theme = theme; if (mode.HasValue) Options.ThemeMode = mode.Value; return this;
     }
     /// <summary>Sets the explicit palette mode without replacing the paired theme.</summary>
-    public Chart WithThemeMode(VisualThemeMode mode) { Options.ThemeMode = mode; return this; }
+    public Chart WithThemeMode(ThemeMode mode) { Options.ThemeMode = mode; return this; }
 
     /// <summary>
     /// Sets the CSS font-family used by vector and HTML renderers.

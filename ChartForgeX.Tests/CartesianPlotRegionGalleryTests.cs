@@ -17,10 +17,10 @@ public sealed class CartesianPlotRegionGalleryTests {
     [InlineData(ChartSeriesKind.Bubble, "compact-plot-regions", false)]
     [InlineData(ChartSeriesKind.Bubble, "compact-plot-regions", true)]
     public void ExecutableGalleryModelsKeepBackgroundGuidanceAndObservationsIndependent(ChartSeriesKind kind, string variant, bool dark) {
-        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var compact = variant.StartsWith("compact-", StringComparison.Ordinal);
         var chart = V2GalleryModels.Create(kind, variant, mode).WithSize(compact ? 360 : 800, compact ? 360 : 440)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithTitle(kind == ChartSeriesKind.Scatter ? "Effort and impact" : "Capacity and delay");
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Equal(kind == ChartSeriesKind.Scatter ? 4 : 2, prepared.Regions.Count(r => r.Role == "plot-region"));

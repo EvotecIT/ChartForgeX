@@ -118,7 +118,7 @@ public sealed class MermaidGitGraphDepthTests {
     internal static string Source(string direction, bool parallel) => "%%{init: {\"gitGraph\":{\"mainBranchName\":\"trunk\",\"mainBranchOrder\":3,\"showBranches\":true,\"showCommitLabel\":true,\"rotateCommitLabel\":false,\"parallelCommits\":" + (parallel ? "true" : "false") + "}}}%%\ngitGraph " + direction
         + "\ncommit id:\"base\" tag:\"v1\"\nbranch feature order:2\ncommit id:\"feature-1\" type:HIGHLIGHT\ncheckout trunk\ncommit id:\"main-next\"\nmerge feature id:\"joined\" tag:\"v2\"\nbranch consumer order:1\ncommit id:\"consumer-1\"\ncherry-pick id:\"joined\" parent:\"main-next\" tag:\"picked\"";
     internal static MermaidRenderOptions Options(int width, bool dark) => new() { WarningPolicy = MermaidWarningPolicy.Reject,
-        GitGraph = new MermaidGitGraphRenderOptions { Width = width, Height = 620, Title = "Native commit ancestry", Presentation = new MermaidPresentationOptions { Theme = VisualTheme.Graphite(), ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light } } };
+        GitGraph = new MermaidGitGraphRenderOptions { Width = width, Height = 620, Title = "Native commit ancestry", Presentation = new MermaidPresentationOptions { Theme = VisualTheme.Graphite(), ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light } } };
     internal static XElement Marker(XDocument xml, string id) => xml.Descendants().Single(node => (string?)node.Attribute("data-cfx-role") == "git-commit" && (string?)node.Attribute("data-commit-id") == id);
     internal static double Number(XElement node, string attribute) => double.Parse(node.Attribute(attribute)!.Value, CultureInfo.InvariantCulture);
     internal static void Capture(string name, VisualArtifact artifact) {

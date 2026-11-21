@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -12,7 +13,7 @@ using ChartForgeX.Interactivity.Html;
 if (args.Length != 1) throw new ArgumentException("Pass the path of a font licensed for this output.");
 FontRegistry.Register("Owned financial font", File.ReadAllBytes(args[0]));
 var effect = HtmlNativeTransitionEffect.{{EFFECT}}; var initial = effect == HtmlNativeTransitionEffect.InitialValues; var renderer = new HtmlInteractiveChartRenderer();
-Chart Model(bool finish) => NativeFinancialComponentRecipe.Create({{OHLC}}, finish, {{WIDTH}}, VisualThemeMode.{{MODE}}, "Owned financial font");
+Chart Model(bool finish) => NativeFinancialComponentRecipe.Create({{OHLC}}, finish, {{WIDTH}}, ThemeMode.{{MODE}}, "Owned financial font");
 void Configure(HtmlChartInteractionOptions options) { options.CaptureNativeValueSource = true; options.Interaction.ChartId = "native-financial-components"; }
 var from = renderer.PrepareSection(Model(false), configure: Configure); var to = renderer.PrepareSection(Model(true), configure: Configure);
 var payload = renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(effect, 5, effect == HtmlNativeTransitionEffect.ValueFlash ? ChartColor.Black : null));

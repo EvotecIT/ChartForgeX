@@ -12,9 +12,9 @@ namespace ChartForgeX.Tests;
 [Trait("BrowserSuite", "Compatibility")]
 public sealed class LocalizedHeatmapTooltipBrowserTests {
     [BrowserTheory]
-    [InlineData(390, VisualThemeMode.Dark)]
-    [InlineData(900, VisualThemeMode.Light)]
-    public async Task ShippedRuntimeReadsTheAuthoredLevelCaptionAndCapturedValue(int width, VisualThemeMode mode) {
+    [InlineData(390, ThemeMode.Dark)]
+    [InlineData(900, ThemeMode.Light)]
+    public async Task ShippedRuntimeReadsTheAuthoredLevelCaptionAndCapturedValue(int width, ThemeMode mode) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(width, 320).WithTheme(VisualTheme.Graphite(), mode)
             .WithFontFamily(BrowserProofFonts.Family).WithLegend(false)

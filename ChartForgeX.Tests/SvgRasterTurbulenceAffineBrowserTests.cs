@@ -18,7 +18,7 @@ public sealed class SvgRasterTurbulenceAffineBrowserTests {
     [InlineData(760, false)]
     [InlineData(760, true)]
     public async Task NativeAffineSheetKeepsActualSourceCoverageAndCompleteDownloadAtBothWidths(int width, bool dark) {
-        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var colors = VisualTheme.Graphite().Resolve(mode);
         var names = new[] { "rotate", "skew", "reflect", "quarter-turn" };
         var html = "<style>body{margin:0;padding:16px;box-sizing:border-box;background:" + colors.Background.ToCss() +

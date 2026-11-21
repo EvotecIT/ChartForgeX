@@ -139,7 +139,7 @@ public sealed class BoxPlotDistributionBrowserTests {
                 new ChartObservationId(group.X == 1 && index == 9 ? "A" : (group.X == 1 ? "a-" : "b-") + index))));
         }
         return Chart.Create().WithSize(width, 400).WithTitle("Service latency").WithXLabels("Service A", "Service B")
-            .WithPointLegend().WithDataLabels(false).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).AddSeries(series);
+            .WithPointLegend().WithDataLabels(false).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).AddSeries(series);
     }
 
     private static Task<string[]> RowsAsync(IPage page) => page.Locator(".cfx-tooltip__meta").EvaluateAsync<string[]>("node => Array.from(node.children).map(child => child.textContent)");

@@ -8,7 +8,7 @@ using ChartForgeX.SvgRaster;
 using ChartForgeX.Themes;
 using ChartForgeX.VisualArtifacts;
 
-var layer = NativeMaskExample.Create({{VARIANT}}, VisualThemeMode.{{MODE}});
+var layer = NativeMaskExample.Create({{VARIANT}}, ThemeMode.{{MODE}});
 File.WriteAllText("mask-source.svg", layer.Source.ToSvg());
 File.WriteAllBytes("mask-source.png", layer.Source.ToPng());
 File.WriteAllText("mask.svg", layer.Visual.ToSvg());

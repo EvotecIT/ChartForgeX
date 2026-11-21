@@ -5,7 +5,7 @@ internal static class NativeErrorComponentExamples {
     internal static void Write(string output, string[] args) {
         var font = NativeFallbackRadialExamples.RequiredFont(args, "--primary-font"); FontRegistry.Register("Owned uncertainty font", font); Directory.CreateDirectory(output); var renderer = new HtmlInteractiveChartRenderer();
         foreach (var effect in new[] { HtmlNativeTransitionEffect.Values, HtmlNativeTransitionEffect.InitialValues, HtmlNativeTransitionEffect.ValueFlash }) foreach (var form in new[] { "x", "y", "xy" }) foreach (var width in new[] { 390, 760 }) {
-            var mode = width == 390 ? VisualThemeMode.Light : VisualThemeMode.Dark;
+            var mode = width == 390 ? ThemeMode.Light : ThemeMode.Dark;
             void Configure(HtmlChartInteractionOptions options) { options.CaptureNativeValueSource = true; options.Interaction.ChartId = "native-error-components"; }
             var from = renderer.PrepareSection(NativeErrorComponentRecipe.Create(form, false, width, mode, "Owned uncertainty font"), configure: Configure);
             var to = renderer.PrepareSection(NativeErrorComponentRecipe.Create(form, true, width, mode, "Owned uncertainty font"), configure: Configure);

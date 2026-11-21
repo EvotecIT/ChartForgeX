@@ -5,7 +5,7 @@ using ChartForgeX.VisualArtifacts;
 
 internal static class NativeRetainedMaskExamples {
     internal static void Write(string output) {
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             foreach (var variant in new[] { "compact", "wide" }) {
                 var source = NativeRetainedMaskExample.PrepareSource(variant, mode);
                 var masked = source.WithMask(NativeRetainedMaskExample.CreateMask(source));

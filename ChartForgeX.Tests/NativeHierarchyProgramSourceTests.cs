@@ -8,7 +8,7 @@ public sealed class NativeHierarchyProgramSourceTests {
     [InlineData("treemap", "ellipsis", 390, false)] [InlineData("treemap", "ellipsis", 760, true)]
     [InlineData("sunburst-total", "subtree", 390, true)] [InlineData("sunburst-total", "root", 760, false)]
     public void PublicProgramUsesCompiledCoreHierarchyAndExistingAdapterCapture(string family, string intent, int width, bool dark) {
-        var program = ExampleRecipeSource.EmitNativeHierarchyMotion(family, intent, width, dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        var program = ExampleRecipeSource.EmitNativeHierarchyMotion(family, intent, width, dark ? ThemeMode.Dark : ThemeMode.Light);
         NativeRadialMotionBeforeControls.Save("hierarchy-program-" + family + "-" + intent + "-" + width + ".cs", program);
         Assert.DoesNotContain("{{", program, StringComparison.Ordinal); Assert.Contains("class NativeHierarchyMotionRecipe", program, StringComparison.Ordinal);
         Assert.Contains("PrepareNativeTransitionJson", program, StringComparison.Ordinal); Assert.Contains("ChartVisibilityTarget.HierarchyItem", program, StringComparison.Ordinal);

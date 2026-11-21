@@ -17,7 +17,7 @@ public sealed class RetainedMaskBrowserTests {
     [InlineData("compact", false)] [InlineData("wide", false)]
     [InlineData("compact", true)] [InlineData("wide", true)]
     public async Task TypedAlphaMaskKeepsLiveNativeVectorWordsLinksAndExplicitBakedCompanion(string variant, bool dark) {
-        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var width = variant == "compact" ? 390 : 1100;
         var source = NativeRetainedMaskExample.PrepareSource(variant, mode);
         var original = source.WithMask(NativeRetainedMaskExample.CreateMask(source));

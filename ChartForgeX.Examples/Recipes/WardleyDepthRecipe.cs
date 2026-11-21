@@ -1,7 +1,7 @@
 /// <summary>Ordinary dependency-free Wardley composition with native numbered annotations and sourcing paint.</summary>
 public static class WardleyDepthRecipe {
     /// <summary>Creates the same source-ordered map for wide or compact native output.</summary>
-    public static WardleyMapBlock Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static WardleyMapBlock Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var block = WardleyMapBlock.Create().WithTitle("Delivery strategy").WithSize(variant == "compact" ? 390 : 1100, 600)
             .WithPadding(30).WithTheme(VisualTheme.Graphite(), mode).WithAnnotationsBox(.18, 0);

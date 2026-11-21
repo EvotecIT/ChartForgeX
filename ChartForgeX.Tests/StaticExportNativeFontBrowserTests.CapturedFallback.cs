@@ -20,7 +20,7 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         if (!Enabled) return;
         NativeFallbackClusterBeforeControls.Register(); var renderer = new HtmlInteractiveChartRenderer();
         HtmlChartSection Section(double value) => renderer.PrepareSection(NativeFallbackClusterBeforeControls.Model(donut, true, value).WithSize(width, 420)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(NativeFallbackClusterBeforeControls.Primary + ", " + NativeFallbackClusterBeforeControls.Fallback), dark ? VisualThemeMode.Dark : VisualThemeMode.Light),
+            .WithTheme(VisualTheme.Graphite().WithFontFamily(NativeFallbackClusterBeforeControls.Primary + ", " + NativeFallbackClusterBeforeControls.Fallback), dark ? ThemeMode.Dark : ThemeMode.Light),
             configure: options => { options.TextPresentation = HtmlChartTextPresentation.NativeContours; options.Interaction.ChartId = "native-fallback-motion"; options.Interaction.Enable(ChartInteractionFeatures.Export); });
         var from = Section(60); var to = Section(80); var payload = renderer.PrepareNativeTransitionJson(from, to,
             new HtmlNativeTransitionOptions(initial ? HtmlNativeTransitionEffect.InitialValues : HtmlNativeTransitionEffect.Values, 5));

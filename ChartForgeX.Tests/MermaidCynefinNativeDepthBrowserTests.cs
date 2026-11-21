@@ -28,7 +28,7 @@ public sealed class MermaidCynefinNativeDepthBrowserTests {
             await Capture(session.Page, artifact, "cynefin-native-" + width + (dark ? "-dark" : "-light"));
             InteractiveChartBrowser.AssertNoConsoleErrors(session);
         }
-        var ordinary = TopologyPathDecorationRecipe.Create("wide", dark ? VisualThemeMode.Dark : VisualThemeMode.Light).ToVisualArtifact();
+        var ordinary = TopologyPathDecorationRecipe.Create("wide", dark ? ThemeMode.Dark : ThemeMode.Light).ToVisualArtifact();
         await using (var session = await InteractiveChartBrowser.OpenAsync(ordinary.ToHtmlPage(), width, 500)) {
             Assert.Equal(1, await session.Page.Locator("[data-path-decoration-id=\"maintenance-zone\"]").CountAsync());
             Assert.Contains("Gateway", await session.Page.Locator("body").InnerTextAsync());

@@ -11,15 +11,15 @@ namespace ChartForgeX.Tests;
 /// <summary>Numeric keys may reduce plot space; value axes retain readable type and complete source facts.</summary>
 public sealed class AxisReadabilityTests {
     [Theory]
-    [InlineData(ChartSeriesKind.Scatter, "color-scale", 800, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.Scatter, "color-scale", 800, VisualThemeMode.Dark)]
-    [InlineData(ChartSeriesKind.Bubble, "color-scale", 800, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.Bubble, "color-scale", 800, VisualThemeMode.Dark)]
-    [InlineData(ChartSeriesKind.Scatter, "compact-color-dimension", 360, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.Scatter, "compact-color-dimension", 360, VisualThemeMode.Dark)]
-    [InlineData(ChartSeriesKind.Bubble, "compact-color-dimension", 360, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.Bubble, "compact-color-dimension", 360, VisualThemeMode.Dark)]
-    public void CrowdedNumericKeysKeepReadableValueAxesAndSourceTicks(ChartSeriesKind kind, string variant, int width, VisualThemeMode mode) {
+    [InlineData(ChartSeriesKind.Scatter, "color-scale", 800, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.Scatter, "color-scale", 800, ThemeMode.Dark)]
+    [InlineData(ChartSeriesKind.Bubble, "color-scale", 800, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.Bubble, "color-scale", 800, ThemeMode.Dark)]
+    [InlineData(ChartSeriesKind.Scatter, "compact-color-dimension", 360, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.Scatter, "compact-color-dimension", 360, ThemeMode.Dark)]
+    [InlineData(ChartSeriesKind.Bubble, "compact-color-dimension", 360, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.Bubble, "compact-color-dimension", 360, ThemeMode.Dark)]
+    public void CrowdedNumericKeysKeepReadableValueAxesAndSourceTicks(ChartSeriesKind kind, string variant, int width, ThemeMode mode) {
         var chart = V2GalleryModels.Create(kind, variant, mode);
         var context = Context(width, mode);
         var prepared = chart.Prepare(context);
@@ -36,16 +36,16 @@ public sealed class AxisReadabilityTests {
 
     [Fact]
     public void ExplicitlyAuthoredSubminimumAxisTypeRetainsSourceWithoutTinyPaint() {
-        var chart = V2GalleryModels.Create(ChartSeriesKind.Scatter, "color-scale", VisualThemeMode.Light);
+        var chart = V2GalleryModels.Create(ChartSeriesKind.Scatter, "color-scale", ThemeMode.Light);
         chart.Options.TickLabelStyle.FontSize = 6;
-        var prepared = chart.Prepare(Context(800, VisualThemeMode.Light));
+        var prepared = chart.Prepare(Context(800, ThemeMode.Light));
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "axis-y-label").ToArray();
         Assert.Empty(labels);
         Assert.Contains(prepared.Regions, region => region.Role == "axis-y-label" && !string.IsNullOrEmpty(region.Label));
         Assert.Equal(6, chart.Options.TickLabelStyle.FontSize);
     }
 
-    private static VisualRenderContext Context(int width, VisualThemeMode mode) => new(
+    private static VisualRenderContext Context(int width, ThemeMode mode) => new(
         new VisualLayoutOptions(new VisualSize(width, width == 360 ? 360 : 440)), VisualTheme.Graphite(), mode,
         new VisualFrame("Processing time by workload", "Temperature has its own fixed color domain; processing time stays independent"),
         new FontSpec { Family = "Carlito", FilePath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf") });

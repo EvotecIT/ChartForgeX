@@ -13,15 +13,15 @@ public sealed class GanttLaneLabelPlacementTests {
     private static readonly DateTime Start = new(2025, 11, 3, 0, 0, 0, DateTimeKind.Utc);
 
     [Theory]
-    [InlineData(390, 12, VisualThemeMode.Light)]
-    [InlineData(390, 12, VisualThemeMode.Dark)]
-    [InlineData(760, 12, VisualThemeMode.Light)]
-    [InlineData(760, 12, VisualThemeMode.Dark)]
-    [InlineData(390, 10, VisualThemeMode.Light)]
-    [InlineData(390, 10, VisualThemeMode.Dark)]
-    [InlineData(760, 10, VisualThemeMode.Light)]
-    [InlineData(760, 10, VisualThemeMode.Dark)]
-    public void PackedCaptionsClearOtherItemsCaptionsAndGroupBandsWithoutLosingSourceFacts(int width, double fontSize, VisualThemeMode mode) {
+    [InlineData(390, 12, ThemeMode.Light)]
+    [InlineData(390, 12, ThemeMode.Dark)]
+    [InlineData(760, 12, ThemeMode.Light)]
+    [InlineData(760, 12, ThemeMode.Dark)]
+    [InlineData(390, 10, ThemeMode.Light)]
+    [InlineData(390, 10, ThemeMode.Dark)]
+    [InlineData(760, 10, ThemeMode.Light)]
+    [InlineData(760, 10, ThemeMode.Dark)]
+    public void PackedCaptionsClearOtherItemsCaptionsAndGroupBandsWithoutLosingSourceFacts(int width, double fontSize, ThemeMode mode) {
         var chart = DenseChart(width, fontSize, mode);
         var original = chart.Series.Select(series => series.GanttLaneItems.ToArray()).ToArray();
         var prepared = Prepare(chart); var svg = XDocument.Parse(prepared.ToSvg());
@@ -68,7 +68,7 @@ public sealed class GanttLaneLabelPlacementTests {
         }
         var image = PngReader.Decode(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
         Assert.Equal(width, image.Width); Assert.Equal(width == 390 ? 360 : 440, image.Height);
-        if (mode == VisualThemeMode.Light && (width == 390 && fontSize == 10 || width == 760 && fontSize == 10)) {
+        if (mode == ThemeMode.Light && (width == 390 && fontSize == 10 || width == 760 && fontSize == 10)) {
             var caption = captions[0];
             Assert.True(HasNativeInk(prepared, image, caption.Bounds, caption.Text), "A retained packed caption must paint native raster ink.");
         }
@@ -76,7 +76,7 @@ public sealed class GanttLaneLabelPlacementTests {
 
     [Fact]
     public void InfeasibleLargeCaptionsDoNotEnlargePackedRowsOrLoseTheirItems() {
-        var chart = DenseChart(390, 96, VisualThemeMode.Light);
+        var chart = DenseChart(390, 96, ThemeMode.Light);
         var original = chart.Series.Select(series => series.GanttLaneItems.ToArray()).ToArray();
         var prepared = Prepare(chart);
         Assert.DoesNotContain(prepared.Scene.Nodes.OfType<VisualSceneText>(), text => text.Role == "data-label");
@@ -89,7 +89,7 @@ public sealed class GanttLaneLabelPlacementTests {
             foreach (var other in marks.Where(other => other.Id != mark.Id)) Assert.False(Overlaps(mark.Bounds, other.Bounds));
         }
         for (var lane = 0; lane < 2; lane++) Assert.Equal(original[lane], chart.Series[lane].GanttLaneItems);
-        var unlabelled = DenseChart(390, 96, VisualThemeMode.Light);
+        var unlabelled = DenseChart(390, 96, ThemeMode.Light);
         foreach (var series in unlabelled.Series) for (var point = 0; point < series.GanttLaneItems.Count; point++) {
             var item = series.GanttLaneItems[point];
             series.UpdateGanttLaneItem(point, new ChartGanttLaneItem(item.Start, item.End, item.Category, detail: item.Detail));
@@ -107,7 +107,7 @@ public sealed class GanttLaneLabelPlacementTests {
     [InlineData(true, false, null, 8)]
     public void PackedCaptionVisibilityHonorsChartDefaultsAndSeriesOverridesWithoutHiddenBandGrowth(
         bool? chartVisible, bool? firstSeriesVisible, bool? secondSeriesVisible, int expectedCaptions) {
-        var chart = DenseChart(390, 10, VisualThemeMode.Light);
+        var chart = DenseChart(390, 10, ThemeMode.Light);
         chart.Options.ShowDataLabels = chartVisible;
         chart.Series[0].ShowDataLabels = firstSeriesVisible; chart.Series[1].ShowDataLabels = secondSeriesVisible;
         var original = chart.Series.Select(series => series.GanttLaneItems.ToArray()).ToArray();
@@ -130,7 +130,7 @@ public sealed class GanttLaneLabelPlacementTests {
         Assert.Equal(16, prepared.Regions.Count(region => region.Role == "gantt-lane-item"));
         if (expectedCaptions == 0) {
             Assert.DoesNotContain(prepared.Regions, region => region.Role == "data-label");
-            var unlabelled = DenseChart(390, 10, VisualThemeMode.Light);
+            var unlabelled = DenseChart(390, 10, ThemeMode.Light);
             foreach (var series in unlabelled.Series) for (var point = 0; point < series.GanttLaneItems.Count; point++) {
                 var item = series.GanttLaneItems[point];
                 series.UpdateGanttLaneItem(point, new ChartGanttLaneItem(item.Start, item.End, item.Category, detail: item.Detail));
@@ -166,7 +166,7 @@ public sealed class GanttLaneLabelPlacementTests {
         Assert.True(HasNativeInk(prepared, image, caption.Bounds, caption.Text));
     }
 
-    private static Chart DenseChart(int width, double fontSize, VisualThemeMode mode) {
+    private static Chart DenseChart(int width, double fontSize, ThemeMode mode) {
         var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(width, width == 390 ? 360 : 440)
             .WithTitle("Overlapping operating batches").WithDataLabels().WithStateCategories(States());
         chart.Options.DataLabelStyle.WithFontSize(fontSize);

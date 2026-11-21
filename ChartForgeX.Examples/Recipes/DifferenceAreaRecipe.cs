@@ -1,7 +1,7 @@
 /// <summary>Builds actual-versus-forecast areas with crossings, gaps and stepped boundaries.</summary>
 public static class DifferenceAreaRecipe {
     /// <summary>Creates the selected difference-area example from paired authored observations.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "dated-gaps" or "compact-dated-gaps"
             or "step-start" or "step-middle" or "step-end" or "compact-step-middle" or "singleton" or "compact-singleton" or "dense" or "compact-dense" or "smooth-boundaries" or "compact-smooth-boundaries"))
             throw new ArgumentOutOfRangeException(nameof(variant));

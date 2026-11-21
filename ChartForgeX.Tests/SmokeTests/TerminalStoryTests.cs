@@ -102,7 +102,7 @@ internal static partial class SmokeTests {
 
         var regularPromptCanvas = new RgbaCanvas(200, 50, 1, null, 1, useDefaultOutlineFont: false);
         var emphasizedPromptCanvas = new RgbaCanvas(200, 50, 1, null, 1, useDefaultOutlineFont: false);
-        var promptColor = TerminalThemes.Default().Resolve(VisualThemeMode.Dark).Accent;
+        var promptColor = TerminalThemes.Default().Resolve(ThemeMode.Dark).Accent;
         TerminalPngTextPreserver.Draw(regularPromptCanvas, 0, 0, "PS> ", promptColor, 18);
         TerminalPngTextPreserver.DrawEmphasized(emphasizedPromptCanvas, 0, 0, "PS> ", promptColor, 18);
         Assert(TerminalPngTextPreserver.MeasureEmphasized("PS> ", emphasizedPromptCanvas, 18) >

@@ -5,7 +5,7 @@ using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 using ChartForgeX.VisualBlocks;
 
-{{FONT_SETUP}}var mode = VisualThemeMode.{{MODE}};
+{{FONT_SETUP}}var mode = ThemeMode.{{MODE}};
 var model = {{FACTORY}}.Create({{VARIANT}}, mode);
 model.WithTheme(VisualTheme.Graphite(){{FONT_THEME}}, mode);
 File.WriteAllText("visual.svg", model.ToSvg());

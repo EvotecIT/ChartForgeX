@@ -1,6 +1,6 @@
 /// <summary>Endpoint gradients and outlined labels use the same native Sankey scene in SVG and PNG.</summary>
 public static class SankeyPaintRecipe {
-    public static Chart Create(string variant = "gradient-colors", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "gradient-colors", ThemeMode mode = ThemeMode.Light) {
         var chart = Chart.Create().AddSankey("Requests", new[] {
             new ChartNode("received", "Received"), new ChartNode("review", "Review"), new ChartNode("ready", "Ready")
         }, new[] {

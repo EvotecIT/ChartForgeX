@@ -18,7 +18,7 @@ public sealed partial class ExampleRecipeTests {
     [InlineData(ChartSeriesKind.ProgressRing)]
     [InlineData(ChartSeriesKind.Radar)]
     public void SparseIndependentMarksOmitCategoriesAndRetainTheirValues(ChartSeriesKind kind) {
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             var chart = Assert.IsType<Chart>(ExampleRecipes.ForKind(kind, "sparse").Create("sparse", mode));
             var source = chart.Series.First();
             Assert.Equal(new[] { 1d, 3, 6 }, source.Points.Select(point => point.X));
@@ -49,9 +49,9 @@ public sealed partial class ExampleRecipeTests {
     }
 
     [Theory]
-    [InlineData("concentric", VisualThemeMode.Light)]
-    [InlineData("compact-concentric", VisualThemeMode.Dark)]
-    public void ConcentricRecipeAndDownloadRetainTwoIndependentTotals(string variant, VisualThemeMode mode) {
+    [InlineData("concentric", ThemeMode.Light)]
+    [InlineData("compact-concentric", ThemeMode.Dark)]
+    public void ConcentricRecipeAndDownloadRetainTwoIndependentTotals(string variant, ThemeMode mode) {
         var recipe = ExampleRecipes.ForKind(ChartSeriesKind.Donut, variant);
         var chart = Assert.IsType<Chart>(recipe.Create(variant, mode));
         Assert.Equal(new[] { 100d, 220d }, chart.Series.Select(series => series.Points.Sum(point => point.Y)));
@@ -86,15 +86,15 @@ public sealed partial class ExampleRecipeTests {
     }
 
     [Theory]
-    [InlineData(ChartSeriesKind.RegionMap, false, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.RegionMap, true, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.RegionMap, false, VisualThemeMode.Dark)]
-    [InlineData(ChartSeriesKind.RegionMap, true, VisualThemeMode.Dark)]
-    [InlineData(ChartSeriesKind.TileMap, false, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.TileMap, true, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.TileMap, false, VisualThemeMode.Dark)]
-    [InlineData(ChartSeriesKind.TileMap, true, VisualThemeMode.Dark)]
-    public void MapColorRecipesKeepSignedTemperaturesZeroAndMissingRegions(ChartSeriesKind kind, bool compact, VisualThemeMode mode) {
+    [InlineData(ChartSeriesKind.RegionMap, false, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.RegionMap, true, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.RegionMap, false, ThemeMode.Dark)]
+    [InlineData(ChartSeriesKind.RegionMap, true, ThemeMode.Dark)]
+    [InlineData(ChartSeriesKind.TileMap, false, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.TileMap, true, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.TileMap, false, ThemeMode.Dark)]
+    [InlineData(ChartSeriesKind.TileMap, true, ThemeMode.Dark)]
+    public void MapColorRecipesKeepSignedTemperaturesZeroAndMissingRegions(ChartSeriesKind kind, bool compact, ThemeMode mode) {
         var variant = compact ? "compact-color-dimension" : "color-dimension";
         var recipe = ExampleRecipes.ForKind(kind, variant);
         var chart = Assert.IsType<Chart>(recipe.Create(variant, mode)).WithSize(compact ? 360 : 800, compact ? 360 : 440)
@@ -122,12 +122,12 @@ public sealed partial class ExampleRecipeTests {
     public void GalleryTypographyIsAnExplicitCompleteAlternative() {
         var recipe = ExampleRecipes.ForKind(ChartSeriesKind.Bar);
         var ordinary = Source(recipe);
-        var reproduction = ExampleRecipeSource.Emit(recipe, "wide", "Orders", "North and South", VisualThemeMode.Dark,
+        var reproduction = ExampleRecipeSource.Emit(recipe, "wide", "Orders", "North and South", ThemeMode.Dark,
             360, 360, galleryTypography: true);
         Assert.DoesNotContain("fonts/", ordinary);
         Assert.DoesNotContain("FontRegistry.Register", reproduction);
         Assert.Contains("FontSpec.FromFamily(ChartFontStacks.ProductSans)", reproduction);
-        Assert.Contains("var mode = VisualThemeMode.Dark;", reproduction);
+        Assert.Contains("var mode = ThemeMode.Dark;", reproduction);
         Assert.Contains("new VisualSize(360, 360)", reproduction);
         Assert.Contains("public static class BarRecipe", reproduction);
     }
@@ -157,11 +157,11 @@ public sealed partial class ExampleRecipeTests {
         Assert.Contains(observed.Points, point => point.X == 1.99);
         Assert.Contains(observed.Points, point => point.X == 8.01);
         Assert.Contains(observed.Points, point => point.BreakBefore);
-        var source = ExampleRecipeSource.Emit(recipe, "x-viewport", "Requests", "X 2–8", VisualThemeMode.Light, 800, 440, viewport: true);
+        var source = ExampleRecipeSource.Emit(recipe, "x-viewport", "Requests", "X 2–8", ThemeMode.Light, 800, 440, viewport: true);
         Assert.Contains("model.Prepare(context, new ChartCartesianViewport(x: new ChartAxisWindow(2, 8)))", source);
         Assert.DoesNotContain("ViewportExample", source);
     }
 
     private static string Source(ExampleRecipe recipe, string variant = "wide") =>
-        ExampleRecipeSource.Emit(recipe, variant, "Orders", "North and South", VisualThemeMode.Light, 800, 440);
+        ExampleRecipeSource.Emit(recipe, variant, "Orders", "North and South", ThemeMode.Light, 800, 440);
 }

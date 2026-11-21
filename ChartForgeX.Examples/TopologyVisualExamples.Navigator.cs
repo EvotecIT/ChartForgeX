@@ -17,7 +17,7 @@ internal static partial class TopologyVisualExamples {
             .WithHtmlFindControls();
         options.EnableHtmlSelectionPanel = true;
         BuildDenseServiceEstate().SaveInteractiveHtml(Path.Combine(target, "visual-dense-service-estate-navigator.html"), options);
-        BuildDenseServiceEstate().WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)
+        BuildDenseServiceEstate().WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
             .SaveInteractiveHtml(Path.Combine(target, "visual-dense-service-estate-navigator-dark.html"), options);
     }
 

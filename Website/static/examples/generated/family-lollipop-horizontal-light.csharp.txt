@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -13,7 +14,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = LollipopHorizontalRecipe.Create("horizontal", mode);
 var context = new VisualRenderContext(
@@ -28,7 +29,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 /// <summary>Compares delivery-stage orders on a physical horizontal value axis.</summary>
 public static class LollipopHorizontalRecipe {
     /// <summary>Creates the horizontal example through the canonical lollipop and physical-axis owners.</summary>
-    public static Chart Create(string variant = "horizontal", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "horizontal", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("horizontal" or "compact-horizontal")) throw new ArgumentOutOfRangeException(nameof(variant));
         var points = Enumerable.Range(1, 6).Select(index => new ChartPoint(index, 20 + index * 7 % 29));
         var orders = new ChartSeries(new ChartSeriesId("orders"), "Orders", ChartSeriesKind.Lollipop, points)

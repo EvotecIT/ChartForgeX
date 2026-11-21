@@ -16,22 +16,22 @@ public sealed class InteractiveHeatmapColorScaleBrowserTests {
     public async Task ThemeRampsKeepTheirOwnFillsAndContrastingInkAcrossHostThemeSwitches() {
         if (!Enabled) return;
         var theme = VisualTheme.Graphite();
-        Chart Ramp(bool diverging, VisualThemeMode mode) {
+        Chart Ramp(bool diverging, ThemeMode mode) {
             var chart = Chart.Create().WithSize(600, 200).WithTheme(theme, mode).WithDataLabels();
             if (diverging) chart.WithHeatmapColorScale(theme.Resolve(mode).DivergingRamp!.ToColorScale(0))
                 .AddHeatmapRow("Change", new double?[] { -3, -2, -1, 0, 1, 2, 3 });
             else chart.AddHeatmapRow("Intensity", new double?[] { 0, 1, 2, 3, 4 });
             return chart;
         }
-        var light = SvgColorVariables.SharedRoles(theme, VisualThemeMode.Light);
-        var dark = SvgColorVariables.SharedRoles(theme, VisualThemeMode.Dark);
+        var light = SvgColorVariables.SharedRoles(theme, ThemeMode.Light);
+        var dark = SvgColorVariables.SharedRoles(theme, ThemeMode.Dark);
         var live = string.Concat(new[] { true, false }.Select(diverging =>
-            Ramp(diverging, VisualThemeMode.Light).ToSvg(new VisualSvgOptions(colorVariables: light), diverging ? "diverging" : "sequential")));
+            Ramp(diverging, ThemeMode.Light).ToSvg(new VisualSvgOptions(colorVariables: light), diverging ? "diverging" : "sequential")));
         string Properties(SvgColorVariables variables) => string.Join(";", variables.GetVariablesForSvg(live).Select(variable => variable.Name + ":" + variable.Color.ToCss()));
         var html = "<!doctype html><html><head><style>#live{" + Properties(light) + "}html.dark #live{" + Properties(dark) + "}</style></head><body>"
-            + "<div id='live'>" + live + "</div><div id='light'>" + Ramp(true, VisualThemeMode.Light).ToSvg("static-light-diverging")
-            + Ramp(false, VisualThemeMode.Light).ToSvg("static-light-sequential") + "</div><div id='dark'>"
-            + Ramp(true, VisualThemeMode.Dark).ToSvg("static-dark-diverging") + Ramp(false, VisualThemeMode.Dark).ToSvg("static-dark-sequential") + "</div></body></html>";
+            + "<div id='live'>" + live + "</div><div id='light'>" + Ramp(true, ThemeMode.Light).ToSvg("static-light-diverging")
+            + Ramp(false, ThemeMode.Light).ToSvg("static-light-sequential") + "</div><div id='dark'>"
+            + Ramp(true, ThemeMode.Dark).ToSvg("static-dark-diverging") + Ramp(false, ThemeMode.Dark).ToSvg("static-dark-sequential") + "</div></body></html>";
         await using var session = await OpenAsync(html, 1260, 900);
         var page = session.Page;
         var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
@@ -81,7 +81,7 @@ public sealed class InteractiveHeatmapColorScaleBrowserTests {
     public async Task PointerKeyboardAndSelectionKeepObservedValuesAndMissingIdentities(ChartSeriesKind kind, int width, bool dark, bool explicitScale) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(width, 400).WithDataLabels(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithHeatmapColorScale(explicitScale ? ChartColorScale.Discrete(new[] {
                 new ChartColorBand(10, ChartColor.FromHex("#DAE8F8"), "Low"),
                 new ChartColorBand(20, ChartColor.FromHex("#6F9ECE"), "Middle"),

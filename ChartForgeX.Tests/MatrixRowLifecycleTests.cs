@@ -36,11 +36,11 @@ public sealed class MatrixRowLifecycleTests {
     }
 
     [Theory]
-    [InlineData(false, VisualThemeMode.Light)]
-    [InlineData(false, VisualThemeMode.Dark)]
-    [InlineData(true, VisualThemeMode.Light)]
-    [InlineData(true, VisualThemeMode.Dark)]
-    public void EntirelyMissingRowsKeepTheirAuthoredColumnsWithoutInventingZeroCells(bool hexagonal, VisualThemeMode mode) {
+    [InlineData(false, ThemeMode.Light)]
+    [InlineData(false, ThemeMode.Dark)]
+    [InlineData(true, ThemeMode.Light)]
+    [InlineData(true, ThemeMode.Dark)]
+    public void EntirelyMissingRowsKeepTheirAuthoredColumnsWithoutInventingZeroCells(bool hexagonal, ThemeMode mode) {
         var chart = Chart.Create().WithSize(520, 320).WithHeader(false).WithLegend(false)
             .WithXLabels("First", "Second", "Third").WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Hidden);
         Add(chart, hexagonal, "Missing", new double?[] { null, null, null });
@@ -73,11 +73,11 @@ public sealed class MatrixRowLifecycleTests {
     }
 
     [Theory]
-    [InlineData(false, VisualThemeMode.Light)]
-    [InlineData(false, VisualThemeMode.Dark)]
-    [InlineData(true, VisualThemeMode.Light)]
-    [InlineData(true, VisualThemeMode.Dark)]
-    public void ClearingAndRefillingANumericPeerKeepsItsRowAndTheOtherRowsSourceFacts(bool hexagonal, VisualThemeMode mode) {
+    [InlineData(false, ThemeMode.Light)]
+    [InlineData(false, ThemeMode.Dark)]
+    [InlineData(true, ThemeMode.Light)]
+    [InlineData(true, ThemeMode.Dark)]
+    public void ClearingAndRefillingANumericPeerKeepsItsRowAndTheOtherRowsSourceFacts(bool hexagonal, ThemeMode mode) {
         var chart = Chart.Create().WithSize(520, 320).WithHeader(false).WithLegend(false)
             .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Hidden);
         AddPoints(chart, hexagonal, "Changing", new[] { new ChartPoint(1, 10) });
@@ -118,7 +118,7 @@ public sealed class MatrixRowLifecycleTests {
         .Where(node => node.Attribute("data-cfx-role")?.Value is "heatmap-cell" or "hexbin-cell").ToArray();
     private static XElement Matrix(PreparedVisual prepared) => XDocument.Parse(prepared.ToSvg()).Descendants()
         .Single(node => node.Attribute("data-cfx-role")?.Value is "heatmap" or "hexbin-heatmap");
-    private static VisualRenderContext Context(VisualThemeMode mode) => new(new VisualLayoutOptions(new VisualSize(520, 320)),
+    private static VisualRenderContext Context(ThemeMode mode) => new(new VisualLayoutOptions(new VisualSize(520, 320)),
         VisualTheme.Graphite(), mode, frame: new VisualFrame(showLegend: false));
     private static VisualRenderOptions Raster() => new(supersampling: 1);
     private static void AssertPaintedCenter(PreparedVisual prepared, bool hexagonal) {

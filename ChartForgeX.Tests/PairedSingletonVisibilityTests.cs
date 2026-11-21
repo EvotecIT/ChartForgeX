@@ -10,13 +10,13 @@ namespace ChartForgeX.Tests;
 /// <summary>Isolated paired observations remain visible without inventing an interpolated interval.</summary>
 public sealed class PairedSingletonVisibilityTests {
     [Theory]
-    [InlineData(ChartSeriesKind.RangeBand, 390, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.RangeArea, 390, VisualThemeMode.Dark)]
-    [InlineData(ChartSeriesKind.DifferenceArea, 390, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.RangeBand, 760, VisualThemeMode.Dark)]
-    [InlineData(ChartSeriesKind.RangeArea, 760, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.DifferenceArea, 760, VisualThemeMode.Dark)]
-    public void DefaultSingletonEndpointsUseVisibleContainedMarkersAndKeepTheirExactFacts(ChartSeriesKind kind, int width, VisualThemeMode mode) {
+    [InlineData(ChartSeriesKind.RangeBand, 390, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.RangeArea, 390, ThemeMode.Dark)]
+    [InlineData(ChartSeriesKind.DifferenceArea, 390, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.RangeBand, 760, ThemeMode.Dark)]
+    [InlineData(ChartSeriesKind.RangeArea, 760, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.DifferenceArea, 760, ThemeMode.Dark)]
+    public void DefaultSingletonEndpointsUseVisibleContainedMarkersAndKeepTheirExactFacts(ChartSeriesKind kind, int width, ThemeMode mode) {
         var chart = Create(kind, new[] { (0d, 0d, 7d, false) });
         var prepared = Prepare(chart, width, mode);
         var markers = Markers(prepared).ToArray();
@@ -52,7 +52,7 @@ public sealed class PairedSingletonVisibilityTests {
     [InlineData(ChartSeriesKind.DifferenceArea)]
     public void OnlyDisconnectedSingleObservationRunsAcquireAutomaticEndpointMarkers(ChartSeriesKind kind) {
         var chart = Create(kind, new[] { (0d, 0d, 7d, false), (2d, 1d, 8d, true), (3d, 2d, 9d, false), (5d, 0d, 0d, true) });
-        var prepared = Prepare(chart, 390, VisualThemeMode.Light);
+        var prepared = Prepare(chart, 390, ThemeMode.Light);
         Assert.Equal(4, Markers(prepared).Count());
         var document = XDocument.Parse(prepared.ToSvg());
         var points = document.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "point").ToArray();
@@ -65,13 +65,13 @@ public sealed class PairedSingletonVisibilityTests {
                 .Sum(path => path.Commands.Count(command => command.Kind == ChartPathCommandKind.MoveTo)));
         }
         chart.Series[0].Markers.Enabled = true;
-        Assert.Equal(8, Markers(Prepare(chart, 390, VisualThemeMode.Light)).Count());
+        Assert.Equal(8, Markers(Prepare(chart, 390, ThemeMode.Light)).Count());
         ScatterBubbleColorRenderingTests.Capture(prepared, "paired-isolated-runs-" + kind);
     }
 
     private static IEnumerable<VisualSceneEllipse> Markers(PreparedVisual prepared) => prepared.Scene.Nodes.OfType<VisualSceneEllipse>()
         .Where(node => node.Role is "range-marker" or "difference-marker");
-    private static PreparedVisual Prepare(Chart chart, int width, VisualThemeMode mode) => chart.Prepare(new VisualRenderContext(
+    private static PreparedVisual Prepare(Chart chart, int width, ThemeMode mode) => chart.Prepare(new VisualRenderContext(
         new VisualLayoutOptions(new VisualSize(width, 320)), themeMode: mode, frame: new VisualFrame(chart.Title)));
     private static Chart Create(ChartSeriesKind kind, (double X, double First, double Second, bool Break)[] values) {
         var chart = Chart.Create().WithTitle("One observed pair");

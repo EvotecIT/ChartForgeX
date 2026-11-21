@@ -1,7 +1,7 @@
 /// <summary>Observed counts compared with a radar reference area and an unfilled target line.</summary>
 public static class MixedRadialRecipe {
     /// <summary>Creates shared radial categories with optional closed curves or reversed angular order.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light, double? curveTension = null) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light, double? curveTension = null) {
         if (variant is not ("wide" or "compact" or "mixed" or "compact-mixed" or "mixed-curves" or "compact-mixed-curves" or "mixed-angular-reversal" or "compact-mixed-angular-reversal"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var tension = curveTension ?? (variant is "mixed-curves" or "compact-mixed-curves" ? 1d : (double?)null);

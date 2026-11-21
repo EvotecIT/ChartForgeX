@@ -12,11 +12,11 @@ public sealed class TimeAxisDensityTests {
     private static readonly DateTime Start = new(2026, 9, 14, 0, 0, 0, DateTimeKind.Utc);
 
     [Theory]
-    [InlineData(640, 7, false, 7, VisualThemeMode.Light)]
-    [InlineData(640, 7, false, 7, VisualThemeMode.Dark)]
-    [InlineData(800, 19, true, 5, VisualThemeMode.Light)]
-    [InlineData(800, 19, true, 5, VisualThemeMode.Dark)]
-    public void MeasuredTimeScaleKeepsDailyOrIntermediateDayTicksWhenTheyFit(int width, int days, bool authoredCount, int minimumLabels, VisualThemeMode mode) {
+    [InlineData(640, 7, false, 7, ThemeMode.Light)]
+    [InlineData(640, 7, false, 7, ThemeMode.Dark)]
+    [InlineData(800, 19, true, 5, ThemeMode.Light)]
+    [InlineData(800, 19, true, 5, ThemeMode.Dark)]
+    public void MeasuredTimeScaleKeepsDailyOrIntermediateDayTicksWhenTheyFit(int width, int days, bool authoredCount, int minimumLabels, ThemeMode mode) {
         var first = authoredCount ? new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc) : Start;
         var chart = Create(width).WithThemeMode(mode).AddLine("Readings", Enumerable.Range(0, days).Select(day => new ChartPoint(first.AddDays(day), 40 + day % 5)));
         if (authoredCount) chart.Options.XAxis.TickCount = 6;
@@ -29,11 +29,11 @@ public sealed class TimeAxisDensityTests {
     }
 
     [Theory]
-    [InlineData(false, VisualThemeMode.Light)]
-    [InlineData(false, VisualThemeMode.Dark)]
-    [InlineData(true, VisualThemeMode.Light)]
-    [InlineData(true, VisualThemeMode.Dark)]
-    public void NarrowDateScaleKeepsCalendarBoundariesInsteadOfPaddedEndpointTimes(bool bars, VisualThemeMode mode) {
+    [InlineData(false, ThemeMode.Light)]
+    [InlineData(false, ThemeMode.Dark)]
+    [InlineData(true, ThemeMode.Light)]
+    [InlineData(true, ThemeMode.Dark)]
+    public void NarrowDateScaleKeepsCalendarBoundariesInsteadOfPaddedEndpointTimes(bool bars, ThemeMode mode) {
         var chart = Create(360).WithThemeMode(mode).WithPadding(64, 14, 20, 46);
         var points = Enumerable.Range(0, bars ? 15 : 30).Select(day => new ChartPoint(Start.AddDays(day * (bars ? 2 : 1)), 40 + day % 5));
         if (bars) chart.AddBar("Readings", points); else chart.AddLine("Readings", points);

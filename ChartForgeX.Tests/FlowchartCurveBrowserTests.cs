@@ -12,7 +12,7 @@ public sealed class FlowchartCurveBrowserTests {
     [InlineData("swimlane", "compact", false)] [InlineData("swimlane", "wide", true)]
     public async Task OrdinaryNativeCurvesKeepVisibleLabelsAndScrollableScriptFreeOutput(string family, string variant, bool dark) {
         var width = variant == "compact" ? 640 : 1100;
-        var artifact = FlowchartCurveRecipe.Create(family, variant, dark ? VisualThemeMode.Dark : VisualThemeMode.Light, BrowserProofFonts.Family);
+        var artifact = FlowchartCurveRecipe.Create(family, variant, dark ? ThemeMode.Dark : ThemeMode.Light, BrowserProofFonts.Family);
         var html = artifact.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize });
         await using var session = await BrowserProofFonts.OpenAsync(html, width, 900);
         var observed = await session.Page.EvaluateAsync<JsonElement>("""

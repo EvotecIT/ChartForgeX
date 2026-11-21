@@ -20,7 +20,7 @@ public sealed class MermaidEventModelingDepthTests {
     internal static MermaidRenderOptions Options(bool dark, int width) => new() {
         EventModeling = new MermaidTopologyRenderOptions { Id = "event-native-depth", Width = width, Height = 700 },
         Presentation = new MermaidPresentationOptions { Theme = VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family),
-            ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light }
+            ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light }
     };
 
     [Fact]

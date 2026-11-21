@@ -5,7 +5,7 @@ internal static class NativeReflowExamples {
     internal static void Write(string output) {
         Directory.CreateDirectory(output); var renderer = new HtmlInteractiveChartRenderer();
         foreach (var kind in new[] { "line", "bar", "boxes", "raw" }) foreach (var width in new[] { 390, 760 })
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             var chart = NativeReflowRecipe.Create(kind, width, mode); var from = renderer.PrepareVisibilitySection(chart, NativeReflowRecipe.View(kind, false));
             var to = renderer.PrepareVisibilitySection(chart, NativeReflowRecipe.View(kind, true)); var options = new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.LegendVisibility, 9);
             var forward = renderer.PrepareNativeTransitionJson(from, to, options); var reverse = renderer.PrepareNativeTransitionJson(to, from, options);

@@ -39,7 +39,7 @@ public sealed class TopologyEdgeStripe {
 /// <summary>A small value chip drawn on an edge, such as PoE watts, replication cost or lag.</summary>
 public sealed class TopologyEdgeChip {
     private string _text = string.Empty;
-    private TopologyTone _tone = TopologyTone.Neutral;
+    private Tone _tone = Tone.Neutral;
 
     /// <summary>Gets or sets the chip text, drawn in a monospace face.</summary>
     public string Text { get => _text; set => _text = string.IsNullOrWhiteSpace(value) ? throw new ArgumentException("Chip text is required.", nameof(value)) : value.Trim(); }
@@ -47,14 +47,8 @@ public sealed class TopologyEdgeChip {
     /// <summary>Gets or sets an optional icon id drawn before the text.</summary>
     public string? IconId { get; set; }
 
-    /// <summary>Gets or sets the chip tone. Automatic follows the edge status.</summary>
-    public TopologyTone Tone {
-        get => _tone;
-        set {
-            TopologyModelGuards.EnumDefined(value, nameof(value));
-            _tone = value;
-        }
-    }
+    /// <summary>Gets or sets the chip tone. <see cref="Tone.None"/> follows the edge status.</summary>
+    public Tone Tone { get => _tone; set => _tone = value; }
 
     internal TopologyEdgeChip Clone() => new() { Text = Text, IconId = IconId, Tone = Tone };
 }

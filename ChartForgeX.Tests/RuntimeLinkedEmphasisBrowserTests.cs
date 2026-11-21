@@ -110,7 +110,7 @@ public sealed class RuntimeLinkedEmphasisBrowserTests {
     [InlineData(true, 390)]
     public async Task CartesianPointLegendsKeepObservationForegroundAndExplicitIsolation(bool dark, int width) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(640, 360).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = Chart.Create().WithSize(640, 360).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithTitle("Requests over time").WithXLabels("Mon", "Tue", "Wed").WithPointLegend()
             .AddSeries(new ChartSeries(new ChartSeriesId("api"), "API", ChartSeriesKind.Bar,
                 new[] { new ChartPoint(1, 17), new ChartPoint(2, 24), new ChartPoint(3, 21) })
@@ -152,7 +152,7 @@ public sealed class RuntimeLinkedEmphasisBrowserTests {
     }
 
     private static Chart Create(ChartSeriesKind kind, bool dark) {
-        var chart = Chart.Create().WithSize(640, 360).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = Chart.Create().WithSize(640, 360).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithTitle("Requests over time").WithXLabels("Mon", "Tue", "Wed");
         chart.AddSeries(new ChartSeries(new ChartSeriesId("api"), "API", kind, new[] { new ChartPoint(1, 17), new ChartPoint(2, 24), new ChartPoint(3, 21) })
             .WithObservationIds(new[] { new ChartObservationId("a-1"), new ChartObservationId("a-2"), new ChartObservationId("a-3") }));

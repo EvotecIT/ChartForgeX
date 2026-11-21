@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = SequenceLayoutTypographyRecipe.Create(&quot;compact&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Creates a native sequence with independent measured role typography and explicit logical spacing.&lt;/summary&gt;
 public static class SequenceLayoutTypographyRecipe {
     /// &lt;summary&gt;Creates compact 390x620 or wide 1000x620 authored minima; natural exports may grow. No source parser or browser is invoked.&lt;/summary&gt;
-    public static SequenceArtifact Create(string variant=&quot;wide&quot;,VisualThemeMode mode=VisualThemeMode.Light) {
+    public static SequenceArtifact Create(string variant=&quot;wide&quot;,ThemeMode mode=ThemeMode.Light) {
         if(variant is not (&quot;compact&quot; or &quot;wide&quot;))throw new ArgumentOutOfRangeException(nameof(variant));
         var model=SequenceArtifact.Create(&quot;sequence-layout&quot;).WithSize(variant==&quot;compact&quot;?390:1000,620)
             .WithTitle(&quot;Measured review sequence&quot;).WithSubtitle(&quot;Each role retains its own font and source identity&quot;)
@@ -132,6 +133,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -141,7 +143,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = SequenceLayoutTypographyRecipe.Create(&quot;compact&quot;, mode);
 var context = new VisualRenderContext(
@@ -156,7 +158,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Creates a native sequence with independent measured role typography and explicit logical spacing.&lt;/summary&gt;
 public static class SequenceLayoutTypographyRecipe {
     /// &lt;summary&gt;Creates compact 390x620 or wide 1000x620 authored minima; natural exports may grow. No source parser or browser is invoked.&lt;/summary&gt;
-    public static SequenceArtifact Create(string variant=&quot;wide&quot;,VisualThemeMode mode=VisualThemeMode.Light) {
+    public static SequenceArtifact Create(string variant=&quot;wide&quot;,ThemeMode mode=ThemeMode.Light) {
         if(variant is not (&quot;compact&quot; or &quot;wide&quot;))throw new ArgumentOutOfRangeException(nameof(variant));
         var model=SequenceArtifact.Create(&quot;sequence-layout&quot;).WithSize(variant==&quot;compact&quot;?390:1000,620)
             .WithTitle(&quot;Measured review sequence&quot;).WithSubtitle(&quot;Each role retains its own font and source identity&quot;)

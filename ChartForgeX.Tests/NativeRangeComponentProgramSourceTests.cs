@@ -6,7 +6,7 @@ namespace ChartForgeX.Tests;
 public sealed class NativeRangeComponentProgramSourceTests {
     [Theory] [InlineData(false, false, 390)] [InlineData(false, true, 760)] [InlineData(true, false, 760)] [InlineData(true, true, 390)]
     public void PublicRangeProgramsUseTypedIntervalFactoriesNativeValuesAndCallerFonts(bool initial, bool area, int width) {
-        var program = ExampleRecipeSource.EmitNativeRangeComponents(initial, area, width, width == 390 ? VisualThemeMode.Light : VisualThemeMode.Dark);
+        var program = ExampleRecipeSource.EmitNativeRangeComponents(initial, area, width, width == 390 ? ThemeMode.Light : ThemeMode.Dark);
         NativeRadialMotionBeforeControls.Save("range-program-" + initial + "-" + area + "-" + width + ".cs", program);
         Assert.DoesNotContain("{{", program, StringComparison.Ordinal); Assert.Contains("ChartSeries.CreateRangeArea", program, StringComparison.Ordinal); Assert.Contains("ChartSeries.CreateRangeBand", program, StringComparison.Ordinal);
         Assert.Contains("CaptureNativeValueSource = true", program, StringComparison.Ordinal); Assert.Contains("PrepareNativeTransitionJson", program, StringComparison.Ordinal); Assert.Contains("FontRegistry.Register", program, StringComparison.Ordinal);

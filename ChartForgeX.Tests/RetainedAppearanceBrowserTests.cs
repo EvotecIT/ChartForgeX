@@ -16,7 +16,7 @@ public sealed class RetainedAppearanceBrowserTests {
     [InlineData("compact", false)] [InlineData("wide", false)]
     [InlineData("compact", true)] [InlineData("wide", true)]
     public async Task OrderedRootFiltersKeepTheSingleLiveNativeSourceAndTerminalReplayKeepsTheExplicitBakedBoundary(string variant, bool dark) {
-        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var width = variant == "compact" ? 390 : 760;
         var source = NativeRetainedAppearanceExample.PrepareSource(variant, mode);
         var original = NativeRetainedAppearanceExample.Create(variant, mode);

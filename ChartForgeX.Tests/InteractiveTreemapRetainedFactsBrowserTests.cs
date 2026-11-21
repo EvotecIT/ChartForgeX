@@ -22,7 +22,7 @@ public sealed class InteractiveTreemapRetainedFactsBrowserTests {
         if (allZero) items.Add(new("standalone", "Standalone", value: 0));
         else { items.Add(new("visible", "Main allocation", "group", 1)); items.Add(new("tiny", "Small allocation", "group", 1e-20)); }
         var chart = Chart.Create().WithSize(compactDark ? 340 : 680, compactDark ? 340 : 400).WithLegend(false)
-            .WithTheme(VisualTheme.Graphite(), compactDark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), compactDark ? ThemeMode.Dark : ThemeMode.Light)
             .WithTitle(allZero ? "Unallocated work" : "Allocation by team").AddSeries(ChartSeries.CreateTreemap(new ChartSeriesId("allocation-source"), "Allocation", items));
         var html = chart.ToInteractiveHtmlPage(options => { options.IncludeResetButton = false; options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit; })
             .Replace("<main ", "<button id='before-chart'>Before chart</button><main ", StringComparison.Ordinal);

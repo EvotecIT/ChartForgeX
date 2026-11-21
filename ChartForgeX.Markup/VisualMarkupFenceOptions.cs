@@ -88,7 +88,7 @@ public static class VisualMarkupFenceOptions {
     /// <param name="value">The source value.</param>
     /// <param name="optionName">The option name used in diagnostics.</param>
     /// <returns>The parsed enum value.</returns>
-    public static TEnum ParseEnum<TEnum>(string value, string optionName) where TEnum : struct {
+    public static TEnum ParseEnum<TEnum>(string value, string optionName) where TEnum : struct, Enum {
         var normalized = NormalizeKey(value);
         foreach (var name in Enum.GetNames(typeof(TEnum))) {
             if (NormalizeKey(name) == normalized) return (TEnum)Enum.Parse(typeof(TEnum), name, false);

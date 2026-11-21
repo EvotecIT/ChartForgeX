@@ -63,7 +63,7 @@ internal static class PremiumSurfaceExamples {
             builder.PlotRadius = builder.BarRadius = 8;
         });
 
-        MetricCard Card(string label, string value, string caption, string symbol, VisualStatus status, ChartColor color, params double[] history) => MetricCard.Create()
+        MetricCard Card(string label, string value, string caption, string symbol, Tone status, ChartColor color, params double[] history) => MetricCard.Create()
             .WithSize(260, 142)
             .WithTheme(theme)
             .WithMetric(label, value)
@@ -73,10 +73,10 @@ internal static class PremiumSurfaceExamples {
             .WithMiniSparkline(history, color: color, fillColor: color.WithAlpha(34));
 
         var cards = new[] {
-            Card("Coverage", "98.4%", "assets reporting", "COV", VisualStatus.Positive, ChartColor.FromHex("#14B8A6"), 92, 94, 95, 97, 98.4),
-            Card("Critical", "3", "requires action", "CRT", VisualStatus.Negative, ChartColor.FromHex("#EF4444"), 8, 7, 5, 4, 3),
-            Card("Warnings", "18", "open findings", "WRN", VisualStatus.Warning, ChartColor.FromHex("#F59E0B"), 28, 26, 23, 20, 18),
-            Card("Resolved", "146", "last 30 days", "OK", VisualStatus.Info, ChartColor.FromHex("#2563EB"), 82, 96, 111, 129, 146)
+            Card("Coverage", "98.4%", "assets reporting", "COV", Tone.Success, ChartColor.FromHex("#14B8A6"), 92, 94, 95, 97, 98.4),
+            Card("Critical", "3", "requires action", "CRT", Tone.Danger, ChartColor.FromHex("#EF4444"), 8, 7, 5, 4, 3),
+            Card("Warnings", "18", "open findings", "WRN", Tone.Warning, ChartColor.FromHex("#F59E0B"), 28, 26, 23, 20, 18),
+            Card("Resolved", "146", "last 30 days", "OK", Tone.Info, ChartColor.FromHex("#2563EB"), 82, 96, 111, 129, 146)
         };
 
         var grid = VisualGrid.CreateMetricStrip("Monthly Security Summary", cards, columns: 2, panelWidth: 260, panelHeight: 142)

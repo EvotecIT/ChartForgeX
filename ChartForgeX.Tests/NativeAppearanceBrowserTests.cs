@@ -14,9 +14,9 @@ namespace ChartForgeX.Tests;
 [Trait("BrowserSuite", "Compatibility")]
 public sealed class NativeAppearanceBrowserTests {
     [BrowserTheory]
-    [InlineData("compact", VisualThemeMode.Light)] [InlineData("compact", VisualThemeMode.Dark)]
-    [InlineData("wide", VisualThemeMode.Light)] [InlineData("wide", VisualThemeMode.Dark)]
-    public async Task ExplicitBakedEffectsAndLocalGlassHaveSelfContainedVisibleOutputs(string variant, VisualThemeMode mode) {
+    [InlineData("compact", ThemeMode.Light)] [InlineData("compact", ThemeMode.Dark)]
+    [InlineData("wide", ThemeMode.Light)] [InlineData("wide", ThemeMode.Dark)]
+    public async Task ExplicitBakedEffectsAndLocalGlassHaveSelfContainedVisibleOutputs(string variant, ThemeMode mode) {
         var outline = NativeAppearanceExample.Create("outline", variant, mode);
         var bloom = NativeAppearanceExample.Create("bloom", variant, mode);
         var glow = NativeAppearanceExample.Create("glow", variant, mode);

@@ -1,7 +1,7 @@
 /// <summary>Uses actual elapsed, session, ordinal or calendar category owners with fixed time coordinates.</summary>
 public static class NativeComponentTimeRecipe {
     /// <summary>Creates copied authored temporal X policy and real numeric typed values.</summary>
-    public static Chart Create(string family, string policy, bool finish, int width, VisualThemeMode mode, string fontFamily) {
+    public static Chart Create(string family, string policy, bool finish, int width, ThemeMode mode, string fontFamily) {
         if (family is not ("candlestick" or "ohlc" or "bubble" or "range" or "error")) throw new ArgumentOutOfRangeException(nameof(family));
         var value = finish ? 60d : 40d; var first = new DateTime(2026, 1, 10, 12, 0, 0, DateTimeKind.Utc); var later = new DateTime(2026, 3, 10, 12, 0, 0, DateTimeKind.Utc);
         var chart = Chart.Create().WithTitle("Captured time categories").WithSize(width, 420).WithTheme(VisualTheme.Graphite().WithFontFamily(fontFamily), mode).WithLegend(true).WithDataLabels(true);

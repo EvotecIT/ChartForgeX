@@ -18,7 +18,7 @@ public sealed class FiniteCompositingBrowserTests {
     [InlineData("compact", false)] [InlineData("wide", false)]
     [InlineData("compact", true)] [InlineData("wide", true)]
     public async Task ExplicitSourceOperatorsAndOptionalNativeStencilHaveVisibleIndependentInputs(string variant, bool dark) {
-        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var width = variant == "compact" ? 390 : 1100;
         var operators = new[] { "over", "in", "out", "atop", "xor" };
         var background = VisualTheme.Graphite().Resolve(mode).Background.ToCss();

@@ -10,9 +10,9 @@ namespace ChartForgeX.Tests;
 [Collection(nameof(FontRegistryCollection))]
 public sealed class NativeVectorGlassExampleTests {
     [Theory]
-    [InlineData("compact", VisualThemeMode.Light)] [InlineData("compact", VisualThemeMode.Dark)]
-    [InlineData("wide", VisualThemeMode.Light)] [InlineData("wide", VisualThemeMode.Dark)]
-    public void OnlyTheExplicitBackdropIsBakedAndForegroundCaptionsUseTheIncumbentNativeTextOwner(string variant, VisualThemeMode mode) {
+    [InlineData("compact", ThemeMode.Light)] [InlineData("compact", ThemeMode.Dark)]
+    [InlineData("wide", ThemeMode.Light)] [InlineData("wide", ThemeMode.Dark)]
+    public void OnlyTheExplicitBackdropIsBakedAndForegroundCaptionsUseTheIncumbentNativeTextOwner(string variant, ThemeMode mode) {
         var canvas = NativeVectorGlassExample.Create(variant, mode);
         var svg = canvas.ToSvg();
         var png = canvas.ToPng();

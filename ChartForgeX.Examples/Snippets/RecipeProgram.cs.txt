@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -13,7 +14,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-{{FONT_SETUP}}var mode = VisualThemeMode.{{MODE}};
+{{FONT_SETUP}}var mode = ThemeMode.{{MODE}};
 var theme = VisualTheme.Graphite();
 var model = {{FACTORY}}.Create({{VARIANT}}, mode);
 {{NATURAL}}var context = new VisualRenderContext(

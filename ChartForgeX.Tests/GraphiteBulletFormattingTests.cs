@@ -17,7 +17,7 @@ public sealed class GraphiteBulletFormattingTests {
     [InlineData(false, 80, 1)]
     [InlineData(true, 80, 1)]
     public void CompactBulletRowsKeepPositiveMarksInSvgAndPng(bool dark, int height, int rowCount) {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithSize(200, height).WithPngOutputScale(1);
         for (var row = 0; row < rowCount; row++) chart.AddBullet("Count " + row, 40 + row, 70);
         var nodes = XDocument.Parse(chart.ToSvg()).Descendants().ToArray();
@@ -50,7 +50,7 @@ public sealed class GraphiteBulletFormattingTests {
     [InlineData(false, 380)]
     [InlineData(true, 380)]
     public void PercentValuesTargetsAndAxisRetainTheirUnitsWithoutColliding(bool dark, int width) {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithSize(width, 294).WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + " %")
             .AddBullet("DMARC", 88, 95).AddBullet("DNSSEC", 74, 90);
         var nodes = XDocument.Parse(chart.ToSvg()).Descendants().ToArray();
@@ -79,7 +79,7 @@ public sealed class GraphiteBulletFormattingTests {
     [InlineData(false)]
     [InlineData(true)]
     public void PlainTargetsKeepGroupedValuesAndCompactTicksWhileExplicitFormatOwnsBoth(bool dark) {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithSize(640, 300).AddBullet("Count", 1284, 1900, max: 2000);
         var nodes = XDocument.Parse(chart.ToSvg()).Descendants().ToArray();
         Assert.Equal("1,284", Assert.Single(Roles(nodes, "bullet-value-label")).Value);

@@ -37,7 +37,7 @@ public sealed class GanttDependencyWindowTests {
     public async Task ClippedTasksDoNotLeavePhantomDependencyInkInStaticBrowserOutput(bool dark, int width) {
         if (!InteractiveChartBrowser.Enabled) return;
         var chart = Create(1, 2, 3, 4, false, width)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         chart.AddGanttTask("Visible", 12, 18).AddGanttDependency(chart.Series[1], chart.Series[2]);
         await using var session = await InteractiveChartBrowser.OpenAsync(
             "<!doctype html><html><body style='margin:0'>" + chart.ToHtmlFragment() + "</body></html>", width, 400);

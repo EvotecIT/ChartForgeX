@@ -1,7 +1,7 @@
 /// <summary>Uses an explicit antimeridian point/route window while retaining raw source bearings and identities.</summary>
 public static class DatelineMapRecipe {
     /// <summary>Creates compact/wide examples in either existing geographic projection.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "mercator" or "compact-mercator")) throw new ArgumentOutOfRangeException(nameof(variant));
         var width = variant.StartsWith("compact", StringComparison.Ordinal) ? 390 : 800;
         var projection = variant.EndsWith("mercator", StringComparison.Ordinal) ? ChartMapGeoJsonProjection.WebMercator : ChartMapGeoJsonProjection.Equirectangular;

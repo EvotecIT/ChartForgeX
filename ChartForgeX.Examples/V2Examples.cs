@@ -16,7 +16,7 @@ public static partial class V2Examples {
         TopologyHierarchyExamples.Write(output);
         var artifacts = new List<ProofArtifact>();
         foreach (var family in new[] { "cartesian", "donut" }) {
-            foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+            foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
                 foreach (var variant in curated ? new[] { "wide", "compact", "explicit-status" } : Variants) {
                     var width = variant == "compact" ? 360 : 800;
                     var height = variant == "compact" ? 360 : 440;
@@ -67,7 +67,7 @@ public static partial class V2Examples {
     }
 
     /// <summary>Creates comparison data from the same compiled recipe included in its standalone download.</summary>
-    public static Chart Create(string family, string variant, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string family, string variant, ThemeMode mode = ThemeMode.Light) {
         if (family != "cartesian" && family != "donut") throw new ArgumentOutOfRangeException(nameof(family));
         if (!Variants.Contains(variant, StringComparer.Ordinal)) throw new ArgumentOutOfRangeException(nameof(variant));
         return (Chart)ExampleRecipes.Named(family == "cartesian" ? "comparison" : "findings").Create(variant, mode);

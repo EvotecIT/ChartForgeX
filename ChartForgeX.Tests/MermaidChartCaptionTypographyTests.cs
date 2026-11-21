@@ -38,7 +38,7 @@ public sealed class MermaidChartCaptionTypographyTests {
         var rendered = MermaidRenderer.Render("%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\n" + body);
         Assert.False(rendered.HasErrors);
         var chart = Assert.IsType<Chart>(rendered.Artifact!.Model);
-        chart.WithSize(width, height).WithThemeMode(dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        chart.WithSize(width, height).WithThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         var request = VisualExportRequest.ForChart(chart);
         var prepared = chart.Prepare(request.Context);
         var labels = XDocument.Parse(prepared.ToSvg()).Descendants().Where(element => element.Name.LocalName == "text").Select(element => element.Value).ToArray();

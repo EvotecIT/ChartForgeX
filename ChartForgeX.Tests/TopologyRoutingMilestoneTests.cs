@@ -94,6 +94,8 @@ public sealed class TopologyRoutingMilestoneTests {
         Assert.NotNull(expected.Height);
         var expectedWidth = expected.Width.GetValueOrDefault();
         var expectedHeight = expected.Height.GetValueOrDefault();
+        // The HTML page embeds the literal prepared SVG for an explicit mode; Auto paints it with scoped properties.
+        chart.ThemeMode = ThemeMode.Light;
         var artifact = chart.ToVisualArtifact();
         artifact.PreserveNaturalSize = true;
         var envelope = artifact.ToInterchangeEnvelope();

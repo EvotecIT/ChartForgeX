@@ -5,9 +5,9 @@ namespace ChartForgeX.Tests;
 
 public sealed class WardleyRecipeSourceTests {
     [Theory]
-    [InlineData("compact", VisualThemeMode.Light)] [InlineData("compact", VisualThemeMode.Dark)]
-    [InlineData("wide", VisualThemeMode.Light)] [InlineData("wide", VisualThemeMode.Dark)]
-    public void OrdinaryProgramCompilesTheSameNativeSourceFactory(string variant, VisualThemeMode mode) {
+    [InlineData("compact", ThemeMode.Light)] [InlineData("compact", ThemeMode.Dark)]
+    [InlineData("wide", ThemeMode.Light)] [InlineData("wide", ThemeMode.Dark)]
+    public void OrdinaryProgramCompilesTheSameNativeSourceFactory(string variant, ThemeMode mode) {
         var program = ExampleRecipeSource.EmitWardley(variant, mode); var map = WardleyDepthRecipe.Create(variant, mode);
         Assert.Contains("WardleyDepthRecipe.Create(\"" + variant + "\", mode)", program); Assert.Contains("public static class WardleyDepthRecipe", program);
         Assert.Contains("File.WriteAllText(\"visual.svg\", model.ToSvg());", program); Assert.Contains("File.WriteAllBytes(\"visual.png\", model.ToPng());", program);

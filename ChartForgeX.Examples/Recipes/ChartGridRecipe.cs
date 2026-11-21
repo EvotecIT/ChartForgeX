@@ -1,6 +1,6 @@
 /// <summary>A three-panel comparison with shared Cartesian axes.</summary>
 public static class ChartGridRecipe {
-    public static ChartGrid Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static ChartGrid Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var observations = Enumerable.Range(1, 6).Select(index => new ChartPoint(index, 20 + index * 7 % 29)).ToArray();
         var requests = Chart.Create().WithTitle("Observed requests").WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
             .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("requests"), "Requests", observations));

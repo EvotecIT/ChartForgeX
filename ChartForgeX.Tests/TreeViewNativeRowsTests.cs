@@ -14,7 +14,7 @@ public sealed class TreeViewNativeRowsTests {
     [InlineData(false, 1100)]
     [InlineData(true, 1100)]
     public void NativeRowsPreservePreorderAndParentConnectorsAndPaintFileMeaning(bool dark, int width) {
-        var block = Sample().WithTheme(VisualTheme.Graphite().WithTypography(new VisualTypography(BrowserProofFonts.Family)), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var block = Sample().WithTheme(VisualTheme.Graphite().WithTypography(new VisualTypography(BrowserProofFonts.Family)), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithTitle("Build inputs").WithNaturalSize(width, 320);
         var svg = block.ToSvg(); var png = block.ToPng(); var xml = XDocument.Parse(svg);
         Save("treeview-core", dark, width, svg, png);

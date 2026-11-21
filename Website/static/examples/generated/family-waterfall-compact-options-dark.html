@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = WaterfallRecipe.Create(&quot;compact-options&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Builds running-balance waterfalls with signed changes and explicit checkpoints.&lt;/summary&gt;
 public static class WaterfallRecipe {
     /// &lt;summary&gt;Creates the selected waterfall example and its orientation.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot; or &quot;horizontal&quot; or &quot;compact-horizontal&quot; or &quot;portable&quot; or &quot;compact-portable&quot; or &quot;portable-horizontal&quot; or &quot;compact-portable-horizontal&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
         if (variant is &quot;portable&quot; or &quot;compact-portable&quot; or &quot;portable-horizontal&quot; or &quot;compact-portable-horizontal&quot;) {
@@ -156,6 +157,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -165,7 +167,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = WaterfallRecipe.Create(&quot;compact-options&quot;, mode);
 var context = new VisualRenderContext(
@@ -180,7 +182,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Builds running-balance waterfalls with signed changes and explicit checkpoints.&lt;/summary&gt;
 public static class WaterfallRecipe {
     /// &lt;summary&gt;Creates the selected waterfall example and its orientation.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot; or &quot;horizontal&quot; or &quot;compact-horizontal&quot; or &quot;portable&quot; or &quot;compact-portable&quot; or &quot;portable-horizontal&quot; or &quot;compact-portable-horizontal&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
         if (variant is &quot;portable&quot; or &quot;compact-portable&quot; or &quot;portable-horizontal&quot; or &quot;compact-portable-horizontal&quot;) {

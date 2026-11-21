@@ -31,7 +31,7 @@ public sealed class WorkloadListBlock : FactualVisualBlock<WorkloadListBlock> {
     public static WorkloadListBlock Create() => new();
 
     /// <summary>Adds a person workload row.</summary>
-    public WorkloadListBlock AddPerson(string name, string? subtitle, double value, double maximum = 100, VisualStatus status = VisualStatus.Neutral, string? avatarText = null, string? displayValue = null, ChartColor? color = null, string? note = null) {
+    public WorkloadListBlock AddPerson(string name, string? subtitle, double value, double maximum = 100, Tone? status = null, string? avatarText = null, string? displayValue = null, ChartColor? color = null, string? note = null) {
         _rows.Add(new WorkloadListRow(name, subtitle, value, maximum, status, avatarText, displayValue, color, note));
         return this;
     }
@@ -54,15 +54,15 @@ public sealed class WorkloadListRow {
     private string _avatarText = string.Empty;
     private string _displayValue = string.Empty;
     private string _note = string.Empty;
-    private VisualStatus _status;
+    private Tone _status;
 
     /// <summary>Initializes a workload row.</summary>
-    public WorkloadListRow(string label, string? subtitle, double value, double maximum = 100, VisualStatus status = VisualStatus.Neutral, string? avatarText = null, string? displayValue = null, ChartColor? color = null, string? note = null) {
+    public WorkloadListRow(string label, string? subtitle, double value, double maximum = 100, Tone? status = null, string? avatarText = null, string? displayValue = null, ChartColor? color = null, string? note = null) {
         _label = label ?? throw new ArgumentNullException(nameof(label));
         _subtitle = subtitle ?? string.Empty;
         Value = value;
         Maximum = maximum;
-        Status = status;
+        Status = status ?? Tone.Neutral;
         _avatarText = avatarText ?? string.Empty;
         _displayValue = displayValue ?? string.Empty;
         Color = color;
@@ -82,13 +82,7 @@ public sealed class WorkloadListRow {
     public double Maximum { get; set; }
 
     /// <summary>Gets or sets the semantic row status.</summary>
-    public VisualStatus Status {
-        get => _status;
-        set {
-            VisualBlockGuards.EnumDefined(value, nameof(value));
-            _status = value;
-        }
-    }
+    public Tone Status { get => _status; set => _status = value; }
 
     /// <summary>Gets or sets avatar initials or a compact symbol.</summary>
     public string AvatarText { get => _avatarText; set => _avatarText = value ?? throw new ArgumentNullException(nameof(value)); }
@@ -146,8 +140,8 @@ public sealed class ActivityTimelineBlock : FactualVisualBlock<ActivityTimelineB
     }
 
     /// <summary>Adds a primary timeline event.</summary>
-    public ActivityTimelineBlock AddEvent(string title, string? timestamp = null, VisualStatus status = VisualStatus.Neutral, string? badge = null, string? detail = null, string? symbol = null) {
-        _items.Add(ActivityTimelineItem.Event(title, timestamp, status, badge, detail, symbol));
+    public ActivityTimelineBlock AddEvent(string title, string? timestamp = null, Tone? status = null, string? badge = null, string? detail = null, string? symbol = null) {
+        _items.Add(ActivityTimelineItem.Event(title, timestamp, status ?? Tone.Neutral, badge, detail, symbol));
         return this;
     }
 
@@ -173,7 +167,7 @@ public sealed class ActivityTimelineItem {
     private string _badge = string.Empty;
     private string _detail = string.Empty;
     private string _symbol = string.Empty;
-    private VisualStatus _status;
+    private Tone _status;
     private ActivityTimelineItemKind _kind;
 
     private ActivityTimelineItem(ActivityTimelineItemKind kind, string title) {
@@ -206,13 +200,7 @@ public sealed class ActivityTimelineItem {
     public string Symbol { get => _symbol; set => _symbol = value ?? throw new ArgumentNullException(nameof(value)); }
 
     /// <summary>Gets or sets semantic item status.</summary>
-    public VisualStatus Status {
-        get => _status;
-        set {
-            VisualBlockGuards.EnumDefined(value, nameof(value));
-            _status = value;
-        }
-    }
+    public Tone Status { get => _status; set => _status = value; }
 
     /// <summary>Gets or sets whether checklist text should render completed.</summary>
     public bool Completed { get; set; }
@@ -227,7 +215,7 @@ public sealed class ActivityTimelineItem {
     public static ActivityTimelineItem Section(string label) => new(ActivityTimelineItemKind.Section, label);
 
     /// <summary>Creates an event item.</summary>
-    public static ActivityTimelineItem Event(string title, string? timestamp, VisualStatus status, string? badge, string? detail, string? symbol = null) {
+    public static ActivityTimelineItem Event(string title, string? timestamp, Tone status, string? badge, string? detail, string? symbol = null) {
         return new ActivityTimelineItem(ActivityTimelineItemKind.Event, title) {
             Timestamp = timestamp ?? string.Empty,
             Status = status,
@@ -242,7 +230,7 @@ public sealed class ActivityTimelineItem {
         return new ActivityTimelineItem(ActivityTimelineItemKind.ChecklistItem, text) {
             Completed = completed,
             Muted = muted,
-            Status = completed ? VisualStatus.Positive : VisualStatus.Info
+            Status = completed ? Tone.Success : Tone.Info
         };
     }
 
@@ -250,7 +238,7 @@ public sealed class ActivityTimelineItem {
     public static ActivityTimelineItem Hidden(int count, string label) {
         return new ActivityTimelineItem(ActivityTimelineItemKind.HiddenSummary, label) {
             HiddenCount = count,
-            Status = VisualStatus.Info
+            Status = Tone.Info
         };
     }
 }

@@ -188,7 +188,7 @@ public sealed partial class VisualStory {
     }
 
     /// <summary>Sets the visual-story theme.</summary>
-    public VisualStory WithTheme(VisualTheme theme, VisualThemeMode? mode = null) {
+    public VisualStory WithTheme(VisualTheme theme, ThemeMode? mode = null) {
         Theme = theme ?? throw new ArgumentNullException(nameof(theme));
         if (mode.HasValue) ThemeMode = mode.Value;
         return this;

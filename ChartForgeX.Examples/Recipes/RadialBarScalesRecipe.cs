@@ -1,7 +1,7 @@
 /// <summary>Request counts and resolution rates on independent radial value scales.</summary>
 public static class RadialBarScalesRecipe {
     /// <summary>Creates count and percentage measures from a rightward start ray.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "dual-axes" or "compact-dual-axes")) throw new ArgumentOutOfRangeException(nameof(variant));
         var requests = new ChartSeries(new ChartSeriesId("requests"), "Requests", ChartSeriesKind.RadialBar, new[] { new ChartPoint(1, 800) });
         var resolved = new ChartSeries(new ChartSeriesId("resolved"), "Resolved (%)", ChartSeriesKind.RadialBar, new[] { new ChartPoint(1, 85) })

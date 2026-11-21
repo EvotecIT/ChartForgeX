@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Globalization;
 using System.Text.Json;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;
@@ -13,7 +14,7 @@ var primary = args.Length > 0 ? args[0] : "fonts/primary.ttf"; var fallback = ar
 foreach (var path in new[] { primary, fallback }) { var extension = Path.GetExtension(path); if (!extension.Equals(".ttf", StringComparison.OrdinalIgnoreCase) && !extension.Equals(".otf", StringComparison.OrdinalIgnoreCase)) throw new ArgumentException("Supply explicit .ttf/.otf faces."); }
 FontRegistry.Register("Example Primary", primary); FontRegistry.Register("Example Fallback", fallback);
 var kind = {{KIND}}; var policy = {{POLICY}};
-Chart Model(double reading) => NativeNumberCultureCaseRecipe.Create(kind, policy, reading, {{WIDTH}}, VisualThemeMode.{{MODE}}, "Example Primary, Example Fallback");
+Chart Model(double reading) => NativeNumberCultureCaseRecipe.Create(kind, policy, reading, {{WIDTH}}, ThemeMode.{{MODE}}, "Example Primary, Example Fallback");
 var renderer = new HtmlInteractiveChartRenderer(); var readings = NativeNumberCultureCaseRecipe.Readings(policy); var from = renderer.PrepareSection(Model(readings.First)); var to = renderer.PrepareSection(Model(readings.Last));
 var options = new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.Values, 9); var forward = renderer.PrepareNativeTransitionJson(from, to, options); var reverse = renderer.PrepareNativeTransitionJson(to, from, options);
 var action = "const chart=ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'));let forward=true;document.querySelector('#play').onclick=()=>{chart.update(forward?" + JsonSerializer.Serialize(to.Html) + ":" + JsonSerializer.Serialize(from.Html) + ",{sceneRevision:chart.sceneRevision,transition:forward?" + JsonSerializer.Serialize(forward) + ":" + JsonSerializer.Serialize(reverse) + ",motion:{duration:650}});forward=!forward;};";

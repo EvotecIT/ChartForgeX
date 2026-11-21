@@ -7,9 +7,9 @@ namespace ChartForgeX.Tests;
 
 public sealed class NativeMaskBlendExampleTests {
     [Theory]
-    [InlineData("compact", VisualThemeMode.Light)] [InlineData("compact", VisualThemeMode.Dark)]
-    [InlineData("wide", VisualThemeMode.Light)] [InlineData("wide", VisualThemeMode.Dark)]
-    public void CompletePublicProgramsShareNativeSourceAndKeepOptionalVisualsOutOfCore(string variant, VisualThemeMode mode) {
+    [InlineData("compact", ThemeMode.Light)] [InlineData("compact", ThemeMode.Dark)]
+    [InlineData("wide", ThemeMode.Light)] [InlineData("wide", ThemeMode.Dark)]
+    public void CompletePublicProgramsShareNativeSourceAndKeepOptionalVisualsOutOfCore(string variant, ThemeMode mode) {
         var layer = NativeMaskExample.Create(variant, mode); MaskBlendFixture.Capture("native-mask-example-" + variant + "-" + mode, layer);
         var report = NativeMaskBlendCompositionExample.Create(variant, mode, VisualBlendMode.Screen);
         MaskBlendFixture.CaptureImage("native-mask-report-" + variant + "-" + mode, report.ToImage());

@@ -1,7 +1,7 @@
 /// <summary>Builds an ordered intake funnel with independent captions and native connection paint.</summary>
 public static class FunnelPresentationRecipe {
     /// <summary>Creates the complete requested form. Exact documentation typography needs Carlito regular/bold installed or registered; other hosts use normal font fallback.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "cone" or "compact-cone" or "horizontal" or "compact-horizontal" or "cone-horizontal" or "compact-cone-horizontal")) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant.StartsWith("compact", StringComparison.Ordinal);
         var cone = variant is "cone" or "compact-cone" or "cone-horizontal" or "compact-cone-horizontal";

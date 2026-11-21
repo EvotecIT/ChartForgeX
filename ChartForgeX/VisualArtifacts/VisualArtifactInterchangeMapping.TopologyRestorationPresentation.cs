@@ -14,7 +14,7 @@ public static partial class VisualArtifactInterchangeMapping {
         chart.PreparedFont = source.ContextFont;
         if (source.Theme != null) {
             chart.Theme = RestoreCompleteTopologyTheme(source.Theme);
-            chart.ThemeMode = source.Theme.Mode ?? VisualThemeMode.Light;
+            chart.ThemeMode = source.Theme.Mode ?? ThemeMode.Light;
         }
         if (source.TopologyCaptions != null) source.TopologyCaptions.Apply(chart.DefaultRenderOptions ??= new TopologyRenderOptions());
         if (source.MapViewport != null) {

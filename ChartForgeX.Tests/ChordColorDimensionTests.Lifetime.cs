@@ -72,10 +72,10 @@ public sealed partial class ChordColorDimensionTests {
     public void RegisteredColorRecipeRetainsNineTransferFactsAndProducesBothNativeExports(int width, bool dark) {
         var variant = width == 360 ? "compact-color-dimension" : "color-dimension";
         var recipe = ExampleRecipes.OptionVariants.Single(item => item.Key == (ChartSeriesKind.Chord, "color-dimension")).Value;
-        var chart = (Chart)recipe.Create(variant, dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        var chart = (Chart)recipe.Create(variant, dark ? ThemeMode.Dark : ThemeMode.Light);
         chart.WithSize(width, width == 360 ? 360 : 440).WithTitle("Transfer volume and latency")
             .WithSubtitle("Illustrative latency colors flows; transfer counts retain their weights")
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         var original = ChordRecipe.Create("wide").Series[0].FlowLinks;
         Assert.Equal(original.Select(flow => (flow.Id, flow.SourceId, flow.TargetId, flow.Value)),
             chart.Series[0].FlowLinks.Select(flow => (flow.Id, flow.SourceId, flow.TargetId, flow.Value)));

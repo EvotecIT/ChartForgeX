@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = PyramidPresentationRecipe.Create(&quot;reversed&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Builds triangular allocation partitions with independent category/value captions and source-owned borders.&lt;/summary&gt;
 public static class PyramidPresentationRecipe {
     /// &lt;summary&gt;Creates the full allocation example. Exact documentation typography needs Carlito regular/bold installed or registered; other hosts use normal font fallback.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;horizontal&quot; or &quot;compact-horizontal&quot; or &quot;reversed&quot; or &quot;compact-reversed&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant.StartsWith(&quot;compact&quot;, StringComparison.Ordinal);
         var horizontal = variant.EndsWith(&quot;horizontal&quot;, StringComparison.Ordinal);
@@ -141,6 +142,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -150,7 +152,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = PyramidPresentationRecipe.Create(&quot;reversed&quot;, mode);
 var context = new VisualRenderContext(
@@ -165,7 +167,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Builds triangular allocation partitions with independent category/value captions and source-owned borders.&lt;/summary&gt;
 public static class PyramidPresentationRecipe {
     /// &lt;summary&gt;Creates the full allocation example. Exact documentation typography needs Carlito regular/bold installed or registered; other hosts use normal font fallback.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;horizontal&quot; or &quot;compact-horizontal&quot; or &quot;reversed&quot; or &quot;compact-reversed&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant.StartsWith(&quot;compact&quot;, StringComparison.Ordinal);
         var horizontal = variant.EndsWith(&quot;horizontal&quot;, StringComparison.Ordinal);

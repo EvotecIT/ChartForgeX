@@ -9,7 +9,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class PreparedHierarchySankeyTests {
-    private static VisualRenderContext Context(double width = 720, double height = 460, VisualThemeMode mode = VisualThemeMode.Light) =>
+    private static VisualRenderContext Context(double width = 720, double height = 460, ThemeMode mode = ThemeMode.Light) =>
         new(new VisualLayoutOptions(new VisualSize(width, height)), themeMode: mode, frame: new VisualFrame("Shared frame", showLegend: false));
     private static Chart Hierarchy(ChartSeriesKind kind) {
         var chart = Chart.Create();
@@ -22,13 +22,13 @@ public sealed class PreparedHierarchySankeyTests {
     private static double Number(XElement element, string name) => double.Parse(element.Attribute(name)!.Value, CultureInfo.InvariantCulture);
 
     [Theory]
-    [InlineData(ChartSeriesKind.Tree, 320, 260, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.Tree, 720, 460, VisualThemeMode.Dark)]
-    [InlineData(ChartSeriesKind.Sunburst, 320, 260, VisualThemeMode.Dark)]
-    [InlineData(ChartSeriesKind.Sunburst, 720, 460, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.Treemap, 320, 260, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.Treemap, 720, 460, VisualThemeMode.Dark)]
-    public void HierarchiesUseBoundedNativeGeometryAndRetainEverySourceLabel(ChartSeriesKind kind, int width, int height, VisualThemeMode mode) {
+    [InlineData(ChartSeriesKind.Tree, 320, 260, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.Tree, 720, 460, ThemeMode.Dark)]
+    [InlineData(ChartSeriesKind.Sunburst, 320, 260, ThemeMode.Dark)]
+    [InlineData(ChartSeriesKind.Sunburst, 720, 460, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.Treemap, 320, 260, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.Treemap, 720, 460, ThemeMode.Dark)]
+    public void HierarchiesUseBoundedNativeGeometryAndRetainEverySourceLabel(ChartSeriesKind kind, int width, int height, ThemeMode mode) {
         var chart = Hierarchy(kind); var prepared = chart.Prepare(Context(width, height, mode));
         string role = kind == ChartSeriesKind.Tree ? "tree-node" : kind == ChartSeriesKind.Sunburst ? "sunburst-segment" : "treemap-tile";
         var regions = prepared.Regions.Where(r => r.Role == role).ToArray();
@@ -92,9 +92,9 @@ public sealed class PreparedHierarchySankeyTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void SankeyFractionalRibbonsAndNodesShareOneExactWeightScale(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void SankeyFractionalRibbonsAndNodesShareOneExactWeightScale(ThemeMode mode) {
         var chart = Chart.Create().AddSankey("Flows", new[] { new ChartNode("Source", "Source"), new ChartNode("Tiny", "Tiny"), new ChartNode("Large", "Large") }, new[] { new ChartFlowLink("flow-1", "Source", "Tiny", .001), new ChartFlowLink("flow-2", "Source", "Large", 1) });
         chart.Series[0].WithNodeState(chart.Series[0].Nodes[0].Id, ChartSeriesState.Danger);
         var prepared = chart.Prepare(Context(mode: mode)); var xml = XDocument.Parse(prepared.ToSvg());

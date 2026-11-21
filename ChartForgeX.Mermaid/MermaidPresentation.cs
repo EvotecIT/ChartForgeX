@@ -27,7 +27,7 @@ internal static class MermaidPresentation {
         } else if (model is SequenceArtifact sequence) {
             sequence.Accessibility.Name = document.Accessibility.Name;
             sequence.Accessibility.Description = document.Accessibility.Description;
-            if (document.Theme != null) sequence.ThemeMode = string.Equals(document.Theme, "dark", StringComparison.OrdinalIgnoreCase) ? VisualThemeMode.Dark : VisualThemeMode.Light;
+            if (document.Theme != null) sequence.ThemeMode = string.Equals(document.Theme, "dark", StringComparison.OrdinalIgnoreCase) ? ThemeMode.Dark : ThemeMode.Light;
             if (host?.ThemeMode != null) sequence.ThemeMode = host.ThemeMode.Value;
             var preset=document.Configuration.Preset?.Resolve(sequence.ThemeMode,host?.Theme!=null,document.Configuration.Theme);
             sequence.Theme = Theme(sequence.Theme, document.Configuration, host,preset);
@@ -108,5 +108,5 @@ internal static class MermaidPresentation {
             fontSize ?? source.DataLabelSize, source.ScalarValueSize * scale, source.CenterValueSize * scale,
             source.AxisTitleSize * scale, source.MonospaceFamily);
     }
-    private static VisualThemeMode Mode(string theme) => string.Equals(theme, "dark", StringComparison.OrdinalIgnoreCase) ? VisualThemeMode.Dark : VisualThemeMode.Light;
+    private static ThemeMode Mode(string theme) => string.Equals(theme, "dark", StringComparison.OrdinalIgnoreCase) ? ThemeMode.Dark : ThemeMode.Light;
 }

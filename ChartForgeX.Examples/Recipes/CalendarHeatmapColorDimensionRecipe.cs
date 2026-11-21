@@ -1,7 +1,7 @@
 /// <summary>Formats daily temperature independently from the calendar's numeric observations.</summary>
 public static class CalendarHeatmapColorDimensionRecipe {
     /// <summary>Creates a temperature calendar with Polish number formatting and a named color dimension.</summary>
-    public static Chart Create(string variant = "color-dimension", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "color-dimension", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("color-dimension" or "compact-color-dimension")) throw new ArgumentOutOfRangeException(nameof(variant));
         var colors = VisualTheme.Graphite().Resolve(mode);
         return Chart.Create().ConfigureLabels(labels => labels.NoData = "Not sampled")

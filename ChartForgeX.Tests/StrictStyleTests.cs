@@ -85,6 +85,7 @@ public sealed class StrictStyleTests {
         // Runtimes restore inline styles inside the roots they mount; the declarations must match the ordinary page.
         const string Inline = """
             () => [...document.querySelectorAll('.cfx-interactive-chart, [data-cfx-runtime-bound]')].flatMap(root => [root, ...root.querySelectorAll('*')])
+              .filter(node => !node.matches('script,style'))
               .map(node => node.tagName + '|' + (node.getAttribute('class') || '').split(/\s+/).filter(name => name.startsWith('cfx-s-')).length + '|' + node.style.cssText)
             """;
         var policy = "default-src 'none'; img-src data:; font-src data:; style-src 'nonce-" + Nonce + "'; script-src 'nonce-" + Nonce + "'";

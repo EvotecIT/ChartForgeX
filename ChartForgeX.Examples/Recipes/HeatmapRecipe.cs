@@ -1,7 +1,7 @@
 /// <summary>Shows monthly coverage measurements across service areas.</summary>
 public static class HeatmapRecipe {
     /// <summary>Creates numeric coverage rows; the sparse variant preserves empty cell positions.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "compact-options")) throw new ArgumentOutOfRangeException(nameof(variant));
         if (variant == "sparse") return Chart.Create().WithXLabels("Identity", "Network", "Storage", "Backup", "Access", "Recovery")
             .AddHeatmapRow("Primary", new double?[] { 92, null, null, 70, null, 41 }, id: new ChartSeriesId("primary-measurements"))

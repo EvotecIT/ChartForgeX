@@ -21,10 +21,10 @@ public sealed class InteractiveSunburstBrowserTests {
     [InlineData(800, true, true)]
     public async Task PoliciesRetainNativePointerKeyboardIdentityAndLocalizedIndependentFacts(int width, bool dark, bool inclusive) {
         if (!Enabled) return;
-        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var variant = inclusive ? "authored-total" : "options";
         var chart = V2GalleryModels.Create(ChartSeriesKind.Sunburst, variant, mode)
-            .WithSize(width, width < 500 ? 360 : 460).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithSize(width, width < 500 ? 360 : 460).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithTitle("Przydział pracy").WithSubtitle(inclusive ? "Inclusive parent totals retain unallocated remainder" : "Leaf totals size sectors; measured color stays independent")
             .ConfigureLabels(labels => { labels.Color = "Kolor"; labels.NoData = "Brak danych"; labels.AuthoredValue = "Dostarczono <&>"; labels.Remainder = "Pozostało <&>"; });
         chart.Options.Sunburst.ColorDimension.Name = "Zmiana <&>";

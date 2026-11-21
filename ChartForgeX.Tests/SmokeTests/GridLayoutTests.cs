@@ -72,6 +72,8 @@ internal static partial class SmokeTests {
             "Prepared headings should materialize script sizing and position once, without retaining a second backend baseline shift.");
         Assert(string.Join(" ", headings.Select(element => element.Value)).Contains("STYLED GRID HEADER", StringComparison.Ordinal),
             "Shared header measurement and painting should materialize title casing.");
+        grid.ThemeMode = ThemeMode.Light;
+        prepared = grid.Prepare(VisualExportRequest.ForGrid(grid).Context);
         var html = grid.ToHtmlFragment();
         var inlineSvg = prepared.ToSvg(new VisualSvgOptions(colorVariables: grid.SvgColorVariables, responsive: true));
         Assert(html.Contains(inlineSvg, StringComparison.Ordinal), "Static HTML should retain the exact prepared typography and layout with responsive export policy.");

@@ -14,11 +14,11 @@ namespace ChartForgeX.Tests;
 [Trait("BrowserSuite", "Compatibility")]
 public sealed class AntimeridianMapViewportBrowserTests {
     [BrowserTheory]
-    [InlineData("compact", VisualThemeMode.Light)]
-    [InlineData("wide", VisualThemeMode.Dark)]
-    [InlineData("compact-mercator", VisualThemeMode.Dark)]
-    [InlineData("mercator", VisualThemeMode.Light)]
-    public async Task RawSeamTargetsRetainDistinctIdsThroughSelectionNativeUpdateFitAndDownloads(string variant, VisualThemeMode mode) {
+    [InlineData("compact", ThemeMode.Light)]
+    [InlineData("wide", ThemeMode.Dark)]
+    [InlineData("compact-mercator", ThemeMode.Dark)]
+    [InlineData("mercator", ThemeMode.Light)]
+    public async Task RawSeamTargetsRetainDistinctIdsThroughSelectionNativeUpdateFitAndDownloads(string variant, ThemeMode mode) {
         if (!Enabled) return;
         var chart = DatelineMapRecipe.Create(variant, mode); var width = variant.StartsWith("compact", StringComparison.Ordinal) ? 390 : 800;
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(Options), width + 24, 850);

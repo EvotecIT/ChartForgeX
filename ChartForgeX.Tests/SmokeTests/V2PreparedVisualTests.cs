@@ -23,8 +23,8 @@ public sealed class V2PreparedVisualTests {
     [Fact]
     public void PreparedExportsDetachFromModelThemeFontAndAccessibilityMutation() {
         var chart = Chart.Create().WithTitle("Stable title").AddLine("Samples", Points(1, 3, 2));
-        var light = VisualDesignTokens.FromJson(CanonicalJson(), VisualThemeMode.Light);
-        var dark = VisualDesignTokens.FromJson(CanonicalJson(), VisualThemeMode.Dark);
+        var light = VisualDesignTokens.FromJson(CanonicalJson(), ThemeMode.Light);
+        var dark = VisualDesignTokens.FromJson(CanonicalJson(), ThemeMode.Dark);
         var theme = new VisualTheme(light, dark);
         var context = new VisualRenderContext(theme: theme);
         var prepared = chart.Prepare(context);
@@ -37,9 +37,9 @@ public sealed class V2PreparedVisualTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void ChartAndDonutShareResolvedFrameAndExactLogicalDimensions(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void ChartAndDonutShareResolvedFrameAndExactLogicalDimensions(ThemeMode mode) {
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(480, 320)), themeMode: mode,
             frame: new VisualFrame("Shared heading", "Shared subtitle", showLegend: false, showSurface: true));
         var cartesian = Chart.Create().AddLine("Samples", Points(1, 3, 2)).Prepare(context);

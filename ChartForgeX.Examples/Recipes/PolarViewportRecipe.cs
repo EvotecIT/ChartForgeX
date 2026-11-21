@@ -8,7 +8,7 @@ using ChartForgeX.Typography;
 /// <summary>A complete source-owned directional Polar view with independent primary and logarithmic secondary radii.</summary>
 public static partial class PolarViewportRecipe {
     /// <summary>Creates authored radians, stable identities and two independent radius axes without filtering observations.</summary>
-    public static Chart Create(int width = 800, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(int width = 800, ThemeMode mode = ThemeMode.Light) {
         var primary = new ChartSeries(new ChartSeriesId("primary"), "Observed strength", ChartSeriesKind.Polar,
             new[] { new ChartPoint(-.25, 5), new ChartPoint(.1, 60), new ChartPoint(.4, 95), new ChartPoint(3, 50, true), new ChartPoint(6.1, 90) });
         primary.ConfigurePolar(options => { options.Form = ChartLineAreaForm.Area; options.FillOpacity = .2; options.CurveTension = .35; });

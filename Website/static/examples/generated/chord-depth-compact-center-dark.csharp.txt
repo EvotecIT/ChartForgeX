@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -13,7 +14,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = ChordDepthRecipe.Create("compact-center", mode);
 var context = new VisualRenderContext(
@@ -27,7 +28,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 
 /// <summary>Explicit display order and ribbon tension leave directed source facts and ordinal paint unchanged.</summary>
 public static class ChordDepthRecipe {
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var compact = variant.StartsWith("compact", StringComparison.Ordinal);
         var form = compact && variant != "compact" ? variant.Substring("compact-".Length) : variant;
         if (form is not ("wide" or "compact" or "source" or "straight" or "center"))

@@ -229,7 +229,7 @@ public sealed class InteractiveTooltipAcquisitionBrowserTests {
     public async Task RestoredChildAndMarkerFreePaintRemainEligibleUntilTheirActualSurfaceIsHidden(bool markerFree) {
         if (!Enabled) return;
         var chart = Observation(markerFree, graphite: true);
-        if (markerFree) chart = Chart.Create().WithSize(800, 540).WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark).WithLegend(true)
+        if (markerFree) chart = Chart.Create().WithSize(800, 540).WithTheme(VisualTheme.Graphite(), ThemeMode.Dark).WithLegend(true)
             .WithLineMarkers(ChartLineMarkerMode.None).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
             .AddLine("Reading", new[] { new ChartPoint(3, 5), new ChartPoint(5, 5), new ChartPoint(7, 5) });
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
@@ -265,7 +265,7 @@ public sealed class InteractiveTooltipAcquisitionBrowserTests {
     }
 
     private static Chart Observation(bool dark, bool graphite = false) => Chart.Create().WithSize(800, 540).WithLegend(true)
-        .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
         .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).AddScatter("Reading", new[] { new ChartPoint(5, 5) });
 
     private static async Task CaptureAsync(IPage page, string name, object observations) {

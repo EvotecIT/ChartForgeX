@@ -16,9 +16,9 @@ namespace ChartForgeX.Tests;
 [Trait("BrowserSuite", "Compatibility")]
 public sealed partial class StaticExportNativeFontBrowserTests {
     [BrowserTheory]
-    [InlineData(800, VisualThemeMode.Light)]
-    [InlineData(390, VisualThemeMode.Dark)]
-    public async Task NativeFontPngKeepsCompletePreparedCaptionsAndEditableSvg(int width, VisualThemeMode mode) {
+    [InlineData(800, ThemeMode.Light)]
+    [InlineData(390, ThemeMode.Dark)]
+    public async Task NativeFontPngKeepsCompletePreparedCaptionsAndEditableSvg(int width, ThemeMode mode) {
         if (!Enabled) return;
         var chart = Model(width, mode);
         await using var session = await BrowserProofFonts.OpenAsync(chart.ToInteractiveHtmlFragment(Options), width + 24, 850);
@@ -44,8 +44,8 @@ public sealed partial class StaticExportNativeFontBrowserTests {
     [BrowserFact]
     public async Task OrdinaryAcceptedReplacementReplacesGlyphsAndKeepsComputedTextPaint() {
         if (!Enabled) return;
-        var chart = Model(800, VisualThemeMode.Light);
-        var replacement = Model(800, VisualThemeMode.Light).WithTitle("A new accepted caption")
+        var chart = Model(800, ThemeMode.Light);
+        var replacement = Model(800, ThemeMode.Light).WithTitle("A new accepted caption")
             .WithXLabels("Captured one", "Captured two", "Captured three", "Captured zero");
         replacement.ConfigureFunnel(options => options.CategoryLabel.Style.FontSize = 18);
         await using var session = await BrowserProofFonts.OpenAsync(chart.ToInteractiveHtmlFragment(Options), 824, 850);
@@ -89,7 +89,7 @@ public sealed partial class StaticExportNativeFontBrowserTests {
     [BrowserFact]
     public async Task CapturedOutlinePngDoesNotNeedPageFontsOrBlobImagePermission() {
         if (!Enabled) return;
-        var fragment = Model(800, VisualThemeMode.Light).ToInteractiveHtmlFragment(options => {
+        var fragment = Model(800, ThemeMode.Light).ToInteractiveHtmlFragment(options => {
             Options(options);
             options.TextPresentation = HtmlChartTextPresentation.NativeContours;
         });
@@ -120,7 +120,7 @@ public sealed partial class StaticExportNativeFontBrowserTests {
             chart.Title = "Decoration captured font";
             chart.Nodes.Add(new TopologyNode { Id = "node", Label = DecorationCorridorCaption, X = 60, Y = 90, Width = 260, Height = 90 });
             html = new HtmlInteractiveTopologyRenderer().RenderPresentationFragment(chart, prepared => prepared.ToSvg(), new TopologyRenderOptions { EnableHtmlExportControls = true });
-        } else html = Model(800, VisualThemeMode.Light).WithTitle(DecorationCorridorCaption).WithSubtitle(string.Empty).ToInteractiveHtmlFragment(Options);
+        } else html = Model(800, ThemeMode.Light).WithTitle(DecorationCorridorCaption).WithSubtitle(string.Empty).ToInteractiveHtmlFragment(Options);
         await using var session = await BrowserProofFonts.OpenAsync(html, 824, 850);
         await session.Page.AddStyleTagAsync(new PageAddStyleTagOptions { Content = "svg " + (ancestor ? "g" : "text")
             + "{text-decoration-line:" + lines + ";text-decoration-style:" + style + ";text-decoration-color:rgb(17,203,177);text-decoration-thickness:3px}" });
@@ -179,7 +179,7 @@ public sealed partial class StaticExportNativeFontBrowserTests {
     [InlineData(true)]
     public async Task PngComparisonRejectsChangedOutputPixelsAndDimensions(bool wrongDimensions) {
         if (!Enabled) return;
-        await using var session = await BrowserProofFonts.OpenAsync(Model(800, VisualThemeMode.Light).ToInteractiveHtmlFragment(Options), 824, 850);
+        await using var session = await BrowserProofFonts.OpenAsync(Model(800, ThemeMode.Light).ToInteractiveHtmlFragment(Options), 824, 850);
         var page = session.Page;
         // First prove an unmodified download, then corrupt one real encoder output after
         // its pristine bitmap snapshot. Neither unrelated paint nor a frame resize may pass.
@@ -199,7 +199,7 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    private static Chart Model(int width, VisualThemeMode mode) =>
+    private static Chart Model(int width, ThemeMode mode) =>
         FunnelPresentationRecipe.Create(width == 390 ? "compact-cone" : "cone", mode)
             .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), mode);
     private static void Options(HtmlChartInteractionOptions options) {

@@ -15,7 +15,7 @@ public sealed class CartesianPlotRegionDepthBrowserTests {
     [InlineData(false, false)] [InlineData(false, true)] [InlineData(true, false)] [InlineData(true, true)]
     public async Task BorderedPivotRegionsRetainDeliberateCaptionsSourceNavigationAndNativeResponsiveReplacement(bool dark, bool narrow) {
         if (!Enabled) return;
-        var chart = QuadrantRegionDepthRecipe.Create("pivot-quadrants", dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        var chart = QuadrantRegionDepthRecipe.Create("pivot-quadrants", dark ? ThemeMode.Dark : ThemeMode.Light);
         var html = chart.ToInteractiveHtmlPage(options => {
             options.Interaction.Enable(ChartForgeX.Interactivity.ChartInteractionFeatures.Export);
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Adaptive;

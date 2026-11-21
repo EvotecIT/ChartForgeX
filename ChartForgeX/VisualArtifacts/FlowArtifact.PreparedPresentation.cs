@@ -15,13 +15,13 @@ internal sealed class FlowPreparedPresentation {
     private readonly double _width, _height, _padding;
     private readonly VisualLayoutOptions _layout;
     private readonly VisualAccessibility? _accessibility;
-    internal FlowPreparedPresentation(FlowArtifact flow, VisualLayoutOptions layout, VisualTheme theme, VisualThemeMode mode, PreparedDiagramFont? font, VisualFrame? frame, VisualAccessibility? accessibility = null) {
+    internal FlowPreparedPresentation(FlowArtifact flow, VisualLayoutOptions layout, VisualTheme theme, ThemeMode mode, PreparedDiagramFont? font, VisualFrame? frame, VisualAccessibility? accessibility = null) {
         _width = flow.Width; _height = flow.Height; _padding = flow.Padding; _layout = layout;
         Theme = theme; Mode = mode; Font = font; Frame = frame?.RequestValues(retainOwnedFonts: true);
         _accessibility = accessibility?.Clone();
     }
     internal VisualTheme Theme { get; }
-    internal VisualThemeMode Mode { get; }
+    internal ThemeMode Mode { get; }
     internal PreparedDiagramFont? Font { get; }
     internal VisualFrame? Frame { get; }
     internal void ApplyAccessibility(VisualAccessibility target) {

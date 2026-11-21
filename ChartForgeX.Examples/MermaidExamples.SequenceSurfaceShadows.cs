@@ -1,7 +1,7 @@
 internal static partial class MermaidExamples {
     private static void WriteSequenceSurfaceShadowExamples(string output) {
         var source = MermaidFixtureSources.Read("sequence-retained-surface-shadows");
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             foreach (var variant in new[] { "compact", "wide" }) {
                 var result = SequenceSurfaceShadowSourceRecipe.Parse(source, variant, mode, ExampleTypography.FontFamily);
                 var artifact = result.Artifact!;

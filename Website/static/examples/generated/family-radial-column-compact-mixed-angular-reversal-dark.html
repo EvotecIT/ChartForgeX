@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = MixedRadialRecipe.Create(&quot;compact-mixed-angular-reversal&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Observed counts compared with a radar reference area and an unfilled target line.&lt;/summary&gt;
 public static class MixedRadialRecipe {
     /// &lt;summary&gt;Creates shared radial categories with optional closed curves or reversed angular order.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light, double? curveTension = null) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light, double? curveTension = null) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;mixed&quot; or &quot;compact-mixed&quot; or &quot;mixed-curves&quot; or &quot;compact-mixed-curves&quot; or &quot;mixed-angular-reversal&quot; or &quot;compact-mixed-angular-reversal&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var tension = curveTension ?? (variant is &quot;mixed-curves&quot; or &quot;compact-mixed-curves&quot; ? 1d : (double?)null);
@@ -136,6 +137,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -145,7 +147,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = MixedRadialRecipe.Create(&quot;compact-mixed-angular-reversal&quot;, mode);
 var context = new VisualRenderContext(
@@ -160,7 +162,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Observed counts compared with a radar reference area and an unfilled target line.&lt;/summary&gt;
 public static class MixedRadialRecipe {
     /// &lt;summary&gt;Creates shared radial categories with optional closed curves or reversed angular order.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light, double? curveTension = null) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light, double? curveTension = null) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;mixed&quot; or &quot;compact-mixed&quot; or &quot;mixed-curves&quot; or &quot;compact-mixed-curves&quot; or &quot;mixed-angular-reversal&quot; or &quot;compact-mixed-angular-reversal&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var tension = curveTension ?? (variant is &quot;mixed-curves&quot; or &quot;compact-mixed-curves&quot; ? 1d : (double?)null);

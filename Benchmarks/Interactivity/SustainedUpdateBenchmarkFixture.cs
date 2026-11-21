@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
@@ -68,7 +69,7 @@ public sealed partial class SustainedUpdateBenchmarkFixture : IDisposable {
     public void Reset() {
         _last = null; _lastBrowserSvg = null; _committed = 0; _validated = false;
         var source = Chart.Create().WithSize(900, 500).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithPadding(24, 24, 24, 24).WithTheme(_theme, VisualThemeMode.Light).WithYAxisBounds(0, 60);
+            .WithPadding(24, 24, 24, 24).WithTheme(_theme, ThemeMode.Light).WithYAxisBounds(0, 60);
         _source = source; source.Options.PngFontPath = _font;
         _series = Enumerable.Range(0, _secondary ? 2 : 1).Select(series => {
             var data = ChartSeries.CreateLine(new ChartSeriesId(Key(series)), series == 0 ? "Measurements" : "Companion",

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -13,7 +14,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = SimpleTopologyRecipe.Create("feasibility", mode);
 var context = new VisualRenderContext(
@@ -30,7 +31,7 @@ public static class SimpleTopologyRecipe {
     /// <summary>Creates the bounded native topology model.</summary>
     /// <param name="variant">Use wide or feasibility for the simple topology.</param>
     /// <param name="mode">The rendering mode; diagram colors are resolved when the model is prepared.</param>
-    public static TopologyChart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static TopologyChart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "feasibility"))
             throw new ArgumentOutOfRangeException(nameof(variant), variant, "Use wide or feasibility.");
 

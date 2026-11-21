@@ -20,7 +20,7 @@ These rules govern the shared prepared-rendering contracts and their model entry
 | `To*` | Return an in-memory representation without writing a file or changing the model. | `prepared.ToSvg()`, `prepared.ToPng()`, `prepared.ToRgba()` |
 | `Save*` | Write to an explicitly supplied path or stream. Keep file ownership and format options visible. | File-saving helpers are not part of the prepared contract. |
 | Constructors and named factories | Create immutable requests, snapshots or presets. They are deliberate exceptions to builder prefixes. | `new VisualFrame(...)`, `VisualTheme.Graphite()`, `VisualTheme.FromJson(json)` |
-| `Resolve` | Select a validated immutable view of an existing value. | `theme.Resolve(VisualThemeMode.Dark)` |
+| `Resolve` | Select a validated immutable view of an existing value. | `theme.Resolve(ThemeMode.Dark)` |
 
 Use domain names after prefixes. Avoid interchangeable `Set`, `Use`, `Build`, `Render`, `Options`, `Configure` and `With` methods for the same operation. A meaningful operation such as preparing, importing or exporting is not forced into a configuration prefix.
 
@@ -82,7 +82,7 @@ var theme = VisualTheme.Graphite().Configure(builder => {
     builder.Typography = builder.Typography.WithFamily(ChartFontStacks.ProductSans);
     builder.CardRadius = 8;
 });
-chart.WithTheme(theme, VisualThemeMode.Dark);
+chart.WithTheme(theme, ThemeMode.Dark);
 ```
 
 `Configure` snapshots its builder after success; retaining or editing that builder later cannot change the theme. A failed callback returns no replacement. `VisualDesignTokens` describes a mode's editable colors inside this builder, not a second typography/layout model. Canvas backdrop treatments, terminal chrome and syntax highlighting remain local style options. Frame visibility belongs to the model/frame, independently of the palette.
@@ -98,7 +98,7 @@ var grid = ChartGrid.Create()
     .WithTheme(VisualTheme.Graphite())
     .WithPanelThemes()
     .Add(sales.WithTheme(VisualTheme.Graphite()))
-    .Add(readership.WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark));
+    .Add(readership.WithTheme(VisualTheme.Graphite(), ThemeMode.Dark));
 ```
 
 With panel themes enabled, every child uses its chart's `Theme`, `ThemeMode`, typography and native font-file request. The grid context controls the outer frame, layout, visibility permissions and legend limits. An explicit context theme or font therefore applies to the outer frame; call `WithPanelThemes(false)` to impose that presentation on every panel. A context `LegendStyle` remains an explicit common legend override, and chart text-style overrides remain authoritative. Pagination copies this choice. The grid never infers its presentation from the first child.
@@ -428,7 +428,7 @@ chart.Accessibility.Name = "Storage capacity: 60 GB used and 40 GB available";
 var context = new VisualRenderContext(
     layout: new VisualLayoutOptions(new VisualSize(640, 400)),
     theme: VisualTheme.Graphite(),
-    themeMode: VisualThemeMode.Light,
+    themeMode: ThemeMode.Light,
     frame: new VisualFrame(showLegend: true));
 
 PreparedVisual prepared = chart.Prepare(context);

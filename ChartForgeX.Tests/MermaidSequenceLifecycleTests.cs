@@ -91,7 +91,7 @@ public sealed partial class MermaidSequenceLifecycleTests {
     public void FractionalAutonumberAndExplicitTitleHaveTheSameNativeResultInBothPalettes() {
         const string source = "sequenceDiagram\ntitle: Repeated request\nautonumber 1.5 0.25\nA->>B: One\nB-->>A: Two";
         var document = new MermaidParser().ParseSequence(source).Document!;
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             var native = document.ToSequenceArtifact();
             native.ThemeMode = mode;
             var svg = native.ToSvg();

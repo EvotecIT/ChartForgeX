@@ -192,7 +192,7 @@ public sealed class MermaidClassErCaptionTests {
 
     internal static string Source(string family) => File.ReadAllText(Path.Combine(TestRepository.Root, "ChartForgeX.Examples", "Assets", "Mermaid", family + "-native-captions.mmd"));
     internal static MermaidRenderOptions Options(bool dark, int width) => new() {
-        Presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family, ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light, TopologySizing = MermaidTopologySizing.Natural },
+        Presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family, ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light, TopologySizing = MermaidTopologySizing.Natural },
         Class = new MermaidTopologyRenderOptions { Width = width, Height = 620 },
         EntityRelationship = new MermaidTopologyRenderOptions { Width = width, Height = 620 }
     };

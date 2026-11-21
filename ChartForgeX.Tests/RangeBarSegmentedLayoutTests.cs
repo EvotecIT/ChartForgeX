@@ -12,13 +12,13 @@ namespace ChartForgeX.Tests;
 
 public sealed class RangeBarSegmentedLayoutTests {
     [Theory]
-    [InlineData(800, 440, VisualThemeMode.Light, ChartBarStyle.SegmentedCapsule)]
-    [InlineData(800, 440, VisualThemeMode.Dark, ChartBarStyle.SegmentedCapsule)]
-    [InlineData(360, 360, VisualThemeMode.Light, ChartBarStyle.SegmentedCapsule)]
-    [InlineData(360, 360, VisualThemeMode.Dark, ChartBarStyle.SegmentedCapsule)]
-    [InlineData(800, 440, VisualThemeMode.Light, ChartBarStyle.Flat)]
-    [InlineData(360, 360, VisualThemeMode.Dark, ChartBarStyle.Flat)]
-    public void FourCategoryGalleryKeepsVisibleBodiesAndCapsWithinDistinctPaintedSlots(int width, int height, VisualThemeMode mode, ChartBarStyle style) {
+    [InlineData(800, 440, ThemeMode.Light, ChartBarStyle.SegmentedCapsule)]
+    [InlineData(800, 440, ThemeMode.Dark, ChartBarStyle.SegmentedCapsule)]
+    [InlineData(360, 360, ThemeMode.Light, ChartBarStyle.SegmentedCapsule)]
+    [InlineData(360, 360, ThemeMode.Dark, ChartBarStyle.SegmentedCapsule)]
+    [InlineData(800, 440, ThemeMode.Light, ChartBarStyle.Flat)]
+    [InlineData(360, 360, ThemeMode.Dark, ChartBarStyle.Flat)]
+    public void FourCategoryGalleryKeepsVisibleBodiesAndCapsWithinDistinctPaintedSlots(int width, int height, ThemeMode mode, ChartBarStyle style) {
         var chart = Gallery(width, style); var prepared = chart.Prepare(Context(width, height, mode));
         var bodies = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "range-bar").ToArray();
         var caps = prepared.Scene.Nodes.OfType<VisualSceneLine>().Where(node => node.Role == "range-bar-cap").ToArray();
@@ -80,7 +80,7 @@ public sealed class RangeBarSegmentedLayoutTests {
     [Fact]
     public void DisabledLightingDoesNotConsumeCategorySpace() {
         var chart = Gallery(360, ChartBarStyle.SegmentedCapsule);
-        var context = Context(360, 360, VisualThemeMode.Dark);
+        var context = Context(360, 360, ThemeMode.Dark);
         double Thickness() => chart.Prepare(context).Scene.Nodes.OfType<VisualSceneRectangle>().First(node => node.Role == "range-bar").Bounds.Height;
         var lit = Thickness();
         chart.Options.BarVisualStyle.CapShadowOpacity = 0; chart.Options.BarVisualStyle.CapHighlightOpacity = 0;
@@ -112,7 +112,7 @@ public sealed class RangeBarSegmentedLayoutTests {
         for (var index = 2; index < 8; index++) chart.AddRangeBar("Group " + index, new[] {
             new ChartInterval(1, 20, 40), new ChartInterval(2, 10, 30), new ChartInterval(3, 15, 35), new ChartInterval(4, 25, 50)
         });
-        var context = Context(360, 360, VisualThemeMode.Dark);
+        var context = Context(360, 360, ThemeMode.Dark);
         Assert.Equal("The category slot cannot fit the mark's minimum painted footprint. Increase category-axis space, reduce grouped series, or use a simpler mark style.",
             Assert.Throws<InvalidOperationException>(() => chart.Prepare(context)).Message);
         chart.WithBarStyle(ChartBarStyle.Flat);
@@ -127,7 +127,7 @@ public sealed class RangeBarSegmentedLayoutTests {
     private static Chart Gallery(int width, ChartBarStyle style) => V2GalleryModels.Create(ChartSeriesKind.RangeBar, width == 360 ? "compact-horizontal" : "horizontal")
         .WithBarStyle(style);
 
-    private static VisualRenderContext Context(int width, int height, VisualThemeMode mode) {
+    private static VisualRenderContext Context(int width, int height, ThemeMode mode) {
         const string family = "CFX Range Gallery Carlito";
         var directory = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito");
         FontRegistry.Register(family, Path.Combine(directory, "Carlito-Regular.ttf"), 400);

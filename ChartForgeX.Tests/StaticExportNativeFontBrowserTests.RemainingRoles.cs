@@ -13,7 +13,7 @@ public sealed partial class StaticExportNativeFontBrowserTests {
     [MemberData(nameof(MermaidRemainingCaptionRolesTests.Poses), MemberType = typeof(MermaidRemainingCaptionRolesTests))]
     public async Task RemainingFamilyHeaderAndRelationshipInkUsesTheCapturedPngExportOwner(string family, int width, bool dark) {
         if (!Enabled) return;
-        var artifact = MermaidRemainingCaptionRolesExample.Create(family, width == 390 ? "compact" : "wide", dark ? VisualThemeMode.Dark : VisualThemeMode.Light, BrowserProofFonts.Family);
+        var artifact = MermaidRemainingCaptionRolesExample.Create(family, width == 390 ? "compact" : "wide", dark ? ThemeMode.Dark : ThemeMode.Light, BrowserProofFonts.Family);
         var chart = Assert.IsType<TopologyChart>(artifact.Model);
         var html = new HtmlInteractiveTopologyRenderer().RenderPresentationFragment(chart, prepared => prepared.ToSvg(), new TopologyRenderOptions { EnableHtmlExportControls = true });
         await using var session = await BrowserProofFonts.OpenAsync(html, width + 24, 760);

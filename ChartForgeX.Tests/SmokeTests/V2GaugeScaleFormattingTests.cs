@@ -119,7 +119,7 @@ public sealed class V2GaugeScaleFormattingTests {
     [InlineData(ChartGaugeForm.Needle, true, 800, 440)]
     [InlineData(ChartGaugeForm.Linear, true, 800, 440)]
     public void DefaultGaugeCaptionsRemainReadableAndSeparateFromTheirMeasurements(ChartGaugeForm form, bool dark, int width, int height) {
-        var chart = Chart.Create().WithSize(width, height).WithLegend(false).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = Chart.Create().WithSize(width, height).WithLegend(false).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("tolerance"), "Tolerance", new ChartGaugeValue(1.003, 1.001, 1.005, new[] { new ChartGaugeTarget(1.0025) })))
             .ConfigureGauge(options => options.Form = form);
         var context = VisualExportRequest.ForChart(chart).Context; var prepared = chart.Prepare(context);
@@ -154,7 +154,7 @@ public sealed class V2GaugeScaleFormattingTests {
     [InlineData(false, true)]
     [InlineData(true, true)]
     public void PublishedBandedNeedleKeepsReadableMeasurementAndCaption(bool dark, bool fixtureFont) {
-        var chart = Chart.Create().WithSize(396, 294).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = Chart.Create().WithSize(396, 294).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithTitle("Readiness needle").WithSubtitle("Explicit target and bands")
             .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness", new ChartGaugeValue(74, targets: new[] { new ChartGaugeTarget(90) })))
             .ConfigureGauge(options => {
@@ -209,7 +209,7 @@ public sealed class V2GaugeScaleFormattingTests {
     [InlineData(1d, true, 800, 440)]
     public void NeedleEndpointsKeepMeasuredValueAndCaptionClearOfTheirStroke(double ratio, bool dark, int width, int height) {
         var chart = Chart.Create().WithSize(width, height).WithLegend(false).WithTitle("Range")
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddGauge("Tolerance", 1_000_001 + ratio * 4, 1_000_001, 1_000_005).ConfigureGauge(options => options.Form = ChartGaugeForm.Needle);
         var context = VisualExportRequest.ForChart(chart).Context; var prepared = chart.Prepare(context);
         var line = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == "gauge-needle");

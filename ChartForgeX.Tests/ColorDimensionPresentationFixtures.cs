@@ -7,7 +7,7 @@ namespace ChartForgeX.Tests;
 internal static class ColorDimensionPresentationFixtures {
     internal static Chart Create(ChartSeriesKind kind, string scaleKind = "positioned", int width = 800, bool dark = false) {
         var chart = Chart.Create().WithSize(width, width == 360 ? 400 : 440).WithDataLabels(false)
-            .WithTitle("Color measurement").WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTitle("Color measurement").WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithValueFormat(ChartValueFormat.Number("0.0 'units'"))
             .ConfigureLabels(labels => { labels.NoData = "Not sampled"; labels.Color = "Default color"; });
         if (kind is ChartSeriesKind.TileMap or ChartSeriesKind.RegionMap) {

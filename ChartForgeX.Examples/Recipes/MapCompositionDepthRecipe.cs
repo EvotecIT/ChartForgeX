@@ -1,7 +1,7 @@
 /// <summary>Composes arbitrary regions in one numeric frame, or geographic datasets with an independent tile inset.</summary>
 public static class MapCompositionDepthRecipe {
     /// <summary>Creates complete compact/wide examples. The arbitrary variants do not imply geographic registration.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "arbitrary" or "compact-arbitrary")) throw new ArgumentOutOfRangeException(nameof(variant));
         var width = variant.StartsWith("compact", StringComparison.Ordinal) ? 390 : 800;
         if (variant.EndsWith("arbitrary", StringComparison.Ordinal)) {

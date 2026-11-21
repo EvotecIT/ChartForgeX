@@ -184,7 +184,7 @@ public static partial class PlaygroundEngine {
         }
 
         var parsed = new MermaidVisualMarkupParser(new MermaidRenderOptions { ParseOptions = parseOptions },
-            dark ? VisualThemeMode.Dark : VisualThemeMode.Light).Parse(scan);
+            dark ? ThemeMode.Dark : ThemeMode.Light).Parse(scan);
         foreach (var diagnostic in parsed.Diagnostics) {
             outcome.Add(diagnostic.Severity.ToString(), diagnostic.Code, diagnostic.Message, diagnostic.Line > 0 ? diagnostic.Line : null, null);
         }
@@ -306,10 +306,10 @@ public static partial class PlaygroundEngine {
 
     private sealed class PageTheme {
         public PageTheme(bool dark) {
-            Mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+            Mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         }
 
-        public VisualThemeMode Mode { get; }
+        public ThemeMode Mode { get; }
     }
 
     private sealed class RenderOutcome {

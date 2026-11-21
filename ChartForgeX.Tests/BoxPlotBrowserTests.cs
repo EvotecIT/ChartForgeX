@@ -16,7 +16,7 @@ public sealed class BoxPlotBrowserTests {
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(directory)) Directory.CreateDirectory(directory);
         var chart = V2GalleryModels.Create(ChartSeriesKind.BoxPlot, "compact-horizontal")
-            .WithSize(360, 440).WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark).WithDataLabels(false).WithFontFamily("Carlito")
+            .WithSize(360, 440).WithTheme(VisualTheme.Graphite(), ThemeMode.Dark).WithDataLabels(false).WithFontFamily("Carlito")
             .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
         chart.Options.XAxis.WithBounds(0, 60);
         chart.ConfigureLabels(labels => { labels.Category = "Kategoria"; labels.Minimum = "Minimum lokalne"; labels.Q1 = "Dolny kwartyl"; labels.Median = "Mediana"; labels.Q3 = "Górny kwartyl"; labels.Maximum = "Maksimum"; });

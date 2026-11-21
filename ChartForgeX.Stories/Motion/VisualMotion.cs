@@ -320,7 +320,7 @@ internal static class VisualMotionGuards {
         return trimmed;
     }
 
-    public static void EnumDefined<TEnum>(TEnum value, string parameterName) where TEnum : struct {
+    public static void EnumDefined<TEnum>(TEnum value, string parameterName) where TEnum : struct, Enum {
         if (!Enum.IsDefined(typeof(TEnum), value)) throw new ArgumentOutOfRangeException(parameterName, value, "Unknown " + typeof(TEnum).Name + " value.");
     }
 

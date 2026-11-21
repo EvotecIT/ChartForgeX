@@ -10,7 +10,7 @@ public sealed class ProgressTransitionDefaultOutputControls {
     [InlineData(390, false)] [InlineData(390, true)]
     [InlineData(760, false)] [InlineData(760, true)]
     public void ExistingIndependentProgressRecipeKeepsOrdinaryNativeAndAssetFreeOutputs(int width, bool dark) {
-        var chart = IndependentProgressRecipe.Create(width == 390 ? "compact" : "wide", dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = IndependentProgressRecipe.Create(width == 390 ? "compact" : "wide", dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithFontFamily(BrowserProofFonts.Family);
         var section = new HtmlInteractiveChartRenderer().PrepareSection(chart);
         Assert.DoesNotContain("native-motion", section.Html); Assert.DoesNotContain("update-frame", section.Html);

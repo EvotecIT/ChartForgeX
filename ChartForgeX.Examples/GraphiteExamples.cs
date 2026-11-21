@@ -53,7 +53,7 @@ internal static class GraphiteExamples {
                 if (item.Key == "line") gallery.Append("<p><a href='").Append(name).Append("-interactive.html'>Explore pointer tooltips with a 360 ms delay</a></p>");
             }
             var theme = VisualTheme.Graphite();
-            var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+            var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
             var metric=MetricCard.Create().WithSize(300,260).WithTheme(theme, mode).WithMetric("Coverage","98.4%").WithCaption("Assets reporting")
                 .WithMiniSparkline(new[]{92d,94,95,97,98.4},color:theme.Resolve(mode).Palette[0]);
             var table=ChartTable.Create().WithSize(300,260).WithTheme(theme, mode).WithTitle("Controls").AddColumn("Control").AddColumn("Actual")
@@ -71,7 +71,7 @@ internal static class GraphiteExamples {
     }
 
     internal static Dictionary<string, Chart> Create(bool dark) {
-        Chart Frame(string title,string subtitle,int width=596,int height=338) => Chart.Create().WithSize(width,height).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithTitle(title).WithSubtitle(subtitle);
+        Chart Frame(string title,string subtitle,int width=596,int height=338) => Chart.Create().WithSize(width,height).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithTitle(title).WithSubtitle(subtitle);
         var bar=Frame("Findings by severity","Current and previous run").WithXLabels("Critical","High","Medium","Low","Info").WithDataLabels()
             .AddBar("Current",Points(6,30,82,124,208)).AddBar("Previous",Points(9,39,95,116,186));
         bar.Options.YAxis.Maximum=250; bar.Options.YAxis.TickCount=6;

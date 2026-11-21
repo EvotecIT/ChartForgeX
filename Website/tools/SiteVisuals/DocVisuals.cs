@@ -80,7 +80,7 @@ internal static partial class DocVisuals {
 
     private static ChartPoint[] Points(params double[] values) => values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();
 
-    private static ChartGrid Overview(VisualThemeMode mode) {
+    private static ChartGrid Overview(ThemeMode mode) {
         var trend = Chart.Create().WithThemeMode(mode).WithTitle("Deployment health").WithSubtitle("Checks per run")
             .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri")
             .AddSmoothArea("Passed", Points(820, 940, 980, 1040, 1120))
@@ -97,7 +97,7 @@ internal static partial class DocVisuals {
             .Add(trend, 2).Add(share).Add(coverage).Add(teams, 2);
     }
 
-    private static ChartTable Packages(VisualThemeMode mode) {
+    private static ChartTable Packages(ThemeMode mode) {
         var table = ChartTable.Create()
             .WithTitle("Packages")
             .AddColumn("Package")
@@ -113,13 +113,13 @@ internal static partial class DocVisuals {
         return table;
     }
 
-    private static Chart SurfaceChart(VisualThemeMode mode) => Chart.Create().WithThemeMode(mode)
+    private static Chart SurfaceChart(ThemeMode mode) => Chart.Create().WithThemeMode(mode)
         .WithTitle("Orders by region").WithSize(480, 300)
         .WithXLabels("North", "South", "East", "West")
         .AddBar("This year", Points(48, 61, 57, 72))
         .AddBar("Last year", Points(41, 55, 60, 63));
 
-    private static VisualGrid Blocks(VisualThemeMode mode) {
+    private static VisualGrid Blocks(ThemeMode mode) {
         var cards = new[] {
             MetricCard.Create().WithMetric("CPU load", "38%").WithMiniSparkline(new[] { 52d, 48d, 44d, 41d, 38d }),
             MetricCard.Create().WithMetric("Memory used", "71%").WithMiniBars(new[] { 55d, 59d, 63d, 68d, 71d }, maximum: 100)
@@ -128,7 +128,7 @@ internal static partial class DocVisuals {
         return VisualGrid.CreateMetricStrip("Endpoint snapshot", cards, columns: 2, panelWidth: 260, panelHeight: 150).WithThemeMode(mode);
     }
 
-    private static VisualCanvas Canvas(VisualThemeMode mode) {
+    private static VisualCanvas Canvas(ThemeMode mode) {
         var trend = Chart.Create().WithThemeMode(mode).WithSize(420, 220).WithTransparentBackground().WithHeader(false).WithCard(false)
             .WithLegend(false).AddSmoothArea("Sign-ins", Points(18, 31, 24, 45, 39, 52, 61));
         return VisualCanvas.CreateSocialPreview()
@@ -143,7 +143,7 @@ internal static partial class DocVisuals {
     // The terminal transcript is authored; stories present a session, they never execute it.
     private static string StoryFrame(bool dark, TimeSpan at) {
         const string program = "var chart = Chart.Create()\n    .WithTitle(\"Sign-ins by method\")\n    .AddStackedArea(\"Passkey\", passkey)\n    .AddStackedArea(\"Password\", password);\nchart.SaveSvg(\"sign-ins.svg\");";
-        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var editor = StorySourceTimeline.Create(StorySourceText.Create("", "csharp"))
             .Type(program, TimeSpan.FromSeconds(3))
             .Pause(TimeSpan.FromSeconds(1));

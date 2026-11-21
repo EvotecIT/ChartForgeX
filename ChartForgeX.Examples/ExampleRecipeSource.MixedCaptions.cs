@@ -3,7 +3,7 @@ using ChartForgeX.Themes;
 
 public static partial class ExampleRecipeSource {
     /// <summary>Packages the compiled editable native/source caption recipe as a complete ordinary-package program.</summary>
-    public static string EmitMixedCaptions(string family = "native", string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static string EmitMixedCaptions(string family = "native", string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (family is not ("native" or "flowchart" or "requirement" or "mindmap")) throw new ArgumentOutOfRangeException(nameof(family));
         if (variant is not ("compact" or "wide")) throw new ArgumentOutOfRangeException(nameof(variant));
         var tokens = new Dictionary<string, string>(StringComparer.Ordinal) {

@@ -3,7 +3,7 @@ public static class SimpleTopologyRecipe {
     /// <summary>Creates the bounded native topology model.</summary>
     /// <param name="variant">Use wide or feasibility for the simple topology.</param>
     /// <param name="mode">The rendering mode; diagram colors are resolved when the model is prepared.</param>
-    public static TopologyChart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static TopologyChart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "feasibility"))
             throw new ArgumentOutOfRangeException(nameof(variant), variant, "Use wide or feasibility.");
 

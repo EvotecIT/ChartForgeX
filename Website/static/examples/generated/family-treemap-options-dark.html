@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = TreemapRecipe.Create(&quot;options&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Creates a treemap showing work allocation and independent numeric color values.&lt;/summary&gt;
 public static class TreemapRecipe {
     /// &lt;summary&gt;Creates the source model for a gallery variant without choosing an export backend.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
 
@@ -131,8 +132,8 @@ public static class TreemapRecipe {
             new ChartHierarchyItem(&quot;research&quot;, &quot;Independent research&quot;, value: 8, colorValue: 14)
         };
         var colors = VisualTheme.Graphite().Resolve(mode);
-        var low = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(153, 138, 224) : ChartColor.FromRgb(101, 78, 169);
-        var high = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(238, 157, 98) : ChartColor.FromRgb(191, 92, 34);
+        var low = mode == ThemeMode.Dark ? ChartColor.FromRgb(153, 138, 224) : ChartColor.FromRgb(101, 78, 169);
+        var high = mode == ThemeMode.Dark ? ChartColor.FromRgb(238, 157, 98) : ChartColor.FromRgb(191, 92, 34);
         var scale = variant == &quot;options&quot; ? ChartColorScale.Discrete(new[] {
             new ChartColorBand(0, low, &quot;Decline&quot;), new ChartColorBand(10, colors.Border, &quot;Steady&quot;), new ChartColorBand(null, high, &quot;Growth&quot;)
         }) : ChartColorScale.Diverging(low, colors.Border, high, 0).WithValueRange(-10, 15).WithLabels(&quot;Decrease&quot;, &quot;No change&quot;, &quot;Increase&quot;);
@@ -156,6 +157,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -165,7 +167,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = TreemapRecipe.Create(&quot;options&quot;, mode);
 var context = new VisualRenderContext(
@@ -180,7 +182,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Creates a treemap showing work allocation and independent numeric color values.&lt;/summary&gt;
 public static class TreemapRecipe {
     /// &lt;summary&gt;Creates the source model for a gallery variant without choosing an export backend.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
 
@@ -201,8 +203,8 @@ public static class TreemapRecipe {
             new ChartHierarchyItem(&quot;research&quot;, &quot;Independent research&quot;, value: 8, colorValue: 14)
         };
         var colors = VisualTheme.Graphite().Resolve(mode);
-        var low = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(153, 138, 224) : ChartColor.FromRgb(101, 78, 169);
-        var high = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(238, 157, 98) : ChartColor.FromRgb(191, 92, 34);
+        var low = mode == ThemeMode.Dark ? ChartColor.FromRgb(153, 138, 224) : ChartColor.FromRgb(101, 78, 169);
+        var high = mode == ThemeMode.Dark ? ChartColor.FromRgb(238, 157, 98) : ChartColor.FromRgb(191, 92, 34);
         var scale = variant == &quot;options&quot; ? ChartColorScale.Discrete(new[] {
             new ChartColorBand(0, low, &quot;Decline&quot;), new ChartColorBand(10, colors.Border, &quot;Steady&quot;), new ChartColorBand(null, high, &quot;Growth&quot;)
         }) : ChartColorScale.Diverging(low, colors.Border, high, 0).WithValueRange(-10, 15).WithLabels(&quot;Decrease&quot;, &quot;No change&quot;, &quot;Increase&quot;);

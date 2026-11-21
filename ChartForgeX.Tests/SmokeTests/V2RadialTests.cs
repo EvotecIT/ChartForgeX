@@ -29,7 +29,7 @@ public sealed class V2RadialTests {
         var metadata = scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "radial-point").ToArray();
         Assert.Equal("1", metadata[0].Metadata["data-cfx-source-points"]);
         Assert.Equal("0.75", metadata[0].Metadata["data-cfx-percent"]);
-        Assert.Equal(3, VisualRadialCompiler.LegendEntries(chart, new VisualRenderContext().Theme.Resolve(VisualThemeMode.Light)).Count);
+        Assert.Equal(3, VisualRadialCompiler.LegendEntries(chart, new VisualRenderContext().Theme.Resolve(ThemeMode.Light)).Count);
     }
 
     [Theory]
@@ -123,7 +123,7 @@ public sealed class V2RadialTests {
         Assert.Equal(VisualSceneSvgRenderer.Render(baseline, idPrefix: "zero-offset-proof"),
             VisualSceneSvgRenderer.Render(zeroOffset, idPrefix: "zero-offset-proof"));
         Assert.Equal(VisualSceneRasterRenderer.Render(baseline).Pixels, VisualSceneRasterRenderer.Render(zeroOffset).Pixels);
-        Assert.Equal(3, VisualRadialCompiler.LegendEntries(chart, new VisualRenderContext().Theme.Resolve(VisualThemeMode.Light)).Count);
+        Assert.Equal(3, VisualRadialCompiler.LegendEntries(chart, new VisualRenderContext().Theme.Resolve(ThemeMode.Light)).Count);
     }
 
     [Fact]
@@ -339,7 +339,7 @@ public sealed class V2RadialTests {
             .WithDonutCenterLabel(false).WithDataLabelConnectorStrokeWidth(8);
         chart.Options.DataLabelPlacement = ChartDataLabelPlacement.Above;
         var theme = VisualTheme.Graphite();
-        var compactTheme = new VisualTheme(theme.Resolve(VisualThemeMode.Light).ToTokens(), theme.Resolve(VisualThemeMode.Dark).ToTokens(), spacing: 6);
+        var compactTheme = new VisualTheme(theme.Resolve(ThemeMode.Light).ToTokens(), theme.Resolve(ThemeMode.Dark).ToTokens(), spacing: 6);
         var scene = Compile(chart, context: new VisualRenderContext(theme: compactTheme));
         Assert.Contains(scene.Diagnostics, diagnostic => diagnostic.Code == "radial.label-overflow");
         Assert.DoesNotContain(scene.Nodes, node => node.Role is "data-label" or "data-label-connector");

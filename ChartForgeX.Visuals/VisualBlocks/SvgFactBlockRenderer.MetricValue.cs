@@ -16,8 +16,8 @@ public sealed partial class SvgFactBlockRenderer {
         var valueSize = textLayout.ValueSize;
         var radius = Math.Min(20, Math.Max(14, theme.PlotCornerRadius + 7));
         writer.StartElement("rect").Attribute("data-cfx-role", "metric-value-surface").Attribute("x", content.X).Attribute("y", y).Attribute("width", content.Width).Attribute("height", height).Attribute("rx", radius).Attribute("fill", theme.PlotBackground.ToCss()).Attribute("stroke", theme.PlotBorder.WithAlpha(140).ToCss()).EndEmptyElement().Line();
-        var badgeColor = card.Status == VisualStatus.None ? VisualBlockRendering.PaletteAt(theme, 0) : statusColor;
-        var hasBadge = card.Icon != VisualIcon.None || card.Symbol.Length > 0;
+        var badgeColor = card.Status == Tone.None ? VisualBlockRendering.PaletteAt(theme, 0) : statusColor;
+        var hasBadge = card.Icon != Icon.None || card.Symbol.Length > 0;
         var valueX = textLayout.ValuePlacement.X;
         if (hasBadge) {
             var badgeRadius = textLayout.ValuePlacement.BadgeRadius;
@@ -28,7 +28,7 @@ public sealed partial class SvgFactBlockRenderer {
             if (textLayout.ValuePlacement.Measured) symbolSize = ChartTextFitting.FitFontSize(0, symbolSize,
                 size => VisualBlockRendering.MeasureTextWidth(card.Symbol, size, theme.FontFamily, 700) <= symbolMaxWidth);
             writer.StartElement("circle").Attribute("data-cfx-role", "metric-value-surface-badge").Attribute("cx", cx).Attribute("cy", cy).Attribute("r", badgeRadius).Attribute("fill", badgeColor.WithAlpha(36).ToCss()).Attribute("stroke", theme.PlotBorder.WithAlpha(155).ToCss()).EndEmptyElement().Line();
-            if (card.Icon != VisualIcon.None) WriteIcon(writer, card.Icon, cx, cy, badgeRadius * 0.62, badgeColor);
+            if (card.Icon != Icon.None) WriteIcon(writer, card.Icon, cx, cy, badgeRadius * 0.62, badgeColor);
             else writer.StartElement("text").Attribute("data-cfx-role", "metric-symbol").Attribute("x", cx).Attribute("y", cy).Attribute("text-anchor", "middle").Attribute("dominant-baseline", "central").Attribute("alignment-baseline", "central").Attribute("fill", theme.Text.ToCss()).Attribute("font-family", theme.FontFamily).Attribute("font-size", symbolSize).Attribute("font-weight", "850").Text(VisualBlockRendering.FitText(card.Symbol, symbolSize, symbolMaxWidth)).EndElement().Line();
         }
 

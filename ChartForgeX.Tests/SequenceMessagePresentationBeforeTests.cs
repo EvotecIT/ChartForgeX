@@ -28,8 +28,8 @@ public sealed class SequenceMessagePresentationBeforeTests {
         var result=MermaidRenderer.Render(source);Capture("sequence-message-before-number-ink",source,result);Assert.False(result.HasErrors);Assert.NotNull(result.Artifact);Assert.Empty(result.Diagnostics);
     }
     [Theory]
-    [InlineData(VisualThemeMode.Light)] [InlineData(VisualThemeMode.Dark)]
-    public void OrdinaryUnnumberedSourceRemainsTheDefaultPixelControl(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)] [InlineData(ThemeMode.Dark)]
+    public void OrdinaryUnnumberedSourceRemainsTheDefaultPixelControl(ThemeMode mode) {
         var result=MermaidRenderer.Render(Body,new MermaidRenderOptions{Presentation=new MermaidPresentationOptions{ThemeMode=mode}});Capture("sequence-message-before-ordinary-"+mode,Body,result);Assert.Empty(result.Diagnostics);Assert.NotNull(result.Artifact);
     }
     [Fact]

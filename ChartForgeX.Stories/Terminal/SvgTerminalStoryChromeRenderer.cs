@@ -44,7 +44,7 @@ internal static class SvgTerminalStoryChromeRenderer {
     }
 
     private static string TrafficLight(TerminalStory story, string light, string dark) =>
-        story.Tabs[0].ThemeMode == ChartForgeX.Themes.VisualThemeMode.Light ? light : dark;
+        story.Tabs[0].ThemeMode != ChartForgeX.ThemeMode.Dark ? light : dark;
 
     private static void WriteMacOS(SvgMarkupWriter writer, TerminalStory story, TerminalStoryLayout layout) {
         writer.StartElement("g").Attribute("data-cfx-role", "terminal-macos-controls").EndStartElement().Line();

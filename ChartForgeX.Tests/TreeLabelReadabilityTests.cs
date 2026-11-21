@@ -122,7 +122,7 @@ public sealed class TreeLabelReadabilityTests {
     private static VisualRenderContext Context(int width, int height) {
         string font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(font), "The existing native font fixture must be available.");
-        return new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, height)), VisualTheme.Graphite(), VisualThemeMode.Light,
+        return new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, height)), VisualTheme.Graphite(), ThemeMode.Light,
             new VisualFrame("Regional processing structure", showLegend: false), FontSpec.FromFile(font));
     }
 

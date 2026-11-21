@@ -16,7 +16,7 @@ public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockP
     private readonly MermaidRenderOptions _defaults;
     private readonly MermaidRailroadRenderOptions _railroadRenderOptions;
     private readonly MermaidParseOptions? _parseOptions;
-    private readonly VisualThemeMode? _defaultThemeMode;
+    private readonly ThemeMode? _defaultThemeMode;
     private readonly MermaidFlowchartRenderOptions _renderOptions;
     private readonly MermaidFlowchartRenderOptions _swimlaneRenderOptions;
     private readonly MermaidFlowchartRenderOptions _useCaseRenderOptions;
@@ -66,9 +66,9 @@ public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockP
     /// <summary>Initializes a parser with a host theme fallback applied before native appearance capture.</summary>
     /// <param name="renderOptions">Rendering defaults captured independently for this parser.</param>
     /// <param name="defaultThemeMode">Fallback for fences without an authored theme; null preserves native defaults.</param>
-    public MermaidVisualMarkupBlockParser(MermaidRenderOptions renderOptions, VisualThemeMode? defaultThemeMode) {
+    public MermaidVisualMarkupBlockParser(MermaidRenderOptions renderOptions, ThemeMode? defaultThemeMode) {
         if (renderOptions == null) throw new ArgumentNullException(nameof(renderOptions));
-        if (defaultThemeMode.HasValue && !Enum.IsDefined(typeof(VisualThemeMode), defaultThemeMode.Value))
+        if (defaultThemeMode.HasValue && !Enum.IsDefined(typeof(ThemeMode), defaultThemeMode.Value))
             throw new ArgumentOutOfRangeException(nameof(defaultThemeMode));
 
         _defaults = renderOptions.Clone();
@@ -120,7 +120,7 @@ public sealed partial class MermaidVisualMarkupBlockParser : IVisualMarkupBlockP
 
         var parsed = new MermaidParser().Parse(block.Payload, _parseOptions);
         var usesDefaultTheme = parsed.Document != null && parsed.Document.Theme == null && _defaultThemeMode.HasValue;
-        if (usesDefaultTheme && _defaultThemeMode == VisualThemeMode.Dark) parsed.Document!.Theme = "dark";
+        if (usesDefaultTheme && _defaultThemeMode == ThemeMode.Dark) parsed.Document!.Theme = "dark";
         MermaidRenderResult rendered;
         try {
             var options = BuildRenderOptions(block, parsed.Document?.Kind ?? MermaidDiagramKind.Unknown);

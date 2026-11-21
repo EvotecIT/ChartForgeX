@@ -1,7 +1,7 @@
 /// <summary>Builds a two-position capacity comparison for three teams.</summary>
 public static class SlopeRecipe {
     /// <summary>Creates the selected slope example with explicit endpoint labels.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var teamA = new ChartSeries(new ChartSeriesId("team-a"), "Team A", ChartSeriesKind.Slope, new[] { new ChartPoint(1, 28), new ChartPoint(2, 64) });

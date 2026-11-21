@@ -6,13 +6,13 @@ namespace ChartForgeX.Tests;
 
 public sealed class GitGraphRecipeSourceTests {
     [Theory]
-    [InlineData("wide-lr", VisualThemeMode.Light)] [InlineData("wide-lr", VisualThemeMode.Dark)]
-    [InlineData("compact-lr", VisualThemeMode.Light)] [InlineData("compact-lr", VisualThemeMode.Dark)]
-    [InlineData("wide-tb", VisualThemeMode.Light)] [InlineData("wide-tb", VisualThemeMode.Dark)]
-    [InlineData("compact-tb", VisualThemeMode.Light)] [InlineData("compact-tb", VisualThemeMode.Dark)]
-    [InlineData("wide-bt", VisualThemeMode.Light)] [InlineData("wide-bt", VisualThemeMode.Dark)]
-    [InlineData("compact-bt", VisualThemeMode.Light)] [InlineData("compact-bt", VisualThemeMode.Dark)]
-    public void DownloadUsesTheCompiledNativeBlockFactoryAndCompleteOrdinaryCoreOnlyProgram(string variant, VisualThemeMode mode) {
+    [InlineData("wide-lr", ThemeMode.Light)] [InlineData("wide-lr", ThemeMode.Dark)]
+    [InlineData("compact-lr", ThemeMode.Light)] [InlineData("compact-lr", ThemeMode.Dark)]
+    [InlineData("wide-tb", ThemeMode.Light)] [InlineData("wide-tb", ThemeMode.Dark)]
+    [InlineData("compact-tb", ThemeMode.Light)] [InlineData("compact-tb", ThemeMode.Dark)]
+    [InlineData("wide-bt", ThemeMode.Light)] [InlineData("wide-bt", ThemeMode.Dark)]
+    [InlineData("compact-bt", ThemeMode.Light)] [InlineData("compact-bt", ThemeMode.Dark)]
+    public void DownloadUsesTheCompiledNativeBlockFactoryAndCompleteOrdinaryCoreOnlyProgram(string variant, ThemeMode mode) {
         var source = ExampleRecipeSource.EmitGitGraph(variant, mode); var block = GitGraphDepthRecipe.Create(variant, mode);
         Assert.Contains("var model = GitGraphDepthRecipe.Create(\"" + variant + "\", mode);", source);
         Assert.Contains("File.WriteAllBytes(\"visual.png\", model.ToPng());", source); Assert.Contains("File.WriteAllText(\"visual.svg\", model.ToSvg());", source);

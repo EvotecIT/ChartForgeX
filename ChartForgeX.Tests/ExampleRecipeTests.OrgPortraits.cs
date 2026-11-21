@@ -7,11 +7,11 @@ namespace ChartForgeX.Tests;
 
 public sealed partial class ExampleRecipeTests {
     [Theory]
-    [InlineData("wide", VisualThemeMode.Light)]
-    [InlineData("compact", VisualThemeMode.Dark)]
-    [InlineData("meet", VisualThemeMode.Light)]
-    [InlineData("slice", VisualThemeMode.Dark)]
-    public void OrganizationPortraitRecipeContainsCompleteEmbeddedOrdinarySourceAndNativeMedia(string variant, VisualThemeMode mode) {
+    [InlineData("wide", ThemeMode.Light)]
+    [InlineData("compact", ThemeMode.Dark)]
+    [InlineData("meet", ThemeMode.Light)]
+    [InlineData("slice", ThemeMode.Dark)]
+    public void OrganizationPortraitRecipeContainsCompleteEmbeddedOrdinarySourceAndNativeMedia(string variant, ThemeMode mode) {
         var recipe = ExampleRecipes.Named("org-portraits"); var source = Source(recipe, variant);
         Assert.Equal(nameof(OrgPortraitsRecipe), recipe.Factory); Assert.Contains("public static class OrgPortraitsRecipe", source);
         Assert.Contains("TopologyIconArtwork.Portrait", source); Assert.DoesNotContain("ChartForgeX.Examples", source); Assert.DoesNotContain("{{", source);

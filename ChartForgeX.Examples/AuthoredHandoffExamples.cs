@@ -5,7 +5,7 @@ using ChartForgeX.VisualArtifacts;
 internal static class AuthoredHandoffExamples {
     internal static void Write(string output) {
         ExampleTypography.Register();
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             var chart = TopologyAuthoredPathBadgeRecipe.Create().WithTheme(VisualTheme.Graphite().WithFontFamily(ExampleTypography.FontFamily), mode);
             var artifact = chart.ToVisualArtifact();
             var path = Path.Combine(output, "authored-handoff-" + mode.ToString().ToLowerInvariant());

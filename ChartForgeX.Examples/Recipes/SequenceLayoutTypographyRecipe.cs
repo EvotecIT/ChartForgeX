@@ -1,7 +1,7 @@
 /// <summary>Creates a native sequence with independent measured role typography and explicit logical spacing.</summary>
 public static class SequenceLayoutTypographyRecipe {
     /// <summary>Creates compact 390x620 or wide 1000x620 authored minima; natural exports may grow. No source parser or browser is invoked.</summary>
-    public static SequenceArtifact Create(string variant="wide",VisualThemeMode mode=VisualThemeMode.Light) {
+    public static SequenceArtifact Create(string variant="wide",ThemeMode mode=ThemeMode.Light) {
         if(variant is not ("compact" or "wide"))throw new ArgumentOutOfRangeException(nameof(variant));
         var model=SequenceArtifact.Create("sequence-layout").WithSize(variant=="compact"?390:1000,620)
             .WithTitle("Measured review sequence").WithSubtitle("Each role retains its own font and source identity")

@@ -123,13 +123,13 @@ public static class EnhanceExamples {
         return name.ToString();
     }
 
-    private static SvgColorVariables Variables(VisualThemeMode mode) =>
-        (mode == VisualThemeMode.Dark ? VisualDesignTokens.GraphiteDark() : VisualDesignTokens.GraphiteLight()).ToSvgColorVariables(RoleName);
+    private static SvgColorVariables Variables(ThemeMode mode) =>
+        (mode == ThemeMode.Dark ? VisualDesignTokens.GraphiteDark() : VisualDesignTokens.GraphiteLight()).ToSvgColorVariables(RoleName);
 
     private static string Tokens() {
-        string Block(VisualThemeMode mode) => string.Join(" ", Variables(mode).Variables.GroupBy(v => v.Name).Select(v => v.Key + ": " + v.First().Color.ToCss() + ";"));
-        var light = Block(VisualThemeMode.Light);
-        var dark = Block(VisualThemeMode.Dark);
+        string Block(ThemeMode mode) => string.Join(" ", Variables(mode).Variables.GroupBy(v => v.Name).Select(v => v.Key + ": " + v.First().Color.ToCss() + ";"));
+        var light = Block(ThemeMode.Light);
+        var dark = Block(ThemeMode.Dark);
         return ":root { color-scheme: light; " + light + " }\n"
             + "  :root[data-theme=\"dark\"] { color-scheme: dark; " + dark + " }\n"
             + "  @media (prefers-color-scheme: dark) { :root:not([data-theme=\"light\"]) { color-scheme: dark; " + dark + " } }";
@@ -139,19 +139,19 @@ public static class EnhanceExamples {
     // (a 390px phone leaves about 330px); wider cards stretch them horizontally.
     private static string Svg(Chart chart, string id, int width, int height, bool legend = true) {
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, height), 8),
-            VisualTheme.Graphite(), VisualThemeMode.Light, new VisualFrame("", "", showLegend: legend, transparentBackground: true), FontSpec.FromFamily("system-ui, sans-serif")));
-        var options = new VisualSvgOptions(id, Variables(VisualThemeMode.Light)).WithEnhanceHooks(includeData: true);
+            VisualTheme.Graphite(), ThemeMode.Light, new VisualFrame("", "", showLegend: legend, transparentBackground: true), FontSpec.FromFamily("system-ui, sans-serif")));
+        var options = new VisualSvgOptions(id, Variables(ThemeMode.Light)).WithEnhanceHooks(includeData: true);
         try { return prepared.ToSvg(options.WithFluidWidth()); }
-        catch (NotSupportedException) { return prepared.ToSvg(new VisualSvgOptions(id, Variables(VisualThemeMode.Light), responsive: true).WithEnhanceHooks(includeData: true)); }
+        catch (NotSupportedException) { return prepared.ToSvg(new VisualSvgOptions(id, Variables(ThemeMode.Light), responsive: true).WithEnhanceHooks(includeData: true)); }
     }
 
     private static void WriteStory(string directory) {
         var records = EnhanceRecipe.Records();
         PreparedVisual Prepared(Chart chart) => chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(600, 300), 8),
-            VisualTheme.Graphite(), VisualThemeMode.Light, new VisualFrame("", "", showLegend: true), FontSpec.FromFamily("system-ui, sans-serif")));
+            VisualTheme.Graphite(), ThemeMode.Light, new VisualFrame("", "", showLegend: true), FontSpec.FromFamily("system-ui, sans-serif")));
         var story = VisualStory.Create("Charts and a CanopyX grid that follow each other")
             .WithDescription("Four chart families and one data grid of the same illustrative records, wired with one call per pair.")
-            .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Light).WithSize(800, 480);
+            .WithTheme(VisualTheme.Graphite(), ThemeMode.Light).WithSize(800, 480);
         var code = Asset("linked-views.js").TrimEnd();
         Scene("columns", "Click a segment and the grid filters to its day and kind", Prepared(EnhanceRecipe.Week(records)),
             "Records per day by kind for the last seven days of October 2026 (example data).");

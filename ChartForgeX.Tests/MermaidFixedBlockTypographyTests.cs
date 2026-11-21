@@ -114,7 +114,7 @@ public sealed class MermaidFixedBlockTypographyTests {
         var parsed = MermaidRenderer.Render("%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':256}}}%%\n" + body);
         Assert.Empty(parsed.Diagnostics);
         var block = Assert.IsAssignableFrom<IVisualBlock>(parsed.Artifact!.Model);
-        block.Options.ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        block.Options.ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var svg = parsed.Artifact.ToSvg(); var png = parsed.Artifact.ToPng();
         var labels = XDocument.Parse(svg).Descendants().Where(e => e.Name.LocalName == "text").Select(e => e.Value).ToArray();
         foreach (var value in fishbone ? new[] { "API", "People", "Data", "Process", "Review" }

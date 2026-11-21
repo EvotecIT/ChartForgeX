@@ -11,15 +11,15 @@ namespace ChartForgeX.Tests;
 
 public sealed class SeamPolygonImportTests {
     [Theory]
-    [InlineData("wide", VisualThemeMode.Light)]
-    [InlineData("wide", VisualThemeMode.Dark)]
-    [InlineData("compact", VisualThemeMode.Light)]
-    [InlineData("compact", VisualThemeMode.Dark)]
-    [InlineData("mercator", VisualThemeMode.Light)]
-    [InlineData("mercator", VisualThemeMode.Dark)]
-    [InlineData("compact-mercator", VisualThemeMode.Light)]
-    [InlineData("compact-mercator", VisualThemeMode.Dark)]
-    public void CompleteRingsFeaturesAndObservationIdentitiesSurviveNativePaintClipping(string variant, VisualThemeMode mode) {
+    [InlineData("wide", ThemeMode.Light)]
+    [InlineData("wide", ThemeMode.Dark)]
+    [InlineData("compact", ThemeMode.Light)]
+    [InlineData("compact", ThemeMode.Dark)]
+    [InlineData("mercator", ThemeMode.Light)]
+    [InlineData("mercator", ThemeMode.Dark)]
+    [InlineData("compact-mercator", ThemeMode.Light)]
+    [InlineData("compact-mercator", ThemeMode.Dark)]
+    public void CompleteRingsFeaturesAndObservationIdentitiesSurviveNativePaintClipping(string variant, ThemeMode mode) {
         var chart = SeamPolygonMapRecipe.Create(variant, mode); var definition = chart.Series[0].RegionMapDefinition!;
         var prepared = MapLabelClusterDepthTests.Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng();
         MapLabelClusterDepthTests.Capture(prepared, "seam-polygons-" + variant + "-" + mode);

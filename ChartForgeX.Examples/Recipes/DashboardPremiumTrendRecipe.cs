@@ -1,7 +1,7 @@
 /// <summary>Builds the shared dashboard trend model at its gallery or original download width.</summary>
 public static class DashboardPremiumTrendRecipe {
     /// <summary>Creates the 920-pixel gallery chart or the 840-pixel standalone snippet.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "snippet")) throw new ArgumentOutOfRangeException(nameof(variant));
         return Chart.Create()
             .WithHeader(false)

@@ -14,7 +14,7 @@ internal static class TableArtifactGuards {
         TableArtifactCapabilities.Export |
         TableArtifactCapabilities.Virtualization;
 
-    public static void EnumDefined<TEnum>(TEnum value, string parameterName) where TEnum : struct {
+    public static void EnumDefined<TEnum>(TEnum value, string parameterName) where TEnum : struct, Enum {
         if (!Enum.IsDefined(typeof(TEnum), value)) throw new ArgumentOutOfRangeException(parameterName, value, "Value must be a defined enum member.");
     }
 

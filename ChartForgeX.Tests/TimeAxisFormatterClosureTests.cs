@@ -70,7 +70,7 @@ public sealed class TimeAxisFormatterClosureTests {
     public void AutomaticDateFormatsChooseDistinctCalendarCaptionsBeforePaint(bool dark, int width) {
         var chart = new MermaidParser().ParseGantt("gantt\naxisFormat %a %d %b\nFirst :first, 2026-01-04, 4d").Document!
             .ToChart(new MermaidGanttRenderOptions { Width = width, Height = 360 })
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithPngFont(Font()).ConfigureGridStyle(style => style.ShowVerticalLines = true);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         ScatterBubbleColorRenderingTests.Capture(prepared, $"gantt-distinct-date-{dark}-{width}");
@@ -94,9 +94,9 @@ public sealed class TimeAxisFormatterClosureTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void CartesianDateCallbacksUseTheSameAutomaticPrecisionPolicy(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void CartesianDateCallbacksUseTheSameAutomaticPrecisionPolicy(ThemeMode mode) {
         var chart = Chart.Create().WithSize(960, 360).WithHeader(false).WithLegend(false).WithPngFont(Font()).WithThemeMode(mode)
             .WithXAxisTimeScale().AddLine("Readings", new[] { new ChartPoint(Start, 10), new ChartPoint(Start.AddDays(4), 20) })
             .ConfigureXAxis(axis => {

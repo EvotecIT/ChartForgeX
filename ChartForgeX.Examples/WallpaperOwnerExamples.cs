@@ -10,8 +10,8 @@ public static class WallpaperOwnerExamples {
     /// <summary>Creates one example layout; the layout names describe consumer policy, not engine presets.</summary>
     public static VisualCanvas Create(string layout, int width, int height) {
         var theme = VisualTheme.Graphite();
-        var colors = theme.Resolve(VisualThemeMode.Dark);
-        var canvas = VisualCanvas.Create(width, height).WithTitle("System overview").WithTheme(theme, VisualThemeMode.Dark)
+        var colors = theme.Resolve(ThemeMode.Dark);
+        var canvas = VisualCanvas.Create(width, height).WithTitle("System overview").WithTheme(theme, ThemeMode.Dark)
             .WithBackdrop(VisualCanvasBackdropStyle.Plain).WithBackground(colors.Background);
         var accent = colors.Accent;
         if (layout == "CenterRight") {
@@ -44,7 +44,7 @@ public static class WallpaperOwnerExamples {
 
     /// <summary>Creates a transparent fixed-viewport topology suitable for a wallpaper overlay.</summary>
     public static TopologyChart CreateTopology() => TopologyChart.Create().WithId("wallpaper-topology").WithViewport(560, 310, 20)
-        .WithLegend(null).WithTheme(OverlayTheme(), VisualThemeMode.Dark)
+        .WithLegend(null).WithTheme(OverlayTheme(), ThemeMode.Dark)
         .AddNode("workstation", "Workstation", 34, 110, width: 140, height: 70)
         .AddNode("gateway", "Gateway", 330, 110, TopologyNodeKind.Gateway, width: 140, height: 70)
         .AddEdge("network", "workstation", "gateway", "Network", routing: TopologyEdgeRouting.Straight);

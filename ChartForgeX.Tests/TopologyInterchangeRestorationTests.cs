@@ -128,7 +128,7 @@ public sealed class TopologyInterchangeRestorationTests {
 
     internal static TopologyChart Source(bool dark, int width) {
         var chart = TopologyChart.Create().WithId("portable-topology").WithTitle("Editable request route")
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithViewport(width, 520).WithRenderOptions(new TopologyRenderOptions { IncludeLegend = true, WrapNodeLabels = true });
         chart.Accessibility.Name = "Imported request graph"; chart.Accessibility.Language = "en";
         chart.Groups.Add(new TopologyGroup { Id = "region", Label = "Service region", X = 24, Y = 30, Width = 640, Height = 240,

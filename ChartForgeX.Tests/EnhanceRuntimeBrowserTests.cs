@@ -80,7 +80,7 @@ public sealed class EnhanceRuntimeBrowserTests {
         body.Append("<section id=\"plain-host\">").Append(plain).Append("</section>");
         foreach (var family in ExampleRecipes.ChartFamilies) {
             var id = "family-" + family.Key.ToString().ToLowerInvariant();
-            var svg = family.Value.Create("wide", VisualThemeMode.Light).Prepare(Context(720, 420)).ToSvg(new VisualSvgOptions(id).WithEnhanceHooks(includeData: true));
+            var svg = family.Value.Create("wide", ThemeMode.Light).Prepare(Context(720, 420)).ToSvg(new VisualSvgOptions(id).WithEnhanceHooks(includeData: true));
             body.Append("<section>").Append(svg.Replace("<svg ", "<svg id=\"" + id + "\" ")).Append("</section>");
         }
         await using var session = await OpenAsync(Page(body.ToString()), 900, 700);
@@ -221,7 +221,7 @@ public sealed class EnhanceRuntimeBrowserTests {
     [BrowserFact]
     public async Task HostBehaviour_AttachesThroughThePublicRegistry() {
         if (!Enabled) return;
-        var calendar = ExampleRecipes.ForKind(ChartSeriesKind.CalendarHeatmap).Create("wide", VisualThemeMode.Light).Prepare(Context(720, 300))
+        var calendar = ExampleRecipes.ForKind(ChartSeriesKind.CalendarHeatmap).Create("wide", ThemeMode.Light).Prepare(Context(720, 300))
             .ToSvg(new VisualSvgOptions("calendar").WithEnhanceHooks());
         await using var session = await OpenAsync(Page("<section id=\"calendar-host\">" + calendar + "</section>"), 900, 600);
         var page = session.Page;

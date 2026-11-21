@@ -367,7 +367,7 @@ internal static partial class SmokeTests {
     }
 
     private static void SvgUsesReportGradeStyling() {
-        var chart = Chart.Create().WithTitle("Styled").WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark).WithSize(640, 360)
+        var chart = Chart.Create().WithTitle("Styled").WithTheme(VisualTheme.Graphite(), ThemeMode.Dark).WithSize(640, 360)
             .WithLineVisualStyle(ChartLineVisualStyle.Premium())
             .AddSmoothLine("Values", Points(10, 30, 20), ChartColor.FromRgb(96, 165, 250))
             .AddHorizontalLine(25, "target", ChartColor.FromRgb(251, 191, 36));
@@ -393,7 +393,7 @@ internal static partial class SmokeTests {
         var customized = Chart.Create().WithTheme(VisualTheme.Graphite()).WithPlotBackground()
             .WithTitle("Custom typography")
             .ConfigureTheme(builder => {
-                foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+                foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
                     var colors = builder.Colors(mode);
                     colors.Background = ChartColor.FromRgb(250, 250, 250);
                     colors.ElevatedSurface = ChartColor.FromRgb(1, 1, 1);
@@ -418,7 +418,7 @@ internal static partial class SmokeTests {
         var hexPalette = Chart.Create().WithTheme(VisualTheme.Graphite()).WithPalette(ChartPalettes.FromHex("#123456", "#0ea5e9"))
             .AddLine("First", Points(1, 2, 3)).AddLine("Second", Points(3, 2, 1)).ToSvg();
         Assert(hexPalette.Contains("#123456", StringComparison.Ordinal) && hexPalette.Contains("#0EA5E9", StringComparison.Ordinal), "Chart palette helpers should accept pasted hex colors.");
-        var hexTheme = VisualTheme.Graphite().WithPalette(ChartPalettes.FromHex("#ABC", "#0EA5E980")).Resolve(VisualThemeMode.Light);
+        var hexTheme = VisualTheme.Graphite().WithPalette(ChartPalettes.FromHex("#ABC", "#0EA5E980")).Resolve(ThemeMode.Light);
         Assert(hexTheme.Palette[0].ToHex() == "#AABBCC" && hexTheme.Palette[1].ToCss() == "rgba(14,165,233,0.502)", "Theme palettes should retain short and alpha hex colors.");
         Assert(customized.Contains("#010101", StringComparison.Ordinal) && customized.Contains("#020202", StringComparison.Ordinal), "Theme callbacks should customize independent surface colors.");
         Assert(customized.Contains("#050505", StringComparison.Ordinal), "Theme callbacks should customize text colors.");
@@ -464,7 +464,7 @@ internal static partial class SmokeTests {
 
     private static void ReportThemesExposeVisualTokens() {
         var theme = VisualTheme.Graphite();
-        var colors = theme.Resolve(VisualThemeMode.Dark);
+        var colors = theme.Resolve(ThemeMode.Dark);
         Assert(colors.Border.A > 0 && colors.PlotBorder.A > 0, "Report themes should define independent card and plot borders.");
         Assert(theme.PlotRadius > 0, "Report themes should define plot corner geometry.");
         Assert(colors.Positive.A > 0 && colors.Warning.A > 0 && colors.Negative.A > 0, "Report themes should define semantic status colors.");
@@ -472,18 +472,18 @@ internal static partial class SmokeTests {
         var palette = new[] { ChartColor.Black };
         var customized = theme.WithPalette(palette);
         palette[0] = ChartColor.White;
-        Assert(customized.Resolve(VisualThemeMode.Dark).Palette[0].Equals(ChartColor.Black),
+        Assert(customized.Resolve(ThemeMode.Dark).Palette[0].Equals(ChartColor.Black),
             "Themes should snapshot caller-owned palette arrays.");
-        Assert(theme.Resolve(VisualThemeMode.Dark).Palette.Count > 1, "Customizing a theme should preserve the source snapshot.");
+        Assert(theme.Resolve(ThemeMode.Dark).Palette.Count > 1, "Customizing a theme should preserve the source snapshot.");
         var pastel = ChartPalettes.Pastel;
         pastel[0] = ChartColor.Black;
         Assert(!ChartPalettes.Pastel[0].Equals(ChartColor.Black), "Palette presets should return independent arrays.");
-        var overlay = VisualTheme.TransparentOverlay().Resolve(VisualThemeMode.Dark);
+        var overlay = VisualTheme.TransparentOverlay().Resolve(ThemeMode.Dark);
         Assert(overlay.Background.A == 0 && overlay.ElevatedSurface.A > 0 && overlay.ElevatedSurface.A < 255,
             "Overlay themes should preserve a clear background and translucent card.");
         Assert(overlay.Palette.Count >= 8, "Overlay themes should provide a broad operational palette.");
         foreach (var namedTheme in new[] { VisualTheme.Graphite(), VisualTheme.Accessible(), VisualTheme.TransparentOverlay() }) {
-            var namedColors = namedTheme.Resolve(VisualThemeMode.Light);
+            var namedColors = namedTheme.Resolve(ThemeMode.Light);
             Assert(namedColors.Palette.Count >= 8, "Named themes should provide broad qualitative palettes.");
             Assert(namedTheme.Typography.Family.Length > 0, "Named themes should define a font stack.");
             Assert(namedColors.Foreground.A > 0 && namedColors.MutedForeground.A > 0 && namedColors.Grid.A > 0,
@@ -523,7 +523,7 @@ internal static partial class SmokeTests {
         var boundaryB = Chart.Create().WithTitle("a").WithSubtitle("bc").WithSize(320, 220).AddLine("Values", Points(10, 20, 30));
         AssertNoDuplicateIds(boundaryA.ToSvg() + boundaryB.ToSvg(), "Boundary-distinct content namespaces");
         var lightVariant = Chart.Create().WithTitle("Visual identity").WithSize(320, 220).WithTheme(VisualTheme.Graphite()).AddLine("Values", Points(10, 20, 30));
-        var darkVariant = Chart.Create().WithTitle("Visual identity").WithSize(320, 220).WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark).AddLine("Values", Points(10, 20, 30));
+        var darkVariant = Chart.Create().WithTitle("Visual identity").WithSize(320, 220).WithTheme(VisualTheme.Graphite(), ThemeMode.Dark).AddLine("Values", Points(10, 20, 30));
         AssertNoDuplicateIds(lightVariant.ToHtmlFragment() + darkVariant.ToHtmlFragment(), "Unscoped fragments with distinct visual identities");
         var withoutLegend = Chart.Create().WithTitle("Repeated fragment").WithSize(320, 220).WithLegend(false).AddLine("Values", Points(10, 20, 30));
         AssertNoDuplicateIds(repeated.ToHtmlFragment() + withoutLegend.ToHtmlFragment(), "Unscoped fragments with distinct layout options");

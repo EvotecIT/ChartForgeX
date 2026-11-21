@@ -202,7 +202,7 @@ public sealed class PatternOnlyPaintBrowserTests {
 
     internal static Chart Create(ChartSeriesKind kind, bool dark) {
         var chart = Chart.Create().WithSize(dark ? 360 : 760, dark ? 360 : 440).WithHeader(false).WithLegend().WithAxes(false).WithGrid(false)
-            .WithDataLabels(false).WithBarStyle(ChartBarStyle.Flat).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .WithDataLabels(false).WithBarStyle(ChartBarStyle.Flat).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         var points = new[] { new ChartPoint(1, 30), new ChartPoint(2, 70), new ChartPoint(3, 50) };
         switch (kind) {
             case ChartSeriesKind.Bar: chart.AddBar("Hatched observations", points); break;

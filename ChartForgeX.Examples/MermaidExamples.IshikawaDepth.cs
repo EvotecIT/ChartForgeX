@@ -11,7 +11,7 @@ internal static class MermaidIshikawaDepthExamples {
 
 internal static partial class MermaidExamples {
     private static void WriteIshikawaDepthExamples(string output) {
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark })
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark })
             foreach (var variant in new[] { "wide", "compact" }) {
                 var block = IshikawaDepthRecipe.Create(variant, mode).WithTheme(VisualTheme.Graphite().WithFontFamily(ExampleTypography.FontFamily), mode)
                     .WithNaturalSize(variant == "compact" ? 390 : 1100, 520);

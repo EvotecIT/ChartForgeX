@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -13,7 +14,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 #endregion
 
@@ -21,7 +22,7 @@ var model=SequenceArtifact.Create("sequence-preset-appearance").WithSize(390,860
 model.ThemeMode=mode;
 model.Layout=new SequenceLayoutPolicy(participantMinimumWidth:64,participantSpacing:8,participantBands:new SequenceParticipantBands(),mirrorParticipants:true,fragmentMargin:10,fragmentTabMinimumWidth:50,fragmentTabMinimumHeight:35);
 model.Typography=new SequenceTypography(participant:new TextStyleOverride{FontSize=14},message:new TextStyleOverride{FontSize=12});
-var dark=mode==VisualThemeMode.Dark;
+var dark=mode==ThemeMode.Dark;
 model.Paint.ParticipantFill=ChartColor.FromHex(dark?"#111113":"#FFFFFF");
 model.Paint.ParticipantText=ChartColor.FromHex(dark?"#E0DFDF":"#28253D");
 model.Paint.FragmentTitleText=model.Paint.ParticipantText;

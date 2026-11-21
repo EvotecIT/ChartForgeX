@@ -105,7 +105,7 @@ public sealed class ProgressEditingBrowserTests {
             .WithObservationId(reorder ? 1 : 0, new ChartObservationId("fraction"))
             .WithObservationId(reorder ? 0 : 1, new ChartObservationId("jobs"));
         return Chart.Create().WithSize(width, 340).WithTitle("Edit independent progress rows").WithLegend(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).AddSeries(series);
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).AddSeries(series);
     }
     private static void Options(HtmlChartInteractionOptions options) {
         options.ProgressEditing.Enabled = true; options.ProgressEditing.StepRatio = .125;

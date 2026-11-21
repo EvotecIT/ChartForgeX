@@ -4,7 +4,7 @@ using ChartForgeX.VisualArtifacts;
 
 internal static partial class MermaidExamples {
     private static void WriteNativeShapeCatalogExamples(string output) {
-        foreach(var suffix in new[]{"a","b","c","d"}) foreach(var mode in new[]{VisualThemeMode.Light,VisualThemeMode.Dark})
+        foreach(var suffix in new[]{"a","b","c","d"}) foreach(var mode in new[]{ThemeMode.Light,ThemeMode.Dark})
             foreach(var variant in new[]{"compact","wide"}) {
                 var source=MermaidFixtureSources.Read("flowchart-native-shape-catalog-"+suffix);
                 var rendered=MermaidRenderer.Render(source,new MermaidRenderOptions {WarningPolicy=MermaidWarningPolicy.Reject,

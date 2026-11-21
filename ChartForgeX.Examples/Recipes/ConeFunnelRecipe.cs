@@ -1,6 +1,6 @@
 /// <summary>A cone funnel: trial sign-ups narrowing to renewed subscriptions, with retention captions.</summary>
 public static class ConeFunnelRecipe {
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var stages = new (string Name, double Count)[] {
             ("Visitors", 12400), ("Sign-ups", 5270), ("Trials", 2130), ("Paid", 860), ("Renewed", 610)

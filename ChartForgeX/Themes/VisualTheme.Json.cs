@@ -35,8 +35,8 @@ public sealed partial class VisualTheme {
         var typography = Object(root, "typography", "theme");
         var geometry = Object(root, "geometry", "theme");
         var effects = root.TryGetValue("effects", out var effectValue) ? effectValue.AsObject("effects") : new Dictionary<string, GeoJsonValue>();
-        var light = ReadThemeColors(json, root, "light", VisualThemeMode.Light);
-        var dark = ReadThemeColors(json, root, "dark", VisualThemeMode.Dark);
+        var light = ReadThemeColors(json, root, "light", ThemeMode.Light);
+        var dark = ReadThemeColors(json, root, "dark", ThemeMode.Dark);
         var scale = new VisualTypography(Required(typography, "family", "typography").AsString("typography.family"),
                 Number(typography, "titleSize", "typography"), Number(typography, "subtitleSize", "typography"),
                 Number(typography, "axisSize", "typography"), Number(typography, "legendSize", "typography"), Number(typography, "dataLabelSize", "typography"),
@@ -104,7 +104,7 @@ public sealed partial class VisualTheme {
         return json;
     }
 
-    private static VisualDesignTokens ReadThemeColors(string json, Dictionary<string, GeoJsonValue> root, string mode, VisualThemeMode variant) {
+    private static VisualDesignTokens ReadThemeColors(string json, Dictionary<string, GeoJsonValue> root, string mode, ThemeMode variant) {
         var tokens = VisualDesignTokens.FromJson(json, variant);
         var palette = Object(root, mode, "theme");
         if (!palette.TryGetValue("roles", out var value)) return tokens;

@@ -12,7 +12,7 @@ public sealed class SequenceNavigationBeforeTests {
     }
     [Theory] [InlineData(false)] [InlineData(true)]
     public void OrdinaryStaticPrimaryHrefRemainsScriptFreeAndInert(bool dark) {
-        var source="sequenceDiagram\nparticipant A\nparticipant B\nlink A: Guide @ #guide\nA->>B: Save";var result=MermaidRenderer.Render(source,new MermaidRenderOptions{Presentation=new MermaidPresentationOptions{ThemeMode=dark?VisualThemeMode.Dark:VisualThemeMode.Light}});Capture("sequence-navigation-before-ordinary-"+dark,source,result);Assert.Empty(result.Diagnostics);
+        var source="sequenceDiagram\nparticipant A\nparticipant B\nlink A: Guide @ #guide\nA->>B: Save";var result=MermaidRenderer.Render(source,new MermaidRenderOptions{Presentation=new MermaidPresentationOptions{ThemeMode=dark?ThemeMode.Dark:ThemeMode.Light}});Capture("sequence-navigation-before-ordinary-"+dark,source,result);Assert.Empty(result.Diagnostics);
         var artifact = result.Artifact ?? throw new InvalidOperationException("The primary-link source did not produce an artifact.");
         Assert.Contains("#guide", artifact.ToSvg());
         Assert.DoesNotContain("<script", artifact.ToSvg());

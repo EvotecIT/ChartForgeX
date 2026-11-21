@@ -111,7 +111,7 @@ public sealed class MermaidTreeViewNativeRowsTests {
 
     internal static MermaidRenderOptions Options(bool dark, int width) => new() {
         TreeView = new MermaidTreeViewRenderOptions { Width = width, Height = 320 },
-        Presentation = new MermaidPresentationOptions { ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light, FontFamily = BrowserProofFonts.Family }
+        Presentation = new MermaidPresentationOptions { ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light, FontFamily = BrowserProofFonts.Family }
     };
     private static void Save(string name, bool dark, int width, string svg, byte[] png) {
         var output = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY"); if (string.IsNullOrWhiteSpace(output)) return;

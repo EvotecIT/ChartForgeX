@@ -10,7 +10,7 @@ public sealed partial class VisualArtifactInterchangeWaterfallArtifact {
     /// <summary>Gets or sets the immutable native theme, including status paints, connector ink and typography.</summary>
     public VisualTheme Theme { get; set; } = VisualTheme.Graphite();
     /// <summary>Gets or sets the explicit native theme mode.</summary>
-    public VisualThemeMode ThemeMode { get; set; }
+    public ThemeMode ThemeMode { get; set; }
     /// <summary>Gets or sets the configured padding, retained while the host owns the frame.</summary>
     public ChartPadding Padding { get; set; } = ChartPadding.All(24);
     /// <summary>Gets or sets whether padding was explicitly authored; false retains native compact-frame fallback.</summary>

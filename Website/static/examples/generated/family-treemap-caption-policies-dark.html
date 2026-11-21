@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = TreemapCaptionPoliciesRecipe.Create(&quot;caption-policies&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Opts into bounded caption shrinking and whole-text-element ellipsis while retaining complete source names.&lt;/summary&gt;
 public static class TreemapCaptionPoliciesRecipe {
     /// &lt;summary&gt;Creates the complete source model; layout and exports use the existing Treemap owner.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;caption-policies&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;caption-policies&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;caption-policies&quot; or &quot;compact-caption-policies&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create().WithLegend(false).WithDataLabels().WithTransparentBackground(false)
             .AddTreemap(&quot;Reconciliation&quot;, new[] {
@@ -133,6 +134,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -142,7 +144,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = TreemapCaptionPoliciesRecipe.Create(&quot;caption-policies&quot;, mode);
 var context = new VisualRenderContext(
@@ -157,7 +159,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Opts into bounded caption shrinking and whole-text-element ellipsis while retaining complete source names.&lt;/summary&gt;
 public static class TreemapCaptionPoliciesRecipe {
     /// &lt;summary&gt;Creates the complete source model; layout and exports use the existing Treemap owner.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;caption-policies&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;caption-policies&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;caption-policies&quot; or &quot;compact-caption-policies&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create().WithLegend(false).WithDataLabels().WithTransparentBackground(false)
             .AddTreemap(&quot;Reconciliation&quot;, new[] {

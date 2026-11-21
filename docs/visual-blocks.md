@@ -60,7 +60,7 @@ using ChartForgeX.VisualBlocks;
 
 var table = ChartTable.Create()
     .WithTitle("Drive Summary")
-    .WithTheme(VisualTheme.TransparentOverlay(), VisualThemeMode.Dark)
+    .WithTheme(VisualTheme.TransparentOverlay(), ThemeMode.Dark)
     .WithTransparentBackground()
     .AddColumn("Drive")
     .AddColumn("Used", TextAlignment.Right, format: "0%")
@@ -97,11 +97,11 @@ var vacancies = ChartTable.Create()
     .AddRow("Google", "Software Engineer", "92", "", "")
     .AddRow("Microsoft", "Software Engineer", "92", "", "")
     .ConfigureRow(0, row => {
-        row.Cells[3].WithBadge("22 new", VisualStatus.Info, ChartColor.FromHex("#7C3AED"));
+        row.Cells[3].WithBadge("22 new", Tone.Info, ChartColor.FromHex("#7C3AED"));
         row.Cells[4].WithSparkline(new[] { 12d, 16d, 13d, 19d, 22d }, color: ChartColor.FromHex("#7C3AED"));
     })
     .ConfigureRow(1, row => {
-        row.Cells[3].WithBadge("12 new", VisualStatus.Info, ChartColor.FromHex("#7C3AED"));
+        row.Cells[3].WithBadge("12 new", Tone.Info, ChartColor.FromHex("#7C3AED"));
         row.Cells[4].WithMiniBars(new[] { 10d, 14d, 12d, 11d, 12d }, color: ChartColor.FromHex("#7C3AED"));
     });
 ```
@@ -115,7 +115,7 @@ var cpu = MetricCard.Create()
     .WithCaption("5 minute trend")
     .WithSymbol("CPU")
     .WithBadgePlacement(MetricCardBadgePlacement.TopLeft)
-    .WithStatus(VisualStatus.Positive)
+    .WithStatus(Tone.Success)
     .WithMiniBars(new[] { 48d, 52d, 44d, 41d, 38d }, maximum: 100);
 ```
 
@@ -126,7 +126,7 @@ var latency = MetricCard.Create()
     .WithMetric("Latency", "18 ms")
     .WithTrend("-12 ms")
     .WithCaption("last samples")
-    .WithStatus(VisualStatus.Info)
+    .WithStatus(Tone.Info)
     .WithMiniSparkline(new[] { 42d, 36d, 31d, 28d, 24d, 18d });
 ```
 
@@ -169,7 +169,7 @@ var results = TerminalTable.Create()
 var console = TerminalStory.Create()
     .WithTitle(@"pwsh - C:\OpenSource")
     .WithDialect(TerminalDialect.PowerShell)
-    .WithTheme(TerminalThemes.PowerShell(), VisualThemeMode.Dark)
+    .WithTheme(TerminalThemes.PowerShell(), ThemeMode.Dark)
     .WithWindowStyle(TerminalWindowStyle.WindowsTerminal)
     .WithWorkingDirectory(@"C:\OpenSource")
     .Command(@".\Invoke-Validation.ps1")
@@ -289,8 +289,8 @@ var progress = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows)
     .WithTitle("Project Progress")
     .WithSubtitle("Overall completion rate all projects.")
     .WithHeaderSymbol("%")
-    .AddItem("Performing Progress", 89, segments: 44, delta: "+10.2%", status: VisualStatus.Positive)
-    .AddItem("Target Sales", 67, segments: 44, delta: "+2.2%", status: VisualStatus.Info)
+    .AddItem("Performing Progress", 89, segments: 44, delta: "+10.2%", status: Tone.Success)
+    .AddItem("Target Sales", 67, segments: 44, delta: "+2.2%", status: Tone.Info)
     .WithCaption("Up by 6% compared to last week");
 ```
 
@@ -302,12 +302,12 @@ var progressWithConfiguredRows = SegmentedMetricBlock.Create()
         item.Maximum = 100;
         item.Segments = 35;
         item.Delta = "+4.3%";
-        item.Status = VisualStatus.Positive;
+        item.Status = Tone.Success;
     })
     .AddItem(new SegmentedMetricItem("Operational Costs", 58)
         .WithProgress(100, 35)
         .WithDelta("-6.4%")
-        .WithStatus(VisualStatus.Negative));
+        .WithStatus(Tone.Danger));
 ```
 
 Set `DisplayValue` when progress rows should show exact values instead of derived percentages. The row can still use `Value` and `Maximum` for filled segment geometry. `DisplayValue` accepts ordinary values plus an optional format, so callers do not need to pre-format simple counts or currency strings:
@@ -319,7 +319,7 @@ var performance = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows)
         .WithProgress(100, 44)
         .WithDisplayValue(132034, "N0")
         .WithDelta("+4.3%")
-        .WithStatus(VisualStatus.Positive));
+        .WithStatus(Tone.Success));
 ```
 
 Part-to-whole strips are the same model again: a calmer visual treatment for certificate counts, sales platforms, checks, inventory states, or any other split:
@@ -398,9 +398,9 @@ Workload list blocks cover staff-capacity rows and ranked people lists:
 ```csharp
 var workload = WorkloadListBlock.Create()
     .WithTitle("Today Staff Workload")
-    .AddPerson("Panji Dwi", "Zumba Trainer", 4, 8, VisualStatus.Neutral, "PD", "4/8")
-    .AddPerson("Raihan Fikri", "Aerobik Trainer", 10, 8, VisualStatus.Negative, "RF", "10/8", note: "Overload")
-    .AddPerson("Mufti Hidayat", "Massage Specialist", 6, 8, VisualStatus.Positive);
+    .AddPerson("Panji Dwi", "Zumba Trainer", 4, 8, Tone.Neutral, "PD", "4/8")
+    .AddPerson("Raihan Fikri", "Aerobik Trainer", 10, 8, Tone.Danger, "RF", "10/8", note: "Overload")
+    .AddPerson("Mufti Hidayat", "Massage Specialist", 6, 8, Tone.Success);
 ```
 
 Activity timelines provide the chart-like vertical event-spine pattern without flattening nested checklist rows into a generic list. App chrome such as tabs, notes, and action buttons belongs in semantic HTML/interactivity rather than this static SVG/PNG block:
@@ -411,13 +411,13 @@ var timeline = ActivityTimelineBlock.Create()
     .WithCard(false)
     .WithEventSurfaces(false)
     .AddSection("In-progress")
-    .AddEvent("Shipment", status: VisualStatus.Info, detail: "Delivery by Royal Mail Standard", symbol: "S")
-    .AddEvent("Shipment 1", status: VisualStatus.Neutral, symbol: "1")
+    .AddEvent("Shipment", status: Tone.Info, detail: "Delivery by Royal Mail Standard", symbol: "S")
+    .AddEvent("Shipment 1", status: Tone.Neutral, symbol: "1")
     .AddChecklistItem("Carrier confirmed", completed: true, muted: true)
     .AddChecklistItem("Packing in progress", completed: false)
     .AddHiddenSummary(6, "items hidden")
     .AddSection("Completed")
-    .AddEvent("Order created", status: VisualStatus.Positive, symbol: "OK");
+    .AddEvent("Order created", status: Tone.Success, symbol: "OK");
 ```
 
 Schedule timelines cover planner-style time-of-day swimlanes:

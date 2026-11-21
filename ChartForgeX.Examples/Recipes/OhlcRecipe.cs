@@ -1,7 +1,7 @@
 /// <summary>Builds daily opening, high, low and closing prices as tick marks.</summary>
 public static class OhlcRecipe {
     /// <summary>Creates the selected OHLC example with optional rising and falling stroke styles.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "dashed" or "compact-dashed"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create();

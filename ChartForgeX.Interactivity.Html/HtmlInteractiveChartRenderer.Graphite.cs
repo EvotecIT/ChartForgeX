@@ -8,17 +8,17 @@ using System.Globalization;
 namespace ChartForgeX.Interactivity.Html;
 
 public sealed partial class HtmlInteractiveChartRenderer {
-    private static string GraphiteInteractionTokens(Chart chart) {
-        var t = chart.Options.ResolvedTheme;
+    private static string GraphiteInteractionTokens(Chart chart, ThemeMode mode) {
+        var t = chart.Options.Theme.ResolvePresentation(mode);
         return InteractionTokens(t.Background, t.Axis, t.Palette[0],
             t.FontFamily, chart.Options.HostOwnsFrame || chart.Options.TransparentBackground,
-            chart.Options.Theme.Resolve(chart.Options.ThemeMode).Chrome);
+            chart.Options.Theme.Resolve(mode).Chrome);
     }
 
     internal static string PreparedInteractionTokens(VisualRenderContext context) =>
         ThemeInteractionTokens(context.Theme, context.ThemeMode, context.Frame.TransparentBackground);
 
-    internal static string ThemeInteractionTokens(VisualTheme theme, VisualThemeMode mode, bool transparent) {
+    internal static string ThemeInteractionTokens(VisualTheme theme, ThemeMode mode, bool transparent) {
         var colors = theme.Resolve(mode);
         return InteractionTokens(colors.Background, colors.Axis, colors.Palette[0],
             theme.Typography.Family, transparent, colors.Chrome);

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -13,7 +14,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = QuadrantChartRecipe.Create("wide", mode);
 var context = new VisualRenderContext(
@@ -27,7 +28,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 
 /// <summary>A quadrant chart: proposed projects placed by effort and impact, with four labelled regions.</summary>
 public static class QuadrantChartRecipe {
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var projects = new (string Name, double Effort, double Impact)[] {
             ("SSO rollout", 2.1, 8.6), ("Backup audit", 1.4, 6.9), ("MFA for admins", 1.1, 9.2), ("DNS cleanup", 2.8, 6.4),

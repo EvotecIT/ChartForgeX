@@ -232,7 +232,7 @@ public sealed class BlockHierarchyDepthTests {
     internal static BlockLayoutBlock Parsed(int width, bool dark) {
         var parsed = new MermaidParser().ParseBlock(Source); Assert.False(parsed.HasErrors);
         return parsed.Document!.ToBlockLayoutBlock(new MermaidBlockRenderOptions { Width = width, Height = 620, Title = "Source blocks" })
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light);
     }
     internal static Dictionary<string, XElement> Cells(XDocument document) => document.Descendants()
         .Where(node => Role(node) is "block-layout-composite" or "block-layout-item").ToDictionary(node => node.Attribute("data-block-id")!.Value, StringComparer.Ordinal);

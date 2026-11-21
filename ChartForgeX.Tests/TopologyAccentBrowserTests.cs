@@ -73,7 +73,7 @@ public sealed class TopologyAccentBrowserTests {
         await page.WaitForFunctionAsync("()=>!!document.querySelector('.cfx-graph-explorer').__cfxGraphState");
         if (backend == HtmlGraphRenderBackend.Canvas)
             Assert.True(await root.EvaluateAsync<bool>("root=>root.__cfxGraphState.nodes[0].el.__cfxVirtual===true"));
-        async Task AssertPaint(VisualThemeMode mode) {
+        async Task AssertPaint(ThemeMode mode) {
             var card = await root.EvaluateAsync<string>("root=>getComputedStyle(root).getPropertyValue('--cfx-color-surface-solid').trim()");
             for (var index = 0; index < displays.Length; index++) {
                 var paint = await root.EvaluateAsync<string[]>("(root,id)=>{const n=root.__cfxGraphState.byId.get(id);return [n.backgroundColor,n.borderColor]}", "implicit-" + index);
@@ -90,20 +90,20 @@ public sealed class TopologyAccentBrowserTests {
             if (backend == HtmlGraphRenderBackend.Svg)
                 Assert.Equal("rgb(255, 255, 255)", await root.Locator("[data-node-id=explicit] > :is(rect,circle,path,polygon,ellipse)").First.EvaluateAsync<string>("node=>getComputedStyle(node).fill"));
         }
-        await AssertPaint(VisualThemeMode.Light);
+        await AssertPaint(ThemeMode.Light);
         await Capture(page, "after", "light");
         await root.Locator("[data-cfx-graph-action=theme]").ClickAsync();
         await page.WaitForFunctionAsync("()=>document.querySelector('.cfx-graph-explorer').dataset.cfxGraphThemeActive==='dark'");
-        await AssertPaint(VisualThemeMode.Dark);
+        await AssertPaint(ThemeMode.Dark);
         await Capture(page, "after", "dark");
         await page.EvaluateAsync("()=>{const root=document.querySelector('.cfx-graph-explorer'),nodes=ChartForgeXGraphExplorer.get(root).nodes;nodes.forEach(n=>n.label+=' updated');ChartForgeXGraphExplorer.update(root,{upsertNodes:nodes});}");
-        await AssertPaint(VisualThemeMode.Dark);
+        await AssertPaint(ThemeMode.Dark);
         await page.EvaluateAsync("()=>ChartForgeXGraphExplorer.theme(document.querySelector('.cfx-graph-explorer'),'light')");
-        await AssertPaint(VisualThemeMode.Light);
+        await AssertPaint(ThemeMode.Light);
         AssertNoConsoleErrors(session);
         if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY"))) {
             // Reproduce only the former C# projection: non-card defaults authored the source theme's light Card fill.
-            var previousFill = chart.Theme.Resolve(VisualThemeMode.Light).Surface.ToCss();
+            var previousFill = chart.Theme.Resolve(ThemeMode.Light).Surface.ToCss();
             var previousNodes = graph.Nodes.Where(node => node.Id.StartsWith("implicit-", StringComparison.Ordinal) && !node.Metadata.ContainsKey("topology.card")).ToArray();
             try {
                 foreach (var node in previousNodes) node.Style.BackgroundColor = previousFill;
@@ -141,7 +141,7 @@ public sealed class TopologyAccentBrowserTests {
         await session.Page.WaitForFunctionAsync("()=>!!document.querySelector('.cfx-graph-explorer').__cfxGraphState");
         var root = session.Page.Locator(".cfx-graph-explorer");
         Assert.True(await root.EvaluateAsync<bool>("root=>root.__cfxGraphState.nodes[0].el.__cfxVirtual===true"));
-        Assert.Equal(statusSource ? chart.Theme.Resolve(VisualThemeMode.Light).Status.Critical.Fill.ToCss() : "#2468AC",
+        Assert.Equal(statusSource ? chart.Theme.Resolve(ThemeMode.Light).Status.Critical.Fill.ToCss() : "#2468AC",
             await root.EvaluateAsync<string>("root=>root.__cfxGraphState.nodes[0].borderColor"));
         AssertNoConsoleErrors(session);
     }
@@ -176,12 +176,12 @@ public sealed class TopologyAccentBrowserTests {
         await page.EvaluateAsync("()=>{const root=document.querySelector('.cfx-graph-explorer'),node=ChartForgeXGraphExplorer.get(root).nodes[0];node.label='Updated service';ChartForgeXGraphExplorer.update(root,{upsertNodes:[node]});}");
         Assert.Equal(dark, await Color());
         Assert.NotEqual(light, dark);
-        Assert.Equal(chart.Theme.Resolve(VisualThemeMode.Dark).Status.Critical.Fill.ToCss(),
+        Assert.Equal(chart.Theme.Resolve(ThemeMode.Dark).Status.Critical.Fill.ToCss(),
             await root.Locator("[data-cfx-role=graph-node]").First.EvaluateAsync<string>("node=>getComputedStyle(node).getPropertyValue('--cfx-topology-status-accent').trim()"));
         await page.EvaluateAsync("()=>ChartForgeXGraphExplorer.theme(document.querySelector('.cfx-graph-explorer'),'light')");
         Assert.Equal(light, await Color());
         await page.EvaluateAsync("()=>{const root=document.querySelector('.cfx-graph-explorer'),node=ChartForgeXGraphExplorer.get(root).nodes[0];node.status='warning';ChartForgeXGraphExplorer.update(root,{upsertNodes:[node]});}");
-        Assert.Equal(chart.Theme.Resolve(VisualThemeMode.Light).Status.Medium.Fill.ToCss(),
+        Assert.Equal(chart.Theme.Resolve(ThemeMode.Light).Status.Medium.Fill.ToCss(),
             await root.EvaluateAsync<string>("root=>root.__cfxGraphState.nodes[0].borderColor"));
         AssertNoConsoleErrors(session);
     }

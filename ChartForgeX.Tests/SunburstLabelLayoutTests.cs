@@ -9,11 +9,11 @@ namespace ChartForgeX.Tests;
 
 public sealed class SunburstLabelLayoutTests {
     [Theory]
-    [InlineData(VisualThemeMode.Light, 0)]
-    [InlineData(VisualThemeMode.Dark, 0)]
-    [InlineData(VisualThemeMode.Light, 3)]
-    [InlineData(VisualThemeMode.Dark, 3)]
-    public void NarrowSectorKeepsCaptionWhenAngularEdgesRequireOuterRadialLane(VisualThemeMode mode, double cornerRadius) {
+    [InlineData(ThemeMode.Light, 0)]
+    [InlineData(ThemeMode.Dark, 0)]
+    [InlineData(ThemeMode.Light, 3)]
+    [InlineData(ThemeMode.Dark, 3)]
+    public void NarrowSectorKeepsCaptionWhenAngularEdgesRequireOuterRadialLane(ThemeMode mode, double cornerRadius) {
         var chart = Chart.Create().WithDataLabels().AddSunburst("Teams", new[] {
             new ChartHierarchyItem("root", "All"),
             new ChartHierarchyItem("before", "Before", "root", 21),
@@ -31,9 +31,9 @@ public sealed class SunburstLabelLayoutTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void WideChartWithHeadingAndColorKeyKeepsCompleteInnerRingNames(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void WideChartWithHeadingAndColorKeyKeepsCompleteInnerRingNames(ThemeMode mode) {
         var chart = SunburstRecipe.Create("options", mode).ConfigureDataLabelStyle(style => style.WithFontSize(12));
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 440)), themeMode: mode,
             frame: new VisualFrame(V2GalleryModels.Title(ChartSeriesKind.Sunburst), "Leaf totals size sectors; measured color stays independent"),
@@ -47,11 +47,11 @@ public sealed class SunburstLabelLayoutTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light, 0)]
-    [InlineData(VisualThemeMode.Dark, 0)]
-    [InlineData(VisualThemeMode.Light, 6)]
-    [InlineData(VisualThemeMode.Dark, 6)]
-    public void BroadThreeLevelHierarchyKeepsEveryFullCaptionInsideItsOwnSegment(VisualThemeMode mode, double cornerRadius) {
+    [InlineData(ThemeMode.Light, 0)]
+    [InlineData(ThemeMode.Dark, 0)]
+    [InlineData(ThemeMode.Light, 6)]
+    [InlineData(ThemeMode.Dark, 6)]
+    public void BroadThreeLevelHierarchyKeepsEveryFullCaptionInsideItsOwnSegment(ThemeMode mode, double cornerRadius) {
         var chart = Teams();
         chart.ConfigureSunburst(options => options.CornerRadius = cornerRadius);
         chart.Series[0].ConfigureDataLabelStyle(style => style.WithFontSize(13));

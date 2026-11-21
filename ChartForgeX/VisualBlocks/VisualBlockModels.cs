@@ -9,24 +9,6 @@ using ChartForgeX.Themes;
 namespace ChartForgeX.VisualBlocks;
 
 /// <summary>
-/// Generic semantic status used by visual blocks.
-/// </summary>
-public enum VisualStatus {
-    /// <summary>No semantic status.</summary>
-    None,
-    /// <summary>Neutral informational status.</summary>
-    Neutral,
-    /// <summary>Positive or healthy status.</summary>
-    Positive,
-    /// <summary>Warning or attention status.</summary>
-    Warning,
-    /// <summary>Negative or failed status.</summary>
-    Negative,
-    /// <summary>Informational status.</summary>
-    Info
-}
-
-/// <summary>
 /// Shared renderer-independent options for visual blocks.
 /// </summary>
 public sealed class VisualBlockOptions {
@@ -71,11 +53,11 @@ public sealed class VisualBlockOptions {
     }
 
     /// <summary>Gets or sets the explicit mode of the shared theme.</summary>
-    public VisualThemeMode ThemeMode {
+    public ThemeMode ThemeMode {
         get => _themeMode;
-        set { if (!Enum.IsDefined(typeof(VisualThemeMode), value)) throw new ArgumentOutOfRangeException(nameof(value)); _themeMode = value; }
+        set { if (!Enum.IsDefined(typeof(ThemeMode), value)) throw new ArgumentOutOfRangeException(nameof(value)); _themeMode = value; }
     }
-    private VisualThemeMode _themeMode;
+    private ThemeMode _themeMode;
     internal ResolvedVisualTheme ResolvedTheme => Theme.ResolvePresentation(ThemeMode);
 
     /// <summary>
@@ -172,14 +154,14 @@ public abstract class VisualBlock<TSelf> : IVisualBlock where TSelf : VisualBloc
     public TSelf WithPadding(double left, double top, double right, double bottom) { Options.Padding = new ChartPadding(left, top, right, bottom); return Self(); }
 
     /// <summary>Sets the visual theme.</summary>
-    public TSelf WithTheme(VisualTheme theme, VisualThemeMode? mode = null) {
+    public TSelf WithTheme(VisualTheme theme, ThemeMode? mode = null) {
         Options.Theme = theme ?? throw new ArgumentNullException(nameof(theme));
         if (mode.HasValue) Options.ThemeMode = mode.Value;
         return Self();
     }
 
     /// <summary>Sets the light or dark mode without changing the shared theme.</summary>
-    public TSelf WithThemeMode(VisualThemeMode mode) { Options.ThemeMode = mode; return Self(); }
+    public TSelf WithThemeMode(ThemeMode mode) { Options.ThemeMode = mode; return Self(); }
 
     /// <summary>Writes theme colours in SVG output as CSS custom properties (see <see cref="VisualBlockOptions.SvgColorVariables"/>).</summary>
     /// <param name="variables">The colour variables, or null to write literal colours.</param>
@@ -205,7 +187,7 @@ public abstract class VisualBlock<TSelf> : IVisualBlock where TSelf : VisualBloc
 }
 
 internal static class VisualBlockGuards {
-    public static void EnumDefined<TEnum>(TEnum value, string parameterName) where TEnum : struct {
+    public static void EnumDefined<TEnum>(TEnum value, string parameterName) where TEnum : struct, Enum {
         if (!Enum.IsDefined(typeof(TEnum), value)) throw new ArgumentOutOfRangeException(parameterName, value, "Unknown " + typeof(TEnum).Name + " value.");
     }
 

@@ -27,7 +27,7 @@ public sealed class VisualThemeJsonTests {
         string json = original.ToJson();
         var imported = VisualTheme.FromJson(json);
         Assert.Equal(json, imported.ToJson());
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             var expected = original.Resolve(mode);
             var actual = imported.Resolve(mode);
             Assert.Equal(new[] { expected.Background, expected.Surface, expected.ElevatedSurface, expected.Foreground, expected.MutedForeground, expected.Border, expected.Accent },
@@ -117,7 +117,7 @@ public sealed class VisualThemeJsonTests {
         Assert.Equal(20, imported.Typography.CenterValueSize);
         Assert.Equal(14, imported.GaugeStrokeWidth);
         Assert.Equal(4, imported.GaugeBandWidth);
-        Assert.Equal(original.Resolve(VisualThemeMode.Dark).Palette, imported.Resolve(VisualThemeMode.Dark).Palette);
+        Assert.Equal(original.Resolve(ThemeMode.Dark).Palette, imported.Resolve(ThemeMode.Dark).Palette);
     }
 
     [Fact]
@@ -128,7 +128,7 @@ public sealed class VisualThemeJsonTests {
         document.AsObject().Remove("geometry");
         string palette = document.ToJsonString();
         var imported = VisualTheme.FromPaletteJson(palette, new VisualTypography(titleSize: 30));
-        Assert.Equal(VisualTheme.Graphite().Resolve(VisualThemeMode.Dark).Palette, imported.Resolve(VisualThemeMode.Dark).Palette);
+        Assert.Equal(VisualTheme.Graphite().Resolve(ThemeMode.Dark).Palette, imported.Resolve(ThemeMode.Dark).Palette);
         Assert.Equal(30, imported.Typography.TitleSize);
         Assert.Throws<ArgumentException>(() => VisualTheme.FromJson(palette));
     }
@@ -139,10 +139,10 @@ public sealed class VisualThemeJsonTests {
             Neutral = null, Neutral2 = null, Neutral3 = null };
         var original = new VisualTheme(light, light);
         var imported = VisualTheme.FromJson(original.ToJson());
-        Assert.Empty(imported.Resolve(VisualThemeMode.Light).SequentialRamp);
-        Assert.Null(imported.Resolve(VisualThemeMode.Dark).DivergingRamp);
+        Assert.Empty(imported.Resolve(ThemeMode.Light).SequentialRamp);
+        Assert.Null(imported.Resolve(ThemeMode.Dark).DivergingRamp);
         Assert.Equal(original.ToJson(), imported.ToJson());
-        var colors = imported.Resolve(VisualThemeMode.Light);
+        var colors = imported.Resolve(ThemeMode.Light);
         Assert.Equal(colors.Surface, colors.Neutral);
         Assert.Equal(colors.Border, colors.Neutral2);
         Assert.Equal(colors.MutedForeground, colors.Neutral3);

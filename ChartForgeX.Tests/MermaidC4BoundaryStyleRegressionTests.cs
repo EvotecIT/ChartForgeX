@@ -21,7 +21,7 @@ public sealed class MermaidC4BoundaryStyleRegressionTests {
     public void BorderOnlyBoundaryStylePaintsTheBorderWithoutRetintingTheSurface(bool dark) {
         const string source = "C4Context\nSystem_Boundary(scope, \"Scope\") {\nPerson(user, \"User\")\n}";
         var options = new MermaidTopologyRenderOptions { Presentation = new MermaidPresentationOptions {
-            ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light, FontFamily = BrowserProofFonts.Family } };
+            ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light, FontFamily = BrowserProofFonts.Family } };
         var parser = new MermaidParser();
         var baseline = parser.ParseC4(source).Document!.ToTopologyChart(options);
         var styled = parser.ParseC4(source + "\nUpdateElementStyle(scope, $borderColor=\"#ff0000\")").Document!.ToTopologyChart(options);

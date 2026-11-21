@@ -1,7 +1,7 @@
 /// <summary>Compares service capacity with independent Start and End glyphs on either physical orientation.</summary>
 public static class DumbbellEndpointRecipe {
     /// <summary>Creates source-ordered pairs; marker presentation never sorts or replaces the two endpoint values.</summary>
-    public static Chart Create(string variant = "endpoint-markers", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "endpoint-markers", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("horizontal" or "compact-horizontal" or "endpoint-markers" or "compact-endpoint-markers"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var colors = VisualTheme.Graphite().Resolve(mode);

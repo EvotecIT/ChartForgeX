@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = TopologyInterchangeRecipe.Create(&quot;wide&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Saves native topology semantics, loads editable owners and changes a detail without parsing source text.&lt;/summary&gt;
 public static class TopologyInterchangeRecipe {
     /// &lt;summary&gt;Creates an edited graph after the same public JSON save/load boundary used by a file workflow.&lt;/summary&gt;
-    public static TopologyChart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static TopologyChart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         var source = Author(variant, mode);
         var envelope = VisualArtifactInterchangeEnvelope.FromJson(source.ToVisualArtifact().ToInterchangeJson());
         return Edit(envelope.ToTopologyChart());
@@ -121,7 +122,7 @@ public static class TopologyInterchangeRecipe {
     /// &lt;param name=&quot;variant&quot;&gt;Use wide or compact.&lt;/param&gt;
     /// &lt;param name=&quot;mode&quot;&gt;The authored resolved color mode.&lt;/param&gt;
     /// &lt;returns&gt;The detached edited model; the original JSON remains unchanged.&lt;/returns&gt;
-    public static TopologyChart SaveLoadAndEdit(string directory, string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static TopologyChart SaveLoadAndEdit(string directory, string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (string.IsNullOrWhiteSpace(directory)) throw new ArgumentException(&quot;An output directory is required.&quot;, nameof(directory));
         Directory.CreateDirectory(directory);
         var path = Path.Combine(directory, &quot;request-route.json&quot;);
@@ -143,7 +144,7 @@ public static class TopologyInterchangeRecipe {
         return chart;
     }
 
-    private static TopologyChart Author(string variant, VisualThemeMode mode) {
+    private static TopologyChart Author(string variant, ThemeMode mode) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant == &quot;compact&quot;;
         var chart = TopologyChart.Create().WithId(&quot;saved-request-route&quot;).WithTitle(&quot;An editable saved route&quot;)
@@ -168,6 +169,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -177,7 +179,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = TopologyInterchangeRecipe.Create(&quot;wide&quot;, mode);
 var context = new VisualRenderContext(
@@ -192,7 +194,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Saves native topology semantics, loads editable owners and changes a detail without parsing source text.&lt;/summary&gt;
 public static class TopologyInterchangeRecipe {
     /// &lt;summary&gt;Creates an edited graph after the same public JSON save/load boundary used by a file workflow.&lt;/summary&gt;
-    public static TopologyChart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static TopologyChart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         var source = Author(variant, mode);
         var envelope = VisualArtifactInterchangeEnvelope.FromJson(source.ToVisualArtifact().ToInterchangeJson());
         return Edit(envelope.ToTopologyChart());
@@ -203,7 +205,7 @@ public static class TopologyInterchangeRecipe {
     /// &lt;param name=&quot;variant&quot;&gt;Use wide or compact.&lt;/param&gt;
     /// &lt;param name=&quot;mode&quot;&gt;The authored resolved color mode.&lt;/param&gt;
     /// &lt;returns&gt;The detached edited model; the original JSON remains unchanged.&lt;/returns&gt;
-    public static TopologyChart SaveLoadAndEdit(string directory, string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static TopologyChart SaveLoadAndEdit(string directory, string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (string.IsNullOrWhiteSpace(directory)) throw new ArgumentException(&quot;An output directory is required.&quot;, nameof(directory));
         Directory.CreateDirectory(directory);
         var path = Path.Combine(directory, &quot;request-route.json&quot;);
@@ -225,7 +227,7 @@ public static class TopologyInterchangeRecipe {
         return chart;
     }
 
-    private static TopologyChart Author(string variant, VisualThemeMode mode) {
+    private static TopologyChart Author(string variant, ThemeMode mode) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant == &quot;compact&quot;;
         var chart = TopologyChart.Create().WithId(&quot;saved-request-route&quot;).WithTitle(&quot;An editable saved route&quot;)

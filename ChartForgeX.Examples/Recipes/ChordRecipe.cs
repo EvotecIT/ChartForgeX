@@ -1,6 +1,6 @@
 /// <summary>Directed team transfers retain parallel, reciprocal, self and zero-valued flow identities.</summary>
 public static class ChordRecipe {
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var configured = variant == "options";
         var transfers = ChartSeries.CreateChord(new ChartSeriesId("transfer-source"), "Transfers", new[] {
             new ChartNode("north", "North"), new ChartNode("south", "South"),

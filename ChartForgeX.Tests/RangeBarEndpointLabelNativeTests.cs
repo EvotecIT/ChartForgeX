@@ -14,8 +14,8 @@ public sealed class RangeBarEndpointLabelNativeTests {
     [InlineData("compact-horizontal-endpoint-labels", true)]
     public void ExecutableGalleryModelsPaintEndpointInkAndRetainDescendingCustomHeadings(string variant, bool dark) {
         var compact = variant.StartsWith("compact", StringComparison.Ordinal);
-        var chart = V2GalleryModels.Create(ChartSeriesKind.RangeBar, variant, dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
-            .WithSize(compact ? 360 : 800, compact ? 360 : 440).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        var chart = V2GalleryModels.Create(ChartSeriesKind.RangeBar, variant, dark ? ThemeMode.Dark : ThemeMode.Light)
+            .WithSize(compact ? 360 : 800, compact ? 360 : 440).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         RoundedRadialSeriesTests.UseFixtureFont(chart);
         var prepared = RangeBarEndpointLabelTests.Prepare(chart);
         var labels = RangeBarEndpointLabelTests.Labels(prepared);

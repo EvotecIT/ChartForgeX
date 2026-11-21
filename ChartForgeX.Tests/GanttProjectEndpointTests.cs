@@ -15,11 +15,11 @@ public sealed class GanttProjectEndpointTests {
     private static readonly DateTime Finish = Start.AddDays(17);
 
     [Theory]
-    [InlineData(400, VisualThemeMode.Light)]
-    [InlineData(900, VisualThemeMode.Light)]
-    [InlineData(400, VisualThemeMode.Dark)]
-    [InlineData(900, VisualThemeMode.Dark)]
-    public void AutomaticAndRejectedFixedPlansShareRegularProjectDayCaptions(int width, VisualThemeMode mode) {
+    [InlineData(400, ThemeMode.Light)]
+    [InlineData(900, ThemeMode.Light)]
+    [InlineData(400, ThemeMode.Dark)]
+    [InlineData(900, ThemeMode.Dark)]
+    public void AutomaticAndRejectedFixedPlansShareRegularProjectDayCaptions(int width, ThemeMode mode) {
         var automatic = Prepare(PlanChart(width, mode, string.Empty));
         var fallbackChart = PlanChart(width, mode, "tickInterval 1millisecond\n");
         var fallback = Prepare(fallbackChart);
@@ -198,11 +198,11 @@ public sealed class GanttProjectEndpointTests {
     }
 
     [BrowserTheory]
-    [InlineData(400, VisualThemeMode.Light)]
-    [InlineData(900, VisualThemeMode.Light)]
-    [InlineData(400, VisualThemeMode.Dark)]
-    [InlineData(900, VisualThemeMode.Dark)]
-    public async Task ProjectDayCaptionsStayOnTheirRegularGridInStaticBrowserAndNativeOutput(int width, VisualThemeMode mode) {
+    [InlineData(400, ThemeMode.Light)]
+    [InlineData(900, ThemeMode.Light)]
+    [InlineData(400, ThemeMode.Dark)]
+    [InlineData(900, ThemeMode.Dark)]
+    public async Task ProjectDayCaptionsStayOnTheirRegularGridInStaticBrowserAndNativeOutput(int width, ThemeMode mode) {
         if (!InteractiveChartBrowser.Enabled) return;
         var chart = PlanChart(width, mode, string.Empty);
         var prepared = Prepare(chart);
@@ -243,7 +243,7 @@ public sealed class GanttProjectEndpointTests {
         }
     }
 
-    private static Chart PlanChart(int width, VisualThemeMode mode, string interval) => new MermaidParser()
+    private static Chart PlanChart(int width, ThemeMode mode, string interval) => new MermaidParser()
         .ParseGantt(string.Format(CultureInfo.InvariantCulture, Plan, interval)).Document!.ToChart().WithSize(width, 300)
         .WithTheme(VisualTheme.Graphite(), mode).WithFontFamily(BrowserProofFonts.CarlitoFamily).WithPngFont(Font())
         .ConfigureTickLabelStyle(style => style.FontSize = 12).ConfigureGridStyle(style => style.ShowVerticalLines = true);

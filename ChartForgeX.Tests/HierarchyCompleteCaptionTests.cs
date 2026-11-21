@@ -13,11 +13,11 @@ public sealed class HierarchyCompleteCaptionTests {
     private const string Name = "Regional processing reconciliation and settlement allocation North America";
 
     [Theory]
-    [InlineData(VisualThemeMode.Light, false)]
-    [InlineData(VisualThemeMode.Dark, false)]
-    [InlineData(VisualThemeMode.Light, true)]
-    [InlineData(VisualThemeMode.Dark, true)]
-    public void TreeUsesAvailableThirdRowWithoutMovingNodeCenters(VisualThemeMode mode, bool dense) {
+    [InlineData(ThemeMode.Light, false)]
+    [InlineData(ThemeMode.Dark, false)]
+    [InlineData(ThemeMode.Light, true)]
+    [InlineData(ThemeMode.Dark, true)]
+    public void TreeUsesAvailableThirdRowWithoutMovingNodeCenters(ThemeMode mode, bool dense) {
         var names = dense ? new[] { Name, Name.Replace("North America", "South America"), Name.Replace("North America", "Western Europe") } : new[] { Name };
         var chart = Tree(dense);
         var prepared = chart.Prepare(Context(760, 420, mode));
@@ -52,9 +52,9 @@ public sealed class HierarchyCompleteCaptionTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void TreemapUsesAvailableRowsForCompleteNameAndValue(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void TreemapUsesAvailableRowsForCompleteNameAndValue(ThemeMode mode) {
         var chart = Treemap();
         var prepared = chart.Prepare(Context(390, 420, mode));
         ScatterBubbleColorRenderingTests.Capture(prepared, "treemap-complete-extra-rows-" + mode);
@@ -74,7 +74,7 @@ public sealed class HierarchyCompleteCaptionTests {
     public void TreeAuthoredCaptionControlsSizingPaintAndDescriptionWithoutChangingTheNodeName() {
         var chart = Tree(false);
         chart.Series[0].WithPointLabel(0, Name);
-        var prepared = chart.Prepare(Context(760, 420, VisualThemeMode.Light));
+        var prepared = chart.Prepare(Context(760, 420, ThemeMode.Light));
         var caption = Caption(prepared, "root", "tree-node-label");
         Assert.Equal(Name, string.Join(" ", caption.Text.Lines.Select(line => line.Text)));
         Assert.Equal(3, caption.Text.Lines.Count);
@@ -89,7 +89,7 @@ public sealed class HierarchyCompleteCaptionTests {
         ScatterBubbleColorRenderingTests.Capture(prepared, "tree-authored-caption");
         var frozen = prepared.ToSvg();
         chart.Series[0].UseFormattedPointLabel(0);
-        Assert.Equal("Operations", Assert.Single(Caption(chart.Prepare(Context(760, 420, VisualThemeMode.Light)), "root", "tree-node-label").Text.Lines).Text);
+        Assert.Equal("Operations", Assert.Single(Caption(chart.Prepare(Context(760, 420, ThemeMode.Light)), "root", "tree-node-label").Text.Lines).Text);
         Assert.Equal("Operations", chart.Series[0].Nodes[0].Label);
         Assert.Equal(frozen, prepared.ToSvg());
     }
@@ -154,7 +154,7 @@ public sealed class HierarchyCompleteCaptionTests {
         Assert.All(painted, line => Assert.True(line, "Every complete caption row must reach the native raster painter."));
     }
 
-    internal static VisualRenderContext Context(int width, int height, VisualThemeMode mode, FontSpec? font = null) => new(
+    internal static VisualRenderContext Context(int width, int height, ThemeMode mode, FontSpec? font = null) => new(
         new VisualLayoutOptions(new VisualSize(width, height)), VisualTheme.Graphite(), mode,
         new VisualFrame("Regional operations", showLegend: false),
         font ?? FontSpec.FromFile(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));

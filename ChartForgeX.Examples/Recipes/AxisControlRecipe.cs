@@ -4,7 +4,7 @@ public static class AxisControlRecipe {
     public static readonly string[] Options = { "axis-step", "axis-values", "axis-spacing", "axis-minor", "axis-grid", "axis-time-step", "axis-log-step", "axis-stacked" };
 
     /// <summary>Creates the selected axis option example.</summary>
-    public static Chart Create(string variant = "axis-step", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "axis-step", ThemeMode mode = ThemeMode.Light) {
         var option = variant.StartsWith("compact-", StringComparison.Ordinal) ? variant.Substring(8) : variant;
         if (!Options.Contains(option)) throw new ArgumentOutOfRangeException(nameof(variant));
         if (option == "axis-time-step") return Weekly();

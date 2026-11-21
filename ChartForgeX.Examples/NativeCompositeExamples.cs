@@ -7,7 +7,7 @@ using ChartForgeX.VisualArtifacts;
 
 internal static class NativeCompositeExamples {
     internal static void Write(string output) {
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) foreach (var variant in new[] { "compact", "wide" }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) foreach (var variant in new[] { "compact", "wide" }) {
             foreach (var operation in new[] { VisualCompositeOperator.SourceIn, VisualCompositeOperator.DestinationOut, VisualCompositeOperator.Xor }) {
                 var composition = NativeCompositeCompositionExample.Create(variant, mode, operation);
                 var image = composition.ToImage();

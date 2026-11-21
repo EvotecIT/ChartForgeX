@@ -6,7 +6,7 @@ using ChartForgeX.VisualArtifacts;
 /// <summary>Executable gallery models shared by focused downloadable recipes and rendering tests.</summary>
 public static class V2GalleryModels {
     /// <summary>Creates the selected family from the same compiled source included in its download.</summary>
-    public static Chart Create(ChartSeriesKind kind, string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) =>
+    public static Chart Create(ChartSeriesKind kind, string variant = "wide", ThemeMode mode = ThemeMode.Light) =>
         (Chart)ExampleRecipes.ForKind(kind, variant).Create(variant, mode);
 
     public static ChartGrid CreateGrid() => ChartGridRecipe.Create();

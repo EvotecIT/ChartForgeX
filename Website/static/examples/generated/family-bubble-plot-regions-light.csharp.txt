@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -13,7 +14,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = BubblePlotRegionsRecipe.Create("plot-regions", mode);
 var context = new VisualRenderContext(
@@ -28,7 +29,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 /// <summary>Shows work queues against bounded target and review regions.</summary>
 public static class BubblePlotRegionsRecipe {
     /// <summary>Creates the selected example without choosing a renderer or export backend.</summary>
-    public static Chart Create(string variant = "plot-regions", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "plot-regions", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("plot-regions" or "compact-plot-regions")) throw new ArgumentOutOfRangeException(nameof(variant));
         return PlotRegions();
     }

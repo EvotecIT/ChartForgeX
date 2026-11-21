@@ -15,7 +15,7 @@ public static class MermaidRemainingCaptionRolesExample {
     };
 
     /// <summary>Creates one source-backed native artifact with compact/wide geometry and paired themes.</summary>
-    public static VisualArtifact Create(string family, string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light, string? fontFamily = null) {
+    public static VisualArtifact Create(string family, string variant = "wide", ThemeMode mode = ThemeMode.Light, string? fontFamily = null) {
         if (variant is not ("compact" or "wide")) throw new ArgumentOutOfRangeException(nameof(variant));
         var width = variant == "compact" ? 390 : 1100;
         var topology = new MermaidTopologyRenderOptions { Width = width, Height = 620 };

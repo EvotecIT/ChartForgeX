@@ -39,7 +39,7 @@ public sealed class RemainingValueTransitionDefaultControls {
         File.WriteAllText(stem + ".html", section.Html); File.WriteAllText(stem + ".svg", section.PreparedVisual.ToSvg()); File.WriteAllBytes(stem + ".png", section.PreparedVisual.ToPng());
     }
     internal static Chart Model(string kind, int width, bool dark, double reading, string family, bool identified = true) {
-        var chart = Chart.Create().WithSize(width, 440).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = Chart.Create().WithSize(width, 440).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithFontFamily(family).WithLegend(false).WithValueFormat(ChartValueFormat.Number("0.00", CultureInfo.InvariantCulture));
         if (kind == "rings") {
             chart.WithXLabels("Received", "Verified", "Complete").WithProgressRingCenterLabel();

@@ -1,7 +1,7 @@
 /// <summary>Builds a least-squares trend through weekly service desk requests while retaining the observations used to fit it.</summary>
 public static class TrendLineRecipe {
     /// <summary>Creates the selected trend example, including the small-drift precision case.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "precision" or "compact-precision"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         if (variant is "precision" or "compact-precision") {

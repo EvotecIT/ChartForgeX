@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -15,7 +16,7 @@ using ChartForgeX.VisualBlocks;
 
 // Native PNG and standalone SVG use bundled Archivo.
 // Add ChartFontAssets.StyleSheet once for other text on a host page.
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = BoxPlotRecipe.Create("compact-options", mode);
 var context = new VisualRenderContext(
@@ -30,7 +31,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 /// <summary>Builds delivery-time distributions from typed five-number summaries.</summary>
 public static class BoxPlotRecipe {
     /// <summary>Creates the selected box-plot example and its orientation.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "horizontal" or "compact-horizontal"
             or "statistic-labels" or "compact-statistic-labels" or "horizontal-statistic-labels" or "compact-horizontal-statistic-labels"))
             throw new ArgumentOutOfRangeException(nameof(variant));
@@ -62,7 +63,7 @@ public static class BoxPlotRecipe {
         return chart;
     }
 
-    private static Chart StatisticLabels(string variant, VisualThemeMode mode) {
+    private static Chart StatisticLabels(string variant, ThemeMode mode) {
         var horizontal = variant.Contains("horizontal");
         var chart = Chart.Create().WithTitle("Five-number delivery summaries").WithXLabels("Standard", "Express")
             .AddSeries(ChartSeries.CreateBoxPlot(new ChartSeriesId("delivery"), "Delivery time", new[] {
@@ -75,8 +76,8 @@ public static class BoxPlotRecipe {
                     label.Placement = horizontal ? ChartDataLabelPlacement.Above : ChartDataLabelPlacement.Right;
                     label.Style.WithFontSize(10);
                 }
-                options.MinimumLabel.Style.WithColor(mode == VisualThemeMode.Dark ? "#82b8ff" : "#235b9f");
-                options.MaximumLabel.Style.WithColor(mode == VisualThemeMode.Dark ? "#ffbe79" : "#975000");
+                options.MinimumLabel.Style.WithColor(mode == ThemeMode.Dark ? "#82b8ff" : "#235b9f");
+                options.MaximumLabel.Style.WithColor(mode == ThemeMode.Dark ? "#ffbe79" : "#975000");
                 options.MedianLabel.Style.WithFontSize(12).WithWeight("700");
             }).WithDataLabels();
         (horizontal ? chart.Options.XAxis : chart.Options.YAxis).WithBounds(0, 60);

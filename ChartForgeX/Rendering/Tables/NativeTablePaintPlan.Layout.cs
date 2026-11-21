@@ -67,9 +67,9 @@ internal sealed partial class NativeTablePaintPlan {
                     var cellId = ChildId("cell", row.Key.Length + ":" + row.Key + "/" + column.Id);
                     using (Identity(cellId, "table-cell", new Dictionary<string, string> { ["data-row-key"] = row.Key, ["data-column-id"] = column.Id, ["data-table-id"] = data.ContentId })) {
                         if (cell.Background.HasValue) Rect("table-cell-background", new ChartRect(x + 2 * s, y + 2 * s, Math.Max(s, widths[i] - 4 * s), Math.Max(s, rowHeight - 4 * s)), 4 * s, cell.Background.Value);
-                        var status = cell.Status != VisualStatus.None ? cell.Status : data.StatusColumn == i ? VisualBlockRendering.ParseStatus(cell.Text) : VisualStatus.None;
+                        var status = cell.Status != Tone.None ? cell.Status : data.StatusColumn == i ? VisualBlockRendering.ParseStatus(cell.Text) : Tone.None;
                         var textX = x + 9 * s;
-                        if (status != VisualStatus.None && data.StatusColumn == i) { Circle("table-status", x + 10 * s, y + rowHeight / 2, 4 * s, VisualBlockRendering.StatusColor(theme, status)); textX += 12 * s; }
+                        if (status != Tone.None && data.StatusColumn == i) { Circle("table-status", x + 10 * s, y + rowHeight / 2, 4 * s, VisualBlockRendering.StatusColor(theme, status)); textX += 12 * s; }
                         var cellWidth = widths[i] - (textX - x) - 7 * s;
                         if (cell.MicroVisual != NativeTableMicroVisual.None) MicroVisual(cell, textX, y + 4 * s, cellWidth, rowHeight - 8 * s, i);
                         else if (cell.BadgeText.Length > 0) Badge(cell, textX, y + 4 * s, cellWidth, rowHeight - 8 * s);

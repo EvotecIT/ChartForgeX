@@ -44,8 +44,8 @@ public sealed class MermaidSequenceParticipantViewsTests {
         SequenceSourcePolicyFixture.CaptureDiagnostics("sequence-source-view-invalid-"+name,result);Assert.True(result.HasErrors);Assert.Null(result.Artifact);Assert.Contains(result.Diagnostics,item=>item.Message.Contains(name,StringComparison.Ordinal)&&item.Span.Line==1);
     }
     [Theory]
-    [InlineData("compact",VisualThemeMode.Light)] [InlineData("compact",VisualThemeMode.Dark)] [InlineData("wide",VisualThemeMode.Light)] [InlineData("wide",VisualThemeMode.Dark)]
-    public void CompleteNativeAndSourceProgramsUseExistingCoreAndAdapterCompileBoundaries(string variant,VisualThemeMode mode) {
+    [InlineData("compact",ThemeMode.Light)] [InlineData("compact",ThemeMode.Dark)] [InlineData("wide",ThemeMode.Light)] [InlineData("wide",ThemeMode.Dark)]
+    public void CompleteNativeAndSourceProgramsUseExistingCoreAndAdapterCompileBoundaries(string variant,ThemeMode mode) {
         var model=SequenceParticipantViewsRecipe.Create(variant,mode);var width=variant=="compact"?390:1000;
         var prepared=model.Prepare(new ChartForgeX.Rendering.VisualRenderContext(new ChartForgeX.Rendering.VisualLayoutOptions(new ChartForgeX.Rendering.VisualSize(width,820)),themeMode:mode));SequenceViewFixture.Capture("sequence-view-recipe-"+variant+"-"+mode,prepared);
         var native=ExampleRecipeSource.Emit(ExampleRecipes.Named("sequence-participant-views"),variant,"Participant views","Source identities",mode,width,820,false,"Sequence");var source=ExampleRecipeSource.EmitSequenceParticipantViews(variant,mode);

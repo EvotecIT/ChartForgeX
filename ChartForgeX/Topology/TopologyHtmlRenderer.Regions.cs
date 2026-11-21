@@ -9,20 +9,19 @@ namespace ChartForgeX.Topology;
 
 public sealed partial class TopologyHtmlRenderer {
     private string RenderRegionFragment(TopologyChart chart, TopologyRenderOptions options, bool includeAssets,
-        string? preparedSvg = null, double? preparedWidth = null, Func<PreparedTopology, string>? renderSvg = null) {
+        string? preparedSvg = null, double? preparedWidth = null, Func<PreparedTopology, string>? renderSvg = null, AutoThemeStyle? auto = null, bool writeAutoStyle = false) {
         var html = new StringBuilder();
-        var colors = chart.Theme.Resolve(options.RegionPrint ? VisualThemeMode.Light : chart.ThemeMode);
+        if (options.RegionPrint) auto = null;
+        string Colors(ThemeMode mode) => RegionColors(chart.Theme.Resolve(options.RegionPrint ? ThemeMode.Light : mode));
         if (includeAssets) html.Append("<style>").Append(TopologyRegionTemplate.Styles.Value).Append("</style>");
         html.Append("<div class=\"").Append(WebUtility.HtmlEncode(CssClassPrefix(options)))
-            .Append("-wrapper cfx-region-chart\" data-cfx-region-chart=\"true\" data-cfx-interactive=\"")
+            .Append("-wrapper cfx-region-chart\"").Append(auto?.RootAttributes)
+            .Append(" data-cfx-region-chart=\"true\" data-cfx-interactive=\"")
             .Append(options.EnableHtmlInteractions ? "true" : "false").Append("\" data-chart-id=\"").Append(WebUtility.HtmlEncode(chart.Id ?? "topology"))
             .Append("\" style=\"width:100%;max-width:").Append((preparedWidth ?? chart.Viewport.Width).ToString("R", CultureInfo.InvariantCulture))
-            .Append("px;--cfx-surface:").Append(colors.ElevatedSurface.ToCss()).Append(";--cfx-text:").Append(colors.Foreground.ToCss())
-            .Append(";--cfx-muted:").Append(colors.MutedForeground.ToCss()).Append(";--cfx-border:").Append(colors.Border.ToCss())
-            .Append(";--cfx-focus:").Append(colors.Accent.ToCss()).Append(";--cfx-good:").Append(colors.Status.Pass.Fill.ToCss())
-            .Append(";--cfx-warn:").Append(colors.Status.Medium.Fill.ToCss()).Append(";--cfx-bad:").Append(colors.Status.Critical.Fill.ToCss())
-            .Append(";--cfx-info:").Append(colors.Info.ToCss()).Append(";--cfx-neutral:").Append(colors.Status.Neutral.Fill.ToCss())
+            .Append("px").Append(auto == null ? Colors(chart.ThemeMode) : "")
             .Append(";font-family:").Append(WebUtility.HtmlEncode(chart.Theme.Typography.Family)).Append("\">");
+        if (auto != null && writeAutoStyle) html.Append(auto.StyleElement);
         if (renderSvg != null || preparedSvg != null) {
             // Producer-owned presentations and prepared artifact snapshots retain their single resolved observation.
             var svg = renderSvg == null ? preparedSvg! : renderSvg(chart.Prepare(options));
@@ -46,8 +45,10 @@ public sealed partial class TopologyHtmlRenderer {
             var variant = entry.Name;
             var source = TopologyLayoutEngine.Clone(chart);
             source.Viewport.Width = entry.Width;
-            if (variant == "print") source.ThemeMode = VisualThemeMode.Light;
+            if (variant == "print") source.ThemeMode = ThemeMode.Light;
             var policy = options.Clone(); policy.RegionPrint = options.RegionPrint || variant == "print"; policy.UseResponsiveSvg = true;
+            // Print stays light: the print drawing paints literal colours rather than the Auto properties a dark preference changes.
+            if (variant == "print" && auto != null) policy.SvgColorVariables = null;
             policy.IdScope = (options.IdScope ?? chart.Id ?? "region") + "-" + variant + "-" + entry.Width.ToString("R", CultureInfo.InvariantCulture);
             html.Append("<div class=\"cfx-region-").Append(variant).Append("\"");
             if (variant == "desktop") {
@@ -58,7 +59,7 @@ public sealed partial class TopologyHtmlRenderer {
                 html.Append("\"");
             }
             if (variant == "print") {
-                var light = chart.Theme.Resolve(VisualThemeMode.Light);
+                var light = chart.Theme.Resolve(ThemeMode.Light);
                 html.Append(" style=\"--cfx-good:").Append(light.Status.Pass.Fill.ToCss()).Append(";--cfx-warn:").Append(light.Status.Medium.Fill.ToCss())
                     .Append(";--cfx-bad:").Append(light.Status.Critical.Fill.ToCss()).Append(";--cfx-info:").Append(light.Info.ToCss())
                     .Append(";--cfx-neutral:").Append(light.Status.Neutral.Fill.ToCss()).Append("\"");
@@ -67,6 +68,22 @@ public sealed partial class TopologyHtmlRenderer {
         }
         if (options.IncludeRegionDetails) html.Append(RegionDetails(chart));
         html.Append("</div>"); return html.ToString();
+    }
+
+    // Inline custom properties of a region chart; Auto writes the same declarations per mode in its scoped stylesheet.
+    private static string RegionColors(VisualThemeColors colors) => ";--cfx-surface:" + colors.ElevatedSurface.ToCss() + ";--cfx-text:" + colors.Foreground.ToCss()
+        + ";--cfx-muted:" + colors.MutedForeground.ToCss() + ";--cfx-border:" + colors.Border.ToCss()
+        + ";--cfx-focus:" + colors.Accent.ToCss() + ";--cfx-good:" + colors.Status.Pass.Fill.ToCss()
+        + ";--cfx-warn:" + colors.Status.Medium.Fill.ToCss() + ";--cfx-bad:" + colors.Status.Critical.Fill.ToCss()
+        + ";--cfx-info:" + colors.Info.ToCss() + ";--cfx-neutral:" + colors.Status.Neutral.Fill.ToCss();
+
+    private static string RegionAutoColors(VisualThemeColors light) {
+        string V(VisualThemeColorToken token, ChartForgeX.Primitives.ChartColor color) => AutoThemeStyle.TokenVar(token, color);
+        return "--cfx-surface:" + V(VisualThemeColorToken.ElevatedSurface, light.ElevatedSurface) + ";--cfx-text:" + V(VisualThemeColorToken.Foreground, light.Foreground)
+            + ";--cfx-muted:" + V(VisualThemeColorToken.MutedForeground, light.MutedForeground) + ";--cfx-border:" + V(VisualThemeColorToken.Border, light.Border)
+            + ";--cfx-focus:" + V(VisualThemeColorToken.Accent, light.Accent) + ";--cfx-good:" + V(VisualThemeColorToken.Positive, light.Status.Pass.Fill)
+            + ";--cfx-warn:" + V(VisualThemeColorToken.Warning, light.Status.Medium.Fill) + ";--cfx-bad:" + V(VisualThemeColorToken.Negative, light.Status.Critical.Fill)
+            + ";--cfx-info:" + V(VisualThemeColorToken.Info, light.Info) + ";--cfx-neutral:" + V(VisualThemeColorToken.Neutral, light.Status.Neutral.Fill);
     }
 
     private static string RegionDetails(TopologyChart chart) {

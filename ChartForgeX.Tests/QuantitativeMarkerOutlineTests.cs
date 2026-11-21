@@ -219,7 +219,7 @@ public sealed class QuantitativeMarkerOutlineTests {
             builder.Light.Foreground = ChartColor.FromRgba(17, 31, 47, 173);
             builder.Dark.Foreground = ChartColor.FromRgba(223, 231, 241, 197);
         });
-        var chart = Chart.Create().WithSize(width, 400).WithTheme(theme, dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = Chart.Create().WithSize(width, 400).WithTheme(theme, dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithHeader(false).WithLegend().WithDataLabels(false).WithAxes(false).WithGrid(false)
             .WithXAxisBounds(0, 4).WithYAxisBounds(0, 4).ConfigureLabels(labels => labels.Color = "Temperature");
         chart.Options.TransparentBackground = true; chart.Options.ShowCard = false; chart.Options.ShowPlotBackground = false;

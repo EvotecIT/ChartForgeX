@@ -1,7 +1,7 @@
 /// <summary>An ordinary optional-Visuals report composites an explicit native capture against an authored destination.</summary>
 public static class NativeCompositeCompositionExample {
     /// <summary>Creates a real stencil/cutout report without an implicit page backdrop or second renderer.</summary>
-    public static ChartForgeX.Composition.ImageComposition Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light,
+    public static ChartForgeX.Composition.ImageComposition Create(string variant = "wide", ThemeMode mode = ThemeMode.Light,
         ChartForgeX.Effects.VisualCompositeOperator operation = ChartForgeX.Effects.VisualCompositeOperator.SourceIn) {
         var source = NativeRetainedMaskExample.PrepareSource(variant, mode);
         var width = checked((int)source.Size.Width);

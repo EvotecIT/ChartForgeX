@@ -50,7 +50,7 @@ public sealed class MermaidStateConcurrencyRenderingTests {
     public void NestedConcurrentDirectAndFencedExportsRetainNotesShellTransitionsSeparatorsAndNativeInk(bool dark, int width) {
         var source = MermaidStateConcurrencyTests.Source;
         var options = new MermaidRenderOptions {
-            Presentation = new MermaidPresentationOptions { ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light,
+            Presentation = new MermaidPresentationOptions { ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light,
                 FontFamily = BrowserProofFonts.Family, FontSize = 12 },
             State = new MermaidTopologyRenderOptions { Width = width, Height = 760 }
         };

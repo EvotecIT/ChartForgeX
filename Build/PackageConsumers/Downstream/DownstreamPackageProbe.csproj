@@ -15,7 +15,8 @@
     <PackageReference Include="ChartForgeX.Interactivity" Version="$(PackageVersion)" PrivateAssets="all" />
     <PackageReference Include="ChartForgeX.Interactivity.Html" Version="$(PackageVersion)" PrivateAssets="all" />
     <PackageReference Include="OfficeIMO.ChartForgeX" Version="3.5.1" PrivateAssets="all" />
-    <PackageReference Include="HtmlForgeX.ChartForgeX" Version="3.0.0" PrivateAssets="all" />
+    <!-- HtmlForgeX.ChartForgeX 3.0.0 is built against VisualThemeMode, which the shared ThemeMode replaced; the probe
+         returns to it once HtmlForgeX publishes a bridge built against this API. -->
     <PackageReference Include="HtmlTinkerX" Version="3.0.5" PrivateAssets="all" />
   </ItemGroup>
 </Project>

@@ -135,14 +135,14 @@ internal static partial class Program {
         var mermaidArtifact = mermaid.Document.ToVisualArtifact(new MermaidFlowchartRenderOptions { Id = "package-mermaid", Presentation = FixtureOptions().Presentation });
         if (mermaidArtifact.Kind != VisualArtifactKind.Mermaid || !mermaidArtifact.SupportsExport(VisualArtifactExportFormat.Svg)) throw new InvalidOperationException("Mermaid package artifact contract missing.");
         // Mermaid's dark theme selects dark mode and renders it with Graphite, on the dark card surface.
-        PackageAssertions.Require(mermaidArtifact.Model is TopologyChart mermaidTopology && mermaidTopology.ThemeMode == VisualThemeMode.Dark
-            && mermaidTopology.Theme.Resolve(VisualThemeMode.Dark).Background.Equals(VisualTheme.Graphite().Resolve(VisualThemeMode.Dark).ElevatedSurface),
+        PackageAssertions.Require(mermaidArtifact.Model is TopologyChart mermaidTopology && mermaidTopology.ThemeMode == ThemeMode.Dark
+            && mermaidTopology.Theme.Resolve(ThemeMode.Dark).Background.Equals(VisualTheme.Graphite().Resolve(ThemeMode.Dark).ElevatedSurface),
             "Packed Mermaid conversion lost its dark source theme.");
         var hostTheme = VisualTheme.Graphite().WithFontFamily(PackageAssertions.OutlineFontFamily);
         var hostArtifact = mermaid.Document.ToVisualArtifact(new MermaidFlowchartRenderOptions {
-            Presentation = new MermaidPresentationOptions { Theme = hostTheme, ThemeMode = VisualThemeMode.Dark }
+            Presentation = new MermaidPresentationOptions { Theme = hostTheme, ThemeMode = ThemeMode.Dark }
         });
-        PackageAssertions.Require(hostArtifact.Model is TopologyChart hostTopology && hostTopology.ThemeMode == VisualThemeMode.Dark
+        PackageAssertions.Require(hostArtifact.Model is TopologyChart hostTopology && hostTopology.ThemeMode == ThemeMode.Dark
             && hostTopology.Theme.ToJson() == hostTheme.ToJson(), "Packed Mermaid conversion did not preserve an explicit paired host theme.");
         var mermaidClass = new MermaidParser().ParseClass("classDiagram\nclass User\nUser <|-- Admin");
         if (mermaidClass.HasErrors || mermaidClass.Document is null || mermaidClass.Document.Classes.Count != 2) throw new InvalidOperationException("Mermaid package class parser failed.");

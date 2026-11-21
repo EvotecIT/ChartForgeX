@@ -1,7 +1,7 @@
 /// <summary>Three independent service mixes use source-ordered automatic Donut bands.</summary>
 public static class AutomaticRadialBandsRecipe {
     /// <summary>Creates immutable allocation without assigning or changing authored RadialBand values.</summary>
-    public static Chart Create(string variant = "automatic-rings", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "automatic-rings", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("automatic-rings" or "compact-automatic-rings")) throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create().WithXLabels("Subscriptions", "Consulting", "Support")
             .WithAutomaticRadialBands(new ChartRadialBandAllocation(.2, .04)).WithDonutCenterLabel(false)

@@ -1,6 +1,6 @@
 /// <summary>A quadrant chart: proposed projects placed by effort and impact, with four labelled regions.</summary>
 public static class QuadrantChartRecipe {
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var projects = new (string Name, double Effort, double Impact)[] {
             ("SSO rollout", 2.1, 8.6), ("Backup audit", 1.4, 6.9), ("MFA for admins", 1.1, 9.2), ("DNS cleanup", 2.8, 6.4),

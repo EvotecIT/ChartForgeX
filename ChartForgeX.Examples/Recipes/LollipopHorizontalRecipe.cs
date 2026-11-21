@@ -1,7 +1,7 @@
 /// <summary>Compares delivery-stage orders on a physical horizontal value axis.</summary>
 public static class LollipopHorizontalRecipe {
     /// <summary>Creates the horizontal example through the canonical lollipop and physical-axis owners.</summary>
-    public static Chart Create(string variant = "horizontal", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "horizontal", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("horizontal" or "compact-horizontal")) throw new ArgumentOutOfRangeException(nameof(variant));
         var points = Enumerable.Range(1, 6).Select(index => new ChartPoint(index, 20 + index * 7 % 29));
         var orders = new ChartSeries(new ChartSeriesId("orders"), "Orders", ChartSeriesKind.Lollipop, points)

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -15,7 +16,7 @@ using ChartForgeX.VisualBlocks;
 
 // Native PNG and standalone SVG use bundled Archivo.
 // Add ChartFontAssets.StyleSheet once for other text on a host page.
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = OperationsDashboardRecipe.Create("wide", mode);
 var context = new VisualRenderContext(
@@ -29,7 +30,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 
 /// <summary>An operations dashboard: one ChartGrid of a trend, a share, a heatmap and a gauge.</summary>
 public static class OperationsDashboardRecipe {
-    public static ChartGrid Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static ChartGrid Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var weeks = Enumerable.Range(1, 12).ToArray();
         var trend = Chart.Create().WithTitle("Tickets per week").WithSubtitle("Opened against resolved")

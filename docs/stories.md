@@ -18,7 +18,7 @@ var editor = StorySourceTimeline.Create(StorySourceText.Create("", "csharp"))
     .Pause(TimeSpan.FromSeconds(2));
 
 var story = VisualStory.Create("Write and run")
-    .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark)
+    .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
     .WithFormat(VisualStoryFormat.Widescreen);
 story.Scene("write", "Write the source", 4)
     .Panel("source", new VisualStorySourceSurface(editor,
@@ -70,14 +70,14 @@ Choose a faster cadence for short chapters. Explicit budgets support up to 3,600
 
 ## Desktop appearance and colored typing
 
-Stories use the same immutable `VisualTheme` as charts, diagrams and canvases. Select the light or dark palette with `VisualThemeMode`; the mode also sets the HTML page's color scheme. Common colors and proportional and monospace fonts belong to the theme. Window chrome, gradients and syntax colors belong to `VisualStoryStyleOptions`.
+Stories use the same immutable `VisualTheme` as charts, diagrams and canvases. Select the light or dark palette with `ThemeMode`; the mode also sets the HTML page's color scheme. Common colors and proportional and monospace fonts belong to the theme. Window chrome, gradients and syntax colors belong to `VisualStoryStyleOptions`.
 
 For a desktop appearance, pair `VisualStoryThemes.MacOS()`, `Windows()` or `Linux()` with the corresponding style factory. Each theme contains light and dark palettes; pass `light: true` to the style factory when selecting the light palette. The same native geometry supplies SVG, PNG and animated exports.
 
 ```csharp
 var style = VisualStoryStyleOptions.MacOS();
 style.Syntax!.Variable = ChartColor.FromHex("#74C7FF");
-story.WithTheme(VisualStoryThemes.MacOS(), VisualThemeMode.Dark)
+story.WithTheme(VisualStoryThemes.MacOS(), ThemeMode.Dark)
     .WithStyle(style);
 ```
 
@@ -101,7 +101,7 @@ Configure a terminal's theme and style before authoring its commands. `TerminalT
 
 ```csharp
 var terminal = TerminalStory.Create()
-    .WithTheme(TerminalThemes.PowerShell(), VisualThemeMode.Dark)
+    .WithTheme(TerminalThemes.PowerShell(), ThemeMode.Dark)
     .WithStyle(new TerminalStyleOptions {
         Cursor = ChartColor.FromHex("#74C7FF")
     })

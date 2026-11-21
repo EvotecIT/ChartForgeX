@@ -57,7 +57,7 @@ public sealed class VisualGridArtifactTests {
         chart.AddLine("Completed", ChartPoints.FromValues(3, 7, 5));
         var grid = VisualGrid.Create().WithTitle("Service summary").WithSubtitle("Charts and facts")
             .WithColumns(2).WithPadding(12).WithGap(9).WithAdaptiveRowHeights(adaptiveRows)
-            .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark).WithPngOutputScale(2)
+            .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark).WithPngOutputScale(2)
             .Add("requests", chart, columnSpan: 2)
             .Add("ready", MetricCard.Create().WithMetric("Ready", "12").WithSize(120, 70))
             .Add("waiting", MetricCard.Create().WithMetric("Waiting", "3").WithSize(150, 90));

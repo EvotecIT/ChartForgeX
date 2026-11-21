@@ -13,7 +13,7 @@ public sealed class TopologyVerticalStackTests {
     [InlineData(TopologyLayoutDirection.BottomToTop, true)]
     public void GenericStackKeepsFortyCardsAndEmptyPanelsWithoutAutomaticCollapseOrRowOverlap(TopologyLayoutDirection direction, bool dark) {
         var chart = TopologyChart.Create().WithViewport(700, 800, 16).WithLegend(null)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         chart.LayoutMode = TopologyLayoutMode.DenseGrouped; chart.LayoutDirection = direction;
         for (var column = 0; column < 5; column++) {
             var id = "column-" + column;

@@ -14,7 +14,7 @@ public static partial class V2Examples {
 
     // Previews are prepared at their display size. Dense diagram examples use a small,
     // truthful overview of the same notation; their complete model stays on the example page.
-    private static void WriteThumbnail(string output, IVisualRenderable model, string id, string title, string family, VisualThemeMode mode, bool? legend) {
+    private static void WriteThumbnail(string output, IVisualRenderable model, string id, string title, string family, ThemeMode mode, bool? legend) {
         IVisualRenderable previewModel = family switch {
             "sequence" => SimpleSequenceRecipe.Create(),
             "topology" => ThumbnailTopology(),
@@ -50,7 +50,7 @@ public static partial class V2Examples {
         File.WriteAllBytes(Path.Combine(output, id + ".thumbnail.png"), prepared.ToPng());
     }
 
-    private static Chart ThumbnailAvailability(VisualThemeMode mode) {
+    private static Chart ThumbnailAvailability(ThemeMode mode) {
         var chart = AvailabilityLanesRecipe.Create(mode: mode);
         foreach (var series in chart.Series.Skip(3).ToArray()) chart.RemoveSeries(series);
         return chart;
@@ -66,7 +66,7 @@ public static partial class V2Examples {
         }, new TopologyTeamOptions { IncludeTeamNode = false });
     }
 
-    private static ChartGrid ThumbnailDashboard(VisualThemeMode mode) {
+    private static ChartGrid ThumbnailDashboard(ThemeMode mode) {
         var preview = ChartGrid.Create().WithColumns(2).WithGap(12).WithPanelSize(184, 248);
         foreach (var chart in OperationsDashboardRecipe.Create(mode: mode).Charts.Take(2)) {
             chart.Options.ShowDonutCenterLabel = false;

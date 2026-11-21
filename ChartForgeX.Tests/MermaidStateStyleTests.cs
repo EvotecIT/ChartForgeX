@@ -20,7 +20,7 @@ public sealed class MermaidStateStyleTests {
     public void OrderedNamedAndDirectPaintsReachCompositeAndStatePairedArtifacts(string direction, bool dark, int width) {
         var source = StyledSource(direction);
         var options = new MermaidRenderOptions {
-            Presentation = new MermaidPresentationOptions { ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light,
+            Presentation = new MermaidPresentationOptions { ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light,
                 FontFamily = BrowserProofFonts.Family, FontSize = 12 },
             State = new MermaidTopologyRenderOptions { Width = width, Height = 640 }
         };

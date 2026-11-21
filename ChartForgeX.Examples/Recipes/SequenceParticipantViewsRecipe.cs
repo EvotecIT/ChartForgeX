@@ -1,7 +1,7 @@
 /// <summary>Creates a native sequence view with retained unused source records and measured participant footers.</summary>
 public static class SequenceParticipantViewsRecipe {
     /// <summary>Creates compact or wide native source facts; natural exports retain measured minima and may scroll in a compact host.</summary>
-    public static SequenceArtifact Create(string variant="wide",VisualThemeMode mode=VisualThemeMode.Light) {
+    public static SequenceArtifact Create(string variant="wide",ThemeMode mode=ThemeMode.Light) {
         if(variant is not ("compact" or "wide"))throw new ArgumentOutOfRangeException(nameof(variant));
         var model=SequenceArtifact.Create("sequence-participant-views").WithSize(variant=="compact"?390:1000,820)
             .WithTitle("Participant views").WithSubtitle("Unused records stay editable; footer occurrences share source identity")

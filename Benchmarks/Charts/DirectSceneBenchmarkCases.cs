@@ -1,3 +1,4 @@
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
@@ -15,10 +16,10 @@ public static class DirectSceneBenchmarkCases {
         LegacySceneBenchmarkCases.Initialize(tokenPath, fontPath, boldFontPath);
         var theme = VisualTheme.FromPaletteJson(File.ReadAllText(tokenPath), new VisualTypography("CFX Proof Carlito", 22, 13, 11, 12, 11));
         _context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(LegacySceneBenchmarkCases.Width, LegacySceneBenchmarkCases.Height), padding: 24),
-            theme, VisualThemeMode.Light,
+            theme, ThemeMode.Light,
             new VisualFrame(LegacySceneBenchmarkCases.Title, "One prepared scene for SVG and native PNG", showLegend: true, legendPosition: ChartLegendPosition.TopLeft), FontSpec.FromFamily("CFX Proof Carlito"));
-        _phase3Context = new VisualRenderContext(_context.Layout, theme, VisualThemeMode.Light, _context.Frame, _context.Font);
-        _topologyContext = new VisualRenderContext(_context.Layout, theme, VisualThemeMode.Light,
+        _phase3Context = new VisualRenderContext(_context.Layout, theme, ThemeMode.Light, _context.Frame, _context.Font);
+        _topologyContext = new VisualRenderContext(_context.Layout, theme, ThemeMode.Light,
             new VisualFrame(LegacySceneBenchmarkCases.Title, "One prepared scene for SVG and native PNG", showLegend: false, legendPosition: ChartLegendPosition.TopLeft), _context.Font);
     }
 

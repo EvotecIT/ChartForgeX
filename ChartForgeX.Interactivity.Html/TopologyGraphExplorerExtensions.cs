@@ -32,7 +32,7 @@ public static class TopologyGraphExplorerExtensions {
         var scene = GraphScene.Create(ids.ChartId, TopologySceneTitle(source));
         scene.Subtitle = source.Subtitle;
         if (options.AccentSource == TopologyAccentSource.Status) {
-            foreach (ChartForgeX.Themes.VisualThemeMode mode in new[] { ChartForgeX.Themes.VisualThemeMode.Light, ChartForgeX.Themes.VisualThemeMode.Dark }) {
+            foreach (ChartForgeX.ThemeMode mode in new[] { ChartForgeX.ThemeMode.Light, ChartForgeX.ThemeMode.Dark }) {
                 var paints = new TopologyPaint(source.Theme, mode);
                 foreach (var status in new[] { TopologyHealthStatus.Healthy, TopologyHealthStatus.Warning, TopologyHealthStatus.Critical, TopologyHealthStatus.Unknown, TopologyHealthStatus.Disabled })
                     scene.Metadata["topology.statusAccent." + Token(status) + "." + mode.ToString().ToLowerInvariant()] = paints.StatusColor(status);
@@ -441,7 +441,7 @@ public static class TopologyGraphExplorerExtensions {
         return parts.Length == 0 ? null : string.Join(" / ", parts);
     }
 
-    private static string Token<TEnum>(TEnum value) where TEnum : struct {
+    private static string Token<TEnum>(TEnum value) where TEnum : struct, Enum {
         return value.ToString()!.ToLowerInvariant();
     }
 

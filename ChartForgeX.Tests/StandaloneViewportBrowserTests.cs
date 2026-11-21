@@ -141,7 +141,7 @@ public sealed partial class StandaloneViewportBrowserTests {
         if (kind is ChartSeriesKind.Line or ChartSeriesKind.Area or ChartSeriesKind.Scatter)
             series.ConfigureMarkers(markers => { markers.Enabled = true; markers.Radius = 4; });
         var chart = Chart.Create().WithSize(800, 440).WithTitle("Inspect saved measurements")
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithXAxisBounds(0, 12).WithYAxisBounds(0, 100).WithLegend().WithDataLabels(false).AddSeries(series);
         if (reference) chart.AddSeries(new ChartSeries(new ChartSeriesId("reference"), "Reference", ChartSeriesKind.Line,
             new[] { new ChartPoint(0, 95), new ChartPoint(12, 95) }));

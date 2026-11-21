@@ -8,7 +8,7 @@ namespace SiteVisuals;
 
 internal static class NotFoundVisuals {
     public static Dictionary<string, object> Write(VisualOutput output) {
-        Chart Empty(VisualThemeMode mode) => Chart.Create()
+        Chart Empty(ThemeMode mode) => Chart.Create()
             .WithThemeMode(mode)
             .WithTransparentBackground()
             .WithCard(false)

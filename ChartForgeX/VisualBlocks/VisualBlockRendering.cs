@@ -92,25 +92,24 @@ internal static partial class VisualBlockRendering {
 
     }
 
-    public static ChartColor StatusColor(ResolvedVisualTheme theme, VisualStatus status) {
-        switch (status) {
-            case VisualStatus.Positive: return theme.Positive;
-            case VisualStatus.Warning: return theme.Warning;
-            case VisualStatus.Negative: return theme.Negative;
-            case VisualStatus.Info: return theme.Info;
-            case VisualStatus.Neutral: return theme.MutedText;
-            default: return theme.MutedText;
-        }
+    /// <summary>Paints a tone: built-in tones use the status roles, a named tone uses the theme role of that name, and anything else is muted.</summary>
+    public static ChartColor StatusColor(ResolvedVisualTheme theme, Tone status) {
+        if (status == Tone.Success) return theme.Positive;
+        if (status == Tone.Warning) return theme.Warning;
+        if (status == Tone.Danger) return theme.Negative;
+        if (status == Tone.Info) return theme.Info;
+        return ToneRoles.TryResolveNamed(status, out var token) ? theme.Role(token) : theme.MutedText;
     }
 
-    public static VisualStatus ParseStatus(string value) {
-        if (string.IsNullOrWhiteSpace(value)) return VisualStatus.None;
+    public static Tone ParseStatus(string value) {
+        if (string.IsNullOrWhiteSpace(value)) return Tone.None;
         var text = value.Trim();
-        if (EqualsAny(text, "ok", "healthy", "success", "pass", "passed", "online", "ready")) return VisualStatus.Positive;
-        if (EqualsAny(text, "warn", "warning", "attention", "degraded", "partial")) return VisualStatus.Warning;
-        if (EqualsAny(text, "error", "failed", "fail", "critical", "down", "offline")) return VisualStatus.Negative;
-        if (EqualsAny(text, "info", "note", "pending", "unknown")) return VisualStatus.Info;
-        return VisualStatus.Neutral;
+        if (EqualsAny(text, "ok", "healthy", "success", "pass", "passed", "online", "ready")) return Tone.Success;
+        if (EqualsAny(text, "warn", "warning", "attention", "degraded", "partial")) return Tone.Warning;
+        if (EqualsAny(text, "error", "failed", "fail", "critical", "down", "offline", "danger")) return Tone.Danger;
+        if (EqualsAny(text, "muted")) return Tone.Muted;
+        if (EqualsAny(text, "info", "note", "pending", "unknown")) return Tone.Info;
+        return Tone.Neutral;
     }
 
     public static ChartColor PaletteAt(ResolvedVisualTheme theme, int index) {

@@ -5,7 +5,7 @@ using ChartForgeX.VisualArtifacts;
 /// <summary>Renders an ordinary review workflow through the native source curve owner.</summary>
 public static class FlowchartCurveRecipe {
     /// <summary>Creates the same source recipe used by the gallery and emitted consumer program.</summary>
-    public static VisualArtifact Create(string family, string variant, VisualThemeMode mode, string? fontFamily = null) {
+    public static VisualArtifact Create(string family, string variant, ThemeMode mode, string? fontFamily = null) {
         if (variant is not ("compact" or "wide")) throw new ArgumentException("Unknown curve recipe size.", nameof(variant));
         var options = new MermaidRenderOptions {
             WarningPolicy = MermaidWarningPolicy.Reject,

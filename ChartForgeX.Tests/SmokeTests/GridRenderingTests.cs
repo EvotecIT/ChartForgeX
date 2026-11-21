@@ -47,7 +47,7 @@ internal static partial class SmokeTests {
         AssertNoDuplicateIds(repeatedGrid.ToHtmlFragment("scope with spaces") + repeatedGrid.ToHtmlFragment("scope|with|spaces"), "External host scopes");
         Assert(grid.ToSvg() == grid.ToSvg(), "Prepared SVG grids should be deterministic.");
         Assert(grid.ToSvg("stable-grid") == grid.ToSvg("stable-grid"), "Host-scoped SVG grids should be deterministic.");
-        grid.WithAutomaticPanelSize().WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark);
-        Assert(!grid.PanelSize.HasValue && ReferenceEquals(grid.Theme, VisualTheme.Graphite()) && grid.ThemeMode == VisualThemeMode.Dark, "Automatic panel sizing should preserve the explicitly selected paired theme and mode.");
+        grid.WithAutomaticPanelSize().WithTheme(VisualTheme.Graphite(), ThemeMode.Dark);
+        Assert(!grid.PanelSize.HasValue && ReferenceEquals(grid.Theme, VisualTheme.Graphite()) && grid.ThemeMode == ThemeMode.Dark, "Automatic panel sizing should preserve the explicitly selected paired theme and mode.");
     }
 }

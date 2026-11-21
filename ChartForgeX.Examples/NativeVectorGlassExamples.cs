@@ -4,7 +4,7 @@ using ChartForgeX.Themes;
 
 internal static class NativeVectorGlassExamples {
     internal static void Write(string output) {
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             foreach (var variant in new[] { "compact", "wide" }) {
                 var canvas = NativeVectorGlassExample.Create(variant, mode);
                 var stem = Path.Combine(output, "native-vector-glass-" + variant + "-" + mode);

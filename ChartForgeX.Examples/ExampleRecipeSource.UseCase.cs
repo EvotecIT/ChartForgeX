@@ -2,7 +2,7 @@ using System.Text.Json;
 
 public static partial class ExampleRecipeSource {
     /// <summary>Packages the canonical UseCase source as a complete ordinary Mermaid-package program.</summary>
-    public static string EmitUseCaseSource(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light, bool galleryTypography = false) {
+    public static string EmitUseCaseSource(string variant = "wide", ThemeMode mode = ThemeMode.Light, bool galleryTypography = false) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var source = ReadResource("ChartForgeX.Examples.MermaidFixtures.usecase-native-source-depth.mmd");
         if (variant == "compact") source = source.Replace("direction LR", "direction TB", StringComparison.Ordinal);

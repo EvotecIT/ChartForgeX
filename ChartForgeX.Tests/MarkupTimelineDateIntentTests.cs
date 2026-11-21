@@ -33,7 +33,7 @@ public sealed class MarkupTimelineDateIntentTests {
         var source = fenced ? Table : Commands;
         var (chart, artifact) = Parse(source, fenced);
         var expected = NativeLaunch();
-        foreach (var model in new[] { chart, expected }) model.WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        foreach (var model in new[] { chart, expected }) model.WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         Assert.Equal(ChartScaleKind.Time, chart.Options.XAxis.Scale);
         Assert.Equal(new[] { "Design", "Build engine", "Playground UI", "Launch" }, chart.Series.Select(series => series.Name));
         Assert.Equal(new[] { 0, 5, 13, 26 }.Select(day => Start.AddDays(day).ToOADate()), chart.Series.Select(series => series.GanttItems.Single().Start));

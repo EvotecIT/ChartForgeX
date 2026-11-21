@@ -7,9 +7,10 @@ using static ChartForgeX.VisualBlocks.SvgVisualBlockRenderer;
 namespace ChartForgeX.VisualBlocks;
 
 public sealed partial class SvgFactBlockRenderer {
-    private static void WriteIcon(SvgMarkupWriter writer, VisualIcon icon, double x, double y, double size, ChartColor color) {
+    private static void WriteIcon(SvgMarkupWriter writer, Icon icon, double x, double y, double size, ChartColor color) {
+        if (icon.IsEmpty) return;
         var stroke = Math.Max(1.6, size * 0.16);
-        if (icon == VisualIcon.ForkKnife) {
+        if (icon == Icons.ForkKnife) {
             writer.StartElement("path")
                 .Attribute("data-cfx-role", "visual-icon")
                 .Attribute("data-cfx-icon", "fork-knife")
@@ -23,7 +24,7 @@ public sealed partial class SvgFactBlockRenderer {
             return;
         }
 
-        if (icon == VisualIcon.Flame) {
+        if (icon == Icons.Flame) {
             writer.StartElement("path")
                 .Attribute("data-cfx-role", "visual-icon")
                 .Attribute("data-cfx-icon", "flame")
@@ -33,7 +34,7 @@ public sealed partial class SvgFactBlockRenderer {
             return;
         }
 
-        if (icon == VisualIcon.Droplet) {
+        if (icon == Icons.Droplet) {
             writer.StartElement("path")
                 .Attribute("data-cfx-role", "visual-icon")
                 .Attribute("data-cfx-icon", "droplet")
@@ -43,7 +44,7 @@ public sealed partial class SvgFactBlockRenderer {
             return;
         }
 
-        if (icon == VisualIcon.Runner) {
+        if (icon == Icons.Runner) {
             writer.StartElement("g").Attribute("data-cfx-role", "visual-icon").Attribute("data-cfx-icon", "runner").EndStartElement()
                 .StartElement("circle").Attribute("cx", x + size * 0.12).Attribute("cy", y - size * 0.70).Attribute("r", size * 0.16).Attribute("fill", "none").Attribute("stroke", color.ToCss()).Attribute("stroke-width", stroke).EndEmptyElement()
                 .StartElement("path").Attribute("d", "M " + F(x + size * 0.02) + " " + F(y - size * 0.42) + " L " + F(x - size * 0.18) + " " + F(y - size * 0.02) + " L " + F(x + size * 0.10) + " " + F(y + size * 0.16) + " M " + F(x) + " " + F(y - size * 0.34) + " L " + F(x + size * 0.40) + " " + F(y - size * 0.18) + " M " + F(x - size * 0.18) + " " + F(y - size * 0.02) + " L " + F(x - size * 0.50) + " " + F(y + size * 0.36) + " M " + F(x + size * 0.10) + " " + F(y + size * 0.16) + " L " + F(x + size * 0.48) + " " + F(y + size * 0.50)).Attribute("fill", "none").Attribute("stroke", color.ToCss()).Attribute("stroke-width", stroke).Attribute("stroke-linecap", "round").Attribute("stroke-linejoin", "round").EndEmptyElement()
@@ -51,7 +52,7 @@ public sealed partial class SvgFactBlockRenderer {
             return;
         }
 
-        if (icon == VisualIcon.Bicycle) {
+        if (icon == Icons.Bicycle) {
             writer.StartElement("g").Attribute("data-cfx-role", "visual-icon").Attribute("data-cfx-icon", "bicycle").EndStartElement()
                 .StartElement("circle").Attribute("cx", x - size * 0.50).Attribute("cy", y + size * 0.34).Attribute("r", size * 0.28).Attribute("fill", "none").Attribute("stroke", color.ToCss()).Attribute("stroke-width", stroke).EndEmptyElement()
                 .StartElement("circle").Attribute("cx", x + size * 0.50).Attribute("cy", y + size * 0.34).Attribute("r", size * 0.28).Attribute("fill", "none").Attribute("stroke", color.ToCss()).Attribute("stroke-width", stroke).EndEmptyElement()
@@ -60,11 +61,26 @@ public sealed partial class SvgFactBlockRenderer {
             return;
         }
 
-        if (icon == VisualIcon.Person) {
+        if (icon == Icons.Person) {
             writer.StartElement("g").Attribute("data-cfx-role", "visual-icon").Attribute("data-cfx-icon", "person").EndStartElement()
                 .StartElement("circle").Attribute("cx", x).Attribute("cy", y - size * 0.36).Attribute("r", size * 0.28).Attribute("fill", color.ToCss()).EndEmptyElement()
                 .StartElement("path").Attribute("d", "M " + F(x - size * 0.60) + " " + F(y + size * 0.62) + " C " + F(x - size * 0.46) + " " + F(y + size * 0.12) + " " + F(x + size * 0.46) + " " + F(y + size * 0.12) + " " + F(x + size * 0.60) + " " + F(y + size * 0.62) + " Z").Attribute("fill", color.ToCss()).EndEmptyElement()
                 .EndElement().Line();
+            return;
+        }
+
+        if (icon != Icons.Lightning) {
+            // A key this renderer does not draw, including one from another icon pack, gets the default mark.
+            writer.StartElement("circle")
+                .Attribute("data-cfx-role", "visual-icon")
+                .Attribute("data-cfx-icon", "default")
+                .Attribute("cx", x)
+                .Attribute("cy", y)
+                .Attribute("r", size * 0.42)
+                .Attribute("fill", "none")
+                .Attribute("stroke", color.ToCss())
+                .Attribute("stroke-width", stroke)
+                .EndEmptyElement().Line();
             return;
         }
 

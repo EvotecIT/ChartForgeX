@@ -31,7 +31,7 @@ public sealed class V2GalleryArtifactTests {
     public void PublishedBubbleOptionsRetainCurrentModelFactsAndReproducibleSource(string theme) {
         var output = Path.Combine(FindRepository(), "Website", "static", "examples", "generated");
         using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(output, "manifest.json")));
-        var mode = Enum.Parse<VisualThemeMode>(theme, ignoreCase: true);
+        var mode = Enum.Parse<ThemeMode>(theme, ignoreCase: true);
         foreach (var variant in new[] { "options", "compact-options" }) {
             var id = "family-bubble-" + variant + "-" + theme;
             var artifact = Assert.Single(manifest.RootElement.GetProperty("artifacts").EnumerateArray(),
@@ -47,7 +47,7 @@ public sealed class V2GalleryArtifactTests {
 
             var sourceFile = artifact.GetProperty("source").GetString()!;
             var source = File.ReadAllText(Path.Combine(output, sourceFile));
-            Assert.Contains($"var mode = VisualThemeMode.{mode};", source, StringComparison.Ordinal);
+            Assert.Contains($"var mode = ThemeMode.{mode};", source, StringComparison.Ordinal);
             Assert.Contains($".Create(\"{variant}\", mode)", source, StringComparison.Ordinal);
             Assert.Matches(@"\.ConfigureBubble\s*\(", source);
             var options = model.Options.Bubble;

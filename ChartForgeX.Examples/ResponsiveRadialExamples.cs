@@ -8,7 +8,7 @@ using ChartForgeX.Themes;
 /// <summary>Offline pie and donut layouts with native legend facts and interactive slice identities.</summary>
 public static class ResponsiveRadialExamples {
     /// <summary>Creates six licence categories, optionally grouping the three smallest into Other.</summary>
-    public static Chart Create(VisualThemeMode mode, bool other = false) {
+    public static Chart Create(ThemeMode mode, bool other = false) {
         var chart = Chart.Create().WithSize(800, 305).WithTheme(VisualTheme.Graphite(), mode)
             .WithTitle("Licences by product").WithSubtitle("Assigned seats, October 2026")
             .WithXLabels("Microsoft 365 E3", "Microsoft 365 E5", "Exchange Online Plan 1", "Power BI Pro", "Visio Plan 2", "Project Plan 3");
@@ -49,12 +49,12 @@ public static class ResponsiveRadialExamples {
     public static void Write(string output) {
         Directory.CreateDirectory(output);
         var examples = new StringBuilder();
-        foreach (var other in new[] { false, true }) foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var other in new[] { false, true }) foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             var chart = Create(mode, other);
             var key = (other ? "pie-other" : "donut") + "-" + mode;
             var fragment = Fragment(chart);
             var panel = "<div class='panel' id='" + key + "' style='width:390px;max-width:100%'>" + fragment + "</div>";
-            File.WriteAllText(Path.Combine(output, key + ".html"), Document(panel, mode == VisualThemeMode.Dark));
+            File.WriteAllText(Path.Combine(output, key + ".html"), Document(panel, mode == ThemeMode.Dark));
             examples.Append("<article><h2>").Append(other ? "Pie with Other" : "Donut").Append(" · ").Append(mode).Append("</h2>").Append(panel).Append("</article>");
             chart.WithSize(390, 420);
             File.WriteAllBytes(Path.Combine(output, "static-" + key + "-390.png"), chart.ToPng());

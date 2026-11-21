@@ -83,10 +83,10 @@ internal sealed partial class ResolvedVisualStoryStyle {
     public static ResolvedVisualStoryStyle PremiumDark() => new();
 
     /// <summary>Creates a visual-story theme from the shared Graphite light design tokens.</summary>
-    public static ResolvedVisualStoryStyle GraphiteLight() => FromTheme(VisualTheme.Graphite(), VisualThemeMode.Light);
+    public static ResolvedVisualStoryStyle GraphiteLight() => FromTheme(VisualTheme.Graphite(), ThemeMode.Light);
 
     /// <summary>Creates a visual-story theme from the shared Graphite dark design tokens.</summary>
-    public static ResolvedVisualStoryStyle GraphiteDark() => FromTheme(VisualTheme.Graphite(), VisualThemeMode.Dark);
+    public static ResolvedVisualStoryStyle GraphiteDark() => FromTheme(VisualTheme.Graphite(), ThemeMode.Dark);
 
     /// <summary>Creates a light visual-story theme suitable for documentation and printing.</summary>
     public static ResolvedVisualStoryStyle Light() => new() {

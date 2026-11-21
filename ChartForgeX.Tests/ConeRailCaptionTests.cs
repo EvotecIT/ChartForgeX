@@ -9,8 +9,8 @@ namespace ChartForgeX.Tests;
 /// <summary>A vertical cone's rail reads as two lines per stage, centred on the stage's divider.</summary>
 public sealed class ConeRailCaptionTests {
     [Theory]
-    [InlineData(VisualThemeMode.Light)] [InlineData(VisualThemeMode.Dark)]
-    public void EachStageShowsNameAndValueThenBothRatiosInTheSecondaryColour(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)] [InlineData(ThemeMode.Dark)]
+    public void EachStageShowsNameAndValueThenBothRatiosInTheSecondaryColour(ThemeMode mode) {
         var chart = Chart.Create().WithSize(800, 480).WithTheme(VisualTheme.Graphite(), mode).WithDataLabels(true)
             .WithXLabels("Visitors", "Sign-ups", "Trials", "Paid", "Renewed")
             .ConfigureFunnel(options => { options.Form = ChartFunnelForm.Cone; options.Orientation = ChartOrientation.Vertical; options.LabelContent = ChartStageLabelContent.Separate; })

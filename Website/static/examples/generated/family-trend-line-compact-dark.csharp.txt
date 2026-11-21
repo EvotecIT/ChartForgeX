@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -13,7 +14,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = TrendLineRecipe.Create("compact", mode);
 var context = new VisualRenderContext(
@@ -28,7 +29,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 /// <summary>Builds a least-squares trend through weekly service desk requests while retaining the observations used to fit it.</summary>
 public static class TrendLineRecipe {
     /// <summary>Creates the selected trend example, including the small-drift precision case.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "precision" or "compact-precision"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         if (variant is "precision" or "compact-precision") {

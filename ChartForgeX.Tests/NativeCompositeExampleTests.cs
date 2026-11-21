@@ -9,9 +9,9 @@ namespace ChartForgeX.Tests;
 [Collection(nameof(FontRegistryCollection))]
 public sealed class NativeCompositeExampleTests {
     [Theory]
-    [InlineData("compact", VisualThemeMode.Light)] [InlineData("compact", VisualThemeMode.Dark)]
-    [InlineData("wide", VisualThemeMode.Light)] [InlineData("wide", VisualThemeMode.Dark)]
-    public void OrdinaryCompleteCoreAndVisualsProgramsStayWithinTheirDeclaredPackageOwners(string variant, VisualThemeMode mode) {
+    [InlineData("compact", ThemeMode.Light)] [InlineData("compact", ThemeMode.Dark)]
+    [InlineData("wide", ThemeMode.Light)] [InlineData("wide", ThemeMode.Dark)]
+    public void OrdinaryCompleteCoreAndVisualsProgramsStayWithinTheirDeclaredPackageOwners(string variant, ThemeMode mode) {
         var composition = NativeCompositeCompositionExample.Create(variant, mode);
         var source = NativeCompositeSourceExample.Source(variant, mode);
         var native = NativeCompositeSourceExample.Rasterize(variant, mode);

@@ -37,7 +37,7 @@ public sealed class V2RadialOptionTests {
         var chart = Chart.Create().AddPie("Load", new[] { new ChartPoint(1, 60), new ChartPoint(2, 40) });
         chart.Series[0].StateRole = ChartSeriesState.Danger;
         var explicitColor = ChartColor.FromHex("#123456"); chart.Series[0].WithPointColor(1, explicitColor);
-        var scene = Compile(chart); var colors = new VisualRenderContext().Theme.Resolve(VisualThemeMode.Light);
+        var scene = Compile(chart); var colors = new VisualRenderContext().Theme.Resolve(ThemeMode.Light);
         var slices = scene.Nodes.OfType<VisualSceneSlice>().ToArray();
         Assert.Equal(colors.Status.Critical.Fill, slices[0].Fill); Assert.Equal(explicitColor, slices[1].Fill);
         var legend = VisualRadialCompiler.LegendEntries(chart, colors);

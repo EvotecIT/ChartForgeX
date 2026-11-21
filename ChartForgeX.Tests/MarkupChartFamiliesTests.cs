@@ -49,11 +49,11 @@ public sealed partial class MarkupChartFamiliesTests {
     }
 
     [Theory]
-    [InlineData(390, VisualThemeMode.Light)]
-    [InlineData(390, VisualThemeMode.Dark)]
-    [InlineData(1000, VisualThemeMode.Light)]
-    [InlineData(1000, VisualThemeMode.Dark)]
-    public void EveryNumericFamilyMatchesNativeSvgAndDecodedPngAtCompactAndWideSizes(int width, VisualThemeMode mode) {
+    [InlineData(390, ThemeMode.Light)]
+    [InlineData(390, ThemeMode.Dark)]
+    [InlineData(1000, ThemeMode.Light)]
+    [InlineData(1000, ThemeMode.Dark)]
+    public void EveryNumericFamilyMatchesNativeSvgAndDecodedPngAtCompactAndWideSizes(int width, ThemeMode mode) {
         foreach (var family in new[] { "stackedbar", "stackedhorizontalbar", "percentstackedbar",
             "percentstackedhorizontalbar", "percentstackedarea", "smoothpercentstackedarea", "heatmap", "gauge", "lineargauge" }) {
             var source = "size " + width + "x420\n" + NumericSource(family, false);
@@ -144,7 +144,7 @@ public sealed partial class MarkupChartFamiliesTests {
         return parsed.Document.Chart;
     }
 
-    private static void AssertNativeArtifacts(Chart expected, Chart actual, int width, VisualThemeMode mode, string name) {
+    private static void AssertNativeArtifacts(Chart expected, Chart actual, int width, ThemeMode mode, string name) {
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, 420)),
             theme: VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), themeMode: mode);
         AssertPreparedArtifacts(expected.Prepare(context), actual.Prepare(context), width, name + "-" + width + "-" + mode);

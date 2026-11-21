@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = ScatterColorScaleRecipe.Create(&quot;compact-color-scale&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,12 +111,12 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Colors processing observations by temperature and overlays a target duration.&lt;/summary&gt;
 public static class ScatterColorScaleRecipe {
     /// &lt;summary&gt;Creates the selected example without choosing a renderer or export backend.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;color-scale&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;color-scale&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;color-scale&quot; or &quot;compact-color-scale&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         return NumericColorScale(mode);
     }
 
-    private static Chart NumericColorScale(VisualThemeMode mode) {
+    private static Chart NumericColorScale(ThemeMode mode) {
         var colors = VisualTheme.Graphite().Resolve(mode);
         var samples = new[] {
             new { Batch = 15d, Minutes = 28d, Temperature = (double?)-12 },
@@ -144,6 +145,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -153,7 +155,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = ScatterColorScaleRecipe.Create(&quot;compact-color-scale&quot;, mode);
 var context = new VisualRenderContext(
@@ -168,12 +170,12 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Colors processing observations by temperature and overlays a target duration.&lt;/summary&gt;
 public static class ScatterColorScaleRecipe {
     /// &lt;summary&gt;Creates the selected example without choosing a renderer or export backend.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;color-scale&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;color-scale&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;color-scale&quot; or &quot;compact-color-scale&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         return NumericColorScale(mode);
     }
 
-    private static Chart NumericColorScale(VisualThemeMode mode) {
+    private static Chart NumericColorScale(ThemeMode mode) {
         var colors = VisualTheme.Graphite().Resolve(mode);
         var samples = new[] {
             new { Batch = 15d, Minutes = 28d, Temperature = (double?)-12 },

@@ -14,11 +14,11 @@ namespace ChartForgeX.Tests;
 [Collection(nameof(FontRegistryCollection))]
 public sealed class InnerShadowPresentationTests {
     [Theory]
-    [InlineData("compact", VisualThemeMode.Light)]
-    [InlineData("compact", VisualThemeMode.Dark)]
-    [InlineData("wide", VisualThemeMode.Light)]
-    [InlineData("wide", VisualThemeMode.Dark)]
-    public void CoreRecipeNativeProfilesAndOrderedPortableReplayKeepOneSource(string variant, VisualThemeMode mode) {
+    [InlineData("compact", ThemeMode.Light)]
+    [InlineData("compact", ThemeMode.Dark)]
+    [InlineData("wide", ThemeMode.Light)]
+    [InlineData("wide", ThemeMode.Dark)]
+    public void CoreRecipeNativeProfilesAndOrderedPortableReplayKeepOneSource(string variant, ThemeMode mode) {
         var source = NativeAppearanceExample.PrepareSource(variant, mode);
         var request = NativeAppearanceExample.InnerShadowPolicy(mode);
         var layer = NativeAppearanceExample.Create("inner", variant, mode);

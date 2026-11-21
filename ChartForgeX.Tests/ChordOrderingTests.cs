@@ -10,7 +10,7 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class ChordOrderingTests {
-    private static VisualRenderContext Context(int width = 800, VisualThemeMode mode = VisualThemeMode.Light) =>
+    private static VisualRenderContext Context(int width = 800, ThemeMode mode = ThemeMode.Light) =>
         new(new VisualLayoutOptions(new VisualSize(width, 520)), theme: VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family),
             themeMode: mode, frame: new VisualFrame(showLegend: false));
     private static XElement[] Role(PreparedVisual visual, string role) => PreparedChordTests.Role(visual, role);
@@ -18,11 +18,11 @@ public sealed class ChordOrderingTests {
     private static string Id(XElement node) => node.Attribute("data-cfx-target-id")!.Value;
 
     [Theory]
-    [InlineData(390, VisualThemeMode.Light)]
-    [InlineData(390, VisualThemeMode.Dark)]
-    [InlineData(800, VisualThemeMode.Light)]
-    [InlineData(800, VisualThemeMode.Dark)]
-    public void ExplicitDisplayOrderRetainsSourceTraversalSlotsWeightsColorsAndDash(int width, VisualThemeMode mode) {
+    [InlineData(390, ThemeMode.Light)]
+    [InlineData(390, ThemeMode.Dark)]
+    [InlineData(800, ThemeMode.Light)]
+    [InlineData(800, ThemeMode.Dark)]
+    public void ExplicitDisplayOrderRetainsSourceTraversalSlotsWeightsColorsAndDash(int width, ThemeMode mode) {
         var chart = ChordDepthRecipe.Create(width == 390 ? "compact" : "wide", mode);
         var source = chart.Series[0]; var nodes = source.Nodes.ToArray(); var flows = source.FlowLinks.ToArray();
         var visual = chart.Prepare(Context(width, mode)); var n = Role(visual, "chord-node"); var f = Role(visual, "chord-link");

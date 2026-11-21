@@ -16,7 +16,7 @@ public sealed partial class StandaloneViewportBrowserTests {
     public async Task WrappedLegendButtonsOwnTheirLabelAndDoNotOverlap(bool dark, int width) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(400, 400).WithPointLegend().WithDataLabels(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithXLabels("Subscriptions", "Professional services", "Platform support", "Other")
             .AddSeries(new ChartSeries(new ChartSeriesId("revenue"), "Revenue", ChartSeriesKind.Donut, ChartPoints.FromValues(55, 25, 15, 5)));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), width, 812);
@@ -53,7 +53,7 @@ public sealed partial class StandaloneViewportBrowserTests {
             new ChartHierarchyItem("operations", "Operations", "all", .5) };
         var series = sunburst ? ChartSeries.CreateSunburst(new ChartSeriesId("work"), "Allocation", items)
             : ChartSeries.CreateTreemap(new ChartSeriesId("work"), "Allocation", items);
-        var chart = Chart.Create().WithSize(800, 440).WithTheme(VisualTheme.Graphite(), VisualThemeMode.Light).AddSeries(series);
+        var chart = Chart.Create().WithSize(800, 440).WithTheme(VisualTheme.Graphite(), ThemeMode.Light).AddSeries(series);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), 980, 800);
         var page = session.Page;
         await MountAsync(page);

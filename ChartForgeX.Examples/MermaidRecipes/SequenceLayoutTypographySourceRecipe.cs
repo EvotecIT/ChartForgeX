@@ -5,7 +5,7 @@ using ChartForgeX.VisualArtifacts;
 /// <summary>Parses the shared sequence source fixture through the ordinary Mermaid adapter.</summary>
 public static class SequenceLayoutTypographySourceRecipe {
     /// <summary>Creates natural source output in the selected theme, retaining scrollable intrinsic dimensions.</summary>
-    public static VisualArtifact Create(string source,string variant="wide",VisualThemeMode mode=VisualThemeMode.Light,string? fontFamily=null) {
+    public static VisualArtifact Create(string source,string variant="wide",ThemeMode mode=ThemeMode.Light,string? fontFamily=null) {
         if(variant is not ("compact" or "wide"))throw new ArgumentOutOfRangeException(nameof(variant));
         var result=MermaidRenderer.Render(source,new MermaidRenderOptions{WarningPolicy=MermaidWarningPolicy.Reject,
             Presentation=new MermaidPresentationOptions{ThemeMode=mode,FontFamily=fontFamily},

@@ -14,11 +14,11 @@ public sealed class ExampleRecipeImportPlacementTests {
     [InlineData("appearance")]
     public void DownloadedProgramsKeepRecipeImportsBeforeTopLevelStatements(string recipe) {
         var source = recipe switch {
-            "number-culture" => ExampleRecipeSource.EmitNativeNumberCultureCase("pie", "fr-number", 390, VisualThemeMode.Light),
-            "quadrant" => ExampleRecipeSource.Emit(ExampleRecipes.ForKind(ChartForgeX.Core.ChartSeriesKind.Scatter, "interior-quadrants"), "interior-quadrants", "Regions", "Measured axes", VisualThemeMode.Light, 800, 440),
-            "initial-fade" => ExampleRecipeSource.EmitInitialFade(ChartForgeX.Core.ChartSeriesKind.Line, 390, VisualThemeMode.Light),
-            "appearance" => ExampleRecipeSource.EmitNativeAppearance("bloom", "wide", VisualThemeMode.Light),
-            _ => ExampleRecipeSource.EmitRemainingCaptionRoles("class", "wide", VisualThemeMode.Light)
+            "number-culture" => ExampleRecipeSource.EmitNativeNumberCultureCase("pie", "fr-number", 390, ThemeMode.Light),
+            "quadrant" => ExampleRecipeSource.Emit(ExampleRecipes.ForKind(ChartForgeX.Core.ChartSeriesKind.Scatter, "interior-quadrants"), "interior-quadrants", "Regions", "Measured axes", ThemeMode.Light, 800, 440),
+            "initial-fade" => ExampleRecipeSource.EmitInitialFade(ChartForgeX.Core.ChartSeriesKind.Line, 390, ThemeMode.Light),
+            "appearance" => ExampleRecipeSource.EmitNativeAppearance("bloom", "wide", ThemeMode.Light),
+            _ => ExampleRecipeSource.EmitRemainingCaptionRoles("class", "wide", ThemeMode.Light)
         };
         Assert.Contains("using System.Globalization;", source, StringComparison.Ordinal);
         var firstStatement = source.IndexOf("\nvar ", StringComparison.Ordinal);

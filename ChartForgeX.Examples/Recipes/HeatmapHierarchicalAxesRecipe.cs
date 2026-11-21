@@ -4,7 +4,7 @@ public static class HeatmapHierarchicalAxesRecipe {
     /// <param name="variant">Use wide, compact, states-wide or states-compact. Numeric and categorical cells remain separate models.</param>
     /// <param name="mode">The paired theme mode.</param>
     /// <returns>A complete native chart ready for SVG, PNG or the optional HTML adapter.</returns>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "states-wide" or "states-compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant.EndsWith("compact", StringComparison.Ordinal); var states = variant.StartsWith("states", StringComparison.Ordinal);
         var theme = VisualTheme.Graphite(); var colors = theme.Resolve(mode);

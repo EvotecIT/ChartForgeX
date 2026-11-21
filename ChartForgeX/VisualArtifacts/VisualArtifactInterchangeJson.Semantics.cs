@@ -342,7 +342,7 @@ internal static partial class VisualArtifactInterchangeJson {
             FragmentTabShadow = ReadDropShadow(item,"fragmentTabShadow"),
             BackgroundShadow = ReadDropShadow(item,"backgroundShadow"), Layout = ReadSequenceLayout(item), Typography = ReadSequenceTypography(item),
             Theme = OptionalString(item,"themeJson") is string theme ? ChartForgeX.Themes.VisualTheme.FromJson(theme) : null,
-            ThemeMode = OptionalEnum<ChartForgeX.Themes.VisualThemeMode>(item,"themeMode") };
+            ThemeMode = OptionalEnum<ChartForgeX.ThemeMode>(item,"themeMode") };
     }
 
     private static VisualArtifactInterchangePresentation? ReadPresentation(Dictionary<string, GeoJsonValue> root) {
@@ -364,7 +364,7 @@ internal static partial class VisualArtifactInterchangeJson {
         if (item == null) return null;
         return new VisualArtifactInterchangeTheme {
             Definition = OptionalString(item, "themeJson") is string definition ? ChartForgeX.Themes.VisualTheme.FromJson(definition) : null,
-            Mode = OptionalEnum<ChartForgeX.Themes.VisualThemeMode>(item, "themeMode"),
+            Mode = OptionalEnum<ChartForgeX.ThemeMode>(item, "themeMode"),
             Background = RequiredString(item, "background"), Foreground = RequiredString(item, "foreground"),
             MutedForeground = RequiredString(item, "mutedForeground"), Card = RequiredString(item, "card"),
             Surface = RequiredString(item, "surface"), Border = RequiredString(item, "border"), Accent = RequiredString(item, "accent"),
@@ -569,7 +569,7 @@ internal static partial class VisualArtifactInterchangeJson {
         return values.TryGetValue(name, out GeoJsonValue? value) && !value.IsNull ? value.AsObject(name) : null;
     }
 
-    private static void OptionalEnum<TEnum>(VisualArtifactInterchangeJsonWriter writer, string name, TEnum? value) where TEnum : struct {
+    private static void OptionalEnum<TEnum>(VisualArtifactInterchangeJsonWriter writer, string name, TEnum? value) where TEnum : struct, System.Enum {
         if (value.HasValue) String(writer, name, value.Value.ToString() ?? string.Empty);
     }
 }

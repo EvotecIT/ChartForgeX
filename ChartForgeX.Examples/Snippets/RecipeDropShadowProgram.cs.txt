@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -7,7 +8,7 @@ using ChartForgeX.SvgRaster;
 using ChartForgeX.Themes;
 using ChartForgeX.VisualArtifacts;
 
-var layer = NativeDropShadowExample.Create({{VARIANT}}, VisualThemeMode.{{MODE}});
+var layer = NativeDropShadowExample.Create({{VARIANT}}, ThemeMode.{{MODE}});
 File.WriteAllText("shadow-source.svg", layer.Source.ToSvg());
 File.WriteAllBytes("shadow-source.png", layer.Source.ToPng());
 File.WriteAllText("shadow.svg", layer.Visual.ToSvg());

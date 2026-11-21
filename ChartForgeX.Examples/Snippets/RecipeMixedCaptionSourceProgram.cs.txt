@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using ChartForgeX;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.Themes;
 using ChartForgeX.Mermaid;
@@ -7,7 +8,7 @@ using ChartForgeX.Topology;
 using ChartForgeX.Typography;
 
 // Reference the ordinary ChartForgeX.Mermaid package; source lowering stays in that package.
-var artifact = MermaidMixedCaptionSourceExample.Create({{FAMILY}}, {{VARIANT}}, VisualThemeMode.{{MODE}});
+var artifact = MermaidMixedCaptionSourceExample.Create({{FAMILY}}, {{VARIANT}}, ThemeMode.{{MODE}});
 File.WriteAllText("caption.svg", artifact.ToSvg());
 File.WriteAllBytes("caption.png", artifact.ToPng());
 File.WriteAllText("caption.html", artifact.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));

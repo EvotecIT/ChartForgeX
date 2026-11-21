@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = ScatterPartialColorRangeRecipe.Create(&quot;compact-partial-color-range&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,12 +111,12 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Colors completion values with an observed lower bound and a fixed goal.&lt;/summary&gt;
 public static class ScatterPartialColorRangeRecipe {
     /// &lt;summary&gt;Creates the selected example without choosing a renderer or export backend.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;partial-color-range&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;partial-color-range&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;partial-color-range&quot; or &quot;compact-partial-color-range&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         return PartialColorRange(mode);
     }
 
-    private static Chart PartialColorRange(VisualThemeMode mode) {
+    private static Chart PartialColorRange(ThemeMode mode) {
         var colors = VisualTheme.Graphite().Resolve(mode);
         var duration = new[] { 18d, 30, 24, 44, 32 };
         var completion = new double?[] { 55, 82, null, 68, 95 };
@@ -139,6 +140,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -148,7 +150,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = ScatterPartialColorRangeRecipe.Create(&quot;compact-partial-color-range&quot;, mode);
 var context = new VisualRenderContext(
@@ -163,12 +165,12 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Colors completion values with an observed lower bound and a fixed goal.&lt;/summary&gt;
 public static class ScatterPartialColorRangeRecipe {
     /// &lt;summary&gt;Creates the selected example without choosing a renderer or export backend.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;partial-color-range&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;partial-color-range&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;partial-color-range&quot; or &quot;compact-partial-color-range&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         return PartialColorRange(mode);
     }
 
-    private static Chart PartialColorRange(VisualThemeMode mode) {
+    private static Chart PartialColorRange(ThemeMode mode) {
         var colors = VisualTheme.Graphite().Resolve(mode);
         var duration = new[] { 18d, 30, 24, 44, 32 };
         var completion = new double?[] { 55, 82, null, 68, 95 };

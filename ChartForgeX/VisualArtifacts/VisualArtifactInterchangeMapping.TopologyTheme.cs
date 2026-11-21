@@ -7,7 +7,7 @@ public static partial class VisualArtifactInterchangeMapping {
     private static VisualArtifactInterchangeTheme MapTopologyTheme(TopologyChart source) {
         var captured = MapTheme(source.ResolvedTheme, source.Theme.Typography.TitleSize);
         if (!source.Theme.HasTopologyDefaultExtras()) captured.Definition = source.Theme;
-        if (source.ThemeMode != VisualThemeMode.Light) captured.Mode = source.ThemeMode;
+        if (source.ThemeMode == ThemeMode.Dark) captured.Mode = ThemeMode.Dark;
         return captured;
     }
 
@@ -18,7 +18,7 @@ public static partial class VisualArtifactInterchangeMapping {
         if (source.Definition != null) return source.Definition;
         var canonical = VisualTheme.Graphite().WithFontFamily(source.FontFamily);
         var canonicalType = canonical.Typography;
-        var canonicalPaint = MapTheme(new TopologyPaint(canonical, source.Mode ?? VisualThemeMode.Light), canonicalType.TitleSize);
+        var canonicalPaint = MapTheme(new TopologyPaint(canonical, source.Mode ?? ThemeMode.Light), canonicalType.TitleSize);
         if (SameLegacyThemeColors(source, canonicalPaint)
             && (source.TitleSize ?? canonicalType.TitleSize).Equals(canonicalType.TitleSize)
             && (source.DataLabelSize ?? canonicalType.DataLabelSize).Equals(canonicalType.DataLabelSize)
@@ -30,7 +30,7 @@ public static partial class VisualArtifactInterchangeMapping {
             subtitleSize: source.SubtitleSize ?? VisualTheme.Graphite().Typography.SubtitleSize,
             legendSize: source.LegendSize ?? VisualTheme.Graphite().Typography.LegendSize);
         var graphite = VisualTheme.Graphite().WithTypography(typography);
-        var ordinary = MapTheme(new TopologyPaint(graphite, source.Mode ?? VisualThemeMode.Light), typography.TitleSize);
+        var ordinary = MapTheme(new TopologyPaint(graphite, source.Mode ?? ThemeMode.Light), typography.TitleSize);
         if (SameLegacyThemeColors(source, ordinary)) return graphite;
         return RestoreTopologyTheme(source);
     }

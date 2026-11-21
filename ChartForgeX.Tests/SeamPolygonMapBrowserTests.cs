@@ -16,11 +16,11 @@ namespace ChartForgeX.Tests;
 [Trait("BrowserSuite", "Compatibility")]
 public sealed class SeamPolygonMapBrowserTests {
     [BrowserTheory]
-    [InlineData("compact", VisualThemeMode.Light)]
-    [InlineData("wide", VisualThemeMode.Dark)]
-    [InlineData("compact-mercator", VisualThemeMode.Dark)]
-    [InlineData("mercator", VisualThemeMode.Light)]
-    public async Task NativeSeamRingsAndFeatureSnapshotsSurviveHiddenTargetExclusionSelectionUpdateAndExports(string variant, VisualThemeMode mode) {
+    [InlineData("compact", ThemeMode.Light)]
+    [InlineData("wide", ThemeMode.Dark)]
+    [InlineData("compact-mercator", ThemeMode.Dark)]
+    [InlineData("mercator", ThemeMode.Light)]
+    public async Task NativeSeamRingsAndFeatureSnapshotsSurviveHiddenTargetExclusionSelectionUpdateAndExports(string variant, ThemeMode mode) {
         if (!Enabled) return;
         var chart = SeamPolygonMapRecipe.Create(variant, mode); var width = variant.StartsWith("compact", StringComparison.Ordinal) ? 390 : 800;
         var prepared = MapLabelClusterDepthTests.Prepare(chart);

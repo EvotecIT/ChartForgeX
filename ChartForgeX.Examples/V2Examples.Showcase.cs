@@ -13,7 +13,7 @@ public static partial class V2Examples {
         var forms = new (string Family, ChartSeriesKind Kind, string Variant, string Title, string Subtitle)[] {
             ("linear-gauge", ChartSeriesKind.Gauge, "vertical", "Available capacity against a target", "A linear scale with bands, a goal and a baseline")
         };
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             var suffix = mode.ToString().ToLowerInvariant();
             foreach (var showcase in showcases) {
                 var recipe = ExampleRecipes.Named(showcase.Recipe);

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using ChartForgeX;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Themes;
 using ChartForgeX.VisualArtifacts;
@@ -9,7 +10,7 @@ internal static partial class Program {
             ?? throw new InvalidOperationException("Missing palette fixture.");
         using var reader = new StreamReader(stream);
         var source = reader.ReadToEnd();
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             var options = new MermaidRenderOptions { Presentation = new MermaidPresentationOptions { ThemeMode = mode } };
             var result = RenderFixture(source, options);
             if (result.HasErrors || result.Artifact?.Model is not SequenceArtifact model || model.Layout?.ParticipantBands == null)

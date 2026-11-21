@@ -95,7 +95,7 @@ public sealed partial class MarkupArchitectureParser {
                     case "subtitle": state.Chart.Subtitle = value.Trim(); break;
                     case "direction": state.Chart.LayoutDirection = ParseDirection(value); break;
                     case "layout": state.Chart.LayoutMode = VisualMarkupFenceOptions.ParseEnum<TopologyLayoutMode>(value, "layout"); break;
-                    case "theme": state.Chart.ThemeMode = VisualMarkupFenceOptions.ParseEnum<VisualThemeMode>(value, "theme"); break;
+                    case "theme": state.Chart.ThemeMode = VisualMarkupFenceOptions.ParseEnum<ThemeMode>(value, "theme"); break;
                     case "width": state.Width = Positive(value, "width"); break;
                     case "height": state.Height = Positive(value, "height"); break;
                 }

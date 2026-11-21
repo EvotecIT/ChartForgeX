@@ -11,9 +11,9 @@ namespace ChartForgeX.Tests;
 [Collection(nameof(FontRegistryCollection))]
 public sealed class NativeRetainedAppearanceExampleTests {
     [Theory]
-    [InlineData("compact", VisualThemeMode.Light)] [InlineData("compact", VisualThemeMode.Dark)]
-    [InlineData("wide", VisualThemeMode.Light)] [InlineData("wide", VisualThemeMode.Dark)]
-    public void OrdinaryCoreProgramSavesEditsAndReplaysRetainedAndTerminalPresentation(string variant, VisualThemeMode mode) {
+    [InlineData("compact", ThemeMode.Light)] [InlineData("compact", ThemeMode.Dark)]
+    [InlineData("wide", ThemeMode.Light)] [InlineData("wide", ThemeMode.Dark)]
+    public void OrdinaryCoreProgramSavesEditsAndReplaysRetainedAndTerminalPresentation(string variant, ThemeMode mode) {
         var root = NativeRetainedAppearanceExample.Create(variant, mode);
         var saved = root.ToArtifact().ToInterchangeJson();
         var replayed = NativeRetainedAppearanceExample.RestoreRoot(saved, variant, mode);

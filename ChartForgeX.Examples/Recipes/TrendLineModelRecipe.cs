@@ -1,7 +1,7 @@
 /// <summary>Fits the selected native model to retained measurements with a pointwise interval.</summary>
 public static class TrendLineModelRecipe {
     /// <summary>Creates observed values and a fitted curve; logarithmic-response intervals describe the conditional median.</summary>
-    public static Chart Create(string variant = "polynomial", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "polynomial", ThemeMode mode = ThemeMode.Light) {
         var selection = variant.StartsWith("compact-", StringComparison.Ordinal) ? variant.Substring(8) : variant;
         var model = selection switch {
             "polynomial" => ChartTrendLineModel.Polynomial,

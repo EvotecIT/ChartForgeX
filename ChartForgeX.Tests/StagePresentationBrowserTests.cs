@@ -16,19 +16,19 @@ namespace ChartForgeX.Tests;
 [Trait("BrowserSuite", "Compatibility")]
 public sealed class StagePresentationBrowserTests {
     [BrowserTheory]
-    [InlineData(false, false, 390, VisualThemeMode.Light)]
-    [InlineData(false, false, 390, VisualThemeMode.Dark)]
-    [InlineData(false, false, 800, VisualThemeMode.Light)]
-    [InlineData(false, false, 800, VisualThemeMode.Dark)]
-    [InlineData(true, false, 390, VisualThemeMode.Light)]
-    [InlineData(true, false, 390, VisualThemeMode.Dark)]
-    [InlineData(true, false, 800, VisualThemeMode.Light)]
-    [InlineData(true, false, 800, VisualThemeMode.Dark)]
-    [InlineData(false, true, 390, VisualThemeMode.Light)]
-    [InlineData(false, true, 390, VisualThemeMode.Dark)]
-    [InlineData(false, true, 800, VisualThemeMode.Light)]
-    [InlineData(false, true, 800, VisualThemeMode.Dark)]
-    public async Task NativeStageComponentsKeepResponsiveSelectionSourceIdentityAndCurrentExports(bool pyramid, bool cone, int width, VisualThemeMode mode) {
+    [InlineData(false, false, 390, ThemeMode.Light)]
+    [InlineData(false, false, 390, ThemeMode.Dark)]
+    [InlineData(false, false, 800, ThemeMode.Light)]
+    [InlineData(false, false, 800, ThemeMode.Dark)]
+    [InlineData(true, false, 390, ThemeMode.Light)]
+    [InlineData(true, false, 390, ThemeMode.Dark)]
+    [InlineData(true, false, 800, ThemeMode.Light)]
+    [InlineData(true, false, 800, ThemeMode.Dark)]
+    [InlineData(false, true, 390, ThemeMode.Light)]
+    [InlineData(false, true, 390, ThemeMode.Dark)]
+    [InlineData(false, true, 800, ThemeMode.Light)]
+    [InlineData(false, true, 800, ThemeMode.Dark)]
+    public async Task NativeStageComponentsKeepResponsiveSelectionSourceIdentityAndCurrentExports(bool pyramid, bool cone, int width, ThemeMode mode) {
         if (!Enabled) return;
         var chart = Model(pyramid, cone, width, mode); var updated = Model(pyramid, cone, width, mode);
         updated.Series[0].Points[1] = new ChartForgeX.Primitives.ChartPoint(2, pyramid ? 35 : 85);
@@ -84,7 +84,7 @@ public sealed class StagePresentationBrowserTests {
             Assert.True(SvgRasterColor.TryParse(row.GetProperty("fill").GetString()!, out var painted)); Assert.Equal(expected[source].Color, painted);
         }
     }
-    private static Chart Model(bool pyramid, bool cone, int width, VisualThemeMode mode) {
+    private static Chart Model(bool pyramid, bool cone, int width, ThemeMode mode) {
         var chart = pyramid ? PyramidPresentationRecipe.Create(width == 390 ? "compact" : "wide", mode)
             : FunnelPresentationRecipe.Create(cone ? width == 390 ? "compact-cone" : "cone" : width == 390 ? "compact" : "wide", mode);
         return chart.WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), mode);

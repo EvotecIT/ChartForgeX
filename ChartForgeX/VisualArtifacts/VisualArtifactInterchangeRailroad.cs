@@ -17,7 +17,7 @@ public sealed class VisualArtifactInterchangeRailroadArtifact {
     /// <summary>Gets or sets the immutable native theme, including typography and both palettes.</summary>
     public VisualTheme Theme { get; set; } = VisualTheme.Graphite();
     /// <summary>Gets or sets the native theme mode.</summary>
-    public VisualThemeMode ThemeMode { get; set; }
+    public ThemeMode ThemeMode { get; set; }
     /// <summary>Gets or sets configured native content padding, retained while the host owns the frame.</summary>
     public ChartPadding Padding { get; set; } = new(18, 16, 18, 12);
     /// <summary>Gets or sets whether the full background is transparent.</summary>

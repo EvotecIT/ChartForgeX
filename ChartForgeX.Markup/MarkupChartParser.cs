@@ -123,7 +123,7 @@ public sealed partial class MarkupChartParser {
             if (VisualMarkupFenceOptions.TryGetAttribute(block, "subtitle", out var subtitle) && !string.IsNullOrWhiteSpace(subtitle)) state.Subtitle = subtitle;
             if (VisualMarkupFenceOptions.TryGetAttribute(block, "type", out var type) && !string.IsNullOrWhiteSpace(type)) state.Type = ValidateChartType(type);
             if (VisualMarkupFenceOptions.TryGetAttribute(block, "theme", out var theme)) ParseTheme(state, theme);
-            if (VisualMarkupFenceOptions.TryGetAttribute(block, "themeMode", out var themeMode)) state.ThemeMode = VisualMarkupFenceOptions.ParseEnum<ChartForgeX.Themes.VisualThemeMode>(themeMode, "themeMode");
+            if (VisualMarkupFenceOptions.TryGetAttribute(block, "themeMode", out var themeMode)) state.ThemeMode = VisualMarkupFenceOptions.ParseEnum<ChartForgeX.ThemeMode>(themeMode, "themeMode");
             if (VisualMarkupFenceOptions.TryGetAttribute(block, "series", out var series) && !string.IsNullOrWhiteSpace(series)) state.SeriesName = series;
             if (VisualMarkupFenceOptions.TryGetAttribute(block, "size", out var size) && !string.IsNullOrWhiteSpace(size)) ParseSize(state, size);
             if (VisualMarkupFenceOptions.TryGetAttribute(block, "width", out var width) && !string.IsNullOrWhiteSpace(width)) state.Width = ParsePositiveInt32(width, "width");

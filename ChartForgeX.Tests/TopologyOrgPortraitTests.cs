@@ -13,11 +13,11 @@ namespace ChartForgeX.Tests;
 
 public sealed class TopologyOrgPortraitTests {
     [Theory]
-    [InlineData(false, TopologyPortraitFit.Meet, VisualThemeMode.Light, 900)]
-    [InlineData(true, TopologyPortraitFit.Slice, VisualThemeMode.Dark, 390)]
-    [InlineData(false, TopologyPortraitFit.Slice, VisualThemeMode.Light, 900)]
-    [InlineData(true, TopologyPortraitFit.Meet, VisualThemeMode.Dark, 390)]
-    public void HierarchyAndTeamPortraitsShareExactNativeSvgImageGeometryAndCrop(bool team, TopologyPortraitFit fit, VisualThemeMode mode, int width) {
+    [InlineData(false, TopologyPortraitFit.Meet, ThemeMode.Light, 900)]
+    [InlineData(true, TopologyPortraitFit.Slice, ThemeMode.Dark, 390)]
+    [InlineData(false, TopologyPortraitFit.Slice, ThemeMode.Light, 900)]
+    [InlineData(true, TopologyPortraitFit.Meet, ThemeMode.Dark, 390)]
+    public void HierarchyAndTeamPortraitsShareExactNativeSvgImageGeometryAndCrop(bool team, TopologyPortraitFit fit, ThemeMode mode, int width) {
         var artwork = TopologyIconArtwork.Portrait(Stripes(), fit);
         var chart = Model(team, artwork).WithViewport(width, 320);
         var prepared = chart.Prepare(Context(width, mode), Options());
@@ -86,7 +86,7 @@ public sealed class TopologyOrgPortraitTests {
         Assert.NotSame(artwork, node.Artwork); Assert.Equal(originalHref, node.Artwork!.ImageHref);
         artwork.ImageHref = "https://example.invalid/not-fetched.png"; artwork.PreserveAspectRatio = "none";
         Assert.Equal(originalHref, node.Artwork.ImageHref); Assert.Equal("xMidYMid slice", node.Artwork.PreserveAspectRatio);
-        var prepared = chart.Prepare(Context(900, VisualThemeMode.Light), Options());
+        var prepared = chart.Prepare(Context(900, ThemeMode.Light), Options());
         var svg = prepared.ToSvg("captured-portrait"); var png = prepared.ToPng();
         var envelope = chart.ToVisualArtifact().ToInterchangeEnvelope(); var restored = envelope.ToTopologyChart();
         var restoredNode = Assert.Single(restored.Nodes); Assert.Equal(node.Id, restoredNode.Id);
@@ -123,7 +123,7 @@ public sealed class TopologyOrgPortraitTests {
         Assert.Equal(new[] { red, green, blue, (byte)255 }, image.Pixels.Skip(offset).Take(4));
     }
     private static TopologyRenderOptions Options() => new() { IncludeLegend = false, IncludeTitle = false, FitContentToViewport = true };
-    private static VisualRenderContext Context(int width, VisualThemeMode mode) => new(new VisualLayoutOptions(new VisualSize(width, 320)),
+    private static VisualRenderContext Context(int width, ThemeMode mode) => new(new VisualLayoutOptions(new VisualSize(width, 320)),
         VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), mode, new VisualFrame(showLegend: false));
     private static void Save(PreparedVisual prepared, string name) {
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY"); if (string.IsNullOrWhiteSpace(directory)) return;

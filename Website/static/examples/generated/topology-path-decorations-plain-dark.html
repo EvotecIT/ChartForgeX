@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = TopologyPathDecorationRecipe.Create(&quot;plain&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;An ordinary native topology with a curved maintenance boundary, separate from graph facts.&lt;/summary&gt;
 public static class TopologyPathDecorationRecipe {
     /// &lt;summary&gt;Creates a script-free plan with two services, one relationship and an optional independent boundary.&lt;/summary&gt;
-    public static TopologyChart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static TopologyChart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;plain&quot; or &quot;compact-plain&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant.StartsWith(&quot;compact&quot;, StringComparison.Ordinal);
         var includeBoundary = !variant.EndsWith(&quot;plain&quot;, StringComparison.Ordinal);
@@ -122,7 +123,7 @@ public static class TopologyPathDecorationRecipe {
         chart.AddEdge(&quot;dispatch&quot;, &quot;gateway&quot;, &quot;worker&quot;, &quot;Dispatch&quot;);
         if (includeBoundary) chart.PathDecorations.Add(new TopologyPathDecoration(&quot;maintenance-zone&quot;,
             &quot;M 370 70 C 330 120 410 170 370 220 C 330 270 410 300 370 330&quot;,
-            stroke: mode == VisualThemeMode.Dark ? ChartColor.FromHex(&quot;#FBBF24&quot;) : ChartColor.FromHex(&quot;#92400E&quot;),
+            stroke: mode == ThemeMode.Dark ? ChartColor.FromHex(&quot;#FBBF24&quot;) : ChartColor.FromHex(&quot;#92400E&quot;),
             strokeWidth: 3, dashPattern: new[] { 8d, 4d }));
         return chart;
     }
@@ -133,6 +134,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -142,7 +144,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = TopologyPathDecorationRecipe.Create(&quot;plain&quot;, mode);
 var context = new VisualRenderContext(
@@ -157,7 +159,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;An ordinary native topology with a curved maintenance boundary, separate from graph facts.&lt;/summary&gt;
 public static class TopologyPathDecorationRecipe {
     /// &lt;summary&gt;Creates a script-free plan with two services, one relationship and an optional independent boundary.&lt;/summary&gt;
-    public static TopologyChart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static TopologyChart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;plain&quot; or &quot;compact-plain&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant.StartsWith(&quot;compact&quot;, StringComparison.Ordinal);
         var includeBoundary = !variant.EndsWith(&quot;plain&quot;, StringComparison.Ordinal);
@@ -169,7 +171,7 @@ public static class TopologyPathDecorationRecipe {
         chart.AddEdge(&quot;dispatch&quot;, &quot;gateway&quot;, &quot;worker&quot;, &quot;Dispatch&quot;);
         if (includeBoundary) chart.PathDecorations.Add(new TopologyPathDecoration(&quot;maintenance-zone&quot;,
             &quot;M 370 70 C 330 120 410 170 370 220 C 330 270 410 300 370 330&quot;,
-            stroke: mode == VisualThemeMode.Dark ? ChartColor.FromHex(&quot;#FBBF24&quot;) : ChartColor.FromHex(&quot;#92400E&quot;),
+            stroke: mode == ThemeMode.Dark ? ChartColor.FromHex(&quot;#FBBF24&quot;) : ChartColor.FromHex(&quot;#92400E&quot;),
             strokeWidth: 3, dashPattern: new[] { 8d, 4d }));
         return chart;
     }

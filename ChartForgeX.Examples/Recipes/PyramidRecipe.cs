@@ -1,7 +1,7 @@
 /// <summary>Builds a triangular allocation chart from ordered service values.</summary>
 public static class PyramidRecipe {
     /// <summary>Creates the selected pyramid example, including area encoding and geometric reversal.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "dense" or "compact-dense"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create().WithDataLabels();

@@ -27,12 +27,14 @@ internal sealed class HtmlInteractiveDiagramRenderer {
 
     internal string Render(SequenceArtifact sequence, VisualRenderContext? context, bool page) {
         if (sequence == null) throw new ArgumentNullException(nameof(sequence));
+        // An explicit render context is a resolved request; only the sequence's own Auto mode follows the viewer.
+        var auto = context == null ? AutoThemeStyle.ForHtml(sequence.Theme, sequence.ThemeMode, null) : null;
         context ??= new VisualRenderContext(new VisualLayoutOptions(new VisualSize(sequence.Width, sequence.Height), sequence.Padding, fitHeightToContent: true),
             sequence.Theme, sequence.ThemeMode);
         var prepared = sequence.Prepare(CardContext(context));
         var envelope = prepared.ToArtifact(sequence.Id, VisualArtifactKind.Sequence).ToInterchangeEnvelope();
         return Render(prepared, "sequence", SequenceModel(envelope, prepared), sequence.Id, context.Frame.Title ?? sequence.Title,
-            context.Frame.Subtitle ?? sequence.Subtitle, context, page);
+            context.Frame.Subtitle ?? sequence.Subtitle, context, page, auto);
     }
 
     // The page owns the Graphite card and its title band, so the drawing is prepared without its own heading or background.
@@ -40,12 +42,17 @@ internal sealed class HtmlInteractiveDiagramRenderer {
         new VisualFrame(string.Empty, string.Empty, showLegend: false, transparentBackground: true), context.Font);
 
     private string Render(PreparedVisual prepared, string family, string model, string id, string? title, string? subtitle,
-        VisualRenderContext context, bool page) {
+        VisualRenderContext context, bool page, AutoThemeStyle? auto = null) {
         var language = Localization.ResolveLanguage(prepared.Accessibility.Language);
         var theme = context.Theme; var mode = context.ThemeMode; var transparent = context.Frame.TransparentBackground;
         var name = string.IsNullOrWhiteSpace(title) ? id : title!;
         var fontFamily = string.IsNullOrWhiteSpace(context.Font.Family) ? theme.Typography.Family : context.Font.Family;
-        var svg = CropToContent(prepared, out var width);
+        var svg = CropToContent(prepared, auto?.Variables, out var width);
+        string Scheme(ThemeMode schemeMode) => "color-scheme:" + (schemeMode == ThemeMode.Dark ? "dark" : "light")
+            + HtmlInteractiveChartRenderer.ThemeInteractionTokens(theme, schemeMode, transparent);
+        string Background(ThemeMode backgroundMode) => transparent ? "transparent" : theme.Resolve(backgroundMode).Background.ToCss();
+        auto?.WithRule("&", Scheme);
+        var pageTheme = page ? AutoThemeStyle.ForHtml(theme, auto == null ? mode : ThemeMode.Auto, null)?.WithPageBackground(Background) : null;
         var writer = new HtmlMarkupWriter();
         if (page) {
             writer.Doctype().Line()
@@ -53,23 +60,26 @@ internal sealed class HtmlInteractiveDiagramRenderer {
                 .StartElement("head").EndStartElement().Line();
             // A full page registers the product faces for its HTML heading, as chart pages do; fragments leave fonts to the host.
             HtmlChartRenderer.WriteDocumentHead(writer, name, ChartForgeX.Typography.ChartFontAssets.StyleSheet + HtmlDiagramAssets.Style
-                + "body{margin:0;background:" + (transparent ? "transparent" : theme.Resolve(mode).Background.ToCss()) + ";" + HtmlSurfacePolish.BrowserTextPolishCss + "}");
+                + "body{margin:0;background:" + (pageTheme == null ? Background(mode) : AutoThemeStyle.Var(AutoThemeStyle.PageBackground, Background(mode)))
+                + ";" + HtmlSurfacePolish.BrowserTextPolishCss + "}" + pageTheme?.StyleSheet);
             writer.EndElement().Line()
-                .StartElement("body").EndStartElement().Line()
+                .StartElement("body").Attribute(ChartForgeX.Themes.AutoThemeStyle.ScopeAttribute, pageTheme?.Id)
+                .Attribute(AutoThemeStyle.Attribute, pageTheme == null ? null : AutoThemeStyle.AttributeValue).EndStartElement().Line()
                 .StartElement("main").Attribute("class", "cfx-diagram-shell").EndStartElement().Line();
         } else {
             writer.StartElement("style").EndStartElement().RawTrusted(HtmlDiagramAssets.Style).EndElement().Line();
         }
 
-        writer.StartElement("section").Attribute("class", "cfx-diagram").Attribute("data-cfx-look", "graphite")
+        writer.StartElement("section").Attribute("class", "cfx-diagram").Attribute(ChartForgeX.Themes.AutoThemeStyle.ScopeAttribute, auto?.Id)
+            .Attribute(AutoThemeStyle.Attribute, auto == null ? null : AutoThemeStyle.AttributeValue).Attribute("data-cfx-look", "graphite")
             .Attribute("data-cfx-diagram", family).Attribute("role", "group").Attribute("aria-label", name)
             .Attribute("lang", page ? null : language).Attribute("dir", page ? null : Localization.DirectionAttribute)
             .Attribute("data-cfx-ui", Localization.ToDiagramJson()).Attribute("data-cfx-diagram-model", model)
             .Attribute("style", "--cfx-diagram-width:" + Number(width) + "px;--cfx-diagram-font:" + HtmlChartRenderer.CssFontFamily(fontFamily)
                 + ";--cfx-diagram-title-size:" + Number(theme.Typography.TitleSize * 1.2) + "px;--cfx-diagram-subtitle-size:" + Number(theme.Typography.SubtitleSize * 1.15)
-                + "px;color-scheme:" + (mode == VisualThemeMode.Dark ? "dark" : "light")
-                + HtmlInteractiveChartRenderer.ThemeInteractionTokens(theme, mode, transparent))
+                + "px" + (auto == null ? ";" + Scheme(mode) : string.Empty))
             .EndStartElement().Line();
+        if (auto != null) writer.RawTrusted(auto.StyleElement).Line();
         if (!string.IsNullOrWhiteSpace(title) || !string.IsNullOrWhiteSpace(subtitle)) {
             writer.StartElement("header").Attribute("class", "cfx-diagram-heading").EndStartElement();
             if (!string.IsNullOrWhiteSpace(title)) writer.StartElement("h2").Attribute("class", "cfx-diagram-title").EndStartElement().Text(title!).EndElement();
@@ -92,8 +102,9 @@ internal sealed class HtmlInteractiveDiagramRenderer {
 
     // Layout fills the requested viewport; the card shows only the drawn content so no empty bands sit above or below it.
     // Only the root viewBox changes: native geometry and identities are untouched.
-    private static (string Svg, VisualSvgFontResources? Fonts) CropToContent(PreparedVisual prepared, out double width) {
-        var emission = prepared.ExportSvgEmission(VisualSvgTextPresentation.Automatic);
+    private static (string Svg, VisualSvgFontResources? Fonts) CropToContent(PreparedVisual prepared, SvgColorVariables? colors, out double width) {
+        var emission = colors == null ? prepared.ExportSvgEmission(VisualSvgTextPresentation.Automatic)
+            : prepared.ExportSvgEmission(new VisualSvgOptions(colorVariables: colors).WithTextPresentation(VisualSvgTextPresentation.Automatic));
         var size = prepared.Size; width = size.Width;
         if (prepared.Regions.Count == 0) return (emission.Svg, emission.Fonts);
         const double margin = 12;

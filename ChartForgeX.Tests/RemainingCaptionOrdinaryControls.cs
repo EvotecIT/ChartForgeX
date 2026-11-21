@@ -16,7 +16,7 @@ public sealed class RemainingCaptionOrdinaryControls {
     [Theory]
     [MemberData(nameof(Poses))]
     public void OrdinaryPlainFamilyAndNativeRolesProvideExactSvgPngPortableControls(string family, int width, bool dark) {
-        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         PreparedVisual visual;
         double? sourcePadding = null;
         if (family == "native") {

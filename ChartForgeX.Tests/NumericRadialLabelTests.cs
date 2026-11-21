@@ -41,7 +41,7 @@ public sealed class NumericRadialLabelTests {
         var label = Assert.Single(Captions(scene));
         Assert.Equal("500", string.Join(" ", label.Text.Lines.Select(line => line.Text)));
         Assert.True(Shape(Assert.Single(NumericRadialSeriesTests.Marks(scene))).Contains(Bounds(label)));
-        var background = VisualTheme.Graphite().Resolve(VisualThemeMode.Dark).Background;
+        var background = VisualTheme.Graphite().Resolve(ThemeMode.Dark).Background;
         var composed = ChartColorMath.Blend(background, ChartColor.FromRgb(fill.R, fill.G, fill.B), fill.A / 255d);
         Assert.True(ChartColorMath.ContrastRatio(composed, label.Color) >= 4.5);
 
@@ -69,7 +69,7 @@ public sealed class NumericRadialLabelTests {
         var label = Assert.Single(Captions(outside));
         Assert.Equal("500", string.Join(" ", label.Text.Lines.Select(line => line.Text)));
         Assert.False(Shape(Assert.Single(NumericRadialSeriesTests.Marks(outside))).Intersects(Bounds(label)));
-        Assert.Equal(VisualTheme.Graphite().Resolve(VisualThemeMode.Dark).Foreground, label.Color);
+        Assert.Equal(VisualTheme.Graphite().Resolve(ThemeMode.Dark).Foreground, label.Color);
         Assert.Equal("500", Point(outside, "series-0-point-0").Metadata["data-cfx-y"]);
     }
 
@@ -94,7 +94,7 @@ public sealed class NumericRadialLabelTests {
         var chart = V2GalleryModels.Create(ChartSeriesKind.RadialColumn, "wide").WithDataLabelPlacement(placement);
         var font = new FontSpec { Family = "Carlito", FilePath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf") };
         var scene = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 440)),
-            VisualTheme.Graphite(), VisualThemeMode.Dark,
+            VisualTheme.Graphite(), ThemeMode.Dark,
             new VisualFrame("Regional service workload", "Explore the data, then download the chart", showLegend: null, showSurface: false), font)).Scene;
         var label = Assert.Single(Captions(scene), text => text.Id == "series-0-point-1-label");
         Assert.Equal("950", string.Join(" ", label.Text.Lines.Select(line => line.Text)));
@@ -136,7 +136,7 @@ public sealed class NumericRadialLabelTests {
     private static VisualScene Prepare(Chart chart, int width, int height) {
         var font = new FontSpec { Family = "Carlito", FilePath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf") };
         return chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, height)),
-            themeMode: VisualThemeMode.Dark, frame: new VisualFrame(showLegend: false), font: font)).Scene;
+            themeMode: ThemeMode.Dark, frame: new VisualFrame(showLegend: false), font: font)).Scene;
     }
     private static VisualSceneText[] Captions(VisualScene scene) => scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "radial-data-label").ToArray();
     private static VisualSceneGroup Point(VisualScene scene, string id) => scene.Nodes.OfType<VisualSceneGroup>().Single(group => group.Id == id);

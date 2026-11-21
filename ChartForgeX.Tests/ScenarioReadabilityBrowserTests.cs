@@ -19,7 +19,7 @@ public sealed class ScenarioReadabilityBrowserTests {
     [InlineData(true, true, 1440)]
     public async Task ScenarioHeadingsAndProgressRemainReadableInStandaloneAndThemedHosts(bool dark, bool host, int width) {
         if (!Enabled) return;
-        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(640, 280)
             .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("counts"), "Counts", new[] { new ChartPoint(1, 7), new ChartPoint(2, 3) }));
         var interactive = new HtmlInteractiveChartRenderer().RenderFragment(chart, options => {

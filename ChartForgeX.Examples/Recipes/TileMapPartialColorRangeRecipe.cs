@@ -1,7 +1,7 @@
 /// <summary>Creates a tile map with a fixed zero and an observed upper color bound.</summary>
 public static class TileMapPartialColorRangeRecipe {
     /// <summary>Creates the source model for a gallery variant without choosing an export backend.</summary>
-    public static Chart Create(string variant = "partial-color-range", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "partial-color-range", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("partial-color-range" or "compact-partial-color-range"))
             throw new ArgumentOutOfRangeException(nameof(variant));
 

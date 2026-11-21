@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -13,7 +14,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = CalendarHeatmapColorScaleRecipe.Create("compact-color-scale", mode);
 var context = new VisualRenderContext(
@@ -28,7 +29,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 /// <summary>Colors dated activity from quiet to busy on a fixed numeric scale.</summary>
 public static class CalendarHeatmapColorScaleRecipe {
     /// <summary>Creates a Monday-first calendar with an explicit activity range and missing-data color.</summary>
-    public static Chart Create(string variant = "color-scale", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "color-scale", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("color-scale" or "compact-color-scale")) throw new ArgumentOutOfRangeException(nameof(variant));
         var colors = VisualTheme.Graphite().Resolve(mode);
         return Chart.Create().ConfigureCalendar(options => options.FirstDayOfWeek = DayOfWeek.Monday)

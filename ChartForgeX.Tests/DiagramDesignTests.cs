@@ -36,7 +36,7 @@ public sealed class DiagramDesignTests {
     public void RankedEdgesEnterFacingSidesAtDistinctPortsAndOpaqueLabelsCoverTheirOwnMidpoint(bool dark) {
         const string source = "flowchart TD\na[First] -->|first path| c[Complete]\nb[Second] -->|second path| c";
         var result = MermaidRenderer.Render(source, new MermaidRenderOptions {
-            Presentation = new MermaidPresentationOptions { ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light }
+            Presentation = new MermaidPresentationOptions { ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light }
         });
         Assert.Empty(result.Diagnostics);
         var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model);

@@ -367,7 +367,7 @@ public sealed class MarkupTopologyParser {
         return inToken && currentToken == tokenIndex && tokenQuoted;
     }
 
-    private static TEnum ParseEnum<TEnum>(string value) where TEnum : struct {
+    private static TEnum ParseEnum<TEnum>(string value) where TEnum : struct, Enum {
         var normalized = NormalizeKey(value);
         foreach (var name in Enum.GetNames(typeof(TEnum))) {
             if (NormalizeKey(name) == normalized) return (TEnum)Enum.Parse(typeof(TEnum), name, false);

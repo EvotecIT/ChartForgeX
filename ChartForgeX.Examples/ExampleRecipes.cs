@@ -151,7 +151,7 @@ public static partial class ExampleRecipes {
 
     private static IReadOnlyDictionary<(ChartSeriesKind, string), ExampleRecipe> OptionRecipes() {
         var recipes = new Dictionary<(ChartSeriesKind, string), ExampleRecipe>();
-        void Add(ChartSeriesKind kind, string factory, Func<string, VisualThemeMode, IVisualRenderable> create, params string[] variants) {
+        void Add(ChartSeriesKind kind, string factory, Func<string, ThemeMode, IVisualRenderable> create, params string[] variants) {
             var recipe = new ExampleRecipe(factory, create);
             foreach (var variant in variants) recipes.Add((kind, variant), recipe);
         }
@@ -204,10 +204,10 @@ public static partial class ExampleRecipes {
 
 /// <summary>A strongly typed factory paired with exactly one compiled native source file.</summary>
 public sealed class ExampleRecipe {
-    private readonly Func<string, VisualThemeMode, IVisualRenderable> _create;
-    internal ExampleRecipe(string factory, Func<string, VisualThemeMode, IVisualRenderable> create) { Factory = factory; _create = create; }
+    private readonly Func<string, ThemeMode, IVisualRenderable> _create;
+    internal ExampleRecipe(string factory, Func<string, ThemeMode, IVisualRenderable> create) { Factory = factory; _create = create; }
     /// <summary>Gets the native factory class used by the downloaded program.</summary>
     public string Factory { get; }
     /// <summary>Creates the same model that the gallery and standalone program render.</summary>
-    public IVisualRenderable Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) => _create(variant, mode);
+    public IVisualRenderable Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) => _create(variant, mode);
 }

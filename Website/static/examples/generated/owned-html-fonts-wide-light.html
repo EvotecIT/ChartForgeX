@@ -88,13 +88,13 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 using ChartForgeX.Interactivity.Html;
-var chart=HtmlOwnedFontRecipe.Create(&quot;wide&quot;,VisualThemeMode.Light);
+var chart=HtmlOwnedFontRecipe.Create(&quot;wide&quot;,ThemeMode.Light);
 Directory.CreateDirectory(&quot;output&quot;);File.WriteAllText(&quot;output/report.svg&quot;,chart.ToSvg());File.WriteAllBytes(&quot;output/report.png&quot;,chart.ToPng());
 File.WriteAllText(&quot;output/report.html&quot;,chart.ToInteractiveHtmlPage(options=&gt;options.TextPresentation=HtmlChartTextPresentation.Automatic));
 /// &lt;summary&gt;A native report chart whose HTML adapter can deliver the caller&#39;s registered face.&lt;/summary&gt;
 public static class HtmlOwnedFontRecipe {
     /// &lt;summary&gt;Creates the same native chart for static exports and configurable HTML text.&lt;/summary&gt;
-    public static Chart Create(string variant, VisualThemeMode mode, string? family = null) {
+    public static Chart Create(string variant, ThemeMode mode, string? family = null) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot;)) throw new ArgumentException(&quot;Unknown font report size.&quot;, nameof(variant));
         var theme = VisualTheme.Graphite(); if (family != null) theme = theme.WithFontFamily(family);
         return Chart.Create().WithSize(variant == &quot;compact&quot; ? 390 : 760, 440).WithTheme(theme, mode)
@@ -110,13 +110,13 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;
 using ChartForgeX.Interactivity.Html;
-var chart=HtmlOwnedFontRecipe.Create(&quot;wide&quot;,VisualThemeMode.Dark);
+var chart=HtmlOwnedFontRecipe.Create(&quot;wide&quot;,ThemeMode.Dark);
 Directory.CreateDirectory(&quot;output&quot;);File.WriteAllText(&quot;output/report.svg&quot;,chart.ToSvg());File.WriteAllBytes(&quot;output/report.png&quot;,chart.ToPng());
 File.WriteAllText(&quot;output/report.html&quot;,chart.ToInteractiveHtmlPage(options=&gt;options.TextPresentation=HtmlChartTextPresentation.Automatic));
 /// &lt;summary&gt;A native report chart whose HTML adapter can deliver the caller&#39;s registered face.&lt;/summary&gt;
 public static class HtmlOwnedFontRecipe {
     /// &lt;summary&gt;Creates the same native chart for static exports and configurable HTML text.&lt;/summary&gt;
-    public static Chart Create(string variant, VisualThemeMode mode, string? family = null) {
+    public static Chart Create(string variant, ThemeMode mode, string? family = null) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot;)) throw new ArgumentException(&quot;Unknown font report size.&quot;, nameof(variant));
         var theme = VisualTheme.Graphite(); if (family != null) theme = theme.WithFontFamily(family);
         return Chart.Create().WithSize(variant == &quot;compact&quot; ? 390 : 760, 440).WithTheme(theme, mode)

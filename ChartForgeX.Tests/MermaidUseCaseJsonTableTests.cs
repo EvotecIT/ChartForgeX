@@ -15,7 +15,7 @@ public sealed class MermaidUseCaseJsonTableTests {
         WarningPolicy = MermaidWarningPolicy.Reject,
         UseCase = new MermaidFlowchartRenderOptions { Width = width, Height = width == 390 ? 1000 : 680,
             Presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family,
-                ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light, TopologySizing = MermaidTopologySizing.FixedViewport } }
+                ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light, TopologySizing = MermaidTopologySizing.FixedViewport } }
     };
     [Theory]
     [InlineData(390, false)] [InlineData(390, true)] [InlineData(1000, false)] [InlineData(1000, true)]

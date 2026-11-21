@@ -1,7 +1,7 @@
 /// <summary>Formats heatmap temperatures with independent color-dimension captions and legends.</summary>
 public static class HeatmapColorDimensionRecipe {
     /// <summary>Creates a temperature dimension with automatic, gradient or swatch legend presentation.</summary>
-    public static Chart Create(string variant = "color-dimension", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "color-dimension", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("color-dimension" or "compact-color-dimension" or "gradient-color-legend" or "compact-gradient-color-legend"
             or "swatch-color-legend" or "compact-swatch-color-legend")) throw new ArgumentOutOfRangeException(nameof(variant));
         var colors = VisualTheme.Graphite().Resolve(mode);

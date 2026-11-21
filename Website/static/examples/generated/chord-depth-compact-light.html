@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = ChordDepthRecipe.Create(&quot;compact&quot;, mode);
 var context = new VisualRenderContext(
@@ -109,7 +110,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 
 /// &lt;summary&gt;Explicit display order and ribbon tension leave directed source facts and ordinal paint unchanged.&lt;/summary&gt;
 public static class ChordDepthRecipe {
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         var compact = variant.StartsWith(&quot;compact&quot;, StringComparison.Ordinal);
         var form = compact &amp;&amp; variant != &quot;compact&quot; ? variant.Substring(&quot;compact-&quot;.Length) : variant;
         if (form is not (&quot;wide&quot; or &quot;compact&quot; or &quot;source&quot; or &quot;straight&quot; or &quot;center&quot;))
@@ -148,6 +149,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -157,7 +159,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = ChordDepthRecipe.Create(&quot;compact&quot;, mode);
 var context = new VisualRenderContext(
@@ -171,7 +173,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 
 /// &lt;summary&gt;Explicit display order and ribbon tension leave directed source facts and ordinal paint unchanged.&lt;/summary&gt;
 public static class ChordDepthRecipe {
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         var compact = variant.StartsWith(&quot;compact&quot;, StringComparison.Ordinal);
         var form = compact &amp;&amp; variant != &quot;compact&quot; ? variant.Substring(&quot;compact-&quot;.Length) : variant;
         if (form is not (&quot;wide&quot; or &quot;compact&quot; or &quot;source&quot; or &quot;straight&quot; or &quot;center&quot;))

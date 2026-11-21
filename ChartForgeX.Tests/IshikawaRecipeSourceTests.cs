@@ -5,9 +5,9 @@ namespace ChartForgeX.Tests;
 
 public sealed class IshikawaRecipeSourceTests {
     [Theory]
-    [InlineData("wide", VisualThemeMode.Light)] [InlineData("wide", VisualThemeMode.Dark)]
-    [InlineData("compact", VisualThemeMode.Light)] [InlineData("compact", VisualThemeMode.Dark)]
-    public void CompleteOrdinaryProgramUsesTheCompiledCoreFishboneFactory(string variant, VisualThemeMode mode) {
+    [InlineData("wide", ThemeMode.Light)] [InlineData("wide", ThemeMode.Dark)]
+    [InlineData("compact", ThemeMode.Light)] [InlineData("compact", ThemeMode.Dark)]
+    public void CompleteOrdinaryProgramUsesTheCompiledCoreFishboneFactory(string variant, ThemeMode mode) {
         var program = ExampleRecipeSource.EmitIshikawa(variant, mode); var block = IshikawaDepthRecipe.Create(variant, mode);
         Assert.Contains("IshikawaDepthRecipe.Create(\"" + variant + "\", mode)", program);
         Assert.Contains("File.WriteAllText(\"fishbone.svg\", model.ToSvg());", program); Assert.Contains("File.WriteAllBytes(\"fishbone.png\", model.ToPng());", program);

@@ -2,12 +2,12 @@ using ChartForgeX.Themes;
 
 public static partial class ExampleRecipeSource {
     /// <summary>Emits a complete public consumer program using the same compiled native recipe as the gallery.</summary>
-    public static string EmitZenUmlPresentation(string family,string variant,VisualThemeMode mode) {
+    public static string EmitZenUmlPresentation(string family,string variant,ThemeMode mode) {
         if(family is not ("presentation" or "order")||variant is not ("compact" or "wide"))throw new ArgumentException("Unknown finite Zen recipe.");
         var recipe=ReadResource("ChartForgeX.Examples.MermaidRecipes.ZenUmlPresentationRecipe.cs");
         var split=recipe.IndexOf("/// <summary>",StringComparison.Ordinal);
         return "using System;\nusing System.IO;\nusing ChartForgeX.Mermaid;\nusing ChartForgeX.Themes;\nusing ChartForgeX.VisualArtifacts;\n"
-            +"var artifact=ZenUmlPresentationRecipe.Create(\""+family+"\",\""+variant+"\",VisualThemeMode."+mode+");\n"
+            +"var artifact=ZenUmlPresentationRecipe.Create(\""+family+"\",\""+variant+"\",ThemeMode."+mode+");\n"
             +"Directory.CreateDirectory(\"output\");artifact.SaveSvg(\"output/sequence.svg\");File.WriteAllBytes(\"output/sequence.png\",artifact.ToPng());File.WriteAllText(\"output/sequence.html\",artifact.ToHtmlPage());File.WriteAllText(\"output/sequence.json\",artifact.ToInterchangeJson());\n"
             +recipe.Substring(split);
     }

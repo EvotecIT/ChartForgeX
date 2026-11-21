@@ -86,6 +86,14 @@ public sealed partial class SvgColorVariables {
         return this;
     }
 
+    // A colour a renderer derives for one purpose (story syntax) replaces an earlier mapping of the same RGB value.
+    internal void AddPreferred(string name, ChartColor color) {
+        Add(name, color);
+        var variable = _variables[_variables.Count - 1];
+        var key = Rgb(color.R, color.G, color.B);
+        _any[key] = variable; _text[key] = variable; _byRole[RoleKey(SvgColorRole.Any, key)] = variable;
+    }
+
     /// <summary>Registers one theme-ramp declaration while retaining first-Ramp matching for authored scales.</summary>
     internal void AddRamp(string? name, ChartColor color, SvgColorRole role) {
         var key = Rgb(color.R, color.G, color.B);

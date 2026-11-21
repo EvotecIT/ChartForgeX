@@ -91,7 +91,7 @@ var orders = ChartSeries.CreateLine(new ChartSeriesId("completed-orders"), "Comp
     ChartPoints.FromValues(28, 34, 41, 48, 32));
 orders.ConfigureMarkers(markers => markers.Radius = 4);
 var chart = Chart.Create().WithTitle("Weekly orders")
-    .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Dark).AddSeries(orders);
+    .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark).AddSeries(orders);
 orders.WithName("Completed orders");
 ```
 
@@ -118,7 +118,7 @@ var chart = Chart.Create().WithXLabels("North", "South", "East", "West")
     .AddBar("Orders", ChartPoints.FromValues(28, 34, 41, 48));
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(800, 440)),
-    themeMode: VisualThemeMode.Dark,
+    themeMode: ThemeMode.Dark,
     frame: new VisualFrame("Orders by region"));
 var prepared = chart.Prepare(context);
 string svg = prepared.ToSvg();

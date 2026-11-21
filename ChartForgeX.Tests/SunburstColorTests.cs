@@ -16,9 +16,9 @@ public sealed class SunburstColorTests {
     private static XElement Mark(XElement node) => node.Elements().Single(element => (string?)element.Attribute("data-cfx-role") == "sunburst-segment-mark");
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void IndependentMeasurementsShareFixedAndDiscretePaintAcrossSectorsLegendAndNativePixels(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void IndependentMeasurementsShareFixedAndDiscretePaintAcrossSectorsLegendAndNativePixels(ThemeMode mode) {
         foreach (var scale in new[] {
             ChartColorScale.Sequential(Red, Blue).WithValueRange(0, 100).WithNoDataColor(Missing),
             ChartColorScale.Discrete(new[] { new ChartColorBand(50, Red, "Lower"), new ChartColorBand(null, Blue, "Upper") }).WithNoDataColor(Missing)

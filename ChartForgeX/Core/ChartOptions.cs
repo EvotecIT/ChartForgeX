@@ -12,7 +12,7 @@ public sealed partial class ChartOptions {
     private ChartSize _size = new(1000, 560);
     private ChartPadding _padding = ChartPadding.All(24);
     private VisualTheme _theme = VisualTheme.Graphite();
-    private VisualThemeMode _themeMode;
+    private ThemeMode _themeMode;
     private ResolvedVisualTheme? _resolvedTheme;
     private ChartHeatmapScale _heatmapScale = ChartHeatmapScale.Sequential;
     private ChartLegendPosition _legendPosition = ChartLegendPosition.TopLeft;
@@ -93,9 +93,9 @@ public sealed partial class ChartOptions {
     }
 
     /// <summary>Gets or sets the explicit color-palette mode.</summary>
-    public VisualThemeMode ThemeMode {
+    public ThemeMode ThemeMode {
         get => _themeMode;
-        set { if (!Enum.IsDefined(typeof(VisualThemeMode), value)) throw new ArgumentOutOfRangeException(nameof(value)); _themeMode = value; _resolvedTheme = null; }
+        set { if (!Enum.IsDefined(typeof(ThemeMode), value)) throw new ArgumentOutOfRangeException(nameof(value)); _themeMode = value; _resolvedTheme = null; }
     }
     internal ResolvedVisualTheme ResolvedTheme => _resolvedTheme ??= Theme.ResolvePresentation(ThemeMode);
 

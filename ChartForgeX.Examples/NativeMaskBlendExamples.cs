@@ -5,7 +5,7 @@ using ChartForgeX.VisualArtifacts;
 
 internal static class NativeMaskBlendExamples {
     internal static void Write(string output) {
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) foreach (var variant in new[] { "compact", "wide" }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) foreach (var variant in new[] { "compact", "wide" }) {
             var layer = NativeMaskExample.Create(variant, mode); var stem = Path.Combine(output, "native-mask-" + variant + "-" + mode.ToString().ToLowerInvariant());
             File.WriteAllText(stem + ".source.svg", layer.Source.ToSvg()); File.WriteAllBytes(stem + ".source.png", layer.Source.ToPng());
             File.WriteAllText(stem + ".svg", layer.Visual.ToSvg()); File.WriteAllBytes(stem + ".png", layer.Visual.ToPng());

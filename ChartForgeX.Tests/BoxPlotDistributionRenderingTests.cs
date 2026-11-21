@@ -73,11 +73,11 @@ public sealed class BoxPlotDistributionRenderingTests {
         }
     }
     [Theory]
-    [InlineData(false, false, 800, VisualThemeMode.Light)]
-    [InlineData(false, true, 360, VisualThemeMode.Dark)]
-    [InlineData(true, false, 800, VisualThemeMode.Dark)]
-    [InlineData(true, true, 360, VisualThemeMode.Light)]
-    public void RawOutliersShareNativeGeometryAndKeepIndependentSummaryAndSampleFacts(bool horizontal, bool reversed, int width, VisualThemeMode mode) {
+    [InlineData(false, false, 800, ThemeMode.Light)]
+    [InlineData(false, true, 360, ThemeMode.Dark)]
+    [InlineData(true, false, 800, ThemeMode.Dark)]
+    [InlineData(true, true, 360, ThemeMode.Light)]
+    public void RawOutliersShareNativeGeometryAndKeepIndependentSummaryAndSampleFacts(bool horizontal, bool reversed, int width, ThemeMode mode) {
         var chart = Create(width, mode).ConfigureBoxPlot(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
         var valueAxis = horizontal ? chart.Options.XAxis : chart.Options.YAxis;
         valueAxis.WithReversal(reversed);
@@ -114,7 +114,7 @@ public sealed class BoxPlotDistributionRenderingTests {
 
     [Fact]
     public void PreparedDistributionExportsRemainDetachedFromPolicySourcesIdentitiesAndLocalizedWords() {
-        var chart = Create(800, VisualThemeMode.Light).ConfigureLabels(labels => {
+        var chart = Create(800, ThemeMode.Light).ConfigureLabels(labels => {
             labels.LowerWhisker = "Dolny wąs"; labels.SourceMinimum = "Minimum pomiarów"; labels.Outlier = "Pomiar odstający";
         });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -129,7 +129,7 @@ public sealed class BoxPlotDistributionRenderingTests {
 
     [Fact]
     public void PointLegendsUseGroupIdentityAndNeverBorrowAnOriginalSampleIdentity() {
-        var prepared = Create(800, VisualThemeMode.Light).WithLegend(true).WithPointLegend().Prepare(new VisualRenderContext());
+        var prepared = Create(800, ThemeMode.Light).WithLegend(true).WithPointLegend().Prepare(new VisualRenderContext());
         var legends = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "legend-entry").ToArray();
         Assert.Equal(2, legends.Length);
         Assert.Equal(new[] { "group-\"a", "group-b" }, legends.Select(group => group.Metadata["data-cfx-group-id"]));
@@ -157,7 +157,7 @@ public sealed class BoxPlotDistributionRenderingTests {
 
     [Fact]
     public void VerticalSecondaryProjectionIncludesSourceExtremaAndHorizontalRestrictionsStayExplicit() {
-        var chart = Create(800, VisualThemeMode.Light);
+        var chart = Create(800, ThemeMode.Light);
         chart.Series[0].ValueAxis = ChartAxisSide.Secondary;
         chart.AddLine("Primary", new[] { new ChartPoint(1, 1), new ChartPoint(2, 2) });
         var prepared = chart.Prepare(new VisualRenderContext());
@@ -167,7 +167,7 @@ public sealed class BoxPlotDistributionRenderingTests {
         Assert.Throws<NotSupportedException>(() => chart.Prepare(new VisualRenderContext()));
     }
 
-    internal static Chart Create(int width, VisualThemeMode mode) {
+    internal static Chart Create(int width, ThemeMode mode) {
         var series = ChartSeries.CreateBoxPlot(new ChartSeriesId("raw-distribution"), "Latency", new[] {
             new ChartBoxPlotSampleGroup(1, new[] { 0d, 1, 2, 3, 4, 5, 6, 7, 8, 100 }),
             new ChartBoxPlotSampleGroup(2, new[] { 0d, 100, 101, 102 })

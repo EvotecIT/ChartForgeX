@@ -133,7 +133,7 @@ public sealed class GanttDependencyTests {
         if (!InteractiveChartBrowser.Enabled) return;
         var document = new MermaidParser().ParseGantt(File.ReadAllText(Fixture("mmd"))).Document!;
         var chart = document.ToChart(new MermaidGanttRenderOptions { Width = width, Height = 420 })
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + chart.ToHtmlFragment() + "</body></html>", width, 460);
         Assert.Equal(3, await session.Page.Locator("[data-cfx-role='gantt-dependency-line']").CountAsync());
         Assert.Equal(4, await session.Page.Locator("[data-cfx-role='gantt-task'],[data-cfx-role='gantt-milestone']").CountAsync());

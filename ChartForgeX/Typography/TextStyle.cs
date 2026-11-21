@@ -136,7 +136,7 @@ public sealed class TextStyle {
 
     private static bool IsFinite(double value) => !double.IsNaN(value) && !double.IsInfinity(value);
 
-    private static void ValidateEnum<T>(T value, string parameterName) where T : struct {
+    private static void ValidateEnum<T>(T value, string parameterName) where T : struct, Enum {
         if (!Enum.IsDefined(typeof(T), value)) throw new ArgumentOutOfRangeException(parameterName, value, "Unknown text formatting value.");
     }
 }

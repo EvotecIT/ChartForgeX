@@ -8,15 +8,15 @@ namespace ChartForgeX.Tests;
 
 public sealed class MixedCaptionRecipeSourceTests {
     [Theory]
-    [InlineData("native", "compact", VisualThemeMode.Light)]
-    [InlineData("native", "compact", VisualThemeMode.Dark)]
-    [InlineData("native", "wide", VisualThemeMode.Light)]
-    [InlineData("native", "wide", VisualThemeMode.Dark)]
-    [InlineData("flowchart", "wide", VisualThemeMode.Dark)]
-    [InlineData("requirement", "compact", VisualThemeMode.Light)]
-    [InlineData("requirement", "compact", VisualThemeMode.Dark)]
-    [InlineData("mindmap", "wide", VisualThemeMode.Light)]
-    public void CompleteOrdinaryProgramUsesTheSameCompiledRecipeAndEditableNativeOwner(string family, string variant, VisualThemeMode mode) {
+    [InlineData("native", "compact", ThemeMode.Light)]
+    [InlineData("native", "compact", ThemeMode.Dark)]
+    [InlineData("native", "wide", ThemeMode.Light)]
+    [InlineData("native", "wide", ThemeMode.Dark)]
+    [InlineData("flowchart", "wide", ThemeMode.Dark)]
+    [InlineData("requirement", "compact", ThemeMode.Light)]
+    [InlineData("requirement", "compact", ThemeMode.Dark)]
+    [InlineData("mindmap", "wide", ThemeMode.Light)]
+    public void CompleteOrdinaryProgramUsesTheSameCompiledRecipeAndEditableNativeOwner(string family, string variant, ThemeMode mode) {
         var emitted = ExampleRecipeSource.EmitMixedCaptions(family, variant, mode);
         var sourcePath = family == "native"
             ? Path.Combine(TestRepository.Root, "ChartForgeX.Examples", "Recipes", "MixedCaptionRecipe.cs")
@@ -32,7 +32,7 @@ public sealed class MixedCaptionRecipeSourceTests {
             Assert.Contains("fonts/Carlito-Regular.ttf", emitted, StringComparison.Ordinal);
             Assert.Contains("fonts/Carlito-Bold.ttf", emitted, StringComparison.Ordinal);
             Assert.Contains("FontRegistry.Register(captionFamily", emitted, StringComparison.Ordinal);
-            Assert.Contains("VisualThemeMode." + mode + ", captionFamily)", emitted, StringComparison.Ordinal);
+            Assert.Contains("ThemeMode." + mode + ", captionFamily)", emitted, StringComparison.Ordinal);
         } else {
             Assert.Contains("ChartForgeX.Mermaid.MermaidRenderer.Render", source, StringComparison.Ordinal);
             Assert.Contains("MermaidMixedCaptionSourceExample.Create", emitted, StringComparison.Ordinal);

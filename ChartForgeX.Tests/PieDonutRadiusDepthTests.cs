@@ -47,11 +47,11 @@ public sealed class PieDonutRadiusDepthTests {
     }
 
     [Theory]
-    [InlineData(ChartSeriesKind.Pie, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.Pie, VisualThemeMode.Dark)]
-    [InlineData(ChartSeriesKind.Donut, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.Donut, VisualThemeMode.Dark)]
-    public void ClearingAllOptInsRestoresExactDefaultSvgPngWhilePreparedExportsStayDetached(ChartSeriesKind kind, VisualThemeMode mode) {
+    [InlineData(ChartSeriesKind.Pie, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.Pie, ThemeMode.Dark)]
+    [InlineData(ChartSeriesKind.Donut, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.Donut, ThemeMode.Dark)]
+    public void ClearingAllOptInsRestoresExactDefaultSvgPngWhilePreparedExportsStayDetached(ChartSeriesKind kind, ThemeMode mode) {
         var series = Source("observed", kind); var chart = Chart.Create().WithSize(600, 420).WithTheme(VisualTheme.Graphite(), mode)
             .WithLegend(false).WithHeader(false).AddSeries(series);
         var original = Prepare(chart); var svg = original.ToSvg(); var png = original.ToPng();
@@ -149,7 +149,7 @@ public sealed class PieDonutRadiusDepthTests {
         .WithObservationIds(new[] { new ChartObservationId("category-A"), new ChartObservationId("category-B"), new ChartObservationId("category-C") });
     internal static Chart Fixture(ChartSeriesKind kind, bool dark, int width, bool labels) {
         var source = Source("observed", kind).WithPointSliceRadiusRatio(0, .35).WithPointSliceRadiusRatio(1, .7).WithPointSliceRadiusRatio(2, 1);
-        return Chart.Create().WithSize(width, width < 500 ? 440 : 500).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        return Chart.Create().WithSize(width, width < 500 ? 440 : 500).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithHeader(false).WithLegend(false).WithDataLabels(labels).WithXLabels("Alpha", "Beta", "Gamma").AddSeries(source);
     }
     internal static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);

@@ -1,13 +1,14 @@
 using System;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Mermaid;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using ChartForgeX.VisualArtifacts;
 
 var source = {{SOURCE_TEXT}};
-var result = SequenceSurfaceShadowSourceRecipe.Parse(source, {{VARIANT}}, VisualThemeMode.{{MODE}});
+var result = SequenceSurfaceShadowSourceRecipe.Parse(source, {{VARIANT}}, ThemeMode.{{MODE}});
 foreach (var diagnostic in result.Diagnostics) Console.WriteLine(diagnostic.Code + ": " + diagnostic.Message);
 var artifact = result.Artifact!;
 File.WriteAllText("sequence-source.svg", artifact.ToSvg());

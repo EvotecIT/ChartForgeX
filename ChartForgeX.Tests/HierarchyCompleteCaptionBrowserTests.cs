@@ -10,11 +10,11 @@ namespace ChartForgeX.Tests;
 /// <summary>Independent SVG glyph bounds preserve complete hierarchy captions with the native fixture face.</summary>
 public sealed class HierarchyCompleteCaptionBrowserTests {
     [BrowserTheory]
-    [InlineData(false, VisualThemeMode.Light)]
-    [InlineData(false, VisualThemeMode.Dark)]
-    [InlineData(true, VisualThemeMode.Light)]
-    [InlineData(true, VisualThemeMode.Dark)]
-    public async Task CompleteCaptionsStayInsideTheirMarksWithTheNativeFont(bool treemap, VisualThemeMode mode) {
+    [InlineData(false, ThemeMode.Light)]
+    [InlineData(false, ThemeMode.Dark)]
+    [InlineData(true, ThemeMode.Light)]
+    [InlineData(true, ThemeMode.Dark)]
+    public async Task CompleteCaptionsStayInsideTheirMarksWithTheNativeFont(bool treemap, ThemeMode mode) {
         if (!Enabled) return;
         var chart = treemap ? HierarchyCompleteCaptionTests.Treemap() : HierarchyCompleteCaptionTests.Tree(true);
         if (!treemap) chart.Series[0].WithPointLabel(0, "Authored operations");

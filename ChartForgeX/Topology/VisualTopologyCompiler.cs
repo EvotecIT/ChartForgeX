@@ -45,7 +45,7 @@ internal sealed partial class VisualTopologyCompiler {
         _frameRequest = context.Frame.RequestValues(retainOwnedFonts: true);
         _source = source;
         if (source.LayoutMode == TopologyLayoutMode.Regions && options.RegionPrint)
-            context = new VisualRenderContext(context.Layout, context.Theme, VisualThemeMode.Light, context.Frame, context.Font)
+            context = new VisualRenderContext(context.Layout, context.Theme, ThemeMode.Light, context.Frame, context.Font)
                 .WithRequestsOf(context).WithNativeTextCapture(context.NativeTextCapture);
         _svgTheme = new TopologyPaint(context.Theme, context.ThemeMode, options.SvgColorVariables?.Clone());
         _context = ResolveFrame(context, source, options);

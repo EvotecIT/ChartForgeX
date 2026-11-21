@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Xml.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
@@ -43,7 +44,7 @@ public class SectionPreparationBenchmarkFixture {
             .WithObservationIds(Enumerable.Range(0, count).Select(index => new ChartObservationId("row-" + index.ToString(CultureInfo.InvariantCulture))));
         series.ConfigureMarkers(markers => { markers.Enabled = true; markers.Radius = radius; });
         SourceChart = Chart.Create().WithSize(800, 440).WithPadding(24, 24, 24, 24).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithTheme(theme, VisualThemeMode.Light).AddSeries(series);
+            .WithTheme(theme, ThemeMode.Light).AddSeries(series);
         SourceChart.Options.PngFontPath = fontPath;
         if (parts[1] == "explicit") SourceChart.WithXAxisBounds(0, 12).WithYAxisBounds(0, 40);
         _authoredXMinimum = SourceChart.Options.XAxis.Minimum; _authoredXMaximum = SourceChart.Options.XAxis.Maximum;

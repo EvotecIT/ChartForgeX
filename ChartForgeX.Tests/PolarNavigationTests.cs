@@ -39,7 +39,7 @@ public sealed class PolarNavigationTests {
     [Theory]
     [InlineData(360, false)] [InlineData(360, true)] [InlineData(800, false)] [InlineData(800, true)]
     public void AcceptedNativeViewsRetainSourceIdentitiesAndBothExportSurfacesAcrossAllPoses(int width, bool dark) {
-        var chart = Model().WithSize(width, 420).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        var chart = Model().WithSize(width, 420).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         var original = chart.Series.Select(series => series.Points.ToArray()).ToArray();
         var prepared = Prepare(chart, Window()); var projection = prepared.PolarProjection!;
         var zoomed = Prepare(chart, projection.Zoom(1.5, Anchor(projection, 6.1, .8), All));

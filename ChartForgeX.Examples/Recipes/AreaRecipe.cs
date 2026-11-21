@@ -1,7 +1,7 @@
 /// <summary>Builds a filled area showing weekly capacity use.</summary>
 public static class AreaRecipe {
     /// <summary>Creates the selected area example, including the warning-pattern option.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         if (variant == "sparse") {

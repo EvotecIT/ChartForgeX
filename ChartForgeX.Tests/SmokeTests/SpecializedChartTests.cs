@@ -375,7 +375,7 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("data-cfx-status=\"positive\"", StringComparison.Ordinal), "Semantic heatmaps should expose positive cell status.");
         Assert(svg.Contains("data-cfx-status=\"warning\"", StringComparison.Ordinal), "Semantic heatmaps should expose warning cell status.");
         Assert(svg.Contains("data-cfx-status=\"negative\"", StringComparison.Ordinal), "Semantic heatmaps should expose negative cell status.");
-        var heatmapColors = VisualTheme.Graphite().Resolve(VisualThemeMode.Light);
+        var heatmapColors = VisualTheme.Graphite().Resolve(ThemeMode.Light);
         Assert(svg.Contains("fill=\"" + heatmapColors.Positive.ToHex() + "\"", StringComparison.Ordinal), "Semantic heatmap high values should use the positive theme color.");
         Assert(svg.Contains("fill=\"" + heatmapColors.Warning.ToHex() + "\"", StringComparison.Ordinal), "Semantic heatmap warning values should use the warning theme color.");
         Assert(svg.Contains("fill=\"" + heatmapColors.Negative.ToHex() + "\"", StringComparison.Ordinal), "Semantic heatmap low values should use the negative theme color.");

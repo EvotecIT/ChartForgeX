@@ -1,6 +1,6 @@
 /// <summary>Bars, a forecast area and an observed line share daily categories, including explicit missing and empty states.</summary>
 public static class ComparisonRecipe {
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var count = variant == "empty" ? 0 : variant == "dense" ? 24 : 12;
         var names = variant == "wrapped-legend"
             ? new[] { "Observed checks across all locations", "Expected coverage of monitored services", "Capacity available for the next assessment" }

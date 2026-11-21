@@ -20,10 +20,10 @@ public static partial class TopologyChartExtensions {
     }
 
     /// <summary>Adds a small monospace value chip along an edge, such as PoE watts, replication cost or lag.</summary>
-    public static TopologyChart AddEdgeChip(this TopologyChart chart, string edgeId, string text, TopologyTone tone = TopologyTone.Neutral, string? iconId = null) {
+    /// <remarks>A default <paramref name="tone"/> is <see cref="Tone.Neutral"/>; pass <see cref="Tone.None"/> to follow the edge status.</remarks>
+    public static TopologyChart AddEdgeChip(this TopologyChart chart, string edgeId, string text, Tone? tone = null, string? iconId = null) {
         var edge = RequiredEdge(chart, edgeId);
-        ValidateEnum(typeof(TopologyTone), tone, nameof(tone), "Topology tones");
-        edge.Chips.Add(new TopologyEdgeChip { Text = RequiredText(text, nameof(text), "Topology edge chip text"), Tone = tone, IconId = string.IsNullOrWhiteSpace(iconId) ? null : iconId!.Trim() });
+        edge.Chips.Add(new TopologyEdgeChip { Text = RequiredText(text, nameof(text), "Topology edge chip text"), Tone = tone ?? Tone.Neutral, IconId = string.IsNullOrWhiteSpace(iconId) ? null : iconId!.Trim() });
         return chart;
     }
 

@@ -9,15 +9,15 @@ namespace ChartForgeX.Tests;
 
 public sealed class AntimeridianMapViewportTests {
     [Theory]
-    [InlineData("wide", VisualThemeMode.Light)]
-    [InlineData("wide", VisualThemeMode.Dark)]
-    [InlineData("compact", VisualThemeMode.Light)]
-    [InlineData("compact", VisualThemeMode.Dark)]
-    [InlineData("mercator", VisualThemeMode.Light)]
-    [InlineData("mercator", VisualThemeMode.Dark)]
-    [InlineData("compact-mercator", VisualThemeMode.Light)]
-    [InlineData("compact-mercator", VisualThemeMode.Dark)]
-    public void ExplicitSeamWindowRetainsRawFactsCoincidentBearingsAndRectangularlyClippedNativeCurves(string variant, VisualThemeMode mode) {
+    [InlineData("wide", ThemeMode.Light)]
+    [InlineData("wide", ThemeMode.Dark)]
+    [InlineData("compact", ThemeMode.Light)]
+    [InlineData("compact", ThemeMode.Dark)]
+    [InlineData("mercator", ThemeMode.Light)]
+    [InlineData("mercator", ThemeMode.Dark)]
+    [InlineData("compact-mercator", ThemeMode.Light)]
+    [InlineData("compact-mercator", ThemeMode.Dark)]
+    public void ExplicitSeamWindowRetainsRawFactsCoincidentBearingsAndRectangularlyClippedNativeCurves(string variant, ThemeMode mode) {
         var chart = DatelineMapRecipe.Create(variant, mode); var prepared = MapLabelClusterDepthTests.Prepare(chart);
         MapLabelClusterDepthTests.Capture(prepared, "dateline-map-" + variant + "-" + mode);
         var map = Assert.Single(MapLabelClusterDepthTests.Groups(prepared, "geographic-map"));

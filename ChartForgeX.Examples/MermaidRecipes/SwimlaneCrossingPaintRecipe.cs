@@ -12,7 +12,7 @@ public static class SwimlaneCrossingPaintRecipe {
         return settings + "swimlane-beta LR\n subgraph Inbound\n a[Accept]\n b[Build]\n end\n subgraph Outbound\n c[Check]\n d[Deliver]\n end\n a --> d\n b --> c\n";
     }
     /// <summary>Creates the source-backed artifact through the normal Mermaid package.</summary>
-    public static VisualArtifact Create(string form = "basis", string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static VisualArtifact Create(string form = "basis", string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var rendered = MermaidRenderer.Render(Source(form), new MermaidRenderOptions {
             Presentation = new MermaidPresentationOptions { ThemeMode = mode },

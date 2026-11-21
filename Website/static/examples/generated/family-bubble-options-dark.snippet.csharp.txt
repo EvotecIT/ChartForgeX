@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -14,7 +15,7 @@ using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 using static BubbleMarkerOptionsRecipe;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 #endregion
 
@@ -31,7 +32,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 #endregion
 
 static class BubbleMarkerOptionsRecipe {
-    internal static Chart MarkerOptions(bool custom, VisualThemeMode mode) {
+    internal static Chart MarkerOptions(bool custom, ThemeMode mode) {
         var standard = ChartSeries.CreateBubble(new ChartSeriesId("standard"), "Standard", new[] {
             new ChartBubble(1, 18, 9), new ChartBubble(2, 30, 36), new ChartBubble(3, 24, 81)
         }).ConfigureMarkers(markers => markers.Shape = ChartMarkerShape.Circle);
@@ -41,7 +42,7 @@ static class BubbleMarkerOptionsRecipe {
         if (custom) priority.ConfigureMarkers(markers => {
             markers.CustomPath = ChartMarkerPath.Start(0, -1).CubicTo(1, -1, 1, 1, 0, 1)
                 .CubicTo(-1, 1, -1, -1, 0, -1);
-            var outline = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(226, 232, 240) : ChartColor.FromRgb(51, 65, 85);
+            var outline = mode == ThemeMode.Dark ? ChartColor.FromRgb(226, 232, 240) : ChartColor.FromRgb(51, 65, 85);
             markers.OutlineStroke = new ChartStrokeStyle(outline, 2, dash: new[] { 4d, 3d });
             markers.StrokeDashOffset = 1;
         });

@@ -6,7 +6,7 @@ using ChartForgeX.VisualArtifacts;
 
 internal static class NativeRetainedAppearanceExamples {
     internal static void Write(string output) {
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             foreach (var variant in new[] { "compact", "wide" }) {
                 var source = NativeRetainedAppearanceExample.Create(variant, mode);
                 var layer = NativeRetainedAppearanceExample.Capture(variant, mode);

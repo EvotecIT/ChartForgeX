@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -13,7 +14,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = CombinedGaugeRecipe.Create("wide", mode);
 var context = new VisualRenderContext(
@@ -27,7 +28,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 
 /// <summary>A single reading shown with an arc, needle, explicit references and independently painted semantic bands.</summary>
 public static class CombinedGaugeRecipe {
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant == "compact";
         var series = ChartSeries.CreateGauge(new ChartSeriesId("pressure"), "Pressure",

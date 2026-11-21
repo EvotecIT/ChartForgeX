@@ -19,7 +19,7 @@ public sealed class GaugeConfigurationFontTests {
         try {
             FontRegistry.Register(family, OpenTypeTestFonts.NameKeyed(extraGlyphs: Enumerable.Range(32, 95).ToDictionary(value => value, _ => OpenTypeTestFonts.Flex)));
             var chart = GaugeConfigurationRenderingTests.Create(layout, dark, compact: true)
-                .WithTheme(VisualTheme.Graphite().WithFontFamily(family), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+                .WithTheme(VisualTheme.Graphite().WithFontFamily(family), dark ? ThemeMode.Dark : ThemeMode.Light);
             var wide = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
             var svg = wide.ToSvg(); var png = wide.ToPng();
             Verify(wide);

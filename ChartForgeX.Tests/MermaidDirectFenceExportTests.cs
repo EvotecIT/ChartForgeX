@@ -26,7 +26,7 @@ public sealed class MermaidDirectFenceExportTests {
     [MemberData(nameof(Sources))]
     public void DirectAndFencedNotationExportsHaveIdenticalSvgAndNativePng(string fixture, string source, bool dark) {
         var options = new MermaidRenderOptions {
-            Presentation = new MermaidPresentationOptions { ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light,
+            Presentation = new MermaidPresentationOptions { ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light,
                 FontFamily = BrowserProofFonts.Family, FontSize = 12 },
             Flowchart = new MermaidFlowchartRenderOptions { Width = 360, Height = 760 },
             Class = new MermaidTopologyRenderOptions { Width = 360, Height = 760 },

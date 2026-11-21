@@ -72,7 +72,7 @@ public sealed class HighlightFontContractsBrowserTests {
     public async Task TopologyUnknownIdsDoNotAddHighlightMutingOrClearSelection(bool dark) {
         if (!Enabled) return;
         var chart = TopologyChart.Create().WithViewport(800, 320, 12).WithLegend(null)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddNode("a", "API", 80, 100).AddNode("b", "Worker", 480, 100).AddEdge("ab", "a", "b", "Dispatch");
         await using var session = await OpenAsync(new HtmlInteractiveTopologyRenderer().RenderPage(chart,
             new TopologyRenderOptions { EnableHtmlSelectionPanel = false }), dark ? 390 : 1440, 680);
@@ -138,7 +138,7 @@ public sealed class HighlightFontContractsBrowserTests {
     private static Chart Bars(string id, bool dark) {
         var points = new[] { new ChartPoint(1, 10), new ChartPoint(2, 20) };
         return Chart.Create().WithTitle("Service observations").WithSize(800, 450).WithLegend().WithDataLabels(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithXLabels("Berlin", "Paris")
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithXLabels("Berlin", "Paris")
             .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("primary"), "First", points).WithObservationId(0, new ChartObservationId(id)))
             .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("reference"), "Second", points));
     }

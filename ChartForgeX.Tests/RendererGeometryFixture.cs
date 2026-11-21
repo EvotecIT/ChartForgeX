@@ -44,7 +44,7 @@ internal static class RendererGeometryFixture {
         }
         if (family.StartsWith("wardley", StringComparison.Ordinal)) {
             if (family != "wardley") theme = VisualTheme.Graphite();
-            var mode = family == "wardley-dark" ? VisualThemeMode.Dark : VisualThemeMode.Light;
+            var mode = family == "wardley-dark" ? ThemeMode.Dark : ThemeMode.Light;
             var map = WardleyMapBlock.Create().WithSize(400, 280).WithTheme(theme, mode).WithCard(false).WithTransparentBackground().WithPngOutputScale(density);
             map.AddNode("origin", "Origin", 0.5, 0.1);
             map.AddEvolution("origin", 0.8);
@@ -60,7 +60,7 @@ internal static class RendererGeometryFixture {
             return map;
         }
         if (family is "fork" or "flame" or "droplet") {
-            var icon = family == "fork" ? VisualIcon.ForkKnife : family == "flame" ? VisualIcon.Flame : VisualIcon.Droplet;
+            var icon = family == "fork" ? Icons.ForkKnife : family == "flame" ? Icons.Flame : Icons.Droplet;
             var card = MetricCard.Create().WithMetric("Meals", 12).WithSize(200, 140).WithTheme(theme).WithCard(false).WithTransparentBackground().WithIcon(icon).WithPngOutputScale(density);
             return card;
         }

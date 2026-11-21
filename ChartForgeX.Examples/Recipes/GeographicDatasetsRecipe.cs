@@ -1,7 +1,7 @@
 /// <summary>Combines geographic service zones, independently colored weighted depots and retained route facts.</summary>
 public static class GeographicDatasetsRecipe {
     /// <summary>Creates a compact or wide geographic chart using an ordinary or Mercator source projection.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "mercator" or "compact-mercator")) throw new ArgumentOutOfRangeException(nameof(variant));
         var projection = variant.EndsWith("mercator", StringComparison.Ordinal)
             ? ChartMapGeoJsonProjection.WebMercator : ChartMapGeoJsonProjection.Equirectangular;

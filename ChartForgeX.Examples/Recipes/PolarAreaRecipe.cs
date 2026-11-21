@@ -1,7 +1,7 @@
 /// <summary>Service revenue encoded by radial area, with an optional reversed category example.</summary>
 public static class PolarAreaRecipe {
     /// <summary>Creates radial revenue segments; the reversal variant retains a zero-valued category and point paint.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "angular-reversal" or "compact-angular-reversal"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         if (variant is "angular-reversal" or "compact-angular-reversal") {

@@ -113,6 +113,6 @@ public sealed class AutomaticPointCaptionWrappingTests {
     private static FontSpec Font() => new() { Family = "Carlito", FilePath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf") };
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(new VisualRenderContext(
         new VisualLayoutOptions(new VisualSize(chart.Options.Size.Width, chart.Options.Size.Height), chart.Options.Padding),
-        chart.Options.Theme, VisualThemeMode.Light, new VisualFrame(showLegend: false), Font()));
+        chart.Options.Theme, ThemeMode.Light, new VisualFrame(showLegend: false), Font()));
     private static VisualSceneText[] Captions(PreparedVisual prepared) => prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label").ToArray();
 }

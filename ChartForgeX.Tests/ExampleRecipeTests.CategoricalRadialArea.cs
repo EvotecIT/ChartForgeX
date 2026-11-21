@@ -8,13 +8,13 @@ namespace ChartForgeX.Tests;
 
 public sealed partial class ExampleRecipeTests {
     [Theory]
-    [InlineData("wide", VisualThemeMode.Light)]
-    [InlineData("compact", VisualThemeMode.Dark)]
-    [InlineData("stacked", VisualThemeMode.Dark)]
-    [InlineData("compact-stacked", VisualThemeMode.Light)]
-    [InlineData("radius", VisualThemeMode.Light)]
-    [InlineData("compact-radius", VisualThemeMode.Dark)]
-    public void CategoricalRadialAreaHasCompleteCompiledSourceAndUnmodifiedObservations(string variant, VisualThemeMode mode) {
+    [InlineData("wide", ThemeMode.Light)]
+    [InlineData("compact", ThemeMode.Dark)]
+    [InlineData("stacked", ThemeMode.Dark)]
+    [InlineData("compact-stacked", ThemeMode.Light)]
+    [InlineData("radius", ThemeMode.Light)]
+    [InlineData("compact-radius", ThemeMode.Dark)]
+    public void CategoricalRadialAreaHasCompleteCompiledSourceAndUnmodifiedObservations(string variant, ThemeMode mode) {
         var recipe = ExampleRecipes.Named("categorical-radial-area"); var source = Source(recipe, variant);
         Assert.Equal(nameof(CategoricalRadialAreaRecipe), recipe.Factory);
         Assert.Contains("public static class CategoricalRadialAreaRecipe", source);

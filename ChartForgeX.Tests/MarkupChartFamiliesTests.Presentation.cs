@@ -21,7 +21,7 @@ public sealed partial class MarkupChartFamiliesTests {
             var expected = Chart.Create().WithXAxisTimeScale();
             if (family == "ohlc") expected.AddOhlc("Price", candles);
             else expected.AddCandlestick("Price", candles);
-            AssertNativeArtifacts(expected, chart, 920, VisualThemeMode.Light, "dated-" + family);
+            AssertNativeArtifacts(expected, chart, 920, ThemeMode.Light, "dated-" + family);
         }
     }
 
@@ -33,7 +33,7 @@ public sealed partial class MarkupChartFamiliesTests {
             expected.Options.HeatmapColorDimension.Name = "Coverage %";
             Assert.Equal("Coverage %", chart.Options.HeatmapColorDimension.Name);
             Assert.Equal(expected.Options.Theme.ToJson(), chart.Options.Theme.ToJson());
-            AssertNativeArtifacts(expected, chart, 920, VisualThemeMode.Light, "named-heatmap");
+            AssertNativeArtifacts(expected, chart, 920, ThemeMode.Light, "named-heatmap");
         }
     }
 }

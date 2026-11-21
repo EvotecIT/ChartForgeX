@@ -17,15 +17,15 @@ public sealed class MermaidThemeLayoutTests {
     };
 
     [Theory]
-    [InlineData(false, "default", VisualThemeMode.Light)]
-    [InlineData(false, "dark", VisualThemeMode.Dark)]
-    [InlineData(false, "DARK", VisualThemeMode.Dark)]
-    [InlineData(false, "unknown", VisualThemeMode.Light)]
-    [InlineData(true, "default", VisualThemeMode.Light)]
-    [InlineData(true, "dark", VisualThemeMode.Dark)]
-    [InlineData(true, "DARK", VisualThemeMode.Dark)]
-    [InlineData(true, "unknown", VisualThemeMode.Light)]
-    public void SourceThemeKeepsNativePaletteAndEmittedLayoutWhileSelectingFiniteColorRoles(bool packet, string sourceTheme, VisualThemeMode expectedMode) {
+    [InlineData(false, "default", ThemeMode.Light)]
+    [InlineData(false, "dark", ThemeMode.Dark)]
+    [InlineData(false, "DARK", ThemeMode.Dark)]
+    [InlineData(false, "unknown", ThemeMode.Light)]
+    [InlineData(true, "default", ThemeMode.Light)]
+    [InlineData(true, "dark", ThemeMode.Dark)]
+    [InlineData(true, "DARK", ThemeMode.Dark)]
+    [InlineData(true, "unknown", ThemeMode.Light)]
+    public void SourceThemeKeepsNativePaletteAndEmittedLayoutWhileSelectingFiniteColorRoles(bool packet, string sourceTheme, ThemeMode expectedMode) {
         var body = packet ? Packet : Timeline;
         var baseline = Render(body);
         var rendered = Render("%%{init: {'theme':'" + sourceTheme + "'}}%%\n" + body, sourceTheme == "unknown");
@@ -62,7 +62,7 @@ public sealed class MermaidThemeLayoutTests {
         return Assert.IsType<VisualArtifact>(rendered.Artifact);
     }
 
-    private static (VisualTheme Theme, VisualThemeMode Mode) Presentation(VisualArtifact artifact, bool packet) {
+    private static (VisualTheme Theme, ThemeMode Mode) Presentation(VisualArtifact artifact, bool packet) {
         if (packet) {
             var block = Assert.IsType<PacketLayoutBlock>(artifact.Model);
             return (block.Options.Theme, block.Options.ThemeMode);

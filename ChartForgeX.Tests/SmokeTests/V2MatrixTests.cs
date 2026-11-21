@@ -27,11 +27,11 @@ public sealed class V2MatrixTests {
     }
 
     [Theory]
-    [InlineData(false, VisualThemeMode.Light)]
-    [InlineData(false, VisualThemeMode.Dark)]
-    [InlineData(true, VisualThemeMode.Light)]
-    [InlineData(true, VisualThemeMode.Dark)]
-    public void NativeMatricesPreserveMasksPointColorsBoundsAndDetachedExports(bool hexagonal, VisualThemeMode mode) {
+    [InlineData(false, ThemeMode.Light)]
+    [InlineData(false, ThemeMode.Dark)]
+    [InlineData(true, ThemeMode.Light)]
+    [InlineData(true, ThemeMode.Dark)]
+    public void NativeMatricesPreserveMasksPointColorsBoundsAndDetachedExports(bool hexagonal, ThemeMode mode) {
         var chart = Chart.Create().WithXLabels("A", "B", "C", "D").ConfigureHeatmapColorDimension(options => options.ShowLegend = false);
         if (hexagonal) chart.AddHexbinHeatmapRow("Service", new double?[] { 0, null, 20, null });
         else chart.AddHeatmapRow("Service", new double?[] { 0, null, 20, null });
@@ -108,7 +108,7 @@ public sealed class V2MatrixTests {
         var state = new ChartStateCategory("quiet", "Quiet", ChartColor.FromHex("#777777"), emphasis: ChartStateEmphasis.Quiet);
         var chart = Chart.Create().WithStateCategories(state).WithMarkBackdrop(ChartMarkBackdrop.Background)
             .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always).AddHeatmapCategoryRow("Service", new ChartHeatmapCell("quiet", "Ready"));
-        var context = Context(VisualThemeMode.Dark); var prepared = chart.Prepare(context);
+        var context = Context(ThemeMode.Dark); var prepared = chart.Prepare(context);
         var svg = prepared.ToSvg(); chart.Options.Theme = VisualTheme.Graphite();
         Assert.Equal(svg, prepared.ToSvg());
         var colors = context.Theme.Resolve(context.ThemeMode);
@@ -149,7 +149,7 @@ public sealed class V2MatrixTests {
     public void PreparedMapBlendSharesScaleInterpolationAndRetainsStopOperands() {
         var low = ChartColor.FromHex("#102030"); var high = ChartColor.FromHex("#90a0b0");
         var chart = Chart.Create(); chart.Options.MapColorScale = ChartColorScale.Sequential(low, high);
-        var colors = Context().Theme.Resolve(VisualThemeMode.Light);
+        var colors = Context().Theme.Resolve(ThemeMode.Light);
         var blend = ChartHeatmapSurface.MapBlend(chart, colors, null, null, 25, 0, 100);
         Assert.Equal(chart.Options.MapColorScale.ColorFor(25, 0, 100), blend.Color);
         Assert.Equal(low, blend.From); Assert.Equal(high, blend.To); Assert.Equal(.25, blend.Amount);
@@ -160,7 +160,7 @@ public sealed class V2MatrixTests {
         Assert.Contains("--high", SvgPaint.Resolve(blend.Paint.Value!, variables));
     }
 
-    private static VisualRenderContext Context(VisualThemeMode mode = VisualThemeMode.Light) =>
+    private static VisualRenderContext Context(ThemeMode mode = ThemeMode.Light) =>
         new(new VisualLayoutOptions(new VisualSize(640, 400)), themeMode: mode, frame: new VisualFrame("Matrix", "Native scene"));
     private static XElement[] ByRole(XDocument document, string role) => document.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == role).ToArray();
 }

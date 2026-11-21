@@ -45,9 +45,9 @@ public sealed class TopologyShapeContentTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void DefaultMarkupApprovalRetainsItsQuestionSubtitleBadgeAndStatus(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void DefaultMarkupApprovalRetainsItsQuestionSubtitleBadgeAndStatus(ThemeMode mode) {
         var result = new MarkupFlowParser().Parse("decision approve \"Approved?\" subtitle:\"Human gate\" badge:? status:warning");
         Assert.False(result.HasErrors);
         var flow = result.Document!;
@@ -153,7 +153,7 @@ public sealed class TopologyShapeContentTests {
             Assert.True(outline.Contains(new ChartRect(status.Cx - status.Rx, status.Cy - status.Ry, status.Rx * 2, status.Ry * 2)));
     }
 
-    private static VisualRenderContext Context(VisualThemeMode mode = VisualThemeMode.Light) => new(
+    private static VisualRenderContext Context(ThemeMode mode = ThemeMode.Light) => new(
         new VisualLayoutOptions(new VisualSize(800, 500), 20), themeMode: mode, frame: new VisualFrame(showLegend: false),
         font: new FontSpec { Family = "Carlito", FilePath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf") });
 }

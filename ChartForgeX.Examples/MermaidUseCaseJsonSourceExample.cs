@@ -1,7 +1,7 @@
 /// <summary>Consumes canonical UseCase source through the ordinary Mermaid package.</summary>
 public static class MermaidUseCaseJsonSourceExample {
     /// <summary>Parses the supplied complete source and renders its linked native table vertex.</summary>
-    public static VisualArtifact Create(string source, string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light, string? fontFamily = null) {
+    public static VisualArtifact Create(string source, string variant = "wide", ThemeMode mode = ThemeMode.Light, string? fontFamily = null) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant == "compact"; if (compact) source = source.Replace("direction LR", "direction TB", StringComparison.Ordinal);
         var result = ChartForgeX.Mermaid.MermaidRenderer.Render(source, new ChartForgeX.Mermaid.MermaidRenderOptions {

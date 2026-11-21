@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = FunnelPresentationRecipe.Create(&quot;compact-cone-horizontal&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Builds an ordered intake funnel with independent captions and native connection paint.&lt;/summary&gt;
 public static class FunnelPresentationRecipe {
     /// &lt;summary&gt;Creates the complete requested form. Exact documentation typography needs Carlito regular/bold installed or registered; other hosts use normal font fallback.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;cone&quot; or &quot;compact-cone&quot; or &quot;horizontal&quot; or &quot;compact-horizontal&quot; or &quot;cone-horizontal&quot; or &quot;compact-cone-horizontal&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant.StartsWith(&quot;compact&quot;, StringComparison.Ordinal);
         var cone = variant is &quot;cone&quot; or &quot;compact-cone&quot; or &quot;cone-horizontal&quot; or &quot;compact-cone-horizontal&quot;;
@@ -149,6 +150,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -158,7 +160,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = FunnelPresentationRecipe.Create(&quot;compact-cone-horizontal&quot;, mode);
 var context = new VisualRenderContext(
@@ -173,7 +175,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Builds an ordered intake funnel with independent captions and native connection paint.&lt;/summary&gt;
 public static class FunnelPresentationRecipe {
     /// &lt;summary&gt;Creates the complete requested form. Exact documentation typography needs Carlito regular/bold installed or registered; other hosts use normal font fallback.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;wide&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;cone&quot; or &quot;compact-cone&quot; or &quot;horizontal&quot; or &quot;compact-horizontal&quot; or &quot;cone-horizontal&quot; or &quot;compact-cone-horizontal&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant.StartsWith(&quot;compact&quot;, StringComparison.Ordinal);
         var cone = variant is &quot;cone&quot; or &quot;compact-cone&quot; or &quot;cone-horizontal&quot; or &quot;compact-cone-horizontal&quot;;

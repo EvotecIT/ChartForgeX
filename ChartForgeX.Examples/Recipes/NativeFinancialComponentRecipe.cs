@@ -1,7 +1,7 @@
 /// <summary>Creates actual OHLC price tuples with native direction and observation policies.</summary>
 public static class NativeFinancialComponentRecipe {
     /// <summary>Creates an authored fixed numeric price source with caller-owned fonts.</summary>
-    public static Chart Create(bool ohlc, bool finish, int width, VisualThemeMode mode, string family) {
+    public static Chart Create(bool ohlc, bool finish, int width, ThemeMode mode, string family) {
         var open = finish ? 60d : 40d; var high = finish ? 80d : 70d; var low = finish ? 10d : 20d; var close = finish ? 40d : 60d;
         var chart = Chart.Create().WithTitle("Actual financial components").WithSize(width, 420).WithTheme(VisualTheme.Graphite().WithFontFamily(family), mode).WithLegend(true).WithDataLabels(true);
         foreach (var key in new[] { "delivery", "comparison" }) {

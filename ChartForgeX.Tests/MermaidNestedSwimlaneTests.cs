@@ -14,7 +14,7 @@ public sealed partial class MermaidNestedSwimlaneTests {
     internal static string Fixture(string direction = "LR") => File.ReadAllText(Path.Combine(TestRepository.Root,
         "ChartForgeX.Tests", "Fixtures", "Mermaid", "swimlane-native-nesting.mmd")).Replace("swimlane-beta LR", "swimlane-beta " + direction, StringComparison.Ordinal);
     internal static MermaidRenderOptions Options(bool dark, int width) => new() {
-        Presentation = new MermaidPresentationOptions { ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light, FontFamily = BrowserProofFonts.Family },
+        Presentation = new MermaidPresentationOptions { ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light, FontFamily = BrowserProofFonts.Family },
         Swimlane = new MermaidFlowchartRenderOptions { Width = width, Height = 750 }
     };
 

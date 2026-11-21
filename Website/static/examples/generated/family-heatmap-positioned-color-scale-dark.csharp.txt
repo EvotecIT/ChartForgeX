@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -13,7 +14,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = HeatmapPositionedColorScaleRecipe.Create("positioned-color-scale", mode);
 var context = new VisualRenderContext(
@@ -28,7 +29,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 /// <summary>Maps heatmap temperatures to explicitly positioned color stops.</summary>
 public static class HeatmapPositionedColorScaleRecipe {
     /// <summary>Creates temperature rows with fixed color-stop positions and masked cells.</summary>
-    public static Chart Create(string variant = "positioned-color-scale", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "positioned-color-scale", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("positioned-color-scale" or "compact-positioned-color-scale")) throw new ArgumentOutOfRangeException(nameof(variant));
         var colors = VisualTheme.Graphite().Resolve(mode);
         var values = new double?[] { -30, -20, -3, 0, 2.5, 5, 10, 22.5, 40, 55, null, null };

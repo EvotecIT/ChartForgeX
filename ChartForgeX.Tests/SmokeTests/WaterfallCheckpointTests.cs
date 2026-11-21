@@ -84,7 +84,7 @@ public sealed class WaterfallCheckpointTests {
         Assert.Equal("10", groups[7].Metadata["data-cfx-delta"]);
         var sourceGroup = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneGroup>(), group => group.Role == "series");
         Assert.Equal("4", sourceGroup.Metadata["data-cfx-source-points"]); Assert.Equal("8", sourceGroup.Metadata["data-cfx-rendered-points"]);
-        var legends = VisualCartesianCompiler.LegendEntries(chart, new VisualRenderContext().Theme.Resolve(VisualThemeMode.Light));
+        var legends = VisualCartesianCompiler.LegendEntries(chart, new VisualRenderContext().Theme.Resolve(ThemeMode.Light));
         Assert.Equal(8, legends.Count); Assert.Equal("Costs", legends[3].Label); Assert.Equal(accent, legends[3].Color);
         Assert.Equal(ChartFillPattern.Crosshatch, legends[3].Pattern);
         Assert.Equal(groups[3].Metadata["data-cfx-derived-identity"], legends[3].Metadata!["data-cfx-derived-identity"]);

@@ -1,6 +1,7 @@
 #region imports
 using System;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 #endregion
@@ -8,7 +9,7 @@ using ChartForgeX.Topology;
 /// <summary>The executable source for the website's mixed-policy organization hierarchy.</summary>
 public static class PlatformTeamWebsiteRecipe {
     /// <summary>Creates the maintained team with its standard, compact and vertical branches.</summary>
-    public static TopologyChart Create(VisualThemeMode mode = VisualThemeMode.Light) {
+    public static TopologyChart Create(ThemeMode mode = ThemeMode.Light) {
 #region people
         var members = new[] {
             new TopologyTeamMember("marta", "Marta", "Head of platform") {

@@ -22,7 +22,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     public async Task NativeBrushReportsTheSoleObservedValueDomainAndOmitsMixedY(string domains, bool dark, int width) {
         if (!Enabled) return;
         var chart = ChartLinkedProjectionContractsTests.ValueDomainsChart(domains)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(ConfigureProjectionBrush), width, 650);
         var result = await NativeProjectionBrushAsync(session.Page);
         var range = result.GetProperty("range");

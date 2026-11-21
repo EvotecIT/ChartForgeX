@@ -43,7 +43,7 @@
           "name": "storage.type.chartforgex-markup"
         },
         {
-          "match": "(?i)\\b(Graphite|Report|Executive|Product|Accessible|Colorblind|Aurora|Editorial|Candy|People[-_]?Infographic|Terminal|Transparent[-_]?Overlay|Minimal|Dashboard|Saas[-_]?Dashboard|Restaurant[-_]?Dashboard|light|dark)\\b",
+          "match": "(?i)\\b(Graphite|Report|Executive|Product|Accessible|Colorblind|Aurora|Editorial|Candy|People[-_]?Infographic|Terminal|Transparent[-_]?Overlay|Minimal|Dashboard|Saas[-_]?Dashboard|Restaurant[-_]?Dashboard|auto|light|dark)\\b",
           "name": "constant.language.chartforgex-markup"
         },
         {

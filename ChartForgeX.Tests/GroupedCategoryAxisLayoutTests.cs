@@ -212,7 +212,7 @@ public sealed class GroupedCategoryAxisLayoutTests {
     }
 
     private static Chart Bare() => Chart.Create().WithSize(960, 520).WithHeader(false).WithLegend(false).WithDataLabels(false)
-        .WithTheme(VisualTheme.Graphite(), VisualThemeMode.Light).ConfigureTickLabelStyle(style => style.FontSize = 12);
+        .WithTheme(VisualTheme.Graphite(), ThemeMode.Light).ConfigureTickLabelStyle(style => style.FontSize = 12);
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
     private static ChartRect Plot(PreparedVisual prepared) => Assert.Single(prepared.Regions, region => region.Role == "cartesian-plot").Bounds;
     private static string GroupRole(bool horizontal) => horizontal ? "axis-y-category-group" : "axis-x-category-group";

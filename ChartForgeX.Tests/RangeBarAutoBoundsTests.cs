@@ -12,16 +12,16 @@ namespace ChartForgeX.Tests;
 
 public sealed class RangeBarAutoBoundsTests {
     [Theory]
-    [InlineData("wide", VisualThemeMode.Light)]
-    [InlineData("compact", VisualThemeMode.Dark)]
-    [InlineData("thumbnail", VisualThemeMode.Light)]
-    [InlineData("reversed-value", VisualThemeMode.Light)]
-    [InlineData("reversed-category", VisualThemeMode.Dark)]
-    [InlineData("reversed-both-thumbnail", VisualThemeMode.Dark)]
-    [InlineData("logarithmic", VisualThemeMode.Light)]
-    [InlineData("reversed-logarithmic", VisualThemeMode.Dark)]
-    [InlineData("flat", VisualThemeMode.Dark)]
-    public void AutomaticValueBoundsContainActualIntervalPaintAfterEveryAncestorClip(string scenario, VisualThemeMode mode) {
+    [InlineData("wide", ThemeMode.Light)]
+    [InlineData("compact", ThemeMode.Dark)]
+    [InlineData("thumbnail", ThemeMode.Light)]
+    [InlineData("reversed-value", ThemeMode.Light)]
+    [InlineData("reversed-category", ThemeMode.Dark)]
+    [InlineData("reversed-both-thumbnail", ThemeMode.Dark)]
+    [InlineData("logarithmic", ThemeMode.Light)]
+    [InlineData("reversed-logarithmic", ThemeMode.Dark)]
+    [InlineData("flat", ThemeMode.Dark)]
+    public void AutomaticValueBoundsContainActualIntervalPaintAfterEveryAncestorClip(string scenario, ThemeMode mode) {
         var thumbnail = scenario.Contains("thumbnail", StringComparison.Ordinal);
         var compact = scenario is "compact" or "reversed-category" or "reversed-logarithmic" or "flat";
         var width = thumbnail ? 400 : compact ? 360 : 800; var height = thumbnail ? 280 : compact ? 360 : 440;
@@ -56,7 +56,7 @@ public sealed class RangeBarAutoBoundsTests {
     public void ExplicitValueBoundsKeepEndpointsAtThePlotEdgesAndIntentionallyClipTheirCaps(bool reversed) {
         var chart = V2GalleryModels.Create(ChartSeriesKind.RangeBar, "horizontal");
         chart.Options.XAxis.WithBounds(10, 55).WithReversal(reversed);
-        var groups = PointGroups(chart.Prepare(Context(800, 440, VisualThemeMode.Light)));
+        var groups = PointGroups(chart.Prepare(Context(800, 440, ThemeMode.Light)));
         Assert.Equal(10, chart.Options.XAxis.Minimum); Assert.Equal(55, chart.Options.XAxis.Maximum);
         AssertPinned(MainCaps(groups[1])[0], maximum: false, reversed);
         AssertPinned(MainCaps(groups[7])[1], maximum: true, reversed);
@@ -69,7 +69,7 @@ public sealed class RangeBarAutoBoundsTests {
         var chart = V2GalleryModels.Create(ChartSeriesKind.RangeBar, "horizontal");
         if (explicitMaximum) chart.Options.XAxis.Maximum = 55;
         else chart.Options.XAxis.Minimum = 10;
-        var groups = PointGroups(chart.Prepare(Context(800, 440, VisualThemeMode.Light)));
+        var groups = PointGroups(chart.Prepare(Context(800, 440, ThemeMode.Light)));
         AssertPinned(explicitMaximum ? MainCaps(groups[7])[1] : MainCaps(groups[1])[0], explicitMaximum, false);
         var automatic = Parts(explicitMaximum ? groups[1] : groups[7]).Where(part => part.Name.LocalName == "line")
             .Skip(explicitMaximum ? 0 : 4).Take(4).ToArray();
@@ -86,7 +86,7 @@ public sealed class RangeBarAutoBoundsTests {
             .WithBarStyle(ChartBarStyle.Flat).WithXLabels("Minimum", "Maximum")
             .AddRangeBar("Range", new[] { new ChartInterval(1, 10, 10 + delta), new ChartInterval(2, 55, 55 + delta) });
         chart.Series[0].StrokeWidth = .1; chart.Options.XAxis.Reversed = reversed;
-        var prepared = chart.Prepare(Context(360, 360, VisualThemeMode.Dark)); var groups = PointGroups(prepared);
+        var prepared = chart.Prepare(Context(360, 360, ThemeMode.Dark)); var groups = PointGroups(prepared);
         Assert.Equal(2, groups.Length);
         foreach (var group in groups) {
             var body = group.Descendants().Single(part => (string?)part.Attribute("data-cfx-role") == "range-bar");
@@ -97,7 +97,7 @@ public sealed class RangeBarAutoBoundsTests {
         Capture(prepared, "minimum-body-" + reversed + "-" + delta.ToString("R", CultureInfo.InvariantCulture), new { delta, reversed });
     }
 
-    private static VisualRenderContext Context(int width, int height, VisualThemeMode mode, bool thumbnail = false) {
+    private static VisualRenderContext Context(int width, int height, ThemeMode mode, bool thumbnail = false) {
         const string family = "CFX Range Bounds Carlito";
         var directory = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito");
         FontRegistry.Register(family, Path.Combine(directory, "Carlito-Regular.ttf"), 400);

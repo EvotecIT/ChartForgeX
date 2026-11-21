@@ -19,7 +19,7 @@ public sealed class NumericRadialBrowserTests {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(compact ? 360 : 800, compact ? 360 : 440)
             .WithTitle(bars ? "Regional requests" : "Regional workload")
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithXLabels("North", "South", "East", "West").WithLegend().WithDataLabels(false)
             .WithRadialGeometry(new ChartRadialGeometryOptions(-90, 180));
         var first = new[] { new ChartPoint(1, 1200), new ChartPoint(2, 800), new ChartPoint(3, 500), new ChartPoint(4, 900) };

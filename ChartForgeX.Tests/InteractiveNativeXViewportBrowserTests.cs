@@ -127,7 +127,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
     [InlineData(true, 380, ChartSeriesKind.StepLine)]
     public async Task NativeWindowWithoutObservationsKeepsCrossingPaintWithoutInventingTargets(bool dark, int width, ChartSeriesKind kind) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(800, 440).WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = Chart.Create().WithSize(800, 440).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithTitle("A native window between observations").WithSubtitle("The connected path crosses this window; source observations remain outside")
             .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
             .AddSeries(new ChartSeries(new ChartSeriesId("crossing"), "Crossing", kind, new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) })
@@ -277,7 +277,7 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
             for (var index = 0; index < 13; index++) series.WithObservationId(index, new ChartObservationId("sample-" + index));
             if (_kind is not (ChartSeriesKind.Candlestick or ChartSeriesKind.Ohlc))
                 series.ConfigureMarkers(markers => { markers.Enabled = true; if (_kind != ChartSeriesKind.Bubble) markers.Radius = _automaticBounds ? 18 : 4; });
-            var chart = ChartForgeX.Core.Chart.Create().WithSize(_width, 440).WithTheme(VisualTheme.Graphite(), _dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            var chart = ChartForgeX.Core.Chart.Create().WithSize(_width, 440).WithTheme(VisualTheme.Graphite(), _dark ? ThemeMode.Dark : ThemeMode.Light)
                 .WithTitle("Inspect a native X window").WithSubtitle("Native ticks and fixed Y bounds follow the committed window")
                 .WithLegend().AddSeries(series)
                 .AddSeries(new ChartSeries(new ChartSeriesId("reference"), "Reference", ChartSeriesKind.StepLine, new[] { new ChartPoint(Origin, 30), new ChartPoint(Maximum, 30) }));

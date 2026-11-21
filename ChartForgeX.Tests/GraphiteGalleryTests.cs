@@ -18,7 +18,7 @@ public sealed class GraphiteGalleryTests {
         Directory.CreateDirectory(output);
         try {
             var chart = Chart.Create().WithSize(596, 338).WithTitle("Host frame").WithHostFrame()
-                .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithPngOutputScale(scale)
+                .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithPngOutputScale(scale)
                 .WithXLabels("One", "Two", "Three").AddBar("Counts", new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20) });
             foreach (var name in new[] { "normal", "edge-mark" }) {
                 File.WriteAllText(Path.Combine(output, name + ".svg"), chart.ToSvg());

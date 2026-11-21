@@ -8,13 +8,13 @@ namespace ChartForgeX.Tests;
 public sealed partial class ExampleRecipeTests {
     public static IEnumerable<object[]> NativeTrendModelSelections() {
         foreach (var variant in new[] { "polynomial", "logarithmic", "exponential", "power", "confidence", "prediction" })
-            foreach (var compact in new[] { false, true }) foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark })
+            foreach (var compact in new[] { false, true }) foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark })
                 yield return new object[] { compact ? "compact-" + variant : variant, mode };
     }
 
     [Theory]
     [MemberData(nameof(NativeTrendModelSelections))]
-    public void NativeModelRecipesRetainMeasuredSourcesAndEmitCompleteProgramsAndIntervals(string variant, VisualThemeMode mode) {
+    public void NativeModelRecipesRetainMeasuredSourcesAndEmitCompleteProgramsAndIntervals(string variant, ThemeMode mode) {
         var selection = new ExampleFamilySelection(ChartSeriesKind.TrendLine, variant);
         Assert.Contains(selection, ExampleRecipes.FamilySelections(ChartSeriesKind.TrendLine));
         Assert.Contains(selection, ExampleRecipes.StandaloneFamilySelections());

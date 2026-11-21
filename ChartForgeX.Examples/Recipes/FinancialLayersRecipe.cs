@@ -1,7 +1,7 @@
 /// <summary>Combines retained price observations, a reference line and a range across explicit trading sessions.</summary>
 public static class FinancialLayersRecipe {
     /// <summary>Creates a compact or wide chart after a keyed price update, preserving the surviving quote's datum style.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var friday = new DateTime(2026, 10, 16, 9, 0, 0, DateTimeKind.Utc);
         var monday = friday.AddDays(3);

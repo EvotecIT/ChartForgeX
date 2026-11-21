@@ -105,7 +105,7 @@ public sealed class MapColorScaleStopsTests {
             : ChartColorScale.Diverging(Low[0], Neutral, High[2], midpoint)).WithValueRange(0, 10).WithLabels(null, "Target temperature", null);
         var chart = Map("tile-map", scale).WithSize(360, 360).WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Bottom);
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 360)),
-            VisualTheme.Graphite(), VisualThemeMode.Light, new VisualFrame(), FontSpec.FromFamily(family)));
+            VisualTheme.Graphite(), ThemeMode.Light, new VisualFrame(), FontSpec.FromFamily(family)));
         var document = XDocument.Parse(prepared.ToSvg());
         var swatches = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "map-scale-step").ToArray();
         var target = swatches[midpointStep].Bounds;

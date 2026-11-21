@@ -9,12 +9,12 @@ namespace ChartForgeX.Tests;
 public sealed partial class ExampleRecipeTests {
     public static IEnumerable<object[]> MixedScheduleSelections() {
         foreach (var variant in new[] { "wide", "compact", "reversed", "compact-reversed", "time", "compact-time", "time-reversed", "compact-time-reversed" })
-            foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) yield return new object[] { variant, mode };
+            foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) yield return new object[] { variant, mode };
     }
 
     [Theory]
     [MemberData(nameof(MixedScheduleSelections))]
-    public void ScheduleDownloadContainsOnlyTheCompletePublicTypedFactory(string variant, VisualThemeMode mode) {
+    public void ScheduleDownloadContainsOnlyTheCompletePublicTypedFactory(string variant, ThemeMode mode) {
         var recipe = ExampleRecipes.Named("mixed-schedule"); var source = Source(recipe, variant);
         foreach (var contract in new[] { "ChartSeriesKind.Timeline", "CreateGanttTask", "CreateStateTimelineLane", "CreateGanttLane", "AddGanttDependency" }) Assert.Contains(contract, source);
         Assert.DoesNotContain("{{", source); Assert.DoesNotContain("ChartForgeX.Examples", source);

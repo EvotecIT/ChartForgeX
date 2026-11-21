@@ -86,6 +86,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -95,7 +96,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = LatencyWeekRecipe.Create(&quot;latency-week&quot;, mode);
 var context = new VisualRenderContext(
@@ -110,7 +111,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Builds a week of hourly ping latency for three domain controllers, as a monitoring report shows it.&lt;/summary&gt;
 public static class LatencyWeekRecipe {
     /// &lt;summary&gt;Creates the latency week; the compact variant keeps the same data.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;latency-week&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;latency-week&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;latency-week&quot; or &quot;compact-latency-week&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var start = new DateTime(2026, 10, 19, 0, 0, 0, DateTimeKind.Utc);
         var chart = Chart.Create().WithXAxisTimeScale(TimeZoneInfo.Utc).WithYAxis(&quot;Round-trip time (ms)&quot;).WithValueUnit(&quot;ms&quot;)
@@ -138,6 +139,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -147,7 +149,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = LatencyWeekRecipe.Create(&quot;latency-week&quot;, mode);
 var context = new VisualRenderContext(
@@ -162,7 +164,7 @@ File.WriteAllText(&quot;visual.html&quot;, prepared.ToArtifact(&quot;example&quo
 /// &lt;summary&gt;Builds a week of hourly ping latency for three domain controllers, as a monitoring report shows it.&lt;/summary&gt;
 public static class LatencyWeekRecipe {
     /// &lt;summary&gt;Creates the latency week; the compact variant keeps the same data.&lt;/summary&gt;
-    public static Chart Create(string variant = &quot;latency-week&quot;, VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = &quot;latency-week&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;latency-week&quot; or &quot;compact-latency-week&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var start = new DateTime(2026, 10, 19, 0, 0, 0, DateTimeKind.Utc);
         var chart = Chart.Create().WithXAxisTimeScale(TimeZoneInfo.Utc).WithYAxis(&quot;Round-trip time (ms)&quot;).WithValueUnit(&quot;ms&quot;)

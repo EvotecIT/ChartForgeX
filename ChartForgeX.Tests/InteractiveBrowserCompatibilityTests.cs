@@ -89,7 +89,7 @@ public sealed class InteractiveBrowserCompatibilityTests {
     public async Task ConnectedWindowExportsItsCommittedSceneAndResetsWithoutChromiumCommands(bool dark, int width) {
         if (!Enabled) return;
         var chart = Chart.Create().WithSize(700, 400).WithTitle("Connected window compatibility").WithLegend(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("measurements"), "Measurements",
                 Enumerable.Range(0, 13).Select(index => new ChartPoint(index, 4 + index % 5))));
         var renderer = new HtmlInteractiveChartRenderer();
@@ -150,7 +150,7 @@ public sealed class InteractiveBrowserCompatibilityTests {
 
     private static Chart Observations(bool dark, bool updated = false) => Chart.Create().WithSize(700, 380)
         .WithTitle("Browser observations").WithLegend().WithDataLabels(false)
-        .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
         .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("observations"), "Observations",
                 new[] { new ChartPoint(0, 12), new ChartPoint(1, updated ? 17 : 8), new ChartPoint(2, 10) })
             .WithObservationId(0, new ChartObservationId("north")).WithObservationId(1, new ChartObservationId("south")));

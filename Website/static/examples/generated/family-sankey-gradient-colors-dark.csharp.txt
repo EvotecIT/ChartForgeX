@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -13,7 +14,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = SankeyPaintRecipe.Create("gradient-colors", mode);
 var context = new VisualRenderContext(
@@ -27,7 +28,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 
 /// <summary>Endpoint gradients and outlined labels use the same native Sankey scene in SVG and PNG.</summary>
 public static class SankeyPaintRecipe {
-    public static Chart Create(string variant = "gradient-colors", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "gradient-colors", ThemeMode mode = ThemeMode.Light) {
         var chart = Chart.Create().AddSankey("Requests", new[] {
             new ChartNode("received", "Received"), new ChartNode("review", "Review"), new ChartNode("ready", "Ready")
         }, new[] {

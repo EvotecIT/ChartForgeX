@@ -13,7 +13,7 @@ public sealed class CartesianInteriorAxesBrowserTests {
     [InlineData(false, false)] [InlineData(false, true)] [InlineData(true, false)] [InlineData(true, true)]
     public async Task CompleteInteriorAxesReprepareTogetherDuringAdaptiveReplacementAndDetachedExport(bool dark, bool narrow) {
         if (!Enabled) return;
-        var chart = QuadrantRegionDepthRecipe.Create("interior-quadrants", dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        var chart = QuadrantRegionDepthRecipe.Create("interior-quadrants", dark ? ThemeMode.Dark : ThemeMode.Light);
         var html = chart.ToInteractiveHtmlPage(options => { options.ResponsiveLayout = HtmlChartResponsiveLayout.Adaptive;
             options.Interaction.Enable(ChartForgeX.Interactivity.ChartInteractionFeatures.Export);
             options.Adaptive.NarrowWidth = 360; options.Adaptive.NarrowHeight = 440; });

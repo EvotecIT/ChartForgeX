@@ -62,16 +62,16 @@ public static partial class VisualArtifactInterchangeMapping {
             flow.ConfigureConnector(flow.Connectors.Count - 1, connector => { connector.Id = edge.Id; Copy(edge.Extensions, connector.Metadata); });
         }
         var theme = envelope.Presentation?.Theme is {} captured ? RestoreCompleteTopologyTheme(captured) : VisualTheme.Graphite();
-        flow.PreparedPresentation = new FlowPreparedPresentation(flow, layout, theme, envelope.Presentation?.Theme?.Mode ?? VisualThemeMode.Light,
+        flow.PreparedPresentation = new FlowPreparedPresentation(flow, layout, theme, envelope.Presentation?.Theme?.Mode ?? ThemeMode.Light,
             envelope.Presentation?.ContextFont, envelope.Presentation?.Frame, new VisualAccessibility {
                 Name = envelope.AccessibleName, Description = envelope.AccessibleDescription,
                 Language = envelope.Language, IsDecorative = envelope.IsDecorative });
         flow.ValidateNative();
         return flow;
         static double Bound(double? value, string name) => value ?? throw new NotSupportedException("Native restoration requires " + name + ".");
-        static VisualStatus Status(string? value) {
-            if (value != null && Enum.TryParse<VisualStatus>(value, out var status) && Enum.IsDefined(typeof(VisualStatus), status) && value == status.ToString()) return status;
-            throw new NotSupportedException("Flow status requires a defined native status token.");
+        static Tone Status(string? value) {
+            if (value != null && Tone.TryParse(value, out var status) && value == status.Name) return status;
+            throw new NotSupportedException("Flow status requires a tone name.");
         }
     }
 }

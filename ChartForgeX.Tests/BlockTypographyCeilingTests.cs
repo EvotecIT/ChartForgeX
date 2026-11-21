@@ -18,7 +18,7 @@ public sealed class BlockTypographyCeilingTests {
     [InlineData(true)]
     public async Task TallSingleBranchGitKeepsMeasuredTagInsideItsBadge(bool dark) {
         var theme = VisualTheme.Graphite().WithFontFamily("Arial"); theme = theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: 256, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });
-        var block = GitGraphBlock.Create().WithSize(600, 1200).WithTheme(theme, dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithCard(false).AddBranch("main").AddCommit("base", "main", tag: "i");
+        var block = GitGraphBlock.Create().WithSize(600, 1200).WithTheme(theme, dark ? ThemeMode.Dark : ThemeMode.Light).WithCard(false).AddBranch("main").AddCommit("base", "main", tag: "i");
         var svg = block.ToSvg();
         Assert.Equal("i", Assert.Single(XDocument.Parse(svg).Descendants(), element => (string?)element.Attribute("data-cfx-role") == "git-tag-label").Value);
         Assert.NotEmpty(block.ToPng());
@@ -35,7 +35,7 @@ public sealed class BlockTypographyCeilingTests {
     [InlineData(true)]
     public async Task GitCaptionsWithLineBreaksFitAsSingleTextRuns(bool dark) {
         var theme = VisualTheme.Graphite().WithFontFamily("Courier New");
-        var block = GitGraphBlock.Create().WithSize(320, 300).WithTheme(theme, dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithCard(false)
+        var block = GitGraphBlock.Create().WithSize(320, 300).WithTheme(theme, dark ? ThemeMode.Dark : ThemeMode.Light).WithCard(false)
             .AddBranch("main").AddCommit("first", "main").AddCommit("last", "main", label: "MMMMMMMMMM\nMMMMMMMMMM");
         var svg = block.ToSvg();
         Assert.NotEmpty(block.ToPng());
@@ -65,7 +65,7 @@ public sealed class BlockTypographyCeilingTests {
         var parsed = new MermaidParser().ParseGitGraph(source);
         Assert.Empty(parsed.Diagnostics);
         var block = parsed.Document!.ToGitGraphBlock(new MermaidGitGraphRenderOptions { Width = width, Height = 420, Presentation = new MermaidPresentationOptions { FontFamily = BrowserProofFonts.Family } });
-        block.Options.ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        block.Options.ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var svg = block.ToSvg();
         var labels = XDocument.Parse(svg).Descendants().Where(element => element.Name.LocalName == "text").Select(element => element.Value).ToArray();
         foreach (var caption in new[] { "base", "work", "merge", "main", "dev", "v1" }) Assert.Contains(caption, labels);

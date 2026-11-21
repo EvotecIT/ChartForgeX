@@ -34,7 +34,7 @@ public sealed class NativeOwnedValueFlashBeforeControls {
             var comparison=new ChartSeries(new ChartSeriesId("comparison"),"Comparison",kind=="line"?ChartSeriesKind.Line:ChartSeriesKind.Bar,new[]{new ChartPoint(0,10),new ChartPoint(1,15),new ChartPoint(2,20)})
                 .WithObservationIds(new[]{new ChartObservationId("earlier"),new ChartObservationId("current"),new ChartObservationId("later")});chart.AddSeries(comparison);
         }
-        return chart.WithSize(width,420).WithThemeMode(dark?ChartForgeX.Themes.VisualThemeMode.Dark:ChartForgeX.Themes.VisualThemeMode.Light);
+        return chart.WithSize(width,420).WithThemeMode(dark?ChartForgeX.ThemeMode.Dark:ChartForgeX.ThemeMode.Light);
     }
     internal static HtmlChartSection Section(HtmlInteractiveChartRenderer renderer,string kind,double reading,int width=760,bool dark=false)=>renderer.PrepareSection(Model(kind,reading,width,dark),configure:options=>{options.CaptureNativeValueSource=kind.StartsWith("raw-",StringComparison.Ordinal);options.Interaction.ChartId="owned-flash";});
 }

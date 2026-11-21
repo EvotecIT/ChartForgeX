@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -15,7 +16,7 @@ var extension = Path.GetExtension(fontPath); if (!extension.Equals(".ttf", Strin
 FontRegistry.Register("Example Native", fontPath);
 var family = {{FAMILY}}; var intent = {{INTENT}}; var renderer = new HtmlInteractiveChartRenderer();
 Chart Model(double reading) {
-    var chart = NativeHierarchyMotionRecipe.Create(family, reading, {{WIDTH}}, VisualThemeMode.{{MODE}}, "Example Native");
+    var chart = NativeHierarchyMotionRecipe.Create(family, reading, {{WIDTH}}, ThemeMode.{{MODE}}, "Example Native");
     if (intent == "ellipsis") { chart.Series[0].WithPointLabel(0, string.Concat(Enumerable.Repeat("Regional reconciliation ", 12)));
         chart.ConfigureTreemap(captionOptions => { captionOptions.LabelTrimming = TextTrimming.Ellipsis; captionOptions.MinimumLabelFontSize = 10; }); }
     return chart;

@@ -10,10 +10,10 @@ namespace ChartForgeX.Tests;
 
 public sealed class StoryDesignTokenTests {
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void TranslucentSyntaxColorsUseReadableForegroundInsteadOfOpaqueOnlyContrast(VisualThemeMode mode) {
-        var invisible = mode == VisualThemeMode.Dark ? ChartColor.FromHex("#FFFFFF20") : ChartColor.FromHex("#00000020");
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void TranslucentSyntaxColorsUseReadableForegroundInsteadOfOpaqueOnlyContrast(ThemeMode mode) {
+        var invisible = mode == ThemeMode.Dark ? ChartColor.FromHex("#FFFFFF20") : ChartColor.FromHex("#00000020");
         var theme = VisualTheme.Graphite().Configure(builder => {
             builder.Colors(mode).Palette = new[] { invisible };
             builder.Colors(mode).Accent = invisible.WithAlpha(0);
@@ -26,9 +26,9 @@ public sealed class StoryDesignTokenTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void SharedThemeSelectsStoryAndTerminalSurfacesFontsAndSemanticInk(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void SharedThemeSelectsStoryAndTerminalSurfacesFontsAndSemanticInk(ThemeMode mode) {
         var theme = VisualTheme.Graphite();
         var colors = theme.Resolve(mode);
         var story = VisualStory.Create("Shared appearance").WithTheme(theme, mode);
@@ -48,9 +48,9 @@ public sealed class StoryDesignTokenTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void TerminalSvgUsesSharedSemanticTonesAndRetainsAuthoredOverrides(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void TerminalSvgUsesSharedSemanticTonesAndRetainsAuthoredOverrides(ThemeMode mode) {
         var error = ChartColor.FromHex("#A52A6D");
         var theme = VisualTheme.Graphite().Configure(builder =>
             builder.Colors(mode).Status.Critical = new VisualTokenColor(ChartColors.Red, error));
@@ -72,7 +72,7 @@ public sealed class StoryDesignTokenTests {
     public void PreparedStoriesCaptureLocalSyntaxAndWindowOptionsWithoutMutatingSharedTheme() {
         var shared = VisualTheme.Graphite();
         var style = new VisualStoryStyleOptions { Syntax = new StorySyntaxPalette { Plain = ChartColors.Red } };
-        var story = VisualStory.Create("Detached style").WithTheme(shared, VisualThemeMode.Dark).WithStyle(style).WithSize(480, 320);
+        var story = VisualStory.Create("Detached style").WithTheme(shared, ThemeMode.Dark).WithStyle(style).WithSize(480, 320);
         story.Scene("source", "Source", 1).Panel("source", new VisualStorySourceSurface(StorySourceText.Create("Ready")));
         story.Outcome("ready", "Ready", "source");
         var prepared = story.Prepare();
@@ -85,14 +85,14 @@ public sealed class StoryDesignTokenTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void StoryHtmlKeepsExplicitModeWhenItsAuthoredBackgroundHasDifferentLuminance(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void StoryHtmlKeepsExplicitModeWhenItsAuthoredBackgroundHasDifferentLuminance(ThemeMode mode) {
         var theme = VisualTheme.Graphite().Configure(builder =>
-            builder.Colors(mode).Background = mode == VisualThemeMode.Light ? ChartColor.Black : ChartColor.White);
+            builder.Colors(mode).Background = mode == ThemeMode.Light ? ChartColor.Black : ChartColor.White);
         var story = VisualStory.Create("Explicit appearance").WithTheme(theme, mode).WithSize(480, 320);
         story.Scene("source", "Source", 1).Panel("source", new VisualStorySourceSurface(StorySourceText.Create("Ready")));
         story.Outcome("ready", "Ready", "source");
-        Assert.Contains("color-scheme:" + (mode == VisualThemeMode.Light ? "light" : "dark"), story.ToHtmlPage());
+        Assert.Contains("color-scheme:" + (mode == ThemeMode.Light ? "light" : "dark"), story.ToHtmlPage());
     }
 }

@@ -1,7 +1,7 @@
 /// <summary>Builds stacked request volumes and normalized stepped capacity shares.</summary>
 public static class StackedAreaRecipe {
     /// <summary>Creates the selected stacked-area example.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options" or "missing-zero" or "compact-missing-zero" or "missing-gap" or "compact-missing-gap"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create();

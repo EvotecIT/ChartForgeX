@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -15,7 +16,7 @@ using ChartForgeX.VisualBlocks;
 
 // Native PNG and standalone SVG use bundled Archivo.
 // Add ChartFontAssets.StyleSheet once for other text on a host page.
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = WordCloudRecipe.Create("compact", mode);
 var context = new VisualRenderContext(
@@ -29,7 +30,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 
 /// <summary>Deterministic placement of weighted service-observation terms.</summary>
 public static class WordCloudRecipe {
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         // How often each topic appeared in a quarter of service review notes.
         var terms = new (string Text, double Mentions)[] {
             ("Availability", 96), ("Identity", 81), ("Latency", 74), ("Network", 69), ("Storage", 61), ("Recovery", 57),

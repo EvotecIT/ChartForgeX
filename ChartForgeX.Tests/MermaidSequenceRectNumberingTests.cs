@@ -78,7 +78,7 @@ public sealed partial class MermaidSequenceRectNumberingTests {
     public void NativeBackgroundOptionPreservesNullDefaultsAndTypedSnapshotIsolation(bool dark) {
         var sequence = SequenceArtifact.Create("native-rect").AddParticipant("A").AddParticipant("B").AddMessage("A", "B", "Message")
             .AddBlock(SequenceArtifactBlockKind.Rect, "Native highlight", 0, 0);
-        sequence.ThemeMode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        sequence.ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light;
         Assert.Null(sequence.Blocks[0].BackgroundColor);
         var baseline = sequence.ToSvg();
         Assert.Contains("Native highlight", baseline);

@@ -21,7 +21,7 @@ public sealed class HierarchyTranslucentCaptionBrowserTests {
     public async Task AutomaticInkMatchesThePreparedSurfaceInCompactWideLightAndDarkHosts(ChartSeriesKind kind, int width, bool dark) {
         if (!InteractiveChartBrowser.Enabled) return;
         var chart = HierarchyTranslucentCaptionCausalTests.Single(kind).WithSize(width, 460)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithTransparentBackground(false);
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithTransparentBackground(false);
         chart.ConfigureDataLabelStyle(style => style.FontFamily = BrowserProofFonts.Family);
         chart.Series[0].WithPointColor(0, (dark ? ChartColor.White : ChartColor.Black).WithAlpha(24));
         var context = VisualExportRequest.ForChart(chart).Context;

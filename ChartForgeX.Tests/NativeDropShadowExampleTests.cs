@@ -6,9 +6,9 @@ namespace ChartForgeX.Tests;
 
 public sealed class NativeDropShadowExampleTests {
     [Theory]
-    [InlineData("compact", VisualThemeMode.Light)] [InlineData("compact", VisualThemeMode.Dark)]
-    [InlineData("wide", VisualThemeMode.Light)] [InlineData("wide", VisualThemeMode.Dark)]
-    public void CompleteSharedProgramUsesTheSameNativeSourceAndExplicitFiniteImport(string variant, VisualThemeMode mode) {
+    [InlineData("compact", ThemeMode.Light)] [InlineData("compact", ThemeMode.Dark)]
+    [InlineData("wide", ThemeMode.Light)] [InlineData("wide", ThemeMode.Dark)]
+    public void CompleteSharedProgramUsesTheSameNativeSourceAndExplicitFiniteImport(string variant, ThemeMode mode) {
         var layer = NativeDropShadowExample.Create(variant, mode);
         NativeEffectBeforeCapture.Write("native-shadow-example-" + variant + "-" + mode, layer.Visual.ToSvg(), layer.Visual.ToPng(), layer.ToImage());
         var program = ExampleRecipeSource.EmitNativeDropShadow(variant, mode);

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -15,7 +16,7 @@ using ChartForgeX.VisualBlocks;
 
 // Native PNG and standalone SVG use bundled Archivo.
 // Add ChartFontAssets.StyleSheet once for other text on a host page.
-var mode = VisualThemeMode.Light;
+var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = TileMapPartialColorRangeRecipe.Create("compact-partial-color-range", mode);
 var context = new VisualRenderContext(
@@ -30,7 +31,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 /// <summary>Creates a tile map with a fixed zero and an observed upper color bound.</summary>
 public static class TileMapPartialColorRangeRecipe {
     /// <summary>Creates the source model for a gallery variant without choosing an export backend.</summary>
-    public static Chart Create(string variant = "partial-color-range", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "partial-color-range", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("partial-color-range" or "compact-partial-color-range"))
             throw new ArgumentOutOfRangeException(nameof(variant));
 

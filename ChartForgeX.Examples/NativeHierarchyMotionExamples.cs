@@ -10,7 +10,7 @@ internal static class NativeHierarchyMotionExamples {
         if (!extension.Equals(".ttf", StringComparison.OrdinalIgnoreCase) && !extension.Equals(".otf", StringComparison.OrdinalIgnoreCase)) throw new ArgumentException("Supply a .ttf/.otf face.");
         FontRegistry.Register("Example Native", fontPath); Directory.CreateDirectory(output); var renderer = new HtmlInteractiveChartRenderer();
         foreach (var family in new[] { "treemap", "sunburst-leaf", "sunburst-total" }) foreach (var intent in family == "treemap" ? new[] { "values", "initial", "subtree", "root", "ellipsis" } : new[] { "values", "initial", "subtree", "root" })
-        foreach (var width in new[] { 390, 760 }) foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var width in new[] { 390, 760 }) foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             Chart Model(double reading) {
                 var chart = NativeHierarchyMotionRecipe.Create(family, reading, width, mode, "Example Native");
                 if (intent == "ellipsis") { chart.Series[0].WithPointLabel(0, string.Concat(Enumerable.Repeat("Regional reconciliation ", 12)));

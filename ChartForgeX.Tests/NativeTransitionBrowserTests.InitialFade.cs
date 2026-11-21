@@ -22,7 +22,7 @@ public sealed partial class NativeTransitionBrowserTests {
         // without changing that limit or discarding either captured drawing.
         var chart = (kind == ChartSeriesKind.RegionMap ? SeamPolygonMapRecipe.Create()
             : Assert.IsType<Chart>(ExampleRecipes.ForKind(kind).Create())).WithSize(width, 420)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light);
         var renderer = new HtmlInteractiveChartRenderer(); var final = renderer.PrepareSection(chart, configure: options => {
             // The supplied Carlito browser face keeps this dual-drawing map payload finite;
             // native geometry and all SVG/PNG frame captures are unchanged.

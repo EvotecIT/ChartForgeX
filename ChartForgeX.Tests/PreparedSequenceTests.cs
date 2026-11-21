@@ -8,7 +8,7 @@ namespace ChartForgeX.Tests;
 
 /// <summary>Protects the native sequence family and its portable prepared geometry.</summary>
 public sealed class PreparedSequenceTests {
-    private static VisualRenderContext Context(double width = 960, double height = 900, VisualThemeMode mode = VisualThemeMode.Light) =>
+    private static VisualRenderContext Context(double width = 960, double height = 900, ThemeMode mode = ThemeMode.Light) =>
         new(new VisualLayoutOptions(new VisualSize(width, height)), themeMode: mode, frame: new VisualFrame(showLegend: false));
 
     [Theory]
@@ -90,9 +90,9 @@ public sealed class PreparedSequenceTests {
     }
 
     [Theory]
-    [InlineData(VisualThemeMode.Light)]
-    [InlineData(VisualThemeMode.Dark)]
-    public void NestedFragmentsNotesAndActivationsHaveDisjointMeasuredRows(VisualThemeMode mode) {
+    [InlineData(ThemeMode.Light)]
+    [InlineData(ThemeMode.Dark)]
+    public void NestedFragmentsNotesAndActivationsHaveDisjointMeasuredRows(ThemeMode mode) {
         var model = SequenceArtifact.Create("fragments").WithTitle("Shared frame")
             .AddParticipant("client", "Client", SequenceArtifactParticipantKind.Actor)
             .AddParticipant("server", "Server", SequenceArtifactParticipantKind.Control)

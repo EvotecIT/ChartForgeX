@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -8,8 +9,8 @@ using ChartForgeX.Themes;
 using ChartForgeX.Interactivity.Html;
 
 var renderer = new HtmlInteractiveChartRenderer();
-var from = renderer.PrepareSection(NativeCartesianValueRecipe.Create({{BAR}}, 20, {{WIDTH}}, VisualThemeMode.{{MODE}}));
-var to = renderer.PrepareSection(NativeCartesianValueRecipe.Create({{BAR}}, 80, {{WIDTH}}, VisualThemeMode.{{MODE}}));
+var from = renderer.PrepareSection(NativeCartesianValueRecipe.Create({{BAR}}, 20, {{WIDTH}}, ThemeMode.{{MODE}}));
+var to = renderer.PrepareSection(NativeCartesianValueRecipe.Create({{BAR}}, 80, {{WIDTH}}, ThemeMode.{{MODE}}));
 var initial = {{INITIAL}};
 var payload = renderer.PrepareNativeTransitionJson(from, to,
     new HtmlNativeTransitionOptions(initial ? HtmlNativeTransitionEffect.InitialValues : HtmlNativeTransitionEffect.Values, 12));

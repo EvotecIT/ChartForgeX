@@ -18,7 +18,7 @@ public sealed class MermaidPresentationOptions {
     /// <summary>Gets or sets a native paired theme; null retains native colors and source color settings.</summary>
     public VisualTheme? Theme { get; set; }
     /// <summary>Gets or sets the native light/dark mode.</summary>
-    public VisualThemeMode? ThemeMode { get; set; }
+    public ThemeMode? ThemeMode { get; set; }
     /// <summary>Gets or sets the requested font family. Native font resolution still applies.</summary>
     public string? FontFamily { get; set; }
     /// <summary>Gets or sets the data-label size in pixels, scaling the native typography proportionally.</summary>
@@ -37,7 +37,7 @@ public sealed class MermaidPresentationOptions {
         return result;
     }
     internal void Validate() {
-        if (ThemeMode.HasValue && !Enum.IsDefined(typeof(VisualThemeMode), ThemeMode.Value)) throw new ArgumentOutOfRangeException(nameof(ThemeMode));
+        if (ThemeMode.HasValue && !Enum.IsDefined(typeof(ThemeMode), ThemeMode.Value)) throw new ArgumentOutOfRangeException(nameof(ThemeMode));
         if (TopologySizing.HasValue && !Enum.IsDefined(typeof(MermaidTopologySizing), TopologySizing.Value)) throw new ArgumentOutOfRangeException(nameof(TopologySizing));
         if (FontFamily != null && string.IsNullOrWhiteSpace(FontFamily)) throw new ArgumentException("A host font family must contain text.", nameof(FontFamily));
         if (FontSize.HasValue && (double.IsNaN(FontSize.Value) || double.IsInfinity(FontSize.Value) || FontSize.Value <= 0 || FontSize.Value > 512))

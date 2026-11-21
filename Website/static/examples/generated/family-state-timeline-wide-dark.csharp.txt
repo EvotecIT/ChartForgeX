@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -13,7 +14,7 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = StateTimelineRecipe.Create("wide", mode);
 var context = new VisualRenderContext(
@@ -27,7 +28,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 
 /// <summary>Availability intervals retain state keys, details and lane grouping.</summary>
 public static class StateTimelineRecipe {
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var colors = VisualTheme.Graphite().Resolve(mode);
         var start = new DateTime(2026, 3, 2, 8, 0, 0, DateTimeKind.Utc);
         var primary = ChartSeries.CreateStateTimelineLane(new ChartSeriesId("primary"), "Primary", new[] {

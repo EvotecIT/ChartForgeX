@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using ChartForgeX;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
@@ -14,7 +15,7 @@ using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 using static ScatterPartialColorRangeRecipe;
 
-var mode = VisualThemeMode.Dark;
+var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 #endregion
 
@@ -31,7 +32,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 #endregion
 
 static class ScatterPartialColorRangeRecipe {
-    internal static Chart PartialColorRange(VisualThemeMode mode) {
+    internal static Chart PartialColorRange(ThemeMode mode) {
         var colors = VisualTheme.Graphite().Resolve(mode);
         var duration = new[] { 18d, 30, 24, 44, 32 };
         var completion = new double?[] { 55, 82, null, 68, 95 };

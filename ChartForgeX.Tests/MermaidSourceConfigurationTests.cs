@@ -66,8 +66,8 @@ public sealed class MermaidSourceConfigurationTests {
         Assert.Contains(parsed.Diagnostics, item => item.Code == MermaidDiagnosticCodes.UnsupportedConfiguration && item.Span.Line == 6);
         var artifact = ((MermaidDocument)document).ToVisualArtifact();
         var topology = Assert.IsType<TopologyChart>(artifact.Model);
-        Assert.Equal(VisualThemeMode.Dark, topology.ThemeMode);
-        Assert.Equal(VisualTheme.Graphite().Resolve(VisualThemeMode.Dark).ElevatedSurface, topology.Theme.Resolve(topology.ThemeMode).Background);
+        Assert.Equal(ThemeMode.Dark, topology.ThemeMode);
+        Assert.Equal(VisualTheme.Graphite().Resolve(ThemeMode.Dark).ElevatedSurface, topology.Theme.Resolve(topology.ThemeMode).Background);
         Assert.Equal("Arial, sans-serif", topology.Theme.Typography.Family);
         Assert.Equal("classic", artifact.Metadata["mermaid.config.look"]);
         Assert.Contains(topology.Theme.Resolve(topology.ThemeMode).Background.ToHex(), artifact.ToSvg());
@@ -147,7 +147,7 @@ public sealed class MermaidSourceConfigurationTests {
         Assert.Contains(result.Diagnostics, item => item.Code == MermaidDiagnosticCodes.UnsupportedConfiguration && item.Message.Contains("sequence.theme"));
         Assert.Contains(result.Diagnostics, item => item.Code == MermaidDiagnosticCodes.UnsupportedConfiguration && item.Message.Contains("forest"));
         var topology = Assert.IsType<TopologyChart>(result.Artifact!.Model);
-        Assert.Equal(VisualThemeMode.Light, topology.ThemeMode);
+        Assert.Equal(ThemeMode.Light, topology.ThemeMode);
         Assert.Equal(ChartForgeX.Primitives.ChartColor.FromHex("#FFFFFF"), topology.Theme.Resolve(topology.ThemeMode).Background);
     }
 }

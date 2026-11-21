@@ -8,9 +8,9 @@ namespace ChartForgeX.Tests;
 /// <summary>The complete ordinary-consumption recipe uses public native and HTML preparation surfaces for the same artifact.</summary>
 public sealed class PolarViewportRecipeTests {
     [Theory]
-    [InlineData(360, VisualThemeMode.Light)] [InlineData(360, VisualThemeMode.Dark)]
-    [InlineData(800, VisualThemeMode.Light)] [InlineData(800, VisualThemeMode.Dark)]
-    public void CompleteRecipeExportsTheSameCompletedNativeDrawingThroughBothPublicRoutes(int width, VisualThemeMode mode) {
+    [InlineData(360, ThemeMode.Light)] [InlineData(360, ThemeMode.Dark)]
+    [InlineData(800, ThemeMode.Light)] [InlineData(800, ThemeMode.Dark)]
+    public void CompleteRecipeExportsTheSameCompletedNativeDrawingThroughBothPublicRoutes(int width, ThemeMode mode) {
         var chart = PolarViewportRecipe.Create(width, mode); var prepared = PolarViewportRecipe.Prepare(chart);
         var section = PolarViewportRecipe.PrepareSection(chart);
         Assert.Equal(prepared.ToSvg(), section.PreparedVisual.ToSvg()); Assert.Equal(prepared.ToPng(), section.PreparedVisual.ToPng());

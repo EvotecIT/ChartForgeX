@@ -20,7 +20,7 @@ public sealed class SankeyOptionsBrowserTests {
         if (!Enabled) return;
         string variant = width < 500 ? "compact-options" : "options";
         var chart = V2GalleryModels.Create(ChartSeriesKind.Sankey, variant).WithSize(width, width < 500 ? 360 : 440)
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithTitle("Requests across processing stages").WithSubtitle("Aligned and ordered weighted flows");
         chart.WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);

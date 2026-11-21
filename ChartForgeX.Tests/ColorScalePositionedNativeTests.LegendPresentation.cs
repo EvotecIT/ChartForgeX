@@ -145,9 +145,9 @@ public sealed partial class ColorScalePositionedNativeTests {
     [InlineData(ChartSeriesKind.Heatmap, "gradient-color-legend", true)]
     public void GalleryModelsPrepareBothKeyPresentationsAtTheirDeclaredSize(ChartSeriesKind kind, string variant, bool dark) {
         var compact = variant.StartsWith("compact-", StringComparison.Ordinal);
-        var chart = V2GalleryModels.Create(kind, variant, dark ? VisualThemeMode.Dark : VisualThemeMode.Light)
+        var chart = V2GalleryModels.Create(kind, variant, dark ? ThemeMode.Dark : ThemeMode.Light)
             .WithSize(compact ? 360 : 800, compact ? 360 : 440).WithTitle("Measured temperature")
-            .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         var prepared = Prepare(chart); var gradient = variant.Contains("gradient", StringComparison.Ordinal);
         Assert.Equal(gradient ? 1 : 0, prepared.Scene.Nodes.OfType<VisualSceneGradient>().Count());
         Assert.Contains("Temperature", prepared.ToSvg());

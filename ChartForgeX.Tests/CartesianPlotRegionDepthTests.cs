@@ -14,7 +14,7 @@ public sealed class CartesianPlotRegionDepthTests {
     [Theory]
     [InlineData(360, false)] [InlineData(360, true)] [InlineData(800, false)] [InlineData(800, true)]
     public void CompleteRecipeKeepsBorderCaptionAndPivotGeometryInBothNativeExports(int width, bool dark) {
-        var chart = QuadrantRegionDepthRecipe.Create(width == 360 ? "compact-pivot-quadrants" : "pivot-quadrants", dark ? VisualThemeMode.Dark : VisualThemeMode.Light);
+        var chart = QuadrantRegionDepthRecipe.Create(width == 360 ? "compact-pivot-quadrants" : "pivot-quadrants", dark ? ThemeMode.Dark : ThemeMode.Light);
         var prepared = CartesianAxisRuleCrossingTests.Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng();
         Capture(svg, png, "quadrant-region-depth-" + width + "-" + dark);
         Assert.Equal(4, prepared.Scene.Nodes.Count(node => node.Role == "plot-region-border"));

@@ -1,7 +1,7 @@
 /// <summary>Opts into bounded caption shrinking and whole-text-element ellipsis while retaining complete source names.</summary>
 public static class TreemapCaptionPoliciesRecipe {
     /// <summary>Creates the complete source model; layout and exports use the existing Treemap owner.</summary>
-    public static Chart Create(string variant = "caption-policies", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "caption-policies", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("caption-policies" or "compact-caption-policies")) throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create().WithLegend(false).WithDataLabels().WithTransparentBackground(false)
             .AddTreemap("Reconciliation", new[] {

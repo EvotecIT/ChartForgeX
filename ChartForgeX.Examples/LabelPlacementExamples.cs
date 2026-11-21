@@ -9,7 +9,7 @@ public static class LabelPlacementExamples {
     /// <summary>Creates bullet, funnel, gauge, route-map and Sankey panels in the requested theme.</summary>
     public static IReadOnlyList<(string Name, Chart Chart)> Charts(bool dark) {
         var theme = VisualTheme.Graphite();
-        var mode = dark ? VisualThemeMode.Dark : VisualThemeMode.Light;
+        var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var bullet = Chart.Create().WithTitle("Control targets").WithSize(600, 338).WithTheme(theme, mode)
             .WithValueFormatter(v => v.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
             .AddBullet("DMARC enforcement", 88, 95, 0, 100, new[] { 60d, 80d })
@@ -47,7 +47,7 @@ public static class LabelPlacementExamples {
 
     /// <summary>Creates a topology with close captions, multiline nodes and labelled routes.</summary>
     public static TopologyChart Topology(bool dark) => TopologyChart.Create().WithViewport(1000, 500)
-        .WithTheme(VisualTheme.Graphite(), dark ? VisualThemeMode.Dark : VisualThemeMode.Light).WithTitle("Measured service topology")
+        .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithTitle("Measured service topology")
         .AddNode("gateway", "Regional gateway", 70, 170, width: 180, height: 96, subtitle: "Traffic and routing")
         .AddNode("identity", "Identity service", 380, 120, width: 190, height: 96, subtitle: "Authentication")
         .AddNode("policy", "Policy evaluation", 380, 290, width: 190, height: 96, subtitle: "Control checks")

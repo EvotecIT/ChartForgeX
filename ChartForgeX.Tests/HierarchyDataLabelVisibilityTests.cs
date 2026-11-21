@@ -8,13 +8,13 @@ namespace ChartForgeX.Tests;
 
 public sealed class HierarchyDataLabelVisibilityTests {
     [Theory]
-    [InlineData(ChartSeriesKind.Tree, 720, 460, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.Tree, 340, 300, VisualThemeMode.Dark)]
-    [InlineData(ChartSeriesKind.Sunburst, 720, 460, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.Sunburst, 340, 300, VisualThemeMode.Dark)]
-    [InlineData(ChartSeriesKind.Treemap, 720, 460, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.Treemap, 340, 300, VisualThemeMode.Dark)]
-    public void ChartLabelsAndSeriesOverridesShareOneRenderedPolicy(ChartSeriesKind kind, int width, int height, VisualThemeMode mode) {
+    [InlineData(ChartSeriesKind.Tree, 720, 460, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.Tree, 340, 300, ThemeMode.Dark)]
+    [InlineData(ChartSeriesKind.Sunburst, 720, 460, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.Sunburst, 340, 300, ThemeMode.Dark)]
+    [InlineData(ChartSeriesKind.Treemap, 720, 460, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.Treemap, 340, 300, ThemeMode.Dark)]
+    public void ChartLabelsAndSeriesOverridesShareOneRenderedPolicy(ChartSeriesKind kind, int width, int height, ThemeMode mode) {
         var chart = Model(kind).WithDataLabels(false);
         var series = chart.Series[0];
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, height)), themeMode: mode,

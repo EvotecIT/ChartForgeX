@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using ChartForgeX.Core;
 using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
 
 namespace ChartForgeX.Html;
 
@@ -18,29 +20,48 @@ public sealed class HtmlChartGridRenderer {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
         if (idScope == null) throw new ArgumentNullException(nameof(idScope));
         var request = VisualExportRequest.ForGrid(grid);
-        var prepared = grid.Prepare(request.Context);
+        var auto = AutoThemeStyle.ForHtml(grid.Theme, grid.ThemeMode, grid.SvgColorVariables);
+        // Panels with their own themes paint inside their own colour scope. An Auto panel whose theme gives the grid's Auto
+        // colours shares the grid's properties for the render; other panels keep their own colours.
+        var bound = new List<Chart>();
+        if (auto != null && grid.UsePanelThemes)
+            foreach (var chart in grid.Charts)
+                if (chart.Options.SvgColorVariables == null && AutoThemeStyle.ForHtml(chart.Options.Theme, chart.Options.ThemeMode, null)?.Id == auto.Id) {
+                    chart.Options.SvgColorVariables = auto.Variables; bound.Add(chart);
+                }
+        PreparedVisual prepared;
+        try { prepared = grid.Prepare(request.Context); }
+        finally { foreach (var chart in bound) chart.Options.SvgColorVariables = null; }
         var prefix = VisualSvgOptions.NamespaceFromExternalId(idScope);
-        return new HtmlMarkupWriter().StartElement("section").Attribute("class", "chartforgex-grid")
+        return new HtmlMarkupWriter().StartElement("section").Attribute("class", "chartforgex-grid").Attribute(ChartForgeX.Themes.AutoThemeStyle.ScopeAttribute, auto?.Id)
+            .Attribute(AutoThemeStyle.Attribute, auto == null ? null : AutoThemeStyle.AttributeValue)
             .Attribute("style", "width:100%;max-width:" + prepared.Size.Width.ToString(CultureInfo.InvariantCulture) + "px;box-sizing:border-box")
-            .EndStartElement().RawTrusted(prepared.ToSvg(new VisualSvgOptions(prefix, grid.SvgColorVariables, responsive: true))).EndElement().Build();
+            .EndStartElement().RawTrusted(auto?.StyleElement)
+            .RawTrusted(prepared.ToSvg(new VisualSvgOptions(prefix, grid.SvgColorVariables ?? auto?.Variables, responsive: true))).EndElement().Build();
     }
 
     /// <summary>Renders a complete script-free HTML document with the same grid layout as static exports.</summary>
     public string RenderPage(ChartGrid grid) {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
         var request = VisualExportRequest.ForGrid(grid);
-        var colors = request.Context.Theme.Resolve(request.Context.ThemeMode);
+        string Background(ThemeMode mode) {
+            var colors = request.Context.Theme.Resolve(mode);
+            return HtmlSurfacePolish.BackgroundCss(HtmlSurfacePolish.PageBackground(colors.Background, colors.ElevatedSurface), flat: true);
+        }
+        var page = AutoThemeStyle.ForHtml(request.Context.Theme, grid.ThemeMode, grid.SvgColorVariables)?.WithPageBackground(Background);
+        var background = Background(request.Context.ThemeMode);
         var title = grid.Title.Length == 0 ? "ChartForgeX report" : grid.Title;
-        var css = HtmlSurfacePolish.CenteredBodyCss(HtmlSurfacePolish.PageBackground(colors.Background, colors.ElevatedSurface),
-            HtmlChartRenderer.CssFontFamily(request.Context.Font.Family), flat: true)
+        var css = HtmlSurfacePolish.CenteredBodyCss(page == null ? background : AutoThemeStyle.Var(AutoThemeStyle.PageBackground, background),
+            HtmlChartRenderer.CssFontFamily(request.Context.Font.Family))
             + ".chartforgex-grid{margin:0 auto}.chartforgex-grid svg{width:100%;height:auto;display:block}"
             + HtmlSurfacePolish.ResponsiveCenteredBodyCss
-            + HtmlSurfacePolish.PrintBodyCss("0", ".chartforgex-grid{max-width:none}");
+            + HtmlSurfacePolish.PrintBodyCss("0", ".chartforgex-grid{max-width:none}") + page?.StyleSheet;
         var writer = new HtmlMarkupWriter();
         writer.Doctype().Line().StartElement("html").Attribute("lang", grid.Accessibility.Language ?? "en").EndStartElement().Line()
             .StartElement("head").EndStartElement().Line();
         HtmlChartRenderer.WriteDocumentHead(writer, title, css);
-        writer.EndElement().Line().StartElement("body").EndStartElement().Line()
+        writer.EndElement().Line().StartElement("body").Attribute(ChartForgeX.Themes.AutoThemeStyle.ScopeAttribute, page?.Id)
+            .Attribute(AutoThemeStyle.Attribute, page == null ? null : AutoThemeStyle.AttributeValue).EndStartElement().Line()
             .RawTrusted(RenderFragment(grid, "html-page")).Line().EndElement().Line().EndElement();
         return writer.Build();
     }

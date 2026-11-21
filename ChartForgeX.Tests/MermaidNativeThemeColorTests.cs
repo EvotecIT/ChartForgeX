@@ -27,7 +27,7 @@ public sealed class MermaidNativeThemeColorTests {
         Assert.Empty(rendered.Diagnostics);
         var artifact = rendered.Artifact!;
         var theme = Theme(artifact.Model!);
-        foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark }) {
+        foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             var colors = theme.Resolve(mode);
             Assert.Equal(ChartColor.FromHex("#112233"), colors.Background);
             Assert.Equal(ChartColor.FromHex("#334455"), colors.Surface);
@@ -74,7 +74,7 @@ public sealed class MermaidNativeThemeColorTests {
         Assert.False(chart.Options.TransparentBackground);
         Assert.Equal(ChartColor.FromHex("#010203"), chart.Options.Theme.Resolve(chart.Options.ThemeMode).Background);
         Assert.Equal(new byte[] { 1, 2, 3, 255 }, RasterImageDecoder.Decode(overridden.Artifact.ToPng()).Pixels.Take(4));
-        Assert.Equal(ChartColor.FromHex("#010203"), host.Resolve(VisualThemeMode.Dark).Background);
+        Assert.Equal(ChartColor.FromHex("#010203"), host.Resolve(ThemeMode.Dark).Background);
         var fenced = new MermaidVisualMarkupParser(new MermaidRenderOptions {
             Presentation = new MermaidPresentationOptions { Theme = host }
         }).Parse("```mermaid\n" + Colors + body + "\n```");
@@ -92,9 +92,9 @@ public sealed class MermaidNativeThemeColorTests {
         };
         var rendered = MermaidRenderer.Render(Colors + "flowchart LR\nA --> B", options);
         Assert.Empty(rendered.Diagnostics);
-        Assert.Equal(ChartColor.FromHex("#040506"), Theme(rendered.Artifact!.Model!).Resolve(VisualThemeMode.Dark).Background);
-        Assert.Equal(ChartColor.FromHex("#010203"), host.Resolve(VisualThemeMode.Dark).Background);
-        Assert.NotEqual(ChartColor.FromHex("#112233"), shared.Resolve(VisualThemeMode.Dark).Background);
+        Assert.Equal(ChartColor.FromHex("#040506"), Theme(rendered.Artifact!.Model!).Resolve(ThemeMode.Dark).Background);
+        Assert.Equal(ChartColor.FromHex("#010203"), host.Resolve(ThemeMode.Dark).Background);
+        Assert.NotEqual(ChartColor.FromHex("#112233"), shared.Resolve(ThemeMode.Dark).Background);
         Assert.All(Assert.IsType<TopologyChart>(rendered.Artifact.Model).Nodes,
             node => Assert.Equal(ChartColor.FromHex("#EEDDCC"), ChartColor.Parse(node.LabelColor!)));
         var fenced = new MermaidVisualMarkupParser(options).Parse("```mermaid\n" + Colors + "flowchart LR\nA --> B\n```");
@@ -121,7 +121,7 @@ public sealed class MermaidNativeThemeColorTests {
         var source = File.ReadAllText(Path.Combine(TestRepository.Root, "tests", "mermaid-conformance", "fixtures", "shared-native-colors.mmd"));
         var rendered = MermaidRenderer.Render(source);
         Assert.Empty(rendered.Diagnostics);
-        var colors = Theme(rendered.Artifact!.Model!).Resolve(VisualThemeMode.Light);
+        var colors = Theme(rendered.Artifact!.Model!).Resolve(ThemeMode.Light);
         Assert.Equal(ChartColor.FromHex("#112233"), colors.Background);
         Assert.Equal(ChartColor.FromHex("#334455"), colors.Surface);
         Assert.Equal(ChartColor.FromHex("#EEDDCC"), colors.Foreground);

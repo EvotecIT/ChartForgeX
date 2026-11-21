@@ -46,11 +46,11 @@ public sealed class ConcentricRadialBandTests {
     }
 
     [Theory]
-    [InlineData(ChartSeriesKind.Pie, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.Pie, VisualThemeMode.Dark)]
-    [InlineData(ChartSeriesKind.Donut, VisualThemeMode.Light)]
-    [InlineData(ChartSeriesKind.Donut, VisualThemeMode.Dark)]
-    public void ClearingAnExplicitSingleBandRestoresTheOrdinaryDefaultExports(ChartSeriesKind kind, VisualThemeMode mode) {
+    [InlineData(ChartSeriesKind.Pie, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.Pie, ThemeMode.Dark)]
+    [InlineData(ChartSeriesKind.Donut, ThemeMode.Light)]
+    [InlineData(ChartSeriesKind.Donut, ThemeMode.Dark)]
+    public void ClearingAnExplicitSingleBandRestoresTheOrdinaryDefaultExports(ChartSeriesKind kind, ThemeMode mode) {
         var series = new ChartSeries(new ChartSeriesId("observed"), "Observed", kind,
             new[] { new ChartPoint(1, 3), new ChartPoint(2, 1) });
         var chart = Chart.Create().WithSize(520, 360).WithTheme(VisualTheme.Graphite(), mode)
@@ -67,9 +67,9 @@ public sealed class ConcentricRadialBandTests {
     }
 
     [Theory]
-    [InlineData(390, 360, VisualThemeMode.Dark)]
-    [InlineData(900, 500, VisualThemeMode.Light)]
-    public void NativeSvgAndPngPaintIndependentBandsAndRetainAnEmptyAnnularGap(int width, int height, VisualThemeMode mode) {
+    [InlineData(390, 360, ThemeMode.Dark)]
+    [InlineData(900, 500, ThemeMode.Light)]
+    public void NativeSvgAndPngPaintIndependentBandsAndRetainAnEmptyAnnularGap(int width, int height, ThemeMode mode) {
         var chart = Rings().WithSize(width, height).WithTheme(VisualTheme.Graphite(), mode)
             .WithHeader(false).WithDataLabels(false).WithDonutCenterLabel(false);
         var innerColor = ChartColor.FromHex("#2468AC"); var outerColor = ChartColor.FromHex("#D45A32");

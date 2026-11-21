@@ -5,7 +5,7 @@ public static partial class V2Examples {
     private static void WriteLegendControl(string output, ICollection<ProofArtifact> artifacts) {
         var recipe = ExampleRecipes.Named("legend-control");
         foreach (var option in LegendControlRecipe.Options)
-            foreach (var mode in new[] { VisualThemeMode.Light, VisualThemeMode.Dark })
+            foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark })
                 foreach (var compact in new[] { false, true }) {
                     var variant = (compact ? "compact-" : "") + option;
                     var (title, subtitle) = option switch {

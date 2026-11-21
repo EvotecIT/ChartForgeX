@@ -1,7 +1,7 @@
 /// <summary>Creates a sunburst showing allocation through a team hierarchy.</summary>
 public static class SunburstRecipe {
     /// <summary>Creates the source model for a gallery variant without choosing an export backend.</summary>
-    public static Chart Create(string variant = "wide", VisualThemeMode mode = VisualThemeMode.Light) {
+    public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options"
             or "authored-total" or "compact-authored-total"))
             throw new ArgumentOutOfRangeException(nameof(variant));
@@ -21,8 +21,8 @@ public static class SunburstRecipe {
         var chart = Chart.Create().WithDataLabels().AddSeries(allocation);
         if (configured) {
             var colors = VisualTheme.Graphite().Resolve(mode);
-            var low = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(153, 138, 224) : ChartColor.FromRgb(101, 78, 169);
-            var high = mode == VisualThemeMode.Dark ? ChartColor.FromRgb(238, 157, 98) : ChartColor.FromRgb(191, 92, 34);
+            var low = mode == ThemeMode.Dark ? ChartColor.FromRgb(153, 138, 224) : ChartColor.FromRgb(101, 78, 169);
+            var high = mode == ThemeMode.Dark ? ChartColor.FromRgb(238, 157, 98) : ChartColor.FromRgb(191, 92, 34);
             chart.ConfigureSunburst(options => {
                 options.CornerRadius = 6;
                 options.SecondaryLabelFormatter = context => context.Item.Id == "all" ? "Allocation" : context.Item.Id == "engineering" ? "Delivery teams"
