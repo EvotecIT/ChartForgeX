@@ -31,12 +31,12 @@ public sealed class AlignedDifferenceBrowserTests {
         var chart = Model(variant, width, mode); var updated = Model(variant, width, mode);
         var alignment = updated.Series[0].DifferenceAlignment!;
         var first = ChartSeries.CreateLine(alignment.FirstSeriesId, alignment.FirstName, alignment.FirstPoints)
-            .WithObservationIds(Enumerable.Range(0, alignment.FirstPoints.Count).Select(index => alignment.FirstObservationIds[index]));
+            .ObservationIds(Enumerable.Range(0, alignment.FirstPoints.Count).Select(index => alignment.FirstObservationIds[index]));
         var second = ChartSeries.CreateLine(alignment.SecondSeriesId, alignment.SecondName, alignment.SecondPoints)
-            .WithObservationIds(Enumerable.Range(0, alignment.SecondPoints.Count).Select(index => alignment.SecondObservationIds[index]));
+            .ObservationIds(Enumerable.Range(0, alignment.SecondPoints.Count).Select(index => alignment.SecondObservationIds[index]));
         var changed = first.Points[2].Y * 1.25; first.Points[2] = new ChartPoint(first.Points[2].X, changed);
         var current = ChartDifferencePoints.Align(first, second, alignment.MissingDataPolicy);
-        updated.Series[0].ReplaceDifferenceAlignment(current).WithObservationIds(current.FirstSourceIndices.Select(index => current.FirstObservationIds[index]));
+        updated.Series[0].ReplaceDifferenceAlignment(current).ObservationIds(current.FirstSourceIndices.Select(index => current.FirstObservationIds[index]));
         await using var session = await BrowserProofFonts.OpenAsync(chart.ToInteractiveHtmlFragment(Options), width + 24, 800);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
         await page.EvaluateAsync("() => { window.aligned = ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart')); }");
@@ -73,7 +73,7 @@ public sealed class AlignedDifferenceBrowserTests {
     }
     private static Chart Model(string variant, int width, ThemeMode mode) {
         var selected = width == 390 ? variant == "wide" ? "compact" : "compact-" + variant : variant;
-        return AlignedDifferenceRecipe.Create(selected, mode).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), mode);
+        return AlignedDifferenceRecipe.Create(selected, mode).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(mode);
     }
     private static void Options(HtmlChartInteractionOptions options) {
         options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;

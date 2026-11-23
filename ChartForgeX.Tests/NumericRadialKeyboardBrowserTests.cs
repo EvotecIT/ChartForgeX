@@ -16,11 +16,11 @@ public sealed class NumericRadialKeyboardBrowserTests {
     [InlineData(false, true)]
     public async Task SeriesLegendSummarizesRawSignedSourceValuesOnceIncludingZeros(bool bars, bool zeroOnly) {
         if (!Enabled) return;
-        var chart = NumericRadialSeriesTests.Add(Chart.Create().WithSize(600, 440).WithLegend().WithDataLabels()
-            .WithDataLabelPlacement(ChartDataLabelPlacement.Outside).WithYAxisBounds(-100, 100), bars, "Requests",
+        var chart = NumericRadialSeriesTests.Add(Chart.Create().Size(600, 440).Legend().DataLabels()
+            .DataLabels(d => d.Placement(ChartDataLabelPlacement.Outside)).YAxis(y => y.Bounds(-100, 100)), bars, "Requests",
             new(1, zeroOnly ? 0 : 20), new(2, zeroOnly ? 0 : -5), new(3, 0));
         NumericRadialSeriesTests.Add(chart, bars, "Peers", new(1, 80), new(2, -15), new(3, 0));
-        foreach (var series in chart.Series) series.WithStackGroup("work").WithNormalization(100);
+        foreach (var series in chart.Series) series.StackGroup("work").NormalizedTo(100);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), 700, 520);
         var page = session.Page;
         var legend = page.Locator(Legend(0));
@@ -46,7 +46,7 @@ public sealed class NumericRadialKeyboardBrowserTests {
     [InlineData(false, "hidden")]
     public async Task KeyboardTabAndArrowSkipUnavailableObservationsAndRestoreTheirReadout(bool bars, string state) {
         if (!Enabled) return;
-        var chart = NumericRadialSeriesTests.Add(Chart.Create().WithSize(600, 440).WithLegend().WithDataLabels(false), bars, "First", new ChartPoint(1, 100));
+        var chart = NumericRadialSeriesTests.Add(Chart.Create().Size(600, 440).Legend().DataLabels(false), bars, "First", new ChartPoint(1, 100));
         NumericRadialSeriesTests.Add(chart, bars, "Second", new ChartPoint(1, 200));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), 700, 520);
         var page = session.Page;

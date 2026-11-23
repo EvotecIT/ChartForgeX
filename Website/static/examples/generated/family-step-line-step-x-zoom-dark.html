@@ -127,8 +127,8 @@ public static class XZoomRecipe {
         var steps = kind == ChartSeriesKind.StepLine;
         var x = new[] { 0d, .86, 1, 2, 3, 4, 5, 5.87, 8, 10 };
         ChartPoint[] Points(params double[] values) =&gt; values.Select((value, index) =&gt; new ChartPoint(x[index], value, x[index] == 4)).ToArray();
-        var chart = Chart.Create().WithXAxis(&quot;Sample&quot;).WithYAxis(&quot;Requests&quot;).WithXAxisBounds(0, 10).WithDataLabels()
-            .WithValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));
+        var chart = Chart.Create().XAxis(xAxis =&gt; xAxis.Title(&quot;Sample&quot;)).YAxis(y =&gt; y.Title(&quot;Requests&quot;)).XAxis(xAxis =&gt; xAxis.Bounds(0, 10)).DataLabels()
+            .ValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));
         var observed = Points(88, 44, 34, 56, 46, 64, 42, 58, 50, 82);
         if (steps) chart.AddStepLine(&quot;Observed&quot;, observed);
         else chart.AddLine(&quot;Observed&quot;, observed);
@@ -136,15 +136,15 @@ public static class XZoomRecipe {
             var utilization = Points(96, 72, 48, 61, 55, 76, 49, 67, 84, 100);
             if (steps) chart.AddStepLine(&quot;Utilization&quot;, utilization);
             else chart.AddLine(&quot;Utilization&quot;, utilization);
-            chart.Series[1].UseSecondaryValueAxis();
-            chart.WithSecondaryYAxis(&quot;Utilization (%)&quot;);
+            chart.Series[1].SecondaryAxis();
+            chart.SecondaryYAxis(s =&gt; s.Title(&quot;Utilization (%)&quot;));
             chart.Options.SecondaryYAxis.TickCount = 4;
         }
-        chart.Options.XAxis.WithReversal(steps);
+        chart.Options.XAxis.Reversed(steps);
         chart.Options.XAxis.TickCount = 4; chart.Options.YAxis.TickCount = 4;
         foreach (var series in chart.Series) {
-            series.ConfigureMarkers(markers =&gt; { markers.Enabled = true; markers.Radius = 3; });
-            if (steps) series.WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+            series.Markers(markers =&gt; { markers.Enabled = true; markers.Radius = 3; });
+            if (steps) series.Interpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
         }
         return chart.AddVerticalLine(2, &quot;Deployment&quot;).AddHorizontalLine(60, &quot;Target&quot;)
             .AddPlotRegion(new(ChartColor.FromHex(&quot;#5487b8&quot;), xMinimum: 2.5, xMaximum: 6.5,
@@ -200,8 +200,8 @@ public static class XZoomRecipe {
         var steps = kind == ChartSeriesKind.StepLine;
         var x = new[] { 0d, .86, 1, 2, 3, 4, 5, 5.87, 8, 10 };
         ChartPoint[] Points(params double[] values) =&gt; values.Select((value, index) =&gt; new ChartPoint(x[index], value, x[index] == 4)).ToArray();
-        var chart = Chart.Create().WithXAxis(&quot;Sample&quot;).WithYAxis(&quot;Requests&quot;).WithXAxisBounds(0, 10).WithDataLabels()
-            .WithValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));
+        var chart = Chart.Create().XAxis(xAxis =&gt; xAxis.Title(&quot;Sample&quot;)).YAxis(y =&gt; y.Title(&quot;Requests&quot;)).XAxis(xAxis =&gt; xAxis.Bounds(0, 10)).DataLabels()
+            .ValueFormat(ChartValueFormat.Number(&quot;0.##&quot;, CultureInfo.InvariantCulture));
         var observed = Points(88, 44, 34, 56, 46, 64, 42, 58, 50, 82);
         if (steps) chart.AddStepLine(&quot;Observed&quot;, observed);
         else chart.AddLine(&quot;Observed&quot;, observed);
@@ -209,15 +209,15 @@ public static class XZoomRecipe {
             var utilization = Points(96, 72, 48, 61, 55, 76, 49, 67, 84, 100);
             if (steps) chart.AddStepLine(&quot;Utilization&quot;, utilization);
             else chart.AddLine(&quot;Utilization&quot;, utilization);
-            chart.Series[1].UseSecondaryValueAxis();
-            chart.WithSecondaryYAxis(&quot;Utilization (%)&quot;);
+            chart.Series[1].SecondaryAxis();
+            chart.SecondaryYAxis(s =&gt; s.Title(&quot;Utilization (%)&quot;));
             chart.Options.SecondaryYAxis.TickCount = 4;
         }
-        chart.Options.XAxis.WithReversal(steps);
+        chart.Options.XAxis.Reversed(steps);
         chart.Options.XAxis.TickCount = 4; chart.Options.YAxis.TickCount = 4;
         foreach (var series in chart.Series) {
-            series.ConfigureMarkers(markers =&gt; { markers.Enabled = true; markers.Radius = 3; });
-            if (steps) series.WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+            series.Markers(markers =&gt; { markers.Enabled = true; markers.Radius = 3; });
+            if (steps) series.Interpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
         }
         return chart.AddVerticalLine(2, &quot;Deployment&quot;).AddHorizontalLine(60, &quot;Target&quot;)
             .AddPlotRegion(new(ChartColor.FromHex(&quot;#5487b8&quot;), xMinimum: 2.5, xMaximum: 6.5,

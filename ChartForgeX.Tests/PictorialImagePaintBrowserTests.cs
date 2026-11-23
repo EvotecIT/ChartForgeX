@@ -26,9 +26,9 @@ public sealed class PictorialImagePaintBrowserTests {
         foreach (var cue in actual.GetProperty("cues").EnumerateArray()) { Assert.True(cue.GetProperty("withinImage").GetBoolean()); Assert.True(cue.GetProperty("width").GetDouble() > 0); Assert.True(cue.GetProperty("height").GetDouble() > 0); }
         Assert.Equal("true", await page.Locator(".cfx-interactive-chart").GetAttributeAsync("data-cfx-keyboard-focus"));
         Assert.Equal("2px", await page.Locator("[data-cfx-focus-ink]").EvaluateAsync<string>("node => getComputedStyle(node).strokeWidth"));
-        chart.WithPictorialFillDirection(ChartPictorialFillDirection.BottomToTop); chart.Series[0].Points[0] = new ChartPoint(1, .75);
+        chart.Pictorial(p => p.FillDirection(ChartPictorialFillDirection.BottomToTop)); chart.Series[0].Points[0] = new ChartPoint(1, .75);
         // This real source change reassigns the same caller-owned observation identity explicitly.
-        chart.Series[0].WithObservationId(0, new ChartObservationId("team"));
+        chart.Series[0].ObservationId(0, new ChartObservationId("team"));
         await page.EvaluateAsync("html => imagePaint.update(html)", chart.ToInteractiveHtmlFragmentWithoutAssets());
         Assert.Equal("true", await page.Locator(Target).GetAttributeAsync("aria-selected")); Assert.Equal("0.75", await page.Locator(Target).GetAttributeAsync("data-cfx-value"));
         Assert.True(await page.Locator(Target).EvaluateAsync<bool>("node => node.getRootNode().activeElement===node"));
@@ -63,7 +63,7 @@ public sealed class PictorialImagePaintBrowserTests {
     [InlineData(390, false)] [InlineData(900, true)]
     public async Task OrdinaryContourPictorialPaintRemainsAKeyboardSelectionControl(int width, bool dark) {
         if (!Enabled) return;
-        var chart = Model(width, dark, "opaque", false).WithPictorialArtwork(null);
+        var chart = Model(width, dark, "opaque", false).Pictorial(p => p.Artwork((ChartPictorialArtwork?)null));
         await using var session = await BrowserProofFonts.OpenAsync(chart.ToInteractiveHtmlFragment(), width + 24, 620);
         await FocusWithKeyboardAsync(session.Page, session.Page.Locator(Target)); await session.Page.Keyboard.PressAsync("Space");
         Assert.Equal("true", await session.Page.Locator(Target).GetAttributeAsync("aria-selected")); AssertNoConsoleErrors(session);
@@ -75,8 +75,8 @@ public sealed class PictorialImagePaintBrowserTests {
             var at = (y * 8 + x) * 4; pixels[at] = 51; pixels[at + 1] = 102; pixels[at + 2] = 153; pixels[at + 3] = 255;
         }
         var artwork = fromSvg ? ChartPictorialArtwork.FromSvg(PictorialArtworkTests.ArtworkSvg, 8, 4) : ChartPictorialArtwork.FromImage(new RgbaImage(8, 4, pixels));
-        var chart = PictorialArtworkTests.Model(.25).WithSize(width, 320).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light).WithPictorialArtwork(artwork);
-        chart.Series[0].WithObservationId(0, new ChartObservationId("team")); return chart;
+        var chart = PictorialArtworkTests.Model(.25).Size(width, 320).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Pictorial(p => p.Artwork(artwork));
+        chart.Series[0].ObservationId(0, new ChartObservationId("team")); return chart;
     }
     private static Task<JsonElement> Observe(IPage page) => page.EvaluateAsync<JsonElement>("""
         () => {

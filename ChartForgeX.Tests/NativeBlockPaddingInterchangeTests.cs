@@ -10,18 +10,18 @@ public sealed class NativeBlockPaddingInterchangeTests {
     [InlineData(false)]
     [InlineData(true)]
     public void RailroadConfiguredPaddingSurvivesSerializationAndLaterFrameOwnershipChanges(bool hostOwnsFrame) {
-        var original = RailroadDiagramBlock.Create().WithTitle("Portable grammar").WithPadding(31, 17, 47, 13)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).WithHostFrame(hostOwnsFrame)
-            .AddRule("root", RailroadExpression.Terminal("Literal")).WithNaturalSize();
+        var original = RailroadDiagramBlock.Create().Title("Portable grammar").Padding(31, 17, 47, 13)
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).HostOwnsFrame(hostOwnsFrame)
+            .AddRule("root", RailroadExpression.Terminal("Literal")).NaturalSize();
         var envelope = VisualArtifact.Create("railroad-padding", VisualArtifactKind.VisualBlock, original).ToInterchangeEnvelope();
         var imported = VisualArtifactInterchangeEnvelope.FromJson(envelope.ToJson()).ToRailroadDiagramBlock();
         Assert.Equal(original.Options.HostOwnsFrame, imported.Options.HostOwnsFrame);
         Assert.Equal(original.RenderSvg("portable"), imported.RenderSvg("portable"));
-        original.WithHostFrame(false); imported.WithHostFrame(false);
+        original.HostOwnsFrame(false); imported.HostOwnsFrame(false);
         Assert.Equal((31d, 17d, 47d, 13d), Padding(imported));
-        original.WithNaturalSize(); imported.WithNaturalSize();
+        original.NaturalSize(); imported.NaturalSize();
         Assert.Equal(original.RenderSvg("portable"), imported.RenderSvg("portable")); Assert.Equal(original.ToPng(), imported.ToPng());
-        original.WithHostFrame(true); imported.WithHostFrame(true);
+        original.HostOwnsFrame(); imported.HostOwnsFrame();
         Assert.Equal((0d, 0d, 0d, 0d), Padding(imported));
     }
 

@@ -122,7 +122,7 @@ public static class TreeRecipe {
             new ChartTreeLink(&quot;operations&quot;, &quot;operations-support&quot;, 40)
         };
         var teams = ChartSeries.CreateTree(new ChartSeriesId(&quot;teams&quot;), &quot;Teams&quot;, nodes, links);
-        return Chart.Create().WithDataLabels().AddSeries(teams);
+        return Chart.Create().DataLabels().AddSeries(teams);
     }
 }
 </code></pre><pre data-visual-theme="dark"><code data-example-source>#region Setup
@@ -167,7 +167,7 @@ public static class TreeRecipe {
             new ChartTreeLink(&quot;operations&quot;, &quot;operations-support&quot;, 40)
         };
         var teams = ChartSeries.CreateTree(new ChartSeriesId(&quot;teams&quot;), &quot;Teams&quot;, nodes, links);
-        return Chart.Create().WithDataLabels().AddSeries(teams);
+        return Chart.Create().DataLabels().AddSeries(teams);
     }
 }
 </code></pre></section></main><footer><a href="catalog.html">Explore more examples</a><a href="fonts/OFL.txt">Font license</a></footer><script data-gallery-script>(() => {

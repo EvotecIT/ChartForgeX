@@ -15,7 +15,7 @@ public sealed class TopologyDiagramDefaultsTests {
     [InlineData(TopologyHealthStatus.Critical, "8 5")]
     [InlineData(TopologyHealthStatus.Disabled, "3 6")]
     public void EdgesAreSolidUnlessTheirStatusReportsAProblem(TopologyHealthStatus status, string expectedDash) {
-        var chart = TopologyChart.Create().WithViewport(420, 160)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(420, 160))
             .AddNode("a", "Alpha", 20, 40).AddNode("b", "Beta", 280, 40)
             .AddEdge("link", "a", "b", status: status);
         var line = XDocument.Parse(chart.ToSvg()).Descendants()
@@ -26,7 +26,7 @@ public sealed class TopologyDiagramDefaultsTests {
 
     [Fact]
     public void DiagonalObstacleRouteTurnsOnceWithoutSharingAnotherEdgesSide() {
-        var chart = TopologyChart.Create().WithViewport(640, 420)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(640, 420))
             .AddNode("client", "Client", 40, 40, width: 200, height: 80)
             .AddNode("cache", "Cache", 400, 40, width: 150, height: 80)
             .AddNode("worker", "Worker", 360, 280, width: 200, height: 80)
@@ -48,7 +48,7 @@ public sealed class TopologyDiagramDefaultsTests {
     [InlineData(null, .45, .7)]
     [InlineData("v2", 0, .45)]
     public void TitleOnlyCardCentresItsHeadingUnlessABadgeHoldsTheLowerRow(string? badge, double minimum, double maximum) {
-        var chart = TopologyChart.Create().WithViewport(320, 160)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(320, 160))
             .AddNode("worker", "Processing service", 40, 30, TopologyNodeKind.Server, width: 240, height: 85);
         chart.Nodes[0].Badge = badge;
         var document = XDocument.Parse(chart.ToSvg());

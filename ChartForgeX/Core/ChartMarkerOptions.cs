@@ -1,8 +1,10 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>Shared numeric point-marker geometry, visibility and paint overrides.</summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class ChartMarkerOptions {
     private ChartMarkerShape _shape;
     private double? _radius, _strokeWidth;

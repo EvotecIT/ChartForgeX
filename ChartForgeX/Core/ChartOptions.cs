@@ -2,53 +2,21 @@ using System;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 using System.Collections.Generic;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>
 /// Defines renderer-independent options for a chart.
 /// </summary>
+[Fluent]
 public sealed partial class ChartOptions {
     private ChartSize _size = new(1000, 560);
     private ChartPadding _padding = ChartPadding.All(24);
     private VisualTheme _theme = VisualTheme.Graphite();
     private ThemeMode _themeMode;
     private ResolvedVisualTheme? _resolvedTheme;
-    private ChartHeatmapScale _heatmapScale = ChartHeatmapScale.Sequential;
-    private ChartLegendPosition _legendPosition = ChartLegendPosition.TopLeft;
     private bool? _showPlotBackground;
-    private bool _showLegend = true;
-    private ChartPictorialShape _pictorialShape = ChartPictorialShape.Circle;
-    private int _pictorialColumns = 12;
-    private double? _pictorialMaximum;
-    private double? _pictorialValuePerSymbol;
-    private double _pictorialSymbolScale = 1.0;
-    private double _pictorialEmptyOpacity = 0.22;
-    private string? _pictorialSvgPathData;
-    private ChartRect _pictorialSvgPathViewBox = new(0, 0, 24, 24);
-    private ChartPictorialShape _pictorialPngFallbackShape = ChartPictorialShape.Circle;
-    private double _progressMaximum = 100;
-    private double _progressBarThicknessRatio = 0.30;
-    private double _progressTrackOpacity = 0.24;
-    private double _wordCloudMinFontSize = 12;
-    private double _wordCloudMaxFontSize = 46;
-    private double[] _wordCloudAngles = { 0 };
-    private int? _wordCloudMaximumTerms;
-    private double _wordCloudDensity = 1.0;
-    private string? _pngFontPath;
-    private string? _pngFontFaceName;
-    private int? _pngFontCollectionIndex;
-    private int _pngSupersamplingScale = 2;
-    private Typography.TextHinting _pngTextHinting;
-    private int _pngOutputScale = 1;
-    private double? _ganttToday;
-    private double _donutInnerRadiusRatio = 0.62;
-    private string? _donutCenterValue;
-    private string? _donutCenterLabel;
-    private double _circleRadiusScale = 1.0;
-    private double _circleStrokeScale = 1.0;
-    private double _radialProgressRadiusScale = 1.0;
-    private double _radialProgressStrokeScale = 1.0;
 
     /// <summary>
     /// Gets or sets the rendered chart size in pixels.
@@ -99,115 +67,9 @@ public sealed partial class ChartOptions {
     }
     internal ResolvedVisualTheme ResolvedTheme => _resolvedTheme ??= Theme.ResolvePresentation(ThemeMode);
 
-    /// <summary>
-    /// Gets or sets the preferred TrueType font file or TrueType collection used by the PNG renderer.
-    /// </summary>
-    /// <remarks>
-    /// SVG and HTML use <see cref="VisualTypography.Family"/>. PNG rendering uses this .ttf or .ttc file when it can be loaded and falls back to an auto-detected platform font or the built-in tiny font.
-    /// </remarks>
-    public string? PngFontPath {
-        get => _pngFontPath;
-        set {
-            if (value != null && string.IsNullOrWhiteSpace(value)) throw new ArgumentException("PNG font path must not be empty.", nameof(value));
-            _pngFontPath = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the optional family, subfamily, full, or PostScript face name used when selecting a PNG font.
-    /// </summary>
-    public string? PngFontFaceName {
-        get => _pngFontFaceName;
-        set {
-            if (value != null && string.IsNullOrWhiteSpace(value)) throw new ArgumentException("PNG font face name must not be empty.", nameof(value));
-            _pngFontFaceName = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the optional face index used when <see cref="PngFontPath"/> points to a TrueType collection.
-    /// </summary>
-    public int? PngFontCollectionIndex {
-        get => _pngFontCollectionIndex;
-        set {
-            if (value < 0) throw new ArgumentOutOfRangeException(nameof(value), value, "PNG font collection index must be non-negative.");
-            _pngFontCollectionIndex = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets how the PNG renderer fits text to the pixel grid.
-    /// </summary>
-    /// <remarks>
-    /// <see cref="Typography.TextHinting.Auto"/> (the default) snaps the baseline, x-height, and cap height of labels at 12 output pixels and below to whole pixels without changing their widths. <see cref="Typography.TextHinting.Full"/> also fits narrow straight stems while retaining layout widths. Use <see cref="Typography.TextHinting.None"/> where exact outline geometry matters, such as animation frames.
-    /// </remarks>
-    public Typography.TextHinting PngTextHinting {
-        get => _pngTextHinting;
-        set {
-            if (!Enum.IsDefined(typeof(Typography.TextHinting), value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown text hinting mode.");
-            _pngTextHinting = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the internal supersampling scale used by the PNG renderer.
-    /// </summary>
-    /// <remarks>
-    /// Higher values improve antialiased edges at the cost of render time and memory. The output dimensions stay equal to <see cref="Size"/>.
-    /// </remarks>
-    public int PngSupersamplingScale {
-        get => _pngSupersamplingScale;
-        set {
-            if (value < 1 || value > 4) throw new ArgumentOutOfRangeException(nameof(value), value, "PNG supersampling scale must be between one and four.");
-            _pngSupersamplingScale = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the output pixel multiplier used by the PNG renderer.
-    /// </summary>
-    /// <remarks>
-    /// Unlike <see cref="PngSupersamplingScale"/>, this changes the emitted PNG dimensions while preserving the chart's logical layout.
-    /// </remarks>
-    public int PngOutputScale {
-        get => _pngOutputScale;
-        set {
-            if (value < 1 || value > 4) throw new ArgumentOutOfRangeException(nameof(value), value, "PNG output scale must be between one and four.");
-            _pngOutputScale = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets whether the legend is enabled. A default legend with one entry is hidden;
-    /// explicitly assigning true also displays a single entry.
-    /// </summary>
-    public bool ShowLegend {
-        get => _showLegend;
-        set { _showLegend = value; HasExplicitLegend = true; }
-    }
-
-    internal bool HasExplicitLegend { get; private set; }
-
     /// <summary>Gets or sets whether Cartesian series geometry is clipped to the plot rectangle.</summary>
     /// <remarks>Markers with centers inside the rectangle may extend beyond it by their radius. Disable this for intentional overflow.</remarks>
     public bool ClipMarksToPlot { get; set; } = true;
-
-    /// <summary>
-    /// Gets or sets a value indicating whether capable legends should list individual points instead of series.
-    /// </summary>
-    public bool ShowPointLegend { get; set; }
-
-    /// <summary>
-    /// Gets or sets where the legend is placed relative to the plot area.
-    /// </summary>
-    public ChartLegendPosition LegendPosition {
-        get => _legendPosition;
-        set {
-            if (!Enum.IsDefined(typeof(ChartLegendPosition), value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown legend position.");
-            _legendPosition = value;
-            HasExplicitLegendPosition = true;
-        }
-    }
 
     /// <summary>
     /// Gets or sets a value indicating whether the title and subtitle are rendered.
@@ -224,9 +86,6 @@ public sealed partial class ChartOptions {
     /// </summary>
     public bool ShowPlotBackground { get => _showPlotBackground ?? false; set => _showPlotBackground = value; }
 
-    internal bool HasExplicitLegendPosition { get; private set; }
-    internal void SetDefaultLegendPosition(ChartLegendPosition position) { if (!HasExplicitLegendPosition) _legendPosition = position; }
-
     /// <summary>
     /// Gets or sets a value indicating whether grid lines are rendered.
     /// </summary>
@@ -238,388 +97,10 @@ public sealed partial class ChartOptions {
     public bool TransparentBackground { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets chart-level data-label visibility. Series without an explicit override use this setting.
-    /// When unset, the renderer uses its family's default visibility.
-    /// </summary>
-    public bool? ShowDataLabels { get => _showDataLabels; set => _showDataLabels = value; }
-    private bool? _showDataLabels;
-    internal bool? DataLabelVisibility => _showDataLabels;
-
-    /// <summary>
-    /// Gets or sets the optional Gantt current-date marker as an OLE Automation date or numeric schedule value.
-    /// </summary>
-    public double? GanttToday {
-        get => _ganttToday;
-        set {
-            ValidateNullableFinite(value, nameof(value));
-            _ganttToday = value;
-        }
-    }
-
-    /// <summary>Gets or sets fixed calendar ticks for classic Gantt time axes. Null uses automatic ticks.
-    /// Explicit axis labels take precedence; windows without a boundary have no tick labels.</summary>
-    public ChartTimeTickInterval? GanttTickInterval { get; set; }
-
-    /// <summary>
-    /// Gets or sets how heatmap values are converted into cell colors.
-    /// </summary>
-    public ChartHeatmapScale HeatmapScale {
-        get => _heatmapScale;
-        set {
-            if (!Enum.IsDefined(typeof(ChartHeatmapScale), value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown heatmap scale.");
-            _heatmapScale = value;
-        }
-    }
-
-    private ChartHeatmapColumnWindow _heatmapColumnWindow = ChartHeatmapColumnWindow.Latest;
-
-    /// <summary>Gets or sets whether rectangular heatmaps may grow beyond the requested frame to fit readable rows.</summary>
-    public bool HeatmapNaturalHeight { get; set; }
-
-    /// <summary>Gets or sets the policy for rectangular heatmap columns that do not fit at a readable width.</summary>
-    public ChartHeatmapColumnWindow HeatmapColumnWindow {
-        get => _heatmapColumnWindow;
-        set {
-            if (!Enum.IsDefined(typeof(ChartHeatmapColumnWindow), value)) throw new ArgumentOutOfRangeException(nameof(value));
-            _heatmapColumnWindow = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets whether categorical heatmap state keys are rendered when the chart legend is enabled. Numeric keys use HeatmapColorDimension.ShowLegend.
-    /// </summary>
-    public bool ShowHeatmapCategoryLegend { get; set; } = true;
-
-    /// <summary>
-    /// Gets or sets a value indicating whether heatmap column labels are rendered.
-    /// </summary>
-    public bool ShowHeatmapColumnLabels { get; set; } = true;
-
-    /// <summary>
-    /// Gets or sets the built-in symbol shape used by pictorial charts.
-    /// </summary>
-    public ChartPictorialShape PictorialShape {
-        get => _pictorialShape;
-        set {
-            if (!Enum.IsDefined(typeof(ChartPictorialShape), value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown pictorial shape.");
-            _pictorialShape = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the number of repeated symbols used per pictorial chart row.
-    /// </summary>
-    public int PictorialColumns {
-        get => _pictorialColumns;
-        set {
-            if (value < 1 || value > 100) throw new ArgumentOutOfRangeException(nameof(value), value, "Pictorial columns must be between one and one hundred.");
-            _pictorialColumns = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the optional scale maximum used by pictorial chart rows.
-    /// </summary>
-    public double? PictorialMaximum {
-        get => _pictorialMaximum;
-        set {
-            ValidateNullableFinite(value, nameof(value));
-            if (value <= 0) throw new ArgumentOutOfRangeException(nameof(value), value, "Pictorial maximum must be greater than zero.");
-            _pictorialMaximum = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the data value represented by one full pictorial symbol.
-    /// </summary>
-    public double? PictorialValuePerSymbol {
-        get => _pictorialValuePerSymbol;
-        set {
-            ValidateNullableFinite(value, nameof(value));
-            if (value <= 0) throw new ArgumentOutOfRangeException(nameof(value), value, "Pictorial value per symbol must be greater than zero.");
-            _pictorialValuePerSymbol = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether numeric value labels are rendered for pictorial rows.
-    /// </summary>
-    public bool ShowPictorialValues { get; set; } = true;
-
-    /// <summary>
-    /// Gets or sets the relative pictorial symbol size inside each symbol slot.
-    /// </summary>
-    public double PictorialSymbolScale {
-        get => _pictorialSymbolScale;
-        set {
-            ChartGuards.Finite(value, nameof(value));
-            if (value < 0.4 || value > 1.4) throw new ArgumentOutOfRangeException(nameof(value), value, "Pictorial symbol scale must be between 0.4 and 1.4.");
-            _pictorialSymbolScale = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the opacity used by unfilled pictorial symbols.
-    /// </summary>
-    public double PictorialEmptyOpacity {
-        get => _pictorialEmptyOpacity;
-        set {
-            ChartGuards.Finite(value, nameof(value));
-            if (value < 0 || value > 1) throw new ArgumentOutOfRangeException(nameof(value), value, "Pictorial empty opacity must be between zero and one.");
-            _pictorialEmptyOpacity = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the maximum value used by progress-bar charts.
-    /// </summary>
-    public double ProgressMaximum {
-        get => _progressMaximum;
-        set {
-            ChartGuards.Finite(value, nameof(value));
-            if (value <= 0) throw new ArgumentOutOfRangeException(nameof(value), value, "Progress maximum must be greater than zero.");
-            _progressMaximum = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether numeric value labels are rendered for progress-bar rows.
-    /// </summary>
-    public bool ShowProgressValues { get; set; } = true;
-
-    /// <summary>
-    /// Gets or sets a value indicating whether progress-bar rows render slider handles. Off by default: a static
-    /// progress bar is a measure, and a knob reads as an input control. An interactive chart with progress editing
-    /// enabled shows them, because there the bar is an input.
-    /// </summary>
-    public bool ShowProgressHandles { get; set; }
-
-    /// <summary>
-    /// Gets or sets the progress-bar thickness as a ratio of each row height.
-    /// </summary>
-    public double ProgressBarThicknessRatio {
-        get => _progressBarThicknessRatio;
-        set {
-            ChartGuards.Finite(value, nameof(value));
-            if (value < 0.16 || value > 0.72) throw new ArgumentOutOfRangeException(nameof(value), value, "Progress-bar thickness ratio must be between 0.16 and 0.72.");
-            _progressBarThicknessRatio = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the opacity used by progress-bar tracks.
-    /// </summary>
-    public double ProgressTrackOpacity {
-        get => _progressTrackOpacity;
-        set {
-            ChartGuards.Finite(value, nameof(value));
-            if (value < 0 || value > 1) throw new ArgumentOutOfRangeException(nameof(value), value, "Progress track opacity must be between zero and one.");
-            _progressTrackOpacity = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether donut charts render the center total and series label.
-    /// </summary>
-    public bool ShowDonutCenterLabel { get; set; } = true;
-
-    /// <summary>
-    /// Gets or sets the ratio of the donut hole radius to the outer radius.
-    /// </summary>
-    public double DonutInnerRadiusRatio {
-        get => _donutInnerRadiusRatio;
-        set {
-            ChartGuards.Finite(value, nameof(value));
-            if (value < 0.35 || value > 0.82) throw new ArgumentOutOfRangeException(nameof(value), value, "Donut inner radius ratio must be between 0.35 and 0.82.");
-            _donutInnerRadiusRatio = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets optional custom primary text rendered in the center of donut charts.
-    /// </summary>
-    public string? DonutCenterValue {
-        get => _donutCenterValue;
-        set => _donutCenterValue = value == null || string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-    }
-
-    /// <summary>
-    /// Gets or sets optional custom secondary text rendered in the center of donut charts.
-    /// </summary>
-    public string? DonutCenterLabel {
-        get => _donutCenterLabel;
-        set => _donutCenterLabel = value == null || string.IsNullOrWhiteSpace(value) ? null : value.Trim();
-    }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether progress-ring charts render the center average and series label.
-    /// </summary>
-    public bool ShowProgressRingCenterLabel { get; set; } = true;
-
-    /// <summary>
-    /// Gets or sets the relative radius used by circle charts.
-    /// </summary>
-    public double CircleRadiusScale {
-        get => _circleRadiusScale;
-        set {
-            ChartGuards.Finite(value, nameof(value));
-            if (value < 0.65 || value > 1.35) throw new ArgumentOutOfRangeException(nameof(value), value, "Circle radius scale must be between 0.65 and 1.35.");
-            _circleRadiusScale = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the relative stroke thickness used by circle charts.
-    /// </summary>
-    public double CircleStrokeScale {
-        get => _circleStrokeScale;
-        set {
-            ChartGuards.Finite(value, nameof(value));
-            if (value < 0.55 || value > 1.8) throw new ArgumentOutOfRangeException(nameof(value), value, "Circle stroke scale must be between 0.55 and 1.8.");
-            _circleStrokeScale = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the relative outer radius used by progress rings and layered radial progress charts.
-    /// </summary>
-    public double RadialProgressRadiusScale {
-        get => _radialProgressRadiusScale;
-        set {
-            ChartGuards.Finite(value, nameof(value));
-            if (value < 0.65 || value > 1.35) throw new ArgumentOutOfRangeException(nameof(value), value, "Radial-progress radius scale must be between 0.65 and 1.35.");
-            _radialProgressRadiusScale = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the relative stroke thickness used by progress rings and layered radial progress charts.
-    /// </summary>
-    public double RadialProgressStrokeScale {
-        get => _radialProgressStrokeScale;
-        set {
-            ChartGuards.Finite(value, nameof(value));
-            if (value < 0.55 || value > 1.8) throw new ArgumentOutOfRangeException(nameof(value), value, "Radial-progress stroke scale must be between 0.55 and 1.8.");
-            _radialProgressStrokeScale = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether circle charts render the status marker and status label.
-    /// </summary>
-    public bool ShowCircleStatusLabel { get; set; } = true;
-
-    /// <summary>
-    /// Gets or sets optional input path data used as the pictorial symbol. Prepared SVG and native PNG output
-    /// paint the same numeric geometry compiled from this path.
-    /// </summary>
-    public string? PictorialSvgPathData {
-        get => _pictorialSvgPathData;
-        set {
-            if (value == null) {
-                _pictorialSvgPathData = null;
-                return;
-            }
-
-            var trimmed = value.Trim();
-            ValidateSvgPathData(trimmed, nameof(value));
-            _pictorialSvgPathData = trimmed;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the viewBox used to scale <see cref="PictorialSvgPathData"/>.
-    /// </summary>
-    public ChartRect PictorialSvgPathViewBox {
-        get => _pictorialSvgPathViewBox;
-        set {
-            if (value.Width <= 0 || value.Height <= 0) throw new ArgumentOutOfRangeException(nameof(value), "Pictorial SVG path viewBox must have positive dimensions.");
-            _pictorialSvgPathViewBox = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the fallback shape for the legacy PNG exporter when <see cref="PictorialSvgPathData"/> is configured.
-    /// Prepared SVG and native PNG output use the actual custom path and ignore this legacy setting.
-    /// </summary>
-    public ChartPictorialShape PictorialPngFallbackShape {
-        get => _pictorialPngFallbackShape;
-        set {
-            if (!Enum.IsDefined(typeof(ChartPictorialShape), value)) throw new ArgumentOutOfRangeException(nameof(value), value, "Unknown pictorial fallback shape.");
-            _pictorialPngFallbackShape = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the smallest font size used by word cloud terms.
-    /// </summary>
-    public double WordCloudMinFontSize {
-        get => _wordCloudMinFontSize;
-        set {
-            ChartGuards.Finite(value, nameof(value));
-            if (value <= 0 || value >= _wordCloudMaxFontSize) throw new ArgumentOutOfRangeException(nameof(value), value, "Word cloud minimum font size must be greater than zero and smaller than the maximum.");
-            _wordCloudMinFontSize = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the largest font size used by word cloud terms.
-    /// </summary>
-    public double WordCloudMaxFontSize {
-        get => _wordCloudMaxFontSize;
-        set {
-            ChartGuards.Finite(value, nameof(value));
-            if (value <= _wordCloudMinFontSize) throw new ArgumentOutOfRangeException(nameof(value), value, "Word cloud maximum font size must be greater than the minimum.");
-            _wordCloudMaxFontSize = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the deterministic rotation angles used by word cloud terms. Terms are horizontal by default;
-    /// supply a pattern such as <c>0, 90</c> for a deliberate mix of orientations.
-    /// </summary>
-    public double[] WordCloudAngles {
-        get => (double[])_wordCloudAngles.Clone();
-        set {
-            if (value == null) throw new ArgumentNullException(nameof(value));
-            if (value.Length == 0) throw new ArgumentException("Word cloud angles must contain at least one angle.", nameof(value));
-            var copy = (double[])value.Clone();
-            for (var i = 0; i < copy.Length; i++) {
-                ChartGuards.Finite(copy[i], nameof(value));
-                if (copy[i] < -90 || copy[i] > 90) throw new ArgumentOutOfRangeException(nameof(value), copy[i], "Word cloud angles must be between -90 and 90 degrees.");
-            }
-
-            _wordCloudAngles = copy;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the optional maximum number of positive-weight terms rendered in a word cloud.
-    /// </summary>
-    public int? WordCloudMaximumTerms {
-        get => _wordCloudMaximumTerms;
-        set {
-            if (value <= 0) throw new ArgumentOutOfRangeException(nameof(value), value, "Word cloud maximum terms must be greater than zero.");
-            _wordCloudMaximumTerms = value;
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the word cloud packing density from 0.5 to 2.0.
-    /// </summary>
-    public double WordCloudDensity {
-        get => _wordCloudDensity;
-        set {
-            ChartGuards.Finite(value, nameof(value));
-            if (value < 0.5 || value > 2.0) throw new ArgumentOutOfRangeException(nameof(value), value, "Word cloud density must be between 0.5 and 2.0.");
-            _wordCloudDensity = value;
-        }
-    }
-
-    /// <summary>
     /// Gets or sets a formatter used for y-axis ticks, data labels, stack totals, and donut totals.
     /// </summary>
-    public Func<double, string>? ValueFormatter {
+    [PowerForge.Fluent.Fluent("FormatValuesBy")]
+public Func<double, string>? ValueFormatter {
         get => ReferenceEquals(ValueFormat, ChartValueFormat.ExistingValue) ? null : ValueFormat.Callback;
         set => ValueFormat = value == null ? ChartValueFormat.ExistingValue : ChartValueFormat.Custom(value);
     }
@@ -627,32 +108,18 @@ public sealed partial class ChartOptions {
     /// <summary>
     /// Gets or sets a value indicating whether the chart is rendered as a compact sparkline.
     /// </summary>
+    [NoFluent]
     public bool IsSparkline { get; set; }
 
     // Original compact sample slots determine bar spacing independently of retained observations.
     // Set only by the standalone Sparkline owner; general chart bars keep their coordinate-based layout.
     internal int SparklineSampleCount { get; set; }
 
-    internal void SetWordCloudFontRange(double minimum, double maximum) {
-        ChartGuards.Finite(minimum, nameof(minimum));
-        ChartGuards.Finite(maximum, nameof(maximum));
-        if (minimum <= 0) throw new ArgumentOutOfRangeException(nameof(minimum), minimum, "Word cloud minimum font size must be greater than zero.");
-        if (maximum <= minimum) throw new ArgumentOutOfRangeException(nameof(maximum), maximum, "Word cloud maximum font size must be greater than the minimum.");
-        _wordCloudMinFontSize = minimum;
-        _wordCloudMaxFontSize = maximum;
-    }
-
-    internal void SetPictorialSvgPath(string pathData, ChartRect viewBox, ChartPictorialShape pngFallbackShape) {
-        PictorialSvgPathData = pathData;
-        PictorialSvgPathViewBox = viewBox;
-        PictorialPngFallbackShape = pngFallbackShape;
-    }
-
-    private static void ValidateNullableFinite(double? value, string parameterName) {
+    internal static void ValidateNullableFinite(double? value, string parameterName) {
         if (value.HasValue) ChartGuards.Finite(value.Value, parameterName);
     }
 
-    private static void ValidateSvgPathData(string value, string parameterName) {
+    internal static void ValidateSvgPathData(string value, string parameterName) {
         if (value.Length == 0) throw new ArgumentException("Pictorial SVG path data must not be empty.", parameterName);
         if (value.Length > 4096) throw new ArgumentException("Pictorial SVG path data must be 4096 characters or fewer.", parameterName);
         for (var i = 0; i < value.Length; i++) {

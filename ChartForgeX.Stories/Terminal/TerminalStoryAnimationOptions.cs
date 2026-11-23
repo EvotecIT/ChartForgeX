@@ -1,68 +1,65 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Terminal;
 
 /// <summary>
 /// Configures animated raster export for a terminal story.
 /// </summary>
+[Fluent]
 public sealed class TerminalStoryAnimationOptions {
-    /// <summary>Gets the maximum sampling frame rate. GIF and APNG round the regular interval up to a whole centisecond.</summary>
-    public int FramesPerSecond { get; private set; } = 10;
+    private int _framesPerSecond = 10;
+    private double _endHoldSeconds = 1.2;
+    private int _outputScale = 1;
+    private int _maximumFrames = 240;
 
-    /// <summary>Gets whether the animation repeats.</summary>
-    public bool Loop { get; private set; } = true;
-
-    /// <summary>Gets the completed-state hold time before the animation repeats or ends, measured from the first completed sample.</summary>
-    public double EndHoldSeconds { get; private set; } = 1.2;
-
-    /// <summary>Gets the raster output density multiplier.</summary>
-    public int OutputScale { get; private set; } = 1;
-
-    /// <summary>Gets the maximum number of rendered frames.</summary>
-    public int MaximumFrames { get; private set; } = 240;
-
-    /// <summary>Creates animation options with Discord-friendly defaults.</summary>
-    public static TerminalStoryAnimationOptions Create() => new();
-
-    /// <summary>Sets the maximum sampling frame rate.</summary>
+    /// <summary>Gets or sets the maximum sampling frame rate, from 2 to 30. GIF and APNG round the regular interval up to a whole centisecond.</summary>
     /// <remarks>
     /// GIF and APNG sample at regular intervals rounded up to whole centiseconds, keeping that cadence at or below the requested rate.
     /// The first completed sample may occur up to one interval after the logical story end. The last frame can use a shorter residual hold delay.
     /// </remarks>
-    public TerminalStoryAnimationOptions WithFramesPerSecond(int framesPerSecond) {
-        if (framesPerSecond < 2 || framesPerSecond > 30) throw new ArgumentOutOfRangeException(nameof(framesPerSecond), "Animated terminal stories support 2 to 30 frames per second.");
-        FramesPerSecond = framesPerSecond;
-        return this;
+    public int FramesPerSecond {
+        get => _framesPerSecond;
+        set {
+            if (value < 2 || value > 30) throw new ArgumentOutOfRangeException(nameof(value), "Animated terminal stories support 2 to 30 frames per second.");
+            _framesPerSecond = value;
+        }
     }
 
-    /// <summary>Configures whether the animation repeats.</summary>
-    public TerminalStoryAnimationOptions WithLoop(bool loop = true) {
-        Loop = loop;
-        return this;
-    }
+    /// <summary>Gets or sets whether the animation repeats.</summary>
+    public bool Loop { get; set; } = true;
 
-    /// <summary>Sets how long the completed state remains visible from the first completed sample.</summary>
+    /// <summary>Gets or sets the completed-state hold time (0 to 10 seconds) before the animation repeats or ends, measured from the first completed sample.</summary>
     /// <remarks>
     /// The hold is rounded to the nearest centisecond, with a minimum of one centisecond for the completed frame, including when the hold is zero.
     /// The animation duration includes the regular sampling interval needed to reach that frame.
     /// </remarks>
-    public TerminalStoryAnimationOptions WithEndHold(double seconds) {
-        if (double.IsNaN(seconds) || double.IsInfinity(seconds) || seconds < 0 || seconds > 10) throw new ArgumentOutOfRangeException(nameof(seconds));
-        EndHoldSeconds = seconds;
-        return this;
+    public double EndHoldSeconds {
+        get => _endHoldSeconds;
+        set {
+            if (double.IsNaN(value) || double.IsInfinity(value) || value < 0 || value > 10) throw new ArgumentOutOfRangeException(nameof(value));
+            _endHoldSeconds = value;
+        }
     }
 
-    /// <summary>Sets the raster output density multiplier.</summary>
-    public TerminalStoryAnimationOptions WithOutputScale(int scale) {
-        if (scale < 1 || scale > 4) throw new ArgumentOutOfRangeException(nameof(scale));
-        OutputScale = scale;
-        return this;
+    /// <summary>Gets or sets the raster output density multiplier, from 1 to 4.</summary>
+    public int OutputScale {
+        get => _outputScale;
+        set {
+            if (value < 1 || value > 4) throw new ArgumentOutOfRangeException(nameof(value));
+            _outputScale = value;
+        }
     }
 
-    /// <summary>Sets the frame budget used to bound memory and file size.</summary>
-    public TerminalStoryAnimationOptions WithMaximumFrames(int maximumFrames) {
-        if (maximumFrames < 2 || maximumFrames > 600) throw new ArgumentOutOfRangeException(nameof(maximumFrames), "Animated terminal stories support a frame budget from 2 to 600.");
-        MaximumFrames = maximumFrames;
-        return this;
+    /// <summary>Gets or sets the frame budget used to bound memory and file size, from 2 to 600.</summary>
+    public int MaximumFrames {
+        get => _maximumFrames;
+        set {
+            if (value < 2 || value > 600) throw new ArgumentOutOfRangeException(nameof(value), "Animated terminal stories support a frame budget from 2 to 600.");
+            _maximumFrames = value;
+        }
     }
+
+    /// <summary>Creates animation options with Discord-friendly defaults.</summary>
+    public static TerminalStoryAnimationOptions Create() => new();
 }

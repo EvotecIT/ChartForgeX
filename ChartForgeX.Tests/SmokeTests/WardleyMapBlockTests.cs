@@ -9,8 +9,8 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void WardleyMapBlockRendersStaticSvgAndPng() {
         var map = WardleyMapBlock.Create()
-            .WithTitle("Platform Map")
-            .WithSize(900, 560);
+            .Title("Platform Map")
+            .Size(900, 560);
         map.SetStages(new[] { "Genesis", "Custom", "Product", "Commodity" });
         map.AddNode("User", "User", 0.95, 0.05, WardleyMapNodeKind.Anchor);
         map.AddNode("Portal", "Portal", 0.80, 0.35).Inertia = true;
@@ -73,7 +73,7 @@ internal static partial class SmokeTests {
 
         static WardleyMapBlock CreateMap(bool dashed = true, VisualLinkDirection forward = VisualLinkDirection.Forward,
             VisualLinkDirection bidirectional = VisualLinkDirection.Bidirectional) {
-            var map = WardleyMapBlock.Create().WithTitle("Flow Map").WithSize(640, 420);
+            var map = WardleyMapBlock.Create().Title("Flow Map").Size(640, 420);
             map.AddNode("Portal", "Portal", 0.80, 0.35);
             map.AddNode("API", "API", 0.70, 0.45);
             map.AddNode("Database", "Database", 0.55, 0.65);

@@ -3,9 +3,9 @@ using ChartForgeX.Interactivity.Html;
 
 internal static class ReadableTopologyExamples {
     public static void Write(string output) {
-        var chart = TopologyChart.Create().WithId("readable-service-report").WithTitle("Service inventory")
-            .WithSubtitle("Readable detail pages with an explicit cross-page relationship index")
-            .WithViewport(1200, 800).WithLayout(TopologyLayoutMode.Layered);
+        var chart = TopologyChart.Create().Id("readable-service-report").Title("Service inventory")
+            .Subtitle("Readable detail pages with an explicit cross-page relationship index")
+            .Viewport(new TopologyViewport(1200, 800)).LayoutMode(TopologyLayoutMode.Layered);
         for (int i = 0; i < 100; i++) chart.AddAutoNode("service-" + i, "Service " + i, subtitle: "Owner: Platform team");
         for (int i = 1; i < 100; i++) chart.AddEdge("link-" + i, "service-" + ((i - 1) / 3), "service-" + i);
         var report = chart.PrepareReport();

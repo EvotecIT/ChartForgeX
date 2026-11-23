@@ -6,8 +6,8 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualMapCompiler {
-    private static double MapCalloutInset(Chart chart, ChartRect plot) => chart.Options.MapCallouts == null ? 0
-        : Math.Min(chart.Options.MapCallouts.MaximumDistance, Math.Min(plot.Width, plot.Height) / 5);
+    private static double MapCalloutInset(Chart chart, ChartRect plot) => chart.Options.Map.Callouts == null ? 0
+        : Math.Min(chart.Options.Map.Callouts.MaximumDistance, Math.Min(plot.Width, plot.Height) / 5);
 
     // Each candidate's nearest box edge is no farther than its anchor offset. Diagonals use unit directions,
     // so MaximumDistance bounds the straight leader in logical units, independently of text dimensions.

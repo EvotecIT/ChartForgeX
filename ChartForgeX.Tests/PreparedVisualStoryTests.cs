@@ -12,8 +12,8 @@ namespace ChartForgeX.Tests;
 public sealed class PreparedVisualStoryTests {
     [Fact]
     public void AnimatedSvgSharesCompleteRepeatedFramesWithoutLosingSampledInstances() {
-        var story = VisualStory.Create("Repeated font-bearing frames").WithSize(480, 320)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily("Archivo"));
+        var story = VisualStory.Create("Repeated font-bearing frames").Size(480, 320)
+            .Theme(VisualTheme.Graphite().WithFontFamily("Archivo"));
         story.Scene("result", "Result", 2).Panel("result", new VisualStoryTextSurface("Ready to publish"));
         story.Outcome("ready", "Ready", "result");
         var prepared = story.Prepare(new VisualStoryPlaybackOptions(TimeSpan.FromSeconds(1), TimeSpan.Zero, 1));
@@ -54,7 +54,7 @@ public sealed class PreparedVisualStoryTests {
     [Fact]
     public void ReusedSourceSurfacesAccountForTheCompletePreparedTranscript() {
         var surface = new VisualStorySourceSurface(StorySourceText.Create(new string('A', 2 * 1024 * 1024)));
-        var story = VisualStory.Create("Shared source transcript").WithSize(480, 320);
+        var story = VisualStory.Create("Shared source transcript").Size(480, 320);
         for (var index = 0; index < 4; index++) story.Scene("scene" + index, "Scene", 1).Panel("source", surface);
         story.Outcome("ready", "Ready", "source");
         var prepared = story.Prepare(new VisualStoryPlaybackOptions(TimeSpan.Zero, TimeSpan.Zero, 1));
@@ -66,11 +66,11 @@ public sealed class PreparedVisualStoryTests {
     [Fact]
     public void PreparationDetachesMutableInputsAndReturnedFrames() {
         var theme = VisualTheme.Graphite();
-        var table = TerminalTable.Create().WithColumns("Result").AddRow("ready");
+        var table = TerminalTable.Create().Columns("Result").AddRow("ready");
         var terminal = TerminalStory.Create().Command("Invoke-Demo", 0.5).Table(table);
         var source = StorySourceText.Create("Invoke-Demo", "powershell");
         var pixels = new byte[] { 200, 80, 30, 255 };
-        var story = VisualStory.Create("Stable observation").WithSize(600, 400).WithTheme(theme);
+        var story = VisualStory.Create("Stable observation").Size(600, 400).Theme(theme);
         story.Scene("write", "Write", 1).Panel("source", new VisualStorySourceSurface(source));
         story.Scene("run", "Run", 2, VisualStorySceneLayout.Split)
             .Panel("terminal", new VisualStoryTerminalSurface(terminal))
@@ -79,8 +79,8 @@ public sealed class PreparedVisualStoryTests {
         var prepared = story.Prepare();
         var before = prepared.ToPng();
         var transcript = prepared.ToTranscript();
-        story.WithTheme(theme.Configure(builder => builder.Dark.Background = ChartColor.White)); table.AddRow("changed"); terminal.Output("changed");
-        source.WithLanguage("changed"); pixels[0] = 0;
+        story.Theme(theme.Configure(builder => builder.Dark.Background = ChartColor.White)); table.AddRow("changed"); terminal.Output("changed");
+        source.Language("changed"); pixels[0] = 0;
         Assert.Equal(before, prepared.ToPng());
         Assert.Equal(transcript, prepared.ToTranscript());
         var frame = prepared.RenderAt(prepared.Duration);
@@ -92,7 +92,7 @@ public sealed class PreparedVisualStoryTests {
 
     [Fact]
     public void EmbeddedTerminalChangesOnTheSceneClockAndEndpointHoldsCompletedState() {
-        var story = VisualStory.Create("Terminal playback").WithSize(600, 400);
+        var story = VisualStory.Create("Terminal playback").Size(600, 400);
         story.Scene("run", "Run", 2).Panel("result", new VisualStoryTerminalSurface(
             TerminalStory.Create().Command("Write-Output 'ready'", 1).Output("ready")));
         story.Outcome("ready", "Ready", "result");
@@ -128,7 +128,7 @@ public sealed class PreparedVisualStoryTests {
 
     [Fact]
     public void FrameBudgetAndCancellationFailBeforeProducingPixels() {
-        var story = VisualStory.Create("Bounded playback").WithSize(480, 320);
+        var story = VisualStory.Create("Bounded playback").Size(480, 320);
         story.Scene("result", "Result", 10).Panel("result", new VisualStoryTextSurface("ready"));
         story.Outcome("ready", "Ready", "result");
         var prepared = story.Prepare();
@@ -141,7 +141,7 @@ public sealed class PreparedVisualStoryTests {
     [Theory]
     [InlineData(.331, .5, 3)]
     public void GifQuantizationCannotMoveTheCompletedChapterBeforeItsBoundary(double firstSeconds, double lastSeconds, int rate) {
-        var story = VisualStory.Create("Quantized boundary").WithSize(480, 320);
+        var story = VisualStory.Create("Quantized boundary").Size(480, 320);
         story.Scene("first", "First", firstSeconds).Panel("first", new VisualStoryTextSurface("First"));
         story.Scene("last", "Last", lastSeconds).Panel("last", new VisualStoryTextSurface("Last"));
         story.Outcome("last", "Last", "last");

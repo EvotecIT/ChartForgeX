@@ -43,15 +43,15 @@ static class ScatterColorScaleRecipe {
         };
         var recorded = ChartSeries.CreateScatter(new ChartSeriesId("recorded-batches"), "Recorded batches",
             samples.Select(sample => new ChartPoint(sample.Batch, sample.Minutes).WithColorValue(sample.Temperature)));
-        recorded.WithColorScale(ChartColorScale.Diverging(new[] { colors.Palette[0] }, colors.Surface,
+        recorded.ColorScale(ChartColorScale.Diverging(new[] { colors.Palette[0] }, colors.Surface,
                 new[] { ChartColor.FromHex("#D9A441"), ChartColor.FromHex("#CF6A42"), colors.Status.Critical.Fill }, 0)
                 .WithValueRange(-15, 30).WithLabels("Cold", "Freezing", "Warm").WithNoDataColor(colors.Border));
         var target = ChartSeries.CreateLine(new ChartSeriesId("target-duration"), "Target duration", new[] { new ChartPoint(0, 30), new ChartPoint(100, 30) })
-            .ConfigureMarkers(markers => markers.Enabled = false);
-        return NumericAxes().ConfigureLabels(labels => { labels.Color = "Temperature (°C)"; labels.NoData = "Not sampled"; })
+            .Markers(markers => markers.Enabled = false);
+        return NumericAxes().Labels(labels => { labels.Color = "Temperature (°C)"; labels.NoData = "Not sampled"; })
             .AddSeries(recorded).AddSeries(target);
     }
 
-    internal static Chart NumericAxes() => Chart.Create().WithXAxis("Batch size (items)").WithYAxis("Processing time (minutes)")
-        .WithXAxisBounds(0, 100).WithYAxisBounds(0, 60).WithDataLabels(false);
+    internal static Chart NumericAxes() => Chart.Create().XAxis(x => x.Title("Batch size (items)")).YAxis(y => y.Title("Processing time (minutes)"))
+        .XAxis(x => x.Bounds(0, 100)).YAxis(y => y.Bounds(0, 60)).DataLabels(false);
 }

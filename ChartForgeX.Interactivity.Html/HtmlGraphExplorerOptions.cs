@@ -1,8 +1,10 @@
+using PowerForge.Fluent;
 namespace ChartForgeX.Interactivity.Html;
 
 /// <summary>
 /// Configures the self-contained HTML graph explorer adapter.
 /// </summary>
+[Fluent]
 public sealed class HtmlGraphExplorerOptions {
     /// <summary>Localizes explorer controls without changing authored graph labels, identities or numeric facts.</summary>
     public HtmlChartLocalization Localization { get; } = new HtmlChartLocalization();

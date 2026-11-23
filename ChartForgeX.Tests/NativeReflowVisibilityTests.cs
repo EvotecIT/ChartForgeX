@@ -19,7 +19,7 @@ public sealed class NativeReflowVisibilityTests {
         var frames = VisualSeriesVisibilityCapture.ReflowFrames(from.PreparedVisual, to.PreparedVisual, 5);
         var payload = renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.LegendVisibility, 5));
         Capture(from, to, frames, payload, kind + "-" + groupLabels);
-        var reference = Reference(kind).WithDataLabels(true).WithLegend(true); reference.Options.ShowPointLegend = true;
+        var reference = Reference(kind).DataLabels(true).Legend(true); reference.Options.Legend.ShowPoints = true;
         reference.UseVisibilitySourceLegend(from.PreparedVisual.Scene.VisibilityCapture!.ReflowSource!);
         var independentlyFiltered = renderer.PrepareSection(reference).PreparedVisual;
         NativeReflowVisibilityBeforeControls.Save("reflow-" + kind + "-" + groupLabels + ".reference.svg", independentlyFiltered.ToSvg());
@@ -44,14 +44,14 @@ public sealed class NativeReflowVisibilityTests {
     [Theory] [InlineData("horizontal-line")] [InlineData("horizontal-boxes")] [InlineData("calendar")] [InlineData("secondary-slots")]
     public void ReflowReusesPhysicalAxisCalendarAndGroupedSlotOwners(string policy) {
         var kind = policy == "horizontal-boxes" ? "boxes" : policy == "secondary-slots" ? "bar" : "line";
-        var chart = Model(kind).WithSize(390, 420); chart.Options.ShowPointLegend = false;
-        if (policy == "horizontal-line") chart.Options.LineOrientation = ChartOrientation.Horizontal;
-        if (policy == "horizontal-boxes") chart.ConfigureBoxPlot(boxes => boxes.Orientation = ChartOrientation.Horizontal);
+        var chart = Model(kind).Size(390, 420); chart.Options.Legend.ShowPoints = false;
+        if (policy == "horizontal-line") chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
+        if (policy == "horizontal-boxes") chart.BoxPlot(boxes => boxes.Orientation = ChartOrientation.Horizontal);
         if (policy == "calendar") { var start = new DateTime(2026, 1, 1).ToOADate(); for (var index = 0; index < chart.Series[0].Points.Count; index++) chart.Series[0].Points[index] = new ChartPoint(start + index, chart.Series[0].Points[index].Y);
-            chart.ConfigureXAxis(axis => { axis.Scale = ChartScaleKind.Time; axis.TimeSpacing = ChartTimeSpacing.Unit(new ChartTimeTickInterval(ChartTimeTickUnit.Day)); }); }
+            chart.XAxis(axis => { axis.Scale = ChartScaleKind.Time; axis.TimeSpacing = ChartTimeSpacing.Unit(new ChartTimeTickInterval(ChartTimeTickUnit.Day)); }); }
         ChartVisibilityView Last() => View(kind, true);
-        if (policy == "secondary-slots") { var extra = ChartSeries.CreateBar(new ChartSeriesId("alternate"), "Alternate", new[] { new ChartPoint(1, 200), new ChartPoint(2, 400), new ChartPoint(3, 300) }).UseSecondaryValueAxis();
-            extra.WithObservationIds(new[] { new ChartObservationId("earlier"), new ChartObservationId("current"), new ChartObservationId("later") }); chart.AddSeries(extra); chart.Options.MaximumBarWidth = 200; }
+        if (policy == "secondary-slots") { var extra = ChartSeries.CreateBar(new ChartSeriesId("alternate"), "Alternate", new[] { new ChartPoint(1, 200), new ChartPoint(2, 400), new ChartPoint(3, 300) }).SecondaryAxis();
+            extra.ObservationIds(new[] { new ChartObservationId("earlier"), new ChartObservationId("current"), new ChartObservationId("later") }); chart.AddSeries(extra); chart.Options.Bars.MaxWidth = 200; }
         var renderer = new HtmlInteractiveChartRenderer(); var from = Section(renderer, chart, View(kind, false));
         var last = policy == "secondary-slots" ? new ChartVisibilityView(new[] { new ChartSeriesId("alternate") }, ChartVisibilityLabelLayering.PreserveOverlay, ChartVisibilityLayout.Reflow) : Last();
         var to = Section(renderer, chart, last); Capture(from, to, VisualSeriesVisibilityCapture.ReflowFrames(from.PreparedVisual, to.PreparedVisual, 5), renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.LegendVisibility, 5)), policy);
@@ -65,8 +65,8 @@ public sealed class NativeReflowVisibilityTests {
     }
     [Fact]
     public void RawOutliersKeepOriginalSampleProvenanceAcrossHiddenGroupRecalculation() {
-        var chart = Model("raw"); chart.Series[0].UpdateBoxPlotSampleGroup(2, new ChartBoxPlotSampleGroup(3, new double[] { 4, 5, 5, 5, 5, 6, 100 })).ConfigureBoxPlotStatistics(options => options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr);
-        chart.Series[0].WithObservationIds(Enumerable.Range(0, chart.Series[0].BoxPlotSourceSamples.Count).Select(index => new ChartObservationId("sample-" + index)));
+        var chart = Model("raw"); chart.Series[0].UpdateBoxPlotSampleGroup(2, new ChartBoxPlotSampleGroup(3, new double[] { 4, 5, 5, 5, 5, 6, 100 })).BoxPlotStatistics(options => options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr);
+        chart.Series[0].ObservationIds(Enumerable.Range(0, chart.Series[0].BoxPlotSourceSamples.Count).Select(index => new ChartObservationId("sample-" + index)));
         var renderer = new HtmlInteractiveChartRenderer(); var from = Section(renderer, chart, View("raw", false)); var to = Section(renderer, chart, View("raw", true));
         Capture(from, to, VisualSeriesVisibilityCapture.ReflowFrames(from.PreparedVisual, to.PreparedVisual, 5), renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.LegendVisibility, 5)), "raw-outlier-source");
         var outliers = PlotGroups(to.PreparedVisual).Where(row => row.Metadata.TryGetValue("data-cfx-kind", out var kind) && kind == "BoxPlotOutlier")
@@ -84,8 +84,8 @@ public sealed class NativeReflowVisibilityTests {
     }
     [Theory] [InlineData("raw")] [InlineData("line")]
     public void FullSourceKeyRejectsChangedUnpaintedRawOrPointPaintDespiteIdenticalNativeSvg(string kind) {
-        var renderer = new HtmlInteractiveChartRenderer(); var a = Model(kind).WithLegend(false); var b = Model(kind, changedUnpainted: true).WithLegend(false);
-        a.Options.ShowPointLegend = false; b.Options.ShowPointLegend = false;
+        var renderer = new HtmlInteractiveChartRenderer(); var a = Model(kind).Legend(false); var b = Model(kind, changedUnpainted: true).Legend(false);
+        a.Options.Legend.ShowPoints = false; b.Options.Legend.ShowPoints = false;
         var first = Section(renderer, a, View(kind, false)); var unchanged = Section(renderer, b, View(kind, false)); var last = Section(renderer, b, View(kind, true));
         NativeReflowVisibilityBeforeControls.Capture(first, "reflow-key-" + kind + "-a"); NativeReflowVisibilityBeforeControls.Capture(unchanged, "reflow-key-" + kind + "-b");
         var keys = new { before = first.PreparedVisual.Scene.VisibilityCapture!.SourceKey, after = unchanged.PreparedVisual.Scene.VisibilityCapture!.SourceKey };
@@ -96,7 +96,7 @@ public sealed class NativeReflowVisibilityTests {
     }
     [Theory] [InlineData("bar")] [InlineData("raw")]
     public void RetainedLegendKeepsFullSourceAuthoredLabelsAndReadoutsAfterFilteredOrdinalShift(string kind) {
-        var chart = Model(kind); chart.Series[0].WithPointLabel(0, "Earlier authored").WithPointLabel(1, "Current authored").WithPointLabel(2, "Later authored");
+        var chart = Model(kind); chart.Series[0].PointLabel(0, "Earlier authored").PointLabel(1, "Current authored").PointLabel(2, "Later authored");
         var renderer = new HtmlInteractiveChartRenderer(); var from = Section(renderer, chart, View(kind, false)); var to = Section(renderer, chart, View(kind, true));
         Capture(from, to, VisualSeriesVisibilityCapture.ReflowFrames(from.PreparedVisual, to.PreparedVisual, 5), renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.LegendVisibility, 5)), "legend-source-" + kind);
         var legend = to.PreparedVisual.Scene.Nodes.OfType<VisualSceneGroup>().Single(row => row.Role == "legend-entry"
@@ -119,8 +119,8 @@ public sealed class NativeReflowVisibilityTests {
         var renderer = new HtmlInteractiveChartRenderer(); var chart = Model("raw", labels: true); var from = Section(renderer, chart, View("raw", false)); var to = Section(renderer, chart, View("raw", true));
         var frames = VisualSeriesVisibilityCapture.ReflowFrames(from.PreparedVisual, to.PreparedVisual, 5); var payload = renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.LegendVisibility, 5));
         Capture(from, to, frames, payload, "detached"); var svg = frames.Select(row => row.Frame.ToSvg()).ToArray(); var png = frames.Select(row => row.Frame.ToPng()).ToArray();
-        chart.Series[0].ReplaceBoxPlotSampleGroups(new[] { new ChartBoxPlotSampleGroup(99, new double[] { -9, 99 }) }); chart.Series[0].WithColor(ChartColor.Black);
-        chart.ConfigureYAxis(axis => axis.Maximum = 999).WithFontFamily("Changed after capture").WithValueFormat(ChartValueFormat.Custom(_ => "changed"));
+        chart.Series[0].ReplaceBoxPlotSampleGroups(new[] { new ChartBoxPlotSampleGroup(99, new double[] { -9, 99 }) }); chart.Series[0].Color(ChartColor.Black);
+        chart.YAxis(axis => axis.Max = 999).FontFamily("Changed after capture").ValueFormat(ChartValueFormat.Custom(_ => "changed"));
         try { FontRegistry.Clear(); var repeated = VisualSeriesVisibilityCapture.ReflowFrames(from.PreparedVisual, to.PreparedVisual, 5);
             Assert.Equal(svg, repeated.Select(row => row.Frame.ToSvg())); for (var index = 0; index < repeated.Count; index++) Assert.Equal(png[index], repeated[index].Frame.ToPng());
             Assert.Equal(payload, renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.LegendVisibility, 5)));
@@ -128,7 +128,7 @@ public sealed class NativeReflowVisibilityTests {
     }
     [Fact]
     public void RawGroupAndSampleNamespacesRemainDistinctAndUnknownMembershipRejectsBeforeNativePaint() {
-        var chart = Model("raw"); chart.Series[0].WithObservationId(0, new ChartObservationId("current")); var renderer = new HtmlInteractiveChartRenderer();
+        var chart = Model("raw"); chart.Series[0].ObservationId(0, new ChartObservationId("current")); var renderer = new HtmlInteractiveChartRenderer();
         var from = Section(renderer, chart, View("raw", false)); var to = Section(renderer, chart, View("raw", true));
         Capture(from, to, VisualSeriesVisibilityCapture.ReflowFrames(from.PreparedVisual, to.PreparedVisual, 3), renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.LegendVisibility, 3)), "namespace");
         Assert.DoesNotContain(from.PreparedVisual.Scene.VisibilityCapture!.TargetCatalog, row => row.Kind == ChartVisibilityTargetKind.Observation);
@@ -146,7 +146,7 @@ public sealed class NativeReflowVisibilityTests {
     [Fact]
     public void UnsupportedSourcePoliciesAndIncompatibleViewsRejectWhileOrdinaryRenderingStaysCallable() {
         var renderer = new HtmlInteractiveChartRenderer(); var chart = Model("line"); var before = Section(renderer, chart, View("line", false));
-        var changes = new Action<Chart>[] { value => value.WithValueFormat(ChartValueFormat.Custom(number => number.ToString())), value => value.ConfigureLabels(labels => labels.AccessibleTextFormatter = _ => "Captured accessible source") };
+        var changes = new Action<Chart>[] { value => value.ValueFormat(ChartValueFormat.Custom(number => number.ToString())), value => value.Labels(labels => labels.AccessibleTextFormatter = _ => "Captured accessible source") };
         var errors = new List<string>(); foreach (var change in changes) { var changed = Model("line"); change(changed); NativeReflowVisibilityBeforeControls.Capture(renderer.PrepareSection(changed), "reflow-unsupported-" + errors.Count);
             try { _ = Section(renderer, changed, View("line", false)); errors.Add("accepted"); } catch (NotSupportedException exception) { errors.Add(exception.Message); } }
         NativeReflowVisibilityBeforeControls.Save("reflow-unsupported.facts.json", JsonSerializer.Serialize(errors)); Assert.DoesNotContain("accepted", errors);
@@ -155,8 +155,8 @@ public sealed class NativeReflowVisibilityTests {
         var after = Section(renderer, chart, View("line", true)); Assert.Throws<ArgumentOutOfRangeException>(() => VisualSeriesVisibilityCapture.ReflowFrames(before.PreparedVisual, after.PreparedVisual, 2));
     }
     internal static Chart Model(string kind, bool changedUnpainted = false, bool labels = false) {
-        var chart = NativeReflowVisibilityBeforeControls.Model(kind, changedUnpainted).WithLegend(true).WithDataLabels(labels);
-        chart.Options.ShowPointLegend = true; return chart;
+        var chart = NativeReflowVisibilityBeforeControls.Model(kind, changedUnpainted).Legend(true).DataLabels(labels);
+        chart.Options.Legend.ShowPoints = true; return chart;
     }
     internal static ChartVisibilityView View(string kind, bool hidden, bool grouping = false) => new(hidden ? new[] {
         kind == "raw" ? ChartVisibilityTarget.BoxPlotGroup(new ChartSeriesId("delivery"), new ChartObservationId("current"))
@@ -169,7 +169,7 @@ public sealed class NativeReflowVisibilityTests {
         if (kind == "raw") series = ChartSeries.CreateBoxPlot(new ChartSeriesId("delivery"), "Delivery", original.Series[0].BoxPlotSourceGroups.Where((_, index) => index != 1));
         else if (kind == "boxes") series = ChartSeries.CreateBoxPlot(new ChartSeriesId("delivery"), "Delivery", original.Series[0].BoxPlots.Where((_, index) => index != 1));
         else series = new ChartSeries(new ChartSeriesId("delivery"), "Delivery", original.Series[0].Kind, original.Series[0].Points.Where((_, index) => index != 1));
-        return Chart.Create().WithSize(760, 420).WithLegend(false).WithLineMarkers(ChartLineMarkerMode.None).AddSeries(series);
+        return Chart.Create().Size(760, 420).Legend(false).Lines(l => l.MarkerMode(ChartLineMarkerMode.None)).AddSeries(series);
     }
     internal static void Capture(HtmlChartSection from, HtmlChartSection to, IReadOnlyList<(PreparedVisual Frame, bool Source, double Opacity)> frames, string payload, string name) {
         NativeReflowVisibilityBeforeControls.Capture(from, "native-reflow-" + name + "-from"); NativeReflowVisibilityBeforeControls.Capture(to, "native-reflow-" + name + "-to");

@@ -53,9 +53,9 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         if (!Enabled) return;
         var start = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         var instants = new[] { start, start.AddTicks(1_000), start.AddTicks(9_000) };
-        var chart = Chart.Create().WithSize(640, 360).WithXAxisTimeScale()
+        var chart = Chart.Create().Size(640, 360).XAxis(x => x.TimeScale())
             .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("precise-points"), "Readings", instants.Select((instant, index) => new ChartPoint(instant, index + 1)))
-                .WithObservationIds(new[] { new ChartObservationId("zero"), new ChartObservationId("one"), new ChartObservationId("nine") }));
+                .ObservationIds(new[] { new ChartObservationId("zero"), new ChartObservationId("one"), new ChartObservationId("nine") }));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(Fit), 820, 650);
         await BindLinkedEventsAsync(session.Page);
         var result = await session.Page.EvaluateAsync<JsonElement>("""

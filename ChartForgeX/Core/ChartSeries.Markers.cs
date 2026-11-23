@@ -4,26 +4,18 @@ namespace ChartForgeX.Core;
 
 public sealed partial class ChartSeries {
     /// <summary>Gets the canonical marker configuration for numeric point glyphs. Dotted maps support only the existing radius override.</summary>
-    public ChartMarkerOptions Markers { get; private set; } = new();
+    public ChartMarkerOptions Markers {
+        get => _markers;
+        set => _markers = value ?? throw new ArgumentNullException(nameof(value));
+    }
+    private ChartMarkerOptions _markers = new();
 
     /// <summary>Gets the radar form, fill and outline configuration for this series.</summary>
-    public ChartRadarOptions Radar { get; private set; } = new();
-
-    /// <summary>Configures marker geometry, visibility and paint without changing the source observations.</summary>
-    /// <param name="configure">The configuration callback.</param>
-    /// <returns>The current series.</returns>
-    public ChartSeries ConfigureMarkers(Action<ChartMarkerOptions> configure) {
-        if (configure == null) throw new ArgumentNullException(nameof(configure));
-        Markers = ChartOptionConfiguration.Configure(Markers, configure, options => options.Clone()); return this;
+    public ChartRadarOptions Radar {
+        get => _radar;
+        set => _radar = value ?? throw new ArgumentNullException(nameof(value));
     }
-
-    /// <summary>Configures a radar series' form, area opacity, curve and immutable outline stroke.</summary>
-    /// <param name="configure">The configuration callback.</param>
-    /// <returns>The current series.</returns>
-    public ChartSeries ConfigureRadar(Action<ChartRadarOptions> configure) {
-        if (configure == null) throw new ArgumentNullException(nameof(configure));
-        Radar = ChartOptionConfiguration.Configure(Radar, configure, options => options.Clone()); return this;
-    }
+    private ChartRadarOptions _radar = new();
 
     internal void ValidateMarkerAndRadarOptions() {
         if (Kind == ChartSeriesKind.Bubble && Markers.Radius.HasValue)

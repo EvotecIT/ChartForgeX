@@ -124,7 +124,7 @@ internal static partial class VisualScalarProgressCompiler {
         if (format == null) return null;
         try { return format.PortablePolicy(); } catch (NotSupportedException) { return null; } catch (ArgumentException) { return null; }
     }
-    private static bool SameAxis(ChartAxis a, ChartAxis b) => a.Minimum == b.Minimum && a.Maximum == b.Maximum && a.Scale == b.Scale
+    private static bool SameAxis(ChartAxis a, ChartAxis b) => a.Min == b.Min && a.Max == b.Max && a.Scale == b.Scale
         && a.LogarithmBase == b.LogarithmBase && a.LogarithmicDomain == b.LogarithmicDomain && a.SymmetricLogarithmThreshold == b.SymmetricLogarithmThreshold
         && a.TickCount == b.TickCount && a.IntegerTicks == b.IntegerTicks && a.TickStep == b.TickStep && a.TickValues.SequenceEqual(b.TickValues) && a.Visible == b.Visible && a.Reversed == b.Reversed && a.ShowLine == b.ShowLine
         && a.Labels.Select(label => (label.Value, label.Text)).SequenceEqual(b.Labels.Select(label => (label.Value, label.Text)));

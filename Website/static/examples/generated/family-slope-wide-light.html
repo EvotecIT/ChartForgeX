@@ -117,7 +117,7 @@ public static class SlopeRecipe {
         var teamA = new ChartSeries(new ChartSeriesId(&quot;team-a&quot;), &quot;Team A&quot;, ChartSeriesKind.Slope, new[] { new ChartPoint(1, 28), new ChartPoint(2, 64) });
         var teamB = new ChartSeries(new ChartSeriesId(&quot;team-b&quot;), &quot;Team B&quot;, ChartSeriesKind.Slope, new[] { new ChartPoint(1, 52), new ChartPoint(2, 43) });
         var teamC = new ChartSeries(new ChartSeriesId(&quot;team-c&quot;), &quot;Team C&quot;, ChartSeriesKind.Slope, new[] { new ChartPoint(1, 38), new ChartPoint(2, 57) });
-        return Chart.Create().WithXLabels(&quot;Before&quot;, &quot;After&quot;).AddSeries(teamA).AddSeries(teamB).AddSeries(teamC);
+        return Chart.Create().XLabels(&quot;Before&quot;, &quot;After&quot;).AddSeries(teamA).AddSeries(teamB).AddSeries(teamC);
     }
 }
 </code></pre><pre data-visual-theme="dark"><code data-example-source>#region Setup
@@ -157,7 +157,7 @@ public static class SlopeRecipe {
         var teamA = new ChartSeries(new ChartSeriesId(&quot;team-a&quot;), &quot;Team A&quot;, ChartSeriesKind.Slope, new[] { new ChartPoint(1, 28), new ChartPoint(2, 64) });
         var teamB = new ChartSeries(new ChartSeriesId(&quot;team-b&quot;), &quot;Team B&quot;, ChartSeriesKind.Slope, new[] { new ChartPoint(1, 52), new ChartPoint(2, 43) });
         var teamC = new ChartSeries(new ChartSeriesId(&quot;team-c&quot;), &quot;Team C&quot;, ChartSeriesKind.Slope, new[] { new ChartPoint(1, 38), new ChartPoint(2, 57) });
-        return Chart.Create().WithXLabels(&quot;Before&quot;, &quot;After&quot;).AddSeries(teamA).AddSeries(teamB).AddSeries(teamC);
+        return Chart.Create().XLabels(&quot;Before&quot;, &quot;After&quot;).AddSeries(teamA).AddSeries(teamB).AddSeries(teamC);
     }
 }
 </code></pre></section></main><footer><a href="catalog.html">Explore more examples</a><a href="fonts/OFL.txt">Font license</a></footer><script data-gallery-script>(() => {

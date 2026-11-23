@@ -15,18 +15,18 @@ public sealed class GraphiteRenderingTests {
     [InlineData(true, true)]
     public void InsideBarLabelsHaveReadablePairedInkAndRespectExplicitColours(bool dark, bool semantic) {
         var tokens = dark ? VisualDesignTokens.GraphiteDark() : VisualDesignTokens.GraphiteLight();
-        var chart = Chart.Create().WithTheme(new VisualTheme(tokens, tokens)).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside)
+        var chart = Chart.Create().Theme(new VisualTheme(tokens, tokens)).DataLabels().DataLabels(d => d.Placement(ChartDataLabelPlacement.Inside))
             .AddBar("Counts", new[] { new ChartPoint(1, 80), new ChartPoint(2, 60) });
-        if (semantic) chart.Series[0].WithState(ChartSeriesState.Danger);
+        if (semantic) chart.Series[0].StateRole(ChartSeriesState.Danger);
         var prepared = Prepare(chart);
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label").ToArray();
         var bars = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "bar").ToArray();
         Assert.Equal(2, labels.Length); Assert.Equal(2, bars.Length);
         for (var index = 0; index < labels.Length; index++)
             Assert.True(ChartColorMath.ContrastRatio(labels[index].Color, bars[index].Fill!.Value) >= 4.5);
-        var pixels = chart.ToPng(); chart.WithSvgColorVariables(tokens.ToSvgColorVariables());
+        var pixels = chart.ToPng(); chart.SvgColorVariables(tokens.ToSvgColorVariables());
         Assert.Contains("ink", chart.ToSvg()); Assert.Equal(pixels, chart.ToPng());
-        chart.WithSvgColorVariables(null); chart.Series[0].DataLabelStyle.Color = ChartColor.FromHex("#C2418A");
+        chart.SvgColorVariables((SvgColorVariables?)null); chart.Series[0].DataLabelStyle.Color = ChartColor.FromHex("#C2418A");
         Assert.All(Prepare(chart).Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label"),
             node => Assert.Equal(ChartColor.FromHex("#C2418A"), node.Color));
     }
@@ -36,7 +36,7 @@ public sealed class GraphiteRenderingTests {
     [InlineData(45)]
     public void AxisFontStacksSurviveXmlEncodingOnce(double rotation) {
         const string family = "Calibri, \"Segoe UI\", \"Sample & Family\", sans-serif";
-        var chart = Chart.Create().WithSize(600, 360).WithXLabels("One", "Two").WithDataLabels()
+        var chart = Chart.Create().Size(600, 360).XLabels("One", "Two").DataLabels()
             .AddBar("Counts", new[] { new ChartPoint(1, 12), new ChartPoint(2, 24) });
         chart.Options.Theme = chart.Options.Theme.WithFontFamily(family); chart.Options.XAxis.LabelAngle = rotation;
         var nodes = XDocument.Parse(chart.ToSvg()).Descendants().ToArray();
@@ -51,7 +51,7 @@ public sealed class GraphiteRenderingTests {
     [InlineData(260)]
     [InlineData(300)]
     public void CompactInlineLegendsRetainShortSeriesNames(int width) {
-        var chart = Chart.Create().WithSize(width, 320).WithTitle("Panel").WithSubtitle("Current status")
+        var chart = Chart.Create().Size(width, 320).Title("Panel").Subtitle("Current status")
             .AddLine("Passed", new[] { new ChartPoint(1, 100), new ChartPoint(2, 110) })
             .AddLine("Warnings", new[] { new ChartPoint(1, 10), new ChartPoint(2, 12) })
             .AddLine("Failed", new[] { new ChartPoint(1, 1), new ChartPoint(2, 2) });
@@ -63,11 +63,11 @@ public sealed class GraphiteRenderingTests {
 
     [Fact]
     public void DefaultFrameIsFlatAndTheHostCanOwnItsPresentation() {
-        var chart = Chart.Create().WithTitle("Readiness").AddBar("Checks", new[] { new ChartPoint(0, 8), new ChartPoint(1, 12) });
+        var chart = Chart.Create().Title("Readiness").AddBar("Checks", new[] { new ChartPoint(0, 8), new ChartPoint(1, 12) });
         var prepared = Prepare(chart);
         Assert.Single(prepared.Scene.Nodes, node => node.Role == "frame-card");
         Assert.DoesNotContain(prepared.Scene.Nodes, node => node is VisualSceneGradient);
-        chart.WithHostFrame(); var hosted = Prepare(chart);
+        chart.HostOwnsFrame(); var hosted = Prepare(chart);
         Assert.DoesNotContain(hosted.Scene.Nodes, node => node.Role is "frame-card" or "content-surface" or "frame-heading" or "background");
         Assert.Equal(2, hosted.Regions.Count(region => region.Role == "point"));
     }
@@ -75,9 +75,9 @@ public sealed class GraphiteRenderingTests {
     [Fact]
     public void StateLinesUseSemanticPaintAndHealthySeriesIsUnderneath() {
         var failures = new ChartSeries(new ChartSeriesId("failures"), "Failures", ChartSeriesKind.Line,
-            new[] { new ChartPoint(0, 3), new ChartPoint(1, 4), new ChartPoint(2, 2) }).WithState(ChartSeriesState.Danger);
+            new[] { new ChartPoint(0, 3), new ChartPoint(1, 4), new ChartPoint(2, 2) }).StateRole(ChartSeriesState.Danger);
         var healthy = new ChartSeries(new ChartSeriesId("healthy"), "Healthy", ChartSeriesKind.Line,
-            new[] { new ChartPoint(0, 8), new ChartPoint(1, 9), new ChartPoint(2, 10) }).WithState(ChartSeriesState.Quiet);
+            new[] { new ChartPoint(0, 8), new ChartPoint(1, 9), new ChartPoint(2, 10) }).StateRole(ChartSeriesState.Quiet);
         var chart = Chart.Create().AddSeries(failures).AddSeries(healthy);
         var prepared = Prepare(chart);
         var series = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "series").ToArray();
@@ -85,7 +85,7 @@ public sealed class GraphiteRenderingTests {
         Assert.Equal(chart.Options.Theme.Resolve(chart.Options.ThemeMode).Positive, prepared.Scene.Nodes.OfType<VisualScenePath>().First(path => path.Role == "line").Stroke!.Value);
         // No lone last-point dots unless labelled (design rule 5).
         Assert.Equal(0, prepared.Scene.Nodes.Count(node => node.Role == "marker"));
-        chart.WithLineMarkers(ChartLineMarkerMode.All);
+        chart.Lines(l => l.MarkerMode(ChartLineMarkerMode.All));
         Assert.Equal(6, Prepare(chart).Scene.Nodes.Count(node => node.Role == "marker"));
     }
 

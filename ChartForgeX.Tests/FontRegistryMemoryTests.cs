@@ -21,9 +21,9 @@ public sealed class FontRegistryMemoryTests : IDisposable {
         File.WriteAllBytes(path, bytes);
         try {
             FontRegistry.Register(Family, path);
-            var chart = Chart.Create().WithSize(360, 220).WithTitle("ChartForgeX 0123456789")
-                .WithTheme(VisualTheme.Graphite().WithFontFamily(Family))
-                .WithXLabels("H", "O").AddBar("H", ChartPoints.FromValues(12, 18));
+            var chart = Chart.Create().Size(360, 220).Title("ChartForgeX 0123456789")
+                .Theme(VisualTheme.Graphite().WithFontFamily(Family))
+                .XLabels("H", "O").AddBar("H", ChartPoints.FromValues(12, 18));
             var png = chart.ToPng();
             var svg = chart.ToSvg();
             var raster = SvgRasterizer.ToImage(svg).Pixels;

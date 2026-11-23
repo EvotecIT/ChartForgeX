@@ -12,8 +12,8 @@ namespace ChartForgeX.Tests;
 
 public sealed class HierarchyViewPreparationTests {
     internal static Chart Source(ChartSeriesKind kind, bool dark = false) {
-        var chart = Chart.Create().WithSize(720, 460).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithTitle("Allocation").WithLegend(false).WithDataLabels(false);
+        var chart = Chart.Create().Size(720, 460).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Title("Allocation").Legend(false).DataLabels(false);
         var items = new[] {
             new ChartHierarchyItem("root", "All work", value: kind == ChartSeriesKind.Sunburst ? 120 : null, colorValue: 0),
             new ChartHierarchyItem("services", "Services", "root", kind == ChartSeriesKind.Sunburst ? 80 : null, 2),
@@ -23,10 +23,10 @@ public sealed class HierarchyViewPreparationTests {
             new ChartHierarchyItem("zero", "Reserve", "services", 0, 8)
         };
         if (kind == ChartSeriesKind.Sunburst) {
-            chart.ConfigureSunburst(options => options.ParentValuePolicy = ChartHierarchyValuePolicy.AuthoredTotal);
+            chart.Sunburst(options => options.ParentValuePolicy = ChartHierarchyValuePolicy.AuthoredTotal);
             chart.AddSeries(ChartSeries.CreateSunburst(new ChartSeriesId("allocation"), "Allocation", items));
         } else chart.AddSeries(ChartSeries.CreateTreemap(new ChartSeriesId("allocation"), "Allocation", items));
-        chart.Series[0].WithNodeState("api", ChartSeriesState.Warning).WithPointColor(3, ChartColor.FromHex("#7c3aed"));
+        chart.Series[0].NodeState("api", ChartSeriesState.Warning).PointColor(3, ChartColor.FromHex("#7c3aed"));
         return chart;
     }
     private static VisualRenderContext Context(bool dark = false, bool showLegend = false) => new(new VisualLayoutOptions(new VisualSize(720, 460)),
@@ -67,7 +67,7 @@ public sealed class HierarchyViewPreparationTests {
     public void SunburstSubtreeFillsTheCircleWithoutNormalizingAwayAuthoredRemainders(bool dark) {
         var chart = Source(ChartSeriesKind.Sunburst, dark);
         var calls = new List<string>();
-        chart.ConfigureSunburst(options => options.SecondaryLabelFormatter = item => { calls.Add(item.Item.Id); return item.Item.Label; });
+        chart.Sunburst(options => options.SecondaryLabelFormatter = item => { calls.Add(item.Item.Id); return item.Item.Label; });
         var prepared = chart.PrepareHierarchy(Context(dark), new ChartHierarchyView("services"));
         Assert.Equal(chart.Series[0].HierarchyItems.Select(item => item.Id).OrderBy(id => id), calls.OrderBy(id => id));
         var root = Node(prepared, "services"); var api = Node(prepared, "api"); var worker = Node(prepared, "worker");
@@ -89,7 +89,7 @@ public sealed class HierarchyViewPreparationTests {
     [Fact]
     public void TreemapSubtreeUsesItsPlotAndPreservesSourcePaintAndLeafRatios() {
         var chart = Source(ChartSeriesKind.Treemap);
-        chart.ConfigureTreemap(options => { options.GroupPadding = 0; options.Gap = 0; options.ShowGroupLabels = false; });
+        chart.Treemap(options => { options.GroupPadding = 0; options.Gap = 0; options.ShowGroupLabels = false; });
         var context = Context(); var full = chart.Prepare(context);
         var child = chart.PrepareHierarchy(context, new ChartHierarchyView("services"));
         var api = child.Regions.Single(region => region.Id == "series-0-node-api").Bounds;
@@ -107,7 +107,7 @@ public sealed class HierarchyViewPreparationTests {
 
     [Fact]
     public void TreemapForestViewDoesNotRequireOrInventAConnectedSourceRoot() {
-        var chart = Chart.Create().WithDataLabels(false).WithLegend(false).AddTreemap("Forest", new[] {
+        var chart = Chart.Create().DataLabels(false).Legend(false).AddTreemap("Forest", new[] {
             new ChartHierarchyItem("team", "Team"), new ChartHierarchyItem("a", "A", "team", 4),
             new ChartHierarchyItem("b", "B", "team", 6), new ChartHierarchyItem("other-root", "Other", value: 8)
         });
@@ -120,7 +120,7 @@ public sealed class HierarchyViewPreparationTests {
 
     [Fact]
     public void LeafAggregateViewRetainsAuthoredParentFactsWhileUsingOnlyDescendantSizes() {
-        var chart = Source(ChartSeriesKind.Sunburst).ConfigureSunburst(options => options.ParentValuePolicy = ChartHierarchyValuePolicy.LeafAggregate);
+        var chart = Source(ChartSeriesKind.Sunburst).Sunburst(options => options.ParentValuePolicy = ChartHierarchyValuePolicy.LeafAggregate);
         var selected = chart.PrepareHierarchy(Context(), new ChartHierarchyView("services"));
         Assert.Equal(50, Number(Node(selected, "services"), "data-cfx-value"));
         Assert.Equal(80, Number(Node(selected, "services"), "data-cfx-authored-value"));
@@ -133,8 +133,8 @@ public sealed class HierarchyViewPreparationTests {
     [InlineData(ChartSeriesKind.Sunburst)]
     public void NumericColorDomainAndSourcePaintDoNotRebaseWithSubtreeGeometry(ChartSeriesKind kind) {
         var chart = Source(kind); var ramp = ChartColorScale.Sequential(ChartColor.FromHex("#ff0000"), ChartColor.FromHex("#0000ff"));
-        if (kind == ChartSeriesKind.Treemap) chart.ConfigureTreemap(options => { options.ColorScale = ramp; options.ColorDimension.ShowLegend = true; });
-        else chart.ConfigureSunburst(options => { options.ColorScale = ramp; options.ColorDimension.ShowLegend = true; });
+        if (kind == ChartSeriesKind.Treemap) chart.Treemap(options => { options.ColorScale = ramp; options.ColorDimension.ShowLegend = true; });
+        else chart.Sunburst(options => { options.ColorScale = ramp; options.ColorDimension.ShowLegend = true; });
         var full = chart.Prepare(Context(showLegend: true)); var child = chart.PrepareHierarchy(Context(showLegend: true), new ChartHierarchyView("services"));
         var role = kind == ChartSeriesKind.Treemap ? "treemap-color-scale" : "sunburst-color-scale";
         var first = Assert.Single(XDocument.Parse(full.ToSvg()).Descendants(), node => (string?)node.Attribute("data-cfx-role") == role);
@@ -163,8 +163,8 @@ public sealed class HierarchyViewPreparationTests {
 
     [Fact]
     public void PointLegendsShowOnlyVisibleSubtreeLeavesWithOriginalTargetIdentity() {
-        var chart = Source(ChartSeriesKind.Treemap).WithPointLegend().WithLegend()
-            .ConfigureTreemap(options => options.ColorDimension.ShowLegend = false);
+        var chart = Source(ChartSeriesKind.Treemap).Legend(l => l.ShowPoints()).Legend()
+            .Treemap(options => options.ColorDimension.ShowLegend = false);
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(720, 460)), frame: new VisualFrame(showLegend: true));
         var full = XDocument.Parse(chart.Prepare(context).ToSvg());
         var child = XDocument.Parse(chart.PrepareHierarchy(context, new ChartHierarchyView("services")).ToSvg());

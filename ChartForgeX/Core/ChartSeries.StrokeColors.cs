@@ -16,21 +16,11 @@ public sealed partial class ChartSeries {
     /// <param name="pointIndex">The zero-based existing source ordinal.</param>
     /// <param name="color">The native color, or null to restore the family border.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries WithPointStrokeColor(int pointIndex, ChartColor? color) {
+    public ChartSeries PointStrokeColor(int pointIndex, ChartColor? color) {
         ValidatePointIndex(pointIndex);
         RequirePointStrokeColors();
         while (_pointStrokeColors.Count <= pointIndex) _pointStrokeColors.Add(null);
         _pointStrokeColors[pointIndex] = color;
-        return this;
-    }
-
-    /// <summary>Restores one supported node or stage's inherited border without changing its fill or identity.</summary>
-    /// <param name="pointIndex">The zero-based existing source ordinal.</param>
-    /// <returns>The current series.</returns>
-    public ChartSeries UseSeriesStrokeColor(int pointIndex) {
-        ValidatePointIndex(pointIndex);
-        RequirePointStrokeColors();
-        if (pointIndex < _pointStrokeColors.Count) _pointStrokeColors[pointIndex] = null;
         return this;
     }
 

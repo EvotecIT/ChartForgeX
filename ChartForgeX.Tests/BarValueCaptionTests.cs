@@ -9,8 +9,8 @@ namespace ChartForgeX.Tests;
 /// <summary>Automatic bar captions read as one set: same side, same unit, close to their bars.</summary>
 public sealed class BarValueCaptionTests {
     private static (VisualSceneText Label, ChartRect Bar)[] Captions(params double[] values) {
-        var chart = Chart.Create().WithSize(360, 220).WithTheme(VisualTheme.Graphite()).WithTitle("Availability by site").WithDataLabels()
-            .WithXLabels("Warsaw", "Krakow", "Frankfurt", "Gdansk")
+        var chart = Chart.Create().Size(360, 220).Theme(VisualTheme.Graphite()).Title("Availability by site").DataLabels()
+            .XLabels("Warsaw", "Krakow", "Frankfurt", "Gdansk")
             .AddBar("Availability", values.Select((value, index) => new ChartPoint(index + 1, value)));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         return prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label")
@@ -51,8 +51,8 @@ public sealed class BarValueCaptionTests {
 
     [Fact]
     public void Prepare_WaterfallOpeningBalanceNearTheAxisMaximum_KeepsItsCaptionAboveLikeTheTotals() {
-        var chart = Chart.Create().WithSize(800, 440).WithTheme(VisualTheme.Graphite()).WithDataLabels()
-            .WithXLabels("Purchased", "Unassigned", "Inactive", "In use")
+        var chart = Chart.Create().Size(800, 440).Theme(VisualTheme.Graphite()).DataLabels()
+            .XLabels("Purchased", "Unassigned", "Inactive", "In use")
             .AddSeries(ChartSeries.CreateWaterfall(new ChartSeriesId("licences"), "Licences", new[] {
                 ChartWaterfallItem.OpeningBalance(1, 1200), ChartWaterfallItem.Delta(2, -86), ChartWaterfallItem.Delta(3, -142), ChartWaterfallItem.Total(4)
             }));
@@ -102,8 +102,8 @@ public sealed class BarValueCaptionTests {
     [Fact]
     public void Prepare_WaterfallWithAnOversizedCaptionFont_DoesNotReserveAnUnfittedLane() {
         Chart Waterfall(bool labels) {
-            var chart = Chart.Create().WithSize(640, 360).WithTheme(VisualTheme.Graphite()).WithDataLabels(labels)
-                .ConfigureDataLabelStyle(style => style.WithFontSize(256))
+            var chart = Chart.Create().Size(640, 360).Theme(VisualTheme.Graphite()).DataLabels(labels)
+                .DataLabelStyle(style => style.FontSize(256))
                 .AddSeries(ChartSeries.CreateWaterfall(new ChartSeriesId("licences"), "Licences", new[] {
                     ChartWaterfallItem.OpeningBalance(1, 1200), ChartWaterfallItem.Delta(2, -86), ChartWaterfallItem.Total(3)
                 }));

@@ -6,23 +6,22 @@ public static class PictorialArtworkRecipe {
             throw new ArgumentOutOfRangeException(nameof(variant));
         var series = new ChartSeries(new ChartSeriesId("assessments"), "Completed assessments", ChartSeriesKind.Pictorial,
             new[] { new ChartPoint(1, 2.5), new ChartPoint(2, 1.25), new ChartPoint(3, .75) })
-            .WithObservationId(0, new ChartObservationId("team-a")).WithObservationId(1, new ChartObservationId("team-b"))
-            .WithObservationId(2, new ChartObservationId("team-c"));
-        var chart = Chart.Create().WithSize(variant == "compact" ? 390 : 900, 460).WithTheme(VisualTheme.Graphite(), mode)
-            .WithTitle("Completed assessments by team").WithLegend(false).WithAxes(false).WithGrid(false)
-            .WithXLabels("Team A", "Team B", "Team C").WithPictorialColumns(4).WithPictorialValuePerSymbol(1)
-            .WithPictorialSvgPath("M1 1H23V23H1Z M8 8V16H16V8Z").WithPictorialEmptyOpacity(.16)
-            .WithValueFormat(ChartValueFormat.Number("0.##' units'", CultureInfo.InvariantCulture)).AddSeries(series);
+            .ObservationId(0, new ChartObservationId("team-a")).ObservationId(1, new ChartObservationId("team-b"))
+            .ObservationId(2, new ChartObservationId("team-c"));
+        var chart = Chart.Create().Size(variant == "compact" ? 390 : 900, 460).Theme(VisualTheme.Graphite()).ThemeMode(mode)
+            .Title("Completed assessments by team").Legend(false).Axes(false).ShowGrid(false)
+            .XLabels("Team A", "Team B", "Team C").Pictorial(p => p.Columns(4).ValuePerSymbol(1).SvgPath("M1 1H23V23H1Z M8 8V16H16V8Z").EmptyOpacity(.16))
+            .ValueFormat(ChartValueFormat.Number("0.##' units'", CultureInfo.InvariantCulture)).AddSeries(series);
         if (variant != "contour") {
-            chart.WithPictorialArtwork(variant == "image" ? ChartPictorialArtwork.FromImage(Image()) : ChartPictorialArtwork.FromSvg(
-                "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 16'><rect x='1' y='1' width='22' height='14' rx='3' fill='#347B59'/><path d='M5 8L10 12L19 4' fill='none' stroke='#FFFFFF' stroke-width='2'/></svg>", 96, 64));
+            chart.Pictorial(p => p.Artwork(variant == "image" ? ChartPictorialArtwork.FromImage(Image()) : ChartPictorialArtwork.FromSvg(
+                "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 16'><rect x='1' y='1' width='22' height='14' rx='3' fill='#347B59'/><path d='M5 8L10 12L19 4' fill='none' stroke='#FFFFFF' stroke-width='2'/></svg>", 96, 64)));
         }
-        return chart.WithPictorialFillDirection(variant switch {
+        return chart.Pictorial(p => p.FillDirection(variant switch {
             "right" => ChartPictorialFillDirection.RightToLeft,
             "bottom" or "contour" => ChartPictorialFillDirection.BottomToTop,
             "top" => ChartPictorialFillDirection.TopToBottom,
             _ => ChartPictorialFillDirection.LeftToRight
-        });
+        }));
     }
 
     private static ChartForgeX.Raster.RgbaImage Image() {

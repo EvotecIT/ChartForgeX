@@ -38,7 +38,7 @@ public sealed class RailroadInterchangeTests {
         Assert.Equal(original.RenderSvg("portable-railroad"), imported.RenderSvg("portable-railroad"));
         Assert.Equal(original.ToPng(), imported.ToPng());
         var before = imported.RenderSvg("portable-railroad");
-        imported.AddRule("additional", RailroadExpression.Terminal("added"), "Additional rule").WithNaturalSize();
+        imported.AddRule("additional", RailroadExpression.Terminal("added"), "Additional rule").NaturalSize();
         var edited = imported.RenderSvg("portable-railroad"); Assert.NotEqual(before, edited); Assert.Contains("Additional rule", edited);
         Assert.Equal(2, original.Rules.Count); Assert.Equal(2, envelope.Railroad!.Rules.Count);
         var image = RasterImageDecoder.Decode(imported.ToPng());
@@ -54,8 +54,8 @@ public sealed class RailroadInterchangeTests {
             RailroadExpression.Lookahead(RailroadExpression.CharacterRange(0x1f600, 0x1f64f)),
             RailroadExpression.Lookahead(RailroadExpression.Terminal("blocked"), positive: false),
             RailroadExpression.Except(RailroadExpression.AnyCharacter(), RailroadExpression.Special("host-defined condition")));
-        var block = RailroadDiagramBlock.Create().WithTitle("Native grammar").WithSubtitle("Semantic portable form").WithPadding(23, 17, 29, 19)
-            .WithTransparentBackground().WithCard(false).WithPngOutputScale(2);
+        var block = RailroadDiagramBlock.Create().Title("Native grammar").Subtitle("Semantic portable form").Padding(23, 17, 29, 19)
+            .TransparentBackground().ShowCard(false).PngOutputScale(2);
         block.RuleComparison = RailroadRuleComparison.OrdinalIgnoreCase; block.AddRule("recursive", expression, "Displayed heading");
         block.AddRule("labelled", RailroadExpression.Terminal("<&\"😀"), "A separate label");
         var artifact = VisualArtifact.Create("native-grammar", VisualArtifactKind.VisualBlock, block);

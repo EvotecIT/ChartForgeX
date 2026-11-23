@@ -53,7 +53,7 @@ public sealed class NativeCompleteCartesianJointAndFlashTests {
     public void CompleteStackValuesKeepSeparateIntentsStrictForAccidentalMixedUpdates(bool labels) {
         var renderer = new HtmlInteractiveChartRenderer();
         HtmlChartSection Section(double value, bool hidden) => renderer.PrepareVisibilitySection(
-            NativeCompleteCartesianValueTests.Model("stacked-bar", value).WithDataLabels(labels),
+            NativeCompleteCartesianValueTests.Model("stacked-bar", value).DataLabels(labels),
             new ChartVisibilityView(hidden ? new[] { new ChartSeriesId("delivery") } : Array.Empty<ChartSeriesId>(), ChartVisibilityLabelLayering.GroupWithSeries));
         var from = Section(30, false); var to = Section(40, true);
         var errors = new[] { HtmlNativeTransitionEffect.Values, HtmlNativeTransitionEffect.LegendVisibility }.Select(effect =>

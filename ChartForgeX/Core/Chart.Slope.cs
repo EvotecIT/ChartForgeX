@@ -60,8 +60,8 @@ public sealed partial class Chart {
     }
 
     private void EnsureSlopeAxisLabels(string startLabel, string endLabel) {
-        if (Options.XAxisLabels.Count > 0) return;
-        Options.XAxisLabels.Add(new ChartAxisLabel(1, startLabel));
-        Options.XAxisLabels.Add(new ChartAxisLabel(2, endLabel));
+        if (Options.XAxis.Labels.Count > 0) return;
+        Options.XAxis.Labels.Add(new ChartAxisLabel(1, startLabel));
+        Options.XAxis.Labels.Add(new ChartAxisLabel(2, endLabel));
     }
 }

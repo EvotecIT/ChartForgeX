@@ -103,7 +103,7 @@ public sealed class MermaidWebsiteSampleTests {
     [InlineData(TopologyEdgePort.Right)]
     public void NativeBranchFansFollowCrossAxisOrderOnEveryPort(TopologyEdgePort port) {
         var acrossX = port is TopologyEdgePort.Top or TopologyEdgePort.Bottom;
-        var chart = TopologyChart.Create().WithViewport(600, 500, 20)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(600, 500, 20))
             .AddNode("source", "Ready", 250, 220, width: 80, height: 60)
             .AddNode("first", "First", acrossX ? 140 : port == TopologyEdgePort.Left ? 40 : 480,
                 acrossX ? port == TopologyEdgePort.Top ? 40 : 400 : 90, width: 80, height: 60)

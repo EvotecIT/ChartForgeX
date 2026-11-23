@@ -44,7 +44,7 @@ public sealed class TopologyExternalUnitsCausalTests {
     [InlineData(TopologyNodeDisplayMode.Tile, TopologyIconShape.Database)]
     public void OrdinaryManualScaleOneKeepsExistingExternalGeometryAndPortableSemantics(TopologyNodeDisplayMode mode, TopologyIconShape glyph) {
         var chart = Chart(mode, glyph, false); chart.LayoutMode = TopologyLayoutMode.Manual;
-        chart.WithRenderOptions(new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = false });
+        chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = false });
         var name = "external-units-" + mode + "-" + glyph + "-unit-control"; CaptureInput(chart, name);
         var prepared = chart.Prepare(); var svg = prepared.ToSvg(); var png = prepared.ToPng(); var json = prepared.ToInterchangeEnvelope().ToJson();
         Capture(name + "-direct", svg, png, json);
@@ -56,15 +56,15 @@ public sealed class TopologyExternalUnitsCausalTests {
     }
 
     private static TopologyChart Chart(TopologyNodeDisplayMode mode, TopologyIconShape glyph, bool shrink) {
-        var chart = TopologyChart.Create().WithId("external-native-units").WithTitle("").WithLegend(null)
-            .WithViewport(shrink ? 320 : 640, shrink ? 240 : 360, 0).WithLayout(TopologyLayoutMode.Layered);
+        var chart = TopologyChart.Create().Id("external-native-units").Title("").Legend((TopologyLegend?)null)
+            .Viewport(new TopologyViewport(shrink ? 320 : 640, shrink ? 240 : 360, 0)).LayoutMode(TopologyLayoutMode.Layered);
         chart.Nodes.Add(new TopologyNode { Id = "node", Label = "Native participant", Subtitle = "A native caption", X = 40, Y = 30,
             Width = shrink ? 920 : 220, Height = shrink ? 720 : 140, Shape = TopologyNodeShape.Rounded, IconShape = glyph,
             Kind = TopologyNodeKind.Generic, DisplayMode = mode, PreserveDisplayModeSize = true, ShowStatusBadge = false, Color = "#2563EB",
             TextStyle = new TextStyleOverride { FontFamily = BrowserProofFonts.Family },
             SubtitleTextStyle = new TextStyleOverride { FontFamily = BrowserProofFonts.Family, FontSize = 13, FontWeight = "500" }
         });
-        chart.WithRenderOptions(new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true, WrapNodeLabels = true, MaxNodeLabelLines = 4, MaxNodeSubtitleLines = 4 });
+        chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true, WrapNodeLabels = true, MaxNodeLabelLines = 4, MaxNodeSubtitleLines = 4 });
         return chart;
     }
     private static string Paint(string svg) {

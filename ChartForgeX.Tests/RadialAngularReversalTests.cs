@@ -17,11 +17,11 @@ public sealed class RadialAngularReversalTests {
         var color = ChartColor.FromHex("#2468AC");
         var angles = radar ? new[] { 1d, 2, 3, 4 } : new[] { 0d, .55, 2.7, 5.4 };
         var points = angles.Select((angle, index) => new ChartPoint(angle, 25 + index * 10)).ToArray();
-        var chart = Bare().WithPolarGridShape(radar ? ChartPolarGridShape.Circle : ChartPolarGridShape.Polygon);
-        chart.Options.ShowAxes = false; chart.Options.PolarGridRingCount = 1; chart.Options.XAxis.TickCount = 4;
+        var chart = Bare().Polar(p => p.GridShape(radar ? ChartPolarGridShape.Circle : ChartPolarGridShape.Polygon));
+        chart.Options.ShowAxes = false; chart.Options.Polar.GridRingCount = 1; chart.Options.XAxis.TickCount = 4;
         if (radar) chart.AddRadarLine("Signal", points); else chart.AddPolar("Signal", points);
-        chart.Series[0].WithPointColor(1, color).ConfigureMarkers(markers => markers.Radius = 6);
-        var normal = Prepare(chart); chart.Options.XAxis.WithReversal(); var reversed = Prepare(chart);
+        chart.Series[0].PointColor(1, color).Markers(markers => markers.Radius = 6);
+        var normal = Prepare(chart); chart.Options.XAxis.Reversed(); var reversed = Prepare(chart);
         var role = radar ? "radar-ring" : "polar-ring";
         var guide = Assert.Single(reversed.Scene.Nodes, node => node.Role == role);
         if (radar) Assert.IsType<VisualSceneEllipse>(guide);
@@ -56,13 +56,13 @@ public sealed class RadialAngularReversalTests {
     [InlineData(true)]
     public void RadarFormsReverseCategorySpokesCaptionsAndPointsTogether(bool reverseSecondaryRadius) {
         var color = ChartColor.FromHex("#2468AC");
-        var chart = Bare().WithXLabels("North", "East", "South", "West").WithSecondaryYAxisBounds(0, 10)
+        var chart = Bare().XLabels("North", "East", "South", "West").SecondaryYAxis(s => s.Bounds(0, 10))
             .AddRadarArea("Observed", new[] { new ChartPoint(3, 60), new ChartPoint(1, 80), new ChartPoint(2, 50), new ChartPoint(4, 70) })
             .AddRadarLine("Target", new[] { new ChartPoint(4, reverseSecondaryRadius ? 3 : 7), new ChartPoint(1, reverseSecondaryRadius ? 2 : 8), new ChartPoint(2, 5) });
-        chart.Series[0].WithPointColor(0, color).WithPointLabel(0, "South source").ConfigureMarkers(markers => markers.Radius = 6);
-        chart.Series[1].UseSecondaryValueAxis(); chart.Options.SecondaryYAxis.WithReversal(reverseSecondaryRadius);
+        chart.Series[0].PointColor(0, color).PointLabel(0, "South source").Markers(markers => markers.Radius = 6);
+        chart.Series[1].SecondaryAxis(); chart.Options.SecondaryYAxis.Reversed(reverseSecondaryRadius);
         var normal = Prepare(chart);
-        chart.Options.XAxis.WithReversal();
+        chart.Options.XAxis.Reversed();
         var reversed = Prepare(chart);
         var spokes = reversed.Scene.Nodes.OfType<VisualSceneLine>().Where(line => line.Role == "radar-spoke").ToArray();
         Assert.Equal(4, spokes.Length);
@@ -96,13 +96,13 @@ public sealed class RadialAngularReversalTests {
     public void ContinuousPolarMirrorsAuthoredRadiansWhileKeepingRawAnglesAndSelectedRadii(bool reverseSecondaryRadius) {
         var color = ChartColor.FromHex("#AB2345");
         var points = new[] { new ChartPoint(0, 80), new ChartPoint(Math.PI / 2, 60), new ChartPoint(-.7, 40), new ChartPoint(Math.PI * 2 + .35, 70) };
-        var chart = Bare().WithSecondaryYAxisBounds(0, 10).AddPolar("Observed", points)
+        var chart = Bare().SecondaryYAxis(s => s.Bounds(0, 10)).AddPolar("Observed", points)
             .AddPolar("Target", new[] { new ChartPoint(Math.PI / 2, reverseSecondaryRadius ? 4 : 6) });
         chart.Options.XAxis.TickCount = 8;
         chart.Options.XAxis.LabelFormatter = angle => (angle * 180 / Math.PI).ToString("0", CultureInfo.InvariantCulture) + "°";
-        chart.Series[0].WithPointColor(2, color).WithPointLabel(2, "Negative-angle source").ConfigureMarkers(markers => markers.Radius = 6);
-        chart.Series[1].UseSecondaryValueAxis(); chart.Options.SecondaryYAxis.WithReversal(reverseSecondaryRadius);
-        var normal = Prepare(chart); chart.Options.XAxis.WithReversal(); var reversed = Prepare(chart);
+        chart.Series[0].PointColor(2, color).PointLabel(2, "Negative-angle source").Markers(markers => markers.Radius = 6);
+        chart.Series[1].SecondaryAxis(); chart.Options.SecondaryYAxis.Reversed(reverseSecondaryRadius);
+        var normal = Prepare(chart); chart.Options.XAxis.Reversed(); var reversed = Prepare(chart);
         var spokes = reversed.Scene.Nodes.OfType<VisualSceneLine>().Where(line => line.Role == "polar-spoke").ToArray();
         var center = spokes[0].Start;
         Assert.True(spokes[2].End.Y > center.Y);
@@ -129,15 +129,15 @@ public sealed class RadialAngularReversalTests {
     [InlineData(true, false)]
     [InlineData(true, true)]
     public void MixedColumnsAndRadarReverseWholeCategoryCentersWithoutChangingRadiusOrSource(bool radarFirst, bool reverseSecondaryRadius) {
-        var chart = Bare().WithSecondaryYAxisBounds(0, 10).WithXLabels("North", "East", "South", "West")
-            .WithRadialGeometry(new ChartRadialGeometryOptions(15, 375, .25));
+        var chart = Bare().SecondaryYAxis(s => s.Bounds(0, 10)).XLabels("North", "East", "South", "West")
+            .RadialGeometry(new ChartRadialGeometryOptions(15, 375, .25));
         var columns = new[] { new ChartPoint(1, 60), new ChartPoint(3, 80), new ChartPoint(4, 40) };
         var radar = new[] { new ChartPoint(2, reverseSecondaryRadius ? 3 : 7), new ChartPoint(1, reverseSecondaryRadius ? 4 : 6), new ChartPoint(4, reverseSecondaryRadius ? 6 : 4) };
         if (radarFirst) chart.AddRadarLine("Target", radar).AddRadialColumn("Observed", columns);
         else chart.AddRadialColumn("Observed", columns).AddRadarLine("Target", radar);
         var radarIndex = radarFirst ? 0 : 1;
-        chart.Series[radarIndex].UseSecondaryValueAxis(); chart.Options.SecondaryYAxis.WithReversal(reverseSecondaryRadius);
-        chart.Options.XAxis.WithReversal();
+        chart.Series[radarIndex].SecondaryAxis(); chart.Options.SecondaryYAxis.Reversed(reverseSecondaryRadius);
+        chart.Options.XAxis.Reversed();
         var prepared = Prepare(chart);
         var column = prepared.Scene.Nodes.OfType<VisualSceneSlice>().First(slice => slice.Role == "radial-column");
         var angle = column.Start + column.Sweep / 2;
@@ -154,10 +154,10 @@ public sealed class RadialAngularReversalTests {
     [Fact]
     public void PolarAreaReversesSlotsPatternsAndCaptionsWhileRetainingSquareRootRadiiAndZeroIdentity() {
         var color = ChartColor.FromHex("#2468AC");
-        var chart = Bare().WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside).WithXLabels("North", "East", "South", "West")
+        var chart = Bare().DataLabels().DataLabels(d => d.Placement(ChartDataLabelPlacement.Inside)).XLabels("North", "East", "South", "West")
             .AddPolarArea("Revenue", new[] { new ChartPoint(4, 100), new ChartPoint(1, 25), new ChartPoint(3, 0), new ChartPoint(2, 64) });
-        chart.Series[0].WithPointColor(0, color).WithPointLabel(1, "Small source").WithPointFillPattern(3, ChartFillPattern.Crosshatch);
-        var normal = Prepare(chart); chart.Options.XAxis.WithReversal(); var reversed = Prepare(chart);
+        chart.Series[0].PointColor(0, color).PointLabel(1, "Small source").PointFillPattern(3, ChartFillPattern.Crosshatch);
+        var normal = Prepare(chart); chart.Options.XAxis.Reversed(); var reversed = Prepare(chart);
         var before = normal.Scene.Nodes.OfType<VisualSceneSlice>().ToArray();
         var after = reversed.Scene.Nodes.OfType<VisualSceneSlice>().ToArray();
         Assert.Equal(4, after.Length);
@@ -189,7 +189,7 @@ public sealed class RadialAngularReversalTests {
     [InlineData(2)]
     public void PolarAreaAngularOrderDoesNotRequireRadarCategoryCount(int count) {
         var chart = Bare().AddPolarArea("Revenue", Enumerable.Range(1, count).Select(index => new ChartPoint(index, index * 25)))
-            .ConfigureXAxis(axis => axis.WithReversal());
+            .XAxis(axis => axis.Reversed());
         var slices = Prepare(chart).Scene.Nodes.OfType<VisualSceneSlice>().ToArray();
         Assert.Equal(count, slices.Length);
         Assert.Equal(-Math.PI / 2 + (count - 1) * Math.PI * 2 / count, slices[0].Start, 9);
@@ -200,15 +200,15 @@ public sealed class RadialAngularReversalTests {
     [InlineData(true)]
     public void PolarAreaRadiusReversalStillRejectsIndependentlyOfAngularOrder(bool reverseAngular) {
         var chart = Bare().AddPolarArea("Revenue", new[] { new ChartPoint(1, 25), new ChartPoint(2, 100) });
-        chart.Options.XAxis.WithReversal(reverseAngular); chart.Options.YAxis.WithReversal();
+        chart.Options.XAxis.Reversed(reverseAngular); chart.Options.YAxis.Reversed();
         Assert.Throws<NotSupportedException>(() => Prepare(chart));
     }
 
-    private static Chart Bare() => Chart.Create().WithSize(600, 480).WithHeader(false).WithLegend(false).WithDataLabels(false).WithYAxisBounds(0, 100);
+    private static Chart Bare() => Chart.Create().Size(600, 480).ShowHeader(false).Legend(false).DataLabels(false).YAxis(y => y.Bounds(0, 100));
     private static PreparedVisual Prepare(Chart chart) {
         var context = VisualExportRequest.ForChart(chart).Context;
         return chart.Prepare(new VisualRenderContext(context.Layout, context.Theme, context.ThemeMode,
-            new VisualFrame(showLegend: chart.Options.ShowLegend, transparentBackground: true), context.Font));
+            new VisualFrame(showLegend: chart.Options.Legend.Visible, transparentBackground: true), context.Font));
     }
     private static IReadOnlyDictionary<string, string> Group(PreparedVisual prepared, string id) =>
         prepared.Scene.Nodes.OfType<VisualSceneGroup>().Single(group => group.Id == id).Metadata;
@@ -233,7 +233,7 @@ public sealed class RadialAngularReversalTests {
         Assert.Equal(new[] { color.R, color.G, color.B, color.A }, Pixel(RasterImageDecoder.Decode(prepared.ToPng()), point));
     private static void AssertDetached(Chart chart, PreparedVisual prepared) {
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
-        chart.Options.XAxis.WithReversal(false); chart.Series[0].Points.Clear();
+        chart.Options.XAxis.Reversed(false); chart.Series[0].Points.Clear();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
     }
 }

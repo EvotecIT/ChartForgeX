@@ -3,10 +3,10 @@ public static class WardleyDepthRecipe {
     /// <summary>Creates the same source-ordered map for wide or compact native output.</summary>
     public static WardleyMapBlock Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
-        var block = WardleyMapBlock.Create().WithTitle("Delivery strategy").WithSize(variant == "compact" ? 390 : 1100, 600)
-            .WithPadding(30).WithTheme(VisualTheme.Graphite(), mode).WithAnnotationsBox(.18, 0);
+        var block = WardleyMapBlock.Create().Title("Delivery strategy").Size(variant == "compact" ? 390 : 1100, 600)
+            .Padding(30).Theme(VisualTheme.Graphite()).ThemeMode(mode).AnnotationsBox(.18, 0);
         block.ShowGrid = true;
-        block.SetStages(new[] { "New / Idea", "Custom", "Product", "Commodity" }).WithStageBoundaries(new[] { .30, .55, .78, 1d });
+        block.SetStages(new[] { "New / Idea", "Custom", "Product", "Commodity" }).StageBoundaries(new[] { .30, .55, .78, 1d });
         block.AddNode("User", "User", .94, .20, WardleyMapNodeKind.Anchor);
         var build = block.AddNode("Build", "Build", .78, .12); build.Strategy = "build";
         var buy = block.AddNode("Buy", "Buy", .64, .29); buy.Strategy = "buy"; buy.Inertia = true;

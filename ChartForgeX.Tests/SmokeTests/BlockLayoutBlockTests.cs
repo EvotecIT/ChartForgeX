@@ -7,9 +7,9 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void BlockLayoutBlockRendersStaticSvgAndPng() {
         var block = BlockLayoutBlock.Create()
-            .WithTitle("Service Path")
-            .WithSize(720, 320)
-            .WithColumns(3)
+            .Title("Service Path")
+            .Size(720, 320)
+            .Columns(3)
             .AddItem("frontend", "Frontend")
             .AddItem("api", "API", 1, BlockLayoutShape.Rounded)
             .AddItem("database", "Database", 1, BlockLayoutShape.Database)

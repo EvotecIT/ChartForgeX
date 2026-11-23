@@ -9,8 +9,8 @@ namespace ChartForgeX.Tests;
 public sealed class V2RadialProgressTests {
     [Fact]
     public void ProgressRings_PreserveZeroFullAndPartialRingsWithPointPaintAndAverage() {
-        var chart = Chart.Create().AddProgressRing("Uptime", new[] { new ChartPoint(1, 0), new ChartPoint(2, 100), new ChartPoint(3, 50) }).WithXLabels("A", "B", "C");
-        var paint = ChartColor.FromHex("#456789"); chart.Series[0].WithPointColor(1, paint);
+        var chart = Chart.Create().AddProgressRing("Uptime", new[] { new ChartPoint(1, 0), new ChartPoint(2, 100), new ChartPoint(3, 50) }).XLabels("A", "B", "C");
+        var paint = ChartColor.FromHex("#456789"); chart.Series[0].PointColor(1, paint);
         var scene = Compile(chart);
         var rings = scene.Nodes.OfType<VisualSceneSlice>().Where(slice => slice.Role == "progress-ring-ring").ToArray();
         Assert.Equal(3, scene.Nodes.Count(node => node.Role == "progress-ring-track"));
@@ -18,7 +18,7 @@ public sealed class V2RadialProgressTests {
         Assert.Equal(paint, rings[0].Fill);
         Assert.Contains(scene.Regions, region => region.Id == "series-0-center-value" && region.Label == "50%");
         Assert.Contains(scene.Regions, region => region.Id == "series-0-point-0" && region.Label == "A: 0%");
-        chart.Options.ShowProgressRingCenterLabel = false;
+        chart.Options.Progress.ShowRingCenterLabel = false;
         Assert.DoesNotContain(Compile(chart).Nodes, node => node.Role is "progress-ring-value" or "progress-ring-title");
         Assert.NotEmpty(VisualSceneRasterRenderer.Render(scene).Pixels);
     }
@@ -26,8 +26,8 @@ public sealed class V2RadialProgressTests {
     [Fact]
     public void LayeredRadial_PreservesIndependentRangesAnglesCapsOpacityAndSeparators() {
         var color = ChartColor.FromHex("#2468AC");
-        var lower = ChartRadialLayer.Create("Base", 80).WithGeometry(1, .12).WithAngles(30, 270).WithLineCap(ChartRadialLayerCap.Butt).WithSeparators(3);
-        var upper = ChartRadialLayer.Create("Overlay", 15, 10, 20, color).WithGeometry(.6, .2).WithAngles(-90, 180).WithOpacity(.5);
+        var lower = ChartRadialLayer.Create("Base", 80).RadiusRatio(1).StrokeRatio(.12).StartAngleDegrees(30).SweepAngleDegrees(270).LineCap(ChartRadialLayerCap.Butt).SeparatorCount(3).SeparatorColor(null).SeparatorStrokeWidth(3).SeparatorInsetRatio(0.06);
+        var upper = ChartRadialLayer.Create("Overlay", 15, 10, 20, color).RadiusRatio(.6).StrokeRatio(.2).StartAngleDegrees(-90).SweepAngleDegrees(180).Opacity(.5);
         var chart = Chart.Create().AddLayeredRadial("Layers", new[] { lower, upper });
         var scene = Compile(chart);
         var arcs = scene.Nodes.OfType<VisualSceneSlice>().Where(slice => slice.Role == "layered-radial-layer").ToArray();
@@ -47,10 +47,10 @@ public sealed class V2RadialProgressTests {
 
     [Fact]
     public void RadiusAndStrokeScalingHaveVisibleEffectsWithoutEscapingTheFixedPlot() {
-        var chart = Chart.Create().AddLayeredRadial("Scaled", new[] { ChartRadialLayer.Create("A", 75).WithGeometry(1.5, .8) });
+        var chart = Chart.Create().AddLayeredRadial("Scaled", new[] { ChartRadialLayer.Create("A", 75).RadiusRatio(1.5).StrokeRatio(.8) });
         chart.Series[0].ShowDataLabels = false;
         var first = Assert.Single(Compile(chart).Nodes.OfType<VisualSceneSlice>(), slice => slice.Role == "layered-radial-layer");
-        chart.Options.RadialProgressStrokeScale = 1.8;
+        chart.Options.Progress.RadialStrokeScale = 1.8;
         var second = Assert.Single(Compile(chart).Nodes.OfType<VisualSceneSlice>(), slice => slice.Role == "layered-radial-layer");
         Assert.True(second.Outer - second.Inner > first.Outer - first.Inner);
         Assert.True(second.Cx - second.Outer >= 0 && second.Cy - second.Outer >= 0 && second.Cx + second.Outer <= 420 && second.Cy + second.Outer <= 320);

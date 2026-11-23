@@ -7,11 +7,11 @@ namespace ChartForgeX.Topology;
 internal sealed partial class VisualTopologyCompiler {
     private void PrepareAuthoredEdgePaths() {
         ValidateDetailBadgeRoles();
-        if (_options.EnableHtmlInteractions && _options.EnableHtmlForceGraphControls && _chart.Edges.Any(edge => edge.LabelPosition != null || edge.SourceMarkerStyle != null || edge.TargetMarkerStyle != null))
+        if (_options.Html.Interactions && _options.Html.ForceGraphControls && _chart.Edges.Any(edge => edge.LabelPosition != null || edge.SourceMarkerStyle != null || edge.TargetMarkerStyle != null))
             throw new NotSupportedException("Explicit label and marker layouts cannot be rewritten by live force graph controls.");
         var paths = _chart.Edges.Where(edge => edge.PathGeometry != null).ToArray();
         if (paths.Length == 0) return;
-        if (_options.EnableHtmlInteractions && _options.EnableHtmlForceGraphControls) throw new NotSupportedException("Authored edge paths cannot be rewritten by live force graph controls.");
+        if (_options.Html.Interactions && _options.Html.ForceGraphControls) throw new NotSupportedException("Authored edge paths cannot be rewritten by live force graph controls.");
         if (_chart.LayoutMode != TopologyLayoutMode.Manual) throw new NotSupportedException("Authored edge paths require Manual topology coordinates.");
         if (paths.Length + _chart.PathDecorations.Count > TopologyPathDecoration.MaximumPaths) throw new ArgumentException("Topology paths exceed 1024 paths.");
         var commands = _chart.PathDecorations.Sum(path => path?.Commands.Count ?? 0); var points = 0;

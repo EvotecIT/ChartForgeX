@@ -32,11 +32,11 @@ public sealed class ChartAxisWindowBoundaryTests {
     [InlineData("secondaryY", true)]
     public void EveryPhysicalAxisRetainsItsExclusiveEndpointAndDetachedMetadata(string slot, bool reversed) {
         var horizontal = slot is "y" or "secondaryX";
-        var chart = Chart.Create().WithLegend(false);
+        var chart = Chart.Create().Legend(false);
         var points = new[] { new ChartPoint(1, 10), new ChartPoint(2, 20), new ChartPoint(3, 100) };
         if (horizontal) chart.AddHorizontalBar("Primary", points); else chart.AddLine("Primary", points);
-        chart.AddLine("Secondary", points).Series[1].UseSecondaryValueAxis();
-        if (horizontal) chart.Options.LineOrientation = ChartOrientation.Horizontal;
+        chart.AddLine("Secondary", points).Series[1].SecondaryAxis();
+        if (horizontal) chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
         var axis = slot == "x" ? chart.Options.XAxis : slot == "y" ? chart.Options.YAxis
             : slot == "secondaryX" ? chart.Options.SecondaryXAxis : chart.Options.SecondaryYAxis;
         axis.Reversed = reversed;
@@ -65,9 +65,9 @@ public sealed class ChartAxisWindowBoundaryTests {
     [InlineData(false)]
     [InlineData(true)]
     public void NumericAndLogarithmicFullBoundsWithAnExcludedLastPointAreNotAFullReset(bool logarithmic) {
-        var chart = Chart.Create().WithLegend(false).AddScatter("Points", new[] { new ChartPoint(1, 1), new ChartPoint(2, 2), new ChartPoint(4, 40) })
-            .WithXAxisBounds(1, 4);
-        if (logarithmic) chart.Options.XAxis.WithLogarithmicScale(2);
+        var chart = Chart.Create().Legend(false).AddScatter("Points", new[] { new ChartPoint(1, 1), new ChartPoint(2, 2), new ChartPoint(4, 40) })
+            .XAxis(x => x.Bounds(1, 4));
+        if (logarithmic) chart.Options.XAxis.LogarithmicScale(2);
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)));
         var full = chart.Prepare(context);
         Assert.Null(full.XProjection!.ConstrainViewport(new ChartAxisWindow(1, 4)));
@@ -90,8 +90,8 @@ public sealed class ChartAxisWindowBoundaryTests {
     public void OrdinalExclusiveMaximumRetainsRawDatesAndExcludesOnlyItsEndpointObservation() {
         var january = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         var values = new[] { january, january.AddDays(1), january.AddDays(11) }.Select(ChartDateTime.ToOADate).ToArray();
-        var chart = Chart.Create().WithLegend(false).AddScatter("Ordinal", values.Select((value, index) => new ChartPoint(value, index + 1)));
-        chart.Options.XAxis.WithTimeSpacing(ChartTimeSpacing.Ordinal);
+        var chart = Chart.Create().Legend(false).AddScatter("Ordinal", values.Select((value, index) => new ChartPoint(value, index + 1)));
+        chart.Options.XAxis.TimeSpacing(ChartTimeSpacing.Ordinal);
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)));
         var request = new ChartAxisWindow(values[0], values[2], maximumInclusive: false);
         var prepared = chart.Prepare(context, new ChartCartesianViewport(x: request));
@@ -106,7 +106,7 @@ public sealed class ChartAxisWindowBoundaryTests {
 
     [Fact]
     public void ExclusiveCategoryEndpointCannotInflateScatterValueFitOrPaintAnEndpointAnnotation() {
-        var chart = Chart.Create().WithLegend(false).AddScatter("Observed", new[] { new ChartPoint(1, 10), new ChartPoint(2, 12), new ChartPoint(3, 1000) });
+        var chart = Chart.Create().Legend(false).AddScatter("Observed", new[] { new ChartPoint(1, 10), new ChartPoint(2, 12), new ChartPoint(3, 1000) });
         chart.AddVerticalLine(3, "Excluded edge").AddNote(new ChartPoint(3, 11), "Excluded note")
             .AddLineSegment(new ChartPoint(2, 11), new ChartPoint(3, 11), "Crossing line");
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)));
@@ -128,11 +128,11 @@ public sealed class ChartAxisWindowBoundaryTests {
     [Fact]
     public void CalendarExclusiveMaximumMustBeACapturedBoundaryWhileInclusiveRawBoundsRemainExact() {
         var january = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-        var chart = Chart.Create().WithLegend(false).AddLine("Monthly", new[] {
+        var chart = Chart.Create().Legend(false).AddLine("Monthly", new[] {
             new ChartPoint(ChartDateTime.ToOADate(january.AddDays(2)), 1),
             new ChartPoint(ChartDateTime.ToOADate(january.AddMonths(1).AddDays(9)), 2),
             new ChartPoint(ChartDateTime.ToOADate(january.AddMonths(2).AddDays(9)), 3) });
-        chart.Options.XAxis.WithTimeSpacing(ChartTimeSpacing.Unit(new ChartTimeTickInterval(ChartTimeTickUnit.Month)));
+        chart.Options.XAxis.TimeSpacing(ChartTimeSpacing.Unit(new ChartTimeTickInterval(ChartTimeTickUnit.Month)));
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)));
         var full = chart.Prepare(context);
         var completeExclusive = Assert.IsType<ChartAxisWindow>(full.XProjection!.ConstrainViewport(
@@ -152,7 +152,7 @@ public sealed class ChartAxisWindowBoundaryTests {
         var authored = new ChartAxisWindow(first, interior);
         Assert.Equal(interior, chart.Prepare(context, new ChartCartesianViewport(x: authored)).XProjection!.Maximum);
 
-        chart.Options.XAxis.Maximum = interior;
+        chart.Options.XAxis.Max = interior;
         var clippedFull = chart.Prepare(context);
         var logical = clippedFull.XProjection!.Project(ChartDateTime.ToOADate(january.AddMonths(2).AddDays(9)));
         var clipped = Assert.IsType<ChartAxisWindow>(clippedFull.XProjection.ConstrainViewport(logical - 1, logical + 1));

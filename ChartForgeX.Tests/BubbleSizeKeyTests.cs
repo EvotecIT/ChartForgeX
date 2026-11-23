@@ -15,18 +15,18 @@ public sealed class BubbleSizeKeyTests {
     public void SizeKeyVisibilityIsIndependentOfCategoricalEntriesAndEmptySourcesHaveNoInventedDomain() {
         var chart = Bare().AddBubble("Requests", new[] { new ChartBubble(2, 20, 25), new ChartBubble(8, 80, 100) });
         Assert.Empty(Groups(Prepare(chart), "bubble-size-key"));
-        chart.ConfigureBubble(options => options.SizeDimension.ShowLegend = true);
+        chart.Bubble(options => options.SizeDimension.ShowLegend = true);
         chart.Series[0].ShowInLegend = false;
         Assert.Single(Groups(Prepare(chart), "bubble-size-key"));
-        chart.WithLegend(false);
+        chart.Legend(false);
         Assert.Empty(Groups(Prepare(chart), "bubble-size-key"));
-        chart.WithLegend();
+        chart.Legend();
         var hiddenFrame = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(960, 600)),
             frame: new VisualFrame(showLegend: false));
         Assert.Empty(Groups(chart.Prepare(hiddenFrame), "bubble-size-key"));
-        chart.ConfigureBubble(options => options.SizeDimension.ShowLegend = false);
+        chart.Bubble(options => options.SizeDimension.ShowLegend = false);
         Assert.Empty(Groups(Prepare(chart), "bubble-size-key"));
-        chart.ConfigureBubble(options => { options.SizeDimension.ShowLegend = true; options.WithSizeDomain(0, 100); });
+        chart.Bubble(options => { options.SizeDimension.ShowLegend = true; options.SizeDomain(0, 100); });
         chart.Series[0].ReplaceBubbles(Array.Empty<ChartBubble>());
         Assert.Empty(Groups(Prepare(chart), "bubble-size-key"));
     }
@@ -36,11 +36,11 @@ public sealed class BubbleSizeKeyTests {
         var chart = Bare().AddBubble("First", new[] { new ChartBubble(1, 20, 1), new ChartBubble(3, 40, 200.5) })
             .AddBubble("Second", new[] { new ChartBubble(5, 60, 200.5) })
             .AddBubble("Hidden extent", new[] { new ChartBubble(7, 80, 400) });
-        chart.Series[2].UseSecondaryValueAxis().ConfigureMarkers(options => options.Enabled = false);
+        chart.Series[2].SecondaryAxis().Markers(options => options.Enabled = false);
         chart.Series[2].ShowInLegend = false;
-        chart.Options.SecondaryYAxis.WithBounds(0, 100);
+        chart.Options.SecondaryYAxis.Bounds(0, 100);
         chart.AddSeries(ChartSeries.CreateBubble(new ChartSeriesId("empty"), "Empty", Array.Empty<ChartBubble>()));
-        chart.ConfigureBubble(options => {
+        chart.Bubble(options => {
             options.MinimumRadius = 2; options.MaximumRadius = 30; options.SizeDimension.ShowLegend = true;
         });
         var prepared = Prepare(chart);
@@ -62,16 +62,16 @@ public sealed class BubbleSizeKeyTests {
     public void SizeNameAndFormatStayIndependentOfYColorAndIdentity() {
         var series = ChartSeries.CreateBubble(new ChartSeriesId("service-requests"), "Service", new[] {
             new ChartBubble(2, 12.5, 25).WithColorValue(3.125)
-        }).WithObservationId(0, new ChartObservationId("request-batch"));
-        var chart = Bare().AddSeries(series).WithDataLabels()
-            .WithValueFormat(ChartValueFormat.Number("0.00 'ms'"));
-        chart.ConfigureBubble(options => {
+        }).ObservationId(0, new ChartObservationId("request-batch"));
+        var chart = Bare().AddSeries(series).DataLabels()
+            .ValueFormat(ChartValueFormat.Number("0.00 'ms'"));
+        chart.Bubble(options => {
             options.SizeDimension.Name = "Requests";
             options.SizeDimension.ValueFormat = ChartValueFormat.Number("0.0 'req'");
             options.SizeDimension.ShowLegend = true;
         });
-        series.WithColorScale(ChartColorScale.Sequential(ChartColor.Black, ChartColor.White))
-            .ConfigureColorDimension(options => {
+        series.ColorScale(ChartColorScale.Sequential(ChartColor.Black, ChartColor.White))
+            .ColorDimension(options => {
                 options.Name = "Temperature"; options.ValueFormat = ChartValueFormat.Number("0.000 '°C'");
             });
         var prepared = Prepare(chart);
@@ -97,13 +97,13 @@ public sealed class BubbleSizeKeyTests {
     [Fact]
     public void NullNameAndFormatRestoreLocalizedDefaultsWithoutChangingSourceFacts() {
         var chart = Bare().AddBubble("Service", new[] { new ChartBubble(2, 20, 25) })
-            .WithValueFormat(ChartValueFormat.Number("0.00 'items'"))
-            .ConfigureLabels(labels => labels.Size = "Wielkość");
-        chart.ConfigureBubble(options => {
+            .ValueFormat(ChartValueFormat.Number("0.00 'items'"))
+            .Labels(labels => labels.Size = "Wielkość");
+        chart.Bubble(options => {
             options.SizeDimension.Name = "Requests"; options.SizeDimension.ShowLegend = true;
             options.SizeDimension.ValueFormat = ChartValueFormat.Number("0.0 'req'");
         });
-        chart.ConfigureBubble(options => { options.SizeDimension.Name = null; options.SizeDimension.ValueFormat = null; });
+        chart.Bubble(options => { options.SizeDimension.Name = null; options.SizeDimension.ValueFormat = null; });
         var prepared = Prepare(chart);
         Assert.Equal("Wielkość", Texts(prepared, "bubble-size-key-title").Single());
         Assert.Equal(new[] { "25.00 items" }, Texts(prepared, "bubble-size-key-label"));
@@ -118,10 +118,10 @@ public sealed class BubbleSizeKeyTests {
     [InlineData(false)]
     [InlineData(true)]
     public void CloseSizesShareDistinctDefaultCaptionsWhileExplicitPrecisionRemainsAuthoritative(bool explicitFormat) {
-        var chart = Bare().WithDataLabels()
+        var chart = Bare().DataLabels()
             .AddBubble("First", new[] { new ChartBubble(2, 20, 1.001) })
             .AddBubble("Second", new[] { new ChartBubble(8, 80, 1.002) })
-            .ConfigureBubble(options => {
+            .Bubble(options => {
                 options.SizeDimension.ShowLegend = true;
                 if (explicitFormat) options.SizeDimension.ValueFormat = ChartValueFormat.Number("0");
             });
@@ -148,7 +148,7 @@ public sealed class BubbleSizeKeyTests {
         var chart = Bare().AddBubble("Service", new[] { new ChartBubble(2, 20, 25), new ChartBubble(8, 80, 100) });
         var original = chart.Options.Bubble;
         ChartBubbleOptions? retainedCandidate = null;
-        chart.ConfigureBubble(options => {
+        chart.Bubble(options => {
             retainedCandidate = options; options.SizeDimension.Name = "Requests";
             options.SizeDimension.ShowLegend = true; options.SizeDimension.ValueFormat = ChartValueFormat.Number("0.0 'req'");
         });
@@ -160,7 +160,7 @@ public sealed class BubbleSizeKeyTests {
         retainedCandidate.SizeDimension.ShowLegend = false;
         Assert.Equal("Requests", installed.SizeDimension.Name); Assert.True(installed.SizeDimension.ShowLegend);
         var failure = new InvalidOperationException("Reject this candidate.");
-        Assert.Same(failure, Assert.Throws<InvalidOperationException>(() => chart.ConfigureBubble(options => {
+        Assert.Same(failure, Assert.Throws<InvalidOperationException>(() => chart.Bubble(options => {
             options.SizeDimension.Name = "Failed callback"; options.SizeDimension.ShowLegend = false; throw failure;
         })));
         Assert.Same(installed, chart.Options.Bubble);
@@ -170,7 +170,7 @@ public sealed class BubbleSizeKeyTests {
         installed.SizeDimension.ValueFormat = ChartValueFormat.Custom(_ => throw new InvalidOperationException("Late formatter."));
         installed.SizeDimension.ShowLegend = false;
         chart.Series[0].UpdateBubble(0, new ChartBubble(2, 20, 500));
-        chart.ConfigureLabels(labels => labels.Size = "Later label");
+        chart.Labels(labels => labels.Size = "Later label");
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
         Assert.Equal("Requests", Texts(prepared, "bubble-size-key-title").Single());
         Assert.Contains("25.0 req", Texts(prepared, "bubble-size-key-label"));
@@ -178,10 +178,10 @@ public sealed class BubbleSizeKeyTests {
 
     [Fact]
     public void FormatterSideEffectsCannotChangeCapturedKeyAndEachSizeIsFormattedOnce() {
-        var chart = Bare().WithDataLabels().AddBubble("First", new[] { new ChartBubble(2, 20, 25), new ChartBubble(4, 40, 100) })
+        var chart = Bare().DataLabels().AddBubble("First", new[] { new ChartBubble(2, 20, 25), new ChartBubble(4, 40, 100) })
             .AddBubble("Second", new[] { new ChartBubble(6, 60, 25) });
         var calls = new Dictionary<double, int>();
-        chart.ConfigureBubble(options => {
+        chart.Bubble(options => {
             options.SizeDimension.Name = "Requests"; options.SizeDimension.ShowLegend = true;
             options.SizeDimension.ValueFormat = ChartValueFormat.Custom(value => {
                 calls[value] = calls.GetValueOrDefault(value) + 1;
@@ -208,8 +208,8 @@ public sealed class BubbleSizeKeyTests {
     public void AuthoredDomainKeyUsesClampedLogicalRadiiWithoutChangingRawFacts(bool reversed) {
         var chart = Bare().AddBubble("Service", new[] {
             new ChartBubble(2, 20, 5), new ChartBubble(5, 50, 30), new ChartBubble(8, 80, 100)
-        }).ConfigureBubble(options => {
-            options.WithSizeDomain(10, 50); options.MinimumRadius = 2; options.MaximumRadius = 18;
+        }).Bubble(options => {
+            options.SizeDomain(10, 50); options.MinimumRadius = 2; options.MaximumRadius = 18;
             options.Reversed = reversed; options.SizeDimension.ShowLegend = true;
         });
         var prepared = Prepare(chart); var samples = Samples(prepared); var marks = Marks(prepared);
@@ -227,7 +227,7 @@ public sealed class BubbleSizeKeyTests {
     [InlineData(true)]
     public void ConstantAndZeroRadiusKeysKeepHonestCaptionsWithoutDataTargets(bool zeroRadius) {
         var chart = Bare().AddBubble("Service", new[] { new ChartBubble(2, 20, 40), new ChartBubble(8, 80, 40) })
-            .ConfigureBubble(options => {
+            .Bubble(options => {
                 options.MinimumRadius = zeroRadius ? 0 : 2; options.MaximumRadius = zeroRadius ? 0 : 30;
                 options.SizeDimension.Name = "Requests"; options.SizeDimension.ShowLegend = true;
             });
@@ -252,12 +252,12 @@ public sealed class BubbleSizeKeyTests {
         var fonts = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito");
         FontRegistry.Register(family, Path.Combine(fonts, "Carlito-Regular.ttf"), 400);
         FontRegistry.Register(family, Path.Combine(fonts, "Carlito-Bold.ttf"), 700);
-        var chart = Bare().WithSize(width, height).WithFontFamily(fallbackFont ? "CFX Missing Bubble Size Key Font" : family)
+        var chart = Bare().Size(width, height).FontFamily(fallbackFont ? "CFX Missing Bubble Size Key Font" : family)
             .AddBubble("Service", new[] {
                 new ChartBubble(2, 20, 10).WithColorValue(0), new ChartBubble(5, 50, 55).WithColorValue(5),
                 new ChartBubble(8, 80, 100).WithColorValue(10)
-            }).ConfigureBubble(options => { options.SizeDimension.Name = "Requests"; options.SizeDimension.ShowLegend = true; });
-        chart.Series[0].WithColorScale(ChartColorScale.Sequential(ChartColor.Black, ChartColor.White).WithValueRange(0, 10));
+            }).Bubble(options => { options.SizeDimension.Name = "Requests"; options.SizeDimension.ShowLegend = true; });
+        chart.Series[0].ColorScale(ChartColorScale.Sequential(ChartColor.Black, ChartColor.White).WithValueRange(0, 10));
         var prepared = Prepare(chart);
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code is "cartesian.size-scale-overflow" or "cartesian.color-scale-overflow");
         var key = Assert.Single(prepared.Regions, region => region.Role == "bubble-size-key");
@@ -286,9 +286,9 @@ public sealed class BubbleSizeKeyTests {
 
     [Fact]
     public void OversizedExplicitKeyIsDiagnosedAndOmittedWithoutShrinkingTheScale() {
-        var chart = Bare().WithSize(360, 360).AddBubble("Service", new[] { new ChartBubble(5, 50, 100) })
-            .ConfigureBubble(options => {
-                options.WithSizeDomain(0, 100); options.MinimumRadius = 2; options.MaximumRadius = 320;
+        var chart = Bare().Size(360, 360).AddBubble("Service", new[] { new ChartBubble(5, 50, 100) })
+            .Bubble(options => {
+                options.SizeDomain(0, 100); options.MinimumRadius = 2; options.MaximumRadius = 320;
                 options.SizeDimension.Name = "Requests"; options.SizeDimension.ShowLegend = true;
             });
         var prepared = Prepare(chart);
@@ -302,8 +302,8 @@ public sealed class BubbleSizeKeyTests {
     }
 
     private static Chart Bare() {
-        var chart = Chart.Create().WithSize(960, 600).WithHeader(false).WithLegend().WithDataLabels(false)
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 100);
+        var chart = Chart.Create().Size(960, 600).ShowHeader(false).Legend().DataLabels(false)
+            .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 100));
         chart.Options.ShowAxes = false; chart.Options.ShowGrid = false;
         chart.Options.ShowCard = false; chart.Options.ShowPlotBackground = false; chart.Options.TransparentBackground = false;
         return chart;

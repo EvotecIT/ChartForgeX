@@ -25,8 +25,8 @@ public sealed class InteractiveRelationshipIdentityBrowserTests {
     [InlineData(ChartSeriesKind.Sankey, true, 800)]
     public async Task RepeatedLabelsKeepAuthoredSelectionAndTooltipIdentity(ChartSeriesKind kind, bool dark, int width) {
         if (!Enabled) return;
-        var chart = RelationshipIdentityTests.RepeatedLabels(kind).WithSize(width, width < 500 ? 320 : 460)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithTitle("Teams and support").WithLegend(true);
+        var chart = RelationshipIdentityTests.RepeatedLabels(kind).Size(width, width < 500 ? 320 : 460)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Title("Teams and support").Legend(true);
         var html = chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
         await using var session = await OpenAsync(html, width + 24, width < 500 ? 450 : 580);
         var page = session.Page;
@@ -71,10 +71,10 @@ public sealed class InteractiveRelationshipIdentityBrowserTests {
     public async Task ParallelFlowsAndRenamedReorderedNodesEmitTheirAuthoredIds() {
         if (!Enabled) return;
         var nodes = new[] { new ChartNode("output", "Support"), new ChartNode("input", "Renamed support") };
-        var chart = Chart.Create().WithSize(640, 350).AddSankey("Traffic", nodes, new[] {
+        var chart = Chart.Create().Size(640, 350).AddSankey("Traffic", nodes, new[] {
             new ChartFlowLink("priority", "input", "output", 8), new ChartFlowLink("standard", "input", "output", 5)
         });
-        chart.Series[0].WithNodeState("input", ChartSeriesState.Warning);
+        chart.Series[0].NodeState("input", ChartSeriesState.Warning);
         var html = chart.ToInteractiveHtmlPage();
         await using var session = await OpenAsync(html);
         var page = session.Page;
@@ -102,10 +102,10 @@ public sealed class InteractiveRelationshipIdentityBrowserTests {
     [InlineData(ChartSeriesKind.Chord, false, 800)]
     public async Task FreshExportAfterGraphReplacementSelectsTheNewFactsThroughTheirAuthoredIds(ChartSeriesKind kind, bool dark, int width) {
         if (!Enabled) return;
-        var series = RelationshipDataLifecycleTests.Create(kind).WithNodeState("input", ChartSeriesState.Danger)
-            .WithFlowState("received", ChartSeriesState.Danger);
-        var chart = Chart.Create().WithSize(width, width < 500 ? 320 : 460).AddSeries(series)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithTitle("Updated requests");
+        var series = RelationshipDataLifecycleTests.Create(kind).NodeState("input", ChartSeriesState.Danger)
+            .FlowState("received", ChartSeriesState.Danger);
+        var chart = Chart.Create().Size(width, width < 500 ? 320 : 460).AddSeries(series)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Title("Updated requests");
         series.ReplaceFlowData(RelationshipDataLifecycleTests.Nodes(reversed: true), RelationshipDataLifecycleTests.Flows(9));
         var html = chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
         await using var session = await OpenAsync(html, width + 24, width < 500 ? 430 : 570);
@@ -135,8 +135,8 @@ public sealed class InteractiveRelationshipIdentityBrowserTests {
     [InlineData(ChartSeriesKind.Sankey, true, 360)]
     public async Task ConfiguredExamplesRetainRepeatedLabelsAndNativePaint(ChartSeriesKind kind, bool dark, int width) {
         if (!Enabled) return;
-        var chart = V2GalleryModels.Create(kind, "options").WithSize(width, width < 500 ? 320 : 460)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithTitle("Explicit relationship identities");
+        var chart = V2GalleryModels.Create(kind, "options").Size(width, width < 500 ? 320 : 460)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Title("Explicit relationship identities");
         var html = chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
         await using var session = await OpenAsync(html, width + 24, width < 500 ? 430 : 570);
         var supports = session.Page.Locator("[data-cfx-target-kind=node][data-cfx-label=Support]");

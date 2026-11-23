@@ -18,7 +18,7 @@ public sealed class MapPeriodicRouteCopyBrowserTests {
     [InlineData(800, ThemeMode.Dark)]
     public async Task NearWorldPeerClustersKeepTwoPaintedFragmentsAndOneSourceIdentityInBrowserAndDownloads(int width, ThemeMode mode) {
         if (!Enabled) return;
-        var chart = MapPeriodicRouteCopyTests.Clustered(width, mode).WithDataLabels();
+        var chart = MapPeriodicRouteCopyTests.Clustered(width, mode).DataLabels();
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(Options), width + 24, 650);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
         var source = page.Locator("[data-cfx-role='dotted-map-connector-source']"); Assert.Equal(1, await source.CountAsync());

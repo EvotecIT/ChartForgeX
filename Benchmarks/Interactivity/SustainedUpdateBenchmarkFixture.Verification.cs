@@ -15,9 +15,9 @@ public sealed partial class SustainedUpdateBenchmarkFixture {
     public void Validate() {
         if (_source == null || _session == null || _last?.NarrowPreparedVisual == null || _committed != _updates)
             throw new InvalidOperationException("The complete declared source/preparation/browser commit batch did not run.");
-        if (_source.Series.Count != _series.Length || _source.Options.XAxis.Minimum.HasValue || _source.Options.XAxis.Maximum.HasValue
-            || _source.Options.YAxis.Minimum != 0 || _source.Options.YAxis.Maximum != 60
-            || _secondary && (_source.Options.SecondaryYAxis.Minimum != 0 || _source.Options.SecondaryYAxis.Maximum != 500))
+        if (_source.Series.Count != _series.Length || _source.Options.XAxis.Min.HasValue || _source.Options.XAxis.Max.HasValue
+            || _source.Options.YAxis.Min != 0 || _source.Options.YAxis.Max != 60
+            || _secondary && (_source.Options.SecondaryYAxis.Min != 0 || _source.Options.SecondaryYAxis.Max != 500))
             throw new InvalidOperationException("The rolling update changed its source series or authored axis policy.");
         for (var series = 0; series < _series.Length; series++) {
             if (!ReferenceEquals(_source.Series[series], _series[series]) || _series[series].Points.Count != _count

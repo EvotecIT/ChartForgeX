@@ -13,17 +13,17 @@ public sealed class HorizontalWaterfallTests {
         var chart = Sample();
         Assert.Equal(ChartOrientation.Vertical, chart.Options.Waterfall.Orientation);
         var vertical = chart.Prepare(VisualExportRequest.ForChart(chart).Context).ToSvg();
-        Assert.Same(chart, chart.ConfigureWaterfall(options => options.Orientation = ChartOrientation.Vertical));
+        Assert.Same(chart, chart.Waterfall(options => options.Orientation = ChartOrientation.Vertical));
         Assert.Equal(vertical, chart.Prepare(VisualExportRequest.ForChart(chart).Context).ToSvg());
-        Assert.Throws<ArgumentNullException>(() => chart.ConfigureWaterfall(null!));
+        Assert.Throws<ArgumentNullException>(() => chart.Waterfall((Action<ChartWaterfallOptions>)null!));
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.Waterfall.Orientation = (ChartOrientation)99);
-        chart.ConfigureWaterfall(options => options.Orientation = ChartOrientation.Horizontal);
+        chart.Waterfall(options => options.Orientation = ChartOrientation.Horizontal);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
         Assert.NotEqual(vertical, svg);
         chart.Options.Waterfall.Orientation = ChartOrientation.Vertical;
         chart.Options.YAxis.Labels.Add(new ChartAxisLabel(4, "Changed"));
-        chart.Options.YAxis.WithLabelFormatter(_ => throw new InvalidOperationException("Changed category callback"));
+        chart.Options.YAxis.LabelBy(_ => throw new InvalidOperationException("Changed category callback"));
         chart.ClearSeries();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
     }
@@ -34,9 +34,9 @@ public sealed class HorizontalWaterfallTests {
     [InlineData(false, true)]
     [InlineData(true, true)]
     public void PhysicalAxesMapIntervalsConnectorsAndUnsortedCategoriesWithoutChangingSourceFacts(bool reverseValue, bool reverseCategory) {
-        var chart = Horizontal().WithAxes(false).WithLegend(false).WithBarStyle(ChartBarStyle.Flat);
-        chart.Options.XAxis.WithBounds(-50, 150).WithReversal(reverseValue);
-        chart.Options.YAxis.WithBounds(0, 9).WithReversal(reverseCategory);
+        var chart = Horizontal().Axes(false).Legend(false).Bars(b => b.Style(ChartBarStyle.Flat));
+        chart.Options.XAxis.Bounds(-50, 150).Reversed(reverseValue);
+        chart.Options.YAxis.Bounds(0, 9).Reversed(reverseCategory);
         chart.AddVerticalLine(25).AddHorizontalLine(4.5);
         var scene = Scene(chart);
         var regions = scene.Regions.Where(region => region.Role is "point" or "waterfall-subtotal" or "waterfall-total").ToArray();
@@ -74,7 +74,7 @@ public sealed class HorizontalWaterfallTests {
         var capture = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(capture)) {
             Directory.CreateDirectory(capture);
-            chart.WithAxes().WithDataLabels().WithBarStyle(ChartBarStyle.SegmentedCapsule).WithTitle("Unsorted categories and consecutive checkpoints");
+            chart.Axes().DataLabels().Bars(b => b.Style(ChartBarStyle.SegmentedCapsule)).Title("Unsorted categories and consecutive checkpoints");
             var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
             var name = "horizontal-waterfall-edges-x" + reverseValue + "-y" + reverseCategory;
             File.WriteAllText(Path.Combine(capture, name + ".native.svg"), prepared.ToSvg());
@@ -84,27 +84,27 @@ public sealed class HorizontalWaterfallTests {
 
     [Fact]
     public void CategoryCaptionsShareExplicitYMappingsFormattersDefaultsAndTimeAcrossAxesMarksAndLegends() {
-        var chart = Horizontal().WithPointLegend().WithXLabels("Wrong", "Wrong", "Wrong", "Wrong", "Wrong", "Wrong", "Wrong", "Wrong");
-        chart.Options.XAxis.WithLabelFormatter(value => "$" + value.ToString("0", CultureInfo.InvariantCulture));
+        var chart = Horizontal().Legend(l => l.ShowPoints()).XLabels("Wrong", "Wrong", "Wrong", "Wrong", "Wrong", "Wrong", "Wrong", "Wrong");
+        chart.Options.XAxis.LabelBy(value => "$" + value.ToString("0", CultureInfo.InvariantCulture));
         var calls = new Dictionary<double, int>();
-        chart.Options.YAxis.WithLabelFormatter(value => {
+        chart.Options.YAxis.LabelBy(value => {
             calls[value] = calls.TryGetValue(value, out var count) ? count + 1 : 1;
             return "Stage " + value.ToString("0", CultureInfo.InvariantCulture);
         });
         chart.Options.YAxis.Labels.Add(new ChartAxisLabel(2, "Costs"));
         AssertCaptions(chart, new[] { "Stage 4", "Stage 1", "Stage 3", "Costs", "Stage 5", "Stage 6", "Stage 7", "Stage 8" });
         Assert.Equal(7, calls.Count); Assert.All(calls.Values, count => Assert.Equal(1, count));
-        chart.Options.YAxis.WithLabelFormatter(null); chart.Options.YAxis.Labels.Clear(); chart.Options.XAxis.Labels.Clear();
+        chart.Options.YAxis.LabelBy((Func<double, string>?)null); chart.Options.YAxis.Labels.Clear(); chart.Options.XAxis.Labels.Clear();
         chart.Options.Labels.Subtotal = "Stage sum"; chart.Options.Labels.Total = "Balance";
         AssertCaptions(chart, new[] { "4", "Stage sum", "3", "Stage sum", "Stage sum", "6", "Balance", "8" });
 
         var date = new DateTime(2026, 10, 1, 12, 0, 0, DateTimeKind.Utc);
-        var time = Chart.Create().WithPointLegend().ConfigureWaterfall(options => options.Orientation = ChartOrientation.Horizontal)
+        var time = Chart.Create().Legend(l => l.ShowPoints()).Waterfall(options => options.Orientation = ChartOrientation.Horizontal)
             .AddWaterfall("Dates", new[] { ChartWaterfallItem.Delta(date, 20), ChartWaterfallItem.Total(date.AddDays(1)) });
-        time.Options.YAxis.WithTimeScale(TimeZoneInfo.Utc);
+        time.Options.YAxis.TimeScale(TimeZoneInfo.Utc);
         AssertCaptions(time, new[] { ChartTimeScale.Format(time.Options.YAxis, date.ToOADate()), "Total" });
-        var fallback = Chart.Create().WithPointLegend().WithXLabels("Income", "Balance")
-            .ConfigureWaterfall(options => options.Orientation = ChartOrientation.Horizontal)
+        var fallback = Chart.Create().Legend(l => l.ShowPoints()).XLabels("Income", "Balance")
+            .Waterfall(options => options.Orientation = ChartOrientation.Horizontal)
             .AddWaterfall("Movement", new[] { ChartWaterfallItem.Delta(1, 20), ChartWaterfallItem.Total(2) });
         AssertCaptions(fallback, new[] { "Income", "Balance" });
     }
@@ -113,10 +113,10 @@ public sealed class HorizontalWaterfallTests {
     [InlineData(120d, false)]
     [InlineData(-120d, true)]
     public void HorizontalOpeningDefaultsShareLocalizedCaptionsAndRetainRawSourceAndContributorFacts(double opening, bool reverse) {
-        var chart = Opening(opening).WithDataLabels().WithBarStyle(ChartBarStyle.SegmentedCapsule);
-        chart.ConfigureLabels(labels => { labels.OpeningBalance = "Initial balance"; labels.Subtotal = "Stage sum"; labels.Total = "Balance"; });
-        chart.Options.XAxis.WithBounds(-160, 160).WithReversal(reverse);
-        chart.Options.YAxis.WithReversal();
+        var chart = Opening(opening).DataLabels().Bars(b => b.Style(ChartBarStyle.SegmentedCapsule));
+        chart.Labels(labels => { labels.OpeningBalance = "Initial balance"; labels.Subtotal = "Stage sum"; labels.Total = "Balance"; });
+        chart.Options.XAxis.Bounds(-160, 160).Reversed(reverse);
+        chart.Options.YAxis.Reversed();
         var expected = new[] { "Initial balance", "2", "Stage sum", "4", "Stage sum", "Balance" };
         var prepared = AssertCaptions(chart, expected);
         Assert.Equal(expected, prepared.Scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "legend-label")
@@ -151,10 +151,10 @@ public sealed class HorizontalWaterfallTests {
 
     [Fact]
     public void HorizontalOpeningCategoryLabelsPrecedeCallbacksAndPreparationFormatsEachUnmappedCategoryOnce() {
-        var chart = Opening(120).WithXLabels("Previous balance");
+        var chart = Opening(120).XLabels("Previous balance");
         chart.Options.YAxis.Labels.Add(new ChartAxisLabel(1, "Carried balance"));
         var calls = new Dictionary<double, int>();
-        chart.Options.YAxis.WithLabelFormatter(value => {
+        chart.Options.YAxis.LabelBy(value => {
             calls[value] = calls.TryGetValue(value, out var count) ? count + 1 : 1;
             return "Stage " + value.ToString("0", CultureInfo.InvariantCulture);
         });
@@ -169,8 +169,8 @@ public sealed class HorizontalWaterfallTests {
         var prepared = AssertCaptions(chart, new[] { "Stage 1", "Stage 2", "Stage 3", "Stage 4", "Stage 5", "Stage 6" });
         Assert.Equal(6, calls.Count); Assert.All(calls.Values, count => Assert.Equal(1, count));
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
-        chart.Options.YAxis.WithLabelFormatter(_ => throw new InvalidOperationException("Changed category callback"));
-        chart.ConfigureLabels(labels => labels.OpeningBalance = "Changed"); chart.ClearSeries();
+        chart.Options.YAxis.LabelBy(_ => throw new InvalidOperationException("Changed category callback"));
+        chart.Labels(labels => labels.OpeningBalance = "Changed"); chart.ClearSeries();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
         Assert.All(calls.Values, count => Assert.Equal(1, count));
     }
@@ -186,9 +186,9 @@ public sealed class HorizontalWaterfallTests {
             (Chart.Create().AddHorizontalBar("Bars", new[] { new ChartPoint(1, 20), new ChartPoint(2, 15) }), 2, 2, 2)
         };
         foreach (var (chart, markCount, sourceCount, legendCount) in cases) {
-            chart.WithPointLegend().ConfigureWaterfall(options => options.Orientation = ChartOrientation.Horizontal);
+            chart.Legend(l => l.ShowPoints()).Waterfall(options => options.Orientation = ChartOrientation.Horizontal);
             var calls = new Dictionary<double, int>();
-            chart.Options.YAxis.WithLabelFormatter(value => {
+            chart.Options.YAxis.LabelBy(value => {
                 calls[value] = calls.TryGetValue(value, out var count) ? count + 1 : 1;
                 return "Category " + value.ToString("0", CultureInfo.InvariantCulture);
             });
@@ -208,13 +208,13 @@ public sealed class HorizontalWaterfallTests {
     [InlineData(ChartScaleKind.SymmetricLogarithmic)]
     [InlineData(ChartScaleKind.Logarithmic)]
     public void HorizontalValueTransformsAndLegacyTotalRetainTheirBaselineContracts(ChartScaleKind scale) {
-        var chart = Chart.Create().WithAxes(false).WithLegend(false).WithBarStyle(ChartBarStyle.Flat)
-            .ConfigureWaterfall(options => options.Orientation = ChartOrientation.Horizontal)
+        var chart = Chart.Create().Axes(false).Legend(false).Bars(b => b.Style(ChartBarStyle.Flat))
+            .Waterfall(options => options.Orientation = ChartOrientation.Horizontal)
             .AddWaterfall("Movement", new[] { new ChartPoint(1, 10), new ChartPoint(2, 90), new ChartPoint(3, -80) });
-        chart.Options.XAxis.WithScale(scale);
+        chart.Options.XAxis.Scale(scale);
         var range = ChartRange.FromChart(chart);
         if (scale == ChartScaleKind.Logarithmic) { Assert.Equal(1, range.MinX); Assert.Equal(100, range.MaxX); }
-        else { chart.Options.XAxis.WithBounds(-100, 100); range = ChartRange.FromChart(chart); }
+        else { chart.Options.XAxis.Bounds(-100, 100); range = ChartRange.FromChart(chart); }
         var scene = Scene(chart); var groups = Marks(scene);
         var total = Assert.Single(groups, group => group.Role == "waterfall-total");
         Assert.Equal("series-0-total", total.Id);
@@ -236,11 +236,11 @@ public sealed class HorizontalWaterfallTests {
     [InlineData(false)]
     [InlineData(true)]
     public void ReversedCapsAndAutomaticLabelsFollowMappedEndsAndContainedInkUsesActualPaint(bool reverse) {
-        var chart = Chart.Create().WithSize(800, 400).WithHeader(false).WithAxes(false).WithLegend(false).WithGrid(false)
-            .WithDataLabels().WithBarStyle(ChartBarStyle.SegmentedCapsule)
-            .ConfigureWaterfall(options => options.Orientation = ChartOrientation.Horizontal)
+        var chart = Chart.Create().Size(800, 400).ShowHeader(false).Axes(false).Legend(false).ShowGrid(false)
+            .DataLabels().Bars(b => b.Style(ChartBarStyle.SegmentedCapsule))
+            .Waterfall(options => options.Orientation = ChartOrientation.Horizontal)
             .AddWaterfall("Movement", new[] { ChartWaterfallItem.Delta(1, 40), ChartWaterfallItem.Delta(2, -20), ChartWaterfallItem.Total(3) }, ChartColor.FromHex("#172554"));
-        chart.Options.XAxis.WithBounds(-100, 100).WithReversal(reverse);
+        chart.Options.XAxis.Bounds(-100, 100).Reversed(reverse);
         var scene = Scene(chart);
         var marks = scene.Regions.Where(region => region.Role is "point" or "waterfall-total").ToArray();
         var caps = scene.Nodes.OfType<VisualSceneLine>().Where(line => line.Role == "waterfall-bar-cap").ToArray();
@@ -253,7 +253,7 @@ public sealed class HorizontalWaterfallTests {
             var text = labels[index]; var caption = new ChartRect(text.X, text.Baseline - text.Text.Ascent, text.Text.Metrics.Width, text.Text.Metrics.Height);
             Assert.True(right ? caption.Left > bounds.Right : caption.Right < bounds.Left);
         }
-        chart.WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
+        chart.DataLabels(d => d.Placement(ChartDataLabelPlacement.Inside));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var fill = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().First(node => node.Role == "waterfall-bar").Fill!.Value;
         var context = VisualExportRequest.ForChart(chart).Context;
@@ -267,7 +267,7 @@ public sealed class HorizontalWaterfallTests {
 
     [Fact]
     public void OrientationMutationRoutesSecondaryWaterfallToThePhysicalValueAxis() {
-        var chart = Sample(); chart.Series[0].UseSecondaryValueAxis();
+        var chart = Sample(); chart.Series[0].SecondaryAxis();
         Assert.NotEmpty(chart.Prepare(new VisualRenderContext()).Regions);
         chart.Options.Waterfall.Orientation = ChartOrientation.Horizontal;
         var horizontal = chart.Prepare(new VisualRenderContext());
@@ -279,11 +279,11 @@ public sealed class HorizontalWaterfallTests {
     [InlineData(false)]
     [InlineData(true)]
     public void CollapsedNonzeroCapsulesKeepTheirMappedDirectionWithoutInventingCheckpointValues(bool reverse) {
-        var chart = Chart.Create().WithAxes(false).WithLegend(false).WithBarStyle(ChartBarStyle.SegmentedCapsule)
-            .ConfigureWaterfall(options => options.Orientation = ChartOrientation.Horizontal)
+        var chart = Chart.Create().Axes(false).Legend(false).Bars(b => b.Style(ChartBarStyle.SegmentedCapsule))
+            .Waterfall(options => options.Orientation = ChartOrientation.Horizontal)
             .AddWaterfall("Movement", new[] { ChartWaterfallItem.Delta(1, 1e20), ChartWaterfallItem.Delta(2, -1),
                 ChartWaterfallItem.Subtotal(3), ChartWaterfallItem.Subtotal(4) });
-        chart.Options.XAxis.WithBounds(0, 1e21).WithReversal(reverse);
+        chart.Options.XAxis.Bounds(0, 1e21).Reversed(reverse);
         var scene = Scene(chart);
         var collapsed = scene.Regions.Single(region => region.Id == "series-0-point-1").Bounds;
         Assert.Equal(1, collapsed.Width);
@@ -312,15 +312,15 @@ public sealed class HorizontalWaterfallTests {
     private static VisualSceneGroup[] Marks(VisualScene scene) => scene.Nodes.OfType<VisualSceneGroup>().Where(group =>
         group.Role is "point" or "waterfall-subtotal" or "waterfall-total").ToArray();
 
-    private static Chart Horizontal() => Sample().ConfigureWaterfall(options => options.Orientation = ChartOrientation.Horizontal);
+    private static Chart Horizontal() => Sample().Waterfall(options => options.Orientation = ChartOrientation.Horizontal);
 
-    private static Chart Opening(double value) => Chart.Create().WithSize(900, 500).WithPointLegend()
-        .ConfigureWaterfall(options => options.Orientation = ChartOrientation.Horizontal).AddWaterfall("Movement", new[] {
+    private static Chart Opening(double value) => Chart.Create().Size(900, 500).Legend(l => l.ShowPoints())
+        .Waterfall(options => options.Orientation = ChartOrientation.Horizontal).AddWaterfall("Movement", new[] {
             ChartWaterfallItem.OpeningBalance(1, value), ChartWaterfallItem.Delta(2, value > 0 ? -30 : 30), ChartWaterfallItem.Subtotal(3),
             ChartWaterfallItem.Delta(4, value > 0 ? -130 : 130), ChartWaterfallItem.Subtotal(5), ChartWaterfallItem.Total(6)
         });
 
-    private static Chart Sample() => Chart.Create().WithSize(900, 500).AddWaterfall("Movement", new[] {
+    private static Chart Sample() => Chart.Create().Size(900, 500).AddWaterfall("Movement", new[] {
         ChartWaterfallItem.Delta(4, 100), ChartWaterfallItem.Subtotal(1), ChartWaterfallItem.Delta(3, -140),
         ChartWaterfallItem.Subtotal(2), ChartWaterfallItem.Subtotal(5), ChartWaterfallItem.Delta(6, 25),
         ChartWaterfallItem.Total(7), ChartWaterfallItem.Delta(8, 10)

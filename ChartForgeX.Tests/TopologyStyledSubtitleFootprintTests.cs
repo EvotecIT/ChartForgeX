@@ -45,8 +45,8 @@ public sealed class TopologyStyledSubtitleFootprintTests {
     }
 
     private static TopologyChart Source() {
-        var chart = TopologyChart.Create().WithId("service-tiles").WithViewport(1200, 1000, 24).WithLegend(null)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).WithLayout(TopologyLayoutMode.Layered)
+        var chart = TopologyChart.Create().Id("service-tiles").Viewport(new TopologyViewport(1200, 1000, 24)).Legend((TopologyLegend?)null)
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).LayoutMode(TopologyLayoutMode.Layered)
             .AddAutoNode("gateway", "Gateway", width: 100, height: 80)
             .AddAutoNode("worker", "Worker", width: 100, height: 80)
             .AddEdge("dispatch", "gateway", "worker", "Dispatch");

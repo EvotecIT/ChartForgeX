@@ -36,7 +36,7 @@ public sealed class StaticExportScalingTests {
 
     // The best of three runs removes scheduling noise; allocation on this thread is deterministic for one model.
     private static (double Milliseconds, long Allocated) Measure(int points, Func<Chart, int> export) {
-        var chart = Chart.Create().WithSize(1200, 600).WithTitle("Export scaling").WithLegend(false)
+        var chart = Chart.Create().Size(1200, 600).Title("Export scaling").Legend(false)
             .AddLine("Signal", Enumerable.Range(0, points).Select(index => new ChartPoint(index, Math.Sin(index * .013) * 40 + index % 17)));
         Assert.True(export(chart) > 0);
         var best = double.MaxValue;

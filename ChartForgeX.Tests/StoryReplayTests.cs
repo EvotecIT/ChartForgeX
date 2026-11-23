@@ -8,9 +8,9 @@ namespace ChartForgeX.Tests;
 public sealed class StoryReplayTests {
     [Fact]
     public void NativeTerminalViewportUsesExactCompletionAndPartialElementTicks() {
-        var terminal = TerminalStory.Create().WithDialect(TerminalDialect.Custom, ">").WithFinalPrompt(false)
-            .WithTiming(.1, 42, 0).Command(new string('A', 89), 1);
-        var story = VisualStory.Create("Exact terminal typing").WithSize(1200, 400);
+        var terminal = TerminalStory.Create().Dialect(TerminalDialect.Custom, ">").ShowFinalPrompt(false)
+            .InitialDelaySeconds(.1).CharactersPerSecond(42).LineDelaySeconds(0).Command(new string('A', 89), 1);
+        var story = VisualStory.Create("Exact terminal typing").Size(1200, 400);
         story.Scene("run", "Run", 2).Panel("terminal", new VisualStoryTerminalSurface(terminal, options: new VisualStoryTerminalOptions()));
         story.Outcome("terminal", "Ready", "terminal");
         var prepared = story.Prepare(new VisualStoryPlaybackOptions(TimeSpan.Zero, TimeSpan.Zero, 1));
@@ -26,9 +26,9 @@ public sealed class StoryReplayTests {
     [InlineData(600, false, 2)]
     public void AuthoredViewportFitsLogicalLinesAgainstItsOwnWidth(int width, bool wrap, int expectedRows) {
         var text = string.Concat(Enumerable.Repeat("0123456789", 7));
-        var terminal = TerminalStory.Create().WithWidth(480).WithTypography(24, 36).WithFinalPrompt(false)
-            .WithTiming(0, 42, .08).Command(text, 1).Output(text);
-        var story = VisualStory.Create("Logical terminal lines").WithSize(width, 500);
+        var terminal = TerminalStory.Create().Width(480).Typography(24, 36).ShowFinalPrompt(false)
+            .InitialDelaySeconds(0).CharactersPerSecond(42).LineDelaySeconds(.08).Command(text, 1).Output(text);
+        var story = VisualStory.Create("Logical terminal lines").Size(width, 500);
         story.Scene("run", "Run", 3).Panel("terminal", new VisualStoryTerminalSurface(terminal, options: new VisualStoryTerminalOptions(wrap: wrap)));
         story.Outcome("terminal", "Ready", "terminal");
         var svg = story.Prepare().ToSvg();
@@ -64,9 +64,9 @@ public sealed class StoryReplayTests {
     [Fact]
     public void AuthoredViewportRetainsCompleteTableCellsAndTheFinalPrompt() {
         var text = string.Concat(Enumerable.Repeat("0123456789", 7));
-        var terminal = TerminalStory.Create().WithWidth(480).WithTypography(24, 36).WithDialect(TerminalDialect.Custom, text)
-            .Table(TerminalTable.Create().WithColumns("Value").AddRow(text));
-        var story = VisualStory.Create("Logical table and prompt").WithSize(1200, 500);
+        var terminal = TerminalStory.Create().Width(480).Typography(24, 36).Dialect(TerminalDialect.Custom, text)
+            .Table(TerminalTable.Create().Columns("Value").AddRow(text));
+        var story = VisualStory.Create("Logical table and prompt").Size(1200, 500);
         story.Scene("run", "Run", 3).Panel("terminal", new VisualStoryTerminalSurface(terminal, options: new VisualStoryTerminalOptions(wrap: false)));
         story.Outcome("terminal", "Ready", "terminal");
         var rows = XDocument.Parse(story.Prepare().ToSvg()).Descendants()
@@ -162,8 +162,8 @@ public sealed class StoryReplayTests {
     }
     [Fact]
     public void AuthoredTerminalCanUseTheSameFixedNativeViewport() {
-        var terminal = TerminalStory.Create().WithFinalPrompt(false).WithTiming(0, 42, .08).Command("Get-Status", 1).Output("Ready");
-        var story = VisualStory.Create("Authored viewport").WithSize(600, 400);
+        var terminal = TerminalStory.Create().ShowFinalPrompt(false).InitialDelaySeconds(0).CharactersPerSecond(42).LineDelaySeconds(.08).Command("Get-Status", 1).Output("Ready");
+        var story = VisualStory.Create("Authored viewport").Size(600, 400);
         story.Scene("run", "Run", 2).Panel("terminal", new VisualStoryTerminalSurface(terminal, options: new VisualStoryTerminalOptions()));
         story.Outcome("terminal", "Ready", "terminal");
         var prepared = story.Prepare();
@@ -172,7 +172,7 @@ public sealed class StoryReplayTests {
         Assert.NotEqual(prepared.ToPng(TimeSpan.Zero), prepared.ToPng());
     }
     private static VisualStory Story(StoryReplay replay) {
-        var story = VisualStory.Create("Recorded session").WithSize(600, 400);
+        var story = VisualStory.Create("Recorded session").Size(600, 400);
         story.Scene("replay", "Replay", replay.Duration.TotalSeconds).Panel("terminal", new VisualStoryReplaySurface(replay));
         story.Outcome("terminal", "Completed session", "terminal"); return story;
     }

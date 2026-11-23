@@ -33,12 +33,12 @@ public static class ConsumerRenderingExamples {
             if (dark.HasErrors) throw new InvalidOperationException("Cannot render dark " + pair.Key);
             SaveExample( pair.Key + "-dark", dark.Artifact!.ToSvg(StandaloneSvg), dark.Artifact!.ToPng());
             if (result.Artifact!.Model is TopologyChart fit) {
-                fit.WithViewport(520, 260, 12);
+                fit.Viewport(new TopologyViewport(520, 260, 12));
                 var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false };
                 SaveExample( pair.Key + "-fit", fit.ToSvg(options), fit.ToPng(options));
             }
         }
-        var primaryBranchCase = SequenceArtifact.Create("sequence-primary-case").WithSize(600, 375)
+        var primaryBranchCase = SequenceArtifact.Create("sequence-primary-case").Width(600).Height(375)
             .AddParticipant("client", "Client").AddParticipant("service", "Service")
             .AddMessage("client", "service", "Request")
             .AddBlock(SequenceArtifactBlockKind.Alt, "Success", 0, 1)
@@ -58,15 +58,15 @@ public static class ConsumerRenderingExamples {
         actorChart.Nodes.Single(node => node.Id == "A").Shape = TopologyNodeShape.Actor;
         SaveExample("flow-class-color-actor", actorChart.ToSvg(), actorChart.ToPng());
         var fittedActorOptions = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false };
-        actorChart.WithViewport(480, 260, 12);
+        actorChart.Viewport(new TopologyViewport(480, 260, 12));
         SaveExample("topology-fit-actor-caption", actorChart.ToSvg(fittedActorOptions), actorChart.ToPng(fittedActorOptions));
         actorChart.Nodes.Single(node => node.Id == "A").Shape = null;
         actorChart.Nodes.Single(node => node.Id == "A").DisplayMode = TopologyNodeDisplayMode.Tile;
         var highlightOptions = new TopologyRenderOptions { IncludeLegend = false, DimmedOpacity = .5 };
         highlightOptions.HighlightNodeIds.Add("B");
         SaveExample("flow-class-color-highlight-dimming", actorChart.ToSvg(highlightOptions), actorChart.ToPng(highlightOptions));
-        var topology = TopologyChart.Create().WithViewport(680, 330).WithLegend(null)
-            .WithLayout(TopologyLayoutMode.Layered).WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
+        var topology = TopologyChart.Create().Viewport(new TopologyViewport(680, 330)).Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddAutoGroup("edge", "Edge").AddAutoGroup("core", "Core")
             .AddAutoNode("gw", "PAW-ADM-03", TopologyNodeKind.Network, groupId: "edge")
             .AddAutoNode("api", "Application API", TopologyNodeKind.Service, groupId: "core")
@@ -75,43 +75,43 @@ public static class ConsumerRenderingExamples {
         SaveExample( "layered-groups", topology.ToSvg(), topology.ToPng());
         var fittedTopologyOptions = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false };
         SaveExample("topology-fit-layered-groups", topology.ToSvg(fittedTopologyOptions), topology.ToPng(fittedTopologyOptions));
-        var longRoute = TopologyChart.Create().WithViewport(1200, 800).WithLegend(null).WithLayout(TopologyLayoutMode.Layered)
-            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight).AddAutoGroup("a", "A").AddAutoGroup("b", "B")
+        var longRoute = TopologyChart.Create().Viewport(new TopologyViewport(1200, 800)).Legend((TopologyLegend?)null).LayoutMode(TopologyLayoutMode.Layered)
+            .LayoutDirection(TopologyLayoutDirection.LeftToRight).AddAutoGroup("a", "A").AddAutoGroup("b", "B")
             .AddAutoNode("one", "One", groupId: "a").AddAutoNode("middle", "Middle", groupId: "a")
             .AddAutoNode("last", "Last", groupId: "a").AddAutoNode("other", "Other", groupId: "b")
             .AddEdge("first", "one", "middle").AddEdge("second", "middle", "last").AddEdge("skip", "one", "last", "Bypass");
         SaveExample( "layered-group-long-edge", longRoute.ToSvg(), longRoute.ToPng());
         SaveExample("topology-fit-layered-group-long-edge", longRoute.ToSvg(fittedTopologyOptions), longRoute.ToPng(fittedTopologyOptions));
-        var reversedGroups = TopologyChart.Create().WithViewport(300, 330).WithLegend(null).WithLayout(TopologyLayoutMode.Layered)
-            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight).AddAutoGroup("b", "B").AddAutoGroup("a", "A")
+        var reversedGroups = TopologyChart.Create().Viewport(new TopologyViewport(300, 330)).Legend((TopologyLegend?)null).LayoutMode(TopologyLayoutMode.Layered)
+            .LayoutDirection(TopologyLayoutDirection.LeftToRight).AddAutoGroup("b", "B").AddAutoGroup("a", "A")
             .AddAutoNode("source", "Source", groupId: "a").AddAutoNode("target", "Target", groupId: "b").AddEdge("link", "source", "target");
         SaveExample( "layered-group-declaration-order", reversedGroups.ToSvg(), reversedGroups.ToPng());
-        var wideGrid = TopologyChart.Create().WithViewport(1200, 260).WithLegend(null).WithLayout(TopologyLayoutMode.GroupGrid)
+        var wideGrid = TopologyChart.Create().Viewport(new TopologyViewport(1200, 260)).Legend((TopologyLegend?)null).LayoutMode(TopologyLayoutMode.GroupGrid)
             .AddAutoGroup("site-a", "Primary authentication and directory services").AddAutoGroup("site-b", "Secondary recovery services")
             .AddAutoNode("dc1", "DC01", groupId: "site-a").AddAutoNode("dns1", "DNS and catalog", groupId: "site-a")
             .AddAutoNode("dc2", "DC02", groupId: "site-b").AddAutoNode("backup", "Recovery coordinator", groupId: "site-b")
             .AddEdge("skip-grid", "dc1", "backup", "Site failover");
         var wideGridOptions = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false };
         SaveExample( "topology-group-grid-wide-short", wideGrid.ToSvg(wideGridOptions), wideGrid.ToPng(wideGridOptions));
-        var growing = TopologyChart.Create().WithViewport(1300, 560).WithLegend(null).WithLayout(TopologyLayoutMode.Layered)
-            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight).AddAutoNode("gateway", "Gateway")
+        var growing = TopologyChart.Create().Viewport(new TopologyViewport(1300, 560)).Legend((TopologyLegend?)null).LayoutMode(TopologyLayoutMode.Layered)
+            .LayoutDirection(TopologyLayoutDirection.LeftToRight).AddAutoNode("gateway", "Gateway")
             .AddAutoNode("identity", "Identity service").AddEdge("request", "gateway", "identity", "HTTPS");
         var growingOptions = new TopologyRenderOptions { FitContentToViewport = true, IncludeTitle = false, IncludeLegend = false, IncludeIconLabels = true };
         SaveExample( "topology-fit-growth", growing.ToSvg(growingOptions), growing.ToPng(growingOptions));
-        var shapedPorts = TopologyChart.Create().WithViewport(900, 360).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
+        var shapedPorts = TopologyChart.Create().Viewport(new TopologyViewport(900, 360)).LayoutMode(TopologyLayoutMode.Manual).Legend((TopologyLegend?)null)
             .AddNode("source", "Source", 70, 90, width: 140, height: 120)
             .AddNode("target", "Target", 650, 90, width: 140, height: 120)
             .AddNodePort("source", "upper", TopologyEdgePort.Right, .2)
             .AddNodePort("target", "lower", TopologyEdgePort.Left, .8)
-            .AddEdge("link", "source", "target", "HTTPS").WithEdgeNamedPorts("link", "upper", "lower");
+            .AddEdge("link", "source", "target", "HTTPS").UpdateEdge("link", e => e.SourcePortId("upper").TargetPortId("lower"));
         shapedPorts.Nodes[0].Shape = TopologyNodeShape.Diamond;
         shapedPorts.Nodes[1].Shape = TopologyNodeShape.Diamond;
         SaveExample("topology-fit-shaped-named-ports", shapedPorts.ToSvg(fittedTopologyOptions), shapedPorts.ToPng(fittedTopologyOptions));
-        var artworkFallback = TopologyChart.Create().WithViewport(460, 240, 8).WithLegend(null)
+        var artworkFallback = TopologyChart.Create().Viewport(new TopologyViewport(460, 240, 8)).Legend((TopologyLegend?)null)
             .AddArtworkNode("fallback", "Artwork fallback caption", TopologyIconArtwork.Image("data:image/png;base64,AA=="),
                 12, 10, width: 88, height: 52);
         SaveExample("topology-fit-artwork-fallback-caption", artworkFallback.ToSvg(fittedTopologyOptions), artworkFallback.ToPng(fittedTopologyOptions));
-        var sharedTrunk = TopologyChart.Create().WithViewport(900, 460).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
+        var sharedTrunk = TopologyChart.Create().Viewport(new TopologyViewport(900, 460)).LayoutMode(TopologyLayoutMode.Manual).Legend((TopologyLegend?)null)
             .AddNode("target", "Service", 700, 180, width: 100, height: 44)
             .AddNode("north", "North input", 100, 60, width: 100, height: 44)
             .AddNode("middle", "Middle input", 100, 180, width: 100, height: 44)
@@ -121,8 +121,8 @@ public static class ConsumerRenderingExamples {
         foreach (var edge in sharedTrunk.Edges) edge.Routing = TopologyEdgeRouting.ObstacleAvoidingOrthogonal;
         var sharedTrunkOptions = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, ShareIncomingTrunks = true };
         SaveExample("topology-fit-shared-trunk", sharedTrunk.ToSvg(sharedTrunkOptions), sharedTrunk.ToPng(sharedTrunkOptions));
-        var groupedRanks = TopologyChart.Create().WithViewport(1400, 620).WithLayout(TopologyLayoutMode.Layered)
-            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight).WithLegend(null)
+        var groupedRanks = TopologyChart.Create().Viewport(new TopologyViewport(1400, 620)).LayoutMode(TopologyLayoutMode.Layered)
+            .LayoutDirection(TopologyLayoutDirection.LeftToRight).Legend((TopologyLegend?)null)
             .AddAutoGroup("group", "Grouped services")
             .AddAutoNode("source-a", "Source A").AddAutoNode("source-b", "Source B")
             .AddAutoNode("group-one", "Grouped one", groupId: "group").AddAutoNode("peer-one", "Peer one")
@@ -132,70 +132,70 @@ public static class ConsumerRenderingExamples {
             .AddEdge("group-to-peer", "group-one", "peer-two").AddEdge("peer-to-group", "peer-one", "group-two")
             .AddEdge("group-target", "group-two", "target-a").AddEdge("peer-target", "peer-two", "target-b");
         SaveExample("topology-layered-ungrouped-rank-compaction", groupedRanks.ToSvg(), groupedRanks.ToPng());
-        var selectedRoute = TopologyChart.Create().WithViewport(560, 320).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
+        var selectedRoute = TopologyChart.Create().Viewport(new TopologyViewport(560, 320)).LayoutMode(TopologyLayoutMode.Manual).Legend((TopologyLegend?)null)
             .AddNode("source", "Source", 70, 130, width: 100, height: 64).AddNode("target", "Target", 390, 130, width: 100, height: 64)
-            .AddEdge("link", "source", "target", "Selected route").WithEdgeWaypoints("link", new ChartPoint(260, 18));
+            .AddEdge("link", "source", "target", "Selected route").EdgeWaypoints("link", new ChartPoint(260, 18));
         var selectedRouteOptions = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false };
         selectedRouteOptions.SelectedEdgeIds.Add("link");
         SaveExample("topology-fit-selected-route-stroke", selectedRoute.ToSvg(selectedRouteOptions), selectedRoute.ToPng(selectedRouteOptions));
-        var namedPorts = TopologyChart.Create().WithViewport(900, 340).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
+        var namedPorts = TopologyChart.Create().Viewport(new TopologyViewport(900, 340)).LayoutMode(TopologyLayoutMode.Manual).Legend((TopologyLegend?)null)
             .AddNode("source", "Source", 50, 70, width: 130, height: 72).AddNode("target", "Target", 390, 70, width: 130, height: 72)
             .AddNodePort("source", "upper", TopologyEdgePort.Right, 0.2).AddNodePort("target", "lower", TopologyEdgePort.Left, 0.8)
-            .AddEdge("link", "source", "target", "HTTPS").WithEdgeNamedPorts("link", "upper", "lower");
+            .AddEdge("link", "source", "target", "HTTPS").UpdateEdge("link", e => e.SourcePortId("upper").TargetPortId("lower"));
         SaveExample("topology-fit-named-ports", namedPorts.ToSvg(fittedTopologyOptions), namedPorts.ToPng(fittedTopologyOptions));
-        var portFanOut = TopologyChart.Create().WithViewport(900, 400).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
+        var portFanOut = TopologyChart.Create().Viewport(new TopologyViewport(900, 400)).LayoutMode(TopologyLayoutMode.Manual).Legend((TopologyLegend?)null)
             .AddNode("source", "Source", 50, 150, width: 120, height: 72)
             .AddNode("upper", "Upper target", 420, 40, width: 120, height: 72)
             .AddNode("lower", "Lower target", 420, 270, width: 120, height: 72)
             .AddEdge("upper-link", "source", "upper", "Primary").AddEdge("lower-link", "source", "lower", "Backup");
         SaveExample("topology-fit-port-fanout", portFanOut.ToSvg(fittedTopologyOptions), portFanOut.ToPng(fittedTopologyOptions));
         foreach (var mode in new[] { TopologyNodeDisplayMode.Tile, TopologyNodeDisplayMode.Icon }) {
-            var badge = TopologyChart.Create().WithViewport(720, 300).WithLayout(TopologyLayoutMode.Layered)
-                .WithLayoutDirection(TopologyLayoutDirection.TopToBottom).WithLegend(null)
+            var badge = TopologyChart.Create().Viewport(new TopologyViewport(720, 300)).LayoutMode(TopologyLayoutMode.Layered)
+                .LayoutDirection(TopologyLayoutDirection.TopToBottom).Legend((TopologyLegend?)null)
                 .AddAutoNode("one", "Database cluster").AddAutoNode("two", "Directory service")
                 .AddAutoNode("three", "Recovery controller").AddEdge("first", "one", "two").AddEdge("second", "two", "three");
             foreach (var node in badge.Nodes) { node.DisplayMode = mode; node.Badge = "CRITICAL STATUS"; }
             SaveExample("topology-fit-external-badge-" + mode.ToString().ToLowerInvariant(), badge.ToSvg(growingOptions), badge.ToPng(growingOptions));
         }
-        var endpointLabels = TopologyChart.Create().WithViewport(900, 360).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
+        var endpointLabels = TopologyChart.Create().Viewport(new TopologyViewport(900, 360)).LayoutMode(TopologyLayoutMode.Manual).Legend((TopologyLegend?)null)
             .AddNode("source", "Source", 120, 100, width: 80, height: 60).AddNode("target", "Target", 330, 100, width: 80, height: 60)
-            .AddEdge("link", "source", "target").WithEdgeEndpointLabels("link", "Long source relationship label", "Long target relationship label");
+            .AddEdge("link", "source", "target").UpdateEdge("link", e => e.SourceLabel("Long source relationship label").TargetLabel("Long target relationship label"));
         SaveExample("topology-fit-endpoint-labels", endpointLabels.ToSvg(fittedTopologyOptions), endpointLabels.ToPng(fittedTopologyOptions));
-        var selectedStroke = TopologyChart.Create().WithViewport(520, 260).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
+        var selectedStroke = TopologyChart.Create().Viewport(new TopologyViewport(520, 260)).LayoutMode(TopologyLayoutMode.Manual).Legend((TopologyLegend?)null)
             .AddGroup("selected-group", "Selected group", 24, 24, 240, 150)
             .AddNode("selected", "Selected service", 30, 30, width: 160, height: 84, groupId: "selected-group");
         var selectedStrokeOptions = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false };
         selectedStrokeOptions.SelectedNodeIds.Add("selected");
         selectedStrokeOptions.SelectedGroupIds.Add("selected-group");
         SaveExample("topology-fit-selected-stroke", selectedStroke.ToSvg(selectedStrokeOptions), selectedStroke.ToPng(selectedStrokeOptions));
-        var fittedCloud = TopologyChart.Create().WithViewport(560, 300).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
+        var fittedCloud = TopologyChart.Create().Viewport(new TopologyViewport(560, 300)).LayoutMode(TopologyLayoutMode.Manual).Legend((TopologyLegend?)null)
             .AddNode("cloud", "Cloud service", 10, 10, width: 180, height: 120);
         fittedCloud.Nodes[0].Shape = TopologyNodeShape.Cloud;
         var fittedCloudOptions = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, IncludeNodeLabels = false };
         SaveExample("topology-fit-cloud-shape", fittedCloud.ToSvg(fittedCloudOptions), fittedCloud.ToPng(fittedCloudOptions));
-        var unwrappedLabel = TopologyChart.Create().WithViewport(520, 260).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
+        var unwrappedLabel = TopologyChart.Create().Viewport(new TopologyViewport(520, 260)).LayoutMode(TopologyLayoutMode.Manual).Legend((TopologyLegend?)null)
             .AddNode("service", "A long service label that stays on one line", 40, 80, width: 260, height: 72);
         var unwrappedOptions = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, WrapNodeLabels = false };
         SaveExample("topology-fit-unwrapped-label", unwrappedLabel.ToSvg(unwrappedOptions), unwrappedLabel.ToPng(unwrappedOptions));
-        var packedGroup = TopologyChart.Create().WithViewport(1000, 520).WithLayout(TopologyLayoutMode.Layered)
-            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight).AddGroup("fixed", "Fixed shell", 0, 0, 520, 360)
+        var packedGroup = TopologyChart.Create().Viewport(new TopologyViewport(1000, 520)).LayoutMode(TopologyLayoutMode.Layered)
+            .LayoutDirection(TopologyLayoutDirection.LeftToRight).AddGroup("fixed", "Fixed shell", 0, 0, 520, 360)
             .AddAutoGroup("automatic", "Automatic shell").AddAutoNode("fixed-node", "Fixed member", groupId: "fixed")
             .AddAutoNode("automatic-node", "Automatic member", groupId: "automatic").AddEdge("link", "fixed-node", "automatic-node");
         SaveExample("topology-layered-single-automatic-group", packedGroup.ToSvg(), packedGroup.ToPng());
-        var reverseFlowGroup = TopologyChart.Create().WithViewport(1000, 520).WithLayout(TopologyLayoutMode.Layered)
-            .WithLayoutDirection(TopologyLayoutDirection.RightToLeft)
+        var reverseFlowGroup = TopologyChart.Create().Viewport(new TopologyViewport(1000, 520)).LayoutMode(TopologyLayoutMode.Layered)
+            .LayoutDirection(TopologyLayoutDirection.RightToLeft)
             .AddGroup("fixed", "Fixed shell", 0, 0, 520, 360).AddAutoGroup("automatic", "Automatic shell")
             .AddAutoNode("fixed-node", "Fixed member", groupId: "fixed").AddAutoNode("automatic-node", "Automatic member", groupId: "automatic");
         SaveExample("topology-layered-rtl-automatic-group", reverseFlowGroup.ToSvg(), reverseFlowGroup.ToPng());
-        var interleavedGroup = TopologyChart.Create().WithViewport(1200, 620).WithLegend(null).WithLayout(TopologyLayoutMode.Layered)
-            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
+        var interleavedGroup = TopologyChart.Create().Viewport(new TopologyViewport(1200, 620)).Legend((TopologyLegend?)null).LayoutMode(TopologyLayoutMode.Layered)
+            .LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddGroup("before", "Explicit before", 300, 0, 220, 300).AddAutoGroup("middle", "Automatic middle")
             .AddGroup("after", "Explicit after", 0, 0, 220, 300)
             .AddNode("before-node", "Before", 350, 90, width: 120, height: 64, groupId: "before").AddAutoNode("middle-node", "Middle", groupId: "middle")
             .AddNode("after-node", "After", 50, 90, width: 120, height: 64, groupId: "after")
             .AddEdge("first", "before-node", "middle-node").AddEdge("second", "middle-node", "after-node");
         SaveExample("topology-layered-interleaved-explicit-groups", interleavedGroup.ToSvg(), interleavedGroup.ToPng());
-        var labelColorModes = TopologyChart.Create().WithViewport(1120, 260).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
+        var labelColorModes = TopologyChart.Create().Viewport(new TopologyViewport(1120, 260)).LayoutMode(TopologyLayoutMode.Manual).Legend((TopologyLegend?)null)
             .AddNode("card", "Card label", 20, 60, width: 150, height: 70).AddNode("shape", "Shape label", 230, 60, width: 150, height: 70)
             .AddNode("icon", "Icon label", 440, 60, width: 150, height: 70).AddNode("tile", "Tile label", 650, 60, width: 150, height: 70)
             .AddNode("diagram", "Diagram label", 860, 60, width: 150, height: 70);
@@ -211,8 +211,8 @@ public static class ConsumerRenderingExamples {
         labelColorOptions.HighlightNodeIds.Add("card");
         SaveExample("topology-label-colors-all-modes", labelColorModes.ToSvg(labelColorOptions), labelColorModes.ToPng(labelColorOptions));
         foreach (var mode in new[] { TopologyNodeDisplayMode.Tile, TopologyNodeDisplayMode.Icon }) {
-            var captions = TopologyChart.Create().WithViewport(520, 150).WithLayout(TopologyLayoutMode.Layered)
-                .WithLayoutDirection(TopologyLayoutDirection.TopToBottom)
+            var captions = TopologyChart.Create().Viewport(new TopologyViewport(520, 150)).LayoutMode(TopologyLayoutMode.Layered)
+                .LayoutDirection(TopologyLayoutDirection.TopToBottom)
                 .AddAutoNode("one", "Primary directory controller")
                 .AddAutoNode("two", "Secondary directory controller")
                 .AddAutoNode("three", "Recovery services controller")
@@ -222,53 +222,53 @@ public static class ConsumerRenderingExamples {
         }
         foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             var suffix = mode.ToString().ToLowerInvariant();
-            var radar = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(600, 369)
-                .WithXLabels("Mail auth", "DNSSEC", "TLS", "CT", "Policy", "Monitoring")
+            var radar = Chart.Create().Theme(VisualTheme.Graphite()).ThemeMode(mode).Size(600, 369)
+                .XLabels("Mail auth", "DNSSEC", "TLS", "CT", "Policy", "Monitoring")
                 .AddRadar("Current", new[] { 78d, 62, 74, 80, 70, 66 }.Select((v, i) => new ChartPoint(i + 1, v)).ToArray())
                 .AddRadar("Target", Enumerable.Range(1, 6).Select(i => new ChartPoint(i, 80)).ToArray());
             SaveExample( "radar-" + suffix, radar.ToSvg(), radar.ToPng());
-            var card = MetricCard.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(330, 150).WithPadding(0)
-                .WithMetric("CPU", "38").WithStatus(Tone.Info).WithSymbol("CPU")
-                .WithMiniSparkline(new[] { 12d, 24, 18, 38, 27, 38 });
+            var card = MetricCard.Create().Theme(VisualTheme.Graphite()).ThemeMode(mode).Size(330, 150).Padding(0)
+                .Metric("CPU", "38").Status(Tone.Info).Symbol("CPU")
+                .MiniSparkline(new[] { 12d, 24, 18, 38, 27, 38 });
             SaveExample( "metric-" + suffix, card.ToSvg(), card.ToPng());
-            var compactMetric = MetricCard.Create().WithTheme(VisualTheme.Graphite().WithTypography(new VisualTypography(subtitleSize: 9)), mode)
-                .WithSize(281, 55).WithPadding(6.5).WithCard(false).WithMetric("Memory", 68, unit: "%").WithStatus(Tone.Success);
+            var compactMetric = MetricCard.Create().Theme(VisualTheme.Graphite().WithTypography(new VisualTypography(subtitleSize: 9))).ThemeMode(mode)
+                .Size(281, 55).Padding(6.5).ShowCard(false).Metric("Memory", 68, unit: "%").Status(Tone.Success);
             SaveExample("metric-compact-" + suffix, compactMetric.ToSvg(), compactMetric.ToPng());
             var markerTheme = VisualTheme.Graphite().WithPalette(ChartColor.FromRgb(210, 30, 45), ChartColor.FromRgb(20, 170, 90), ChartColor.FromRgb(40, 90, 220));
-            var list = ChartList.Create().WithTheme(markerTheme, mode).WithSize(330, 140).WithPadding(0).WithCard(false)
+            var list = ChartList.Create().Theme(markerTheme).ThemeMode(mode).Size(330, 140).Padding(0).ShowCard(false)
                 .AddCheckItem("Backups verified", true, "02:10").AddCheckItem("DR test", false, "due 30 Oct");
             SaveExample( "list-" + suffix, list.ToSvg(), list.ToPng());
             var scaledListTheme = markerTheme.WithTypography(new VisualTypography(dataLabelSize: 18));
-            var scaledList = ChartList.Create().WithTheme(scaledListTheme, mode).WithSize(380, 170).WithMarker(VisualListMarker.Check)
+            var scaledList = ChartList.Create().Theme(scaledListTheme).ThemeMode(mode).Size(380, 170).Marker(VisualListMarker.Check)
                 .AddCheckItem("Backup integrity", true, "verified").AddCheckItem("Recovery exercise", false, "scheduled");
             SaveExample("list-typography-" + suffix, scaledList.ToSvg(), scaledList.ToPng());
-            var bars = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(600, 254)
-                .WithXLabels("Alpha", "Beta", "Gamma").WithDataLabels(true)
+            var bars = Chart.Create().Theme(VisualTheme.Graphite()).ThemeMode(mode).Size(600, 254)
+                .XLabels("Alpha", "Beta", "Gamma").DataLabels(true)
                 .AddBar("Count", new[] { new ChartPoint(1, 26), new ChartPoint(2, 24), new ChartPoint(3, 19) });
             SaveExample( "bars-" + suffix, bars.ToSvg(), bars.ToPng());
-            var horizontal = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(600, 254)
-                .WithXLabels("Alpha", "Beta", "Gamma").WithDataLabels(true)
+            var horizontal = Chart.Create().Theme(VisualTheme.Graphite()).ThemeMode(mode).Size(600, 254)
+                .XLabels("Alpha", "Beta", "Gamma").DataLabels(true)
                 .AddHorizontalBar("Count", new[] { new ChartPoint(1, 26), new ChartPoint(2, 24), new ChartPoint(3, 19) });
-            horizontal.Series[0].WithPointColor(0, ChartColor.FromRgb(255, 0, 0)).WithPointColor(1, ChartColor.FromRgb(0, 180, 0));
+            horizontal.Series[0].PointColor(0, ChartColor.FromRgb(255, 0, 0)).PointColor(1, ChartColor.FromRgb(0, 180, 0));
             SaveExample( "horizontal-" + suffix, horizontal.ToSvg(), horizontal.ToPng());
-            var tree = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(600, 346)
+            var tree = Chart.Create().Theme(VisualTheme.Graphite()).ThemeMode(mode).Size(600, 346)
                 .AddTreemap("Work", new[] { new ChartHierarchyItem("a", "Alpha", value: 3), new ChartHierarchyItem("b", "Beta", value: 2) });
             SaveExample( "treemap-" + suffix, tree.ToSvg(), tree.ToPng());
             var start = new DateTime(2026, 1, 1);
-            var calendar = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(800, 126)
+            var calendar = Chart.Create().Theme(VisualTheme.Graphite()).ThemeMode(mode).Size(800, 126)
                 .AddCalendarHeatmap("Sign-ins", Enumerable.Range(0, 126).Select(i => new ChartCalendarHeatmapItem(start.AddDays(i), i % 5 + 1)));
             SaveExample( "calendar-" + suffix, calendar.ToSvg(), calendar.ToPng());
             var largeText = VisualTheme.Graphite().WithTypography(new VisualTypography(dataLabelSize: 24));
-            var table = ChartTable.Create().WithTheme(largeText, mode).WithSize(600, 339)
-                .WithColumns("Check", "State").AddRow("Backups", "Verified").AddRow("Recovery test", "Scheduled");
-            table.ConfigureRow(0, row => row.Cells[1].WithBadge("Verified", Tone.Success));
+            var table = ChartTable.Create().Theme(largeText).ThemeMode(mode).Size(600, 339)
+                .Columns("Check", "State").AddRow("Backups", "Verified").AddRow("Recovery test", "Scheduled");
+            table.UpdateRow(0, row => row.Cells[1].Badge("Verified", Tone.Success));
             SaveExample( "table-typography-" + suffix, table.ToSvg(), table.ToPng());
-            var bullet = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(600, 231).AddBullet("Coverage", 72, 85);
+            var bullet = Chart.Create().Theme(VisualTheme.Graphite()).ThemeMode(mode).Size(600, 231).AddBullet("Coverage", 72, 85);
             SaveExample( "bullet-" + suffix, bullet.ToSvg(), bullet.ToPng());
         }
         var timelineStart = new DateTime(2026, 9, 24, 0, 0, 0, DateTimeKind.Utc);
-        var timeline = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(800, 379).WithLegend(false).WithAxes(true).WithYAxisVisible(true)
-            .WithStateCategories(new VisualStatusTokens().SeverityCategories())
+        var timeline = Chart.Create().Theme(VisualTheme.Graphite()).Size(800, 379).Legend(false).Axes(true).YAxis(y => y.Visible(true))
+            .StateCategories(new VisualStatusTokens().SeverityCategories())
             .AddGanttLane("Escalation lane", new[] { new ChartGanttLaneItem(timelineStart, timelineStart.AddMinutes(2), "high", "Investigate") })
             .AddGanttLane("Directory replication", new[] { new ChartGanttLaneItem(timelineStart, timelineStart.AddDays(2), "low", "Replication window") });
         for (var index = 0; index < 3; index++)

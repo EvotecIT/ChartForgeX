@@ -40,7 +40,7 @@ public sealed partial class Chart : IVisualRenderable {
         foreach (var series in view.Series) series.ResolveFormatting(view);
         ChartTimeSpacingPreparation.Capture(view);
         view.PolarPreparation = ChartPolarPreparation.Resolve(view, polarViewport, requirePolar);
-        if (!view.Options.HeatmapNaturalHeight || viewport != null || view.Series.Count == 0 || view.Series.Any(series => series.Kind != ChartSeriesKind.Heatmap))
+        if (!view.Options.Heatmap.NaturalHeight || viewport != null || view.Series.Count == 0 || view.Series.Any(series => series.Kind != ChartSeriesKind.Heatmap))
             return view.PrepareScene(context, viewport, fullDomain);
         // Measure the real frame and group headers. Repeat only while the caller permits growth and rows still need space.
         for (var attempt = 0; attempt < 5; attempt++) {
@@ -49,7 +49,7 @@ public sealed partial class Chart : IVisualRenderable {
             if (!plot.HasValue) return prepared;
             var rows = view.Series.ToArray();
             var rowLayout = ChartHeatmapRowLayout.Build(rows, plot.Value.Height, context.Theme.Typography.AxisSize);
-            var gap = Math.Max(0, view.Options.HeatmapCellGap ?? 2);
+            var gap = Math.Max(0, view.Options.Heatmap.CellGap ?? 2);
             var wanted = rowLayout.HeadersHeight + rows.Length * 12 + Math.Max(0, rows.Length - 1) * gap;
             if (wanted <= plot.Value.Height + .001) return prepared;
             var height = context.Layout.Size.Height + Math.Ceiling((wanted - plot.Value.Height) * 1.25 + 1);
@@ -80,7 +80,7 @@ public sealed partial class Chart : IVisualRenderable {
         context = new VisualRenderContext(context.Layout, context.Theme, context.ThemeMode, frame, context.Font).WithNativeTextCapture(textCapture).WithRequestsOf(context);
         var builder = new VisualSceneBuilder(context.Layout.Size, context.Font, textCapture) { MinimumTextSize = context.Theme.Typography.MinimumTextSize };
         var colors = context.Theme.Resolve(context.ThemeMode);
-        var mapLegendInset = family == VisualChartFamily.Map && !sourceFrame.HasExplicitLegendPosition && !Options.HasExplicitLegendPosition
+        var mapLegendInset = family == VisualChartFamily.Map && !sourceFrame.HasExplicitLegendPosition && !Options.Legend.HasExplicitPosition
             ? VisualMapCompiler.ResolveTileLegendInset(this, context, builder, entries, colorScales.Map) : null;
         var content = VisualFrameLayout.Build(builder, context, mapLegendInset == null ? entries : Array.Empty<VisualLegendEntry>(), out var legendHeight);
         var projection = VisualChartCompiler.Build(family, this, context, builder, content, axisLabels, bubbleScale, colorScales, legendHeight, viewport, mapLegendInset, fullDomain);

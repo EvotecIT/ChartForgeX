@@ -10,7 +10,7 @@ namespace ChartForgeX.Tests;
 public sealed class ChartDescriptionLabelsTests {
     [Fact]
     public void Defaults_KeepTheEnglishText() {
-        var lines = Chart.Create().WithTitle("Traffic").AddLine("Inbound", Points(1, 2)).AddLine("Outbound", Points(2, 1));
+        var lines = Chart.Create().Title("Traffic").AddLine("Inbound", Points(1, 2)).AddLine("Outbound", Points(2, 1));
         Assert.Equal("Traffic with 2 data series: Inbound, Outbound.", Desc(lines));
         var untitled = Chart.Create();
         Assert.Equal("Chart with no data series.", Desc(untitled));
@@ -27,7 +27,7 @@ public sealed class ChartDescriptionLabelsTests {
     public void CalendarFacts_CountDaysAtZeroApartFromDaysWithAValue() {
         // A day at zero is drawn neutral: a day in the data without changes, not a day with a value.
         var facts = new List<ChartDescriptionFacts>();
-        _ = Chart.Create().ConfigureLabels(labels => labels.AccessibleTextFormatter = item => {
+        _ = Chart.Create().Labels(labels => labels.AccessibleTextFormatter = item => {
             facts.Add(item);
             return null;
         }).AddCalendarHeatmap("Changes", new[] {
@@ -45,8 +45,8 @@ public sealed class ChartDescriptionLabelsTests {
     [Fact]
     public void AccessibleTextFormatter_ReceivesTheFactsAndWritesTheDescription() {
         ChartDescriptionFacts? seen = null;
-        var chart = Chart.Create().WithTitle("Verkehr").AddLine("Eingang", Points(1, 2)).AddLine("Ausgang", Points(2, 1))
-            .ConfigureLabels(labels => labels.AccessibleTextFormatter = facts => {
+        var chart = Chart.Create().Title("Verkehr").AddLine("Eingang", Points(1, 2)).AddLine("Ausgang", Points(2, 1))
+            .Labels(labels => labels.AccessibleTextFormatter = facts => {
                 seen = facts;
                 return facts.Kind == ChartDescriptionKind.Series ? facts.Title + " mit " + facts.Count + " Datenreihen: " + string.Join(", ", facts.SeriesNames) + "." : null;
             });
@@ -65,7 +65,7 @@ public sealed class ChartDescriptionLabelsTests {
             return null;
         }
 
-        _ = Calendar().ConfigureLabels(labels => labels.AccessibleTextFormatter = Collect).ToSvg();
+        _ = Calendar().Labels(labels => labels.AccessibleTextFormatter = Collect).ToSvg();
         var calendar = facts.Single(item => item.Kind == ChartDescriptionKind.CalendarHeatmap);
         Assert.Equal(new DateTime(2026, 9, 7), calendar.FirstDate);
         Assert.Equal(new DateTime(2026, 9, 8), calendar.LastDate);
@@ -75,7 +75,7 @@ public sealed class ChartDescriptionLabelsTests {
         Assert.Equal(5, calendarGroup.MissingCount);
 
         facts.Clear();
-        _ = RegionMap().ConfigureLabels(labels => labels.AccessibleTextFormatter = Collect).ToSvg();
+        _ = RegionMap().Labels(labels => labels.AccessibleTextFormatter = Collect).ToSvg();
         foreach (var kind in new[] { ChartDescriptionKind.RegionMap, ChartDescriptionKind.RegionMapGroup }) {
             var region = facts.Single(item => item.Kind == kind);
             Assert.Equal("United States states", region.MapName);
@@ -85,7 +85,7 @@ public sealed class ChartDescriptionLabelsTests {
         }
 
         facts.Clear();
-        _ = Chart.Create().ConfigureLabels(labels => labels.AccessibleTextFormatter = Collect).ToSvg();
+        _ = Chart.Create().Labels(labels => labels.AccessibleTextFormatter = Collect).ToSvg();
         Assert.Null(facts.Single().Title);
         Assert.Equal(ChartDescriptionKind.NoSeries, facts.Single().Kind);
     }
@@ -101,41 +101,41 @@ public sealed class ChartDescriptionLabelsTests {
             };
         }
 
-        var dotted = Chart.Create().ConfigureLabels(labels => labels.AccessibleTextFormatter = Polish)
+        var dotted = Chart.Create().Labels(labels => labels.AccessibleTextFormatter = Polish)
             .AddDottedMap("Biura", new[] { new ChartMapPoint("Warszawa", 21, 52), new ChartMapPoint("Kraków", 19.9, 50), new ChartMapPoint("Wrocław", 17, 51.1) });
         Assert.Equal("Biura: 3 punkty", AriaLabel(dotted, "dotted-map"));
         Assert.Contains("dotted world map for Biura with 3 highlighted points.", Desc(dotted), StringComparison.Ordinal);
 
-        var tiles = Chart.Create().ConfigureLabels(labels => labels.AccessibleTextFormatter = Polish)
+        var tiles = Chart.Create().Labels(labels => labels.AccessibleTextFormatter = Polish)
             .AddTileMap("Biura", ChartTileMapCatalog.Get("us-states"), new[] { new ChartRegionMapItem("CA", 1) });
         Assert.StartsWith("Biura: 1/", AriaLabel(tiles, "tile-map"), StringComparison.Ordinal);
     }
 
     [Fact]
     public void Formatter_WhiteSpaceFallsBackAndAnExplicitDescriptionIsNotFormatted() {
-        Assert.Equal("Chart with 1 data series: A.", Desc(Chart.Create().AddLine("A", Points(1, 2)).ConfigureLabels(labels => labels.AccessibleTextFormatter = _ => "  ")));
+        Assert.Equal("Chart with 1 data series: A.", Desc(Chart.Create().AddLine("A", Points(1, 2)).Labels(labels => labels.AccessibleTextFormatter = _ => "  ")));
 
         var calls = 0;
         var chart = Chart.Create().AddLine("A", Points(1, 2))
-            .ConfigureLabels(labels => labels.AccessibleTextFormatter = _ => {
+            .Labels(labels => labels.AccessibleTextFormatter = _ => {
                 calls++;
                 return "formatted";
             })
-            .ConfigureAccessibility(accessibility => accessibility.Description = "explicit");
+            .Accessibility(accessibility => accessibility.Description = "explicit");
         Assert.Equal("explicit", Desc(chart));
         Assert.Equal(0, calls);
     }
 
     [Fact]
     public void UntitledChartAndPageLanguage_AreLocalized() {
-        var chart = RegionMap().WithTitle(string.Empty)
-            .ConfigureLabels(labels => labels.UntitledChart = "Diagramm")
-            .ConfigureAccessibility(accessibility => accessibility.Language = "de");
+        var chart = RegionMap().Title(string.Empty)
+            .Labels(labels => labels.UntitledChart = "Diagramm")
+            .Accessibility(accessibility => accessibility.Language = "de");
         Assert.Equal("Diagramm", Element(chart, "title").Value);
         var html = Html(chart);
         Assert.Contains("<title>Diagramm</title>", html, StringComparison.Ordinal);
         Assert.Contains("<html lang=\"de\">", html, StringComparison.Ordinal);
-        Assert.Throws<ArgumentException>(() => Chart.Create().ConfigureLabels(labels => labels.UntitledChart = " "));
+        Assert.Throws<ArgumentException>(() => Chart.Create().Labels(labels => labels.UntitledChart = " "));
     }
 
     [Fact]
@@ -151,12 +151,12 @@ public sealed class ChartDescriptionLabelsTests {
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartDescriptionFacts(ChartDescriptionKind.RegionMap, null, names, 0, -1));
     }
 
-    private static Chart Calendar() => Chart.Create().WithTitle("Changes").AddCalendarHeatmap("Days", new[] {
+    private static Chart Calendar() => Chart.Create().Title("Changes").AddCalendarHeatmap("Days", new[] {
         new ChartCalendarHeatmapItem(new DateTime(2026, 9, 7), 1),
         new ChartCalendarHeatmapItem(new DateTime(2026, 9, 8), 3)
     });
 
-    private static Chart RegionMap() => Chart.Create().WithTitle("Coverage").WithMapLabels(false)
+    private static Chart RegionMap() => Chart.Create().Title("Coverage").Map(m => m.ShowLabels(false))
         .AddRegionMap("Sites", ChartMapCatalog.Get("us-states"), new[] { new ChartRegionMapItem("CA", 1), new ChartRegionMapItem("NY", 2) });
 
     private static ChartPoint[] Points(double first, double second) => new[] { new ChartPoint(0, first), new ChartPoint(1, second) };

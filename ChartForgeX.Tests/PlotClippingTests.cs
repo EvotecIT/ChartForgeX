@@ -17,7 +17,7 @@ public sealed class PlotClippingTests {
             if (x >= 40 && x < 200 && y >= 40 && y < 160) continue;
             Assert.Equal(0, image.Pixels[(y * image.Width + x) * 4 + 3]);
         }
-        chart.WithPlotClipping(false);
+        chart.ClipMarksToPlot(false);
         image = svg ? SvgRasterizer.ToImage(chart.ToSvg()) : chart.ToRgbaImage();
         Assert.Contains(Enumerable.Range(0, 30), y => image.Pixels[(y * image.Width + 120) * 4 + 3] > 0);
     }
@@ -27,7 +27,7 @@ public sealed class PlotClippingTests {
     [InlineData(true)]
     public void EdgeMarkersSurviveButOutsideCentersAreDropped(bool svg) {
         var chart = CreateChart().AddScatter("edge", new[] { new ChartPoint(0, 5), new ChartPoint(-1, 5) }, ChartColors.Red);
-        chart.Series[0].ConfigureMarkers(markers => markers.Radius = 3);
+        chart.Series[0].Markers(markers => markers.Radius = 3);
         var image = svg ? SvgRasterizer.ToImage(chart.ToSvg()) : chart.ToRgbaImage();
         Assert.True(image.Pixels[(100 * image.Width + 38) * 4 + 3] > 0);
         Assert.Equal(0, image.Pixels[(100 * image.Width + 24) * 4 + 3]);
@@ -36,9 +36,9 @@ public sealed class PlotClippingTests {
     }
 
     private static Chart CreateChart() {
-        var chart = Chart.Create().WithSize(240, 200).WithPadding(40, 40, 40, 40)
-            .WithHeader(false).WithCard(false).WithPlotBackground(false).WithLegend(false)
-            .WithTransparentBackground().WithXAxisBounds(0, 10).WithYAxisBounds(0, 10);
+        var chart = Chart.Create().Size(240, 200).Padding(40, 40, 40, 40)
+            .ShowHeader(false).ShowCard(false).ShowPlotBackground(false).Legend(false)
+            .TransparentBackground().XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10));
         chart.Options.ShowAxes = false; chart.Options.ShowGrid = false; chart.Options.Theme = chart.Options.Theme.Configure(builder => { builder.MarkerRadius = 0; });
         return chart;
     }

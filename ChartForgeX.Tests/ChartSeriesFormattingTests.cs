@@ -36,13 +36,13 @@ public sealed class ChartSeriesFormattingTests {
     [InlineData("schedule", true)]
     [InlineData("packed", true)]
     public void FamilyPreparationCapturesLabelsAndPlainTextTooltips(string family, bool visibleLabel) {
-        var chart = Family(family).WithSize(1000, 700).WithLegend(false).WithDataLabels();
+        var chart = Family(family).Size(1000, 700).Legend(false).DataLabels();
         var series = chart.Series[0];
         var prefix = family == "bullet" ? "measured-label-" : "label-";
         var labels = new List<ChartValueContext>();
         var tips = new List<int>();
-        series.WithDataLabelFormatter(context => { labels.Add(context); return prefix + context.Index; })
-            .WithTooltipFormatter(context => { tips.Add(context.Index); return "tip <&> " + context.Index; });
+        series.DataLabelBy(context => { labels.Add(context); return prefix + context.Index; })
+            .TooltipBy(context => { tips.Add(context.Index); return "tip <&> " + context.Index; });
 
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var svg = XDocument.Parse(prepared.ToSvg());
@@ -69,8 +69,8 @@ public sealed class ChartSeriesFormattingTests {
             Assert.Contains(svg.Descendants(), element => element.Name.LocalName == "text" && element.Value == "/ 60");
         }
         var calls = labels.Count;
-        var authored = Family(family).WithSize(1000, 700).WithLegend(false).WithDataLabels();
-        for (var index = 0; index < series.ObservationCount; index++) authored.Series[0].WithPointLabel(index, prefix + index);
+        var authored = Family(family).Size(1000, 700).Legend(false).DataLabels();
+        for (var index = 0; index < series.ObservationCount; index++) authored.Series[0].PointLabel(index, prefix + index);
         var explicitCaptions = authored.Prepare(VisualExportRequest.ForChart(authored).Context);
         Assert.Equal(explicitCaptions.ToPng(), prepared.ToPng());
         Assert.Equal(XDocument.Parse(explicitCaptions.ToSvg()).Descendants().Where(element => element.Name.LocalName == "text").Select(element => element.Value),
@@ -84,8 +84,8 @@ public sealed class ChartSeriesFormattingTests {
     [Fact]
     public void FlowFormatterReceivesAuthoredLinkWeightAndNamesWithoutReplacingNodeText() {
         var chart = Family("sankey"); var calls = 0;
-        chart.Series[0].WithDataLabelFormatter(context => context.Datum is ChartFlowLink ? "flow-caption" : null)
-            .WithTooltipFormatter(context => {
+        chart.Series[0].DataLabelBy(context => context.Datum is ChartFlowLink ? "flow-caption" : null)
+            .TooltipBy(context => {
                 if (context.Datum is not ChartFlowLink) return null;
                 var link = context.GetDatum<ChartFlowLink>(); calls++;
                 Assert.Equal("ab", link.Id);
@@ -108,16 +108,16 @@ public sealed class ChartSeriesFormattingTests {
 
     [Fact]
     public void NullFallsBackEmptySuppressesAndDetachedExportsNeverReinvokeCallbacks() {
-        var chart = Chart.Create().WithSize(900, 500).WithLegend(false).WithDataLabels()
+        var chart = Chart.Create().Size(900, 500).Legend(false).DataLabels()
             .AddBar("Orders", new[] { new ChartPoint(1, 11), new ChartPoint(2, 22), new ChartPoint(3, 33) });
-        var series = chart.Series[0]; series.WithPointLabel(0, "authored");
+        var series = chart.Series[0]; series.PointLabel(0, "authored");
         var prefix = "first"; var calls = 0;
-        series.WithDataLabelFormatter(context => { calls++; return context.Index == 0 ? null : context.Index == 1 ? "" : prefix; })
-            .WithTooltipFormatter(context => context.Index == 0 ? null : context.Index == 1 ? "" : prefix + " <script>");
+        series.DataLabelBy(context => { calls++; return context.Index == 0 ? null : context.Index == 1 ? "" : prefix; })
+            .TooltipBy(context => context.Index == 0 ? null : context.Index == 1 ? "" : prefix + " <script>");
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         prefix = "later";
-        series.WithDataLabelFormatter(_ => throw new InvalidOperationException("Must not execute during export"));
-        series.WithTooltipFormatter(_ => throw new InvalidOperationException("Must not execute during export"));
+        series.DataLabelBy(_ => throw new InvalidOperationException("Must not execute during export"));
+        series.TooltipBy(_ => throw new InvalidOperationException("Must not execute during export"));
 
         var svg = XDocument.Parse(prepared.ToSvg());
         var text = string.Join("|", svg.Descendants().Where(element => element.Name.LocalName == "text").Select(element => element.Value));
@@ -135,20 +135,20 @@ public sealed class ChartSeriesFormattingTests {
 
     [Fact]
     public void ContextUsesScalarFractionsAndCompleteTypedCompoundObservations() {
-        var pie = Chart.Create().WithXLabels("Small", "Large").AddPie("Share", new[] { new ChartPoint(1, 1), new ChartPoint(2, 3) });
+        var pie = Chart.Create().XLabels("Small", "Large").AddPie("Share", new[] { new ChartPoint(1, 1), new ChartPoint(2, 3) });
         var seen = new List<ChartValueContext>();
-        pie.Series[0].WithDataLabelFormatter(context => { seen.Add(context); return null; });
+        pie.Series[0].DataLabelBy(context => { seen.Add(context); return null; });
         _ = pie.Prepare(VisualExportRequest.ForChart(pie).Context);
         Assert.Equal(new[] { "Small", "Large" }, seen.Select(context => context.Category));
         Assert.Equal(new double?[] { 1, 3 }, seen.Select(context => context.Value));
         Assert.Equal(new double?[] { .25, .75 }, seen.Select(context => context.Percent));
         Assert.Equal(3, seen[1].GetDatum<ChartPoint>().Y);
         Assert.Throws<InvalidOperationException>(() => seen[1].GetDatum<ChartInterval>());
-        pie.Series[0].WithName("Renamed");
+        pie.Series[0].Name("Renamed");
         Assert.Equal("Share", seen[0].Series.Name);
 
         var range = Family("range"); ChartValueContext? compound = null;
-        range.Series[0].WithTooltipFormatter(context => { compound = context; return null; });
+        range.Series[0].TooltipBy(context => { compound = context; return null; });
         _ = range.Prepare(VisualExportRequest.ForChart(range).Context);
         Assert.NotNull(compound);
         Assert.Null(compound.Value);
@@ -160,21 +160,21 @@ public sealed class ChartSeriesFormattingTests {
             new ChartHierarchyItem("root", "Root"), new ChartHierarchyItem("leaf", "Leaf", "root", 9)
         });
         var sizes = new List<double?>();
-        hierarchy.Series[0].WithDataLabelFormatter(context => { sizes.Add(context.Value); return null; });
+        hierarchy.Series[0].DataLabelBy(context => { sizes.Add(context.Value); return null; });
         _ = hierarchy.Prepare(VisualExportRequest.ForChart(hierarchy).Context);
         Assert.Equal(new double?[] { 9, 9 }, sizes);
 
-        var box = Chart.Create().WithXLabels(new[] { new ChartAxisLabel(42, "Budget") })
+        var box = Chart.Create().XLabels(new[] { new ChartAxisLabel(42, "Budget") })
             .AddBoxPlot("Boxes", new[] { new ChartBoxPlot(42, 1, 2, 3, 4, 5) });
         var boxed = CaptureContext(box);
         Assert.Equal("Budget", boxed.Category);
         Assert.Null(boxed.Value);
         Assert.Equal(42, boxed.GetDatum<ChartBoxPlot>().X);
 
-        var progress = Chart.Create().WithProgressMaximum(200).AddSeries(new ChartSeries(new ChartSeriesId("p"), "M",
+        var progress = Chart.Create().Progress(p => p.Max(200)).AddSeries(new ChartSeries(new ChartSeriesId("p"), "M",
             ChartSeriesKind.ProgressBar, new[] { new ChartPoint(1, 30) }));
         Assert.Equal(.15, CaptureContext(progress).Percent);
-        var ring = Chart.Create().WithProgressMaximum(200).AddProgressRing("M", new[] { new ChartPoint(1, 30) });
+        var ring = Chart.Create().Progress(p => p.Max(200)).AddProgressRing("M", new[] { new ChartPoint(1, 30) });
         Assert.Equal(.3, CaptureContext(ring).Percent);
         var independent = Chart.Create().AddProgressBars("M", new[] { new ChartProgressItem("A", 30, 20, 60) }, 200);
         Assert.Equal(.25, CaptureContext(independent).Percent!.Value, 12);
@@ -183,7 +183,7 @@ public sealed class ChartSeriesFormattingTests {
             ChartWaterfallItem.OpeningBalance(1, 40), ChartWaterfallItem.Delta(2, -5), ChartWaterfallItem.Total(3)
         });
         var balances = new List<double?>();
-        waterfall.Series[0].WithDataLabelFormatter(context => { balances.Add(context.Value); return null; });
+        waterfall.Series[0].DataLabelBy(context => { balances.Add(context.Value); return null; });
         _ = waterfall.Prepare(VisualExportRequest.ForChart(waterfall).Context);
         Assert.Equal(new double?[] { 40, -5, 35 }, balances);
     }
@@ -191,9 +191,9 @@ public sealed class ChartSeriesFormattingTests {
     [Fact]
     public void MutableFamilyDatumCannotChangeAnotherCallbackOrTheAuthoredLayer() {
         var chart = Family("layer"); var series = chart.Series[0]; ChartValueContext? retained = null;
-        series.WithDataLabelFormatter(context => {
+        series.DataLabelBy(context => {
             retained = context; context.GetDatum<ChartRadialLayer>().Value = 99; return null;
-        }).WithTooltipFormatter(context => {
+        }).TooltipBy(context => {
             Assert.Equal(30, context.GetDatum<ChartRadialLayer>().Value);
             Assert.Equal(.3, context.Percent); return null;
         });
@@ -209,11 +209,11 @@ public sealed class ChartSeriesFormattingTests {
         var id = new ChartSeriesId("orders");
         var series = new ChartSeries(id, "Orders", ChartSeriesKind.Bar,
             new[] { new ChartPoint(1, 10), new ChartPoint(2, 20) })
-            .WithObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("second") });
-        var chart = Chart.Create().WithLegend(false).WithDataLabels().AddSeries(series);
+            .ObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("second") });
+        var chart = Chart.Create().Legend(false).DataLabels().AddSeries(series);
         var labels = 0; var tooltips = 0; var hiddenText = "hidden-a";
-        series.WithDataLabelFormatter(context => { labels++; return context.Index == 0 ? hiddenText : "retained"; })
-            .WithTooltipFormatter(context => { tooltips++; return "tip-" + context.Index; });
+        series.DataLabelBy(context => { labels++; return context.Index == 0 ? hiddenText : "retained"; })
+            .TooltipBy(context => { tooltips++; return "tip-" + context.Index; });
         var context = VisualExportRequest.ForChart(chart).Context;
         var visibility = new ChartVisibilityView(new[] { ChartVisibilityTarget.Observation(id, new ChartObservationId("first")) }, ChartVisibilityLayout.Reflow);
         var first = chart.PrepareVisibility(context, visibility);
@@ -227,21 +227,21 @@ public sealed class ChartSeriesFormattingTests {
         var firstCapture = first.Scene.VisibilityCapture!; var secondCapture = second.Scene.VisibilityCapture!;
         Assert.NotEqual(firstCapture.SourceKey, secondCapture.SourceKey);
         Assert.Contains("hidden-b", secondCapture.ReflowSource!.CanonicalFacts(context));
-        series.WithDataLabelFormatter(_ => throw new InvalidOperationException("Must not be retained"))
-            .WithTooltipFormatter(_ => throw new InvalidOperationException("Must not be retained"));
+        series.DataLabelBy(_ => throw new InvalidOperationException("Must not be retained"))
+            .TooltipBy(_ => throw new InvalidOperationException("Must not be retained"));
         _ = firstCapture.ReflowSource!.CreateNativeView(visibility).Prepare(context).ToSvg();
         Assert.Equal(4, labels); Assert.Equal(4, tooltips);
     }
 
     [Fact]
     public void HiddenCaptionsStillEvaluateAndFailureLeavesAuthoredPresentationUnchanged() {
-        var chart = Family("line").WithDataLabels(false);
-        var series = chart.Series[0]; series.WithPointLabel(0, "keep"); var calls = 0;
-        series.WithDataLabelFormatter(_ => { calls++; return "captured"; });
+        var chart = Family("line").DataLabels(false);
+        var series = chart.Series[0]; series.PointLabel(0, "keep"); var calls = 0;
+        series.DataLabelBy(_ => { calls++; return "captured"; });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Equal(series.ObservationCount, calls);
         Assert.DoesNotContain(XDocument.Parse(prepared.ToSvg()).Descendants(), element => element.Name.LocalName == "text" && element.Value == "captured");
-        series.WithTooltipFormatter(_ => throw new InvalidOperationException("formatter failure"));
+        series.TooltipBy(_ => throw new InvalidOperationException("formatter failure"));
         var failure = Assert.Throws<InvalidOperationException>(() => chart.Prepare(VisualExportRequest.ForChart(chart).Context));
         Assert.Equal("formatter failure", failure.Message);
         Assert.Equal(new string?[] { "keep" }, series.PointLabels);
@@ -251,9 +251,9 @@ public sealed class ChartSeriesFormattingTests {
     [InlineData(ChartChordLabelContent.LabelAndValue)]
     [InlineData(ChartChordLabelContent.LabelAndTotals)]
     public void ChordFormatterReplacesTheCompleteCaptionAndEmptySuppressesGeometry(ChartChordLabelContent content) {
-        var chart = Family("chord").WithSize(1000, 700).WithLegend(false)
-            .ConfigureChord(options => options.LabelContent = content);
-        chart.Series[0].WithDataLabelFormatter(context => context.Index == 0 ? "Sent twenty" : "");
+        var chart = Family("chord").Size(1000, 700).Legend(false)
+            .Chord(options => options.LabelContent = content);
+        chart.Series[0].DataLabelBy(context => context.Index == 0 ? "Sent twenty" : "");
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var svg = XDocument.Parse(prepared.ToSvg());
         var caption = Assert.Single(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "chord-node-label");
@@ -270,11 +270,11 @@ public sealed class ChartSeriesFormattingTests {
     public void PresentationCopiesKeepSeriesOrdinalsForLegendPaintAndLabelIdentity(string family) {
         var chart = family == "difference"
             ? Chart.Create().AddDifferenceArea("Compared", new[] { new ChartDifferencePoint(1, 30, 20), new ChartDifferencePoint(2, 10, 20) })
-            : Family("schedule").WithDataLabels();
-        chart.WithLegend(true);
+            : Family("schedule").DataLabels();
+        chart.Legend(true);
         var context = VisualExportRequest.ForChart(chart).Context;
         var baseline = XDocument.Parse(chart.Prepare(context).ToSvg());
-        chart.Series[0].WithTooltipFormatter(_ => null);
+        chart.Series[0].TooltipBy(_ => null);
         var prepared = chart.Prepare(context);
         var svg = XDocument.Parse(prepared.ToSvg());
         if (family == "difference") {
@@ -292,7 +292,7 @@ public sealed class ChartSeriesFormattingTests {
     }
 
     private static Chart Family(string family) {
-        var chart = Chart.Create().WithXLabels("A", "B");
+        var chart = Chart.Create().XLabels("A", "B");
         var points = new[] { new ChartPoint(1, 30), new ChartPoint(2, 60) };
         var nodes = new[] { new ChartNode("a", "A"), new ChartNode("b", "B") };
         var flow = new[] { new ChartFlowLink("ab", "a", "b", 20) };
@@ -334,7 +334,7 @@ public sealed class ChartSeriesFormattingTests {
 
     private static ChartValueContext CaptureContext(Chart chart) {
         ChartValueContext? captured = null;
-        chart.Series[0].WithDataLabelFormatter(context => { captured = context; return null; });
+        chart.Series[0].DataLabelBy(context => { captured = context; return null; });
         _ = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         return Assert.IsType<ChartValueContext>(captured);
     }

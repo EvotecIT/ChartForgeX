@@ -177,11 +177,11 @@ public static partial class MermaidTopologyRendering {
     private static TopologyChart CreateTopology(MermaidTopologyRenderOptions options, string defaultId, string title, TopologyLayoutMode layout, TopologyLayoutDirection direction) {
         var id = string.IsNullOrWhiteSpace(options.Id) ? defaultId : options.Id!.Trim();
         return TopologyChart.Create()
-            .WithId(id)
-            .WithTitle(title)
-            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
-            .WithViewport(options.Width, options.Height, options.Padding)
-            .WithLayout(layout, direction);
+            .Id(id)
+            .Title(title)
+            .Subtitle(MermaidHeading.Subtitle(options.Subtitle))
+            .Viewport(new TopologyViewport(options.Width, options.Height, options.Padding))
+            .LayoutMode(layout).LayoutDirection(direction);
     }
 
     private static VisualArtifact ToArtifact(MermaidDocument document, TopologyChart topology, string firstMetric, int firstValue, string secondMetric, int secondValue) {

@@ -29,8 +29,8 @@ public sealed class NativeLayeredValueTransitionTests {
         Assert.Equal(4, frames[1].Scene.Nodes.Count(node => node.Role == "layered-radial-layer-cap"));
         Assert.Contains(frames[1].Regions, region => region.Id == "series-0-center-value" && region.Label == (index == 2 ? "50" : "42"));
         var nativeSvg = frames.Select(frame => frame.ToSvg("detached-radial")).ToArray(); var nativePng = frames.Select(frame => frame.ToPng()).ToArray();
-        chart.Series[0].RadialLayers[index].WithValue(1).WithAngles(30, 180).WithGeometry(.5, .25).WithColor(ChartColor.FromHex("#FF0000"));
-        chart.WithFontFamily("Later missing font").WithValueFormat(ChartValueFormat.Custom(_ => "Changed"));
+        chart.Series[0].RadialLayers[index].Value(1).StartAngleDegrees(30).SweepAngleDegrees(180).RadiusRatio(.5).StrokeRatio(.25).Color(ChartColor.FromHex("#FF0000"));
+        chart.FontFamily("Later missing font").ValueFormat(ChartValueFormat.Custom(_ => "Changed"));
         try {
             FontRegistry.Clear(); var retained = VisualValueCapture.Frames(from.PreparedVisual, to.PreparedVisual, 3);
             Assert.Equal(nativeSvg, retained.Select(frame => frame.ToSvg("detached-radial")));
@@ -51,13 +51,13 @@ public sealed class NativeLayeredValueTransitionTests {
         var unchanged = before.PreparedVisual.ToSvg();
         var changedPolicy = Model(760, false, 2, 80, family); changedPolicy.Series[0].RadialLayers[1].SeparatorCount = 4;
         Assert.Throws<NotSupportedException>(() => renderer.PrepareValueTransitionJson(before, renderer.PrepareSection(changedPolicy), 3));
-        changedPolicy = Model(760, false, 2, 80, family); changedPolicy.Series[0].RadialLayers[1].WithColor(ChartColor.FromHex("#FF0000"));
+        changedPolicy = Model(760, false, 2, 80, family); changedPolicy.Series[0].RadialLayers[1].Color(ChartColor.FromHex("#FF0000"));
         Assert.Throws<NotSupportedException>(() => renderer.PrepareValueTransitionJson(before, renderer.PrepareSection(changedPolicy), 3));
-        var custom = renderer.PrepareSection(Model(760, false, 2, 80, family).WithValueFormat(ChartValueFormat.Custom(value => value + " units")));
+        var custom = renderer.PrepareSection(Model(760, false, 2, 80, family).ValueFormat(ChartValueFormat.Custom(value => value + " units")));
         Assert.NotEmpty(custom.PreparedVisual.ToPng()); Assert.Throws<NotSupportedException>(() => renderer.PrepareValueTransitionJson(before, custom, 3));
-        var circle = renderer.PrepareSection(CircleRecipe.Create().WithFontFamily(family));
+        var circle = renderer.PrepareSection(CircleRecipe.Create().FontFamily(family));
         Assert.Throws<NotSupportedException>(() => renderer.PrepareValueTransitionJson(circle, circle, 3));
-        Assert.Throws<NotSupportedException>(() => renderer.PrepareValueTransitionJson(before, renderer.PrepareSection(ProgressRingRecipe.Create().WithFontFamily(family)), 3));
+        Assert.Throws<NotSupportedException>(() => renderer.PrepareValueTransitionJson(before, renderer.PrepareSection(ProgressRingRecipe.Create().FontFamily(family)), 3));
         using var cancelled = new CancellationTokenSource(); cancelled.Cancel();
         Assert.Throws<OperationCanceledException>(() => renderer.PrepareValueTransitionJson(before, after, 3, cancelled.Token));
         Assert.Equal(unchanged, before.PreparedVisual.ToSvg());
@@ -77,13 +77,13 @@ public sealed class NativeLayeredValueTransitionTests {
     }
 
     internal static Chart Model(int width, bool dark, int index, double value, string family) {
-        var chart = LayeredRadialRecipe.Create().WithSize(width, 400).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithFontFamily(family).WithLegend(false);
+        var chart = LayeredRadialRecipe.Create().Size(width, 400).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .FontFamily(family).Legend(false);
         var series = chart.Series[0];
-        for (var row = 0; row < 3; row++) series.WithObservationId(row, new ChartObservationId(new[] { "reviewed", "verified", "complete" }[row]));
-        series.RadialLayers[0].WithLineCap(ChartRadialLayerCap.Butt).WithOpacity(.6);
-        series.ConfigureDataLabelStyle(style => style.WithUnderline(TextDecorationStyle.Dashed));
-        var layer = series.RadialLayers[index]; layer.WithValue(value);
+        for (var row = 0; row < 3; row++) series.ObservationId(row, new ChartObservationId(new[] { "reviewed", "verified", "complete" }[row]));
+        series.RadialLayers[0].LineCap(ChartRadialLayerCap.Butt).Opacity(.6);
+        series.DataLabelStyle(style => style.UnderlineStyle(TextDecorationStyle.Dashed));
+        var layer = series.RadialLayers[index]; layer.Value(value);
         series.UpdateRadialLayer(index, layer); return chart;
     }
     internal static void Configure(HtmlChartInteractionOptions options) {

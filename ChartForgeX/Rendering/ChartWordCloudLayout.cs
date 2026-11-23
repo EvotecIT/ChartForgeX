@@ -40,15 +40,15 @@ internal static class ChartWordCloudLayout {
             .Select((point, index) => new { Point = point, Index = index })
             .Where(item => item.Point.Y > 0)
             .OrderByDescending(item => item.Point.Y);
-        if (chart.Options.WordCloudMaximumTerms.HasValue) valuesQuery = valuesQuery.Take(chart.Options.WordCloudMaximumTerms.Value).OrderByDescending(item => item.Point.Y);
+        if (chart.Options.WordCloud.MaxTerms.HasValue) valuesQuery = valuesQuery.Take(chart.Options.WordCloud.MaxTerms.Value).OrderByDescending(item => item.Point.Y);
         var values = valuesQuery.ToArray();
         if (values.Length == 0) return new List<ChartWordCloudTerm>();
         var max = values.Max(item => item.Point.Y);
         var min = values.Min(item => item.Point.Y);
-        var minFontSize = chart.Options.WordCloudMinFontSize;
-        var maxFontSize = chart.Options.WordCloudMaxFontSize;
-        var angles = chart.Options.WordCloudAngles;
-        var density = chart.Options.WordCloudDensity;
+        var minFontSize = chart.Options.WordCloud.MinFontSize;
+        var maxFontSize = chart.Options.WordCloud.MaxFontSize;
+        var angles = chart.Options.WordCloud.Angles;
+        var density = chart.Options.WordCloud.Density;
         var edgePadding = EdgePadding(plot);
         var safePlot = new ChartRect(
             plot.X + edgePadding,
@@ -142,7 +142,7 @@ internal static class ChartWordCloudLayout {
 
     private static string WordLabel(Chart chart, double x, int index) {
         if (chart.Series[0].PreparedLabel(index) is string captured) return captured;
-        foreach (var label in chart.Options.XAxisLabels) if (Math.Abs(label.Value - x) < 0.000001) return label.Text;
+        foreach (var label in chart.Options.XAxis.Labels) if (Math.Abs(label.Value - x) < 0.000001) return label.Text;
         return "Term " + (index + 1).ToString(CultureInfo.InvariantCulture);
     }
 

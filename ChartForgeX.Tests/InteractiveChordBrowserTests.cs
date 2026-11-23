@@ -18,9 +18,9 @@ public sealed class InteractiveChordBrowserTests {
     [InlineData(true, 800)]
     public async Task DirectedRepeatedParallelAndSelfFlowsKeepNativePointerAndKeyboardIdentity(bool dark, int width) {
         if (!Enabled) return;
-        var chart = V2GalleryModels.Create(ChartSeriesKind.Chord, "options").WithSize(width, width < 500 ? 320 : 460)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithTitle("Directed transfers").WithLegend(true);
-        chart.WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
+        var chart = V2GalleryModels.Create(ChartSeriesKind.Chord, "options").Size(width, width < 500 ? 320 : 460)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Title("Directed transfers").Legend(true);
+        chart.Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
         var name = "chord-styled-" + width + "-" + (dark ? "dark" : "light");
         var html = chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
         await using var session = await OpenAsync(html, width + 24, width < 500 ? 460 : 600);
@@ -133,7 +133,7 @@ public sealed class InteractiveChordBrowserTests {
     [InlineData(true)]
     public async Task AllZeroChordRetainsKeyboardFactsWithoutFilledGeometry(bool dark) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(360, 320).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithTitle("No positive transfers")
+        var chart = Chart.Create().Size(360, 320).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Title("No positive transfers")
             .AddChord("Transfers", new[] { new ChartNode("first", "Support"), new ChartNode("second", "Support") }, new[] { new ChartFlowLink("none", "first", "second", 0) });
         var html = chart.ToInteractiveHtmlPage().Replace("<main ", "<button id=\"before-chart\">Before chart</button><main ", StringComparison.Ordinal);
         await using var session = await OpenAsync(html, 384, 460);
@@ -162,7 +162,7 @@ public sealed class InteractiveChordBrowserTests {
     [InlineData(double.Epsilon, "precision-collapse")]
     public async Task SemanticOnlyChordFactsRespectHiddenLayoutAndMutedSeries(double value, string geometryStatus) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(360, 320).WithLegend(true).AddChord("Transfers", new[] {
+        var chart = Chart.Create().Size(360, 320).Legend(true).AddChord("Transfers", new[] {
             new ChartNode("a", "A"), new ChartNode("b", "B"), new ChartNode("c", "C"), new ChartNode("d", "D")
         }, new[] { new ChartFlowLink("retained", "a", "b", value), new ChartFlowLink("visible", "c", "d", 1e308) });
         var html = "<!doctype html><html><body><button id=\"show-chart\" onclick=\"document.getElementById('chart-host').style.display=''\">Show chart</button>" +
@@ -221,11 +221,11 @@ public sealed class InteractiveChordBrowserTests {
     [InlineData(true, 800)]
     public async Task HiddenNodeCaptionsPreserveVisibleRadiusAndKeyboardZeroFacts(bool dark, int width) {
         if (!Enabled) return;
-        Chart Frame(Chart chart) => chart.WithSize(width, width < 500 ? 320 : 460)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithTitle("Directed transfers");
+        Chart Frame(Chart chart) => chart.Size(width, width < 500 ? 320 : 460)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Title("Directed transfers");
         var baseline = Frame(PreparedChordLabelReservationTests.ZeroCaptionChart(false, false));
         var chart = Frame(PreparedChordLabelReservationTests.ZeroCaptionChart(true, true));
-        chart.Series[0].WithPointLabel(2, new string('W', 180));
+        chart.Series[0].PointLabel(2, new string('W', 180));
         var baselineNode = PreparedChordTests.Role(baseline.Prepare(VisualExportRequest.ForChart(baseline).Context), "chord-node")
             .Single(node => (string?)node.Attribute("data-cfx-target-id") == "north");
         var html = chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);

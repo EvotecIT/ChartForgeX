@@ -14,9 +14,9 @@ public sealed class PageThemeSvgTests {
     [Fact]
     public void SeriesAndPointColorsKeepDistinctVariablesAheadOfExportMaps() {
         var fallback = ChartColor.FromHex("#2468AC");
-        var chart = Chart.Create().WithSize(360, 240)
+        var chart = Chart.Create().Size(360, 240)
             .AddBar("Status", new[] { new ChartPoint(1, 2), new ChartPoint(2, 3) }, fallback.WithCssVariable("--accent"));
-        chart.Series[0].WithPointColor(1, fallback.WithCssVariable("--critical"));
+        chart.Series[0].PointColor(1, fallback.WithCssVariable("--critical"));
         var svg = XDocument.Parse(chart.Prepare(new VisualRenderContext()).ToSvg(new VisualSvgOptions(
             colorVariables: new SvgColorVariables().Add("--mapped", fallback, SvgColorRole.Series))));
         var paints = svg.Descendants().Attributes().Where(attribute => attribute.Name.LocalName is "fill" or "stroke" or "stop-color")

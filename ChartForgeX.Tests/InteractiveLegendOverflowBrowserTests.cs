@@ -26,7 +26,7 @@ public sealed partial class InteractiveLegendOverflowBrowserTests {
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
             options.Interaction.Enable(ChartInteractionFeatures.Export | ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Scenarios);
             options.Interaction.AddScenario("route", "Selected route", scenario => scenario
-                .WithColor(dark ? "#22C55E" : "#F97316").WithDescription("Review the measured series.").WithPlayback(60000)
+                .Color(dark ? "#22C55E" : "#F97316").Description("Review the measured series.").PlaybackDelayMilliseconds(60000).LoopPlayback(false).AutoPlay(false)
                 .AddSeriesStep("series-0", "First measurement").AddSeriesStep("series-1", "Second measurement"));
             options.Localization.Direction = dark ? HtmlChartTextDirection.RightToLeft : HtmlChartTextDirection.LeftToRight;
             options.Localization[HtmlChartText.LegendMore] = "Dalsze klucze ({count})";
@@ -131,9 +131,8 @@ public sealed partial class InteractiveLegendOverflowBrowserTests {
         if (!Enabled) return;
         var series = ChartSeries.CreateBar(new ChartSeriesId("measurements"), "Measurements",
             Enumerable.Range(0, 1000).Select(index => new ChartPoint(index, index % 11)));
-        for (var index = 0; index < 1000; index++) series.WithObservationId(index, new ChartObservationId("item-" + index));
-        var chart = Chart.Create().WithSize(680, 380).WithLegend().WithPointLegend().WithLegendPosition(ChartLegendPosition.Right)
-            .WithLegendBudget(maximumRows: 1).AddSeries(series);
+        for (var index = 0; index < 1000; index++) series.ObservationId(index, new ChartObservationId("item-" + index));
+        var chart = Chart.Create().Size(680, 380).Legend().Legend(l => l.ShowPoints().Position(ChartLegendPosition.Right).MaxRows(1)).AddSeries(series);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit), 390, 900);
         var page = session.Page;
         await page.Locator(Panel + " summary").ClickAsync();
@@ -161,9 +160,9 @@ public sealed partial class InteractiveLegendOverflowBrowserTests {
     }
 
     private static Chart DenseSeries(bool dark, int count = 13, bool reverse = false, bool longLabel = false) {
-        var chart = Chart.Create().WithSize(680, 380).WithTitle("Service observations").WithLegend()
-            .WithLegendPosition(ChartLegendPosition.Right).WithLegendBudget(maximumRows: 1)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+        var chart = Chart.Create().Size(680, 380).Title("Service observations").Legend()
+            .Legend(l => l.Position(ChartLegendPosition.Right).MaxRows(1))
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         var indices = Enumerable.Range(0, count);
         if (reverse) indices = indices.Reverse();
         foreach (var index in indices) chart.AddSeries(ChartSeries.CreateLine(new ChartSeriesId("series-" + index),

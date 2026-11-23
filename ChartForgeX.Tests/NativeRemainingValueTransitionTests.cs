@@ -15,7 +15,7 @@ public sealed class NativeRemainingValueTransitionTests {
     public void DefaultRingTransitionsChoosePercentagePrecisionForEachNativeFrame() {
         var renderer = new HtmlInteractiveChartRenderer(); var font = BrowserProofFonts.Family;
         HtmlChartSection Section(double value) => renderer.PrepareSection(Model("rings", 390, true, value, font)
-            .WithValueFormat(Chart.Create().Options.ValueFormat));
+            .ValueFormat(Chart.Create().Options.ValueFormat));
         var from = Section(10); var to = Section(13); var expected = Section(11.5).PreparedVisual;
         var frames = VisualValueCapture.Frames(from.PreparedVisual, to.PreparedVisual, 3);
         Assert.Same(from.PreparedVisual, frames[0]); Assert.Same(to.PreparedVisual, frames[2]);
@@ -39,8 +39,8 @@ public sealed class NativeRemainingValueTransitionTests {
         Assert.Equal(expected.ToSvg("remaining-midpoint"), frames[1].ToSvg("remaining-midpoint"));
         Assert.Equal(expected.ToPng(), frames[1].ToPng()); NativeValueIdentityProof.AssertEqual(expected, frames[1], "remaining-" + kind);
         var svg = frames.Select(frame => frame.ToSvg("detached-remaining")).ToArray(); var png = frames.Select(frame => frame.ToPng()).ToArray();
-        chart.WithFontFamily("Missing later font").WithValueFormat(ChartValueFormat.Custom(_ => "Changed"));
-        foreach (var series in chart.Series) series.WithDataLabels(false).ConfigureDataLabelStyle(style => style.FontSize = 40);
+        chart.FontFamily("Missing later font").ValueFormat(ChartValueFormat.Custom(_ => "Changed"));
+        foreach (var series in chart.Series) series.ShowDataLabels(false).DataLabelStyle(style => style.FontSize = 40);
         try {
             FontRegistry.Clear(); var retained = VisualValueCapture.Frames(from.PreparedVisual, to.PreparedVisual, 3);
             Assert.Equal(svg, retained.Select(frame => frame.ToSvg("detached-remaining")));
@@ -64,14 +64,14 @@ public sealed class NativeRemainingValueTransitionTests {
     public void AuthoredPolicyChangesCallbacksAndMissingIdentitiesRejectWithoutChangingOrdinaryNativeOutput(string kind) {
         var renderer = new HtmlInteractiveChartRenderer(); var font = BrowserProofFonts.Family;
         var from = renderer.PrepareSection(Model(kind, 760, false, 20, font)); var unchanged = from.PreparedVisual.ToSvg();
-        var callback = Model(kind, 760, false, 80, font).WithValueFormat(ChartValueFormat.Custom(value => value + " units"));
+        var callback = Model(kind, 760, false, 80, font).ValueFormat(ChartValueFormat.Custom(value => value + " units"));
         var ordinary = renderer.PrepareSection(callback); Assert.NotEmpty(ordinary.PreparedVisual.ToPng());
         Assert.Throws<NotSupportedException>(() => renderer.PrepareValueTransitionJson(from, ordinary, 3));
-        var hidden = Model(kind, 760, false, 80, font); foreach (var series in hidden.Series) series.WithDataLabels(false);
+        var hidden = Model(kind, 760, false, 80, font); foreach (var series in hidden.Series) series.ShowDataLabels(false);
         Assert.Throws<NotSupportedException>(() => renderer.PrepareValueTransitionJson(from, renderer.PrepareSection(hidden), 3));
         var policy = Model(kind, 760, false, 80, font);
-        if (kind == "rings") policy.WithRadialProgressStrokeScale(1.2);
-        else if (kind.StartsWith("gauge-", StringComparison.Ordinal)) policy.ConfigureGauge(options => options.BandGap += 1);
+        if (kind == "rings") policy.Progress(p => p.RadialStrokeScale(1.2));
+        else if (kind.StartsWith("gauge-", StringComparison.Ordinal)) policy.Gauge(options => options.BandGap += 1);
         else policy.Series[1].UpdateBulletValue(0, new ChartBulletValue(80, 76, rangeEnds: new[] { 50d, 80 }));
         Assert.Throws<NotSupportedException>(() => renderer.PrepareValueTransitionJson(from, renderer.PrepareSection(policy), 3));
         policy = Model(kind, 760, false, 80, font, identified: false);
@@ -93,18 +93,18 @@ public sealed class NativeRemainingValueTransitionTests {
             Assert.Contains(svg.Descendants(), node => (string?)node.Attribute("data-cfx-role") == "bullet-value-label-source" && (string?)node.Attribute("data-cfx-label") == "50.00 tasks");
         }
         HtmlChartSection Authored(double value) {
-            var chart = Model("bullet-horizontal", 760, false, value, font); chart.Series[1].WithPointLabel(0, "Accepted count");
+            var chart = Model("bullet-horizontal", 760, false, value, font); chart.Series[1].PointLabel(0, "Accepted count");
             return renderer.PrepareSection(chart, configure: Configure);
         }
         var authoredMiddle = VisualValueCapture.Frames(Authored(20).PreparedVisual, Authored(80).PreparedVisual, 3)[1];
         NativeValueIdentityProof.AssertEqual(Authored(50).PreparedVisual, authoredMiddle, "bullet-authored");
         Assert.Contains(authoredMiddle.Regions, region => region.Role == "bullet-value-label" && region.Label == "Accepted count");
-        var changed = Model("bullet-horizontal", 760, false, 80, font); changed.Series[1].ConfigureBulletAxis(axis => axis.WithValueFormat(ChartValueFormat.Number("0.00' other'")));
+        var changed = Model("bullet-horizontal", 760, false, 80, font); changed.Series[1].BulletAxis(axis => axis.ValueFormat(ChartValueFormat.Number("0.00' other'")));
         Assert.Throws<NotSupportedException>(() => renderer.PrepareValueTransitionJson(Section(20), renderer.PrepareSection(changed, configure: Configure), 3));
     }
     internal static Chart Model(string kind, int width, bool dark, double value, string font, bool identified = true) {
         var chart = RemainingValueTransitionDefaultControls.Model(kind, width, dark, value, font, identified);
-        foreach (var series in chart.Series) series.ConfigureDataLabelStyle(style => style.WithUnderline(TextDecorationStyle.Dashed));
+        foreach (var series in chart.Series) series.DataLabelStyle(style => style.UnderlineStyle(TextDecorationStyle.Dashed));
         return chart;
     }
     internal static void Configure(HtmlChartInteractionOptions options) {

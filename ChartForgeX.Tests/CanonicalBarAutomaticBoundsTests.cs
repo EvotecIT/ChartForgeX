@@ -22,14 +22,14 @@ public sealed class CanonicalBarAutomaticBoundsTests {
         var lower = 1.5; var higher = 3.5;
         var shifted = upper ? higher : lower;
         var peer = BitConverter.Int64BitsToDouble(BitConverter.DoubleToInt64Bits(shifted) + 3);
-        var chart = Chart.Create().WithHeader(false).WithAxes(false).WithLegend(false).WithDataLabels(false)
-            .WithBarStyle(ChartBarStyle.Flat);
-        if (stacked) chart.WithStackedBars();
+        var chart = Chart.Create().ShowHeader(false).Axes(false).Legend(false).DataLabels(false)
+            .Bars(b => b.Style(ChartBarStyle.Flat));
+        if (stacked) chart.Bars(b => b.Stacked());
         var first = new[] { new ChartPoint(lower, 2), new ChartPoint(higher, 3) };
         var second = new[] { new ChartPoint(upper ? lower : peer, 4), new ChartPoint(upper ? peer : higher, 5) };
         if (horizontal) chart.AddHorizontalBar("First", first).AddHorizontalBar("Second", second);
         else chart.AddBar("First", first).AddBar("Second", second);
-        if (secondary) chart.Series[1].UseSecondaryValueAxis();
+        if (secondary) chart.Series[1].SecondaryAxis();
         var colors = new[] { ChartColor.FromHex("#235AD7"), ChartColor.FromHex("#D73582") };
         for (var i = 0; i < colors.Length; i++) chart.Series[i].Color = colors[i];
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 400), 0)));
@@ -65,7 +65,7 @@ public sealed class CanonicalBarAutomaticBoundsTests {
     [InlineData(false)]
     [InlineData(true)]
     public void DistinctSmallCategoriesKeepTheirOwnReadableAutomaticSlots(bool horizontal) {
-        var chart = Chart.Create().WithHeader(false).WithAxes(false).WithLegend(false).WithDataLabels(false);
+        var chart = Chart.Create().ShowHeader(false).Axes(false).Legend(false).DataLabels(false);
         var points = new[] { new ChartPoint(1e-8, 2), new ChartPoint(2e-8, 3) };
         if (horizontal) chart.AddHorizontalBar("Observations", points); else chart.AddBar("Observations", points);
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 400), 0)));
@@ -83,8 +83,8 @@ public sealed class CanonicalBarAutomaticBoundsTests {
     [InlineData(true, true)]
     public void MixedMarkFamiliesDoNotReduceScalarBarCategoryMargins(bool interval, bool equivalent) {
         var peer = equivalent ? BitConverter.Int64BitsToDouble(BitConverter.DoubleToInt64Bits(1.5) + 3) : 2.5;
-        var chart = Chart.Create().WithHeader(false).WithAxes(false).WithLegend(false).WithDataLabels(false)
-            .WithBarStyle(ChartBarStyle.Flat).AddBar("Bars", new[] { new ChartPoint(1.5, 2), new ChartPoint(3.5, 3) });
+        var chart = Chart.Create().ShowHeader(false).Axes(false).Legend(false).DataLabels(false)
+            .Bars(b => b.Style(ChartBarStyle.Flat)).AddBar("Bars", new[] { new ChartPoint(1.5, 2), new ChartPoint(3.5, 3) });
         if (interval) chart.AddRangeBar("Reference", new[] { new ChartInterval(peer, 1, 4) });
         else chart.AddLollipop("Reference", new[] { new ChartPoint(peer, 4) });
         var color = ChartColor.FromHex("#235AD7"); chart.Series[0].Color = color;

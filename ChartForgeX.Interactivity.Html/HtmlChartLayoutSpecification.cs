@@ -12,12 +12,12 @@ namespace ChartForgeX.Interactivity.Html;
 // The portable layout IR retains native paint and source semantics. It contains no sampled widths or coordinate derivatives.
 internal static class HtmlChartLayoutSpecification {
     internal static string Serialize(Chart chart, int minimum, int maximum, int height, int printWidth, string? scope, out string svg) {
-        var matrixWindow = chart.Options.HeatmapColumnWindow;
+        var matrixWindow = chart.Options.Heatmap.ColumnWindow;
         // Serialize every source column, retaining the caller's opening position independently of native preparation.
-        chart.Options.HeatmapColumnWindow = ChartHeatmapColumnWindow.Squeeze;
+        chart.Options.Heatmap.ColumnWindow = ChartHeatmapColumnWindow.Squeeze;
         chart.Options.XAxis = chart.Options.XAxis.Clone(); chart.Options.XAxis.LabelDensity = ChartLabelDensity.All;
         chart.Options.YAxis = chart.Options.YAxis.Clone(); chart.Options.YAxis.LabelDensity = ChartLabelDensity.All;
-        chart.WithSize(maximum, height);
+        chart.Size(maximum, height);
         var authoredHeight = height;
         var context = VisualExportRequest.ForChart(chart).Context;
         if (HtmlRadialLayoutSpecification.Supports(chart)) context = HtmlRadialLayoutSpecification.SourceContext(chart, context);
@@ -42,7 +42,7 @@ internal static class HtmlChartLayoutSpecification {
             .Append(stateLanes ? LaneGutter(prepared.Regions, plot) : string.Empty)
             .Append(matrixNode == null ? string.Empty : MatrixSettings(chart, matrixNode, prepared.Regions, plot, matrixWindow))
             .Append(",\"spacing\":").Append(N(chart.Options.Theme.Spacing))
-            .Append(",\"legendPosition\":").Append(HtmlJsonString.Encode(chart.Options.LegendPosition.ToString()));
+            .Append(",\"legendPosition\":").Append(HtmlJsonString.Encode(chart.Options.Legend.Position.ToString()));
         if (HtmlRadialLayoutSpecification.Supports(chart)) HtmlRadialLayoutSpecification.Append(output, chart, context, prepared, authoredHeight, minimum);
         else output.Append(CompactTypeSizes(context.Theme.Typography, minimum));
         // Source values and labels travel with the serialized native scene, including typed observations and category/time formatting.

@@ -1,7 +1,7 @@
 # Legend entries and keys
 
 A chart's legend lists one entry per series, slice or category and places itself in one of eight
-positions (`WithLegendPosition`) inside a height and row budget (`WithLegendBudget`). The options
+positions (`Legend(l => l.Position(...))`) inside a height and row budget (`MaxHeightFraction` and `MaxRows`). The options
 here add entries that do not come from a series, change the key drawn beside each entry, and rewrite
 entry text. They live on `chart.Options.Legend` (`ChartLegendOptions`) and apply to every chart
 family. SVG, HTML and native PNG paint the same keys and text.
@@ -29,7 +29,7 @@ chart.AddHorizontalBand(1_100_000, 1_300_000, color: target, opacity: .12)
 
 `WithKeySize(size)` gives one item its own key size. Items follow the series entries in the order
 they were added, wrap and overflow like any other entry, and count towards the legend: a single
-series with one custom item shows its legend without `WithLegend(true)`.
+series with one custom item shows its legend without `Legend(true)`.
 
 An item is a description of the chart, not of the data, so it carries no series identity. Its entry
 group has `data-cfx-legend-custom="true"` and an empty `data-cfx-series-key`. The browser runtime
@@ -40,7 +40,7 @@ remove the item too.
 ## Keys
 
 ```csharp
-chart.WithLegendKey(ChartLegendKeyShape.Marker, 12);
+chart.Legend(l => l.KeyShape(ChartLegendKeyShape.Marker).KeySize(12));
 ```
 
 `KeyShape` sets the key every series entry draws:
@@ -60,9 +60,9 @@ state swatches.
 ## Entry text
 
 ```csharp
-chart.WithValueFormat(ChartValueFormat.Compact())
-     .WithLegendFormatter(item => item.Series == null ? null
-         : item.Label + " — " + item.FormatValue(item.Total) + " total");
+chart.ValueFormat(ChartValueFormat.Compact())
+     .Legend(l => l.LabelBy(item => item.Series == null ? null
+         : item.Label + " — " + item.FormatValue(item.Total) + " total"));
 ```
 
 The formatter receives a `ChartLegendItemContext` for every entry, custom items included:

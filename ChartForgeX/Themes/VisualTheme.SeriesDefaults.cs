@@ -11,7 +11,7 @@ public sealed partial class VisualTheme {
     private IReadOnlyDictionary<ChartSeriesKind, VisualSeriesDefaults> _seriesDefaults = NoSeriesDefaults;
 
     /// <summary>Gets independent copies of the per-kind series defaults, keyed by series kind.</summary>
-    /// <remarks>Edit them through <see cref="Configure"/> and <see cref="VisualThemeBuilder.ConfigureSeries"/>; changing a copy does not change this theme.</remarks>
+    /// <remarks>Edit them through <see cref="Configure"/> and <see cref="VisualThemeBuilder.Series"/>; changing a copy does not change this theme.</remarks>
     public IReadOnlyDictionary<ChartSeriesKind, VisualSeriesDefaults> SeriesDefaults =>
         new ReadOnlyDictionary<ChartSeriesKind, VisualSeriesDefaults>(CopySeriesDefaults().ToDictionary(pair => pair.Key, pair => pair.Value));
 

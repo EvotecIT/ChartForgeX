@@ -19,7 +19,7 @@ public sealed class TopologyActorCaptionMixedRoutingTests {
     [InlineData(TopologyEdgeRouting.Orthogonal, true, true)]
     public void MixedActualActorAndObstaclePoliciesUseFiniteCaptionClearance(TopologyEdgeRouting policy, bool readable, bool fixedPositions) {
         var model = UseCaseAdvancedActorsRecipe.Create("wide", ThemeMode.Dark);
-        model.WithTheme(model.Theme.WithFontFamily(BrowserProofFonts.Family), ThemeMode.Dark);
+        model.Theme(model.Theme.WithFontFamily(BrowserProofFonts.Family), ThemeMode.Dark);
         if (fixedPositions) {
             // Keep the reported placement independent of later automatic rank packing.
             var positions = new[] { new ChartPoint(219, 244.9), new ChartPoint(610.5, 94.9), new ChartPoint(88.5, 94.9),

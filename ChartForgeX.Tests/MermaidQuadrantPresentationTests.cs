@@ -18,7 +18,7 @@ public sealed class MermaidQuadrantPresentationTests {
     public void HostThemeControlsRegionFillsAndCaptionContrast(bool explicitContext, bool dark) {
         var chart = new MermaidParser().ParseQuadrant(Source).Document!.ToChart();
         var palette = new[] { ChartColor.FromHex("#E02030"), ChartColor.FromHex("#20B040"), ChartColor.FromHex("#3040D0"), ChartColor.FromHex("#D08010") };
-        chart.WithTheme(VisualTheme.Graphite().WithPalette(palette));
+        chart.Theme(VisualTheme.Graphite().WithPalette(palette));
         var request = VisualExportRequest.ForChart(chart).Context;
         var tokens = new VisualDesignTokens { Palette = palette, Surface = dark ? ChartColor.Black : ChartColor.White };
         var context = explicitContext ? new VisualRenderContext(request.Layout, new VisualTheme(tokens, tokens),
@@ -82,7 +82,7 @@ public sealed class MermaidQuadrantPresentationTests {
     public void TranslucentHostPaletteRetainsCaptionPaintAndContrastBindings(int initialAlpha) {
         var color = ChartColor.FromRgba(224, 32, 48, (byte)initialAlpha);
         var chart = new MermaidParser().ParseQuadrant(Source).Document!.ToChart();
-        chart.WithTheme(VisualTheme.Graphite().WithPalette(new[] { color }));
+        chart.Theme(VisualTheme.Graphite().WithPalette(new[] { color }));
         var context = VisualExportRequest.ForChart(chart).Context;
         var surface = context.Theme.Resolve(context.ThemeMode).Surface;
         var prepared = chart.Prepare(context);
@@ -108,7 +108,7 @@ public sealed class MermaidQuadrantPresentationTests {
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartPlotRegion(-1));
         var chart = new MermaidParser().ParseQuadrant(Source).Document!.ToChart();
         var palette = new[] { ChartColor.FromHex("#E02030"), ChartColor.FromHex("#20B040") };
-        chart.WithTheme(VisualTheme.Graphite().WithPalette(palette));
+        chart.Theme(VisualTheme.Graphite().WithPalette(palette));
         chart.PlotRegions.Clear();
         chart.AddPlotRegion(new ChartPlotRegion(5, label: "Wrapped"));
         Assert.Null(chart.PlotRegions[0].Color);

@@ -21,7 +21,7 @@ public sealed class RelationshipNodeStateTests {
             ChartSeriesKind.Sankey => Chart.Create().AddSankey("State", nodes, new[] { new ChartFlowLink("flow", "root", "leaf", 3) }),
             _ => Chart.Create().AddChord("State", nodes, new[] { new ChartFlowLink("flow", "root", "leaf", 3) })
         };
-        chart.Series[0].WithNodeState("leaf", ChartSeriesState.Warning);
+        chart.Series[0].NodeState("leaf", ChartSeriesState.Warning);
         var context = PreparedChordTests.Context();
         string Fill(PreparedVisual prepared) {
             var group = XDocument.Parse(prepared.ToSvg()).Descendants().Single(node => (string?)node.Attribute("data-cfx-role") == groupRole && (string?)node.Attribute("data-cfx-target-id") == "leaf");
@@ -29,14 +29,14 @@ public sealed class RelationshipNodeStateTests {
             return group.Descendants().Single(node => (string?)node.Attribute("data-cfx-role") == markRole).Attribute("fill")!.Value;
         }
         Assert.Equal(context.Theme.Resolve(context.ThemeMode).Status.Medium.Fill.ToCss(), Fill(chart.Prepare(context)));
-        var authored = ChartColor.FromHex("#24567A"); chart.Series[0].WithPointColor(1, authored);
+        var authored = ChartColor.FromHex("#24567A"); chart.Series[0].PointColor(1, authored);
         Assert.Equal(authored.ToCss(), Fill(chart.Prepare(context)));
     }
     [Fact]
     public void SunburstRootNoneOverrideKeepsSeriesPaintProvenanceInHostVariables() {
         var chart = Chart.Create().AddSunburst("State", new[] { new ChartHierarchyItem("root", "Root"), new ChartHierarchyItem("leaf", "Leaf", "root", 3) });
         chart.Series[0].StateRole = ChartSeriesState.Warning;
-        chart.Series[0].WithNodeState("root", ChartSeriesState.None);
+        chart.Series[0].NodeState("root", ChartSeriesState.None);
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(720, 460)));
         var blue = context.Theme.Resolve(context.ThemeMode).Palette[0];
         var variables = new SvgColorVariables().Add("--host-status", blue, SvgColorRole.Status)

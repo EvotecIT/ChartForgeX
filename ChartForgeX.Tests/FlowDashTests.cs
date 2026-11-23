@@ -13,7 +13,7 @@ public sealed class FlowDashTests {
     [InlineData(ChartSeriesKind.Sankey)] [InlineData(ChartSeriesKind.Chord)]
     public void OutlineDashPhaseOpacityAndSnapshotsUseOneNativePolicyInBothFlowFamilies(ChartSeriesKind kind) {
         var chart = Bare(kind); var original = SankeyFlowColorTests.Prepare(chart); var series = chart.Series[0]; var dash = new[] { 5d, 3d };
-        series.WithFlowStyle("small", new ChartFlowStyle(stroke: ChartColor.FromRgb(255, 0, 0), strokeWidth: 1,
+        series.FlowStyle("small", new ChartFlowStyle(stroke: ChartColor.FromRgb(255, 0, 0), strokeWidth: 1,
             outlineStroke: new ChartStrokeStyle(ChartColor.Black, 4, .5, dash), strokeDashOffset: -2));
         dash[0] = 100; var prepared = SankeyFlowColorTests.Prepare(chart);
         var ribbon = Ribbons(prepared, kind)[1];
@@ -24,7 +24,7 @@ public sealed class FlowDashTests {
             .Descendants().Single(node => (string?)node.Attribute("data-cfx-role") == Role(kind));
         Assert.Equal("5 3", (string?)element.Attribute("stroke-dasharray")); Assert.Equal("-2", (string?)element.Attribute("stroke-dashoffset"));
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
-        series.WithFlowStyle("small", new ChartFlowStyle(outlineStroke: new ChartStrokeStyle(width: 0)));
+        series.FlowStyle("small", new ChartFlowStyle(outlineStroke: new ChartStrokeStyle(width: 0)));
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
         Assert.Null(Ribbons(SankeyFlowColorTests.Prepare(chart), kind)[1].Stroke);
         ScatterBubbleColorRenderingTests.Capture(prepared, "flow-dash-" + kind.ToString().ToLowerInvariant());
@@ -34,12 +34,12 @@ public sealed class FlowDashTests {
     [InlineData(ChartSeriesKind.Sankey)] [InlineData(ChartSeriesKind.Chord)]
     public void NativeRasterPreservesActualDashGapsAndDefaultStylePreservesLegacyOutput(ChartSeriesKind kind) {
         var chart = Bare(kind); var original = SankeyFlowColorTests.Prepare(chart);
-        chart.Series[0].WithFlowStyle("small", default(ChartFlowStyle));
+        chart.Series[0].FlowStyle("small", default(ChartFlowStyle));
         Assert.Equal(original.ToSvg(), SankeyFlowColorTests.Prepare(chart).ToSvg());
         Assert.Equal(original.ToPng(), SankeyFlowColorTests.Prepare(chart).ToPng());
-        chart.Series[0].WithFlowStyle("small", new ChartFlowStyle(outlineStroke: new ChartStrokeStyle(ChartColor.Black, 4, dash: new[] { 8d, 8d })));
+        chart.Series[0].FlowStyle("small", new ChartFlowStyle(outlineStroke: new ChartStrokeStyle(ChartColor.Black, 4, dash: new[] { 8d, 8d })));
         var dashed = Ink(SankeyFlowColorTests.Prepare(chart).ToPng(new VisualRenderOptions(supersampling: 1)));
-        chart.Series[0].WithFlowStyle("small", new ChartFlowStyle(outlineStroke: new ChartStrokeStyle(ChartColor.Black, 4)));
+        chart.Series[0].FlowStyle("small", new ChartFlowStyle(outlineStroke: new ChartStrokeStyle(ChartColor.Black, 4)));
         var solid = Ink(SankeyFlowColorTests.Prepare(chart).ToPng(new VisualRenderOptions(supersampling: 1)));
         Assert.True(dashed > 0 && dashed < solid * .85, "Both native exporters must preserve real gaps in the ribbon outline.");
     }
@@ -50,7 +50,7 @@ public sealed class FlowDashTests {
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartFlowStyle(strokeDashOffset: invalid));
 
     private static Chart Bare(ChartSeriesKind kind) {
-        var chart = Chart.Create().WithSize(600, 400).WithHeader(false).WithLegend(false).WithDataLabels(false);
+        var chart = Chart.Create().Size(600, 400).ShowHeader(false).Legend(false).DataLabels(false);
         var nodes = new[] { new ChartNode("r", "Received"), new ChartNode("a", "Accepted") };
         var flows = new[] { new ChartFlowLink("large", "r", "a", 6), new ChartFlowLink("small", "r", "a", 4) };
         if (kind == ChartSeriesKind.Sankey) chart.AddSankey("Requests", nodes, flows); else chart.AddChord("Requests", nodes, flows);

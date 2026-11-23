@@ -8,22 +8,22 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void TopologyMonitoringStyleUsesSoftWorldMapSilhouette() {
         var chart = TopologyChart.Create()
-            .WithId("monitoring-map")
-            .WithViewport(720, 420, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.Geographic)
-            .WithMapViewport(ChartMapViewport.World())
+            .Id("monitoring-map")
+            .Viewport(new TopologyViewport(720, 420, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.Geographic)
+            .MapViewport(ChartMapViewport.World())
             .AddNode("amer", "AMER", 0, 0, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 56, height: 44, symbol: "H")
             .AddNode("emea", "EMEA", 0, 0, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 56, height: 44, symbol: "H")
             .AddNode("apac", "APAC", 0, 0, TopologyNodeKind.Hub, TopologyHealthStatus.Critical, width: 56, height: 44, symbol: "H")
-            .WithNodeCoordinates("amer", -98.5795, 39.8283)
-            .WithNodeCoordinates("emea", 10, 50)
-            .WithNodeCoordinates("apac", 103.8198, 1.3521)
+            .UpdateNode("amer", n => n.Longitude(-98.5795).Latitude(39.8283))
+            .UpdateNode("emea", n => n.Longitude(10).Latitude(50))
+            .UpdateNode("apac", n => n.Longitude(103.8198).Latitude(1.3521))
             .AddEdge("amer-emea", "amer", "emea", "68 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Curved)
             .AddEdge("emea-apac", "emea", "apac", "92 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Critical, VisualLinkDirection.Forward, TopologyEdgeRouting.Curved);
 
         var options = new TopologyRenderOptions { IncludeLegend = false, IncludeGroups = false, IncludeEdgeLabelBackplates = false }
-            .WithMonitoringDashboardStyle();
+            .MonitoringDashboardStyle();
         var svg = chart.ToSvg(options);
         Assert(svg.Contains("data-visual-style=\"MonitoringDashboard\"", StringComparison.Ordinal), "Monitoring style should be emitted as reusable SVG metadata.");
         Assert(svg.Contains("data-cfx-map-background-style=\"SoftSilhouette\"", StringComparison.Ordinal), "Monitoring geographic topology should use soft silhouettes by default.");
@@ -35,32 +35,27 @@ internal static partial class SmokeTests {
 
     private static void TopologyGeographicCalloutsPrioritizeSelectedGroupsAndMapEdges() {
         var chart = TopologyChart.Create()
-            .WithId("monitoring-map-callouts")
-            .WithViewport(720, 420, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.Geographic)
-            .WithMapViewport(ChartMapViewport.World())
+            .Id("monitoring-map-callouts")
+            .Viewport(new TopologyViewport(720, 420, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.Geographic)
+            .MapViewport(ChartMapViewport.World())
             .AddGroup("AMER", "AMER", 0, 0, 100, 80, TopologyHealthStatus.Healthy, "47 sites")
             .AddGroup("EMEA", "EMEA", 0, 0, 100, 80, TopologyHealthStatus.Warning, "56 sites")
             .AddGroup("APAC", "APAC", 0, 0, 100, 80, TopologyHealthStatus.Critical, "39 sites")
-            .WithGroupCoordinates("AMER", -98.5795, 39.8283)
-            .WithGroupCoordinates("EMEA", 10, 50)
-            .WithGroupCoordinates("APAC", 103.8198, 1.3521)
+            .UpdateGroup("AMER", g => g.Longitude(-98.5795).Latitude(39.8283))
+            .UpdateGroup("EMEA", g => g.Longitude(10).Latitude(50))
+            .UpdateGroup("APAC", g => g.Longitude(103.8198).Latitude(1.3521))
             .AddNode("amer-hub", "AMER Hub", 0, 0, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "AMER", width: 56, height: 44, symbol: "H")
             .AddNode("emea-hub", "EMEA Hub", 0, 0, TopologyNodeKind.Hub, TopologyHealthStatus.Warning, "EMEA", width: 56, height: 44, symbol: "H")
             .AddNode("apac-hub", "APAC Hub", 0, 0, TopologyNodeKind.Hub, TopologyHealthStatus.Critical, "APAC", width: 56, height: 44, symbol: "H")
-            .WithNodeCoordinates("amer-hub", -74.006, 40.7128)
-            .WithNodeCoordinates("emea-hub", 0.1276, 51.5072)
-            .WithNodeCoordinates("apac-hub", 103.8198, 1.3521);
+            .UpdateNode("amer-hub", n => n.Longitude(-74.006).Latitude(40.7128))
+            .UpdateNode("emea-hub", n => n.Longitude(0.1276).Latitude(51.5072))
+            .UpdateNode("apac-hub", n => n.Longitude(103.8198).Latitude(1.3521));
 
-        var options = new TopologyRenderOptions {
-            IncludeLegend = false,
-            IncludeGroups = false,
-            IncludeGeographicCallouts = true,
-            GeographicCalloutMaxItems = 2
-        }
-            .WithMonitoringDashboardStyle()
-            .WithSelectedGroup("APAC");
+        var options = new TopologyRenderOptions { IncludeLegend = false, IncludeGroups = false, Geography = { IncludeCallouts = true, CalloutMaxItems = 2 } }
+            .MonitoringDashboardStyle()
+            .SelectGroup("APAC");
         var svg = chart.ToSvg(options);
         var callouts = System.Xml.Linq.XDocument.Parse(svg).Descendants().Where(element => (string?)element.Attribute("data-cfx-visual-role") == "topology-geographic-callout").ToArray();
         Assert(callouts.Length == 2 && callouts.Any(element => (string?)element.Attribute("data-group-id") == "APAC"), "Selected geographic groups should be prioritized when callout count is capped.");
@@ -71,30 +66,25 @@ internal static partial class SmokeTests {
 
     private static void TopologyGeographicCalloutsUseDashboardSlots() {
         var chart = TopologyChart.Create()
-            .WithId("monitoring-map-callout-slots")
-            .WithViewport(960, 520, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.Geographic)
-            .WithMapViewport(ChartMapViewport.World())
+            .Id("monitoring-map-callout-slots")
+            .Viewport(new TopologyViewport(960, 520, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.Geographic)
+            .MapViewport(ChartMapViewport.World())
             .AddGroup("AMER", "AMER", 0, 0, 100, 80, TopologyHealthStatus.Healthy, "47 sites")
             .AddGroup("EMEA", "EMEA", 0, 0, 100, 80, TopologyHealthStatus.Warning, "56 sites")
             .AddGroup("APAC", "APAC", 0, 0, 100, 80, TopologyHealthStatus.Critical, "39 sites")
-            .WithGroupCoordinates("AMER", -98.5795, 39.8283)
-            .WithGroupCoordinates("EMEA", 10, 50)
-            .WithGroupCoordinates("APAC", 103.8198, 1.3521)
+            .UpdateGroup("AMER", g => g.Longitude(-98.5795).Latitude(39.8283))
+            .UpdateGroup("EMEA", g => g.Longitude(10).Latitude(50))
+            .UpdateGroup("APAC", g => g.Longitude(103.8198).Latitude(1.3521))
             .AddNode("amer-hub", "AMER Hub", 0, 0, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "AMER", width: 56, height: 44, symbol: "H")
             .AddNode("emea-hub", "EMEA Hub", 0, 0, TopologyNodeKind.Hub, TopologyHealthStatus.Warning, "EMEA", width: 56, height: 44, symbol: "H")
             .AddNode("apac-hub", "APAC Hub", 0, 0, TopologyNodeKind.Hub, TopologyHealthStatus.Critical, "APAC", width: 56, height: 44, symbol: "H")
-            .WithNodeCoordinates("amer-hub", -74.006, 40.7128)
-            .WithNodeCoordinates("emea-hub", 0.1276, 51.5072)
-            .WithNodeCoordinates("apac-hub", 103.8198, 1.3521);
+            .UpdateNode("amer-hub", n => n.Longitude(-74.006).Latitude(40.7128))
+            .UpdateNode("emea-hub", n => n.Longitude(0.1276).Latitude(51.5072))
+            .UpdateNode("apac-hub", n => n.Longitude(103.8198).Latitude(1.3521));
 
-        var options = new TopologyRenderOptions {
-            IncludeLegend = false,
-            IncludeGroups = false,
-            IncludeGeographicCallouts = true,
-            GeographicCalloutMaxItems = 3
-        }.WithMonitoringDashboardStyle();
+        var options = new TopologyRenderOptions { IncludeLegend = false, IncludeGroups = false, Geography = { IncludeCallouts = true, CalloutMaxItems = 3 } }.MonitoringDashboardStyle();
         var svg = chart.ToSvg(options);
 
         Assert(svg.Contains("data-callout-placement=\"left-corner\"", StringComparison.Ordinal), "Dashboard geographic callouts should place the western region in the left edge slot.");
@@ -106,33 +96,27 @@ internal static partial class SmokeTests {
 
     private static void TopologyGeographicCalloutsAvoidRouteObstacles() {
         var chart = TopologyChart.Create()
-            .WithId("monitoring-map-callout-routes")
-            .WithViewport(820, 440, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.Geographic)
-            .WithMapViewport(ChartMapViewport.World())
+            .Id("monitoring-map-callout-routes")
+            .Viewport(new TopologyViewport(820, 440, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.Geographic)
+            .MapViewport(ChartMapViewport.World())
             .AddGroup("AMER", "AMER", 0, 0, 100, 80, TopologyHealthStatus.Healthy)
             .AddGroup("EMEA", "EMEA", 0, 0, 100, 80, TopologyHealthStatus.Healthy)
             .AddGroup("APAC", "APAC", 0, 0, 100, 80, TopologyHealthStatus.Critical)
-            .WithGroupCoordinates("AMER", -98.5795, 39.8283)
-            .WithGroupCoordinates("EMEA", 10, 50)
-            .WithGroupCoordinates("APAC", 103.8198, 1.3521)
+            .UpdateGroup("AMER", g => g.Longitude(-98.5795).Latitude(39.8283))
+            .UpdateGroup("EMEA", g => g.Longitude(10).Latitude(50))
+            .UpdateGroup("APAC", g => g.Longitude(103.8198).Latitude(1.3521))
             .AddNode("amer-hub", "AMER", 0, 0, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "AMER", width: 64, height: 44, symbol: "H")
             .AddNode("emea-hub", "EMEA", 0, 0, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "EMEA", width: 64, height: 44, symbol: "H")
             .AddNode("apac-hub", "APAC", 0, 0, TopologyNodeKind.Hub, TopologyHealthStatus.Critical, "APAC", width: 64, height: 44, symbol: "H")
-            .WithNodeCoordinates("amer-hub", -98.5795, 39.8283)
-            .WithNodeCoordinates("emea-hub", 10, 50)
-            .WithNodeCoordinates("apac-hub", 103.8198, 1.3521)
+            .UpdateNode("amer-hub", n => n.Longitude(-98.5795).Latitude(39.8283))
+            .UpdateNode("emea-hub", n => n.Longitude(10).Latitude(50))
+            .UpdateNode("apac-hub", n => n.Longitude(103.8198).Latitude(1.3521))
             .AddEdge("wan", "amer-hub", "apac-hub", "142 ms", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.Curved, "backup")
-            .WithEdgeLabelOffset("wan", 120, 58);
+            .UpdateEdge("wan", e => e.LabelOffsetX(120).LabelOffsetY(58));
 
-        var options = new TopologyRenderOptions {
-            IncludeLegend = false,
-            IncludeGroups = false,
-            IncludeGeographicCallouts = true,
-            IncludeEdgeLabelBackplates = false,
-            GeographicCalloutMaxItems = 3
-        }.WithMonitoringDashboardStyle();
+        var options = new TopologyRenderOptions { IncludeLegend = false, IncludeGroups = false, Geography = { IncludeCallouts = true, CalloutMaxItems = 3 }, IncludeEdgeLabelBackplates = false }.MonitoringDashboardStyle();
         var svg = chart.ToSvg(options);
 
         Assert(svg.Contains("data-cfx-visual-role=\"topology-geographic-callout\"", StringComparison.Ordinal), "Route-aware geographic maps should still render dashboard callouts.");
@@ -148,20 +132,20 @@ internal static partial class SmokeTests {
 
     private static void TopologyMonitoringRegionHullsUseTighterDefaults() {
         var chart = TopologyChart.Create()
-            .WithId("monitoring-region-hulls")
-            .WithViewport(720, 420, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.Geographic)
-            .WithMapViewport(ChartMapViewport.World())
+            .Id("monitoring-region-hulls")
+            .Viewport(new TopologyViewport(720, 420, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.Geographic)
+            .MapViewport(ChartMapViewport.World())
             .AddGroup("APAC", "APAC", 0, 0, 100, 80, TopologyHealthStatus.Critical)
-            .WithGroupCoordinates("APAC", 103.8198, 1.3521)
+            .UpdateGroup("APAC", g => g.Longitude(103.8198).Latitude(1.3521))
             .AddNode("sin", "Singapore", 0, 0, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "APAC", width: 52, height: 40, symbol: "H")
             .AddNode("syd", "Sydney", 0, 0, TopologyNodeKind.Branch, TopologyHealthStatus.Critical, "APAC", width: 52, height: 40, symbol: "S")
-            .WithNodeCoordinates("sin", 103.8198, 1.3521)
-            .WithNodeCoordinates("syd", 151.2093, -33.8688);
+            .UpdateNode("sin", n => n.Longitude(103.8198).Latitude(1.3521))
+            .UpdateNode("syd", n => n.Longitude(151.2093).Latitude(-33.8688));
 
         var options = new TopologyRenderOptions { IncludeLegend = false, IncludeGroups = false }
-            .WithMonitoringDashboardStyle();
+            .MonitoringDashboardStyle();
         var svg = chart.ToSvg(options);
         var radius = GetAttribute(svg, "data-cfx-role=\"topology-geographic-hull\"", "rx");
 

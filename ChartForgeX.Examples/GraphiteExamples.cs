@@ -38,7 +38,7 @@ internal static class GraphiteExamples {
             }
             foreach (var item in Create(dark)) {
                 var name = "graphite-" + suffix + "-" + item.Key;
-                item.Value.WithPngOutputScale(scale);
+                item.Value.Png(p => p.OutputScale((int)scale));
                 item.Value.SaveSvg(Path.Combine(output, name + ".svg"));
                 item.Value.SavePng(Path.Combine(output, name + ".png"));
                 item.Value.SaveHtml(Path.Combine(output, name + ".html"));
@@ -54,12 +54,12 @@ internal static class GraphiteExamples {
             }
             var theme = VisualTheme.Graphite();
             var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
-            var metric=MetricCard.Create().WithSize(300,260).WithTheme(theme, mode).WithMetric("Coverage","98.4%").WithCaption("Assets reporting")
-                .WithMiniSparkline(new[]{92d,94,95,97,98.4},color:theme.Resolve(mode).Palette[0]);
-            var table=ChartTable.Create().WithSize(300,260).WithTheme(theme, mode).WithTitle("Controls").AddColumn("Control").AddColumn("Actual")
+            var metric=MetricCard.Create().Size(300,260).Theme(theme).ThemeMode(mode).Metric("Coverage","98.4%").Caption("Assets reporting")
+                .MiniSparkline(new[]{92d,94,95,97,98.4},color:theme.Resolve(mode).Palette[0]);
+            var table=ChartTable.Create().Size(300,260).Theme(theme).ThemeMode(mode).Title("Controls").AddColumn("Control").AddColumn("Actual")
                 .AddRow("TLS","92%").AddRow("DNSSEC","74%");
-            var dashboard=VisualGrid.Create().WithTheme(theme, mode).WithTitle("Control overview").WithColumns(2).WithPanelSize(300,260)
-                .WithPngOutputScale((int)scale).Add(metric).Add(table).Add(Create(dark)["bar"].WithSize(300,260)).Add(Create(dark)["line"].WithSize(300,260));
+            var dashboard=VisualGrid.Create().Theme(theme).ThemeMode(mode).Title("Control overview").Columns(2).PanelSize(300,260)
+                .PngOutputScale((int)scale).Add(metric).Add(table).Add(Create(dark)["bar"].Size(300,260)).Add(Create(dark)["line"].Size(300,260));
             var dashboardName="graphite-"+suffix+"-dashboard";
             dashboard.SaveSvg(Path.Combine(output,dashboardName+".svg")); dashboard.SavePng(Path.Combine(output,dashboardName+".png")); dashboard.SaveHtml(Path.Combine(output,dashboardName+".html"));
             gallery.Append("<h2>Dashboard and KPI</h2><div class='pair'><img alt='SVG dashboard' src='").Append(dashboardName).Append(".svg'><img alt='PNG dashboard' src='").Append(dashboardName).Append(".png'></div>");
@@ -71,56 +71,56 @@ internal static class GraphiteExamples {
     }
 
     internal static Dictionary<string, Chart> Create(bool dark) {
-        Chart Frame(string title,string subtitle,int width=596,int height=338) => Chart.Create().WithSize(width,height).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithTitle(title).WithSubtitle(subtitle);
-        var bar=Frame("Findings by severity","Current and previous run").WithXLabels("Critical","High","Medium","Low","Info").WithDataLabels()
+        Chart Frame(string title,string subtitle,int width=596,int height=338) => Chart.Create().Size(width,height).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Title(title).Subtitle(subtitle);
+        var bar=Frame("Findings by severity","Current and previous run").XLabels("Critical","High","Medium","Low","Info").DataLabels()
             .AddBar("Current",Points(6,30,82,124,208)).AddBar("Previous",Points(9,39,95,116,186));
-        bar.Options.YAxis.Maximum=250; bar.Options.YAxis.TickCount=6;
-        var passed = new ChartSeries(new ChartSeriesId("passed"), "Passed", ChartSeriesKind.Line, Points(820,940,980,1041,1120,1180,1230)).WithState(ChartSeriesState.Quiet);
-        var warnings = new ChartSeries(new ChartSeriesId("warnings"), "Warnings", ChartSeriesKind.Line, Points(120,138,131,112,98,86,72)).WithState(ChartSeriesState.Warning);
-        var failed = new ChartSeries(new ChartSeriesId("failed"), "Failed", ChartSeriesKind.Line, Points(22,30,27,31,18,14,11)).WithState(ChartSeriesState.Danger);
-        var line=Frame("Check results over time","Healthy checks recede; failures remain visible").WithXLabels("Mon","Tue","Wed","Thu","Fri","Sat","Sun")
+        bar.Options.YAxis.Max=250; bar.Options.YAxis.TickCount=6;
+        var passed = new ChartSeries(new ChartSeriesId("passed"), "Passed", ChartSeriesKind.Line, Points(820,940,980,1041,1120,1180,1230)).StateRole(ChartSeriesState.Quiet);
+        var warnings = new ChartSeries(new ChartSeriesId("warnings"), "Warnings", ChartSeriesKind.Line, Points(120,138,131,112,98,86,72)).StateRole(ChartSeriesState.Warning);
+        var failed = new ChartSeries(new ChartSeriesId("failed"), "Failed", ChartSeriesKind.Line, Points(22,30,27,31,18,14,11)).StateRole(ChartSeriesState.Danger);
+        var line=Frame("Check results over time","Healthy checks recede; failures remain visible").XLabels("Mon","Tue","Wed","Thu","Fri","Sat","Sun")
             .AddSeries(passed).AddSeries(warnings).AddSeries(failed);
-        line.Options.YAxis.Maximum=1400; line.Options.YAxis.TickCount=8;
-        var donut=Frame("Findings by control","Largest slices first",600,316).WithXLabels("Mail authentication","TLS","DNSSEC","Policy","Monitoring","Other")
+        line.Options.YAxis.Max=1400; line.Options.YAxis.TickCount=8;
+        var donut=Frame("Findings by control","Largest slices first",600,316).XLabels("Mail authentication","TLS","DNSSEC","Policy","Monitoring","Other")
             .AddDonut("Findings",Points(356,268,214,188,142,116));
         var gauge=Frame("Control readiness","Target 90",396,294)
-            .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness", new ChartGaugeValue(87, targets: new[] { new ChartGaugeTarget(90) }))).ConfigureGauge(o=> {
+            .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness", new ChartGaugeValue(87, targets: new[] { new ChartGaugeTarget(90) }))).Gauge(o=> {
             o.Caption="3 below target";
             o.Bands.Add(new(0,60,ChartSeriesState.Danger)); o.Bands.Add(new(60,80,ChartSeriesState.Warning)); o.Bands.Add(new(80,100,ChartSeriesState.Quiet));
         });
         var needle=Frame("Readiness needle","Explicit target and bands",396,294)
-            .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness", new ChartGaugeValue(74, targets: new[] { new ChartGaugeTarget(90) }))).ConfigureGauge(o=> { o.Form=ChartGaugeForm.Needle; o.Bands.Add(new(0,60,ChartSeriesState.Danger)); o.Bands.Add(new(60,80,ChartSeriesState.Warning)); o.Bands.Add(new(80,100,ChartSeriesState.Quiet)); });
+            .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness", new ChartGaugeValue(74, targets: new[] { new ChartGaugeTarget(90) }))).Gauge(o=> { o.Form=ChartGaugeForm.Needle; o.Bands.Add(new(0,60,ChartSeriesState.Danger)); o.Bands.Add(new(60,80,ChartSeriesState.Warning)); o.Bands.Add(new(80,100,ChartSeriesState.Quiet)); });
         var linear=Frame("Linear readiness","Explicit target and bands",600,232)
-            .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness", new ChartGaugeValue(87, targets: new[] { new ChartGaugeTarget(90) }))).ConfigureGauge(o=> { o.Form=ChartGaugeForm.Linear; o.Bands.Add(new(0,60,ChartSeriesState.Danger)); o.Bands.Add(new(60,80,ChartSeriesState.Warning)); o.Bands.Add(new(80,100,ChartSeriesState.Quiet)); });
-        var bullet=Frame("Control coverage","Actual values and targets",600,317).WithValueFormatter(value=>value.ToString("0",System.Globalization.CultureInfo.InvariantCulture)+"%").AddBullet("DMARC",88,95).AddBullet("DNSSEC",74,90).AddBullet("MTA-STS",63,85).AddBullet("TLS",92,80);
-        var funnel=Frame("Remediation stages","Percentage of the first stage",600,350).WithDataLabels().WithXLabels("Detected","Triaged","Assigned","Fixed","Verified").AddFunnel("Findings",Points(1284,1012,744,521,466));
+            .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness", new ChartGaugeValue(87, targets: new[] { new ChartGaugeTarget(90) }))).Gauge(o=> { o.Form=ChartGaugeForm.Linear; o.Bands.Add(new(0,60,ChartSeriesState.Danger)); o.Bands.Add(new(60,80,ChartSeriesState.Warning)); o.Bands.Add(new(80,100,ChartSeriesState.Quiet)); });
+        var bullet=Frame("Control coverage","Actual values and targets",600,317).FormatValuesBy(value=>value.ToString("0",System.Globalization.CultureInfo.InvariantCulture)+"%").AddBullet("DMARC",88,95).AddBullet("DNSSEC",74,90).AddBullet("MTA-STS",63,85).AddBullet("TLS",92,80);
+        var funnel=Frame("Remediation stages","Percentage of the first stage",600,350).DataLabels().XLabels("Detected","Triaged","Assigned","Fixed","Verified").AddFunnel("Findings",Points(1284,1012,744,521,466));
         var sankey=Frame("Remediation flow","Source-coloured links",600,350).AddSankey("Flow", new[] { new ChartNode("Assessment", "Assessment"), new ChartNode("Remediated", "Remediated"), new ChartNode("In progress", "In progress"), new ChartNode("Overdue", "Overdue"), new ChartNode("Monitoring", "Monitoring"), new ChartNode("GPO", "GPO") }, new[] {
             new ChartFlowLink("flow-1", "Assessment","Remediated",360),new("flow-2", "Assessment","In progress",110),new("flow-3", "Assessment","Overdue",50),new("flow-4", "Monitoring","Remediated",170),new("flow-5", "Monitoring","In progress",90),new("flow-6", "Monitoring","Overdue",50),new("flow-7", "GPO","Remediated",80),new("flow-8", "GPO","In progress",50),new("flow-9", "GPO","Overdue",40)
         });
-        sankey.Series[0].WithNodeState("Remediated",ChartSeriesState.Neutral).WithNodeState("In progress",ChartSeriesState.Warning).WithNodeState("Overdue",ChartSeriesState.Danger);
-        var heat=Frame("Activity by hour","Sequential ramp; zero is neutral",600,296).WithXLabels(Enumerable.Range(0,24).Select(i=>new[]{0,6,12,18,23}.Contains(i)?i.ToString("00"):"").ToArray());
+        sankey.Series[0].NodeState("Remediated",ChartSeriesState.Neutral).NodeState("In progress",ChartSeriesState.Warning).NodeState("Overdue",ChartSeriesState.Danger);
+        var heat=Frame("Activity by hour","Sequential ramp; zero is neutral",600,296).XLabels(Enumerable.Range(0,24).Select(i=>new[]{0,6,12,18,23}.Contains(i)?i.ToString("00"):"").ToArray());
         var days=new[]{"Mon","Tue","Wed","Thu","Fri","Sat","Sun"};
         for(var d=0;d<7;d++)heat.AddHeatmapRow(days[d],Enumerable.Range(0,24).Select(h=>new ChartPoint(h+1,HeatLevel(d,h))));
-        heat.Options.HeatmapRelativeScale=true;
+        heat.Options.Heatmap.RelativeScale=true;
         var results=new Dictionary<string,Chart> { ["bar"]=bar,["line"]=line,["donut"]=donut,["gauge"]=gauge,["needle"]=needle,["linear"]=linear,["bullet"]=bullet,["sankey"]=sankey,["funnel"]=funnel,["heat"]=heat };
-        results["stacked"]=Frame("Stacked composition","Surface separators and square baselines").WithStackedBars().WithXLabels("A","B","C").AddBar("First",Points(20,30,-15)).AddBar("Second",Points(12,14,-8));
+        results["stacked"]=Frame("Stacked composition","Surface separators and square baselines").Bars(b => b.Stacked()).XLabels("A","B","C").AddBar("First",Points(20,30,-15)).AddBar("Second",Points(12,14,-8));
         results["scatter"]=Frame("Scatter","6 px markers and surface outlines").AddScatter("Observations",Points(20,40,28,60,37));
         results["area"]=Frame("Single area","Flat 12 percent fill").AddArea("Volume",Points(20,40,28,60,37));
-        results["narrow-donut"]=Frame("Findings","List beneath the donut",360,510).WithXLabels("Mail","TLS","DNSSEC","Policy","Monitoring","Other").AddDonut("Findings",Points(356,268,214,188,142,116));
-        results["horizontal"]=Frame("Horizontal counts","Square baselines and value-end corners").WithXLabels("One","Two","Three").WithDataLabels().AddHorizontalBar("Counts",Points(50,30,20));
-        results["treemap"]=Frame("Storage distribution","Flat tiles with readable ink").WithDataLabels().AddTreemap("Files",new[]{new ChartHierarchyItem("One", "One", value: 50),new("Two", "Two", value: 30),new("Three", "Three", value: 20)});
-        results["tree"]=Frame("Hierarchy","Shared flat surfaces and labels").WithDataLabels().AddTree("Structure", new[] { new ChartNode("Root", "Root"), new ChartNode("One", "One"), new ChartNode("Two", "Two"), new ChartNode("Three", "Three") }, new[]{new ChartTreeLink("Root","One"),new("Root","Two"),new("One","Three")});
+        results["narrow-donut"]=Frame("Findings","List beneath the donut",360,510).XLabels("Mail","TLS","DNSSEC","Policy","Monitoring","Other").AddDonut("Findings",Points(356,268,214,188,142,116));
+        results["horizontal"]=Frame("Horizontal counts","Square baselines and value-end corners").XLabels("One","Two","Three").DataLabels().AddHorizontalBar("Counts",Points(50,30,20));
+        results["treemap"]=Frame("Storage distribution","Flat tiles with readable ink").DataLabels().AddTreemap("Files",new[]{new ChartHierarchyItem("One", "One", value: 50),new("Two", "Two", value: 30),new("Three", "Three", value: 20)});
+        results["tree"]=Frame("Hierarchy","Shared flat surfaces and labels").DataLabels().AddTree("Structure", new[] { new ChartNode("Root", "Root"), new ChartNode("One", "One"), new ChartNode("Two", "Two"), new ChartNode("Three", "Three") }, new[]{new ChartTreeLink("Root","One"),new("Root","Two"),new("One","Three")});
         results["timeline"]=Frame("Delivery timeline","Flat intervals").AddTimelineRange("Plan",1,3).AddTimelineRange("Build",3,7).AddTimelineRange("Review",6,9);
         results["gantt"]=Frame("Delivery schedule","Flat tasks and progress").AddGanttTask("Plan",1,3,1).AddGanttTask("Build",3,7,.65).AddGanttTask("Review",6,9,.2);
         var schedule = results["gantt"];
         schedule.AddGanttDependency(schedule.Series[0], schedule.Series[1]).AddGanttDependency(schedule.Series[1], schedule.Series[2]);
         results["bubble"]=Frame("Bubble observations","70 percent fill with surface outline").AddBubble("Samples",new[]{new ChartBubble(1,20,12),new(2,50,30),new(3,38,20)});
         results["multi-area"]=Frame("Multiple area series","Lines without overlapping fills").AddArea("One",Points(20,30,40)).AddArea("Two",Points(15,25,35));
-        results["waterfall"]=Frame("Changes","Flat increments and total").WithXLabels("Start","Added","Removed","Final").WithDataLabels().AddWaterfall("Changes",Points(60,20,-10,70));
-        results["host-frame"]=Frame("Host-framed counts","No chart surface or outer padding").WithHostFrame().WithXLabels("One","Two","Three").WithDataLabels().AddBar("Counts",Points(50,30,20));
-        var alert = new ChartSeries(new ChartSeriesId("alert"), "Alert", ChartSeriesKind.Bar, Points(40,24,16)).WithState(ChartSeriesState.Danger);
-        results["inside-bar"]=Frame("Inside bar labels","Contrasting ink for categorical and state fills").WithXLabels("One","Two","Three")
-            .WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside).AddBar("Observed",Points(50,30,20)).AddSeries(alert);
+        results["waterfall"]=Frame("Changes","Flat increments and total").XLabels("Start","Added","Removed","Final").DataLabels().AddWaterfall("Changes",Points(60,20,-10,70));
+        results["host-frame"]=Frame("Host-framed counts","No chart surface or outer padding").HostOwnsFrame().XLabels("One","Two","Three").DataLabels().AddBar("Counts",Points(50,30,20));
+        var alert = new ChartSeries(new ChartSeriesId("alert"), "Alert", ChartSeriesKind.Bar, Points(40,24,16)).StateRole(ChartSeriesState.Danger);
+        results["inside-bar"]=Frame("Inside bar labels","Contrasting ink for categorical and state fills").XLabels("One","Two","Three")
+            .DataLabels().DataLabels(dataLabels => dataLabels.Placement(ChartDataLabelPlacement.Inside)).AddBar("Observed",Points(50,30,20)).AddSeries(alert);
         return results;
     }
 

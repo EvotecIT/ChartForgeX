@@ -38,7 +38,7 @@ public sealed class TreeViewInterchangeTests {
         Assert.Equal("Source and documentation", imported.Options.Accessibility.Description); Assert.Equal("en", imported.Options.Accessibility.Language);
         var before = original.RenderSvg("portable-tree"); var originalPng = original.ToPng();
         Assert.Equal(before, imported.RenderSvg("portable-tree")); Assert.Equal(originalPng, imported.ToPng());
-        imported.AddItem("added", "Integration.cs", imported.Items[0].Id, "An editable imported row").WithNaturalSize(width, 320);
+        imported.AddItem("added", "Integration.cs", imported.Items[0].Id, "An editable imported row").NaturalSize(width, 320);
         var edited = imported.RenderSvg("portable-tree"); var editedPng = imported.ToPng();
         Save("treeview-portable", dark, width, edited, editedPng);
         Assert.NotEqual(before, edited); Assert.Contains("Integration.cs", edited);
@@ -50,9 +50,9 @@ public sealed class TreeViewInterchangeTests {
     [Fact]
     public void EveryRowKindIconAndInertMetadataValueRetainsItsAuthoredMeaningAndPresentation() {
         var classes = new List<string> { "external", "highlight" };
-        var block = TreeViewBlock.Create().WithTitle("Native rows").WithSubtitle("Portable semantics").WithPadding(27, 19, 31, 17)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), ThemeMode.Dark)
-            .WithTransparentBackground().WithCard(false).WithPngOutputScale(2);
+        var block = TreeViewBlock.Create().Title("Native rows").Subtitle("Portable semantics").Padding(27, 19, 31, 17)
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(ThemeMode.Dark)
+            .TransparentBackground().ShowCard(false).PngOutputScale(2);
         block.ShowIcons = true; block.RowIndent = 25; block.RowPadding = 7;
         block.Options.Accessibility.Name = "Native tree"; block.Options.Accessibility.Description = "Complete values";
         block.Options.Accessibility.Language = "pl"; block.Options.Accessibility.IsDecorative = true;
@@ -62,7 +62,7 @@ public sealed class TreeViewInterchangeTests {
         block.AddItem(new TreeViewItem("none", "Hidden icon", "root", icon: TreeViewIcon.None, iconReference: ""));
         block.AddItem(new TreeViewItem("unknown", "External icon", "root", "Inert URL", TreeViewItemKind.File,
             TreeViewIcon.Unknown, true, "https://example.invalid/icon.svg", classes));
-        classes.Clear(); block.WithNaturalSize(900, 400);
+        classes.Clear(); block.NaturalSize(900, 400);
         var artifact = VisualArtifact.Create("typed-tree", VisualArtifactKind.VisualBlock, block);
         var envelope = artifact.ToInterchangeEnvelope(); block.AddItem("later", "Later.txt", "root");
         Assert.Equal(5, envelope.TreeView!.Items.Count);
@@ -97,9 +97,9 @@ public sealed class TreeViewInterchangeTests {
 
     [Fact]
     public void FlatRowsRetainNativeDepthWithoutChangingTheCommonJsonDepthLimit() {
-        var block = TreeViewBlock.Create().WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family));
+        var block = TreeViewBlock.Create().Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family));
         for (var index = 0; index < 128; index++) block.AddItem("n" + index, "Node", index == 0 ? null : "n" + (index - 1));
-        block.WithNaturalSize(3000);
+        block.NaturalSize(3000);
         var envelope = VisualArtifact.Create("deep-tree", VisualArtifactKind.VisualBlock, block).ToInterchangeEnvelope();
         var json = envelope.ToJson(); var imported = VisualArtifactInterchangeEnvelope.FromJson(json).ToTreeViewBlock();
         Assert.Equal(128, imported.Items.Count); Equal(block.Items, imported.Items);
@@ -108,8 +108,8 @@ public sealed class TreeViewInterchangeTests {
     }
 
     internal static VisualArtifactInterchangeEnvelope Native() {
-        var block = TreeViewBlock.Create().WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family))
-            .AddItem("root", "Root/").AddItem("child", "Child.txt", "root").WithNaturalSize(520, 300);
+        var block = TreeViewBlock.Create().Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family))
+            .AddItem("root", "Root/").AddItem("child", "Child.txt", "root").NaturalSize(520, 300);
         return VisualArtifact.Create("tree", VisualArtifactKind.VisualBlock, block).ToInterchangeEnvelope();
     }
     internal static void Equal(IReadOnlyList<TreeViewItem> expected, IReadOnlyList<TreeViewItem> actual) {

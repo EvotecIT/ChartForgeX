@@ -35,14 +35,14 @@ public sealed class TopologyExternalCaptionRoutingTests {
     }
 
     internal static TopologyChart Source(bool top) {
-        var chart=TopologyChart.Create().WithId("external-caption-obstacle").WithTitle("").WithViewport(640,400,24).WithLayout(TopologyLayoutMode.Manual)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).AddNode("source","Start",40,150,width:80,height:60)
+        var chart=TopologyChart.Create().Id("external-caption-obstacle").Title("").Viewport(new TopologyViewport(640, 400, 24)).LayoutMode(TopologyLayoutMode.Manual)
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).AddNode("source","Start",40,150,width:80,height:60)
             .AddNode("captioned","Review request\nAudit record",250,top?220:80,width:100,height:60).AddNode("target","Finish",480,150,width:80,height:60)
             .AddEdge("request","source","target",routing:TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
         foreach(var node in chart.Nodes){node.Shape=TopologyNodeShape.Rectangle;node.PreserveDisplayModeSize=true;node.ShowStatusBadge=false;node.ShowLabel=false;}
         var captioned=chart.Nodes[1];captioned.DisplayMode=TopologyNodeDisplayMode.Icon;captioned.IconShape=TopologyIconShape.Router;captioned.ShowLabel=true;
         captioned.CaptionPlacement=top?TopologyCaptionPlacement.Top:TopologyCaptionPlacement.Bottom;captioned.CaptionGap=8;captioned.CaptionSurface=TopologyCaptionSurface.Plain;captioned.MaximumTextWidth=160;
-        captioned.CaptionTextStyle=new TextStyleOverride{FontSize=20,FontWeight="400"};chart.WithRenderOptions(new TopologyRenderOptions{IncludeLegend=false,IncludeIconLabels=true,FitContentToViewport=false,MaxNodeLabelLines=4,WrapNodeLabels=true,ReadableDenseLayout=true});return chart;
+        captioned.CaptionTextStyle=new TextStyleOverride{FontSize=20,FontWeight="400"};chart.DefaultRenderOptions(new TopologyRenderOptions{IncludeLegend=false,IncludeIconLabels=true,FitContentToViewport=false,MaxNodeLabelLines=4,WrapNodeLabels=true,ReadableDenseLayout=true});return chart;
     }
     private static bool CrossesInterior(ChartRect box,ChartPoint a,ChartPoint b){const double inset=.001;var left=box.Left+inset;var right=box.Right-inset;var top=box.Top+inset;var bottom=box.Bottom-inset;if(right<=left||bottom<=top)return false;var first=0d;var last=1d;var dx=b.X-a.X;var dy=b.Y-a.Y;return Clip(-dx,a.X-left)&&Clip(dx,right-a.X)&&Clip(-dy,a.Y-top)&&Clip(dy,bottom-a.Y)&&last>=first;bool Clip(double direction,double distance){if(direction==0)return distance>=0;var value=distance/direction;if(direction<0){if(value>last)return false;if(value>first)first=value;}else{if(value<first)return false;if(value<last)last=value;}return true;}}
     private static void Capture(string name,PreparedTopology prepared)=>TopologyExternalCaptionPolicyTests.Capture(name,prepared.ToSvg(),prepared.ToPng(),prepared.ToInterchangeEnvelope().ToJson());

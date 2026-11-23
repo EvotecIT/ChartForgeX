@@ -14,7 +14,7 @@ public sealed class ChartLinkedReadableValueContractsTests {
     [Fact]
     public void AutomaticCoordinateReadoutsUsePreparedAxisCaptionsAndKeepRawFactsExact() {
         const double x = .025, y = .12345678901234566;
-        var chart = Chart.Create().WithXAxisBounds(0, 1).WithYAxisBounds(0, 1)
+        var chart = Chart.Create().XAxis(xAxis => xAxis.Bounds(0, 1)).YAxis(yAxis => yAxis.Bounds(0, 1))
             .AddScatter("Samples", new[] { new ChartPoint(x, y) });
         var point = Mark(chart.Prepare(new VisualRenderContext()).ToSvg());
         Assert.Equal("0.025", point.Attribute("data-cfx-display-label")!.Value);
@@ -92,7 +92,7 @@ public sealed class ChartLinkedReadableValueContractsTests {
     public void TimeReadoutsAndBrushTicksUseTheSameAuthoredAxisFormatterOncePerValue() {
         var first = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
         var counts = new Dictionary<double, int>();
-        var chart = Chart.Create().WithSize(800, 400).WithXAxisTimeScale().AddLine("Requests",
+        var chart = Chart.Create().Size(800, 400).XAxis(x => x.TimeScale()).AddLine("Requests",
             new[] { new ChartPoint(first, 7), new ChartPoint(first.AddDays(2), 12) });
         chart.Options.XAxis.LabelFormatter = number => {
             counts[number] = counts.TryGetValue(number, out var count) ? count + 1 : 1;
@@ -112,7 +112,7 @@ public sealed class ChartLinkedReadableValueContractsTests {
 
     [Fact]
     public void ProjectionMetadataPreservesExplicitEmptyCaptionsForBrushDisplay() {
-        var chart = Chart.Create().WithXAxisBounds(0, 10).AddLine("Empty captions", new[] { new ChartPoint(0, 1), new ChartPoint(10, 2) });
+        var chart = Chart.Create().XAxis(x => x.Bounds(0, 10)).AddLine("Empty captions", new[] { new ChartPoint(0, 1), new ChartPoint(10, 2) });
         chart.Options.XAxis.LabelFormatter = _ => string.Empty;
         var html = chart.ToInteractiveHtmlFragmentWithoutAssets();
         var match = Regex.Match(html, "data-cfx-prepared-chart=\"([^\"]+)\"");
@@ -125,7 +125,7 @@ public sealed class ChartLinkedReadableValueContractsTests {
     [Fact]
     public void StateTimelineReadoutsCaptureFormattedBoundsWithoutChangingRawInstants() {
         var first = new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc);
-        var chart = Chart.Create().WithXAxisTimeScale().WithStateCategories(new ChartStateCategory("up", "Available", ChartColor.FromRgb(13, 148, 136)))
+        var chart = Chart.Create().XAxis(x => x.TimeScale()).StateCategories(new ChartStateCategory("up", "Available", ChartColor.FromRgb(13, 148, 136)))
             .AddStateTimelineLane("Service", new[] { new ChartStateTimelineSegment(first, first.AddHours(6), "up") });
         chart.Options.XAxis.LabelFormatter = number => DateTime.FromOADate(number).ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
         var point = Mark(chart.ToSvg());
@@ -138,8 +138,8 @@ public sealed class ChartLinkedReadableValueContractsTests {
 
     internal static Chart ZonedTimeChart(string zone) {
         var first = new DateTime(2026, 3, 2, 0, 0, 0, DateTimeKind.Utc);
-        return Chart.Create().WithSize(960, 360).WithXAxisTimeScale()
-            .ConfigureXAxis(axis => axis.TimeZone = TimeZoneInfo.FindSystemTimeZoneById(zone))
+        return Chart.Create().Size(960, 360).XAxis(x => x.TimeScale())
+            .XAxis(axis => axis.TimeZone = TimeZoneInfo.FindSystemTimeZoneById(zone))
             .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("api"), "API", new[] { new ChartPoint(first, 7), new ChartPoint(first.AddDays(2), 12) }));
     }
 }

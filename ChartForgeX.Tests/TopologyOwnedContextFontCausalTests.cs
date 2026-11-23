@@ -11,8 +11,8 @@ namespace ChartForgeX.Tests;
 public sealed class TopologyOwnedContextFontCausalTests {
     [Theory] [InlineData(false)] [InlineData(true)]
     public void APreparedExplicitFileAndTheOrdinaryThemeFamilyKeepTheirOwnedNativePaintAfterRestoration(bool file) {
-        var chart=TopologyChart.Create().WithId("owned-font-before").WithTitle("").WithViewport(640,400,24)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).AddNode("node","ChartForgeX",210,150,width:180,height:90);
+        var chart=TopologyChart.Create().Id("owned-font-before").Title("").Viewport(new TopologyViewport(640, 400, 24))
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).AddNode("node","ChartForgeX",210,150,width:180,height:90);
         chart.Nodes[0].DisplayMode=TopologyNodeDisplayMode.CompactCard;chart.Nodes[0].PreserveDisplayModeSize=true;chart.Nodes[0].ShowStatusBadge=false;
         var path=Path.Combine(Path.GetTempPath(),"cfx-owned-context-font-"+Guid.NewGuid().ToString("N")+".ttf");
         try {

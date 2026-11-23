@@ -49,7 +49,7 @@ var graph = GraphScene.Create("service-estate", "Service estate")
         edge.LayoutDirected = true;
     });
 
-graph.Options.UseSuperTopologyDefaults();
+graph.Options.SuperTopologyDefaults();
 graph.Options.Layout.Mode = GraphLayoutMode.Hierarchical;
 graph.Options.Layout.Direction = GraphLayoutDirection.LeftToRight;
 graph.Options.Hierarchy.InitialRootNodeId = "estate";
@@ -211,10 +211,10 @@ The large-scene path has four layers:
 
 The compact document is activated only after a level-of-detail threshold is crossed. Normal SVG scenes retain their complete markup. Large pages therefore avoid the hidden-SVG DOM cost while keeping search, filters, selection, neighborhood focus, cluster state, hit testing, JSON export, and incremental updates.
 
-`UseSuperTopologyDefaults()` enables a practical starting policy. Every threshold remains configurable:
+`SuperTopologyDefaults()` enables a practical starting policy. Every threshold remains configurable:
 
 ```csharp
-graph.Options.UseSuperTopologyDefaults();
+graph.Options.SuperTopologyDefaults();
 graph.Options.LevelOfDetail.CanvasPreferredNodeThreshold = 500;
 graph.Options.LevelOfDetail.WebGlPreferredNodeThreshold = 2500;
 graph.Options.LevelOfDetail.OverviewScaleThreshold = 0.62;
@@ -434,7 +434,7 @@ graph.redo("service-estate");
 const positions = graph.positions("service-estate");
 ```
 
-Enable editing with `UseSuperTopologyDefaults(enableManipulation: true)` or by enabling `Manipulation`, `IncrementalUpdates`, and `History`, then grant only the required `GraphManipulationOptions` capabilities. `change` validates references and permissions before dispatching the cancelable `cfxgraphbeforechange` event. Accepted changes dispatch `cfxgraphchange`; rejected or canceled changes do not enter history. Cluster structure remains a trusted-host `update` concern.
+Enable editing with `SuperTopologyDefaults(enableManipulation: true)` or by enabling `Manipulation`, `IncrementalUpdates`, and `History`, then grant only the required `GraphManipulationOptions` capabilities. `change` validates references and permissions before dispatching the cancelable `cfxgraphbeforechange` event. Accepted changes dispatch `cfxgraphchange`; rejected or canceled changes do not enter history. Cluster structure remains a trusted-host `update` concern.
 
 Set `HtmlGraphExplorerOptions.PersistInteractionState = true` to restore positions, viewport, selection, focus, hierarchy, and cluster state from a scene-scoped browser key. Set `InteractionStateStorageKey` when a host needs its own namespace. Persistence is off by default. It never changes the host model or static SVG/PNG output.
 

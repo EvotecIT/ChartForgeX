@@ -17,15 +17,15 @@ public static class MermaidRadarRendering {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidRadarRenderOptions();
         var chart = Chart.Create()
-            .WithTitle(ResolveTitle(document, options))
-            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
-            .WithSize(options.Width ?? document.Configuration.Radar?.Width ?? 760, options.Height ?? document.Configuration.Radar?.Height ?? 620)
-            .WithLegend(document.ShowLegend)
-            .WithXLabels(AxisLabels(document))
-            .WithPolarGridShape(GraticuleShape(document));
-        chart.Options.PolarGridRingCount = Math.Min(document.Ticks ?? 5, 32);
+            .Title(ResolveTitle(document, options))
+            .Subtitle(MermaidHeading.Subtitle(options.Subtitle))
+            .Size(options.Width ?? document.Configuration.Radar?.Width ?? 760, options.Height ?? document.Configuration.Radar?.Height ?? 620)
+            .Legend(document.ShowLegend)
+            .XLabels(AxisLabels(document))
+            .Polar(p => p.GridShape(GraticuleShape(document)));
+        chart.Options.Polar.GridRingCount = Math.Min(document.Ticks ?? 5, 32);
         (document.Configuration.Radar ?? new MermaidRadarSettings()).Apply(chart, options);
-        chart.WithYAxisBounds(document.Minimum ?? 0, document.Maximum ?? ResolveMaximum(document));
+        chart.YAxis(y => y.Bounds(document.Minimum ?? 0, document.Maximum ?? ResolveMaximum(document)));
         var tension = options.CurveTension ?? (string.Equals(document.Graticule, "polygon", StringComparison.OrdinalIgnoreCase)
             ? 0 : document.Configuration.Radar?.CurveTension ?? .17);
         foreach (var curve in document.Curves) {

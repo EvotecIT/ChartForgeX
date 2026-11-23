@@ -1,6 +1,8 @@
+using PowerForge.Fluent;
 namespace ChartForgeX.Interactivity.Html;
 
 /// <summary>Configures a second native chart preparation for narrow HTML containers.</summary>
+[Fluent]
 public sealed class HtmlChartAdaptiveLayoutOptions {
     /// <summary>Gets or sets the narrow drawing's logical width. The default is 360 pixels.</summary>
     public int NarrowWidth { get; set; } = 360;

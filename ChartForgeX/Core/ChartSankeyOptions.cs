@@ -1,8 +1,10 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>Controls the native layout and paint of weighted Sankey flows without changing their authored facts.</summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class ChartSankeyOptions {
     private ChartSankeyAlignment _alignment = ChartSankeyAlignment.Justify;
     private ChartSankeyVerticalAlignment _verticalAlignment = ChartSankeyVerticalAlignment.Center;

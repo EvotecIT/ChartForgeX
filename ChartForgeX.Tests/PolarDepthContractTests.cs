@@ -10,7 +10,7 @@ public sealed class PolarDepthContractTests {
     [Fact]
     public void ExplicitDefaultPolicyPreservesTheExistingOpenStraightNativeArtifact() {
         var chart = Fixture(); var original = Prepare(chart); var svg = original.ToSvg(); var png = original.ToPng();
-        chart.Series[0].ConfigurePolar(options => { options.Form = ChartLineAreaForm.Line; options.ClosePath = false; options.CurveTension = 0; });
+        chart.Series[0].Polar(options => { options.Form = ChartLineAreaForm.Line; options.ClosePath = false; options.CurveTension = 0; });
         var explicitDefault = Prepare(chart);
         Assert.Equal(svg, explicitDefault.ToSvg()); Assert.Equal(png, explicitDefault.ToPng());
         Assert.False(Assert.Single(explicitDefault.Scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "polar-line").Close);
@@ -20,12 +20,12 @@ public sealed class PolarDepthContractTests {
     [Fact]
     public void ConfigurationIsDetachedAndThrowingCallbackDoesNotReplaceInstalledState() {
         var series = Fixture().Series[0]; ChartPolarOptions? retained = null;
-        series.ConfigurePolar(options => { retained = options; options.CurveTension = .25; options.ClosePath = true; });
+        series.Polar(options => { retained = options; options.CurveTension = .25; options.ClosePath = true; });
         retained!.CurveTension = 1; Assert.Equal(.25, series.Polar.CurveTension);
         var installed = series.Polar;
-        Assert.Throws<InvalidOperationException>(() => series.ConfigurePolar(options => { options.Form = ChartLineAreaForm.Area; throw new InvalidOperationException(); }));
+        Assert.Throws<InvalidOperationException>(() => series.Polar(options => { options.Form = ChartLineAreaForm.Area; throw new InvalidOperationException(); }));
         Assert.Same(installed, series.Polar); Assert.Equal(ChartLineAreaForm.Line, series.Polar.Form);
-        Assert.Throws<ArgumentNullException>(() => series.ConfigurePolar(null!));
+        Assert.Throws<ArgumentNullException>(() => series.Polar((Action<ChartPolarOptions>)null!));
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public sealed class PolarDepthContractTests {
 
     [Fact]
     public void ClosedLineUsesTheExistingCurveOwnerWithoutAddingFillOrSourcePoints() {
-        var chart = Fixture(); chart.Series[0].ConfigurePolar(options => { options.ClosePath = true; options.CurveTension = .2; });
+        var chart = Fixture(); chart.Series[0].Polar(options => { options.ClosePath = true; options.CurveTension = .2; });
         var prepared = Prepare(chart); var outline = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "polar-line");
         Assert.True(outline.Close); Assert.Equal(3, outline.Commands.Count(command => command.Kind == ChartPathCommandKind.CubicTo));
         Assert.DoesNotContain(prepared.Scene.Nodes, node => node.Role == "polar-area");
@@ -53,8 +53,8 @@ public sealed class PolarDepthContractTests {
     [Fact]
     public void ShortAreaRunsRetainPointsOpenOutlinesAndTruthfulLegendWithoutInventedFill() {
         var chart = Fixture(); var series = chart.Series[0]; series.Points.RemoveAt(2);
-        series.ConfigurePolar(options => options.Form = ChartLineAreaForm.Area);
-        var prepared = Prepare(chart.WithLegend());
+        series.Polar(options => options.Form = ChartLineAreaForm.Area);
+        var prepared = Prepare(chart.Legend());
         Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "polar.open-area");
         Assert.DoesNotContain(prepared.Scene.Nodes, node => node.Role is "polar-area" or "legend-area");
         Assert.False(Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "polar-line").Close);
@@ -64,8 +64,8 @@ public sealed class PolarDepthContractTests {
         Assert.Single(Prepare(chart).Regions, region => region.Role == "polar-point");
     }
 
-    internal static Chart Fixture() => Chart.Create().WithSize(400, 320).WithHeader(false).WithLegend(false)
-        .WithDataLabels(false).WithAxes(false).WithGrid(false).WithYAxisBounds(0, 100).AddPolar("Signal", Values());
+    internal static Chart Fixture() => Chart.Create().Size(400, 320).ShowHeader(false).Legend(false)
+        .DataLabels(false).Axes(false).ShowGrid(false).YAxis(y => y.Bounds(0, 100)).AddPolar("Signal", Values());
     private static ChartPoint[] Values() => new[] { new ChartPoint(0, 30), new ChartPoint(1, 80), new ChartPoint(2, 60) };
     internal static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
 }

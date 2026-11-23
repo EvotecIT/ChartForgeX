@@ -38,8 +38,8 @@ internal sealed class RadialValueScale {
                 .SelectMany(observations).Where(value => !includeZero || axis.Scale != ChartScaleKind.Logarithmic || value != 0).ToArray();
             // Empty series retain identity without inventing another axis's domain.
             if (values.Length == 0) {
-                if (!axis.Minimum.HasValue || !axis.Maximum.HasValue) continue;
-                values = new[] { axis.Minimum.Value, axis.Maximum.Value };
+                if (!axis.Min.HasValue || !axis.Max.HasValue) continue;
+                values = new[] { axis.Min.Value, axis.Max.Value };
             }
             result.Add(side, Create(axis, values, chartName, includeZero));
         }
@@ -62,14 +62,14 @@ internal sealed class RadialValueScale {
         }
 
         var signed = includeZero && axis.Scale != ChartScaleKind.Logarithmic;
-        var minimum = axis.Minimum ?? (signed ? Math.Min(0, observed.Min()) : AutomaticMinimum(axis, observed));
-        var maximum = axis.Maximum ?? (signed ? Math.Max(0, observed.Max()) : axis.Scale == ChartScaleKind.Logarithmic
+        var minimum = axis.Min ?? (signed ? Math.Min(0, observed.Min()) : AutomaticMinimum(axis, observed));
+        var maximum = axis.Max ?? (signed ? Math.Max(0, observed.Max()) : axis.Scale == ChartScaleKind.Logarithmic
             && axis.LogarithmicDomain == ChartLogarithmicDomain.Negative ? ChartRange.LogarithmicBaseline(observed.Max(), axis) : observed.Max());
         if (maximum <= minimum) {
             if (signed) {
                 var expanded = ChartTicks.Generate(axis, minimum, minimum);
-                if (!axis.Minimum.HasValue) minimum = expanded[0];
-                if (!axis.Maximum.HasValue) maximum = expanded[expanded.Count - 1];
+                if (!axis.Min.HasValue) minimum = expanded[0];
+                if (!axis.Max.HasValue) maximum = expanded[expanded.Count - 1];
             } else if (axis.Scale == ChartScaleKind.Logarithmic && axis.LogarithmicDomain == ChartLogarithmicDomain.Negative) {
                 minimum = maximum * axis.LogarithmBase;
             } else maximum = axis.Scale == ChartScaleKind.Logarithmic ? minimum * axis.LogarithmBase : minimum + 1;
@@ -78,10 +78,10 @@ internal sealed class RadialValueScale {
             throw new InvalidOperationException(chartName + " axis bounds cannot form a finite visible domain.");
 
         var generatedTicks = axis.Labels.Count > 0 ? ChartTicks.ForValueAxis(axis, minimum, maximum)
-            : axis.Minimum.HasValue || axis.Maximum.HasValue ? ChartTicks.ForAxis(axis, minimum, maximum) : ChartTicks.Generate(axis, minimum, maximum);
-        if (generatedTicks.Count > 0 && !axis.Minimum.HasValue) minimum = Math.Min(minimum, generatedTicks[0]);
+            : axis.Min.HasValue || axis.Max.HasValue ? ChartTicks.ForAxis(axis, minimum, maximum) : ChartTicks.Generate(axis, minimum, maximum);
+        if (generatedTicks.Count > 0 && !axis.Min.HasValue) minimum = Math.Min(minimum, generatedTicks[0]);
         var ticks = ChartTicks.PreserveFormatting(generatedTicks, generatedTicks.Where(tick => tick >= minimum).ToArray());
-        if (ticks.Count > 0 && !axis.Maximum.HasValue) maximum = Math.Max(maximum, ticks[ticks.Count - 1]);
+        if (ticks.Count > 0 && !axis.Max.HasValue) maximum = Math.Max(maximum, ticks[ticks.Count - 1]);
         return new RadialValueScale(axis, minimum, maximum, ticks);
     }
 
@@ -121,6 +121,6 @@ internal sealed class RadialValueScale {
             return axis.LogarithmicDomain == ChartLogarithmicDomain.Negative ? smallest : ChartRange.LogarithmicBaseline(smallest, axis);
         }
 
-        return axis.Maximum.HasValue && axis.Maximum.Value <= 0 ? axis.Maximum.Value - 1 : 0;
+        return axis.Max.HasValue && axis.Max.Value <= 0 ? axis.Max.Value - 1 : 0;
     }
 }

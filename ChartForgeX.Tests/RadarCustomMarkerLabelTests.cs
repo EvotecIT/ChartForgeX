@@ -55,15 +55,15 @@ public sealed class RadarCustomMarkerLabelTests {
     }
 
     private static Chart Create(int width, bool dark, ChartMarkerPath? shape, double radius, string label) {
-        var chart = Chart.Create().WithSize(width, 300).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false)
-            .WithYAxisBounds(0, 100).WithDataLabels(false).WithDataLabelPlacement(ChartDataLabelPlacement.Center)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
+        var chart = Chart.Create().Size(width, 300).ShowHeader(false).Legend(false).Axes(false).ShowGrid(false)
+            .YAxis(y => y.Bounds(0, 100)).DataLabels(false).DataLabels(d => d.Placement(ChartDataLabelPlacement.Center))
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddRadialColumn("Observed", Enumerable.Range(1, 4).Select(index => new ChartPoint(index, 40)))
             .AddRadarLine("Target", Enumerable.Range(1, 4).Select(index => new ChartPoint(index, 70)));
         var radar = chart.Series[1]; radar.ShowDataLabels = true; radar.Radar.OutlineStroke = new ChartStrokeStyle(width: 0);
-        radar.ConfigureDataLabelStyle(style => style.FontSize = 12);
-        for (int index = 0; index < 4; index++) radar.WithPointLabel(index, label);
-        radar.ConfigureMarkers(options => { options.Radius = radius; options.StrokeWidth = 0;
+        radar.DataLabelStyle(style => style.FontSize = 12);
+        for (int index = 0; index < 4; index++) radar.PointLabel(index, label);
+        radar.Markers(options => { options.Radius = radius; options.StrokeWidth = 0;
             if (shape == null) options.Shape = ChartMarkerShape.Square; else options.CustomPath = shape; });
         return chart;
     }

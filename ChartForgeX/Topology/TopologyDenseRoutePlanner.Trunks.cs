@@ -54,7 +54,7 @@ internal static partial class TopologyDenseRoutePlanner {
         Dictionary<TopologyEdge, List<ChartPoint>> paintRoutes, Dictionary<TopologyEdge, TopologyEdge> trunkOwners) {
         var options = chart.RenderOptions!;
         // Live force controls replace routes as nodes move; their independently movable relationships keep full paths.
-        if (options.EnableHtmlInteractions && options.EnableHtmlForceGraphControls &&
+        if (options.Html.Interactions && options.Html.ForceGraphControls &&
             chart.LayoutMode is TopologyLayoutMode.ForceDirected or TopologyLayoutMode.RelationshipRadial) return;
         var highlight = TopologyHighlightState.From(chart, options);
         var groups = routes.Where(route => TopologyRenderPrimitives.EffectiveEdgeDash(route.Request.Edge) == "none")

@@ -14,11 +14,11 @@ public sealed class StatisticalReferenceRangeTests {
     [InlineData(true, false)]
     [InlineData(true, true)]
     public async Task ThickStatisticsFitTheResolvedValueAxisWithoutCompressingCategories(bool horizontal, bool reversed) {
-        var chart = Chart.Create().WithSize(640, 360).WithPadding(0, 0, 0, 0)
-            .WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false)
-            .WithLineMarkers(ChartLineMarkerMode.None)
+        var chart = Chart.Create().Size(640, 360).Padding(0, 0, 0, 0)
+            .ShowHeader(false).Legend(false).Axes(false).ShowGrid(false)
+            .Lines(l => l.MarkerMode(ChartLineMarkerMode.None))
             .AddLine("Readings", new[] { new ChartPoint(1, 10), new ChartPoint(2, 20), new ChartPoint(3, 30), new ChartPoint(4, 40) });
-        chart.Options.LineOrientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
+        chart.Options.Lines.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
         (horizontal ? chart.Options.XAxis : chart.Options.YAxis).Reversed = reversed;
         chart.AddMeanLine("", new[] { new ChartPoint(1, 40) }, ChartColor.FromHex("#FF00FF"));
         chart.Annotations[0].StrokeStyle = new ChartStrokeStyle(width: 40, dash: Array.Empty<double>());

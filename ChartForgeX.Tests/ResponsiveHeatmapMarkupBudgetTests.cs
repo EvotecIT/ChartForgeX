@@ -18,10 +18,10 @@ public sealed partial class ResponsiveHeatmapMarkupBudgetTests {
         var days = Enumerable.Range(0, 30).Select(day => new DateTime(2026, 9, 29).AddDays(day).ToString("yyyy-MM-dd")).ToArray();
         string[] groups = { "Domain controllers", "DNS", "Certificates" };
         // The budget covers the literal markup of an explicit mode; Auto adds its scoped colour properties.
-        var chart = Chart.Create().WithThemeMode(ThemeMode.Light).WithSize(1100, 240 + rows * 48 + 3 * 30).WithAxes().WithYAxisVisible().WithPadding(24, 40, 20, 70)
-            .WithStateCategories(new ChartStateCategory("up", "Up", colors.Status.Pass.Fill), new ChartStateCategory("degraded", "Degraded", colors.Status.Medium.Fill, ChartStatePattern.Hatched),
+        var chart = Chart.Create().ThemeMode(ThemeMode.Light).Size(1100, 240 + rows * 48 + 3 * 30).Axes().YAxis(y => y.Visible()).Padding(24, 40, 20, 70)
+            .StateCategories(new ChartStateCategory("up", "Up", colors.Status.Pass.Fill), new ChartStateCategory("degraded", "Degraded", colors.Status.Medium.Fill, ChartStatePattern.Hatched),
                 new ChartStateCategory("down", "Down", colors.Status.Critical.Fill, ChartStatePattern.CrossHatched), new ChartStateCategory("maintenance", "Maintenance", colors.Status.Info.Fill))
-            .WithXLabels(days);
+            .XLabels(days);
         for (var row = 0; row < rows; row++) {
             var target = $"dc{row + 1:00}.ad.evotec.xyz \u00b7 LDAP bind";
             var cells = Enumerable.Range(0, 30).Select(day => (row * 7 + day) % 13 == 0 ? (ChartHeatmapCell?)null
@@ -214,8 +214,8 @@ public sealed partial class ResponsiveHeatmapMarkupBudgetTests {
 
     [BrowserFact]
     public async Task WrappedBottomLegendStaysBelowDatesOnScreenAndInPrintIncludingEarlierLayout3() {
-        var chart = Fixture(12); chart.Options.LegendPosition = ChartLegendPosition.BottomLeft;
-        chart.WithStateCategories(chart.Options.StateCategories.Select(category => new ChartStateCategory(category.Key,
+        var chart = Fixture(12); chart.Options.Legend.Position = ChartLegendPosition.BottomLeft;
+        chart.StateCategories(chart.Options.StateTimeline.Categories.Select(category => new ChartStateCategory(category.Key,
             "Service status: " + category.Label, category.Color, category.Pattern, category.Emphasis)).ToArray());
         var fragment = new HtmlResponsiveChartRenderer().RenderFragment(chart, 240, 1600);
         await using var session = await InteractiveChartBrowser.OpenAsync("<html><body style='margin:0'><div style='width:390px'>" + fragment + "</div></body></html>", 390, 1000);
@@ -258,7 +258,7 @@ public sealed partial class ResponsiveHeatmapMarkupBudgetTests {
         var fragment = new HtmlResponsiveChartRenderer().RenderFragment(chart, 240, 1600);
         chart.Options.XAxis = chart.Options.XAxis.Clone(); chart.Options.XAxis.LabelDensity = ChartLabelDensity.All;
         chart.Options.YAxis = chart.Options.YAxis.Clone(); chart.Options.YAxis.LabelDensity = ChartLabelDensity.All;
-        chart.WithSize(1600, chart.Options.Size.Height);
+        chart.Size(1600, chart.Options.Size.Height);
         var raw = chart.Prepare(VisualExportRequest.ForChart(chart).Context).ToSvg(new VisualSvgOptions(null, chart.Options.SvgColorVariables).WithPatternTiles());
         var compact = System.Text.RegularExpressions.Regex.Match(fragment, "<svg.*?</svg>", System.Text.RegularExpressions.RegexOptions.Singleline).Value;
         // The fragment leaves the product faces to its host page, so the page supplies them for both drawings.

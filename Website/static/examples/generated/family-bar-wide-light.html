@@ -116,30 +116,30 @@ public static class BarRecipe {
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create();
         if (variant is &quot;options&quot; or &quot;compact-options&quot;) {
-            chart.WithXLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;).WithYAxis(&quot;Share (%)&quot;);
+            chart.XLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;).YAxis(y =&gt; y.Title(&quot;Share (%)&quot;));
             var names = new[] { &quot;First half &#183; Completed&quot;, &quot;First half &#183; Remaining&quot;, &quot;Second half &#183; Completed&quot;, &quot;Second half &#183; Remaining&quot; };
             var ids = new[] { &quot;first-half-completed&quot;, &quot;first-half-remaining&quot;, &quot;second-half-completed&quot;, &quot;second-half-remaining&quot; };
             var values = new[] { new[] { 60d, 75, 40, 90 }, new[] { 40d, 25, 60, 30 }, new[] { 90d, 60, 100, 70 }, new[] { 30d, 40, 25, 30 } };
             for (var index = 0; index &lt; names.Length; index++) {
                 var points = values[index].Select((value, point) =&gt; new ChartPoint(point + 1, value));
                 var series = ChartSeries.CreateBar(new ChartSeriesId(ids[index]), names[index], points)
-                    .WithStackGroup(index &lt; 2 ? &quot;first-half&quot; : &quot;second-half&quot;).WithNormalization(100);
+                    .StackGroup(index &lt; 2 ? &quot;first-half&quot; : &quot;second-half&quot;).NormalizedTo(100);
                 chart.AddSeries(series);
             }
-            chart.Options.YAxis.WithBounds(0, 100).WithLabelFormatter(Percent).WithReversal(variant == &quot;compact-options&quot;);
-            chart.WithBarStyle(ChartBarStyle.SegmentedCapsule).WithStackTotals().WithDataLabels(false);
+            chart.Options.YAxis.Bounds(0, 100).LabelBy(Percent).Reversed(variant == &quot;compact-options&quot;);
+            chart.Bars(b =&gt; b.Style(ChartBarStyle.SegmentedCapsule).ShowTotals()).DataLabels(false);
         }
         else if (variant == &quot;sparse&quot;) {
             var points = Enumerable.Range(1, 6).Where(index =&gt; index is 1 or 3 or 6)
                 .Select(index =&gt; new ChartPoint(index, 20 + index * 7 % 29));
-            chart.WithXLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;, &quot;Central&quot;, &quot;Online&quot;)
+            chart.XLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;, &quot;Central&quot;, &quot;Online&quot;)
                 .AddSeries(ChartSeries.CreateBar(new ChartSeriesId(&quot;orders&quot;), &quot;Orders&quot;, points));
         }
         else {
             // Completed orders per region, this year against last year.
             var lastYear = new[] { 1240d, 980, 1460, 1720, 860, 2140 };
             var thisYear = new[] { 1380d, 1050, 1390, 1940, 1010, 2710 };
-            chart.WithXLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;, &quot;Central&quot;, &quot;Online&quot;).WithYAxis(&quot;Orders&quot;)
+            chart.XLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;, &quot;Central&quot;, &quot;Online&quot;).YAxis(y =&gt; y.Title(&quot;Orders&quot;))
                 .AddSeries(ChartSeries.CreateBar(new ChartSeriesId(&quot;last-year&quot;), &quot;2025&quot;, lastYear.Select((value, index) =&gt; new ChartPoint(index + 1, value))))
                 .AddSeries(ChartSeries.CreateBar(new ChartSeriesId(&quot;orders&quot;), &quot;2026&quot;, thisYear.Select((value, index) =&gt; new ChartPoint(index + 1, value))));
         }
@@ -184,30 +184,30 @@ public static class BarRecipe {
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create();
         if (variant is &quot;options&quot; or &quot;compact-options&quot;) {
-            chart.WithXLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;).WithYAxis(&quot;Share (%)&quot;);
+            chart.XLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;).YAxis(y =&gt; y.Title(&quot;Share (%)&quot;));
             var names = new[] { &quot;First half &#183; Completed&quot;, &quot;First half &#183; Remaining&quot;, &quot;Second half &#183; Completed&quot;, &quot;Second half &#183; Remaining&quot; };
             var ids = new[] { &quot;first-half-completed&quot;, &quot;first-half-remaining&quot;, &quot;second-half-completed&quot;, &quot;second-half-remaining&quot; };
             var values = new[] { new[] { 60d, 75, 40, 90 }, new[] { 40d, 25, 60, 30 }, new[] { 90d, 60, 100, 70 }, new[] { 30d, 40, 25, 30 } };
             for (var index = 0; index &lt; names.Length; index++) {
                 var points = values[index].Select((value, point) =&gt; new ChartPoint(point + 1, value));
                 var series = ChartSeries.CreateBar(new ChartSeriesId(ids[index]), names[index], points)
-                    .WithStackGroup(index &lt; 2 ? &quot;first-half&quot; : &quot;second-half&quot;).WithNormalization(100);
+                    .StackGroup(index &lt; 2 ? &quot;first-half&quot; : &quot;second-half&quot;).NormalizedTo(100);
                 chart.AddSeries(series);
             }
-            chart.Options.YAxis.WithBounds(0, 100).WithLabelFormatter(Percent).WithReversal(variant == &quot;compact-options&quot;);
-            chart.WithBarStyle(ChartBarStyle.SegmentedCapsule).WithStackTotals().WithDataLabels(false);
+            chart.Options.YAxis.Bounds(0, 100).LabelBy(Percent).Reversed(variant == &quot;compact-options&quot;);
+            chart.Bars(b =&gt; b.Style(ChartBarStyle.SegmentedCapsule).ShowTotals()).DataLabels(false);
         }
         else if (variant == &quot;sparse&quot;) {
             var points = Enumerable.Range(1, 6).Where(index =&gt; index is 1 or 3 or 6)
                 .Select(index =&gt; new ChartPoint(index, 20 + index * 7 % 29));
-            chart.WithXLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;, &quot;Central&quot;, &quot;Online&quot;)
+            chart.XLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;, &quot;Central&quot;, &quot;Online&quot;)
                 .AddSeries(ChartSeries.CreateBar(new ChartSeriesId(&quot;orders&quot;), &quot;Orders&quot;, points));
         }
         else {
             // Completed orders per region, this year against last year.
             var lastYear = new[] { 1240d, 980, 1460, 1720, 860, 2140 };
             var thisYear = new[] { 1380d, 1050, 1390, 1940, 1010, 2710 };
-            chart.WithXLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;, &quot;Central&quot;, &quot;Online&quot;).WithYAxis(&quot;Orders&quot;)
+            chart.XLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;, &quot;Central&quot;, &quot;Online&quot;).YAxis(y =&gt; y.Title(&quot;Orders&quot;))
                 .AddSeries(ChartSeries.CreateBar(new ChartSeriesId(&quot;last-year&quot;), &quot;2025&quot;, lastYear.Select((value, index) =&gt; new ChartPoint(index + 1, value))))
                 .AddSeries(ChartSeries.CreateBar(new ChartSeriesId(&quot;orders&quot;), &quot;2026&quot;, thisYear.Select((value, index) =&gt; new ChartPoint(index + 1, value))));
         }

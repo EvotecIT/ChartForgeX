@@ -13,7 +13,7 @@ public static partial class MermaidTopologyRendering {
         options ??= new MermaidTopologyRenderOptions();
         var title = document.Nodes.Count == 0 ? ResolveTitle(document, options, "Mermaid mindmap") : ResolveTitle(document, options, MermaidLabelText.DisplayCaption(document.Nodes[0].Text));
         var chart = CreateTopology(options, "mermaid-mindmap", title, TopologyLayoutMode.MindMap, TopologyLayoutDirection.LeftToRight);
-        var renderOptions = new TopologyRenderOptions().WithMindMapStyle();
+        var renderOptions = new TopologyRenderOptions().MindMapStyle();
         chart.DefaultRenderOptions = renderOptions;
         var sections = MindMapSections(document);
         foreach (var item in document.Nodes) {

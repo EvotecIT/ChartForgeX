@@ -20,7 +20,7 @@ var theme = VisualTheme.Graphite();
 
 var tolerance = ChartSeries.CreateGauge(new ChartSeriesId("tolerance"), "Tolerance",
     new ChartGaugeValue(1.003, 1.001, 1.005, new[] { new ChartGaugeTarget(1.0025) }));
-var chart = Chart.Create().AddSeries(tolerance).ConfigureGauge(options => {
+var chart = Chart.Create().AddSeries(tolerance).Gauge(options => {
     options.Form = ChartGaugeForm.Linear;
 });
 

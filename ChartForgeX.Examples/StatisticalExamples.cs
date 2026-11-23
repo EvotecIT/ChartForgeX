@@ -8,15 +8,15 @@ internal static class StatisticalExamples {
         HorizontalStatisticalExamples.Write(output, outputScale);
         void SaveChart(Chart chart, string name) => ExampleArtifactWriter.SaveChart(chart, output, name, outputScale);
         var latencySpread = Chart.Create()
-            .WithTitle("Endpoint Latency Spread")
-            .WithSubtitle("Box plots summarize min, quartiles, median, and max")
-            .WithXAxis("Probe")
-            .WithYAxis("Response time")
-            .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
-            .WithSize(800, 484)
-            .WithDataLabels()
-            .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + " ms")
-            .WithXLabels("DNS", "TCP", "TLS", "HTTP")
+            .Title("Endpoint Latency Spread")
+            .Subtitle("Box plots summarize min, quartiles, median, and max")
+            .XAxis(x => x.Title("Probe"))
+            .YAxis(y => y.Title("Response time"))
+            .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
+            .Size(800, 484)
+            .DataLabels()
+            .FormatValuesBy(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + " ms")
+            .XLabels("DNS", "TCP", "TLS", "HTTP")
             .AddBoxPlot("Latency", new[] {
                 new ChartBoxPlot(1, 18, 24, 31, 38, 48),
                 new ChartBoxPlot(2, 42, 56, 64, 82, 104),
@@ -30,22 +30,22 @@ internal static class StatisticalExamples {
             new ChartBoxPlotSampleGroup(1, new[] { 18d, 20, 22, 24, 26, 28, 30, 32, 34, 95 }),
             new ChartBoxPlotSampleGroup(2, new[] { 26d, 28, 30, 32, 34, 36, 38, 40, 42, 112 }),
             new ChartBoxPlotSampleGroup(3, new[] { 42d, 46, 48, 50, 52, 54, 56, 60, 62, 145 })
-        }).WithBoxPlotGroupIds(new[] { new ChartObservationId("dns"), new ChartObservationId("tcp"), new ChartObservationId("tls") })
-          .ConfigureBoxPlotStatistics(options => options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr);
-        SaveChart(Chart.Create().WithTitle("Service latency distributions")
-            .WithSubtitle("Quartiles and IQR whiskers retain individual outlier measurements")
-            .WithXLabels("DNS", "TCP", "TLS").WithYAxis("Response time (ms)")
-            .WithSize(800, 484).WithTheme(VisualTheme.Graphite()).WithDataLabels(false)
+        }).BoxPlotGroupIds(new[] { new ChartObservationId("dns"), new ChartObservationId("tcp"), new ChartObservationId("tls") })
+          .BoxPlotStatistics(options => options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr);
+        SaveChart(Chart.Create().Title("Service latency distributions")
+            .Subtitle("Quartiles and IQR whiskers retain individual outlier measurements")
+            .XLabels("DNS", "TCP", "TLS").YAxis(y => y.Title("Response time (ms)"))
+            .Size(800, 484).Theme(VisualTheme.Graphite()).DataLabels(false)
             .AddSeries(measurements), "service-latency-iqr-boxplot-light");
 
         var exposureClusters = Chart.Create()
-            .WithTitle("Exposure Clusters")
-            .WithSubtitle("Bubble size shows affected assets per cluster")
-            .WithXAxis("Reachability")
-            .WithYAxis("Exploitability")
-            .WithTheme(VisualTheme.Graphite())
-            .WithSize(800, 484)
-            .WithDataLabels()
+            .Title("Exposure Clusters")
+            .Subtitle("Bubble size shows affected assets per cluster")
+            .XAxis(x => x.Title("Reachability"))
+            .YAxis(y => y.Title("Exploitability"))
+            .Theme(VisualTheme.Graphite())
+            .Size(800, 484)
+            .DataLabels()
             .AddBubble("Assets", new[] {
                 new ChartBubble(1.0, 24, 8),
                 new ChartBubble(1.6, 42, 18),
@@ -53,7 +53,7 @@ internal static class StatisticalExamples {
                 new ChartBubble(3.1, 68, 71),
                 new ChartBubble(3.8, 54, 36)
             }, ChartColor.FromRgb(37, 99, 235))
-            .ConfigureBubble(options => {
+            .Bubble(options => {
                 options.SizeDimension.Name = "Affected assets";
                 options.SizeDimension.ValueFormat = ChartValueFormat.Number("0");
                 options.SizeDimension.ShowLegend = true;
@@ -70,13 +70,13 @@ internal static class StatisticalExamples {
             new ChartPoint(6, 61)
         };
         var remediationTrend = Chart.Create()
-            .WithTitle("Observed Remediation Trend")
-            .WithSubtitle("Scatter observations with computed least-squares trend line")
-            .WithXAxis("Week")
-            .WithYAxis("Open findings")
-            .WithTheme(VisualTheme.Graphite())
-            .WithSize(800, 484)
-            .WithXLabels("W1", "W2", "W3", "W4", "W5", "W6")
+            .Title("Observed Remediation Trend")
+            .Subtitle("Scatter observations with computed least-squares trend line")
+            .XAxis(x => x.Title("Week"))
+            .YAxis(y => y.Title("Open findings"))
+            .Theme(VisualTheme.Graphite())
+            .Size(800, 484)
+            .XLabels("W1", "W2", "W3", "W4", "W5", "W6")
             .AddScatter("Observed", remediationTrendPoints, ChartColor.FromRgb(37, 99, 235))
             .AddTrendLine("Trend", remediationTrendPoints, ChartColor.FromRgb(245, 158, 11))
             .AddMeanLine("mean", remediationTrendPoints, ChartColor.FromRgb(14, 165, 233))
@@ -85,15 +85,15 @@ internal static class StatisticalExamples {
         SaveChart(remediationTrend, "observed-remediation-trend-light");
 
         var confidenceIntervals = Chart.Create()
-            .WithTitle("Detection Confidence")
-            .WithSubtitle("Error bars show observed lower and upper bounds")
-            .WithXAxis("Run")
-            .WithYAxis("Confidence")
-            .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
-            .WithSize(800, 484)
-            .WithDataLabels()
-            .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
-            .WithXLabels("Baseline", "Tuning", "Canary", "Rollout", "Steady")
+            .Title("Detection Confidence")
+            .Subtitle("Error bars show observed lower and upper bounds")
+            .XAxis(x => x.Title("Run"))
+            .YAxis(y => y.Title("Confidence"))
+            .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
+            .Size(800, 484)
+            .DataLabels()
+            .FormatValuesBy(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
+            .XLabels("Baseline", "Tuning", "Canary", "Rollout", "Steady")
             .AddErrorBar("Confidence", new[] {
                 new ChartErrorBar(1, 42, yBounds: new ChartErrorBounds(35, 51)),
                 new ChartErrorBar(2, 58, yBounds: new ChartErrorBounds(49, 66)),
@@ -105,14 +105,14 @@ internal static class StatisticalExamples {
         SaveChart(confidenceIntervals, "detection-confidence-errorbar-dark");
 
         var signalWindows = Chart.Create()
-            .WithTitle("Signal Windows")
-            .WithSubtitle("Candlesticks summarize open, high, low, and close values")
-            .WithXAxis("Window")
-            .WithYAxis("Signal")
-            .WithTheme(VisualTheme.Graphite())
-            .WithSize(800, 484)
-            .WithDataLabels()
-            .WithXLabels("W1", "W2", "W3", "W4", "W5", "W6")
+            .Title("Signal Windows")
+            .Subtitle("Candlesticks summarize open, high, low, and close values")
+            .XAxis(x => x.Title("Window"))
+            .YAxis(y => y.Title("Signal"))
+            .Theme(VisualTheme.Graphite())
+            .Size(800, 484)
+            .DataLabels()
+            .XLabels("W1", "W2", "W3", "W4", "W5", "W6")
             .AddCandlestick("Signal", new[] {
                 new ChartCandlestick(1, 42, 51, 35, 48),
                 new ChartCandlestick(2, 58, 66, 49, 54),
@@ -125,14 +125,14 @@ internal static class StatisticalExamples {
         SaveChart(signalWindows, "signal-windows-candlestick-light");
 
         var signalOhlc = Chart.Create()
-            .WithTitle("Signal Windows OHLC")
-            .WithSubtitle("OHLC ticks keep dense open/high/low/close windows compact")
-            .WithXAxis("Window")
-            .WithYAxis("Signal")
-            .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
-            .WithSize(800, 484)
-            .WithDataLabels()
-            .WithXLabels("W1", "W2", "W3", "W4", "W5", "W6")
+            .Title("Signal Windows OHLC")
+            .Subtitle("OHLC ticks keep dense open/high/low/close windows compact")
+            .XAxis(x => x.Title("Window"))
+            .YAxis(y => y.Title("Signal"))
+            .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
+            .Size(800, 484)
+            .DataLabels()
+            .XLabels("W1", "W2", "W3", "W4", "W5", "W6")
             .AddOhlc("Signal", new[] {
                 new ChartCandlestick(1, 42, 51, 35, 48),
                 new ChartCandlestick(2, 58, 66, 49, 54),
@@ -145,14 +145,14 @@ internal static class StatisticalExamples {
         SaveChart(signalOhlc, "signal-windows-ohlc-dark");
 
         var forecastEnvelope = Chart.Create()
-            .WithTitle("Forecast Envelope")
-            .WithSubtitle("Range bands show expected lower and upper bounds")
-            .WithXAxis("Run")
-            .WithYAxis("Expected Range")
-            .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
-            .WithSize(800, 484)
-            .WithDataLabels()
-            .WithXLabels("R1", "R2", "R3", "R4", "R5", "R6")
+            .Title("Forecast Envelope")
+            .Subtitle("Range bands show expected lower and upper bounds")
+            .XAxis(x => x.Title("Run"))
+            .YAxis(y => y.Title("Expected Range"))
+            .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
+            .Size(800, 484)
+            .DataLabels()
+            .XLabels("R1", "R2", "R3", "R4", "R5", "R6")
             .AddRangeBand("Expected", new[] {
                 new ChartRangeBand(1, 32, 44),
                 new ChartRangeBand(2, 38, 58),
@@ -165,13 +165,13 @@ internal static class StatisticalExamples {
         SaveChart(forecastEnvelope, "forecast-envelope-rangeband-dark");
 
         var forecastInterval = Chart.Create()
-            .WithTitle("Forecast Interval")
-            .WithSubtitle("Range areas emphasize smoothed prediction intervals beside an observed trend")
-            .WithXAxis("Run")
-            .WithYAxis("Expected Range")
-            .WithTheme(VisualTheme.Graphite())
-            .WithSize(800, 484)
-            .WithXLabels("R1", "R2", "R3", "R4", "R5", "R6", "R7")
+            .Title("Forecast Interval")
+            .Subtitle("Range areas emphasize smoothed prediction intervals beside an observed trend")
+            .XAxis(x => x.Title("Run"))
+            .YAxis(y => y.Title("Expected Range"))
+            .Theme(VisualTheme.Graphite())
+            .Size(800, 484)
+            .XLabels("R1", "R2", "R3", "R4", "R5", "R6", "R7")
             .AddRangeArea("Prediction interval", new[] {
                 new ChartRangeBand(1, 28, 44),
                 new ChartRangeBand(2, 34, 55),
@@ -189,15 +189,15 @@ internal static class StatisticalExamples {
         const double lastActual = 7;
         var demand = ChartSeries.CreateLine(new ChartSeriesId("demand"), "Demand",
                 Points(412, 436, 451, 447, 472, 498, 506, 521, 538, 552, 570, 589), ChartColor.FromRgb(37, 99, 235))
-            .WithStrokeStyleFrom(lastActual, new ChartStrokeStyle(dash: new[] { 6d, 5d }));
+            .StrokeStyleFrom(lastActual, new ChartStrokeStyle(dash: new[] { 6d, 5d }));
         var actualForecast = Chart.Create()
-            .WithTitle("Actual and Forecast")
-            .WithSubtitle("Demand is solid through July and dashed where the forecast takes over")
-            .WithXAxis("Month")
-            .WithYAxis("Orders")
-            .WithTheme(VisualTheme.Graphite())
-            .WithSize(800, 484)
-            .WithXLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+            .Title("Actual and Forecast")
+            .Subtitle("Demand is solid through July and dashed where the forecast takes over")
+            .XAxis(x => x.Title("Month"))
+            .YAxis(y => y.Title("Orders"))
+            .Theme(VisualTheme.Graphite())
+            .Size(800, 484)
+            .XLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
             .AddRangeArea("80% interval", new[] {
                 new ChartRangeBand(7, 506, 506),
                 new ChartRangeBand(8, 509, 533),
@@ -211,15 +211,15 @@ internal static class StatisticalExamples {
         SaveChart(actualForecast, "actual-forecast-segmented-line-light");
 
         var remediationLift = Chart.Create()
-            .WithTitle("Remediation Lift")
-            .WithSubtitle("Dumbbells compare before and after values")
-            .WithXAxis("Control")
-            .WithYAxis("Coverage")
-            .WithTheme(VisualTheme.Graphite())
-            .WithSize(800, 484)
-            .WithDataLabels()
-            .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
-            .WithXLabels("SPF", "DMARC", "DNSSEC", "MTA-STS", "TLS-RPT")
+            .Title("Remediation Lift")
+            .Subtitle("Dumbbells compare before and after values")
+            .XAxis(x => x.Title("Control"))
+            .YAxis(y => y.Title("Coverage"))
+            .Theme(VisualTheme.Graphite())
+            .Size(800, 484)
+            .DataLabels()
+            .FormatValuesBy(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
+            .XLabels("SPF", "DMARC", "DNSSEC", "MTA-STS", "TLS-RPT")
             .AddDumbbell("Before/after", new[] {
                 new ChartDumbbell(1, 32, 44),
                 new ChartDumbbell(2, 38, 58),
@@ -231,14 +231,14 @@ internal static class StatisticalExamples {
         SaveChart(remediationLift, "remediation-lift-dumbbell-light");
 
         var findingsPareto = Chart.Create()
-            .WithTitle("Findings Pareto")
-            .WithSubtitle("Contribution bars plus cumulative percentage line")
-            .WithXAxis("Severity")
-            .WithYAxis("Share")
-            .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
-            .WithSize(800, 484)
-            .WithDataLabels()
-            .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
+            .Title("Findings Pareto")
+            .Subtitle("Contribution bars plus cumulative percentage line")
+            .XAxis(x => x.Title("Severity"))
+            .YAxis(y => y.Title("Share"))
+            .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
+            .Size(800, 484)
+            .DataLabels()
+            .FormatValuesBy(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
             .AddPareto("Findings", new[] {
                 new ChartParetoItem("Critical", 50),
                 new ChartParetoItem("High", 28),

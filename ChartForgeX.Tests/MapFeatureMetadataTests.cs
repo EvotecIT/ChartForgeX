@@ -36,11 +36,11 @@ public sealed class MapFeatureMetadataTests {
         var source = ChartMapGeoJson.ToMapPoints(Features);
         var route = ChartMapGeoJson.ToMapConnectors(Features)[0];
         var series = ChartSeries.CreateDottedMap(new ChartSeriesId("ports"), "Ports", source)
-            .WithObservationIds(new[] { new ChartObservationId("west"), new ChartObservationId("east") }).ReplaceMapConnectors(new[] { route });
+            .ObservationIds(new[] { new ChartObservationId("west"), new ChartObservationId("east") }).ReplaceMapConnectors(new[] { route });
         series.UpdateMapPoint(0, series.MapPoints[0].WithColorValue(-5));
         Assert.Same(source[0].Feature, series.MapPoints[0].Feature); Assert.Same(route.Feature, series.MapConnectors[0].Feature);
         Assert.Equal("west", series.ObservationIds[0].Value);
-        var chart = Chart.Create().WithSize(640, 420).WithLegend(false).WithMapViewport(ChartMapViewport.Europe()).AddSeries(series);
+        var chart = Chart.Create().Size(640, 420).Legend(false).Map(m => m.Viewport(ChartMapViewport.Europe())).AddSeries(series);
         var prepared = MapCompositionDepthTests.Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng();
         var target = MapCompositionDepthTests.Source(prepared, "dotted-map-point-source", "ports", "west");
         Assert.Equal(source[0].Feature!.PropertiesJson, (string?)target.Attribute("data-cfx-feature-properties"));
@@ -62,7 +62,7 @@ public sealed class MapFeatureMetadataTests {
         var json = JsonSerializer.Serialize(new { value });
         var feature = new ChartMapFeature(value, json);
         var series = ChartSeries.CreateDottedMap(new ChartSeriesId("controls"), "Controls", new[] { new ChartMapPoint("Point", 0, 0).WithFeature(feature) })
-            .WithObservationId(0, new ChartObservationId("source"));
+            .ObservationId(0, new ChartObservationId("source"));
         var prepared = MapCompositionDepthTests.Prepare(Chart.Create().AddSeries(series));
         var node = MapCompositionDepthTests.Source(prepared, "dotted-map-point-source", "controls", "source");
         Assert.Null(node.Attribute("data-cfx-feature-id"));
@@ -75,8 +75,8 @@ public sealed class MapFeatureMetadataTests {
     public void PointLegendRetainsFeatureFactsWithoutCollapsingSharedFeatureObservationIds() {
         var points = ChartMapGeoJson.ToMapPoints(Features);
         var series = ChartSeries.CreateDottedMap(new ChartSeriesId("ports"), "Ports", points)
-            .WithObservationIds(new[] { new ChartObservationId("west"), new ChartObservationId("east") });
-        var chart = Chart.Create().WithSize(640, 420).WithLegend().WithPointLegend().AddSeries(series);
+            .ObservationIds(new[] { new ChartObservationId("west"), new ChartObservationId("east") });
+        var chart = Chart.Create().Size(640, 420).Legend().Legend(l => l.ShowPoints()).AddSeries(series);
         var legends = XDocument.Parse(MapCompositionDepthTests.Prepare(chart).ToSvg()).Descendants()
             .Where(node => (string?)node.Attribute("data-cfx-role") == "legend-entry" && node.Attribute("data-cfx-feature-id") != null).ToArray();
         Assert.Equal(2, legends.Length);
@@ -124,7 +124,7 @@ public sealed class MapFeatureMetadataTests {
         var exact = line.Feature!.IdJson!.Length + line.Feature.PropertiesJson!.Length;
         options.MaximumExpandedFeatureCharacters = exact;
         Assert.Equal(3, Assert.Single(ChartMapGeoJson.ToMapConnectors(oneLine, options)).RoutePoints.Count);
-        options.MaximumExpandedFeatureCharacters = 1; options.WithCoordinateBounds(50, 60, 50, 60);
+        options.MaximumExpandedFeatureCharacters = 1; options.MinimumLongitude(50).MaximumLongitude(60).MinimumLatitude(50).MaximumLatitude(60).IncludeFeaturesIntersectingCoordinateBounds();
         Assert.Empty(ChartMapGeoJson.ToMapConnectors(oneLine, options));
         Assert.Throws<ArgumentOutOfRangeException>(() => options.MaximumExpandedFeatureCharacters = 0);
     }

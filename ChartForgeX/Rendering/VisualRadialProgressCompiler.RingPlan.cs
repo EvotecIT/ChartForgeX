@@ -31,9 +31,9 @@ internal static partial class VisualRadialProgressCompiler {
         internal RingPlan(Chart chart, VisualRenderContext context, double cx, double cy, double outer, VisualThemeColors colors) {
             var series = chart.Series[0]; _context = context; _colors = colors; _cx = cx; _cy = cy; _outer = outer;
             _seriesKey = series.Id.Value; _local = series.Id.IsAutomatic; _caption = series.Name; _state = series.StateRole;
-            _pin = chart.Options.PinStateColorsInForcedColors && _state != ChartSeriesState.None;
-            _showCenter = series.ResolveDataLabels(chart.Options, defaultVisible: true) && chart.Options.ShowProgressRingCenterLabel;
-            _strokeScale = chart.Options.RadialProgressStrokeScale; _values = series.RenderPoints.Select(point => point.Y).ToArray();
+            _pin = chart.Options.StateTimeline.PinColorsInForcedColors && _state != ChartSeriesState.None;
+            _showCenter = series.ResolveDataLabels(chart.Options, defaultVisible: true) && chart.Options.Progress.ShowRingCenterLabel;
+            _strokeScale = chart.Options.Progress.RadialStrokeScale; _values = series.RenderPoints.Select(point => point.Y).ToArray();
             _percentage = ReferenceEquals(chart.Options.ValueFormat, ChartValueFormat.ExistingValue);
             var displayFormat = _percentage ? ChartValueFormat.Percentages(chart.Options.ValueFormat,
                 _values.Concat(new[] { _values.Average() }).Select(value => value / 100)) : chart.Options.ValueFormat;

@@ -14,9 +14,9 @@ public sealed class HorizontalLineTests {
     [InlineData(ChartStepPosition.Middle, true)]
     [InlineData(ChartStepPosition.End, true)]
     public void StepsChangeValueAtTheDeclaredCategoryPosition(ChartStepPosition position, bool reversed) {
-        var chart = Chart.Create().WithSize(640, 400).WithLegend(false)
+        var chart = Chart.Create().Size(640, 400).Legend(false)
             .AddStepLine("Steps", new[] { new ChartPoint(1, 20), new ChartPoint(3, 80) });
-        chart.Options.LineOrientation = ChartOrientation.Horizontal;
+        chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
         chart.Options.YAxis.Reversed = reversed;
         chart.Series[0].StepPosition = position;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -36,9 +36,9 @@ public sealed class HorizontalLineTests {
     [InlineData(ChartScaleKind.Linear, 800, 460)]
     [InlineData(ChartScaleKind.Logarithmic, 320, 240)]
     public void AutomaticPhysicalRangesContainMarkersAndRetainSourceValues(ChartScaleKind scale, int width, int height) {
-        var chart = Chart.Create().WithSize(width, height).WithLegend(false).WithLineMarkers(ChartLineMarkerMode.All)
+        var chart = Chart.Create().Size(width, height).Legend(false).Lines(l => l.MarkerMode(ChartLineMarkerMode.All))
             .AddLine("Readings", new[] { new ChartPoint(1, 20), new ChartPoint(2, 200), new ChartPoint(3, 2000) });
-        chart.Options.LineOrientation = ChartOrientation.Horizontal;
+        chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
         chart.Options.XAxis.Scale = scale;
         chart.Series[0].MarkerRadius = 18;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -63,11 +63,11 @@ public sealed class HorizontalLineTests {
     [InlineData(false)]
     [InlineData(true)]
     public void LogarithmicValuesAcceptZeroAndNegativeLinearCategories(bool step) {
-        var chart = Chart.Create().WithSize(540, 340).WithLegend(false);
+        var chart = Chart.Create().Size(540, 340).Legend(false);
         var points = new[] { new ChartPoint(-1, 20), new ChartPoint(0, 200), new ChartPoint(1, 2000) };
         if (step) chart.AddStepLine("Readings", points);
         else chart.AddLine("Readings", points);
-        chart.Options.LineOrientation = ChartOrientation.Horizontal;
+        chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
         chart.Options.XAxis.Scale = ChartScaleKind.Logarithmic;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "line");
@@ -79,11 +79,11 @@ public sealed class HorizontalLineTests {
     [Fact]
     public void AddingALineDoesNotReserveASecondBarSlot() {
         Chart Model(bool mixed) {
-            var chart = Chart.Create().WithSize(640, 400).WithLegend(false).WithHeader(false)
+            var chart = Chart.Create().Size(640, 400).Legend(false).ShowHeader(false)
                 .AddHorizontalBar("Bars", new[] { new ChartPoint(1, 20), new ChartPoint(2, 50) });
-            chart.WithXAxisBounds(0, 100).WithYAxisBounds(.5, 2.5);
+            chart.XAxis(x => x.Bounds(0, 100)).YAxis(y => y.Bounds(.5, 2.5));
             if (mixed) chart.AddLine("Line", new[] { new ChartPoint(1, 30), new ChartPoint(2, 60) });
-            chart.Options.LineOrientation = ChartOrientation.Horizontal;
+            chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
             return chart;
         }
         var single = Model(false); var mixed = Model(true);
@@ -95,8 +95,8 @@ public sealed class HorizontalLineTests {
     [Fact]
     public void HorizontalLineConstraintsFailBeforeRenderingAnIncompatibleMix() {
         var chart = Chart.Create().AddLine("Line", new[] { new ChartPoint(1, 20) });
-        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.LineOrientation = (ChartOrientation)99);
-        chart.Options.LineOrientation = ChartOrientation.Horizontal;
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.Lines.Orientation = (ChartOrientation)99);
+        chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
         chart.Options.YAxis.Scale = ChartScaleKind.Logarithmic;
         Assert.Throws<NotSupportedException>(() => chart.Prepare(VisualExportRequest.ForChart(chart).Context));
         chart.Options.YAxis.Scale = ChartScaleKind.Linear;

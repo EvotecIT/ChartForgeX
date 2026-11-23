@@ -4,6 +4,7 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Typography;
 using Xunit;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.Tests;
 
@@ -253,7 +254,7 @@ public sealed class ScriptFreeFluidSvgTests {
     [Trait("BrowserSuite", "Compatibility")]
     public async Task FluidColumns_KeepTheirPreparedThicknessAtEveryHostWidth() {
         if (!InteractiveChartBrowser.Enabled) return;
-        var chart = Core.Chart.Create().WithStackedBars().WithXLabels("Mon", "Tue", "Wed")
+        var chart = Core.Chart.Create().Bars(b => b.Stacked()).XLabels("Mon", "Tue", "Wed")
             .AddBar("Updates", new[] { new ChartPoint(1, 3), new ChartPoint(2, 5), new ChartPoint(3, 2) })
             .AddBar("Notes", new[] { new ChartPoint(1, 1), new ChartPoint(2, 2), new ChartPoint(3, 4) });
         var svg = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(320, 240), 8))).ToSvg(new VisualSvgOptions("columns").WithFluidWidth());

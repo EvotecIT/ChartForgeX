@@ -110,7 +110,7 @@ public sealed class InteractiveBundleTests {
     [InlineData("topology", 168 * 1024, 36 * 1024)]
     [InlineData("explorer", 437 * 1024, 98 * 1024)]
     public void TopologyAndExplorerRuntimesFitRawAndGzipBudgetsAsShipped(string runtime, int rawBudget, int gzipBudget) {
-        var topology = TopologyChart.Create().WithId("budget").AddAutoNode("a", "Edge").AddAutoNode("b", "Core").AddEdge("a-b", "a", "b");
+        var topology = TopologyChart.Create().Id("budget").AddAutoNode("a", "Edge").AddAutoNode("b", "Core").AddEdge("a-b", "a", "b");
         var (script, page) = runtime == "topology"
             ? (HtmlInteractiveTopologyRenderer.BuildInteractionScript(), topology.ToInteractiveHtmlPage())
             : (HtmlGraphExplorerRenderer.BuildInteractionScript(), topology.ToGraphExplorerHtmlPage());
@@ -160,7 +160,7 @@ public sealed class InteractiveBundleTests {
     [InlineData(true)]
     public async Task SavedStandalonePageRunsDeclaredInteractionsWithNetworkBlocked(bool review) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(600, 360).WithXLabels("Mon", "Tue", "Wed")
+        var chart = Chart.Create().Size(600, 360).XLabels("Mon", "Tue", "Wed")
             .AddLine("Requests", ChartPoints.FromValues(2, 7, 4))
             .AddLine("Previous", ChartPoints.FromValues(1, 3, 2));
         var html = chart.ToInteractiveHtmlPage(options => {
@@ -189,7 +189,7 @@ public sealed class InteractiveBundleTests {
     }
 
     private static Task<HtmlBrowserSession> OpenCoreReaderAsync() {
-        var html = Chart.Create().WithSize(600, 360).WithXLabels("Mon", "Tue", "Wed")
+        var html = Chart.Create().Size(600, 360).XLabels("Mon", "Tue", "Wed")
             .AddLine("Requests", ChartPoints.FromValues(2, 7, 4))
             .AddLine("Previous", ChartPoints.FromValues(1, 3, 2))
             .ToInteractiveHtmlPage(options => {
@@ -277,7 +277,7 @@ public sealed class InteractiveBundleTests {
     [BrowserFact]
     public async Task MixedFragmentRuntimesUpgradeReadersAndKeepOneOwnerPerRoot() {
         if (!Enabled) return;
-        var html = Chart.Create().WithSize(600, 360).AddLine("Requests", ChartPoints.FromValues(2, 7, 4))
+        var html = Chart.Create().Size(600, 360).AddLine("Requests", ChartPoints.FromValues(2, 7, 4))
             .ToInteractiveHtmlFragment(options => {
                 options.Runtime = HtmlChartRuntime.Standalone;
                 options.Interaction.Features = ChartInteractionFeatures.Tooltips;

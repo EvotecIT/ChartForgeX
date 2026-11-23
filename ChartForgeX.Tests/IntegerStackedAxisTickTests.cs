@@ -20,9 +20,9 @@ public sealed class IntegerStackedAxisTickTests {
         var first = maximum / 2;
         var completed = new[] { new ChartPoint(1, first), new ChartPoint(2, first) };
         var pending = new[] { new ChartPoint(1, maximum - first), new ChartPoint(2, maximum - first) };
-        var chart = Chart.Create().WithSize(640, 300).WithHeader(false).WithLegend(false).WithDataLabels(false).WithStackedBars();
-        if (horizontal) chart.AddHorizontalBar("Completed", completed).AddHorizontalBar("Pending", pending).WithXAxisIntegerTicks();
-        else chart.AddBar("Completed", completed).AddBar("Pending", pending).WithYAxisIntegerTicks();
+        var chart = Chart.Create().Size(640, 300).ShowHeader(false).Legend(false).DataLabels(false).Bars(b => b.Stacked());
+        if (horizontal) chart.AddHorizontalBar("Completed", completed).AddHorizontalBar("Pending", pending).XAxis(x => x.IntegerTicks());
+        else chart.AddBar("Completed", completed).AddBar("Pending", pending).YAxis(y => y.IntegerTicks());
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var role = horizontal ? "axis-x-label" : "axis-y-label";
         var ticks = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == role)

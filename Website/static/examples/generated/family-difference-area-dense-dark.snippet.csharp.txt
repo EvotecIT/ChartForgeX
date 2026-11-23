@@ -18,13 +18,13 @@ var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 #endregion
 
-var chart = Chart.Create().WithTitle("Observed and forecast").WithXAxis("Observation").WithYAxis("Completed requests")
+var chart = Chart.Create().Title("Observed and forecast").XAxis(x => x.Title("Observation")).YAxis(y => y.Title("Completed requests"))
             .AddSeries(ChartSeries.CreateDifferenceArea(new ChartSeriesId("comparison"), "Actual and forecast",
                 Enumerable.Range(0, 32).Select(index => new ChartDifferencePoint(index,
                     index % 7 == 0 ? 0 : Math.Sin(index * .6) * 9,
                     index % 7 == 0 ? 0 : Math.Cos(index * .6) * 7, index == 16)))
-                .ConfigureDifferenceArea(options => { options.FirstName = "Actual"; options.SecondName = "Forecast"; })
-                .ConfigureMarkers(options => options.Radius = 2));
+                .DifferenceArea(options => { options.FirstName = "Actual"; options.SecondName = "Forecast"; })
+                .Markers(options => options.Radius = 2));
 
 #region Output
 var context = new VisualRenderContext(

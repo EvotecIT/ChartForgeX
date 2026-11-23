@@ -61,7 +61,7 @@ public sealed class ResponsiveRadialLayoutBrowserTests {
     public async Task NarrowRingAndLegendMatchStaticLayout(bool dark) {
         var chart = ResponsiveRadialFixture.Model(dark);
         var fragment = ResponsiveRadialFixture.Fragment(chart);
-        chart.WithSize(390, 420);
+        chart.Size(390, 420);
         var html = ResponsiveRadialFixture.Document(fragment + "<div id='reference' style='position:absolute;left:2000px;top:0;width:390px'>" + chart.ToSvg() + "</div>", dark);
         await using var session = await InteractiveChartBrowser.OpenAsync(html, 1440, 1000);
         var page = session.Page;
@@ -100,10 +100,10 @@ public sealed class ResponsiveRadialLayoutBrowserTests {
     [BrowserFact]
     public async Task CompleteLegendGrowsTheCardInsteadOfDroppingRowsOrSqueezingTheRing() {
         var chart = ResponsiveRadialFixture.Model(false);
-        chart.Options.MaximumPieSlices = 20;
+        chart.Options.Pie.MaxSlices = 20;
         chart.Series[0].Points.Clear();
         for (var index = 0; index < 18; index++) chart.Series[0].Points.Add(new ChartForgeX.Primitives.ChartPoint(index + 1, 20 - index));
-        chart.WithXLabels(Enumerable.Range(1, 18).Select(i => "Service " + i + " with an unusually long entitlement and archive description that fills a whole legend row").ToArray());
+        chart.XLabels(Enumerable.Range(1, 18).Select(i => "Service " + i + " with an unusually long entitlement and archive description that fills a whole legend row").ToArray());
         await using var session = await InteractiveChartBrowser.OpenAsync(ResponsiveRadialFixture.Document(ResponsiveRadialFixture.Fragment(chart), false), 390, 1500);
         var page = session.Page;
         await page.WaitForFunctionAsync("()=>document.querySelector('[data-cfx-responsive-chart]').dataset.cfxLayoutVersion==='spec-4'");
@@ -154,9 +154,9 @@ public sealed class ResponsiveRadialLayoutBrowserTests {
     [InlineData(ChartForgeX.Core.ChartDataLabelPlacement.Outside)]
     public async Task SliceCaptionsStayWithinTheFrameAndMatchNativeVisibility(ChartForgeX.Core.ChartDataLabelPlacement placement) {
         var chart = ResponsiveRadialFixture.Model(false);
-        chart.Options.ShowDataLabels = true; chart.Options.DataLabelPlacement = placement;
+        chart.Options.DataLabels.Visible = true; chart.Options.DataLabels.Placement = placement;
         var fragment = ResponsiveRadialFixture.Fragment(chart);
-        chart.WithSize(390, 420);
+        chart.Size(390, 420);
         var html = ResponsiveRadialFixture.Document(fragment + "<div id='reference' style='position:absolute;left:2000px;top:0;width:390px'>" + chart.ToSvg() + "</div>", false);
         await using var session = await InteractiveChartBrowser.OpenAsync(html, 1440, 1000);
         var page = session.Page;

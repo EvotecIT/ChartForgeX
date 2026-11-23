@@ -12,8 +12,8 @@ internal static class ChartHeatmapSurface {
         CellBlend(chart, colors, high, value, min, max).Color;
 
     internal static ChartColorBlend CellBlend(Chart chart, VisualThemeColors colors, ChartColor? high, double value, double min, double max,
-        SvgColorRole highRole = SvgColorRole.Series) => chart.Options.HeatmapColorScale?.BlendFor(value, min, max)
-            ?? (chart.Options.HeatmapRelativeScale && value == 0 && min >= 0
+        SvgColorRole highRole = SvgColorRole.Series) => chart.Options.Heatmap.ColorScale?.BlendFor(value, min, max)
+            ?? (chart.Options.Heatmap.RelativeScale && value == 0 && min >= 0
                 ? ZeroBlend(colors) : ColorBlend(chart, colors, high, value, min, max, highRole));
 
     internal static ChartColor Color(Chart chart, VisualThemeColors colors, ChartColor? high, double value, double min, double max) =>
@@ -22,7 +22,7 @@ internal static class ChartHeatmapSurface {
     internal static ChartColorBlend ColorBlend(Chart chart, VisualThemeColors colors, ChartColor? high, double value, double min, double max,
         SvgColorRole highRole = SvgColorRole.Series) {
         var ratio = Ratio(chart, value, min, max);
-        if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic)
+        if (chart.Options.Heatmap.Scale == ChartHeatmapScale.Semantic)
             return SemanticBlend(colors.Status.Critical.Fill, colors.Status.Medium.Fill, colors.Status.Pass.Fill, ratio);
         if (!high.HasValue && colors.SequentialRamp.Count > 0) return RampBlend(colors.SequentialRamp, ratio);
         return new ChartColorBlend(colors.Surface, SvgColorRole.Surface, high ?? colors.Palette[0], highRole, .18 + ratio * .82);
@@ -34,12 +34,12 @@ internal static class ChartHeatmapSurface {
     internal static ChartColorBlend MapBlend(Chart chart, VisualThemeColors colors, ChartColor? pointColor, ChartColor? highColor,
         double value, double min, double max, SvgColorRole highRole = SvgColorRole.Series) => pointColor.HasValue
             ? ChartColorBlend.Solid(pointColor.Value, SvgColorRole.Series)
-            : chart.Options.MapColorScale?.BlendFor(value, min, max) ?? ColorBlend(chart, colors, highColor, value, min, max, highRole);
+            : chart.Options.Map.ColorScale?.BlendFor(value, min, max) ?? ColorBlend(chart, colors, highColor, value, min, max, highRole);
 
     internal static ChartColor MapNoDataColor(Chart chart, VisualThemeColors colors) =>
         MapNoDataBlend(chart, colors).Color;
 
-    internal static ChartColorBlend MapNoDataBlend(Chart chart, VisualThemeColors colors) => ChartColorScaleSurface.NoData(chart.Options.MapColorScale, colors);
+    internal static ChartColorBlend MapNoDataBlend(Chart chart, VisualThemeColors colors) => ChartColorScaleSurface.NoData(chart.Options.Map.ColorScale, colors);
 
     internal static ChartColor CalendarColor(VisualThemeColors colors, ChartColor? high, double value, double min, double max) => CalendarBlend(colors, high, value, min, max).Color;
 
@@ -61,7 +61,7 @@ internal static class ChartHeatmapSurface {
         cellWidth >= textWidth + 12 && cellHeight >= textHeight + 10;
 
     /// <summary>
-    /// Returns the colour of a matrix or hexbin heatmap cell. In a count heatmap (<see cref="ChartOptions.HeatmapRelativeScale"/>)
+    /// Returns the colour of a matrix or hexbin heatmap cell. In a count heatmap (<see cref="ChartHeatmapOptions.RelativeScale"/>)
     /// a zero means nothing happened, so it takes the neutral <see cref="ZeroColor(Chart)"/> instead of the weakest ramp step.
     /// Maps keep using <see cref="Color(Chart, ChartColor?, double, double, double)"/>, where zero can be a real magnitude.
     /// </summary>
@@ -69,7 +69,7 @@ internal static class ChartHeatmapSurface {
 
     /// <summary>Returns the colour of a matrix or hexbin heatmap cell as a blend, for SVG colour variables (see <see cref="CellColor(Chart, ChartColor?, double, double, double)"/>).</summary>
     public static ChartColorBlend CellBlend(Chart chart, ChartColor? highColor, double value, double min, double max) =>
-        chart.Options.HeatmapColorScale?.BlendFor(value, min, max)
+        chart.Options.Heatmap.ColorScale?.BlendFor(value, min, max)
             ?? (value == 0 && min >= 0 ? ZeroBlend(chart) : ColorBlend(chart, highColor, value, min, max));
 
     /// <summary>
@@ -81,8 +81,8 @@ internal static class ChartHeatmapSurface {
     /// colour is strong only near the full colour (<see cref="StrongTintAmount"/>).
     /// </summary>
     public static bool IsStrongCell(Chart chart, ChartColor? highColor, double value, double min, double max) {
-        if (chart.Options.HeatmapRelativeScale && value == 0 && min >= 0) return false;
-        if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) return true;
+        if (chart.Options.Heatmap.RelativeScale && value == 0 && min >= 0) return false;
+        if (chart.Options.Heatmap.Scale == ChartHeatmapScale.Semantic) return true;
         var ratio = Ratio(chart, value, min, max);
         if (!highColor.HasValue && chart.Options.ResolvedTheme.SequentialRampValue != null) return ratio >= StrongRampRatio;
         return 0.18 + ratio * 0.82 >= StrongTintAmount;
@@ -99,20 +99,20 @@ internal static class ChartHeatmapSurface {
     /// <summary>Returns <see cref="Color(Chart, ChartColor?, double, double, double)"/> as a blend of its theme, series, or ramp colours.</summary>
     public static ChartColorBlend ColorBlend(Chart chart, ChartColor? highColor, double value, double min, double max) {
         var ratio = Ratio(chart, value, min, max);
-        if (chart.Options.HeatmapScale == ChartHeatmapScale.Semantic) return SemanticBlend(chart, ratio);
+        if (chart.Options.Heatmap.Scale == ChartHeatmapScale.Semantic) return SemanticBlend(chart, ratio);
         if (!highColor.HasValue && chart.Options.ResolvedTheme.SequentialRampValue is { } ramp) return ChartColorBlend.Solid(ramp[Math.Max(1, Math.Min(ramp.Length - 1, (int)Math.Ceiling(ratio * (ramp.Length - 1))))], SvgColorRole.SequentialRamp);
         return new ChartColorBlend(chart.Options.ResolvedTheme.PlotBackground, SvgColorRole.Surface, highColor ?? chart.Options.ResolvedTheme.Palette[0], SvgColorRole.Series, 0.18 + ratio * 0.82);
     }
 
     public static ChartColor MapColor(Chart chart, ChartColor? pointColor, ChartColor highColor, double value, double min, double max) {
-        var scale = chart.Options.MapColorScale;
+        var scale = chart.Options.Map.ColorScale;
         if (scale == null) return Color(chart, pointColor ?? highColor, value, min, max);
         if (pointColor.HasValue) return pointColor.Value;
         return scale.ColorFor(value, min, max);
     }
 
     public static double MapRatio(Chart chart, double value, double min, double max) {
-        var scale = chart.Options.MapColorScale;
+        var scale = chart.Options.Map.ColorScale;
         if (scale == null) return Ratio(chart, value, min, max);
         if (scale.Mode == ChartColorScaleMode.Discrete)
             return scale.Bands.Count == 1 ? 0 : scale.BandIndex(value) / (double)(scale.Bands.Count - 1);
@@ -120,9 +120,9 @@ internal static class ChartHeatmapSurface {
     }
 
     public static double MapScaleValue(Chart chart, double min, double max, double ratio) {
-        var scale = chart.Options.MapColorScale;
+        var scale = chart.Options.Map.ColorScale;
         if (scale != null) return ChartColorScaleLegend.Value(scale, min, max, ratio);
-        if (scale == null && chart.Options.HeatmapRelativeScale)
+        if (scale == null && chart.Options.Heatmap.RelativeScale)
             return InterpolateObservedRange(Math.Min(0, min), max, Clamp(ratio, 0, 1));
         var effectiveMin = scale?.EffectiveMinimum(min) ?? min;
         var effectiveMax = scale?.EffectiveMaximum(max) ?? max;
@@ -139,7 +139,7 @@ internal static class ChartHeatmapSurface {
     /// remain in descriptive metadata. A diverging scale whose midpoint is at either endpoint also samples evenly.
     /// </summary>
     public static double[] MapScaleSteps(Chart chart, double min, double max) {
-        if (chart.Options.MapColorScale is ChartColorScale configured) return ChartColorScaleLegend.Steps(configured, min, max);
+        if (chart.Options.Map.ColorScale is ChartColorScale configured) return ChartColorScaleLegend.Steps(configured, min, max);
         var count = MapScaleStepCount(chart);
         var values = new double[count];
         for (var i = 0; i < count; i++) values[i] = MapScaleValue(chart, min, max, i / (double)(count - 1));
@@ -148,7 +148,7 @@ internal static class ChartHeatmapSurface {
 
     /// <summary>Returns how many swatches a horizontal map scale draws (see <see cref="MapScaleSteps"/>).</summary>
     public static int MapScaleStepCount(Chart chart) {
-        return chart.Options.MapColorScale is ChartColorScale scale ? ChartColorScaleLegend.StepCount(scale) : 5;
+        return chart.Options.Map.ColorScale is ChartColorScale scale ? ChartColorScaleLegend.StepCount(scale) : 5;
     }
 
     /// <summary>
@@ -156,20 +156,20 @@ internal static class ChartHeatmapSurface {
     /// between uniformly sampled values. Sequential, constant and default scales retain their established fallback.
     /// </summary>
     public static double MapScaleMidpointStep(Chart chart, double min, double max, int stepCount) {
-        return chart.Options.MapColorScale is ChartColorScale scale ? ChartColorScaleLegend.MidpointStep(scale, min, max, stepCount) : stepCount / 2;
+        return chart.Options.Map.ColorScale is ChartColorScale scale ? ChartColorScaleLegend.MidpointStep(scale, min, max, stepCount) : stepCount / 2;
     }
 
     public static double MapScaleMidpoint(Chart chart, double min, double max) {
-        var scale = chart.Options.MapColorScale;
+        var scale = chart.Options.Map.ColorScale;
         if (scale == null) return MapScaleValue(chart, min, max, 0.5);
         return scale.EffectiveMidpoint(min, max);
     }
 
-    public static string MapLowLabel(Chart chart) => chart.Options.MapColorScale?.LowLabel ?? chart.Options.Labels.Less;
+    public static string MapLowLabel(Chart chart) => chart.Options.Map.ColorScale?.LowLabel ?? chart.Options.Labels.Less;
 
-    public static string? MapMidpointLabel(Chart chart) => chart.Options.MapColorScale?.MidpointLabel;
+    public static string? MapMidpointLabel(Chart chart) => chart.Options.Map.ColorScale?.MidpointLabel;
 
-    public static string MapHighLabel(Chart chart) => chart.Options.MapColorScale?.HighLabel ?? chart.Options.Labels.More;
+    public static string MapHighLabel(Chart chart) => chart.Options.Map.ColorScale?.HighLabel ?? chart.Options.Labels.More;
 
     public static ChartColor SemanticColor(Chart chart, double ratio) => SemanticBlend(chart, ratio).Color;
 
@@ -185,13 +185,13 @@ internal static class ChartHeatmapSurface {
     }
 
     /// <summary>
-    /// Returns the colour ratio for a heatmap value. With <see cref="ChartOptions.HeatmapRelativeScale"/> the ratio is
+    /// Returns the colour ratio for a heatmap value. With <see cref="ChartHeatmapOptions.RelativeScale"/> the ratio is
     /// relative to the observed range (from zero for non-negative data) instead of treating 0–100 values as percentages.
     /// </summary>
     public static double Ratio(Chart chart, double value, double min, double max) {
         // Status (semantic) heatmaps read a 0–100 domain as absolute percentages. Sequential heatmaps span the observed
         // values (design rule 9), so the weakest step marks the smallest value and the legend's ends match the cells.
-        if (!chart.Options.HeatmapRelativeScale) return chart.Options.HeatmapScale == ChartHeatmapScale.Semantic || min < 0
+        if (!chart.Options.Heatmap.RelativeScale) return chart.Options.Heatmap.Scale == ChartHeatmapScale.Semantic || min < 0
             ? Ratio(value, min, max) : ObservedRangeRatio(value, min, max);
         var floor = Math.Min(0, min);
         var span = max - floor;
@@ -221,7 +221,7 @@ internal static class ChartHeatmapSurface {
     /// Returns the positive/warning/negative status of a cell only for the <see cref="ChartHeatmapScale.Semantic"/> scale.
     /// Sequential (count and intensity) heatmaps carry no status; use <see cref="Level"/> instead.
     /// </summary>
-    public static string? CellStatus(Chart chart, double ratio) => chart.Options.HeatmapScale == ChartHeatmapScale.Semantic ? Status(ratio) : null;
+    public static string? CellStatus(Chart chart, double ratio) => chart.Options.Heatmap.Scale == ChartHeatmapScale.Semantic ? Status(ratio) : null;
 
     /// <summary>Returns the neutral intensity level 0–4 (0 is the weakest) used for sequential heatmap cells and scale steps.</summary>
     public static int Level(double ratio) => (int)Math.Ceiling(Clamp(ratio, 0, 1) * 4);
@@ -236,7 +236,7 @@ internal static class ChartHeatmapSurface {
 
     /// <summary>Returns <see cref="CalendarColor(Chart, ChartSeries, ChartColor?, double, double, double)"/> as a blend of its ramp, series, and surface colours.</summary>
     public static ChartColorBlend CalendarBlend(Chart chart, ChartSeries series, ChartColor? pointColor, double value, double min, double max) {
-        if (chart.Options.HeatmapColorScale is ChartColorScale scale)
+        if (chart.Options.Heatmap.ColorScale is ChartColorScale scale)
             return pointColor.HasValue ? ChartColorBlend.Solid(pointColor.Value, SvgColorRole.Series) : scale.BlendFor(value, min, max);
         var ratio = CalendarRatio(value, min, max);
         if (!pointColor.HasValue && !series.Color.HasValue && chart.Options.ResolvedTheme.SequentialRampValue is { } ramp) return RampBlend(ramp, ratio);
@@ -288,7 +288,7 @@ internal static class ChartHeatmapSurface {
     }
 
     public static ChartColor MapNoDataColor(Chart chart) =>
-        chart.Options.MapColorScale?.NoDataColor ?? ChartColorMath.Blend(chart.Options.ResolvedTheme.PlotBackground, chart.Options.ResolvedTheme.Grid, 0.46);
+        chart.Options.Map.ColorScale?.NoDataColor ?? ChartColorMath.Blend(chart.Options.ResolvedTheme.PlotBackground, chart.Options.ResolvedTheme.Grid, 0.46);
 
     private static double Clamp(double value, double min, double max) {
         if (double.IsNaN(value)) return min;

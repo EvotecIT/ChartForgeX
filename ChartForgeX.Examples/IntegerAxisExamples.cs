@@ -6,43 +6,42 @@ using ChartForgeX.Themes;
 /// <summary>Count charts with whole-number tick positions in vertical and horizontal layouts.</summary>
 public static class IntegerAxisExamples {
     /// <summary>Creates monthly counts whose complete short labels thin to the available width.</summary>
-    public static Chart CreateMonthlyCounts(int width, ThemeMode mode) => Chart.Create().WithSize(width, 280)
-        .WithTheme(VisualTheme.Graphite(), mode).WithTitle("Monthly observations").WithLegend(false).WithDataLabels(false)
-        .WithXLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
-        .WithYAxisIntegerTicks().WithMaximumBarWidth(48)
+    public static Chart CreateMonthlyCounts(int width, ThemeMode mode) => Chart.Create().Size(width, 280)
+        .Theme(VisualTheme.Graphite()).ThemeMode(mode).Title("Monthly observations").Legend(false).DataLabels(false)
+        .XLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+        .YAxis(y => y.IntegerTicks()).Bars(b => b.MaxWidth(48))
         .AddBar("Count", Enumerable.Range(1, 12).Select(index => new ChartPoint(index, index % 4 + 1)).ToArray());
 
     /// <summary>Creates signed stacks with rounded exterior corners and square internal joins.</summary>
     public static Chart CreateSignedStack(bool horizontal, int width, ThemeMode mode) {
-        var chart = Chart.Create().WithSize(width, 320).WithTheme(VisualTheme.Graphite(), mode)
-            .WithTitle("Signed category adjustments").WithSubtitle("Square stack joins · rounded outer ends")
-            .WithLegendPosition(ChartLegendPosition.TopLeft).WithStackedBars().WithMaximumBarWidth(48)
-            .WithBarVisualStyle(ChartBarVisualStyle.Flat().WithCornerRadius(10));
+        var chart = Chart.Create().Size(width, 320).Theme(VisualTheme.Graphite()).ThemeMode(mode)
+            .Title("Signed category adjustments").Subtitle("Square stack joins · rounded outer ends")
+            .Legend(l => l.Position(ChartLegendPosition.TopLeft)).Bars(b => b.Stacked().MaxWidth(48).VisualStyle(ChartBarVisualStyle.Flat().CornerRadius(10)));
         var first = new[] { new ChartPoint(1, 3), new ChartPoint(2, -3) };
         var second = new[] { new ChartPoint(1, 2), new ChartPoint(2, -2) };
         return horizontal
-            ? chart.WithXAxisIntegerTicks().AddHorizontalBar("First", first).AddHorizontalBar("Second", second)
-            : chart.WithYAxisIntegerTicks().AddBar("First", first).AddBar("Second", second);
+            ? chart.XAxis(x => x.IntegerTicks()).AddHorizontalBar("First", first).AddHorizontalBar("Second", second)
+            : chart.YAxis(y => y.IntegerTicks()).AddBar("First", first).AddBar("Second", second);
     }
     /// <summary>Creates a small count chart using the physical value axis's integer tick policy.</summary>
     public static Chart Create(int maximum, bool horizontal, int width, ThemeMode mode) {
         if (maximum < 1) throw new ArgumentOutOfRangeException(nameof(maximum));
-        var chart = Chart.Create().WithSize(width, 300).WithTheme(VisualTheme.Graphite(), mode)
-            .WithTitle("Items by queue").WithSubtitle("Whole-number counts · maximum " + maximum)
-            .WithLegend(false).WithXLabels("Ready", "Running", "Complete");
+        var chart = Chart.Create().Size(width, 300).Theme(VisualTheme.Graphite()).ThemeMode(mode)
+            .Title("Items by queue").Subtitle("Whole-number counts · maximum " + maximum)
+            .Legend(false).XLabels("Ready", "Running", "Complete");
         var points = new[] { new ChartPoint(1, 1), new ChartPoint(2, Math.Max(1, maximum - 1)), new ChartPoint(3, maximum) };
         return horizontal
-            ? chart.WithXAxisIntegerTicks().WithXAxisBounds(0, maximum).AddHorizontalBar("Items", points)
-            : chart.WithYAxisIntegerTicks().WithYAxisBounds(0, maximum).AddBar("Items", points);
+            ? chart.XAxis(x => x.IntegerTicks().Bounds(0, maximum)).AddHorizontalBar("Items", points)
+            : chart.YAxis(y => y.IntegerTicks().Bounds(0, maximum)).AddBar("Items", points);
     }
 
     /// <summary>Writes paired SVG, HTML and native PNG examples for small and large count domains.</summary>
     public static void Write(string output, ChartPngOutputScale scale) {
         TopologyAccentExamples.Write(output);
         foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
-            var sparse = Chart.Create().WithSize(800, 200).WithTheme(VisualTheme.Graphite(), mode)
-                .WithTitle("Sparse category counts").WithXLabels("January", "February")
-                .WithStackedBars().WithYAxisIntegerTicks().WithMaximumBarWidth(48)
+            var sparse = Chart.Create().Size(800, 200).Theme(VisualTheme.Graphite()).ThemeMode(mode)
+                .Title("Sparse category counts").XLabels("January", "February")
+                .Bars(b => b.Stacked()).YAxis(y => y.IntegerTicks()).Bars(b => b.MaxWidth(48))
                 .AddBar("Passed", new[] { new ChartPoint(1, 1), new ChartPoint(2, 2) })
                 .AddBar("Pending", new[] { new ChartPoint(1, 1), new ChartPoint(2, 0) });
             ExampleArtifactWriter.SaveChart(sparse, output, "category-counts-" + mode.ToString().ToLowerInvariant(), scale);

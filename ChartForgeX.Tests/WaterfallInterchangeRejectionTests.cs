@@ -58,21 +58,21 @@ public sealed class WaterfallInterchangeRejectionTests {
     [Fact]
     public void CallbackAndProcessStateRejectBeforeAnyCallbackRuns() {
         var calls = 0; var chart = WaterfallInterchangeTests.Model();
-        chart.WithValueFormat(ChartValueFormat.Custom(value => { calls++; return value.ToString(); }));
+        chart.ValueFormat(ChartValueFormat.Custom(value => { calls++; return value.ToString(); }));
         Assert.Throws<NotSupportedException>(() => chart.ToVisualArtifact().ToInterchangeJson()); Assert.Equal(0, calls);
-        chart.WithValueFormat(ChartValueFormat.Number());
-        chart.Options.XAxis.WithLabelFormatter(value => { calls++; return value.ToString(); });
+        chart.ValueFormat(ChartValueFormat.Number());
+        chart.Options.XAxis.LabelBy(value => { calls++; return value.ToString(); });
         Assert.Throws<NotSupportedException>(() => chart.ToVisualArtifact().ToInterchangeJson()); Assert.Equal(0, calls);
-        chart.Options.XAxis.WithLabelFormatter(null); chart.Options.Labels.AccessibleTextFormatter = _ => { calls++; return "Custom"; };
+        chart.Options.XAxis.LabelBy((Func<double, string>?)null); chart.Options.Labels.AccessibleTextFormatter = _ => { calls++; return "Custom"; };
         Assert.Throws<NotSupportedException>(() => chart.ToVisualArtifact().ToInterchangeJson()); Assert.Equal(0, calls);
-        chart.Options.Labels.AccessibleTextFormatter = null; chart.Options.PngFontPath = "process-local-font.ttf";
-        Assert.Throws<NotSupportedException>(() => chart.ToVisualArtifact().ToInterchangeJson()); chart.Options.PngFontPath = null;
+        chart.Options.Labels.AccessibleTextFormatter = null; chart.Options.Png.FontPath = "process-local-font.ttf";
+        Assert.Throws<NotSupportedException>(() => chart.ToVisualArtifact().ToInterchangeJson()); chart.Options.Png.FontPath = null;
         var culture = (CultureInfo)CultureInfo.GetCultureInfo("pl-PL").Clone(); culture.NumberFormat.NegativeSign = "minus ";
-        chart.WithValueFormat(ChartValueFormat.Number("0.##", culture));
+        chart.ValueFormat(ChartValueFormat.Number("0.##", culture));
         Assert.Throws<NotSupportedException>(() => chart.ToVisualArtifact().ToInterchangeJson());
-        chart.WithValueFormat(ChartValueFormat.Compact(CultureInfo.GetCultureInfo("pl-PL")));
+        chart.ValueFormat(ChartValueFormat.Compact(CultureInfo.GetCultureInfo("pl-PL")));
         Assert.Equal(chart.ToSvg(), chart.ToVisualArtifact().ToInterchangeEnvelope().ToWaterfallChart().ToSvg());
-        chart.Options.XAxis.WithTimeSpacing(ChartTimeSpacing.Ordinal);
+        chart.Options.XAxis.TimeSpacing(ChartTimeSpacing.Ordinal);
         Assert.Throws<NotSupportedException>(() => chart.ToVisualArtifact().ToInterchangeJson());
     }
 

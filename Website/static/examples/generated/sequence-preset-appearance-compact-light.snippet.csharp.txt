@@ -18,7 +18,7 @@ var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 #endregion
 
-var model=SequenceArtifact.Create("sequence-preset-appearance").WithSize(390,860).AddParticipant("A","Review\nOwner",SequenceArtifactParticipantKind.Actor).AddParticipant("B","Archive",SequenceArtifactParticipantKind.Control).AddMessage("A","B","Save").AddMessage("B","A","Stored");
+var model=SequenceArtifact.Create("sequence-preset-appearance").Width(390).Height(860).AddParticipant("A","Review\nOwner",SequenceArtifactParticipantKind.Actor).AddParticipant("B","Archive",SequenceArtifactParticipantKind.Control).AddMessage("A","B","Save").AddMessage("B","A","Stored");
 model.ThemeMode=mode;
 model.Layout=new SequenceLayoutPolicy(participantMinimumWidth:64,participantSpacing:8,participantBands:new SequenceParticipantBands(),mirrorParticipants:true,fragmentMargin:10,fragmentTabMinimumWidth:50,fragmentTabMinimumHeight:35);
 model.Typography=new SequenceTypography(participant:new TextStyleOverride{FontSize=14},message:new TextStyleOverride{FontSize=12});

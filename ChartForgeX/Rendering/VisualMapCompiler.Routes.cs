@@ -12,7 +12,7 @@ internal static partial class VisualMapCompiler {
         double dot, double?[] weights, double min, double max, VisualThemeColors colors, List<MapLabel> labels) {
         var series = chart.Series[0];
         DrawRoutes(chart, context, builder, map, plot, dot, weights, min, max, colors, labels, series, 0,
-            chart.Options.MapConnectors.Concat(series.MapConnectors).ToArray(), point => Geographic(point, viewport, map), point => Visible(point, viewport));
+            chart.Options.Map.Connectors.Concat(series.MapConnectors).ToArray(), point => Geographic(point, viewport, map), point => Visible(point, viewport));
     }
 
     /// <summary>Draws the same route geometry for standalone and composed datasets on one caller-owned coordinate frame.</summary>
@@ -92,7 +92,7 @@ internal static partial class VisualMapCompiler {
             using (builder.PushGroup(id, "dotted-map-connector-source", metadata)) {
                 if (!visible) continue;
                 List<ChartPoint>? captionSamples = null; var captionLength = 0d;
-                var showCaption = series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false);
+                var showCaption = series.ShowDataLabels ?? (chart.Options.DataLabels.Visible ?? false);
                 for (var fragmentIndex = 0; fragmentIndex < painted.Count; fragmentIndex++) {
                     var fragment = painted[fragmentIndex];
                     builder.Path(fragment, stroke: ChartColorMath.WithOpacity(colors.Surface, .72), strokeWidth: width + dot, role: "dotted-map-connector-halo",
@@ -123,7 +123,7 @@ internal static partial class VisualMapCompiler {
                     AddMapLabel(builder, labels, connector.Label, ChartRouteLabelCompaction.Compact(connector.Label), Along(captionSamples, .36), style,
                         id + "-label", "dotted-map-connector-label", plot, context.Theme.Spacing + dot, 30,
                         paint: VisualChartPaint.ExplicitDataLabelColor(chart) ? VisualChartPaint.Text(style) : paint,
-                        leaderColor: chart.Options.MapCallouts != null ? color : null, leaderPaint: paint, callouts: chart.Options.MapCallouts);
+                        leaderColor: chart.Options.Map.Callouts != null ? color : null, leaderPaint: paint, callouts: chart.Options.Map.Callouts);
                 }
             }
         }

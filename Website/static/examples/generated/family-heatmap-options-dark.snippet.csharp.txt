@@ -1,0 +1,42 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = ThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var colors = VisualTheme.Graphite().Resolve(mode);
+var primary = ChartSeries.CreateHeatmapCategoryRow(new ChartSeriesId("primary"), "Primary", new ChartHeatmapCell?[] {
+    new("pass", "Ready", "Assessment passed"), new("warning", "Review"), null, new("pass", "Ready")
+}, "Production");
+var secondary = ChartSeries.CreateHeatmapCategoryRow(new ChartSeriesId("secondary"), "Secondary", new ChartHeatmapCell?[] {
+    new("pass"), new("pass"), new("warning"), new("pass")
+}, "Production");
+var chart = Chart.Create().StateCategories(new ChartStateCategory("pass", "Available", colors.Status.Pass.Fill),
+        new ChartStateCategory("warning", "Review", colors.Status.Medium.Fill, ChartStatePattern.Hatched),
+        new ChartStateCategory("critical", "Unavailable", colors.Status.Critical.Fill, ChartStatePattern.CrossHatched))
+    .XLabels("Identity", "Network", "Storage", "Backup")
+    .AddSeries(primary).AddSeries(secondary);
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Coverage across service areas", "", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion

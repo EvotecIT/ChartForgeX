@@ -58,8 +58,8 @@ internal sealed class MermaidRadarSettings {
     }
 
     internal void Apply(Chart chart, MermaidRadarRenderOptions host) {
-        chart.Options.PolarAxisScaleFactor = host.AxisScaleFactor ?? AxisScaleFactor ?? 1;
-        chart.Options.PolarAxisLabelFactor = host.AxisLabelFactor ?? AxisLabelFactor ?? 1.05;
+        chart.Options.Polar.AxisScaleFactor = host.AxisScaleFactor ?? AxisScaleFactor ?? 1;
+        chart.Options.Polar.AxisLabelFactor = host.AxisLabelFactor ?? AxisLabelFactor ?? 1.05;
         if (host.Padding.HasValue) chart.Options.Padding = host.Padding.Value;
         else if (MarginLeft.HasValue || MarginTop.HasValue || MarginRight.HasValue || MarginBottom.HasValue) {
             var padding = chart.Options.Padding;

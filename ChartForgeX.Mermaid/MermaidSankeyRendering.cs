@@ -17,9 +17,9 @@ public static class MermaidSankeyRendering {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidSankeyRenderOptions();
         var chart = Chart.Create()
-            .WithTitle(MermaidHeading.Title(document, options.Title, null, "Mermaid Sankey"))
-            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
-            .WithSize(options.Width ?? document.Configuration.Sankey?.Width ?? 960,
+            .Title(MermaidHeading.Title(document, options.Title, null, "Mermaid Sankey"))
+            .Subtitle(MermaidHeading.Subtitle(options.Subtitle))
+            .Size(options.Width ?? document.Configuration.Sankey?.Width ?? 960,
                 options.Height ?? document.Configuration.Sankey?.Height ?? 560)
             .AddSankey(string.IsNullOrWhiteSpace(options.SeriesName) ? "Flow" : options.SeriesName!, ToNodes(document), ToLinks(document));
         document.Configuration.Sankey?.Apply(chart);

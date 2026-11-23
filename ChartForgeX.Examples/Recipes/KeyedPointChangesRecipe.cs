@@ -5,11 +5,11 @@ public static class KeyedPointChangesRecipe {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var readings = ChartSeries.CreateLine(new ChartSeriesId("readings"), "Readings",
             new[] { new ChartPoint(1, 10), new ChartPoint(2, 20), new ChartPoint(3, 30) })
-            .WithObservationIds(new[] { new ChartObservationId("a"), new ChartObservationId("b"), new ChartObservationId("c") })
-            .WithPointLabel(1, "Retained observation");
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), mode)
-            .WithTitle("A rolling window with stable observations")
-            .WithXAxis("Sample").WithYAxis("Reading").AddSeries(readings);
+            .ObservationIds(new[] { new ChartObservationId("a"), new ChartObservationId("b"), new ChartObservationId("c") })
+            .PointLabel(1, "Retained observation");
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).ThemeMode(mode)
+            .Title("A rolling window with stable observations")
+            .XAxis(x => x.Title("Sample")).YAxis(y => y.Title("Reading")).AddSeries(readings);
         readings.ApplyPointChanges(new[] {
             ChartObservationChange<ChartPoint>.Remove(new ChartObservationId("a")),
             ChartObservationChange<ChartPoint>.Replace(new ChartObservationId("b"), new ChartPoint(2, 25)),

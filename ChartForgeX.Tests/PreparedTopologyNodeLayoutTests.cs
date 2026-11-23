@@ -184,10 +184,10 @@ public sealed class PreparedTopologyNodeLayoutTests {
     }
 
     private static TopologyChart NodeChart(TopologyNodeDisplayMode mode, TopologyNodeKind kind) =>
-        TopologyChart.Create().WithViewport(300, 240, 20).WithLegend(null)
+        TopologyChart.Create().Viewport(new TopologyViewport(300, 240, 20)).Legend((TopologyLegend?)null)
             .AddNode("node", "AMER", 100, 100, kind, TopologyHealthStatus.Healthy,
                 width: mode == TopologyNodeDisplayMode.Dot ? 22 : 104, height: mode == TopologyNodeDisplayMode.Pill ? 34 : mode == TopologyNodeDisplayMode.Dot ? 22 : 80)
-            .WithNodeDisplay("node", mode);
+            .UpdateNode("node", n => n.DisplayMode(mode).Badge(null));
 
     private static PreparedVisual Prepare(TopologyChart chart) => chart.Prepare(
         new VisualRenderContext(new VisualLayoutOptions(new VisualSize(300, 240), 20), frame: new VisualFrame(showLegend: false)),

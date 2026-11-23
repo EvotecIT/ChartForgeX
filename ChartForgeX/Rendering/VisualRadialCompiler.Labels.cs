@@ -22,11 +22,11 @@ internal static partial class VisualRadialCompiler {
         var style = Style(chart, context, slice.SeriesIndex, slice.PointIndex, color, context.Theme.Typography.DataLabelSize);
         if (outside) {
             var left = placement == ChartDataLabelPlacement.Left || (placement == ChartDataLabelPlacement.Outside && Math.Cos(angle) < 0);
-            var labelX = cx + (left ? -1 : 1) * envelopeRadius * chart.Options.PieOutsideLabelDistanceRatio;
+            var labelX = cx + (left ? -1 : 1) * envelopeRadius * chart.Options.Pie.OutsideLabelDistanceRatio;
             labels.Add(new RadialLabel(slice, text, angle, labelX, sy + Math.Sin(angle) * envelopeRadius * 1.1, sx, sy, left, style, radius, placement));
             return;
         }
-        var labelRadius = chart.Options.PieInsideLabelRadiusRatio.HasValue ? radius * chart.Options.PieInsideLabelRadiusRatio.Value
+        var labelRadius = chart.Options.Pie.InsideLabelRadiusRatio.HasValue ? radius * chart.Options.Pie.InsideLabelRadiusRatio.Value
             : inner > 0 ? (inner + radius) / 2 : radius * 0.66;
         var x = sx + Math.Cos(angle) * labelRadius;
         var y = sy + Math.Sin(angle) * labelRadius;
@@ -57,7 +57,7 @@ internal static partial class VisualRadialCompiler {
             Math.Min(radius * .5, Math.Max(0, Math.Min(y - plot.Top, plot.Bottom - y) * 2)), FitsSlice);
         var fitted = Fit(text, style, maxWidth, builder);
         var reducedRadius = slice.RadiusRatio.GetValueOrDefault(1) < 1;
-        var boundedBand = chart.Series.Count > 1 || chart.Series[slice.SeriesIndex].RadialBand != null || chart.Options.RadialBandAllocation != null || chart.Options.PieInsideLabelRadiusRatio.HasValue || reducedRadius;
+        var boundedBand = chart.Series.Count > 1 || chart.Series[slice.SeriesIndex].RadialBand != null || chart.Options.RadialBandAllocation != null || chart.Options.Pie.InsideLabelRadiusRatio.HasValue || reducedRadius;
         if ((oversized || boundedBand) && !FitsSlice(builder.MeasureText(fitted, style))) {
             if (boundedBand)
                 builder.AddDiagnostic(new VisualDiagnostic("radial.band-label-omitted", chart.Options.RadialBandAllocation != null || reducedRadius
@@ -130,7 +130,7 @@ internal static partial class VisualRadialCompiler {
 
     private static bool VerticalConnector(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot,
         RadialLabel label, ChartRect bounds, double radius, double cy, double extent, bool above, int lane, int laneCount) {
-        var halfStroke = chart.Options.DataLabelConnectorStrokeWidth / 2;
+        var halfStroke = chart.Options.DataLabels.ConnectorStrokeWidth / 2;
         var clearance = Math.Max(2 + halfStroke, context.Theme.Spacing / 2);
         var outerClearance = context.Theme.Spacing - halfStroke - 1;
         if (outerClearance < clearance) return false;
@@ -155,7 +155,7 @@ internal static partial class VisualRadialCompiler {
         for (var index = 1; index < points.Length - 1; index++) {
             var corner = points[index]; var previous = points[index - 1]; var next = points[index + 1];
             var incomingLength = Distance(previous, corner); var outgoingLength = Distance(corner, next);
-            var cut = chart.Options.DataLabelConnectorStyle == ChartDataLabelConnectorStyle.Curve
+            var cut = chart.Options.DataLabels.ConnectorStyle == ChartDataLabelConnectorStyle.Curve
                 ? Math.Min(Math.Max(0, (clearance - halfStroke - 1) / 2), Math.Min(incomingLength, outgoingLength) / 2) : 0;
             if (cut <= 0) { commands.Add(ChartPathCommand.LineTo(corner.X, corner.Y)); continue; }
             var incoming = new ChartPoint(corner.X + (previous.X - corner.X) * cut / incomingLength,
@@ -168,8 +168,8 @@ internal static partial class VisualRadialCompiler {
                 outgoing.Y + (corner.Y - outgoing.Y) * 2 / 3, outgoing.X, outgoing.Y));
         }
         commands.Add(ChartPathCommand.LineTo(endX, endY));
-        var color = ChartColorMath.WithOpacity(chart.Options.DataLabelConnectorColor ?? label.Slice.Color, chart.Options.DataLabelConnectorOpacity);
-        builder.Path(new ChartPath(commands), stroke: color, strokeWidth: chart.Options.DataLabelConnectorStrokeWidth,
+        var color = ChartColorMath.WithOpacity(chart.Options.DataLabels.ConnectorColor ?? label.Slice.Color, chart.Options.DataLabels.ConnectorOpacity);
+        builder.Path(new ChartPath(commands), stroke: color, strokeWidth: chart.Options.DataLabels.ConnectorStrokeWidth,
             role: "data-label-connector", id: SliceId(label.Slice) + "-connector", paint: ConnectorPaint(chart, label.Slice, color));
         return true;
     }
@@ -217,8 +217,8 @@ internal static partial class VisualRadialCompiler {
     private static void Connector(Chart chart, VisualSceneBuilder builder, RadialSlice slice, double angle,
         double sx, double sy, double radius, double x, double y, bool sideLane) {
         var path = ConnectorPath(chart, angle, sx, sy, radius, x, y, sideLane);
-        var color = ChartColorMath.WithOpacity(chart.Options.DataLabelConnectorColor ?? slice.Color, chart.Options.DataLabelConnectorOpacity);
-        builder.Path(path, stroke: color, strokeWidth: chart.Options.DataLabelConnectorStrokeWidth, role: "data-label-connector", id: slice.RadiusRatio.HasValue ? SliceId(slice) + "-connector" : null, paint: ConnectorPaint(chart, slice, color));
+        var color = ChartColorMath.WithOpacity(chart.Options.DataLabels.ConnectorColor ?? slice.Color, chart.Options.DataLabels.ConnectorOpacity);
+        builder.Path(path, stroke: color, strokeWidth: chart.Options.DataLabels.ConnectorStrokeWidth, role: "data-label-connector", id: slice.RadiusRatio.HasValue ? SliceId(slice) + "-connector" : null, paint: ConnectorPaint(chart, slice, color));
     }
 
     private static ChartPath ConnectorPath(Chart chart, double angle, double sx, double sy, double radius,
@@ -229,10 +229,10 @@ internal static partial class VisualRadialCompiler {
         var side = x < sx ? -1 : 1;
         var endX = sideLane ? x - side * 4 : x;
         var commands = new List<ChartPathCommand> { ChartPathCommand.MoveTo(startX, startY) };
-        if (chart.Options.DataLabelConnectorStyle == ChartDataLabelConnectorStyle.Curve) {
+        if (chart.Options.DataLabels.ConnectorStyle == ChartDataLabelConnectorStyle.Curve) {
             commands.Add(ChartPathCommand.CubicTo(startX + side * radius * 0.16, startY,
                 endX - side * radius * 0.16, y, endX, y));
-        } else if (chart.Options.DataLabelConnectorStyle == ChartDataLabelConnectorStyle.Elbow) {
+        } else if (chart.Options.DataLabels.ConnectorStyle == ChartDataLabelConnectorStyle.Elbow) {
             commands.Add(ChartPathCommand.LineTo(sx + Math.Cos(angle) * radius * 1.08, sy + Math.Sin(angle) * radius * 1.08));
             commands.Add(ChartPathCommand.LineTo(endX - side * 8, y));
             commands.Add(ChartPathCommand.LineTo(endX, y));
@@ -242,17 +242,17 @@ internal static partial class VisualRadialCompiler {
     }
 
     private static VisualScenePaintBinding ConnectorPaint(Chart chart, RadialSlice slice, ChartColor actual) {
-        var source = chart.Options.DataLabelConnectorColor.HasValue ? SvgPaint.Of(chart.Options.DataLabelConnectorColor.Value, SvgColorRole.Series)
+        var source = chart.Options.DataLabels.ConnectorColor.HasValue ? SvgPaint.Of(chart.Options.DataLabels.ConnectorColor.Value, SvgColorRole.Series)
             : SlicePaint(chart, slice);
-        return VisualChartPaint.Stroke(source.WithOpacity(actual, chart.Options.DataLabelConnectorOpacity));
+        return VisualChartPaint.Stroke(source.WithOpacity(actual, chart.Options.DataLabels.ConnectorOpacity));
     }
 
     private static void DrawCenter(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, double cx, double cy, double inner, double outerRadius, double? total, int seriesIndex) {
         var colors = context.Theme.Resolve(context.ThemeMode);
-        var value = chart.Options.DonutCenterValue ?? (total.HasValue ? ChartNumericFormatter.FormatValue(chart.Options, total.Value) : OverflowValueText);
-        var overflowCaption = chart.Options.DonutCenterValue == null && !total.HasValue;
+        var value = chart.Options.Pie.CenterValue ?? (total.HasValue ? ChartNumericFormatter.FormatValue(chart.Options, total.Value) : OverflowValueText);
+        var overflowCaption = chart.Options.Pie.CenterValue == null && !total.HasValue;
         var displayValue = overflowCaption ? FormatOverflowCenter(false) : value;
-        var label = chart.Options.DonutCenterLabel ?? chart.Series[seriesIndex].Name;
+        var label = chart.Options.Pie.CenterLabel ?? chart.Series[seriesIndex].Name;
         // These describe the hole's content, rather than claiming exact hit boxes for fitted text.
         var bounds = new ChartRect(cx - inner, cy - inner, inner * 2, inner * 2);
         builder.AddRegion(new VisualSemanticRegion("series-" + seriesIndex.ToString(System.Globalization.CultureInfo.InvariantCulture) + "-center-value", "donut-total-label", bounds, value));

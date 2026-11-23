@@ -10,13 +10,13 @@ public sealed class NativeTopologyDetailTypographyTests {
     [InlineData(false)]
     [InlineData(true)]
     public void DetailOverridesUseNativeMeasuredTextAndDetachedClonesForOrdinaryAndFittedShapes(bool fitted) {
-        var chart = TopologyChart.Create().WithTheme(ChartForgeX.Themes.VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).WithViewport(480, 280, 16).WithLegend(null)
+        var chart = TopologyChart.Create().Theme(ChartForgeX.Themes.VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).Viewport(new TopologyViewport(480, 280, 16)).Legend((TopologyLegend?)null)
             .AddNode("item", "Item", 40, 40, width: 320, height: 170);
         var node = chart.Nodes[0];
         node.Shape = TopologyNodeShape.Rectangle;
         node.FitLabelToContent = fitted;
         node.ShowStatusBadge = false;
-        var style = new TextStyleOverride().WithItalic().WithUnderline().WithWeight("700");
+        var style = new TextStyleOverride().Italic().Underline().FontWeight("700");
         node.Details.Add(new TopologyNodeDetail { Text = "Qualified member", TextStyle = style });
         var options = new TopologyRenderOptions { IncludeLegend = false };
         var prepared = chart.Prepare(options);
@@ -42,7 +42,7 @@ public sealed class NativeTopologyDetailTypographyTests {
 
     [Fact]
     public void AnEmptyDetailOverridePreservesTheDefaultSvgAndPngExactly() {
-        var chart = TopologyChart.Create().WithTheme(ChartForgeX.Themes.VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).WithViewport(440, 240, 16).WithLegend(null)
+        var chart = TopologyChart.Create().Theme(ChartForgeX.Themes.VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).Viewport(new TopologyViewport(440, 240, 16)).Legend((TopologyLegend?)null)
             .AddNode("item", "Item", 40, 40, width: 280, height: 140)
             .AddNodeDetail("item", "Status", "Ready");
         var originalSvg = chart.ToSvg(); var originalPng = chart.ToPng();

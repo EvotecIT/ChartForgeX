@@ -12,12 +12,12 @@ namespace ChartForgeX.Tests;
 public sealed class TopologyNoteRoutingViewportTests {
     [Theory] [InlineData(false)] [InlineData(true)]
     public void GroupTargetNotesRetainTheirActualProjectedRoutingDomainAndRecomputeAfterEdits(bool left) {
-        var chart=TopologyChart.Create().WithId("group-note-routing").WithTitle("").WithViewport(320,240,24).WithLayout(TopologyLayoutMode.Manual)
+        var chart=TopologyChart.Create().Id("group-note-routing").Title("").Viewport(new TopologyViewport(320, 240, 24)).LayoutMode(TopologyLayoutMode.Manual)
             .AddGroup("group","Group",100,100,900,500);
         chart.Theme=VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family);
         chart.Groups[0].ShowLabel=false;
         chart.Annotations.Add(new TopologyAnnotation("note","Group note","group",left?TopologyAnnotationSide.Left:TopologyAnnotationSide.Right));
-        chart.WithRenderOptions(new TopologyRenderOptions{IncludeTitle=false,IncludeLegend=false,FitContentToViewport=true});
+        chart.DefaultRenderOptions(new TopologyRenderOptions{IncludeTitle=false,IncludeLegend=false,FitContentToViewport=true});
         var before=chart.Prepare();var saved=before.ToInterchangeEnvelope();Capture("group-"+left+"-direct",before);
         var restored=VisualArtifactInterchangeEnvelope.FromJson(saved.ToJson()).ToTopologyChart();var after=restored.Prepare();Capture("group-"+left+"-restored",after);
         Assert.InRange(saved.Annotations[0].TopologyDefaultUnits!.Value,.000001,.99);Assert.NotNull(saved.Annotations[0].TopologyRoutingViewport);
@@ -26,7 +26,7 @@ public sealed class TopologyNoteRoutingViewportTests {
         var moved=restored.Prepare();Capture("group-"+left+"-moved",moved);
         Assert.Equal(domain,moved.ToInterchangeEnvelope().Annotations[0].TopologyRoutingViewport);
         Assert.NotEqual(AnnotationInk(after.ToSvg()),AnnotationInk(moved.ToSvg()));
-        restored.WithViewport(420,320,24);
+        restored.Viewport(new TopologyViewport(420, 320, 24));
         // Clearing captured units restores the full native 140-unit panel and 36-unit gutter.
         // Keep that edited request in its admitted positive canvas domain.
         if(left)restored.Groups[0].X+=140+36;
@@ -36,7 +36,7 @@ public sealed class TopologyNoteRoutingViewportTests {
 
     [Fact]
     public void MalformedOrDetachedRoutingViewportsFailThroughTheExistingPortableBoundary() {
-        var chart=TopologyChart.Create().WithId("invalid-note-domain").WithTitle("").WithViewport(640,400,24)
+        var chart=TopologyChart.Create().Id("invalid-note-domain").Title("").Viewport(new TopologyViewport(640, 400, 24))
             .AddNode("node","Node",100,100,width:150,height:80);
         chart.Annotations.Add(new TopologyAnnotation("note","Note","node"));
         var saved=chart.Prepare(new TopologyRenderOptions{IncludeLegend=false,FitContentToViewport=true}).ToInterchangeEnvelope();
@@ -62,7 +62,7 @@ public sealed class TopologyNoteRoutingViewportTests {
     }
     [Theory] [InlineData(false)] [InlineData(true)]
     public void ActualSmallTitledAndLegendRoutingKeepsTheLegacyConstantClampDomain(bool legend) {
-        var chart=TopologyChart.Create().WithId("constant-router-domain").WithTitle("Actual heading").WithSubtitle("Actual subtitle").WithViewport(90,90,24)
+        var chart=TopologyChart.Create().Id("constant-router-domain").Title("Actual heading").Subtitle("Actual subtitle").Viewport(new TopologyViewport(90, 90, 24))
             .AddNode("from","From",25,25,width:10,height:10).AddNode("to","To",45,45,width:10,height:10)
             .AddEdge("edge","from","to",routing:TopologyEdgeRouting.ObstacleAvoidingOrthogonal);
         chart.Legend=legend?TopologyLegend.Default():null;

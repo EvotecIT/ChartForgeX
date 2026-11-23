@@ -39,8 +39,8 @@ public sealed class NativeRawValueSourceMotionTests {
     }
     [Theory] [InlineData(false)] [InlineData(true)]
     public void OptInMetadataKeepsOrdinaryNativePaintAndHiddenRawValuePaintIdentityCannotMasquerade(bool donut) {
-        var renderer = new HtmlInteractiveChartRenderer(); var chart = Model(donut,"radius",double.Epsilon).WithLegend(false).WithDataLabels(false).WithDonutCenterLabel(false);
-        var ordinary = renderer.PrepareSection(chart); var from = Section(renderer,chart); var other = Model(donut,"radius",2*double.Epsilon).WithLegend(false).WithDataLabels(false).WithDonutCenterLabel(false); other.Series[0].WithPointColor(0,ChartColor.Black); var to = Section(renderer,other);
+        var renderer = new HtmlInteractiveChartRenderer(); var chart = Model(donut,"radius",double.Epsilon).Legend(false).DataLabels(false).Pie(p => p.ShowCenterLabel(false));
+        var ordinary = renderer.PrepareSection(chart); var from = Section(renderer,chart); var other = Model(donut,"radius",2*double.Epsilon).Legend(false).DataLabels(false).Pie(p => p.ShowCenterLabel(false)); other.Series[0].PointColor(0,ChartColor.Black); var to = Section(renderer,other);
         NativeRadialMotionBeforeControls.Capture(ordinary,"raw-default-"+donut); NativeRadialMotionBeforeControls.Capture(from,"raw-hidden-from-"+donut); NativeRadialMotionBeforeControls.Capture(to,"raw-hidden-to-"+donut);
         Assert.False(Metadata(ordinary).TryGetProperty("nativeValueSource",out _)); Assert.Equal(ordinary.PreparedVisual.ToSvg(),from.PreparedVisual.ToSvg()); Assert.Equal(ordinary.PreparedVisual.ToPng(),from.PreparedVisual.ToPng());
         Assert.Equal(from.PreparedVisual.ToSvg("raw-unpainted"),to.PreparedVisual.ToSvg("raw-unpainted")); Assert.Equal(from.PreparedVisual.ToPng(),to.PreparedVisual.ToPng());
@@ -51,7 +51,7 @@ public sealed class NativeRawValueSourceMotionTests {
     public void DetachedRawSourceAndCapturedFacesReplayAfterCallerAndRegistryMutation(bool donut) {
         var renderer = new HtmlInteractiveChartRenderer(); var chart = Model(donut,"other",60); var from = Section(renderer,chart); var to = Section(renderer,Model(donut,"other",5));
         var payload = renderer.PrepareNativeTransitionJson(from,to,new HtmlNativeTransitionOptions(frameCount:5)); var frames = VisualValueCapture.NativeFrames(from.PreparedVisual,to.PreparedVisual,5,null); NativeRadialValueMotionTests.Capture(from,to,frames,payload,"raw-detached-"+donut);
-        chart.Series[0].Points.Clear(); chart.Options.MaximumPieSlices=2; chart.WithFontFamily("caller replacement");
+        chart.Series[0].Points.Clear(); chart.Options.Pie.MaxSlices=2; chart.FontFamily("caller replacement");
         try { FontRegistry.Clear(); var repeated = VisualValueCapture.NativeFrames(from.PreparedVisual,to.PreparedVisual,5,null); Assert.Equal(payload,renderer.PrepareNativeTransitionJson(from,to,new HtmlNativeTransitionOptions(frameCount:5))); for(var index=0;index<frames.Count;index++){Assert.Equal(frames[index].ToSvg(),repeated[index].ToSvg());Assert.Equal(frames[index].ToPng(),repeated[index].ToPng());} }
         finally { _=BrowserProofFonts.Family; }
     }
@@ -70,15 +70,15 @@ public sealed class NativeRawValueSourceMotionTests {
     public void RawOptInRetainsNativeDomainFullSourceAndImmutablePresentationAdmission(string condition) {
         var renderer = new HtmlInteractiveChartRenderer(); var chart=Model(false,"other",60); var from=Section(renderer,chart); Exception? error;
         if(condition=="negative"){chart.Series[0].Points[0]=new ChartPoint(1,-1);error=Record.Exception(()=>Reflow(renderer,chart,true));}
-        else if(condition=="callback"){chart.WithValueFormat(ChartValueFormat.Custom(value=>"callback"));error=Record.Exception(()=>Section(renderer,chart));}
-        else {chart.Series[0].Points[0]=new ChartPoint(1,5);if(condition=="unknown-id")chart.Series[0].WithObservationId(0,new ChartObservationId("different"));else chart.Options.PieSliceOpacity=.5; var to=Section(renderer,chart);error=Record.Exception(()=>renderer.PrepareNativeTransitionJson(from,to,new HtmlNativeTransitionOptions()));NativeRadialMotionBeforeControls.Capture(to,"raw-reject-"+condition+"-to");}
+        else if(condition=="callback"){chart.ValueFormat(ChartValueFormat.Custom(value=>"callback"));error=Record.Exception(()=>Section(renderer,chart));}
+        else {chart.Series[0].Points[0]=new ChartPoint(1,5);if(condition=="unknown-id")chart.Series[0].ObservationId(0,new ChartObservationId("different"));else chart.Options.Pie.SliceOpacity=.5; var to=Section(renderer,chart);error=Record.Exception(()=>renderer.PrepareNativeTransitionJson(from,to,new HtmlNativeTransitionOptions()));NativeRadialMotionBeforeControls.Capture(to,"raw-reject-"+condition+"-to");}
         NativeRadialMotionBeforeControls.Capture(from,"raw-reject-"+condition+"-from");NativeRadialMotionBeforeControls.Save("raw-reject-"+condition+".facts.json",JsonSerializer.Serialize(new{condition,error=error?.ToString()}));
         if(condition=="negative")Assert.IsType<InvalidOperationException>(error);else Assert.IsType<NotSupportedException>(error);
     }
     internal static Chart Model(bool donut,string state,double value,int width=760,bool dark=false) {
         var chart=NativeRadialMotionBeforeControls.Model(donut,state=="other","inside",value,width,dark);
         if(state=="empty")for(var index=1;index<chart.Series[0].Points.Count;index++)chart.Series[0].Points[index]=new ChartPoint(index+1,0);
-        if(state=="radius")chart.Series[0].WithPointSliceRadiusRatio(0,0);return chart;
+        if(state=="radius")chart.Series[0].PointSliceRadiusRatio(0,0);return chart;
     }
     internal static HtmlChartSection Section(HtmlInteractiveChartRenderer renderer,Chart chart) => renderer.PrepareSection(chart,configure:options=>{options.CaptureNativeValueSource=true;options.Interaction.ChartId="native-raw";});
     internal static HtmlChartSection Reflow(HtmlInteractiveChartRenderer renderer,Chart chart,bool hidden) => renderer.PrepareVisibilitySection(chart,new ChartVisibilityView(hidden?new[]{ChartVisibilityTarget.RadialOther(new ChartSeriesId("parts"))}:Array.Empty<ChartVisibilityTarget>(),ChartVisibilityLayout.Reflow),configure:options=>{options.CaptureNativeValueSource=true;options.Interaction.ChartId="native-raw";});

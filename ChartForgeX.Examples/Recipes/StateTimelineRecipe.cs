@@ -12,7 +12,7 @@ public static class StateTimelineRecipe {
             new ChartStateTimelineSegment(start, start.AddHours(6), "pass"),
             new ChartStateTimelineSegment(start.AddHours(7), start.AddHours(10), "critical", "No response")
         }, group: "Production");
-        return Chart.Create().WithStateCategories(new ChartStateCategory("pass", "Available", colors.Status.Pass.Fill),
+        return Chart.Create().StateCategories(new ChartStateCategory("pass", "Available", colors.Status.Pass.Fill),
             new ChartStateCategory("warning", "Review", colors.Status.Medium.Fill, ChartStatePattern.Hatched),
             new ChartStateCategory("critical", "Unavailable", colors.Status.Critical.Fill, ChartStatePattern.CrossHatched))
             .AddSeries(primary).AddSeries(secondary);

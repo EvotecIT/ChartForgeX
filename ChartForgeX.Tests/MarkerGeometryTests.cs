@@ -18,18 +18,18 @@ public sealed class MarkerGeometryTests {
         var series = Chart.Create().AddScatter("Samples", new[] { new ChartPoint(1, 2) }).Series[0];
         Assert.Equal(ChartMarkerShape.Circle, series.Markers.Shape);
         Assert.Null(series.Markers.Enabled); Assert.Null(series.Markers.Radius);
-        series.ConfigureMarkers(markers => markers.Radius = 12);
+        series.Markers(markers => markers.Radius = 12);
         Assert.Equal(12, series.Markers.Radius);
         series.Markers.Radius = 7;
         Assert.Equal(7, series.MarkerRadius);
-        series.UseThemeMarkerRadius();
+        series.MarkerRadius(null);
         Assert.Null(series.Markers.Radius);
         Assert.Throws<ArgumentOutOfRangeException>(() => series.Markers.Shape = (ChartMarkerShape)99);
         Assert.Throws<ArgumentOutOfRangeException>(() => series.Markers.Radius = -1);
         Assert.Throws<ArgumentOutOfRangeException>(() => series.Markers.Radius = double.NaN);
         Assert.Throws<ArgumentOutOfRangeException>(() => series.Markers.StrokeWidth = double.PositiveInfinity);
         Assert.Throws<ArgumentOutOfRangeException>(() => series.Markers.StrokeWidth = -1);
-        Assert.Throws<ArgumentNullException>(() => series.ConfigureMarkers(null!));
+        Assert.Throws<ArgumentNullException>(() => series.Markers((Action<ChartMarkerOptions>)null!));
     }
 
     [Fact]
@@ -38,7 +38,7 @@ public sealed class MarkerGeometryTests {
         bar.Series[0].Markers.Enabled = false;
         Assert.Throws<InvalidOperationException>(() => Prepare(bar));
         var map = Bare().AddDottedMap("Places", new[] { new ChartMapPoint("Origin", 0, 0) });
-        map.Series[0].ConfigureMarkers(markers => markers.Radius = 9);
+        map.Series[0].Markers(markers => markers.Radius = 9);
         Assert.NotEmpty(Prepare(map).ToPng());
         map.Series[0].Markers.Shape = ChartMarkerShape.Diamond;
         Assert.Throws<InvalidOperationException>(() => Prepare(map));
@@ -57,8 +57,8 @@ public sealed class MarkerGeometryTests {
     public void BuiltInShapesHaveDistinctNativeSilhouettesAndMatchingFixedSizeLegendContours(ChartMarkerShape shape,
         double inkX, double inkY, double emptyX, double emptyY) {
         const double radius = 20;
-        var chart = Bare().WithLegend().AddScatter("Sample", new[] { new ChartPoint(1, 1) }, Blue);
-        chart.Series[0].ConfigureMarkers(marker => { marker.Shape = shape; marker.Radius = radius; marker.StrokeWidth = 0; });
+        var chart = Bare().Legend().AddScatter("Sample", new[] { new ChartPoint(1, 1) }, Blue);
+        chart.Series[0].Markers(marker => { marker.Shape = shape; marker.Radius = radius; marker.StrokeWidth = 0; });
         var prepared = Prepare(chart);
         var mark = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneMark>(), node => node.Role == "marker");
         var legend = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneMark>(), node => node.Role == "legend-swatch");
@@ -104,8 +104,8 @@ public sealed class MarkerGeometryTests {
     [InlineData(ChartSeriesKind.Polar, "polar-point")]
     public void EverySupportedProducerUsesAuthoredGeometryAndIndependentMarkerPaint(ChartSeriesKind kind, string role) {
         var chart = Family(kind);
-        if (kind == ChartSeriesKind.Bubble) chart.ConfigureBubble(bubble => { bubble.MinimumRadius = 7; bubble.MaximumRadius = 7; });
-        chart.Series[0].ConfigureMarkers(marker => {
+        if (kind == ChartSeriesKind.Bubble) chart.Bubble(bubble => { bubble.MinimumRadius = 7; bubble.MaximumRadius = 7; });
+        chart.Series[0].Markers(marker => {
             marker.Shape = ChartMarkerShape.Diamond; marker.Enabled = true;
             if (kind != ChartSeriesKind.Bubble) marker.Radius = 7;
             marker.Fill = Blue; marker.Stroke = Ink; marker.StrokeWidth = 2;
@@ -127,8 +127,8 @@ public sealed class MarkerGeometryTests {
     [InlineData(ChartSeriesKind.Dumbbell)]
     [InlineData(ChartSeriesKind.Lollipop)]
     public void ConnectingMarkLegendsRetainTheLineHintAlongsideTheConfiguredGlyph(ChartSeriesKind kind) {
-        var chart = Family(kind).WithLegend();
-        chart.Series[0].ConfigureMarkers(marker => { marker.Shape = ChartMarkerShape.Square; marker.Fill = Blue; marker.Stroke = Ink; marker.StrokeWidth = 2; });
+        var chart = Family(kind).Legend();
+        chart.Series[0].Markers(marker => { marker.Shape = ChartMarkerShape.Square; marker.Fill = Blue; marker.Stroke = Ink; marker.StrokeWidth = 2; });
         var prepared = Prepare(chart);
         // A dumbbell's legend names its two ends with one glyph each (design rule 8); the others keep a line hint.
         if (kind == ChartSeriesKind.Dumbbell) {
@@ -147,8 +147,8 @@ public sealed class MarkerGeometryTests {
     public void PointColorPatternAndDecimatedSourceIdsSurviveShapeVisibilityChangesAndPreparation() {
         var chart = Bare().AddDecimatedLine("Signal", Enumerable.Range(0, 20).Select(index => new ChartPoint(index, index % 5)), 6, color: Blue);
         var series = chart.Series[0];
-        series.ConfigureMarkers(marker => { marker.Shape = ChartMarkerShape.Square; marker.Enabled = true; marker.Fill = Ink; marker.Radius = 8; });
-        series.WithPointColor(0, Blue).WithPointFillPattern(0, ChartFillPattern.Crosshatch);
+        series.Markers(marker => { marker.Shape = ChartMarkerShape.Square; marker.Enabled = true; marker.Fill = Ink; marker.Radius = 8; });
+        series.PointColor(0, Blue).PointFillPattern(0, ChartFillPattern.Crosshatch);
         var prepared = Prepare(chart);
         var sourceGroups = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "point").ToArray();
         Assert.Equal(series.SourcePointIndices.Select(index => index.ToString(CultureInfo.InvariantCulture)), sourceGroups.Select(group => group.Metadata["data-cfx-source-point"]));
@@ -185,8 +185,8 @@ public sealed class MarkerGeometryTests {
     [InlineData(0)]
     [InlineData(2)]
     public void BubbleMarkerWidthOverridesTheFamilyOutlineInSourceLegendAndBounds(double markerWidth) {
-        var chart = Bare().WithLegend().AddBubble("Samples", new[] { new ChartBubble(1, 20, 2) }, Blue);
-        chart.Series[0].WithStrokeWidth(5).ConfigureMarkers(marker => { marker.Stroke = Ink; marker.StrokeWidth = markerWidth; });
+        var chart = Bare().Legend().AddBubble("Samples", new[] { new ChartBubble(1, 20, 2) }, Blue);
+        chart.Series[0].StrokeWidth(5).Markers(marker => { marker.Stroke = Ink; marker.StrokeWidth = markerWidth; });
         var prepared = Prepare(chart);
         var source = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneEllipse>(), node => node.Role == "bubble");
         var legend = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneEllipse>(), node => node.Role == "legend-swatch");
@@ -206,8 +206,8 @@ public sealed class MarkerGeometryTests {
         chart.Options.ShowAxes = true;
         chart.Options.XAxis.Scale = scale;
         (secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis).Scale = scale;
-        chart.Series[0].ConfigureMarkers(marker => { marker.Shape = ChartMarkerShape.Square; marker.Radius = 12; marker.Stroke = Ink; marker.StrokeWidth = 8; });
-        if (secondary) chart.Series[0].UseSecondaryValueAxis();
+        chart.Series[0].Markers(marker => { marker.Shape = ChartMarkerShape.Square; marker.Radius = 12; marker.Stroke = Ink; marker.StrokeWidth = 8; });
+        if (secondary) chart.Series[0].SecondaryAxis();
         var prepared = Prepare(chart);
         var xAxis = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), line => line.Role == "axis-x");
         var yAxis = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), line => line.Role == "axis-y");
@@ -242,14 +242,14 @@ public sealed class MarkerGeometryTests {
     }
 
     private static Chart Bare() {
-        var chart = Chart.Create().WithSize(320, 220).WithHeader(false).WithLegend(false).WithDataLabels(false);
+        var chart = Chart.Create().Size(320, 220).ShowHeader(false).Legend(false).DataLabels(false);
         chart.Options.ShowAxes = false; chart.Options.ShowGrid = false; return chart;
     }
 
     private static PreparedVisual Prepare(Chart chart) {
         var request = VisualExportRequest.ForChart(chart).Context;
         return chart.Prepare(new VisualRenderContext(request.Layout, request.Theme, request.ThemeMode,
-            new VisualFrame(showLegend: chart.Options.ShowLegend, transparentBackground: true), request.Font));
+            new VisualFrame(showLegend: chart.Options.Legend.Visible, transparentBackground: true), request.Font));
     }
 
     private static void SameNormalizedCommand(ChartPathCommand source, ChartPoint centre, double radius, ChartPathCommand legend, ChartPoint legendCentre, double legendRadius) {

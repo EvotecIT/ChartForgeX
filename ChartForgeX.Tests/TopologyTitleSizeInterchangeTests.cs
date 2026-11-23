@@ -60,6 +60,6 @@ public sealed class TopologyTitleSizeInterchangeTests {
         envelope.Presentation!.Theme!.TitleSize = value;
         Assert.ThrowsAny<ArgumentException>(() => envelope.ToJson());
     }
-    private static TopologyChart Source(VisualTheme theme) => TopologyChart.Create().WithId("title-size").WithTitle("Topology title")
-        .WithViewport(1000, 650, 24).WithTheme(theme).WithLegend(null).AddNode("service", "Service", 100, 130, width: 220, height: 100);
+    private static TopologyChart Source(VisualTheme theme) => TopologyChart.Create().Id("title-size").Title("Topology title")
+        .Viewport(new TopologyViewport(1000, 650, 24)).Theme(theme).Legend((TopologyLegend?)null).AddNode("service", "Service", 100, 130, width: 220, height: 100);
 }

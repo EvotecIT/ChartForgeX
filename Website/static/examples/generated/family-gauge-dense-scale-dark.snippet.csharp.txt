@@ -22,8 +22,8 @@ var reading = new ChartGaugeValue(12500.125, 0, 20000, new[] {
     new ChartGaugeTarget(1800, "Baseline"), new ChartGaugeTarget(9500, "Expected"),
     new ChartGaugeTarget(10500, "Goal"), new ChartGaugeTarget(19000, "Limit")
 });
-var chart = Chart.Create().WithTitle("Processed requests").AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Capacity", reading))
-    .ConfigureGauge(options => {
+var chart = Chart.Create().Title("Processed requests").AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Capacity", reading))
+    .Gauge(options => {
         options.Form = ChartGaugeForm.Linear; options.TickCount = 11; options.Caption = "Processed requests";
         options.Bands.Add(new ChartGaugeBand(0, 10000, ChartSeriesState.Warning));
         options.Bands.Add(new ChartGaugeBand(10000, 20000, ChartSeriesState.Success));

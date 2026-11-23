@@ -18,13 +18,12 @@ public sealed class TopologyHtmlEnvironmentBrowserTests {
     public async Task InteractiveTopologyKeepsNativeLanguageAndPrintsTheCompleteSceneBeforeRestoringItsCamera(
         bool dark, bool externalAssets, int width, string prefix) {
         if (!Enabled) return;
-        var chart = TopologyChart.Create().WithId("environment-topology").WithViewport(840, 420, 20)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithTitle("Trasa przetwarzania").WithLegend(null).ConfigureAccessibility(options => options.Language = "pl-PL")
+        var chart = TopologyChart.Create().Id("environment-topology").Viewport(new TopologyViewport(840, 420, 20))
+            .Theme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Title("Trasa przetwarzania").Legend((TopologyLegend?)null).Accessibility(options => options.Language = "pl-PL")
             .AddNode("api", "Odbiór", 60, 150).AddNode("worker", "Przetwarzanie", 330, 150).AddNode("store", "Zapis", 620, 150)
             .AddEdge("request", "api", "worker", "Żądanie").AddEdge("result", "worker", "store", "Wynik");
-        var options = new TopologyRenderOptions { EnableHtmlViewportControls = true, EnableHtmlExportControls = true,
-            EnableHtmlSelectionPanel = true, HtmlNarrowMinimumHeight = 288, CssClassPrefix = prefix };
+        var options = new TopologyRenderOptions { Html = { ViewportControls = true, ExportControls = true, SelectionPanel = true, NarrowMinimumHeight = 288 }, CssClassPrefix = prefix };
         options.SelectedNodeIds.Add("worker");
         var asset = HtmlInteractiveAssetFiles.TopologyScript(options);
         var html = new HtmlInteractiveTopologyRenderer().RenderPage(chart, options,

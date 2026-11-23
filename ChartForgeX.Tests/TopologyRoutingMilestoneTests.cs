@@ -15,8 +15,8 @@ public sealed class TopologyRoutingMilestoneTests {
     [InlineData(TopologyLayoutMode.DenseGrouped, false)]
     [InlineData(TopologyLayoutMode.DenseGrouped, true)]
     public void PreservedViewExportsKeepTheSameOutputDimensions(TopologyLayoutMode mode, bool explicitSize) {
-        var chart = DenseRouteFixture.Mesh(12, 24, 20).WithViewport(600, 300).WithLayout(mode);
-        chart.WithRenderOptions(Options());
+        var chart = DenseRouteFixture.Mesh(12, 24, 20).Viewport(new TopologyViewport(600, 300)).LayoutMode(mode);
+        chart.DefaultRenderOptions(Options());
         var artifact = chart.ToVisualArtifact();
         if (explicitSize) artifact.NaturalSize = new VisualArtifactSize(480, 240);
         artifact.PreserveNaturalSize = true;
@@ -33,7 +33,7 @@ public sealed class TopologyRoutingMilestoneTests {
         Assert.Equal(size.Height, double.Parse(svg.Root.Attribute("height")!.Value, System.Globalization.CultureInfo.InvariantCulture));
         Assert.Equal((int)Math.Ceiling(size.Width), png.Width);
         Assert.Equal((int)Math.Ceiling(size.Height), png.Height);
-        var layoutInput = explicitSize ? DenseRouteFixture.Mesh(12, 24, 20).WithViewport(size.Width, size.Height).WithLayout(mode) : chart;
+        var layoutInput = explicitSize ? DenseRouteFixture.Mesh(12, 24, 20).Viewport(new TopologyViewport(size.Width, size.Height)).LayoutMode(mode) : chart;
         var expectedOptions = view.Clone();
         // Explicit output replacement is a fixed viewport. Compare the same fit policy that
         // exports must use to keep its full geometry inside that caller-selected canvas.
@@ -46,14 +46,14 @@ public sealed class TopologyRoutingMilestoneTests {
 
     [Fact]
     public void SharedTrunksDoNotIntroduceSiblingCrossingsOrPrefixOverdraw() {
-        var chart = TopologyChart.Create().WithId("sibling-trunks").WithViewport(1200, 760).WithLegend(null)
+        var chart = TopologyChart.Create().Id("sibling-trunks").Viewport(new TopologyViewport(1200, 760)).Legend((TopologyLegend?)null)
             .AddNode("target", "Service", 1000, 300, width: 100, height: 44);
         var positions = new[] { (640, 500), (640, 324), (220, 324), (780, 324), (780, 148), (500, 324) };
         for (var i = 0; i < positions.Length; i++) {
             chart.AddNode("n" + i, "Input " + i, positions[i].Item1, positions[i].Item2, width: 100, height: 44)
                 .AddEdge("e" + i, "n" + i, "target", kind: TopologyEdgeKind.Dependency, status: TopologyHealthStatus.Healthy,
                     direction: VisualLinkDirection.Forward, routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
-                .WithEdgePorts("e" + i, TopologyEdgePort.Right, TopologyEdgePort.Left);
+                .UpdateEdge("e" + i, e => e.SourcePort(TopologyEdgePort.Right).TargetPort(TopologyEdgePort.Left));
         }
         var plain = Options();
         var shared = plain.Clone();
@@ -69,10 +69,10 @@ public sealed class TopologyRoutingMilestoneTests {
     [InlineData(false)]
     [InlineData(true)]
     public void ArtifactNaturalSizeUsesPreparedGeometry(bool fit) {
-        var chart = DenseRouteFixture.Mesh(12, 20, 25).WithViewport(600, 300);
+        var chart = DenseRouteFixture.Mesh(12, 20, 25).Viewport(new TopologyViewport(600, 300));
         var options = DenseRouteFixture.Options(legend: false);
         options.FitContentToViewport = fit;
-        chart.WithRenderOptions(options);
+        chart.DefaultRenderOptions(options);
         var prepared = chart.Prepare();
         var artifact = chart.ToVisualArtifact();
         if (fit) Assert.Equal(chart.Viewport.Height, prepared.Height);
@@ -87,8 +87,8 @@ public sealed class TopologyRoutingMilestoneTests {
     [InlineData(TopologyLayoutMode.Matrix)]
     [InlineData(TopologyLayoutMode.DenseGrouped)]
     public void PreservingDiscoveredNaturalSizeDoesNotReflowLayout(TopologyLayoutMode mode) {
-        var chart = DenseRouteFixture.Mesh(12, 24, 20).WithViewport(600, 300).WithLayout(mode);
-        chart.WithRenderOptions(Options());
+        var chart = DenseRouteFixture.Mesh(12, 24, 20).Viewport(new TopologyViewport(600, 300)).LayoutMode(mode);
+        chart.DefaultRenderOptions(Options());
         var expected = chart.Prepare().ToInterchangeEnvelope();
         Assert.NotNull(expected.Width);
         Assert.NotNull(expected.Height);
@@ -137,15 +137,15 @@ public sealed class TopologyRoutingMilestoneTests {
 
     [Fact]
     public void ExplicitNaturalSizeAssignmentRetainsViewportPolicyEvenAtDiscoveredSize() {
-        var chart = DenseRouteFixture.Mesh(12, 24, 20).WithViewport(600, 300).WithLayout(TopologyLayoutMode.Matrix);
-        chart.WithRenderOptions(Options());
+        var chart = DenseRouteFixture.Mesh(12, 24, 20).Viewport(new TopologyViewport(600, 300)).LayoutMode(TopologyLayoutMode.Matrix);
+        chart.DefaultRenderOptions(Options());
         var artifact = chart.ToVisualArtifact();
         var size = artifact.NaturalSize!.Value;
         artifact.NaturalSize = size;
         artifact.PreserveNaturalSize = true;
         var fit = Options(); fit.FitContentToViewport = true;
-        var expected = DenseRouteFixture.Mesh(12, 24, 20).WithViewport(size.Width, size.Height)
-            .WithLayout(TopologyLayoutMode.Matrix).WithRenderOptions(fit).Prepare().ToInterchangeEnvelope();
+        var expected = DenseRouteFixture.Mesh(12, 24, 20).Viewport(new TopologyViewport(size.Width, size.Height))
+            .LayoutMode(TopologyLayoutMode.Matrix).DefaultRenderOptions(fit).Prepare().ToInterchangeEnvelope();
         var actual = artifact.ToInterchangeEnvelope();
         Assert.Equal(expected.Nodes.Select(node => (node.X, node.Y)), actual.Nodes.Select(node => (node.X, node.Y)));
     }
@@ -166,7 +166,7 @@ public sealed class TopologyRoutingMilestoneTests {
     [Fact]
     public void PlannedRouteAvoidsOccupiedWaypointCorridor() {
         var chart = Mixed(TopologyEdgeRouting.Orthogonal)
-            .WithEdgeWaypoints("fixed", new ChartPoint(380, 142), new ChartPoint(550, 142));
+            .EdgeWaypoints("fixed", new ChartPoint(380, 142), new ChartPoint(550, 142));
         var prepared = chart.Prepare(Options());
         var report = prepared.Analyze();
         Assert.Empty(report.RouteOverlaps);
@@ -255,8 +255,8 @@ public sealed class TopologyRoutingMilestoneTests {
 
     [Fact]
     public void BusyWrappedPanelsWidenColumnsWithinViewportBudget() {
-        var quiet = DenseRouteFixture.Overview(7, 12, 0).WithViewport(1100, 900);
-        var busy = DenseRouteFixture.Overview(7, 12, 140).WithViewport(1100, 900);
+        var quiet = DenseRouteFixture.Overview(7, 12, 0).Viewport(new TopologyViewport(1100, 900));
+        var busy = DenseRouteFixture.Overview(7, 12, 140).Viewport(new TopologyViewport(1100, 900));
         var quietReport = quiet.Prepare(Options()).Analyze();
         var busyReport = busy.Prepare(Options()).Analyze();
         // Wrapped panels are stretched to a shared column width that already holds the busiest panel's wider lanes.

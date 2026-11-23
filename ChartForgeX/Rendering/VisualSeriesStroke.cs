@@ -74,7 +74,7 @@ internal static class VisualSeriesStroke {
                 dash: style?.ResolveDash(dash ?? Array.Empty<double>()) ?? dash, paint: VisualChartPaint.Stroke(actual.Paint));
             return;
         }
-        foreach (var layer in ChartLineVisualLayers.Build(actual.Color, width, chart.Options.ResolvePreparedLineVisualStyle()))
+        foreach (var layer in ChartLineVisualLayers.Build(actual.Color, width, chart.Options.Lines.ResolvePreparedVisualStyle()))
             if (layer.IsVisible) builder.Path(path, stroke: layer.ColorWithOpacity(), strokeWidth: layer.StrokeWidth,
                 role: role + layer.RoleSuffix, close: close, dash: style?.ResolveDash(dash ?? Array.Empty<double>()) ?? dash,
                 paint: VisualChartPaint.Stroke(layer.IsHighlight ? SvgPaint.Literal(layer.ColorWithOpacity())

@@ -8,7 +8,7 @@ namespace ChartForgeX.Topology;
 
 internal sealed partial class VisualTopologyCompiler {
     private void ValidateSurfacePaintHost() {
-        if(!_options.EnableHtmlInteractions||!_options.EnableHtmlForceGraphControls)return;
+        if(!_options.Html.Interactions||!_options.Html.ForceGraphControls)return;
         if(_source.Nodes.Any(node=>node.SurfaceElementAppearance!=null||TopologySurfacePaintRules.HasOverrides(node.StrokeWidth,node.Opacity,node.SurfaceOpacity,node.DashPattern))
             ||_source.Groups.Any(group=>TopologySurfacePaintRules.HasOverrides(group.StrokeWidth,group.Opacity,group.SurfaceOpacity,group.DashPattern)))
             throw new NotSupportedException("Typed native surface paints cannot be rewritten by live force graph controls.");

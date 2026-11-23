@@ -1,0 +1,65 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+
+var mode = ThemeMode.Light;
+var theme = VisualTheme.Graphite();
+var model = LegendControlRecipe.Create("legend-keys", mode);
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Revenue with marker keys", "Larger legend keys draw each series\u0027 marker", showLegend: true, showSurface: false));
+var prepared = model.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion
+
+/// <summary>Builds one monthly revenue chart per legend option: reference-line entries, value-formatted entries and authored keys.</summary>
+public static class LegendControlRecipe {
+    /// <summary>Gets the option variants this recipe draws; each also has a compact form.</summary>
+    public static readonly string[] Options = { "legend-reference", "legend-values", "legend-keys" };
+
+    /// <summary>Creates the selected legend option example.</summary>
+    public static Chart Create(string variant = "legend-reference", ThemeMode mode = ThemeMode.Light) {
+        var option = variant.StartsWith("compact-", StringComparison.Ordinal) ? variant.Substring(8) : variant;
+        if (!Options.Contains(option)) throw new ArgumentOutOfRangeException(nameof(variant));
+        // Twelve months of revenue and cost, in dollars, against a 1.2M monthly target and a tolerance band.
+        var months = Enumerable.Range(1, 12).ToArray();
+        var target = ChartColor.FromHex("#D97706");
+        var chart = Chart.Create().XAxis(x => x.Title("Month")).YAxis(y => y.Title("USD")).ValueFormat(ChartValueFormat.Compact())
+            .AddLine("Revenue", months.Select(month => new ChartPoint(month, 940_000 + month * 31_000 + month % 3 * 42_000)).ToArray())
+            .AddLine("Cost", months.Select(month => new ChartPoint(month, 610_000 + month * 18_000 + month % 4 * 25_000)).ToArray());
+        switch (option) {
+            case "legend-reference":
+                // The target line and its tolerance band are annotations; the legend names them beside the series.
+                chart.AddHorizontalBand(1_100_000, 1_300_000, color: target, opacity: .12).AddHorizontalLine(1_200_000, color: target)
+                    .AddLegendItem(ChartLegendItem.Line("Target 1.2M", target, ChartLegendItem.ReferenceDash, 1.6))
+                    .AddLegendItem(ChartLegendItem.Band("Tolerance ±100k", target, .12));
+                break;
+            case "legend-values":
+                // Each series entry carries its annual total, formatted like the value axis.
+                chart.Legend(l => l.LabelBy(item => item.Series == null ? null : item.Label + " — " + item.FormatValue(item.Total) + " total"));
+                break;
+            case "legend-keys":
+                // Diamond and square markers on every point, larger legend keys that draw them, and an entry for the review lines.
+                chart.Series[0].Markers(markers => { markers.Enabled = true; markers.Shape = ChartMarkerShape.Diamond; });
+                chart.Series[1].Markers(markers => { markers.Enabled = true; markers.Shape = ChartMarkerShape.Square; });
+                chart.Legend(l => l.KeyShape(ChartLegendKeyShape.Marker).KeySize(12)).AddVerticalLine(6, "H1 review", target).AddVerticalLine(12, "Year end", target)
+                    .AddLegendItem(ChartLegendItem.Line("Review month", target, ChartLegendItem.ReferenceDash, 1.6));
+                break;
+        }
+        return chart;
+    }
+}

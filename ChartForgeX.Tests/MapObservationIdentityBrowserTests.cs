@@ -19,7 +19,7 @@ public sealed class MapObservationIdentityBrowserTests {
         var signedMap = kind is ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap;
         var expectedRaw = signedMap ? "-7" : "7";
         var expectedDisplay = signedMap ? "-7.0 °C" : "7";
-        var chart = Chart.Create().WithSize(640, 360).WithTitle("Observed activity");
+        var chart = Chart.Create().Size(640, 360).Title("Observed activity");
         switch (kind) {
             case ChartSeriesKind.CalendarHeatmap:
                 chart.AddCalendarHeatmap("Days", new[] {
@@ -41,7 +41,7 @@ public sealed class MapObservationIdentityBrowserTests {
                 }), new[] { new ChartRegionMapItem("A", 3) }, id: new ChartSeriesId("activity"));
                 break;
         }
-        var series = chart.Series[0].WithObservationId(0, new ChartObservationId("observed-a"));
+        var series = chart.Series[0].ObservationId(0, new ChartObservationId("observed-a"));
         switch (kind) {
             case ChartSeriesKind.CalendarHeatmap:
                 series.UpdateCalendarItem(0, new ChartCalendarHeatmapItem(new DateTime(2026, 1, 5), 7));
@@ -53,12 +53,12 @@ public sealed class MapObservationIdentityBrowserTests {
                 series.UpdateRegionValue(0, new ChartRegionMapItem("Alpha", -7));
                 break;
         }
-        if (signedMap) chart.WithMapColorScale(ChartColorScale.Diverging(ChartColor.Black, ChartColor.FromHex("#808080"), ChartColor.White, 0)
-                .WithValueRange(-10, 10))
-            .ConfigureMapColorDimension(options => {
+        if (signedMap) chart.Map(m => m.ColorScale(ChartColorScale.Diverging(ChartColor.Black, ChartColor.FromHex("#808080"), ChartColor.White, 0)
+                .WithValueRange(-10, 10)))
+            .Map(map => map.ColorDimension(options => {
                 options.Name = "Temperature";
                 options.ValueFormat = ChartValueFormat.Number("0.0 '°C'", System.Globalization.CultureInfo.InvariantCulture);
-            });
+            }));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), 700, 540);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
         var target = page.Locator("[data-cfx-observation-id='observed-a']");

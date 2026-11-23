@@ -16,7 +16,7 @@ var chart = Chart.Create().AddChord("Transfers", new[] {
     new ChartFlowLink("priority", "north", "south", 4),
     new ChartFlowLink("internal", "central", "central", 3),
     new ChartFlowLink("none", "central", "north", 0)
-}).ConfigureChord(options => {
+}).Chord(options => {
     options.StartAngleDegrees = -120;
     options.SweepAngleDegrees = 300;
     options.NodeGapDegrees = 5;
@@ -25,7 +25,7 @@ var chart = Chart.Create().AddChord("Transfers", new[] {
     options.DirectionCue = ChartChordDirectionCue.TargetChevron;
     options.LabelContent = ChartChordLabelContent.LabelAndTotals;
 });
-chart.Series[0].WithNodeState("north", ChartSeriesState.Warning);
+chart.Series[0].NodeState("north", ChartSeriesState.Warning);
 ```
 
 Each node has an explicit ID and display label. Labels may repeat. Flow IDs remain distinct for parallel and reciprocal links; the renderer does not aggregate them. Cycles and self flows are accepted. A self flow occupies separate outgoing and incoming slots on its own node. Incoming, outgoing, and their combined endpoint totals must remain finite. Invalid identities, references, or aggregates fail before a series is added.
@@ -34,7 +34,7 @@ The node arc represents incoming plus outgoing weight, so each flow contributes 
 
 Flow values are finite and non-negative. Zero flows and nodes without positive endpoints retain source identities and raw values but draw no filled ribbon or arc. Empty and all-zero inputs emit `chord.no-positive-flow`. Positive weights or node thickness that collapse in native geometry emit `chord.precision-collapse`; they receive no minimum-width substitute. Increasing canvas size cannot recover a ratio that underflows the numeric angular allocation.
 
-`ChartOptions.Chord` holds the mutable options configured by `ConfigureChord`:
+`ChartOptions.Chord` holds the mutable options configured by `chart.Chord(c => ...)`:
 
 | Option | Behavior |
 | --- | --- |
@@ -50,7 +50,7 @@ Flow values are finite and non-negative. Zero flows and nodes without positive e
 
 Defaults are a full circle starting at -90 degrees, a 3-degree node gap, 0.06 node thickness, 0.35 ribbon opacity, target chevrons, and labels with combined values. Labels use shared measured fitting outside the circle. Compact output may shorten or omit a label and emits `chord.label-overflow`; full labels and raw totals remain available in node semantics. `ChartSeries.ShowDataLabels = false` hides visible labels.
 
-`ChartSeries.WithNodeState(id, state)` scopes semantic styling to that series. `NodeStates` is read-only. Existing point color, fill-pattern, label, and label-style APIs refer to authored node ordinals. Ribbons inherit the source node's color, pattern and semantic state. `WithFlowStyle(id, new ChartFlowStyle(...))` overrides one authored flow's fill, opacity, pattern or outline; `WithFlowState(id, state)` overrides its semantic state. Explicit colors take precedence over semantic fills. Null removes either flow override; an explicit state of `None` suppresses inheritance. See [shared flow paint conventions](v2/api-conventions.md#flow-paint-and-semantic-state) for precedence and outline defaults. Prepared exports keep their geometry, styles, formatting, and semantics after the mutable model changes.
+`ChartSeries.NodeState(id, state)` scopes semantic styling to that series. `NodeStates` is read-only. Existing point color, fill-pattern, label, and label-style APIs refer to authored node ordinals. Ribbons inherit the source node's color, pattern and semantic state. `FlowStyle(id, new ChartFlowStyle(...))` overrides one authored flow's fill, opacity, pattern or outline; `FlowState(id, state)` overrides its semantic state. Explicit colors take precedence over semantic fills. Null removes either flow override; an explicit state of `None` suppresses inheritance. See [shared flow paint conventions](v2/api-conventions.md#flow-paint-and-semantic-state) for precedence and outline defaults. Prepared exports keep their geometry, styles, formatting, and semantics after the mutable model changes.
 
 Node and link groups publish `data-cfx-target-kind`, `data-cfx-target-id`, authored source indexes, and `data-cfx-coordinate-system="polar"`. Links retain the actual source/target IDs and labels, raw `data-cfx-value`, both endpoint angles, and direction. Node groups retain raw incoming/outgoing totals and arc geometry. Scale metadata is `data-cfx-weight-reference` and `data-cfx-normalized-angular-scale`: divide a raw weight by the reference before applying the angular scale. There are no invented Cartesian `point` or `sourcePoint` ordinals.
 
@@ -59,7 +59,7 @@ The HTML adapter consumes these same targets for selection and tooltips. Display
 ## Display order and tension
 
 ```csharp
-chart.ConfigureChord(options => {
+chart.Chord(options => {
     options.Ordering = new ChartChordOrdering(
         nodeIds: new[] { "central", "north", "south" },
         outgoingFlowIds: new[] { "priority", "north-south", "south-north", "internal", "none" },

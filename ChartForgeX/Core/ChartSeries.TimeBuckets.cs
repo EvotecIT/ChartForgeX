@@ -13,7 +13,7 @@ public sealed partial class ChartSeries {
     /// bar geometry. Preparation requires a time X axis. Null restores point-observation semantics.</remarks>
     /// <param name="interval">The immutable bucket interval, or null to clear it.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries WithTimeBuckets(ChartTimeTickInterval? interval) {
+    public ChartSeries TimeBuckets(ChartTimeTickInterval? interval) {
         if (Kind != ChartSeriesKind.Bar || HistogramBinLayout != null)
             throw new InvalidOperationException("Time buckets require an ordinary bar series.");
         TimeBucketInterval = interval;

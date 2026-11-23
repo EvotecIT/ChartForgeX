@@ -113,8 +113,8 @@ public static class SequenceMessagePresentationRecipe {
     /// &lt;summary&gt;Creates compact or wide native message presentation through the shared preparation owner.&lt;/summary&gt;
     public static SequenceArtifact Create(string variant=&quot;wide&quot;,ThemeMode mode=ThemeMode.Light) {
         if(variant is not (&quot;compact&quot; or &quot;wide&quot;))throw new ArgumentOutOfRangeException(nameof(variant));
-        var model=SequenceArtifact.Create(&quot;sequence-message-presentation&quot;).WithSize(variant==&quot;compact&quot;?390:1000,820)
-            .WithTitle(&quot;Message presentation&quot;).WithSubtitle(&quot;Measured number badges and independent message/note alignment&quot;)
+        var model=SequenceArtifact.Create(&quot;sequence-message-presentation&quot;).Width(variant==&quot;compact&quot;?390:1000).Height(820)
+            .Title(&quot;Message presentation&quot;).Subtitle(&quot;Measured number badges and independent message/note alignment&quot;)
             .AddParticipant(&quot;A&quot;,&quot;Review&quot;).AddParticipant(&quot;B&quot;,&quot;Archive&quot;).AddMessage(&quot;A&quot;,&quot;B&quot;,&quot;Save\nFact&quot;)
             .AddMessage(&quot;B&quot;,&quot;A&quot;,&quot;Ready\nNext&quot;,SequenceArtifactMessageLineStyle.Dashed,SequenceArtifactMessageKind.Return).AddMessage(&quot;B&quot;,&quot;B&quot;,&quot;Check\nSelf&quot;)
             .AddNote(SequenceArtifactNotePlacement.Over,new[]{&quot;A&quot;,&quot;B&quot;},&quot;Review\nNote&quot;);
@@ -158,8 +158,8 @@ public static class SequenceMessagePresentationRecipe {
     /// &lt;summary&gt;Creates compact or wide native message presentation through the shared preparation owner.&lt;/summary&gt;
     public static SequenceArtifact Create(string variant=&quot;wide&quot;,ThemeMode mode=ThemeMode.Light) {
         if(variant is not (&quot;compact&quot; or &quot;wide&quot;))throw new ArgumentOutOfRangeException(nameof(variant));
-        var model=SequenceArtifact.Create(&quot;sequence-message-presentation&quot;).WithSize(variant==&quot;compact&quot;?390:1000,820)
-            .WithTitle(&quot;Message presentation&quot;).WithSubtitle(&quot;Measured number badges and independent message/note alignment&quot;)
+        var model=SequenceArtifact.Create(&quot;sequence-message-presentation&quot;).Width(variant==&quot;compact&quot;?390:1000).Height(820)
+            .Title(&quot;Message presentation&quot;).Subtitle(&quot;Measured number badges and independent message/note alignment&quot;)
             .AddParticipant(&quot;A&quot;,&quot;Review&quot;).AddParticipant(&quot;B&quot;,&quot;Archive&quot;).AddMessage(&quot;A&quot;,&quot;B&quot;,&quot;Save\nFact&quot;)
             .AddMessage(&quot;B&quot;,&quot;A&quot;,&quot;Ready\nNext&quot;,SequenceArtifactMessageLineStyle.Dashed,SequenceArtifactMessageKind.Return).AddMessage(&quot;B&quot;,&quot;B&quot;,&quot;Check\nSelf&quot;)
             .AddNote(SequenceArtifactNotePlacement.Over,new[]{&quot;A&quot;,&quot;B&quot;},&quot;Review\nNote&quot;);

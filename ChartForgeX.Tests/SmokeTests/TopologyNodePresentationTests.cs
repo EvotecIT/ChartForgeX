@@ -8,9 +8,9 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void TopologyTextFitsIconRowsAndCards() {
         var chart = TopologyChart.Create()
-            .WithId("text-fit")
-            .WithViewport(420, 240, 20)
-            .WithLegend(null)
+            .Id("text-fit")
+            .Viewport(new TopologyViewport(420, 240, 20))
+            .Legend((TopologyLegend?)null)
             .AddGroup("app", "Application Tier", 48, 70, 190, 120, TopologyHealthStatus.Warning, "Services", symbol: "service")
             .AddNode("team", "Payments Team With Extra Label", 92, 126, TopologyNodeKind.Team, TopologyHealthStatus.Healthy, "app", "Owner", width: 120, height: 58, symbol: "TM");
 
@@ -23,9 +23,9 @@ internal static partial class SmokeTests {
         Assert(chart.ToPng(options).Length > 64, "Icon row and fitted-card text should render as PNG.");
 
         var wrapped = TopologyChart.Create()
-            .WithId("wrapped-text-fit")
-            .WithViewport(320, 200, 20)
-            .WithLegend(null)
+            .Id("wrapped-text-fit")
+            .Viewport(new TopologyViewport(320, 200, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("wrapped", "Authentication Relationship Service", 84, 96, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 180, height: 64, symbol: "S");
         var wrappedSvg = wrapped.ToSvg(new TopologyRenderOptions { IncludeLegend = false, WrapNodeLabels = true, MaxNodeLabelLines = 2 });
         var wrappedLabels = TopologyRoleTexts(wrappedSvg, "topology-node-label");
@@ -35,9 +35,9 @@ internal static partial class SmokeTests {
 
     private static void TopologyIconLabelsRemainReusableAndFitted() {
         var chart = TopologyChart.Create()
-            .WithId("icon-labels")
-            .WithViewport(220, 150, 20)
-            .WithLegend(null)
+            .Id("icon-labels")
+            .Viewport(new TopologyViewport(220, 150, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("dc1", "NYC-DC1", 60, 70, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, width: 46, height: 42, symbol: "DC")
             .AddNode("dc2", "LON-DC2-VeryLongName", 140, 70, TopologyNodeKind.Server, TopologyHealthStatus.Warning, width: 46, height: 42, symbol: "DC")
             .AddEdge("rep", "dc1", "dc2", "105 ms", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight);
@@ -56,16 +56,16 @@ internal static partial class SmokeTests {
 
     private static void TopologyMonitoringStyleSupportsNeutralGroupSurfaces() {
         var chart = TopologyChart.Create()
-            .WithId("neutral-groups")
-            .WithViewport(360, 220, 20)
-            .WithLegend(null)
+            .Id("neutral-groups")
+            .Viewport(new TopologyViewport(360, 220, 20))
+            .Legend((TopologyLegend?)null)
             .AddGroup("site", "HQ-NYC (32 DCs)", 64, 72, 220, 92, TopologyHealthStatus.Healthy, symbol: "globe")
             .AddNode("dc1", "DC 1", 96, 118, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, "site", width: 14, height: 14)
-            .WithNodeDisplay("dc1", TopologyNodeDisplayMode.Dot);
+            .UpdateNode("dc1", n => n.DisplayMode(TopologyNodeDisplayMode.Dot).Badge(null));
 
         var options = new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Dot }
-            .WithMonitoringDashboardStyle()
-            .WithNeutralGroupSurfaces();
+            .MonitoringDashboardStyle()
+            .GroupSurfaceStyle(global::ChartForgeX.Topology.TopologyGroupSurfaceStyle.Neutral);
         var svg = chart.ToSvg(options);
         Assert(svg.Contains("data-visual-style=\"MonitoringDashboard\"", StringComparison.Ordinal), "Neutral group surfaces should compose with monitoring style.");
         Assert(svg.Contains("data-group-symbol=\"globe\"", StringComparison.Ordinal), "Neutral group surfaces should keep reusable group symbols.");
@@ -80,16 +80,16 @@ internal static partial class SmokeTests {
 
     private static void TopologyGroupStatusDotsUseHealthStatusColor() {
         var chart = TopologyChart.Create()
-            .WithId("group-status-color")
-            .WithViewport(360, 220, 20)
-            .WithLegend(null)
+            .Id("group-status-color")
+            .Viewport(new TopologyViewport(360, 220, 20))
+            .Legend((TopologyLegend?)null)
             .AddGroup("site", "Blue Warning Site", 64, 72, 220, 92, TopologyHealthStatus.Warning, symbol: "globe", color: "#2563EB")
             .AddNode("dc1", "DC 1", 96, 118, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, "site", width: 14, height: 14)
-            .WithNodeDisplay("dc1", TopologyNodeDisplayMode.Dot);
+            .UpdateNode("dc1", n => n.DisplayMode(TopologyNodeDisplayMode.Dot).Badge(null));
 
         var options = new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Dot }
-            .WithMonitoringDashboardStyle()
-            .WithNeutralGroupSurfaces();
+            .MonitoringDashboardStyle()
+            .GroupSurfaceStyle(global::ChartForgeX.Topology.TopologyGroupSurfaceStyle.Neutral);
         var svg = chart.ToSvg(options);
 
         Assert(svg.Contains("data-cfx-role=\"topology-group-status\"", StringComparison.Ordinal), "Monitoring group headers should expose a reusable status dot.");
@@ -102,15 +102,15 @@ internal static partial class SmokeTests {
     private static void TopologyGroupHeadersReserveIconAndStatusSpace() {
         const string longTitle = "Application Tier With Extremely Long Service Owner Title";
         var chart = TopologyChart.Create()
-            .WithId("group-header-fit")
-            .WithViewport(360, 220, 20)
-            .WithLegend(null)
+            .Id("group-header-fit")
+            .Viewport(new TopologyViewport(360, 220, 20))
+            .Legend((TopologyLegend?)null)
             .AddGroup("app", longTitle, 52, 72, 260, 92, TopologyHealthStatus.Critical, subtitle: "Services", symbol: "application", color: "#F97316")
             .AddNode("svc", "Payments Team", 112, 126, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, "app", width: 76, height: 44, symbol: "TM");
 
         var options = new TopologyRenderOptions { IncludeLegend = false }
-            .WithMonitoringDashboardStyle()
-            .WithNeutralGroupSurfaces();
+            .MonitoringDashboardStyle()
+            .GroupSurfaceStyle(global::ChartForgeX.Topology.TopologyGroupSurfaceStyle.Neutral);
         var svg = chart.ToSvg(options);
 
         Assert(svg.Contains("data-cfx-role=\"topology-group-status\"", StringComparison.Ordinal), "Monitoring group headers should keep the right-side status marker.");
@@ -122,16 +122,16 @@ internal static partial class SmokeTests {
     private static void TopologyGroupHeadersFitMediumTitlesBeforeTrimming() {
         const string mediumTitle = "SFO-SanFrancisco (11 DCs)";
         var chart = TopologyChart.Create()
-            .WithId("group-header-medium-fit")
-            .WithViewport(520, 220, 20)
-            .WithLegend(null)
+            .Id("group-header-medium-fit")
+            .Viewport(new TopologyViewport(520, 220, 20))
+            .Legend((TopologyLegend?)null)
             .AddGroup("sfo", mediumTitle, 72, 72, 330, 100, TopologyHealthStatus.Healthy, symbol: "globe")
             .AddNode("dc1", "DC 1", 112, 124, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, "sfo", width: 18, height: 18)
-            .WithNodeDisplay("dc1", TopologyNodeDisplayMode.Dot);
+            .UpdateNode("dc1", n => n.DisplayMode(TopologyNodeDisplayMode.Dot).Badge(null));
 
         var options = new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Dot }
-            .WithMonitoringDashboardStyle()
-            .WithNeutralGroupSurfaces();
+            .MonitoringDashboardStyle()
+            .GroupSurfaceStyle(global::ChartForgeX.Topology.TopologyGroupSurfaceStyle.Neutral);
         var svg = chart.ToSvg(options);
 
         Assert(svg.Contains($">{mediumTitle}<", StringComparison.Ordinal), "Medium-length monitoring group titles should fit by reducing font size before trimming.");
@@ -140,14 +140,14 @@ internal static partial class SmokeTests {
 
     private static void TopologyMonitoringDotNodesRenderCompactSymbols() {
         var chart = TopologyChart.Create()
-            .WithId("dot-symbols")
-            .WithViewport(240, 160, 20)
-            .WithLegend(null)
+            .Id("dot-symbols")
+            .Viewport(new TopologyViewport(240, 160, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("dc1", "DC 1", 90, 70, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, width: 18, height: 18, symbol: "DC")
-            .WithNodeDisplay("dc1", TopologyNodeDisplayMode.Dot);
+            .UpdateNode("dc1", n => n.DisplayMode(TopologyNodeDisplayMode.Dot).Badge(null));
 
         var options = new TopologyRenderOptions { IncludeLegend = false, NodeDisplayMode = TopologyNodeDisplayMode.Dot }
-            .WithMonitoringDashboardStyle();
+            .MonitoringDashboardStyle();
         var svg = chart.ToSvg(options);
 
         Assert(svg.Contains("data-cfx-role=\"topology-node-symbol\"", StringComparison.Ordinal), "Monitoring dot nodes should render compact reusable symbols when a node has a symbol.");
@@ -156,17 +156,17 @@ internal static partial class SmokeTests {
 
     private static void TopologyHiddenNodesWorkAsReusableEdgeAnchors() {
         var chart = TopologyChart.Create()
-            .WithId("hidden-anchors")
-            .WithViewport(320, 160, 20)
-            .WithLegend(null)
+            .Id("hidden-anchors")
+            .Viewport(new TopologyViewport(320, 160, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("source", "Source", 42, 64, TopologyNodeKind.Cloud, TopologyHealthStatus.Healthy, width: 44, height: 44, symbol: "CL")
             .AddNode("anchor", "Group Edge Anchor", 238, 84, TopologyNodeKind.Generic, TopologyHealthStatus.Unknown, width: 1, height: 1)
             .AddEdge("source-anchor", "source", "anchor", null, TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight)
-            .WithNodeDisplay("source", TopologyNodeDisplayMode.Icon)
-            .WithNodeDisplay("anchor", TopologyNodeDisplayMode.Hidden);
+            .UpdateNode("source", n => n.DisplayMode(TopologyNodeDisplayMode.Icon).Badge(null))
+            .UpdateNode("anchor", n => n.DisplayMode(TopologyNodeDisplayMode.Hidden).Badge(null));
 
         var options = new TopologyRenderOptions { IncludeLegend = false }
-            .WithMonitoringDashboardStyle();
+            .MonitoringDashboardStyle();
         var svg = chart.ToSvg(options);
 
         Assert(svg.Contains("data-edge-id=\"source-anchor\"", StringComparison.Ordinal), "Hidden anchors should still be usable by edges.");

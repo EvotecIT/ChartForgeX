@@ -17,11 +17,4 @@ public sealed partial class Chart {
         AppendSeries(ChartSeries.CreateTreemap(name, items, color));
         return this;
     }
-
-    /// <summary>Configures treemap spacing, group captions and the independent numeric color scale.</summary>
-    public Chart ConfigureTreemap(Action<ChartTreemapOptions> configure) {
-        if (configure == null) throw new ArgumentNullException(nameof(configure));
-        Options.Treemap = ChartOptionConfiguration.Configure(Options.Treemap, configure, options => options.Clone());
-        return this;
-    }
 }

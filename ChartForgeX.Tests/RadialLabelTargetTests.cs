@@ -58,7 +58,7 @@ public sealed class RadialLabelTargetTests {
     [InlineData(ChartDataLabelPlacement.Above)]
     [InlineData(ChartDataLabelPlacement.Below)]
     public void VerticalPieCaptionsDeclareTheSameNativeSourceAsTheirLeader(ChartDataLabelPlacement placement) {
-        var chart = RadialLabelTargetBrowserTests.Create(ChartSeriesKind.Pie, true).WithDataLabelPlacement(placement).WithSize(800, 460);
+        var chart = RadialLabelTargetBrowserTests.Create(ChartSeriesKind.Pie, true).DataLabels(d => d.Placement(placement)).Size(800, 460);
         var svg = XDocument.Parse(chart.ToSvg());
         var labels = svg.Descendants().Where(element => element.Attribute("data-cfx-label-for") != null && element.Descendants().Any(child => child.Name.LocalName == "text")).ToArray();
         Assert.NotEmpty(labels);
@@ -69,7 +69,7 @@ public sealed class RadialLabelTargetTests {
     [Fact]
     public void OtherCaptionPointsToTheAuthoredAggregateRatherThanInventingARawObservation() {
         var chart = RadialLabelTargetBrowserTests.Create(ChartSeriesKind.Pie, true);
-        chart.Options.MaximumPieSlices = 2;
+        chart.Options.Pie.MaxSlices = 2;
         var svg = XDocument.Parse(chart.ToSvg());
         var label = Assert.Single(svg.Descendants(), element => (string?)element.Attribute("data-cfx-label-for") == "series-0-point-other");
         var mark = Assert.Single(svg.Descendants(), element => (string?)element.Attribute("data-cfx-source-id") == "series-0-point-other");
@@ -91,8 +91,8 @@ public sealed class RadialLabelTargetTests {
 
         var numeric = RadialLabelTargetBrowserTests.Create(ChartSeriesKind.RadialColumn, true);
         numeric.AddRadialColumn("Additional", new[] { new ChartPoint(1, 100), new ChartPoint(2, 200), new ChartPoint(3, 300) });
-        foreach (var series in numeric.Series) series.WithStackGroup("total");
-        numeric.Options.ShowStackTotals = true;
+        foreach (var series in numeric.Series) series.StackGroup("total");
+        numeric.Options.Bars.ShowTotals = true;
         var totals = XDocument.Parse(numeric.ToSvg()).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "stack-total-source").ToArray();
         Assert.NotEmpty(totals);
         Assert.All(totals, total => Assert.Null(total.Attribute("data-cfx-label-for")));

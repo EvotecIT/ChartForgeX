@@ -55,8 +55,8 @@ public sealed class WaterfallInterchangeTests {
 
     [Fact]
     public void PortablePresentationAndNativeReplayKeepCultureUnitAndIdentityColors() {
-        var original = Model().WithCulture(CultureInfo.GetCultureInfo("de-DE")).WithValueUnit("ms")
-            .WithSeriesColorAssignment(ChartSeriesColorAssignment.Identity);
+        var original = Model().Culture(CultureInfo.GetCultureInfo("de-DE")).ValueUnit("ms")
+            .SeriesColorAssignment(ChartSeriesColorAssignment.Identity);
         var json = original.ToVisualArtifact().ToInterchangeJson();
         var imported = VisualArtifactInterchangeEnvelope.FromJson(json).ToWaterfallChart();
         Assert.Equal("ms", imported.Options.ValueUnit);
@@ -69,9 +69,9 @@ public sealed class WaterfallInterchangeTests {
         Assert.Null(legacy.Options.XAxis.Culture);
         Assert.ThrowsAny<ArgumentException>(() => VisualArtifactInterchangeEnvelope.FromJson(json.Replace("de-DE", "bad_culture!")));
 
-        var chart = Chart.Create().WithSize(600, 320).WithXAxisTimeScale(TimeZoneInfo.Utc);
+        var chart = Chart.Create().Size(600, 320).XAxis(x => x.TimeScale(timeZone: TimeZoneInfo.Utc));
         VisualArtifactInterchangeMapping.RestoreVisibilityPresentation(chart, VisualArtifactInterchangeMapping.CaptureVisibilityPresentation(imported));
-        chart.WithXAxisTimeScale(TimeZoneInfo.Utc);
+        chart.XAxis(x => x.TimeScale(timeZone: TimeZoneInfo.Utc));
         chart.AddSeries(ChartSeries.CreateLine(new ChartSeriesId("requests"), "Requests", new[] {
             new ChartPoint(new DateTime(2026, 10, 21, 0, 0, 0, DateTimeKind.Utc), 50),
             new ChartPoint(new DateTime(2026, 10, 21, 1, 0, 0, DateTimeKind.Utc), 60) }));
@@ -96,7 +96,7 @@ public sealed class WaterfallInterchangeTests {
     public void PortableTimeCultureKeepsANonDefaultCalendar() {
         var japanese = (CultureInfo)CultureInfo.GetCultureInfo("ja-JP").Clone();
         japanese.DateTimeFormat.Calendar = new JapaneseCalendar(); japanese.DateTimeFormat.ShortDatePattern = "gg y/MM/dd";
-        var portable = VisualArtifactInterchangeEnvelope.FromJson(Model().WithCulture(japanese).ToVisualArtifact().ToInterchangeJson()).ToWaterfallChart();
+        var portable = VisualArtifactInterchangeEnvelope.FromJson(Model().Culture(japanese).ToVisualArtifact().ToInterchangeJson()).ToWaterfallChart();
         var restored = portable.Options.XAxis.Culture!;
         var instant = new DateTime(2026, 10, 28);
         Assert.IsType<JapaneseCalendar>(restored.DateTimeFormat.Calendar);
@@ -108,7 +108,7 @@ public sealed class WaterfallInterchangeTests {
         var modified = (CultureInfo)CultureInfo.GetCultureInfo("de-DE").Clone();
         modified.DateTimeFormat.ShortDatePattern = "yyyy/MM/dd"; modified.DateTimeFormat.AbbreviatedMonthNames =
             new[] { "J1", "F2", "M3", "A4", "M5", "J6", "J7", "A8", "S9", "O10", "N11", "D12", "" };
-        var custom = Model().WithCulture(modified);
+        var custom = Model().Culture(modified);
         // User overrides and authored patterns travel with the culture, so the restored view formats time labels identically.
         var portable = VisualArtifactInterchangeEnvelope.FromJson(custom.ToVisualArtifact().ToInterchangeJson()).ToWaterfallChart();
         var restoredCulture = portable.Options.XAxis.Culture!;
@@ -127,8 +127,8 @@ public sealed class WaterfallInterchangeTests {
 
     [Fact]
     public void NumericAppendedTotalKeepsDerivedContributorsAndPresentationWithoutBecomingSourceData() {
-        var chart = Chart.Create().WithLegend(false).AddWaterfall("Changes", new[] { new ChartPoint(1, 10), new ChartPoint(3, -2) });
-        chart.Series[0].WithObservationId(0, new ChartObservationId("first"));
+        var chart = Chart.Create().Legend(false).AddWaterfall("Changes", new[] { new ChartPoint(1, 10), new ChartPoint(3, -2) });
+        chart.Series[0].ObservationId(0, new ChartObservationId("first"));
         chart.Series[0].PointColors.AddRange(new ChartColor?[] { null, null, ChartColor.FromHex("#AB1234") });
         chart.Series[0].PointLabels.AddRange(new string?[] { null, null, "Calculated balance" });
         var envelope = chart.ToVisualArtifact().ToInterchangeEnvelope(); Assert.False(envelope.Waterfall!.TypedItems);
@@ -163,7 +163,7 @@ public sealed class WaterfallInterchangeTests {
         var saved = automatic.ToSvg(); var imported = VisualArtifactInterchangeEnvelope.FromJson(automatic.ToVisualArtifact().ToInterchangeJson()).ToWaterfallChart();
         Assert.Equal(saved, imported.ToSvg()); Assert.Equal(automatic.ToPng(), imported.ToPng());
         Assert.False(imported.Options.XAxis.HasExplicitScale);
-        imported.Options.XAxis.WithTimeSpacing(ChartTimeSpacing.Ordinal);
+        imported.Options.XAxis.TimeSpacing(ChartTimeSpacing.Ordinal);
         Assert.Equal(ChartScaleKind.Time, imported.Options.XAxis.Scale); Assert.Same(ChartTimeSpacing.Ordinal, imported.Options.XAxis.TimeSpacing);
         automatic.Options.XAxis.Scale = ChartScaleKind.Linear;
         var explicitLinear = VisualArtifactInterchangeEnvelope.FromJson(automatic.ToVisualArtifact().ToInterchangeJson()).ToWaterfallChart();
@@ -171,7 +171,7 @@ public sealed class WaterfallInterchangeTests {
         Assert.Equal(ChartScaleKind.Linear, explicitLinear.Options.XAxis.Scale);
         Assert.Null(explicitLinear.Options.XAxis.TimeSpacing);
         // WithTimeSpacing deliberately selects Time, including when an earlier scale was explicit.
-        explicitLinear.Options.XAxis.WithTimeSpacing(ChartTimeSpacing.Ordinal);
+        explicitLinear.Options.XAxis.TimeSpacing(ChartTimeSpacing.Ordinal);
         Assert.Equal(ChartScaleKind.Time, explicitLinear.Options.XAxis.Scale);
         Assert.Same(ChartTimeSpacing.Ordinal, explicitLinear.Options.XAxis.TimeSpacing);
     }
@@ -179,10 +179,10 @@ public sealed class WaterfallInterchangeTests {
     [Theory]
     [InlineData(false)] [InlineData(true)]
     public void NativePhysicalSecondaryAxesAndCrossingPoliciesRemainAuthoredFacts(bool horizontal) {
-        var chart = Model(true, horizontal, false, 800); chart.Series[0].UseSecondaryValueAxis();
+        var chart = Model(true, horizontal, false, 800); chart.Series[0].SecondaryAxis();
         var primary = horizontal ? chart.Options.XAxis : chart.Options.YAxis;
         var secondary = horizontal ? chart.Options.SecondaryXAxis : chart.Options.SecondaryYAxis;
-        secondary.WithBounds(-80, 160).WithReversal(true); primary.WithBounds(-80, 160);
+        secondary.Bounds(-80, 160).Reversed(); primary.Bounds(-80, 160);
         var category = horizontal ? chart.Options.YAxis : chart.Options.XAxis;
         category.RuleCrossAt = 0; secondary.CrossAt = 3;
         var imported = chart.ToVisualArtifact().ToInterchangeEnvelope().ToWaterfallChart();
@@ -213,21 +213,21 @@ public sealed class WaterfallInterchangeTests {
             ChartWaterfallItem.Delta(4, -130), ChartWaterfallItem.Subtotal(5), ChartWaterfallItem.Delta(6, 70), ChartWaterfallItem.Total(7)
         }) : new ChartSeries(new ChartSeriesId("movement"), "Movement", ChartSeriesKind.Waterfall,
             new[] { new ChartPoint(1, 60), new ChartPoint(2, -15), new ChartPoint(4, 25) });
-        series.WithObservationId(typed ? 3 : 1, new ChartObservationId("authored-change"));
-        if (typed) series.WithObservationId(4, new ChartObservationId("checkpoint"));
-        series.WithPointColor(typed ? 4 : 1, new ChartColor(137, 51, 177, 187)).WithPointFillPattern(0, ChartFillPattern.Crosshatch)
-            .WithPointLabel(0, "Opening <balance>").ConfigurePointDataLabelStyle(0, style => { style.FontSize = 13; style.Italic = true; })
-            .ConfigureDataLabelStyle(style => style.FontWeight = "600");
-        var chart = Chart.Create().WithSize(width, 440).WithTitle("Running balance").WithSubtitle("Portable authoring")
-            .WithPadding(18, 14, 18, 12).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithValueFormat(ChartValueFormat.Number("0.00", CultureInfo.InvariantCulture)).WithDataLabels().WithLegend(false).AddSeries(series)
-            .ConfigureWaterfall(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
-        chart.Options.PinStateColorsInForcedColors = true;
-        chart.Options.BarStyle = ChartBarStyle.SegmentedCapsule; chart.Options.BarVisualStyle.CapThickness = 5;
+        series.ObservationId(typed ? 3 : 1, new ChartObservationId("authored-change"));
+        if (typed) series.ObservationId(4, new ChartObservationId("checkpoint"));
+        series.PointColor(typed ? 4 : 1, new ChartColor(137, 51, 177, 187)).PointFillPattern(0, ChartFillPattern.Crosshatch)
+            .PointLabel(0, "Opening <balance>").PointDataLabelStyle(0, style => { style.FontSize = 13; style.Italic = true; })
+            .DataLabelStyle(style => style.FontWeight = "600");
+        var chart = Chart.Create().Size(width, 440).Title("Running balance").Subtitle("Portable authoring")
+            .Padding(18, 14, 18, 12).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .ValueFormat(ChartValueFormat.Number("0.00", CultureInfo.InvariantCulture)).DataLabels().Legend(false).AddSeries(series)
+            .Waterfall(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
+        chart.Options.StateTimeline.PinColorsInForcedColors = true;
+        chart.Options.Bars.Style = ChartBarStyle.SegmentedCapsule; chart.Options.Bars.VisualStyle.CapThickness = 5;
         chart.Options.GridLineStyle.Dash = 3; chart.Options.GridLineStyle.Gap = 2;
-        chart.ConfigureTitleStyle(style => style.FontSize = 18); chart.ConfigureTickLabelStyle(style => style.FontSize = 11);
-        chart.ConfigureLabels(labels => { labels.Change = "Delta"; labels.Subtotal = "Stage sum"; labels.Total = "Final balance"; });
-        var axis = horizontal ? chart.Options.XAxis : chart.Options.YAxis; axis.WithBounds(-80, 160).WithReversal(dark);
+        chart.TitleStyle(style => style.FontSize = 18); chart.TickLabelStyle(style => style.FontSize = 11);
+        chart.Labels(labels => { labels.Change = "Delta"; labels.Subtotal = "Stage sum"; labels.Total = "Final balance"; });
+        var axis = horizontal ? chart.Options.XAxis : chart.Options.YAxis; axis.Bounds(-80, 160).Reversed(dark);
         chart.Options.XAxis.Labels.AddRange(typed ? new[] { new ChartAxisLabel(1,"Open"), new ChartAxisLabel(2,"Adjust"), new ChartAxisLabel(3,"Stage"),
             new ChartAxisLabel(4,"Costs"), new ChartAxisLabel(5,"Cost sum"), new ChartAxisLabel(6,"Recovery"), new ChartAxisLabel(7,"Balance") }
             : new[] { new ChartAxisLabel(1,"Opening"), new ChartAxisLabel(2,"Costs"), new ChartAxisLabel(4,"Recovery"), new ChartAxisLabel(5,"Balance") });

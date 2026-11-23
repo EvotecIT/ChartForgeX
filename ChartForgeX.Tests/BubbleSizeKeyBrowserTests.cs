@@ -15,10 +15,10 @@ public sealed class BubbleSizeKeyBrowserTests {
     [BrowserFact]
     public async Task CloseDefaultSizeReadoutsAgreeWithTheNumericKey() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(900, 560).WithTitle("Close size measurements")
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 100).WithLegend().WithDataLabels(false)
+        var chart = Chart.Create().Size(900, 560).Title("Close size measurements")
+            .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 100)).Legend().DataLabels(false)
             .AddBubble("Requests", new[] { new ChartBubble(2, 20, 1.001), new ChartBubble(8, 80, 1.002) })
-            .ConfigureBubble(options => options.SizeDimension.ShowLegend = true);
+            .Bubble(options => options.SizeDimension.ShowLegend = true);
         var html = chart.ToInteractiveHtmlPage(options => {
             options.Tooltip.Mode = HtmlChartTooltipMode.Single;
             options.Tooltip.PinOnSelect = false;
@@ -51,19 +51,19 @@ public sealed class BubbleSizeKeyBrowserTests {
     public async Task IndependentSizeReadoutsAndDescriptiveKeysSurviveAdaptiveHosting(bool dark, bool compact) {
         if (!Enabled) return;
         var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
-        var chart = Chart.Create().WithTitle("Processing time and request volume")
-            .WithSize(compact ? 340 : 900, 560).WithTheme(VisualTheme.Graphite(), mode)
-            .WithXAxis("Workload batches").WithYAxis("Processing time")
-            .WithXAxisBounds(0, 5).WithYAxisBounds(0, 50).WithLegend().WithDataLabels(false)
-            .WithValueFormat(ChartValueFormat.Number("0.0 'ms'"));
+        var chart = Chart.Create().Title("Processing time and request volume")
+            .Size(compact ? 340 : 900, 560).Theme(VisualTheme.Graphite()).ThemeMode(mode)
+            .XAxis(x => x.Title("Workload batches")).YAxis(y => y.Title("Processing time"))
+            .XAxis(x => x.Bounds(0, 5)).YAxis(y => y.Bounds(0, 50)).Legend().DataLabels(false)
+            .ValueFormat(ChartValueFormat.Number("0.0 'ms'"));
         var series = ChartSeries.CreateBubble(new ChartSeriesId("requests"), "Recorded requests", new[] {
             new ChartBubble(1, 18, 10).WithColorValue(-5), new ChartBubble(2.5, 30, 50).WithColorValue(5),
             new ChartBubble(4, 24, 200).WithColorValue(15)
-        }).WithObservationId(1, new ChartObservationId("batch-two"));
-        series.WithColorScale(ChartColorScale.Sequential(ChartColor.FromHex("#3388cc"), ChartColor.FromHex("#d65e2c")).WithValueRange(-5, 15))
-            .ConfigureColorDimension(options => { options.Name = "Temperature"; options.ValueFormat = ChartValueFormat.Number("0 '°C'"); });
-        chart.AddSeries(series).ConfigureBubble(options => {
-            options.WithSizeDomain(0, 100); options.MinimumRadius = 3; options.MaximumRadius = 18;
+        }).ObservationId(1, new ChartObservationId("batch-two"));
+        series.ColorScale(ChartColorScale.Sequential(ChartColor.FromHex("#3388cc"), ChartColor.FromHex("#d65e2c")).WithValueRange(-5, 15))
+            .ColorDimension(options => { options.Name = "Temperature"; options.ValueFormat = ChartValueFormat.Number("0 '°C'"); });
+        chart.AddSeries(series).Bubble(options => {
+            options.SizeDomain(0, 100); options.MinimumRadius = 3; options.MaximumRadius = 18;
             options.SizeDimension.Name = "Requests"; options.SizeDimension.ValueFormat = ChartValueFormat.Number("0 'req'");
             options.SizeDimension.ShowLegend = true;
         });
@@ -124,11 +124,11 @@ public sealed class BubbleSizeKeyBrowserTests {
     public async Task ChartFormatFallbackIncludingEmptySizeCaptionsOwnsPointerAndKeyboardReadouts(HtmlChartTooltipMode mode, bool empty) {
         if (!Enabled) return;
         var caption = empty ? "" : "25.00 items";
-        var chart = Chart.Create().WithSize(596, 338).WithLegend(false)
-            .WithValueFormat(empty ? ChartValueFormat.Custom(_ => "") : ChartValueFormat.Number("0.00 'items'"))
+        var chart = Chart.Create().Size(596, 338).Legend(false)
+            .ValueFormat(empty ? ChartValueFormat.Custom(_ => "") : ChartValueFormat.Number("0.00 'items'"))
             .AddSeries(ChartSeries.CreateBubble(new ChartSeriesId("requests"), "Recorded requests", new[] { new ChartBubble(2, 20, 25) })
-                .WithObservationId(0, new ChartObservationId("batch-one")))
-            .ConfigureBubble(options => options.SizeDimension.Name = "Requests");
+                .ObservationId(0, new ChartObservationId("batch-one")))
+            .Bubble(options => options.SizeDimension.Name = "Requests");
         Assert.Null(chart.Options.Bubble.SizeDimension.ValueFormat);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             options.Tooltip.Mode = mode; options.Tooltip.PinOnSelect = false;

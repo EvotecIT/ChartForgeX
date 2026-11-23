@@ -40,10 +40,10 @@ static class RangeBarRecipe {
         var observed = ChartSeries.CreateRangeBar(new ChartSeriesId("observed"), "Observed", new[] {
             new ChartInterval(1, 22, 45), new ChartInterval(2, 32, 12), new ChartInterval(3, 18, 42), new ChartInterval(4, 28, 55)
         });
-        var chart = Chart.Create().WithXLabels("Standard", "Express", "Premium", "Bulk").AddSeries(expected).AddSeries(observed)
-            .ConfigureRangeBar(options => options.Orientation = ChartOrientation.Horizontal)
-            .WithBarStyle(ChartBarStyle.SegmentedCapsule).WithDataLabels();
-    chart.WithXAxis("Delivery time (minutes)").WithYAxis("Service");
+        var chart = Chart.Create().XLabels("Standard", "Express", "Premium", "Bulk").AddSeries(expected).AddSeries(observed)
+            .RangeBar(options => options.Orientation = ChartOrientation.Horizontal)
+            .Bars(b => b.Style(ChartBarStyle.SegmentedCapsule)).DataLabels();
+    chart.XAxis(x => x.Title("Delivery time (minutes)")).YAxis(y => y.Title("Service"));
         return chart;
     }
 }

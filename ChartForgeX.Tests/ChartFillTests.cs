@@ -146,7 +146,7 @@ public sealed class ChartFillTests {
     [InlineData("progress-ring")]
     public void SeriesFillUsesTheSharedFamilyPassAndPreparationDetachesAuthoredEdits(string family) {
         var chart = Family(family); var fill = Fill("linear");
-        Assert.Same(chart.Series[0], chart.Series[0].WithFill(fill));
+        Assert.Same(chart.Series[0], chart.Series[0].Fill(fill));
         var prepared = Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng(NativeOptions());
         var document = XDocument.Parse(svg);
         Assert.DoesNotContain(prepared.Scene.Nodes.OfType<VisualSceneGradient>(), node =>
@@ -157,7 +157,7 @@ public sealed class ChartFillTests {
         var pixels = PngReader.Decode(png).Pixels;
         Assert.Contains(Enumerable.Range(0, pixels.Length / 4), index =>
             pixels[index * 4] > 40 && pixels[index * 4 + 1] < 10 && pixels[index * 4 + 2] > 40 && pixels[index * 4 + 3] > 200);
-        chart.Series[0].WithFill(null);
+        chart.Series[0].Fill((ChartFill?)null);
         Assert.DoesNotContain(Prepare(chart).Scene.Nodes.OfType<VisualSceneGradient>(), node => node.AuthoredFill != null);
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng(NativeOptions()));
         Capture(prepared, "family-" + family);
@@ -167,7 +167,7 @@ public sealed class ChartFillTests {
     public void DatumFillOverridesSeriesFillAndNullCallbackResultsRetainTheSeriesPaint() {
         var chart = Family("bar"); var calls = 0;
         chart.Series[0].PointFillOverrides[1] = Fill("image");
-        chart.Series[0].WithFill(Fill("linear")).WithItemStyler<ChartPoint>(context => {
+        chart.Series[0].Fill(Fill("linear")).ItemStyleBy<ChartPoint>(context => {
             calls++; return context.Index == 1 ? new ChartItemStyle(fill: Fill("radial")) : null;
         });
         var prepared = Prepare(chart); var svg = prepared.ToSvg();
@@ -180,7 +180,7 @@ public sealed class ChartFillTests {
         var radial = Assert.Single(surfaces, node => node.AuthoredFill?.Kind == ChartFillKind.RadialGradient);
         var bounds = radial.FillBounds;
         Assert.InRange(Pixel(native, (int)(bounds.X + bounds.Width / 2), (int)(bounds.Y + bounds.Height / 2))[0], 220, 255);
-        chart.Series[0].WithItemStyler<ChartPoint>(null).WithFill(null);
+        chart.Series[0].ItemStyleBy<ChartPoint>(null).Fill((ChartFill?)null);
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(3, calls);
         Capture(prepared, "datum-override");
     }
@@ -188,7 +188,7 @@ public sealed class ChartFillTests {
     [Fact]
     public void ExplicitDatumColorSuppressesInheritedSeriesGradientInSvgAndNativePng() {
         var green = ChartColor.FromHex("#00FF00"); var chart = Family("bar");
-        chart.Series[0].WithFill(Fill("linear")).WithItemStyler<ChartPoint>(context =>
+        chart.Series[0].Fill(Fill("linear")).ItemStyleBy<ChartPoint>(context =>
             context.Index == 1 ? new ChartItemStyle(color: green) : null);
         var prepared = Prepare(chart); var svg = XDocument.Parse(prepared.ToSvg());
         var solid = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneMark>(), mark => mark.Role == "bar" && mark.Fill.Equals(green));
@@ -208,22 +208,22 @@ public sealed class ChartFillTests {
         var calls = 0; var seriesId = new ChartSeriesId("fills");
         var series = new ChartSeries(seriesId, "Values", ChartSeriesKind.Bar,
             new[] { new ChartPoint(0, 4), new ChartPoint(1, 8), new ChartPoint(2, 6) });
-        series.WithObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("hidden"), new ChartObservationId("last") });
-        series.WithFill(Fill("linear"));
+        series.ObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("hidden"), new ChartObservationId("last") });
+        series.Fill(Fill("linear"));
         if (pointOverride) {
-            series.WithFill(null);
+            series.Fill((ChartFill?)null);
             series.PointFillOverrides[0] = Fill("linear");
             series.PointFillOverrides[2] = Fill("radial");
         }
-        else series.WithItemStyler<ChartPoint>(context => {
+        else series.ItemStyleBy<ChartPoint>(context => {
             calls++; return context.Index == 2 ? new ChartItemStyle(fill: Fill("radial")) : null;
         });
-        var chart = Chart.Create().WithSize(320, 240).WithHeader(false).WithLegend(false).WithDataLabels(false).AddSeries(series);
+        var chart = Chart.Create().Size(320, 240).ShowHeader(false).Legend(false).DataLabels(false).AddSeries(series);
         var renderer = new HtmlInteractiveChartRenderer();
         var section = renderer.PrepareVisibilitySection(chart, new ChartVisibilityView(Array.Empty<ChartVisibilityTarget>(), ChartVisibilityLayout.Reflow));
         var source = section.PreparedVisual.Scene.VisibilityCapture!.ReflowSource!;
         var before = calls;
-        series.WithFill(null).WithItemStyler<ChartPoint>(null);
+        series.Fill((ChartFill?)null).ItemStyleBy<ChartPoint>(null);
         series.PointFillOverrides.Clear();
         var retained = source.CreateNativeView(new ChartVisibilityView(new[] {
             ChartVisibilityTarget.Observation(seriesId, new ChartObservationId("hidden")) }, ChartVisibilityLayout.Reflow));
@@ -290,12 +290,12 @@ public sealed class ChartFillTests {
     private static Chart IdentityChart(ChartFill fill, bool datum) {
         var series = new ChartSeries(new ChartSeriesId("fill-identity"), "Values", ChartSeriesKind.Line,
             new[] { new ChartPoint(0, 4), new ChartPoint(1, 8), new ChartPoint(2, 6) });
-        series.WithObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("hidden"), new ChartObservationId("last") });
-        series.ConfigureMarkers(markers => markers.Enabled = false);
-        if (datum) series.WithItemStyler<ChartPoint>(context => context.Index == 1 ? new ChartItemStyle(fill: fill) : null);
-        else series.WithFill(fill);
-        return Chart.Create().WithSize(320, 240).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithLineMarkers(ChartLineMarkerMode.None).AddSeries(series);
+        series.ObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("hidden"), new ChartObservationId("last") });
+        series.Markers(markers => markers.Enabled = false);
+        if (datum) series.ItemStyleBy<ChartPoint>(context => context.Index == 1 ? new ChartItemStyle(fill: fill) : null);
+        else series.Fill(fill);
+        return Chart.Create().Size(320, 240).ShowHeader(false).Legend(false).DataLabels(false)
+            .Lines(l => l.MarkerMode(ChartLineMarkerMode.None)).AddSeries(series);
     }
 
     private static ChartVisibilityView HiddenFillView() => new(new[] {
@@ -319,7 +319,7 @@ public sealed class ChartFillTests {
     }
 
     private static Chart Family(string family) {
-        var chart = Chart.Create().WithSize(320, 240).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false).WithDataLabels(false);
+        var chart = Chart.Create().Size(320, 240).ShowHeader(false).Legend(false).Axes(false).ShowGrid(false).DataLabels(false);
         var points = new[] { new ChartPoint(0, 4), new ChartPoint(1, 8), new ChartPoint(2, 6) };
         return family switch {
             "bar" => chart.AddBar("Values", points), "horizontal-bar" => chart.AddHorizontalBar("Values", points),

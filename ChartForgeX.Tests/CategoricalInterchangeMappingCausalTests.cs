@@ -12,9 +12,9 @@ public sealed class CategoricalInterchangeMappingCausalTests {
     [InlineData(false)] [InlineData(true)]
     public void ExistingNativeCategoricalProducerKeepsEditableFactsAtTheCommonPortableBoundary(bool timeline) {
         IVisualBlock source = timeline
-            ? TimelineDiagramBlock.Create().WithTitle("Timeline facts").WithSize(800, 500).AddSection("phase", "Delivery")
+            ? TimelineDiagramBlock.Create().Title("Timeline facts").Size(800, 500).AddSection("phase", "Delivery")
                 .AddPeriod("p", "Before launch", new[] { "Review", "Document" }, "phase")
-            : JourneyDiagramBlock.Create().WithTitle("Journey facts").WithSize(800, 500).AddSection("phase", "Review")
+            : JourneyDiagramBlock.Create().Title("Journey facts").Size(800, 500).AddSection("phase", "Review")
                 .AddTask("t", "Read", 3, new[] { "Author", "Reviewer" }, "phase");
         source.Options.Theme = VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family);
         var svg = source.RenderSvg("categorical-boundary"); var png = source.ToPng();

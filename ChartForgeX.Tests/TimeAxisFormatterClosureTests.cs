@@ -17,12 +17,12 @@ public sealed class TimeAxisFormatterClosureTests {
     public void AuthoredFormatterExceptionsFromFineCalendarCandidatesEscapePreparation(bool overflow) {
         var failure = overflow ? (Exception)new OverflowException("Authored clock overflow") : new ArgumentException("Authored clock argument");
         var failed = false;
-        var chart = Chart.Create().WithSize(960, 360).WithHeader(false).WithLegend(false).WithXAxisTimeScale()
+        var chart = Chart.Create().Size(960, 360).ShowHeader(false).Legend(false).XAxis(x => x.TimeScale())
             .AddLine("Readings", new[] { new ChartPoint(Start, 10), new ChartPoint(Start.AddDays(4), 20) })
-            .ConfigureXAxis(axis => {
-                axis.WithBounds(Start.ToOADate(), Start.AddDays(4).ToOADate());
+            .XAxis(axis => {
+                axis.Bounds(Start.ToOADate(), Start.AddDays(4).ToOADate());
                 axis.LabelDensity = ChartLabelDensity.Dense;
-                axis.WithLabelFormatter(value => {
+                axis.LabelBy(value => {
                     if (!failed && DateTime.FromOADate(value).TimeOfDay != TimeSpan.Zero) { failed = true; throw failure; }
                     return DateTime.FromOADate(value).ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
                 });
@@ -36,7 +36,7 @@ public sealed class TimeAxisFormatterClosureTests {
     public void ObservationCadenceFitDoesNotConsumeTheAuthoredFitException(bool overflow) {
         var failure = overflow ? (Exception)new OverflowException("Authored cadence overflow") : new ArgumentException("Authored cadence argument");
         var observations = Enumerable.Range(0, 15).Select(index => Start.AddDays(index * 5).ToOADate()).ToArray();
-        Assert.Same(failure, Record.Exception(() => ChartTimeScale.GenerateFitting(new ChartAxis().WithTimeScale(), observations[0], observations[^1],
+        Assert.Same(failure, Record.Exception(() => ChartTimeScale.GenerateFitting(new ChartAxis().TimeScale(), observations[0], observations[^1],
             _ => throw failure, allowCompactDates: true, regularObservations: observations)));
     }
 
@@ -45,10 +45,10 @@ public sealed class TimeAxisFormatterClosureTests {
     [InlineData(true)]
     public void GanttClockCallbacksRetainSubdayTicksAcrossMultiDayWindows(bool useValueFormat) {
         Func<double, string> clock = value => DateTime.FromOADate(value).ToString("HH:mm", CultureInfo.InvariantCulture);
-        var chart = Chart.Create().WithSize(960, 360).WithHeader(false).WithLegend(false)
-            .WithPngFont(Font()).AddGanttTask("Window", Start, Start.AddDays(2)).ConfigureXAxis(axis => {
-                if (useValueFormat) axis.WithValueFormat(ChartValueFormat.Custom(clock));
-                else axis.WithLabelFormatter(clock);
+        var chart = Chart.Create().Size(960, 360).ShowHeader(false).Legend(false)
+            .Png(p => p.FontPath(Font())).AddGanttTask("Window", Start, Start.AddDays(2)).XAxis(axis => {
+                if (useValueFormat) axis.ValueFormat(ChartValueFormat.Custom(clock));
+                else axis.LabelBy(clock);
             });
         Assert.NotNull(chart.Options.XAxis.ValueFormat);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -70,8 +70,8 @@ public sealed class TimeAxisFormatterClosureTests {
     public void AutomaticDateFormatsChooseDistinctCalendarCaptionsBeforePaint(bool dark, int width) {
         var chart = new MermaidParser().ParseGantt("gantt\naxisFormat %a %d %b\nFirst :first, 2026-01-04, 4d").Document!
             .ToChart(new MermaidGanttRenderOptions { Width = width, Height = 360 })
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithPngFont(Font()).ConfigureGridStyle(style => style.ShowVerticalLines = true);
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Png(p => p.FontPath(Font())).GridLineStyle(style => style.ShowVerticalLines = true);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         ScatterBubbleColorRenderingTests.Capture(prepared, $"gantt-distinct-date-{dark}-{width}");
         var labels = Captions(prepared);
@@ -89,7 +89,7 @@ public sealed class TimeAxisFormatterClosureTests {
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code is "schedule.axis-label-overflow" or "text.overflow");
         var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
         Assert.Equal(width, image.Width); Assert.Equal((int)Math.Ceiling(prepared.Size.Height), image.Height);Assert.InRange(image.Height, 120, 359);
-        chart.ConfigureXAxis(axis => axis.TickCount = 4);
+        chart.XAxis(axis => axis.TickCount = 4);
         Assert.InRange(Captions(chart.Prepare(VisualExportRequest.ForChart(chart).Context)).Length, 2, 4);
     }
 
@@ -97,11 +97,11 @@ public sealed class TimeAxisFormatterClosureTests {
     [InlineData(ThemeMode.Light)]
     [InlineData(ThemeMode.Dark)]
     public void CartesianDateCallbacksUseTheSameAutomaticPrecisionPolicy(ThemeMode mode) {
-        var chart = Chart.Create().WithSize(960, 360).WithHeader(false).WithLegend(false).WithPngFont(Font()).WithThemeMode(mode)
-            .WithXAxisTimeScale().AddLine("Readings", new[] { new ChartPoint(Start, 10), new ChartPoint(Start.AddDays(4), 20) })
-            .ConfigureXAxis(axis => {
-                axis.WithBounds(Start.ToOADate(), Start.AddDays(4).ToOADate());
-                axis.WithLabelFormatter(value => DateTime.FromOADate(value).ToString("ddd dd MMM", CultureInfo.InvariantCulture));
+        var chart = Chart.Create().Size(960, 360).ShowHeader(false).Legend(false).Png(p => p.FontPath(Font())).ThemeMode(mode)
+            .XAxis(x => x.TimeScale()).AddLine("Readings", new[] { new ChartPoint(Start, 10), new ChartPoint(Start.AddDays(4), 20) })
+            .XAxis(axis => {
+                axis.Bounds(Start.ToOADate(), Start.AddDays(4).ToOADate());
+                axis.LabelBy(value => DateTime.FromOADate(value).ToString("ddd dd MMM", CultureInfo.InvariantCulture));
             });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "axis-x-label")
@@ -116,11 +116,11 @@ public sealed class TimeAxisFormatterClosureTests {
     [InlineData(false)]
     [InlineData(true)]
     public void AuthoredFixedIntervalsAndAllDensityKeepTheirRepeatedDateCaptions(bool fixedInterval) {
-        var chart = Chart.Create().WithSize(1600, 360).WithHeader(false).WithLegend(false).WithPngFont(Font())
+        var chart = Chart.Create().Size(1600, 360).ShowHeader(false).Legend(false).Png(p => p.FontPath(Font()))
             .AddGanttTask("Window", Start, Start.AddDays(2))
-            .ConfigureXAxis(axis => axis.WithLabelFormatter(value => DateTime.FromOADate(value).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)));
-        if (fixedInterval) chart.WithGanttTickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Hour, 12));
-        else chart.ConfigureXAxis(axis => axis.LabelDensity = ChartLabelDensity.All);
+            .XAxis(axis => axis.LabelBy(value => DateTime.FromOADate(value).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)));
+        if (fixedInterval) chart.Gantt(g => g.TickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Hour, 12)));
+        else chart.XAxis(axis => axis.LabelDensity = ChartLabelDensity.All);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var labels = Captions(prepared).Select(label => label.Text.Lines.Single().Text).ToArray();
         Assert.True(labels.Length > labels.Distinct(StringComparer.Ordinal).Count());

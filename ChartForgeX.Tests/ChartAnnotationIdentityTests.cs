@@ -84,11 +84,11 @@ public sealed class ChartAnnotationIdentityTests {
         Assert.Contains(prepared.Regions, item => item.Role == "gantt-marker" || item.Role == "gantt-vertical-marker");
     }
 
-    private static Chart Create() => Chart.Create().WithSize(480, 300).WithLegend(false)
+    private static Chart Create() => Chart.Create().Size(480, 300).Legend(false)
         .AddLine("Readings", new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) });
 
     private static Chart AllAxisGuideKinds(bool authored, bool horizontalBars) {
-        var chart = horizontalBars ? Chart.Create().WithSize(480, 300).WithLegend(false)
+        var chart = horizontalBars ? Chart.Create().Size(480, 300).Legend(false)
             .AddHorizontalBar("Readings", new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) }) : Create();
         if (authored) return chart.AddHorizontalLine(new ChartAnnotationId("annotation-0"), 3, "Limit")
             .AddVerticalLine(new ChartAnnotationId("vertical: β \"quoted\""), 4, "Limit")

@@ -4,12 +4,14 @@ using System.Linq;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>
 /// Describes a dependency-free small-multiple report made from multiple charts.
 /// </summary>
+[Fluent]
 public sealed partial class ChartGrid {
     private readonly List<Chart> _charts = new();
     private readonly List<ChartGridPanelSpan> _panelSpans = new();
@@ -134,12 +136,20 @@ public sealed partial class ChartGrid {
     /// <summary>
     /// Gets the text style used for the grid title.
     /// </summary>
-    public TextStyleOverride TitleStyle { get; private set; } = new();
+    public TextStyleOverride TitleStyle {
+        get => _titleStyle;
+        set => _titleStyle = value ?? throw new ArgumentNullException(nameof(value));
+    }
+    private TextStyleOverride _titleStyle = new();
 
     /// <summary>
     /// Gets the text style used for the grid subtitle.
     /// </summary>
-    public TextStyleOverride SubtitleStyle { get; private set; } = new();
+    public TextStyleOverride SubtitleStyle {
+        get => _subtitleStyle;
+        set => _subtitleStyle = value ?? throw new ArgumentNullException(nameof(value));
+    }
+    private TextStyleOverride _subtitleStyle = new();
 
     /// <summary>
     /// Gets the charts included in the grid.
@@ -158,115 +168,12 @@ public sealed partial class ChartGrid {
     public static ChartGrid Create() => new();
 
     /// <summary>
-    /// Sets the report title.
-    /// </summary>
-    /// <param name="title">The report title.</param>
-    /// <returns>The current chart grid.</returns>
-    public ChartGrid WithTitle(string title) { Title = title ?? throw new ArgumentNullException(nameof(title)); return this; }
-
-    /// <summary>
-    /// Sets the report subtitle.
-    /// </summary>
-    /// <param name="subtitle">The report subtitle.</param>
-    /// <returns>The current chart grid.</returns>
-    public ChartGrid WithSubtitle(string subtitle) { Subtitle = subtitle ?? throw new ArgumentNullException(nameof(subtitle)); return this; }
-
-    /// <summary>
-    /// Configures grid title text styling.
-    /// </summary>
-    /// <param name="configure">The style configuration callback.</param>
-    /// <returns>The current chart grid.</returns>
-    public ChartGrid ConfigureTitleStyle(Action<TextStyleOverride> configure) {
-        if (configure == null) throw new ArgumentNullException(nameof(configure));
-        TitleStyle = ChartOptionConfiguration.Configure(TitleStyle, configure, style => style.Clone());
-        return this;
-    }
-
-    /// <summary>
-    /// Configures grid subtitle text styling.
-    /// </summary>
-    /// <param name="configure">The style configuration callback.</param>
-    /// <returns>The current chart grid.</returns>
-    public ChartGrid ConfigureSubtitleStyle(Action<TextStyleOverride> configure) {
-        if (configure == null) throw new ArgumentNullException(nameof(configure));
-        SubtitleStyle = ChartOptionConfiguration.Configure(SubtitleStyle, configure, style => style.Clone());
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the preferred number of columns on wide viewports.
-    /// </summary>
-    /// <param name="columns">The preferred column count.</param>
-    /// <returns>The current chart grid.</returns>
-    public ChartGrid WithColumns(int columns) { Columns = columns; return this; }
-
-    /// <summary>
-    /// Sets the gap between charts in pixels.
-    /// </summary>
-    /// <param name="gap">The gap in pixels.</param>
-    /// <returns>The current chart grid.</returns>
-    public ChartGrid WithGap(int gap) { Gap = gap; return this; }
-
-    /// <summary>
-    /// Sets the outer padding around exported grid content in pixels.
-    /// </summary>
-    /// <param name="padding">The padding in pixels.</param>
-    /// <returns>The current chart grid.</returns>
-    public ChartGrid WithPadding(int padding) { Padding = padding; return this; }
-
-    /// <summary>
-    /// Sets the output pixel multiplier used by composed PNG grid exports.
-    /// </summary>
-    /// <param name="scale">The output scale from one to four. Higher values emit larger PNG dimensions with the same logical grid layout.</param>
-    /// <returns>The current chart grid.</returns>
-    public ChartGrid WithPngOutputScale(int scale) { PngOutputScale = scale; return this; }
-
-    /// <summary>
-    /// Sets the output pixel multiplier used by composed PNG grid exports using a named density preset.
-    /// </summary>
-    /// <param name="scale">The output density preset.</param>
-    /// <returns>The current chart grid.</returns>
-    public ChartGrid WithPngOutputScale(ChartPngOutputScale scale) => WithPngOutputScale((int)scale);
-
-    /// <summary>
     /// Sets a fixed panel size for composed SVG and PNG grid exports.
     /// </summary>
     /// <param name="width">The panel width in pixels.</param>
     /// <param name="height">The panel height in pixels.</param>
     /// <returns>The current chart grid.</returns>
-    public ChartGrid WithPanelSize(int width, int height) { PanelSize = new ChartSize(width, height); return this; }
-
-    /// <summary>
-    /// Sets how charts fit inside fixed-size grid panels.
-    /// </summary>
-    /// <param name="fit">The panel fit behavior.</param>
-    /// <returns>The current chart grid.</returns>
-    public ChartGrid WithPanelFit(VisualPanelFit fit) { PanelFit = fit; return this; }
-
-    /// <summary>
-    /// Clears the fixed panel size so composed exports use the largest chart dimensions.
-    /// </summary>
-    /// <returns>The current chart grid.</returns>
-    public ChartGrid WithAutomaticPanelSize() { PanelSize = null; return this; }
-
-    /// <summary>
-    /// Sets the theme used by the grid background and heading.
-    /// </summary>
-    /// <param name="theme">The grid theme.</param>
-    /// <param name="mode">Optional explicit palette mode; omitted keeps the current mode.</param>
-    /// <returns>The current chart grid.</returns>
-    public ChartGrid WithTheme(VisualTheme theme, ThemeMode? mode = null) {
-        if (theme == null) throw new ArgumentNullException(nameof(theme));
-        if (mode.HasValue && !Enum.IsDefined(typeof(ThemeMode), mode.Value)) throw new ArgumentOutOfRangeException(nameof(mode));
-        Theme = theme; if (mode.HasValue) ThemeMode = mode.Value; return this;
-    }
-    /// <summary>Sets the explicit palette mode for the comparison.</summary>
-    public ChartGrid WithThemeMode(ThemeMode mode) { ThemeMode = mode; return this; }
-
-    /// <summary>Retains each chart's authored theme, mode and font inside the grid.</summary>
-    /// <param name="enabled">True uses panel presentation; false shares the grid context's theme, mode and font.</param>
-    /// <returns>The current chart grid.</returns>
-    public ChartGrid WithPanelThemes(bool enabled = true) { UsePanelThemes = enabled; return this; }
+    internal ChartGrid SetPanelSize(int width, int height) { PanelSize = new ChartSize(width, height); return this; }
 
     /// <summary>
     /// Adds a chart to the grid.
@@ -297,7 +204,7 @@ public sealed partial class ChartGrid {
     /// <param name="columnSpan">The number of columns occupied by the chart panel.</param>
     /// <param name="rowSpan">The number of rows occupied by the chart panel.</param>
     /// <returns>The current chart grid.</returns>
-    public ChartGrid WithPanelSpan(int chartIndex, int columnSpan, int rowSpan = 1) {
+    public ChartGrid PanelSpan(int chartIndex, int columnSpan, int rowSpan = 1) {
         if (chartIndex < 0 || chartIndex >= _charts.Count) throw new ArgumentOutOfRangeException(nameof(chartIndex), chartIndex, "Chart index must reference an existing grid chart.");
         _panelSpans[chartIndex] = new ChartGridPanelSpan(columnSpan, rowSpan);
         return this;
@@ -307,7 +214,7 @@ public sealed partial class ChartGrid {
     /// Applies one shared cartesian y-axis range to all compatible charts in the grid.
     /// </summary>
     /// <returns>The current chart grid.</returns>
-    public ChartGrid WithSharedYAxis() {
+    public ChartGrid ShareYAxis() {
         if (_charts.Count == 0) throw new InvalidOperationException("Chart grids must contain at least one chart before sharing y-axis bounds.");
 
         var primaryMinimum = double.PositiveInfinity;
@@ -337,12 +244,12 @@ public sealed partial class ChartGrid {
         if (primaryCompatible.Count == 0 && secondaryCompatible.Count == 0) throw new InvalidOperationException("Shared y-axis bounds require at least one cartesian chart.");
         if (primaryCompatible.Count > 0) {
             if (Math.Abs(primaryMaximum - primaryMinimum) < double.Epsilon) primaryMaximum = primaryMinimum + 1;
-            foreach (var chart in primaryCompatible) chart.WithYAxisBounds(primaryMinimum, primaryMaximum);
+            foreach (var chart in primaryCompatible) chart.YAxis(y => y.Bounds(primaryMinimum, primaryMaximum));
         }
 
         if (secondaryCompatible.Count > 0) {
             if (Math.Abs(secondaryMaximum - secondaryMinimum) < double.Epsilon) secondaryMaximum = secondaryMinimum + 1;
-            foreach (var chart in secondaryCompatible) chart.WithSecondaryYAxisBounds(secondaryMinimum, secondaryMaximum);
+            foreach (var chart in secondaryCompatible) chart.SecondaryYAxis(s => s.Bounds(secondaryMinimum, secondaryMaximum));
         }
 
         return this;
@@ -352,7 +259,7 @@ public sealed partial class ChartGrid {
     /// Applies one shared cartesian x-axis range to all compatible charts in the grid.
     /// </summary>
     /// <returns>The current chart grid.</returns>
-    public ChartGrid WithSharedXAxis() {
+    public ChartGrid ShareXAxis() {
         if (_charts.Count == 0) throw new InvalidOperationException("Chart grids must contain at least one chart before sharing x-axis bounds.");
 
         var minimum = double.PositiveInfinity;
@@ -375,8 +282,8 @@ public sealed partial class ChartGrid {
 
         if (compatible.Count == 0) throw new InvalidOperationException("Shared x-axis bounds require at least one cartesian chart.");
         if (Math.Abs(maximum - minimum) < double.Epsilon) maximum = minimum + 1;
-        foreach (var chart in compatible) chart.WithXAxisBounds(minimum, maximum);
-        foreach (var chart in secondary) chart.WithSecondaryXAxisBounds(secondaryMinimum, secondaryMaximum);
+        foreach (var chart in compatible) chart.XAxis(x => x.Bounds(minimum, maximum));
+        foreach (var chart in secondary) chart.SecondaryXAxis(s => s.Bounds(secondaryMinimum, secondaryMaximum));
         return this;
     }
 
@@ -384,9 +291,9 @@ public sealed partial class ChartGrid {
     /// Applies shared cartesian x-axis and y-axis ranges to all compatible charts in the grid.
     /// </summary>
     /// <returns>The current chart grid.</returns>
-    public ChartGrid WithSharedAxes() {
-        WithSharedXAxis();
-        WithSharedYAxis();
+    public ChartGrid ShareAxes() {
+        ShareXAxis();
+        ShareYAxis();
         return this;
     }
 

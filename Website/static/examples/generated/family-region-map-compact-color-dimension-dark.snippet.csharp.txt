@@ -39,15 +39,15 @@ static class RegionMapRecipe {
             new ChartRegionMapItem("FL", 2.5), new ChartRegionMapItem("WA", 5), new ChartRegionMapItem("IL", 22.5),
             new ChartRegionMapItem("CO", 55)
         };
-        return Chart.Create().ConfigureLabels(labels => labels.NoData = "Not sampled")
+        return Chart.Create().Labels(labels => labels.NoData = "Not sampled")
             .AddRegionHeatmap("Daily mean", ChartMapCatalog.Get("us-states"), values,
                 ChartColorScale.Diverging(ChartColor.FromHex("#2166AC"), ChartColor.FromHex("#D1D5DB"), ChartColor.FromHex("#B2182B"), 0)
                     .WithValueRange(-20, 40).WithLabels("Cold", "Freezing", "Warm").WithNoDataColor(colors.Border),
                 new ChartSeriesId("state-temperatures"))
-            .WithMapLabels(false).WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right)
-            .ConfigureMapColorDimension(options => {
+            .Map(m => m.ShowLabels(false).ScaleLegendPosition(ChartMapScaleLegendPosition.Right))
+            .Map(map => map.ColorDimension(options => {
                 options.Name = "Temperature";
                 options.ValueFormat = ChartValueFormat.Number("#,0.### '°C'", System.Globalization.CultureInfo.InvariantCulture);
-            });
+            }));
     }
 }

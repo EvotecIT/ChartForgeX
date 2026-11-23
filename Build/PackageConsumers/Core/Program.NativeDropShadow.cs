@@ -7,7 +7,7 @@ using ChartForgeX.Rendering;
 
 internal static partial class Program {
     private static void NativeDropShadowContracts() {
-        var chart = Chart.Create().WithSize(320, 240).WithTitle("Finished requests").WithXAxis("Cycle").WithYAxis("Finished")
+        var chart = Chart.Create().Size(320, 240).Title("Finished requests").XAxis(x => x.Title("Cycle")).YAxis(y => y.Title("Finished"))
             .AddLine("Finished", new[] { new ChartPoint(1, 9), new ChartPoint(2, 24), new ChartPoint(3, 17) });
         var source = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(320, 240)),
             frame: new VisualFrame(showLegend: false, transparentBackground: true)));

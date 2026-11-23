@@ -25,7 +25,7 @@ public static partial class VisualArtifactRendering {
                 break;
             case Chart chart:
                 width = chart.Options.Size.Width; height = chart.Options.Size.Height;
-                scale = chart.Options.PngOutputScale;
+                scale = chart.Options.Png.OutputScale;
                 break;
             case TopologyChart topology:
                 var topologyOptions = TopologyOptions(artifact, options);

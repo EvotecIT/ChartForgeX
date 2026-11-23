@@ -117,27 +117,27 @@ public static class MixedScheduleRecipe {
         var compact = variant.StartsWith(&quot;compact&quot;, StringComparison.Ordinal); var time = variant.Contains(&quot;time&quot;, StringComparison.Ordinal);
         var reversed = variant.EndsWith(&quot;reversed&quot;, StringComparison.Ordinal);
         var origin = time ? new DateTime(2026, 10, 20, 0, 0, 0, DateTimeKind.Utc).ToOADate() : 0;
-        var chart = Chart.Create().WithSize(compact ? 390 : 900, 660).WithTheme(VisualTheme.Graphite(), mode)
-            .WithTitle(&quot;One release, several kinds of schedule evidence&quot;).WithSubtitle(&quot;Reversal changes presentation; source instants and resource identities remain unchanged&quot;)
-            .WithXAxisBounds(origin, origin + 10).WithDataLabels().WithStateCategories(
+        var chart = Chart.Create().Size(compact ? 390 : 900, 660).Theme(VisualTheme.Graphite()).ThemeMode(mode)
+            .Title(&quot;One release, several kinds of schedule evidence&quot;).Subtitle(&quot;Reversal changes presentation; source instants and resource identities remain unchanged&quot;)
+            .XAxis(x =&gt; x.Bounds(origin, origin + 10)).DataLabels().StateCategories(
                 new ChartStateCategory(&quot;ready&quot;, &quot;Ready&quot;, ChartColor.FromHex(&quot;#218A63&quot;)),
                 new ChartStateCategory(&quot;review&quot;, &quot;Review&quot;, ChartColor.FromHex(&quot;#BD771C&quot;), ChartStatePattern.Outlined));
-        if (time) chart.WithXAxisTimeScale(TimeZoneInfo.Utc);
+        if (time) chart.XAxis(x =&gt; x.TimeScale(timeZone: TimeZoneInfo.Utc));
         chart.AddSeries(new ChartSeries(new ChartSeriesId(&quot;window&quot;), &quot;Delivery window&quot;, ChartSeriesKind.Timeline,
-            new[] { new ChartPoint(origin + 1, origin + 9) }).WithObservationId(0, new ChartObservationId(&quot;delivery-window&quot;)));
+            new[] { new ChartPoint(origin + 1, origin + 9) }).ObservationId(0, new ChartObservationId(&quot;delivery-window&quot;)));
         var build = ChartSeries.CreateGanttTask(new ChartSeriesId(&quot;build&quot;), &quot;Implementation&quot;, origin + 2, origin + 4, .65)
-            .WithObservationId(0, new ChartObservationId(&quot;implementation&quot;)); chart.AddSeries(build);
+            .ObservationId(0, new ChartObservationId(&quot;implementation&quot;)); chart.AddSeries(build);
         chart.AddSeries(ChartSeries.CreateStateTimelineLane(new ChartSeriesId(&quot;service&quot;), &quot;Service state&quot;, new[] {
             new ChartStateTimelineSegment(origin + 1, origin + 3, &quot;ready&quot;), new ChartStateTimelineSegment(origin + 4, origin + 7, &quot;review&quot;) },
-            summary: &quot;One source gap&quot;, group: &quot;Resources&quot;).WithObservationId(0, new ChartObservationId(&quot;ready-period&quot;)));
+            summary: &quot;One source gap&quot;, group: &quot;Resources&quot;).ObservationId(0, new ChartObservationId(&quot;ready-period&quot;)));
         chart.AddSeries(ChartSeries.CreateGanttLane(new ChartSeriesId(&quot;reviewers&quot;), &quot;Review activity&quot;, new[] {
             new ChartGanttLaneItem(origin + 2, origin + 6, &quot;review&quot;, &quot;Review&quot;), new ChartGanttLaneItem(origin + 3, null, &quot;ready&quot;, &quot;Follow-up&quot;) },
-            group: &quot;Resources&quot;, summary: &quot;Two overlapping items&quot;).WithObservationId(0, new ChartObservationId(&quot;review-item&quot;)));
+            group: &quot;Resources&quot;, summary: &quot;Two overlapping items&quot;).ObservationId(0, new ChartObservationId(&quot;review-item&quot;)));
         var gate = ChartSeries.CreateGanttMilestone(new ChartSeriesId(&quot;gate&quot;), &quot;Acceptance&quot;, origin + 8)
-            .WithObservationId(0, new ChartObservationId(&quot;acceptance&quot;)); chart.AddSeries(gate).AddGanttDependency(build, gate);
+            .ObservationId(0, new ChartObservationId(&quot;acceptance&quot;)); chart.AddSeries(gate).AddGanttDependency(build, gate);
         chart.AddSeries(ChartSeries.CreateGanttMarker(new ChartSeriesId(&quot;checkpoint&quot;), &quot;Current checkpoint&quot;, origin + 9));
-        chart.WithGanttToday(origin + 9);
-        chart.ConfigureXAxis(axis =&gt; axis.Reversed = reversed); chart.ConfigureYAxis(axis =&gt; axis.Reversed = reversed);
+        chart.Gantt(g =&gt; g.Today(origin + 9));
+        chart.XAxis(axis =&gt; axis.Reversed = reversed); chart.YAxis(axis =&gt; axis.Reversed = reversed);
         return chart;
     }
 }
@@ -178,27 +178,27 @@ public static class MixedScheduleRecipe {
         var compact = variant.StartsWith(&quot;compact&quot;, StringComparison.Ordinal); var time = variant.Contains(&quot;time&quot;, StringComparison.Ordinal);
         var reversed = variant.EndsWith(&quot;reversed&quot;, StringComparison.Ordinal);
         var origin = time ? new DateTime(2026, 10, 20, 0, 0, 0, DateTimeKind.Utc).ToOADate() : 0;
-        var chart = Chart.Create().WithSize(compact ? 390 : 900, 660).WithTheme(VisualTheme.Graphite(), mode)
-            .WithTitle(&quot;One release, several kinds of schedule evidence&quot;).WithSubtitle(&quot;Reversal changes presentation; source instants and resource identities remain unchanged&quot;)
-            .WithXAxisBounds(origin, origin + 10).WithDataLabels().WithStateCategories(
+        var chart = Chart.Create().Size(compact ? 390 : 900, 660).Theme(VisualTheme.Graphite()).ThemeMode(mode)
+            .Title(&quot;One release, several kinds of schedule evidence&quot;).Subtitle(&quot;Reversal changes presentation; source instants and resource identities remain unchanged&quot;)
+            .XAxis(x =&gt; x.Bounds(origin, origin + 10)).DataLabels().StateCategories(
                 new ChartStateCategory(&quot;ready&quot;, &quot;Ready&quot;, ChartColor.FromHex(&quot;#218A63&quot;)),
                 new ChartStateCategory(&quot;review&quot;, &quot;Review&quot;, ChartColor.FromHex(&quot;#BD771C&quot;), ChartStatePattern.Outlined));
-        if (time) chart.WithXAxisTimeScale(TimeZoneInfo.Utc);
+        if (time) chart.XAxis(x =&gt; x.TimeScale(timeZone: TimeZoneInfo.Utc));
         chart.AddSeries(new ChartSeries(new ChartSeriesId(&quot;window&quot;), &quot;Delivery window&quot;, ChartSeriesKind.Timeline,
-            new[] { new ChartPoint(origin + 1, origin + 9) }).WithObservationId(0, new ChartObservationId(&quot;delivery-window&quot;)));
+            new[] { new ChartPoint(origin + 1, origin + 9) }).ObservationId(0, new ChartObservationId(&quot;delivery-window&quot;)));
         var build = ChartSeries.CreateGanttTask(new ChartSeriesId(&quot;build&quot;), &quot;Implementation&quot;, origin + 2, origin + 4, .65)
-            .WithObservationId(0, new ChartObservationId(&quot;implementation&quot;)); chart.AddSeries(build);
+            .ObservationId(0, new ChartObservationId(&quot;implementation&quot;)); chart.AddSeries(build);
         chart.AddSeries(ChartSeries.CreateStateTimelineLane(new ChartSeriesId(&quot;service&quot;), &quot;Service state&quot;, new[] {
             new ChartStateTimelineSegment(origin + 1, origin + 3, &quot;ready&quot;), new ChartStateTimelineSegment(origin + 4, origin + 7, &quot;review&quot;) },
-            summary: &quot;One source gap&quot;, group: &quot;Resources&quot;).WithObservationId(0, new ChartObservationId(&quot;ready-period&quot;)));
+            summary: &quot;One source gap&quot;, group: &quot;Resources&quot;).ObservationId(0, new ChartObservationId(&quot;ready-period&quot;)));
         chart.AddSeries(ChartSeries.CreateGanttLane(new ChartSeriesId(&quot;reviewers&quot;), &quot;Review activity&quot;, new[] {
             new ChartGanttLaneItem(origin + 2, origin + 6, &quot;review&quot;, &quot;Review&quot;), new ChartGanttLaneItem(origin + 3, null, &quot;ready&quot;, &quot;Follow-up&quot;) },
-            group: &quot;Resources&quot;, summary: &quot;Two overlapping items&quot;).WithObservationId(0, new ChartObservationId(&quot;review-item&quot;)));
+            group: &quot;Resources&quot;, summary: &quot;Two overlapping items&quot;).ObservationId(0, new ChartObservationId(&quot;review-item&quot;)));
         var gate = ChartSeries.CreateGanttMilestone(new ChartSeriesId(&quot;gate&quot;), &quot;Acceptance&quot;, origin + 8)
-            .WithObservationId(0, new ChartObservationId(&quot;acceptance&quot;)); chart.AddSeries(gate).AddGanttDependency(build, gate);
+            .ObservationId(0, new ChartObservationId(&quot;acceptance&quot;)); chart.AddSeries(gate).AddGanttDependency(build, gate);
         chart.AddSeries(ChartSeries.CreateGanttMarker(new ChartSeriesId(&quot;checkpoint&quot;), &quot;Current checkpoint&quot;, origin + 9));
-        chart.WithGanttToday(origin + 9);
-        chart.ConfigureXAxis(axis =&gt; axis.Reversed = reversed); chart.ConfigureYAxis(axis =&gt; axis.Reversed = reversed);
+        chart.Gantt(g =&gt; g.Today(origin + 9));
+        chart.XAxis(axis =&gt; axis.Reversed = reversed); chart.YAxis(axis =&gt; axis.Reversed = reversed);
         return chart;
     }
 }

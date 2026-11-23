@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.VisualBlocks;
 
 /// <summary>
 /// A dashboard card for people, workload, or ranked rows with avatar slots and progress rails.
 /// </summary>
+[Fluent]
 public sealed class WorkloadListBlock : FactualVisualBlock<WorkloadListBlock> {
     private readonly List<WorkloadListRow> _rows = new();
 
@@ -35,13 +37,6 @@ public sealed class WorkloadListBlock : FactualVisualBlock<WorkloadListBlock> {
         _rows.Add(new WorkloadListRow(name, subtitle, value, maximum, status, avatarText, displayValue, color, note));
         return this;
     }
-
-    /// <summary>Sets whether progress rails are shown.</summary>
-    public WorkloadListBlock WithProgressRails(bool enabled = true) { ShowProgressRails = enabled; return this; }
-
-
-    /// <summary>Sets whether row dividers are shown.</summary>
-    public WorkloadListBlock WithDividers(bool enabled = true) { ShowDividers = enabled; return this; }
 
 }
 
@@ -115,6 +110,7 @@ public enum ActivityTimelineItemKind {
 /// <summary>
 /// A dashboard activity feed with section labels, status nodes, connectors, and nested checklist rows.
 /// </summary>
+[Fluent]
 public sealed class ActivityTimelineBlock : FactualVisualBlock<ActivityTimelineBlock> {
     private readonly List<ActivityTimelineItem> _items = new();
 
@@ -126,12 +122,6 @@ public sealed class ActivityTimelineBlock : FactualVisualBlock<ActivityTimelineB
 
     /// <summary>Creates a new activity timeline block.</summary>
     public static ActivityTimelineBlock Create() => new();
-
-    /// <summary>Sets whether primary events render as card-like surfaces or compact inline rows.</summary>
-    public ActivityTimelineBlock WithEventSurfaces(bool enabled = true) {
-        ShowEventSurfaces = enabled;
-        return this;
-    }
 
     /// <summary>Adds a section label.</summary>
     public ActivityTimelineBlock AddSection(string label) {

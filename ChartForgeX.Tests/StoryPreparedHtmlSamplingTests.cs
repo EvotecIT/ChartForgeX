@@ -6,7 +6,7 @@ namespace ChartForgeX.Tests;
 public sealed class StoryPreparedHtmlSamplingTests {
     [Fact]
     public void LongPreparedHtmlUsesTheCallersFrameBudget() {
-        var story = VisualStory.Create("Explicit HTML sampling").WithSize(480, 320);
+        var story = VisualStory.Create("Explicit HTML sampling").Size(480, 320);
         for (var index = 0; index < 6; index++)
             story.Scene("scene" + index, "Chapter " + index, 60).Panel("result", new VisualStoryTextSurface("Chapter " + index));
         story.Outcome("ready", "Ready", "result");

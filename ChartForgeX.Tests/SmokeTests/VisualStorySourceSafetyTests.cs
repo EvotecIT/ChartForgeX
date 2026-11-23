@@ -7,7 +7,7 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void VisualStorySourceRenderingValidatesThemesAndBoundsGraphemes() {
         var oversizedElementStory = VisualStory.Create("Bounded source grapheme")
-            .WithSize(480, 320);
+            .Size(480, 320);
         oversizedElementStory.Scene("result", "Completed")
             .Panel(
                 "result",

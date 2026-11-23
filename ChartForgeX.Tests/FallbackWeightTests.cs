@@ -80,7 +80,7 @@ public sealed class FallbackWeightTests {
             FontRegistry.Register("CFX Static", Path.Combine(root, "language.ttf"), 400);
             FontRegistry.Register("CFX Variable", Path.Combine(root, "variable-true-type.ttf"), 400);
             var spec = FontSpec.FromFamily("CFX Static, CFX Variable"); spec.Weight = 900;
-            spec = spec.WithVariation("wght", 900);
+            spec = spec.Variation("wght", 900);
             var face = TypographyFontResolver.ResolveFace(spec);
             Assert.True(face.SynthesizeBold); // The static primary cannot apply the axis and lacks B.
             var glyphs = TextShaper.Shape(face.Font!, "B", 40);

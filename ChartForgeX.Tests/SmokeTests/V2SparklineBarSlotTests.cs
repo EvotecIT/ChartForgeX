@@ -27,7 +27,7 @@ public sealed class V2SparklineBarSlotTests {
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(300, 100), 0),
             frame: new VisualFrame(showLegend: false, showSurface: false, transparentBackground: true));
         var data = new SparklineData(slots, 0, 4);
-        var visual = new Sparkline(data).WithStyle(SparklineStyle.Bars).Prepare(context);
+        var visual = new Sparkline(data).Style(SparklineStyle.Bars).Smooth(false).Prepare(context);
         var observed = Enumerable.Range(0, slots.Length).Where(index => slots[index].HasValue).ToArray();
         var bars = XDocument.Parse(visual.ToSvg()).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "bar").ToArray();
         Assert.Equal(observed.Length, bars.Length);
@@ -56,7 +56,7 @@ public sealed class V2SparklineBarSlotTests {
     [Fact]
     public void VeryDenseSparseSlotsDoNotGrowToTheOrdinaryChartMinimumBarWidth() {
         var slots = new double?[10000]; slots[0] = 2; slots[slots.Length - 1] = 2;
-        var visual = new Sparkline(new SparklineData(slots, 0, 4)).WithStyle(SparklineStyle.Bars)
+        var visual = new Sparkline(new SparklineData(slots, 0, 4)).Style(SparklineStyle.Bars).Smooth(false)
             .Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(100, 100), 0),
                 frame: new VisualFrame(showLegend: false, showSurface: false, transparentBackground: true)));
         var regions = visual.Regions.Where(region => region.Role == "point").ToArray();
@@ -71,12 +71,12 @@ public sealed class V2SparklineBarSlotTests {
     [MemberData(nameof(Slots))]
     public void CanvasBarEmbeddingAlsoReservesMissingSlotsWithoutMovingNeighbours(double?[] slots) {
         var tile = new VisualCanvasInfoTileLayer(20, 20, 500, 150, "CPU", "Load", "2")
-            .WithSparkline(new SparklineData(slots, 0, 4), SparklineStyle.Bars);
+            .Sparkline(new SparklineData(slots, 0, 4), SparklineStyle.Bars);
         var canvas = VisualCanvas.Create(560, 210).AddLayer(tile);
         XElement MiniChart() => Assert.Single(XDocument.Parse(canvas.ToSvg()).Descendants(),
             element => (string?)element.Attribute("data-cfx-role") == "visual-canvas-info-tile-mini-chart");
         var sparse = MiniChart().Elements().Where(element => element.Name.LocalName == "rect").Skip(1).ToArray();
-        tile.WithSparkline(new SparklineData(Enumerable.Repeat<double?>(2, slots.Length), 0, 4), SparklineStyle.Bars);
+        tile.Sparkline(new SparklineData(Enumerable.Repeat<double?>(2, slots.Length), 0, 4), SparklineStyle.Bars);
         var full = MiniChart().Elements().Where(element => element.Name.LocalName == "rect").Skip(1).ToArray();
         var observed = Enumerable.Range(0, slots.Length).Where(index => slots[index].HasValue).ToArray();
         Assert.Equal(observed.Length, sparse.Length); Assert.Equal(slots.Length, full.Length);
@@ -90,7 +90,7 @@ public sealed class V2SparklineBarSlotTests {
     public void DenseSparseCanvasBarsKeepBothEndpointMarksInsideTheirMiniChart() {
         var slots = new double?[10000]; slots[0] = 2; slots[slots.Length - 1] = 2;
         var tile = new VisualCanvasInfoTileLayer(20, 20, 500, 150, "CPU", "Load", "2")
-            .WithSparkline(new SparklineData(slots, 0, 4), SparklineStyle.Bars);
+            .Sparkline(new SparklineData(slots, 0, 4), SparklineStyle.Bars);
         var canvas = VisualCanvas.Create(560, 210).AddLayer(tile);
         var group = Assert.Single(XDocument.Parse(canvas.ToSvg()).Descendants(),
             element => (string?)element.Attribute("data-cfx-role") == "visual-canvas-info-tile-mini-chart");

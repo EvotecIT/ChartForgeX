@@ -41,11 +41,11 @@ public static class QuadrantChartRecipe {
         var count = variant == "compact" ? 8 : projects.Length;
         var series = ChartSeries.CreateScatter(new ChartSeriesId("projects"), "Projects",
             projects.Take(count).Select(project => new ChartPoint(project.Effort, project.Impact)));
-        for (var index = 0; index < count; index++) series.WithPointLabel(index, projects[index].Name);
-        series.ConfigureMarkers(markers => { markers.Radius = 6; });
+        for (var index = 0; index < count; index++) series.PointLabel(index, projects[index].Name);
+        series.Markers(markers => { markers.Radius = 6; });
         var colors = VisualTheme.Graphite().Resolve(mode);
-        return Chart.Create().WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).WithLegend(false).WithDataLabels()
-            .WithXAxis("Effort (person-months)").WithYAxis("Impact (score)").AddSeries(series)
+        return Chart.Create().XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10)).Legend(false).DataLabels()
+            .XAxis(x => x.Title("Effort (person-months)")).YAxis(y => y.Title("Impact (score)")).AddSeries(series)
             .AddPlotRegion(new(colors.Status.Pass.Fill, xMaximum: 5, yMinimum: 5, label: "Quick wins", opacity: .14))
             .AddPlotRegion(new(colors.Palette.First(), xMinimum: 5, yMinimum: 5, label: "Major projects", opacity: .12))
             .AddPlotRegion(new(colors.Status.Medium.Fill, xMaximum: 5, yMaximum: 5, label: "Fill-ins", opacity: .12))

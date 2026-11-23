@@ -17,12 +17,4 @@ public sealed partial class Chart {
         ChartPyramidWeights.Total(values);
         return Add(name, ChartSeriesKind.Pyramid, values, color);
     }
-
-    /// <summary>Configures pyramid value encoding, orientation, geometric reversal and aspect ratio.</summary>
-    /// <remarks>Options can be configured before or after adding the pyramid series.</remarks>
-    public Chart ConfigurePyramid(Action<ChartPyramidOptions> configure) {
-        if (configure == null) throw new ArgumentNullException(nameof(configure));
-        Options.Pyramid = ChartOptionConfiguration.Configure(Options.Pyramid, configure, options => options.Clone());
-        return this;
-    }
 }

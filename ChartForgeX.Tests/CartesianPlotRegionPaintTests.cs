@@ -17,8 +17,8 @@ public sealed class CartesianPlotRegionPaintTests {
     public void AuthoredAxisColorStaysLiteralWhileCaptionSurfaceRetainsHostThemePolicy(double opacity) {
         var authored = ChartColor.FromHex("#2864B4");
         var tokens = new VisualDesignTokens { Axis = authored };
-        var chart = Chart.Create().WithHeader(false).WithLegend(false).WithAxes(true).WithGrid(false).WithDataLabels(false)
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+        var chart = Chart.Create().ShowHeader(false).Legend(false).Axes(true).ShowGrid(false).DataLabels(false)
+            .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
             .AddScatter("Observed", new[] { new ChartPoint(1, 1), new ChartPoint(9, 9) })
             .AddPlotRegion(new ChartPlotRegion(authored, label: "Authored", opacity: opacity));
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(520, 300)), new VisualTheme(tokens, tokens),

@@ -16,8 +16,8 @@ public sealed partial class ColorScalePartialDomainNativeTests {
     private static Chart Create(string family, double?[] values, int width = 800, bool dark = false) {
         const string font = "CFX Partial Color Carlito";
         FontRegistry.Register(font, Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
-        var chart = Chart.Create().WithSize(width, 480).WithDataLabels(false).WithPngSupersampling(1)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(font), dark ? ThemeMode.Dark : ThemeMode.Light);
+        var chart = Chart.Create().Size(width, 480).DataLabels(false).Png(p => p.SupersamplingScale(1))
+            .Theme(VisualTheme.Graphite().WithFontFamily(font)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         chart.Options.TransparentBackground = false; chart.Options.ShowCard = false; chart.Options.ShowPlotBackground = false; chart.Options.ShowGrid = false;
         if (family is "scatter" or "bubble") {
             var initial = values.Length > 0 ? values : new double?[] { 0 };
@@ -27,7 +27,7 @@ public sealed partial class ColorScalePartialDomainNativeTests {
                 if (family == "bubble") chart.Series[0].ReplaceBubbles(Array.Empty<ChartBubble>());
                 else chart.Series[0].Points.Clear();
             }
-            chart.WithXAxisBounds(0, 5).WithYAxisBounds(0, 35);
+            chart.XAxis(x => x.Bounds(0, 5)).YAxis(y => y.Bounds(0, 35));
         } else if (family is "heatmap" or "hexbin") {
             // A refresh may clear observations while the row retains its declared columns.
             var initial = values.Any(value => value.HasValue) ? values : values.Select((value, index) => index == 0 ? (double?)0 : null).ToArray();
@@ -43,7 +43,7 @@ public sealed partial class ColorScalePartialDomainNativeTests {
             var leaves = values.Select((value, index) => new ChartHierarchyItem("leaf-" + index, "Observation " + index,
                 family == "sunburst" ? "root" : null, index + 1, value));
             if (family == "sunburst") chart.AddSunburst("Observed", new[] { new ChartHierarchyItem("root", "All") }.Concat(leaves));
-            else chart.AddTreemap("Observed", leaves).ConfigureTreemap(options => options.ShowGroupLabels = false);
+            else chart.AddTreemap("Observed", leaves).Treemap(options => options.ShowGroupLabels = false);
         } else {
             var codes = new[] { "CA", "NY", "TX", "WA" };
             var items = values.Select((value, index) => (value, index)).Where(item => item.value.HasValue)
@@ -52,24 +52,24 @@ public sealed partial class ColorScalePartialDomainNativeTests {
             if (family == "region-map") chart.AddRegionMap("Observed", ChartMapCatalog.Get("us-states"), initial);
             else chart.AddTileMap("Observed", ChartTileMapCatalog.Get("us-states"), initial);
             if (items.Length == 0) chart.Series[0].ReplaceRegionValues(Array.Empty<ChartRegionMapItem>());
-            chart.WithMapLabels(false);
+            chart.Map(m => m.ShowLabels(false));
         }
         return chart;
     }
 
     private static void SetScale(Chart chart, string family, ChartColorScale scale) {
-        if (family is "scatter" or "bubble") chart.Series[0].WithColorScale(scale);
-        else if (family is "heatmap" or "hexbin" or "calendar") chart.WithHeatmapColorScale(scale);
-        else if (family == "sunburst") chart.ConfigureSunburst(options => options.ColorScale = scale);
-        else if (family == "treemap") chart.ConfigureTreemap(options => options.ColorScale = scale);
-        else chart.WithMapColorScale(scale);
+        if (family is "scatter" or "bubble") chart.Series[0].ColorScale(scale);
+        else if (family is "heatmap" or "hexbin" or "calendar") chart.Heatmap(h => h.ColorScale(scale));
+        else if (family == "sunburst") chart.Sunburst(options => options.ColorScale = scale);
+        else if (family == "treemap") chart.Treemap(options => options.ColorScale = scale);
+        else chart.Map(m => m.ColorScale(scale));
     }
 
     private static ChartColorDimensionOptions Dimension(Chart chart, string family) => family switch {
         "scatter" or "bubble" => chart.Series[0].ColorDimension,
-        "heatmap" or "hexbin" or "calendar" => chart.Options.HeatmapColorDimension,
+        "heatmap" or "hexbin" or "calendar" => chart.Options.Heatmap.ColorDimension,
         "sunburst" => chart.Options.Sunburst.ColorDimension, "treemap" => chart.Options.Treemap.ColorDimension,
-        _ => chart.Options.MapColorDimension
+        _ => chart.Options.Map.ColorDimension
     };
     private static string Prefix(string family) => family switch {
         "scatter" or "bubble" => "color-scale-0", "heatmap" or "hexbin" => "heatmap-scale", "calendar" => "calendar-scale",

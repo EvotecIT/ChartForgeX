@@ -190,16 +190,15 @@ public sealed partial class InteractiveNativeXViewportBrowserTests {
         private Chart Model(bool secondary) {
             var primary = new ChartSeries(new ChartSeriesId("samples"), "Samples", ChartSeriesKind.Line,
                 Enumerable.Range(0, 13).Select(index => new ChartPoint(index, 20 + index * 4)));
-            for (var index = 0; index < 13; index++) primary.WithObservationId(index, new ChartObservationId("sample-" + index));
-            primary.ConfigureMarkers(options => options.Enabled = true);
+            for (var index = 0; index < 13; index++) primary.ObservationId(index, new ChartObservationId("sample-" + index));
+            primary.Markers(options => options.Enabled = true);
             var reference = new ChartSeries(new ChartSeriesId("reference"), "Reference", ChartSeriesKind.StepLine,
                 new[] { new ChartPoint(0, 30), new ChartPoint(12, 30) });
-            if (secondary) reference.UseSecondaryValueAxis();
-            var chart = Chart.Create().WithSize(800, 440).WithFontFamily(BrowserProofFonts.Family).WithTitle(Id)
-                .WithXAxisBounds(0, 12).WithYAxisBounds(_logarithmicY ? 1 : 0, _logarithmicY ? 1000 : 100)
-                .WithYAxisScale(_logarithmicY ? ChartScaleKind.Logarithmic : ChartScaleKind.Linear)
+            if (secondary) reference.SecondaryAxis();
+            var chart = Chart.Create().Size(800, 440).FontFamily(BrowserProofFonts.Family).Title(Id)
+                .XAxis(x => x.Bounds(0, 12)).YAxis(y => y.Bounds(_logarithmicY ? 1 : 0, _logarithmicY ? 1000 : 100).Scale(_logarithmicY ? ChartScaleKind.Logarithmic : ChartScaleKind.Linear))
                 .AddSeries(primary).AddSeries(reference);
-            if (secondary) chart.WithSecondaryYAxisBounds(0, 100);
+            if (secondary) chart.SecondaryYAxis(s => s.Bounds(0, 100));
             return chart;
         }
         private void ConfigureSection(HtmlChartInteractionOptions options) {

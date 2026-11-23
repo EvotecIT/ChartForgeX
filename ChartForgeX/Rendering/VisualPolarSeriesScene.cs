@@ -41,7 +41,7 @@ internal static class VisualPolarSeriesScene {
         var width = VisualReferenceStroke.PaintedWidth(stroke, color, VisualSeriesStroke.Width(series, context.Theme.SeriesStrokeWidth));
         if (width <= 0) return 0;
         var actual = ChartColorMath.WithOpacity(stroke?.Color ?? color, stroke?.Opacity ?? 1);
-        return ChartLineVisualLayers.Build(actual, width, chart.Options.LineVisualStyle).Where(layer => layer.IsVisible)
+        return ChartLineVisualLayers.Build(actual, width, chart.Options.Lines.VisualStyle).Where(layer => layer.IsVisible)
             .Select(layer => layer.StrokeWidth).DefaultIfEmpty(0).Max();
     }
 }

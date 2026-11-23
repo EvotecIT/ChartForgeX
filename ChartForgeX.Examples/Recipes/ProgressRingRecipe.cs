@@ -7,9 +7,9 @@ public static class ProgressRingRecipe {
         var points = (variant == "sparse" ? new[] { 1, 3, 6 } : Enumerable.Range(1, 6))
             .Select(index => new ChartPoint(index, 20 + index * 7 % 29));
         var completion = new ChartSeries(new ChartSeriesId("completion"), "Completion", ChartSeriesKind.ProgressRing, points);
-        var chart = Chart.Create().WithXLabels("Received", "Qualified", "Reviewed", "Verified", "Approved", "Complete")
-            .AddSeries(completion).WithProgressRingCenterLabel();
-        if (variant == "options") chart.WithRadialProgressRadiusScale(.85).WithRadialProgressStrokeScale(1.2);
+        var chart = Chart.Create().XLabels("Received", "Qualified", "Reviewed", "Verified", "Approved", "Complete")
+            .AddSeries(completion).Progress(p => p.ShowRingCenterLabel());
+        if (variant == "options") chart.Progress(p => p.RadialRadiusScale(.85).RadialStrokeScale(1.2));
         return chart;
     }
 }

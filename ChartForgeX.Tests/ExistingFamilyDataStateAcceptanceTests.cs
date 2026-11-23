@@ -19,7 +19,7 @@ public sealed class ExistingFamilyDataStateAcceptanceTests {
     public void CompleteRangeBarFramesRetainEverySignedReversedZeroAndSparseInterval(string variant, int width, ThemeMode mode) {
         var chart = RangeBarRecipe.Create(variant); var series = Assert.Single(chart.Series);
         var source = series.Intervals.ToArray();
-        for (var index = 0; index < source.Length; index++) series.WithObservationId(index, new ChartObservationId("interval-" + index));
+        for (var index = 0; index < source.Length; index++) series.ObservationId(index, new ChartObservationId("interval-" + index));
         var prepared = Prepare(chart, width, mode); var points = Points(prepared);
         Assert.Equal(variant == "sparse-catalog" ? 3 : 24, points.Length);
         for (var index = 0; index < source.Length; index++) {
@@ -51,7 +51,7 @@ public sealed class ExistingFamilyDataStateAcceptanceTests {
     public void DenseCompletePairedFramesRetainRawPairsTiesAndBothSidesOfTheirExplicitGap(ChartSeriesKind kind, int width, ThemeMode mode) {
         var chart = kind == ChartSeriesKind.RangeBand ? RangeBandRecipe.Create("dense") : DifferenceAreaRecipe.Create("dense");
         var series = Assert.Single(chart.Series);
-        for (var index = 0; index < 32; index++) series.WithObservationId(index, new ChartObservationId("pair-" + index));
+        for (var index = 0; index < 32; index++) series.ObservationId(index, new ChartObservationId("pair-" + index));
         var prepared = Prepare(chart, width, mode); var points = Points(prepared);
         Assert.Equal(32, points.Length); Assert.Equal(32, series.SourcePointCount);
         for (var index = 0; index < points.Length; index++) {

@@ -18,8 +18,8 @@ var editor = StorySourceTimeline.Create(StorySourceText.Create("", "csharp"))
     .Pause(TimeSpan.FromSeconds(2));
 
 var story = VisualStory.Create("Write and run")
-    .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
-    .WithFormat(VisualStoryFormat.Widescreen);
+    .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
+    .Format(VisualStoryFormat.Widescreen);
 story.Scene("write", "Write the source", 4)
     .Panel("source", new VisualStorySourceSurface(editor,
         options: new VisualStorySourceOptions("demo.cs", fontSize: 18)));
@@ -77,11 +77,11 @@ For a desktop appearance, pair `VisualStoryThemes.MacOS()`, `Windows()` or `Linu
 ```csharp
 var style = VisualStoryStyleOptions.MacOS();
 style.Syntax!.Variable = ChartColor.FromHex("#74C7FF");
-story.WithTheme(VisualStoryThemes.MacOS(), ThemeMode.Dark)
-    .WithStyle(style);
+story.Theme(VisualStoryThemes.MacOS()).ThemeMode(ThemeMode.Dark)
+    .Style(style);
 ```
 
-`story.Style.WindowStyle` selects the chrome independently of the palette; `Minimal` uses a restrained title and `None` hides the title bar. The style also controls `WindowHeader`, `BackgroundEnd` and `Syntax`. Change the common background through a new theme snapshot, for example `theme.Configure(builder => builder.Dark.Background = ChartColor.FromHex("#101827"))`, then assign that snapshot with `WithTheme`. When `Syntax` is omitted, source colors derive from the shared palette with a readable foreground fallback. Explicit syntax colors remain caller choices.
+`story.Style.WindowStyle` selects the chrome independently of the palette; `Minimal` uses a restrained title and `None` hides the title bar. The style also controls `WindowHeader`, `BackgroundEnd` and `Syntax`. Change the common background through a new theme snapshot, for example `theme.Configure(builder => builder.Dark.Background = ChartColor.FromHex("#101827"))`, then assign that snapshot with `Theme`. When `Syntax` is omitted, source colors derive from the shared palette with a readable foreground fallback. Explicit syntax colors remain caller choices.
 
 Replay surfaces without an explicit theme inherit the story colors with every window style. To customize one separately, pass a `VisualTheme` and `themeMode` to `VisualStoryReplaySurface`; an optional `TerminalStyleOptions` supplies local header and cursor colors. Its nullable `Theme` property uses `null` for inheritance. Authored terminal tabs keep their own themes and modes. Preparation retains immutable theme snapshots and copies mutable style options, including syntax colors.
 
@@ -101,16 +101,16 @@ Configure a terminal's theme and style before authoring its commands. `TerminalT
 
 ```csharp
 var terminal = TerminalStory.Create()
-    .WithTheme(TerminalThemes.PowerShell(), ThemeMode.Dark)
-    .WithStyle(new TerminalStyleOptions {
+    .Theme(TerminalThemes.PowerShell()).ThemeMode(ThemeMode.Dark)
+    .Style(new TerminalStyleOptions {
         Cursor = ChartColor.FromHex("#74C7FF")
     })
-    .WithWindowStyle(TerminalWindowStyle.WindowsTerminal)
+    .WindowStyle(TerminalWindowStyle.WindowsTerminal)
     .Command("Get-Date")
     .Output("2026-10-13", TerminalTextTone.Success);
 ```
 
-`WithInitialTab`, `DeclareTab` and `OpenTab` accept a theme, explicit `themeMode` and local style for each session. Changing a palette does not choose window chrome or infer a mode from its brightness. Stories, terminals and canvases default to dark mode; charts and visual grids default to light mode. Pass the mode explicitly when sharing one theme across them.
+`InitialTab`, `DeclareTab` and `OpenTab` accept a theme, explicit `themeMode` and local style for each session. Changing a palette does not choose window chrome or infer a mode from its brightness. Stories, terminals and canvases default to dark mode; charts and visual grids default to light mode. Pass the mode explicitly when sharing one theme across them.
 
 Pass `VisualStoryTerminalOptions` to an authored terminal surface to select a fixed-font viewport. Recorded replay surfaces use this viewport by default. It wraps and scrolls logical lines against the panel width without scaling a whole terminal image or retaining line breaks from the original terminal window. `FontSize`, `HistoryLines` and `Wrap` are explicit. The history limit bounds logical display lines per tab in both authored and recorded surfaces; the complete transcript retains every line. Authored tab transitions preserve both sessions with their configured opacity. A panel that cannot fit a readable line fails with an instruction to enlarge or rebalance it.
 
@@ -126,7 +126,7 @@ var replay = recorded.Trim(TimeSpan.Zero, TimeSpan.FromSeconds(40))
     .CompressPauses(TimeSpan.FromSeconds(2))
     .Explain(TimeSpan.FromSeconds(1), "The recorded wait is shortened.");
 
-var demonstration = VisualStory.Create("Validation replay").WithFormat(VisualStoryFormat.Widescreen);
+var demonstration = VisualStory.Create("Validation replay").Format(VisualStoryFormat.Widescreen);
 demonstration.Scene("run", "Run the validation", replay.Duration.TotalSeconds)
     .Panel("terminal", new VisualStoryReplaySurface(replay));
 demonstration.Outcome("result", "24 checks passed", "terminal");
@@ -139,7 +139,7 @@ Events must be ordered and fit the declared duration. A replay supports 4,096 ev
 
 Run `dotnet run --project ChartForgeX.Examples -- --story-replay-only --output ./replay-output` for landscape, square and portrait demonstrations. These examples use authored resolved events so their timing and output remain reproducible.
 
-`WithFormat` supplies landscape, square and portrait sizes and stacks split panels in portrait. `WithSize` accepts logical widths from 480 to 3840 pixels and heights from 320 to 2160 pixels. It rejects dimensions outside those bounds; choose a supported artboard size before adapting it to a host. `WithPanelReflow` controls whether a tall viewport changes a split into a stack. Font size remains explicit, so choose a smaller readable size for a narrow source panel instead of relying on whole-image scaling.
+`Format` supplies landscape, square and portrait sizes and stacks split panels in portrait. `Size` accepts logical widths from 480 to 3840 pixels and heights from 320 to 2160 pixels. It rejects dimensions outside those bounds; choose a supported artboard size before adapting it to a host. `ReflowPanels` controls whether a tall viewport changes a split into a stack. Font size remains explicit, so choose a smaller readable size for a narrow source panel instead of relying on whole-image scaling.
 
 ## Streaming and browser controls
 

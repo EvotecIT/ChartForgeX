@@ -14,7 +14,7 @@ public sealed class StateTimelineSourceCountTests {
             new ChartStateTimelineSegment(1, 2, "up", "First"),
             new ChartStateTimelineSegment(2, 3, "up", "Middle")
         };
-        var chart = Chart.Create().WithStateCategories(new ChartStateCategory("up", "Up", ChartColor.FromHex("#168257")));
+        var chart = Chart.Create().StateCategories(new ChartStateCategory("up", "Up", ChartColor.FromHex("#168257")));
         if (standalone) chart.AddSeries(ChartSeries.CreateStateTimelineLane(new ChartSeriesId("service"), "Service", segments));
         else chart.AddStateTimelineLane("Service", segments);
         var series = chart.Series[0];

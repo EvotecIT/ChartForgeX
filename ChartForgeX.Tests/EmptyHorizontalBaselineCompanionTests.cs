@@ -12,12 +12,12 @@ public sealed class EmptyHorizontalBaselineCompanionTests {
     [Fact]
     public void EmptyVerticalBarDoesNotChangeSharedHorizontalLineCategoryBounds() {
         var chart = Chart.Create().AddLine("Readings", new[] { new ChartPoint(1, 20), new ChartPoint(2, 40) });
-        chart.Options.LineOrientation = ChartOrientation.Horizontal;
+        chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
         var expected = ChartRange.FromChart(chart);
         chart.AddBar("Empty", Array.Empty<ChartPoint>());
-        ChartGrid.Create().Add(chart).WithSharedYAxis();
-        Assert.Equal(expected.MinY, chart.Options.YAxis.Minimum);
-        Assert.Equal(expected.MaxY, chart.Options.YAxis.Maximum);
+        ChartGrid.Create().Add(chart).ShareYAxis();
+        Assert.Equal(expected.MinY, chart.Options.YAxis.Min);
+        Assert.Equal(expected.MaxY, chart.Options.YAxis.Max);
     }
 
     [Theory]
@@ -27,11 +27,11 @@ public sealed class EmptyHorizontalBaselineCompanionTests {
     public void EmptyBaselineCompanionDoesNotLowerALogarithmicLineDomain(int physicalAxis) {
         var chart = Chart.Create().AddLine("Readings", new[] { new ChartPoint(1, 20), new ChartPoint(2, 40) });
         if (physicalAxis == 0) {
-            chart.Options.LineOrientation = ChartOrientation.Horizontal;
+            chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
             chart.Options.XAxis.Scale = ChartScaleKind.Logarithmic;
         } else if (physicalAxis == 1) chart.Options.YAxis.Scale = ChartScaleKind.Logarithmic;
         else {
-            chart.Series[0].UseSecondaryValueAxis();
+            chart.Series[0].SecondaryAxis();
             chart.Options.SecondaryYAxis.Scale = ChartScaleKind.Logarithmic;
         }
         ChartRange Domain() {
@@ -42,7 +42,7 @@ public sealed class EmptyHorizontalBaselineCompanionTests {
         if (physicalAxis == 0) chart.AddHorizontalBar("Empty", Array.Empty<ChartPoint>());
         else {
             chart.AddBar("Empty", Array.Empty<ChartPoint>());
-            if (physicalAxis == 2) chart.Series[1].UseSecondaryValueAxis();
+            if (physicalAxis == 2) chart.Series[1].SecondaryAxis();
         }
         var actual = Domain();
         Assert.Equal(expected.MinX, actual.MinX); Assert.Equal(expected.MaxX, actual.MaxX);
@@ -55,10 +55,10 @@ public sealed class EmptyHorizontalBaselineCompanionTests {
     [InlineData(true)]
     public async Task EmptyBaselineCompanionDoesNotChangePopulatedHorizontalLineDomain(bool negative) {
         var sign = negative ? -1 : 1;
-        var chart = Chart.Create().WithHeader(false).WithLegend(false).WithDataLabels(false).WithLineMarkers(ChartLineMarkerMode.None)
+        var chart = Chart.Create().ShowHeader(false).Legend(false).DataLabels(false).Lines(l => l.MarkerMode(ChartLineMarkerMode.None))
             .AddLine("Readings", new[] { new ChartPoint(1, sign * 20), new ChartPoint(2, sign * 40) });
         chart.Series[0].Color = ChartColor.FromHex("#E11D48");
-        chart.Options.LineOrientation = ChartOrientation.Horizontal;
+        chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
         var expected = ChartRange.FromChart(chart);
         var before = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         chart.AddHorizontalBar("Empty", Array.Empty<ChartPoint>());

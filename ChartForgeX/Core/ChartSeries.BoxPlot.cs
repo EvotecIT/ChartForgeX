@@ -34,7 +34,7 @@ public sealed partial class ChartSeries {
 
     /// <summary>Atomically configures and recalculates raw distributions while preserving source and group identities.</summary>
     /// <remarks>The callback receives a detached candidate; a failed callback or calculation leaves installed state unchanged.</remarks>
-    public ChartSeries ConfigureBoxPlotStatistics(Action<ChartBoxPlotStatisticsOptions> configure) {
+    public ChartSeries BoxPlotStatistics(Action<ChartBoxPlotStatisticsOptions> configure) {
         RequireRawBoxPlot();
         var options = ChartOptionConfiguration.Configure(_boxPlotStatistics, configure, value => value.Clone());
         var results = ChartBoxPlotStatistics.Calculate(BoxPlotSourceGroups, options);
@@ -75,7 +75,7 @@ public sealed partial class ChartSeries {
     }
 
     /// <summary>Assigns a unique identity to an existing raw sample group.</summary>
-    public ChartSeries WithBoxPlotGroupId(int groupIndex, ChartObservationId id) {
+    public ChartSeries BoxPlotGroupId(int groupIndex, ChartObservationId id) {
         RequireRawBoxPlot(); _ = id.Value;
         if (groupIndex < 0 || groupIndex >= BoxPlotSourceGroups.Count) throw new ArgumentOutOfRangeException(nameof(groupIndex));
         foreach (var entry in _boxPlotGroupIds)
@@ -84,7 +84,7 @@ public sealed partial class ChartSeries {
     }
 
     /// <summary>Atomically replaces raw group identities with exactly one unique identity per group.</summary>
-    public ChartSeries WithBoxPlotGroupIds(IEnumerable<ChartObservationId> ids) {
+    internal ChartSeries SetBoxPlotGroupIds(IEnumerable<ChartObservationId> ids) {
         RequireRawBoxPlot();
         if (ids == null) throw new ArgumentNullException(nameof(ids));
         var candidate = ids.ToArray(); var unique = new HashSet<ChartObservationId>();

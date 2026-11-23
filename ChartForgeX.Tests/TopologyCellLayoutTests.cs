@@ -120,7 +120,7 @@ public sealed class TopologyCellLayoutTests {
     [InlineData(TopologyCellGlyphSet.Unicode)]
     [InlineData(TopologyCellGlyphSet.Ascii)]
     public void Paint_WideCharacters_KeepTheirTwoCells(TopologyCellGlyphSet glyphs) {
-        var chart = TopologyChart.Create().WithLayout(TopologyLayoutMode.Layered, TopologyLayoutDirection.LeftToRight)
+        var chart = TopologyChart.Create().LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddAutoNode("a", "東京 DC").AddAutoNode("b", "Zürich").AddEdge("ab", "a", "b", "同期");
         var canvas = TopologyCellLayout.Create(chart.Prepare()).Paint(new TopologyCellPaintOptions { Glyphs = glyphs });
 

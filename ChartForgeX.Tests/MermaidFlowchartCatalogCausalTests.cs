@@ -40,7 +40,7 @@ public sealed class MermaidFlowchartCatalogCausalTests {
         // This phase requires the composed Actor0-26 prerequisite; it does not assume a universal envelope version.
         for (var value = 0; value <= 26; value++) {
             Assert.True(Enum.IsDefined(typeof(TopologyNodeShape), value));
-            var chart = TopologyChart.Create().WithTitle("").WithViewport(380,230,12).WithLegend(null);
+            var chart = TopologyChart.Create().Title("").Viewport(new TopologyViewport(380, 230, 12)).Legend((TopologyLegend?)null);
             chart.Nodes.Add(new TopologyNode { Id="shape",Label="Native caption",X=30,Y=25,Width=180,Height=110,
                 Shape=(TopologyNodeShape)value,ShowStatusBadge=false,PreserveDisplayModeSize=true,FitLabelToContent=true });
             Capture(chart.ToVisualArtifact(), "flowchart-catalog-ordinary-native-" + value);

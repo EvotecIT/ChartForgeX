@@ -87,8 +87,8 @@ public sealed class TopologyHeaderMeasurementPolicyTests : IDisposable {
         Assert.Equal(44, original[0].X, 6);
     }
 
-    private static TopologyChart Fixture() => TopologyChart.Create().WithViewport(400, 300, 16).WithLegend(null)
-        .WithTheme(VisualTheme.Graphite().WithFontFamily(Family))
+    private static TopologyChart Fixture() => TopologyChart.Create().Viewport(new TopologyViewport(400, 300, 16)).Legend((TopologyLegend?)null)
+        .Theme(VisualTheme.Graphite().WithFontFamily(Family))
         .AddGroup("service", new string('i', 20), 32, 40, 300, 180)
         .AddNode("member", "Member", 110, 49, TopologyNodeKind.Generic, groupId: "service", width: 20, height: 20)
         .AddNode("target", "Target", 250, 150, TopologyNodeKind.Generic, width: 20, height: 10)

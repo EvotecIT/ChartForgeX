@@ -15,14 +15,13 @@ public sealed partial class InteractiveLegendOverflowBrowserTests {
     [InlineData(true)]
     public async Task OmittedPointAndNamedNodeCommandsRetainTheirNativeTargetIdentity(bool hierarchy) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(680, 380).WithLegend().WithPointLegend().WithLegendPosition(ChartLegendPosition.Right)
-            .WithLegendBudget(maximumRows: 1).WithTheme(VisualTheme.Graphite());
+        var chart = Chart.Create().Size(680, 380).Legend().Legend(l => l.ShowPoints().Position(ChartLegendPosition.Right).MaxRows(1)).Theme(VisualTheme.Graphite());
         if (hierarchy) chart.AddSeries(ChartSeries.CreateTreemap(new ChartSeriesId("entries"), "Entries",
             Enumerable.Range(0, 8).Select(index => new ChartHierarchyItem("node-" + index, "Repeated name", value: index + 1))));
         else {
             var series = ChartSeries.CreateBar(new ChartSeriesId("entries"), "Entries",
                 Enumerable.Range(0, 8).Select(index => new ChartPoint(index, index * 2)));
-            for (var index = 0; index < 8; index++) series.WithObservationId(index, new ChartObservationId("item-" + index));
+            for (var index = 0; index < 8; index++) series.ObservationId(index, new ChartObservationId("item-" + index));
             chart.AddSeries(series);
         }
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit), 390, 900);
@@ -99,8 +98,7 @@ public sealed partial class InteractiveLegendOverflowBrowserTests {
             var day = new DateTime(2025, 1, 1);
             var states = Enumerable.Range(0, 8).Select(index => new ChartStateCategory("state-" + index, "State " + index,
                 ChartColor.FromRgb((byte)(20 + index * 20), 80, 140))).ToArray();
-            chart = Chart.Create().WithSize(680, 380).WithLegend().WithLegendPosition(ChartLegendPosition.Right)
-                .WithLegendBudget(maximumRows: 1).WithStateCategories(states)
+            chart = Chart.Create().Size(680, 380).Legend().Legend(l => l.Position(ChartLegendPosition.Right).MaxRows(1)).StateCategories(states)
                 .AddStateTimelineLane("Lane", new[] { new ChartStateTimelineSegment(day, day.AddHours(1), "state-0") });
         } else chart = DenseSeries(false, count: 8);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {

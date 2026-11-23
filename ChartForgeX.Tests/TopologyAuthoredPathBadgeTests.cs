@@ -11,7 +11,7 @@ namespace ChartForgeX.Tests;
 [Trait("BrowserSuite", "Compatibility")]
 public sealed class TopologyAuthoredPathBadgeTests {
     private static TopologyChart Ordinary() {
-        var chart = TopologyChart.Create().WithTheme(ChartForgeX.Themes.VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).WithId("handoff").WithViewport(720, 420, 24);
+        var chart = TopologyChart.Create().Theme(ChartForgeX.Themes.VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).Id("handoff").Viewport(new TopologyViewport(720, 420, 24));
         chart.AddNode("gateway", "Gateway", 60, 70, width: 200, height: 160);
         chart.AddNode("worker", "Worker", 450, 70, width: 200, height: 160);
         chart.AddEdge("dispatch", "gateway", "worker", "Dispatch", direction: VisualLinkDirection.Forward);

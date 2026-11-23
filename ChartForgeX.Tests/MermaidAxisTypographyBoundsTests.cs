@@ -22,9 +22,9 @@ public sealed class MermaidAxisTypographyBoundsTests {
     [InlineData(true, true, 900)]
     [InlineData(true, true, 320)]
     public async Task MaximumFontsRetainAuthoredCategoriesAndNumericScale(bool horizontal, bool dark, int width) {
-        var chart = horizontal ? Chart.Create().WithTheme(VisualTheme.Graphite().Configure(builder => builder.Typography = new VisualTypography(builder.Typography.Family, titleSize: 480, subtitleSize: 320, axisTitleSize: 256, axisSize: 256, legendSize: 256, dataLabelSize: 256)), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithTitle("Horizontal bars").WithSize(width, 520).WithXLabels("Jan", "Feb", "Mar")
-            .WithXAxis("Count").WithYAxis("Month").WithXAxisBounds(0, 100)
+        var chart = horizontal ? Chart.Create().Theme(VisualTheme.Graphite().Configure(builder => builder.Typography = new VisualTypography(builder.Typography.Family, titleSize: 480, subtitleSize: 320, axisTitleSize: 256, axisSize: 256, legendSize: 256, dataLabelSize: 256))).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Title("Horizontal bars").Size(width, 520).XLabels("Jan", "Feb", "Mar")
+            .XAxis(x => x.Title("Count")).YAxis(y => y.Title("Month")).XAxis(x => x.Bounds(0, 100))
             .AddHorizontalBar("Values", new[] { new ChartPoint(1, 20), new ChartPoint(2, 50), new ChartPoint(3, 80) })
             : MermaidVerticalChart(width, dark);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -81,6 +81,6 @@ public sealed class MermaidAxisTypographyBoundsTests {
             + "\nx-axis Month [Jan,Feb,Mar]\ny-axis Count 0 --> 100\nbar [20,50,80]";
         var rendered = MermaidRenderer.Render(source);
         Assert.False(rendered.HasErrors);
-        return Assert.IsType<Chart>(rendered.Artifact!.Model).WithSize(width, 520);
+        return Assert.IsType<Chart>(rendered.Artifact!.Model).Size(width, 520);
     }
 }

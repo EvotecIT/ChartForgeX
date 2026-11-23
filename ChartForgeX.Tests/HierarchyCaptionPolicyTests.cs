@@ -29,13 +29,13 @@ public sealed class HierarchyCaptionPolicyTests {
         AssertArcInkInsideNativeMarks(prepared);
         var source = chart.Series[0].HierarchyItems.Select(item => (item.Id, item.ParentId, item.Label, item.Value)).ToArray();
         var frozenSvg = prepared.ToSvg(); var frozenPng = prepared.ToPng();
-        chart.ConfigureSunburst(options => options.CurvedLabels = false);
+        chart.Sunburst(options => options.CurvedLabels = false);
         var ordinary = chart.Prepare(context);
         Assert.DoesNotContain(ordinary.Scene.Nodes.OfType<VisualSceneGroup>(), group => group.Metadata.ContainsKey("data-cfx-caption-placement"));
         Assert.Equal(source, chart.Series[0].HierarchyItems.Select(item => (item.Id, item.ParentId, item.Label, item.Value)));
         Assert.Equal(prepared.Regions.Select(region => (region.Id, region.Bounds, region.Label)), ordinary.Regions.Select(region => (region.Id, region.Bounds, region.Label)));
         Assert.Equal(frozenSvg, prepared.ToSvg()); Assert.Equal(frozenPng, prepared.ToPng());
-        var subset = chart.ConfigureSunburst(options => options.CurvedLabels = true).PrepareHierarchy(context, new ChartHierarchyView("operations"));
+        var subset = chart.Sunburst(options => options.CurvedLabels = true).PrepareHierarchy(context, new ChartHierarchyView("operations"));
         ScatterBubbleColorRenderingTests.Capture(subset, "sunburst-curved-selected-root-" + width + "-" + mode);
         // The selected root's two equal children centre on vertical tangents. A complete
         // curved run would turn some clusters upside down, so ordinary placement is required.
@@ -59,13 +59,13 @@ public sealed class HierarchyCaptionPolicyTests {
     [InlineData("secondary")]
     [InlineData("multiline")]
     public void UnsupportedCurvedRunsUseDiagnosedWholeCaptionFallback(string kind) {
-        var chart = Chart.Create().WithLegend(false).WithDataLabels().AddSunburst("Names", new[] {
+        var chart = Chart.Create().Legend(false).DataLabels().AddSunburst("Names", new[] {
             new ChartHierarchyItem("root", "All"), new ChartHierarchyItem("target", kind == "joining" ? "العربية" : kind == "multiline" ? "Two\nlines" : "Target", "root", 1)
-        }).ConfigureSunburst(options => {
+        }).Sunburst(options => {
             options.CurvedLabels = true;
             if (kind == "secondary") options.SecondaryLabelFormatter = context => context.Item.Id == "target" ? "Detail" : null;
         });
-        if (kind == "decorated") chart.Series[0].ConfigureDataLabelStyle(style => style.Underline = true);
+        if (kind == "decorated") chart.Series[0].DataLabelStyle(style => style.Underline = true);
         var prepared = chart.Prepare(Context(520, ThemeMode.Light));
         Assert.DoesNotContain(prepared.Scene.Nodes.OfType<VisualSceneGroup>(), group => group.Metadata.ContainsKey("data-cfx-caption-placement"));
         Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "hierarchy.curved-label-fallback");
@@ -97,13 +97,13 @@ public sealed class HierarchyCaptionPolicyTests {
     [InlineData(ThemeMode.Dark)]
     public void TreemapPrimaryFloorFitsCompleteNamesBeforeOptionalEllipsisAndKeepsRawFacts(ThemeMode mode) {
         const string name = "Regional reconciliation";
-        var chart = Chart.Create().WithLegend(false).WithDataLabels().AddTreemap("Teams", new[] {
+        var chart = Chart.Create().Legend(false).DataLabels().AddTreemap("Teams", new[] {
             new ChartHierarchyItem("root", name), new ChartHierarchyItem("leaf", "Leaf", "root", 7)
-        }).ConfigureTreemap(options => options.ShowValues = false);
-        chart.Series[0].ConfigureDataLabelStyle(style => style.WithFontSize(16));
+        }).Treemap(options => options.ShowValues = false);
+        chart.Series[0].DataLabelStyle(style => style.FontSize(16));
         var context = Context(180, mode);
         var original = chart.Prepare(context);
-        chart.ConfigureTreemap(options => options.MinimumLabelFontSize = 9);
+        chart.Treemap(options => options.MinimumLabelFontSize = 9);
         var fitted = chart.Prepare(context);
         ScatterBubbleColorRenderingTests.Capture(fitted, "treemap-caption-floor-" + mode);
         var label = Assert.Single(fitted.Scene.Nodes.OfType<VisualSceneText>(), text => text.Role == "treemap-group-label");
@@ -115,9 +115,9 @@ public sealed class HierarchyCaptionPolicyTests {
     [Fact]
     public void TreemapEllipsisKeepsWholeTextElementsAndCompleteSourceFacts() {
         var name = string.Concat(Enumerable.Repeat("North😀e\u0301 region ", 30));
-        var chart = Chart.Create().WithLegend(false).WithDataLabels().AddTreemap("Names", new[] {
+        var chart = Chart.Create().Legend(false).DataLabels().AddTreemap("Names", new[] {
             new ChartHierarchyItem("root", name), new ChartHierarchyItem("leaf", "Leaf", "root", 7)
-        }).ConfigureTreemap(options => { options.MinimumLabelFontSize = 10; options.LabelTrimming = TextTrimming.Ellipsis; });
+        }).Treemap(options => { options.MinimumLabelFontSize = 10; options.LabelTrimming = TextTrimming.Ellipsis; });
         var prepared = chart.Prepare(Context(240, ThemeMode.Light));
         ScatterBubbleColorRenderingTests.Capture(prepared, "treemap-caption-whole-element-ellipsis");
         var label = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), text => text.Role == "treemap-group-label");
@@ -132,18 +132,18 @@ public sealed class HierarchyCaptionPolicyTests {
 
     [Fact]
     public void DefaultCaptionOptionsRetainBytesAndInvalidOrWrongFamilyPoliciesReject() {
-        var chart = SunburstRecipe.Create().WithLegend(false); var context = Context(520, ThemeMode.Light);
+        var chart = SunburstRecipe.Create().Legend(false); var context = Context(520, ThemeMode.Light);
         var before = chart.Prepare(context);
-        Assert.False(chart.Options.Sunburst.CurvedLabels); chart.ConfigureSunburst(options => options.CurvedLabels = false);
+        Assert.False(chart.Options.Sunburst.CurvedLabels); chart.Sunburst(options => options.CurvedLabels = false);
         Assert.Equal(before.ToSvg(), chart.Prepare(context).ToSvg()); Assert.Equal(before.ToPng(), chart.Prepare(context).ToPng());
-        var treemap = TreemapRecipe.Create().WithLegend(false); var treemapBefore = treemap.Prepare(context);
-        treemap.ConfigureTreemap(value => { value.MinimumLabelFontSize = null; value.LabelTrimming = TextTrimming.None; });
+        var treemap = TreemapRecipe.Create().Legend(false); var treemapBefore = treemap.Prepare(context);
+        treemap.Treemap(value => { value.MinimumLabelFontSize = null; value.LabelTrimming = TextTrimming.None; });
         Assert.Equal(treemapBefore.ToSvg(), treemap.Prepare(context).ToSvg()); Assert.Equal(treemapBefore.ToPng(), treemap.Prepare(context).ToPng());
         var options = new ChartTreemapOptions(); Assert.Null(options.MinimumLabelFontSize); Assert.Equal(TextTrimming.None, options.LabelTrimming);
         foreach (var value in new[] { 0d, -1, double.NaN, double.PositiveInfinity }) Assert.Throws<ArgumentOutOfRangeException>(() => options.MinimumLabelFontSize = value);
         Assert.Throws<ArgumentOutOfRangeException>(() => options.LabelTrimming = (TextTrimming)42);
-        Assert.Throws<InvalidOperationException>(() => Chart.Create().AddLine("Line", new[] { new ChartPoint(0, 1) }).ConfigureSunburst(value => value.CurvedLabels = true).Prepare(context));
-        Assert.Throws<InvalidOperationException>(() => Chart.Create().AddLine("Line", new[] { new ChartPoint(0, 1) }).ConfigureTreemap(value => value.LabelTrimming = TextTrimming.Ellipsis).Prepare(context));
+        Assert.Throws<InvalidOperationException>(() => Chart.Create().AddLine("Line", new[] { new ChartPoint(0, 1) }).Sunburst(value => value.CurvedLabels = true).Prepare(context));
+        Assert.Throws<InvalidOperationException>(() => Chart.Create().AddLine("Line", new[] { new ChartPoint(0, 1) }).Treemap(value => value.LabelTrimming = TextTrimming.Ellipsis).Prepare(context));
     }
 
     internal static VisualRenderContext Context(int width, ThemeMode mode, string? family = null) => new(

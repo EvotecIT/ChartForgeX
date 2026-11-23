@@ -117,9 +117,9 @@ public static class PolarRecipe {
         if (variant is &quot;angular-reversal&quot; or &quot;compact-angular-reversal&quot;) return Reversed();
         var observed = new ChartSeries(new ChartSeriesId(&quot;observed&quot;), &quot;Observed&quot;, ChartSeriesKind.Polar,
             Enumerable.Range(0, 6).Select(index =&gt; new ChartPoint(index * Math.PI / 3, 25 + index * 7)));
-        var chart = Chart.Create().AddSeries(observed).ConfigureXAxis(axis =&gt; axis.LabelFormatter = Degrees);
+        var chart = Chart.Create().AddSeries(observed).XAxis(axis =&gt; axis.LabelFormatter = Degrees);
         if (variant == &quot;options&quot;) {
-            chart.Options.YAxis.WithBounds(0, 100);
+            chart.Options.YAxis.Bounds(0, 100);
             chart.Options.YAxis.TickCount = 6;
             chart.Options.YAxis.Labels.Add(new ChartAxisLabel(20, &quot;20 &#183; Target&quot;));
         }
@@ -134,8 +134,8 @@ public static class PolarRecipe {
             angles.Select((angle, index) =&gt; new ChartPoint(angle, readings[index])));
         var target = new ChartSeries(new ChartSeriesId(&quot;target&quot;), &quot;Expected&quot;, ChartSeriesKind.Polar,
             angles.Select((angle, index) =&gt; new ChartPoint(angle, expected[index])));
-        return Chart.Create().WithYAxisBounds(0, 100).WithDataLabels(false)
-            .ConfigureXAxis(axis =&gt; { axis.LabelFormatter = Degrees; axis.WithReversal(); })
+        return Chart.Create().YAxis(y =&gt; y.Bounds(0, 100)).DataLabels(false)
+            .XAxis(axis =&gt; { axis.LabelFormatter = Degrees; axis.Reversed(); })
             .AddSeries(observed).AddSeries(target);
     }
 
@@ -178,9 +178,9 @@ public static class PolarRecipe {
         if (variant is &quot;angular-reversal&quot; or &quot;compact-angular-reversal&quot;) return Reversed();
         var observed = new ChartSeries(new ChartSeriesId(&quot;observed&quot;), &quot;Observed&quot;, ChartSeriesKind.Polar,
             Enumerable.Range(0, 6).Select(index =&gt; new ChartPoint(index * Math.PI / 3, 25 + index * 7)));
-        var chart = Chart.Create().AddSeries(observed).ConfigureXAxis(axis =&gt; axis.LabelFormatter = Degrees);
+        var chart = Chart.Create().AddSeries(observed).XAxis(axis =&gt; axis.LabelFormatter = Degrees);
         if (variant == &quot;options&quot;) {
-            chart.Options.YAxis.WithBounds(0, 100);
+            chart.Options.YAxis.Bounds(0, 100);
             chart.Options.YAxis.TickCount = 6;
             chart.Options.YAxis.Labels.Add(new ChartAxisLabel(20, &quot;20 &#183; Target&quot;));
         }
@@ -195,8 +195,8 @@ public static class PolarRecipe {
             angles.Select((angle, index) =&gt; new ChartPoint(angle, readings[index])));
         var target = new ChartSeries(new ChartSeriesId(&quot;target&quot;), &quot;Expected&quot;, ChartSeriesKind.Polar,
             angles.Select((angle, index) =&gt; new ChartPoint(angle, expected[index])));
-        return Chart.Create().WithYAxisBounds(0, 100).WithDataLabels(false)
-            .ConfigureXAxis(axis =&gt; { axis.LabelFormatter = Degrees; axis.WithReversal(); })
+        return Chart.Create().YAxis(y =&gt; y.Bounds(0, 100)).DataLabels(false)
+            .XAxis(axis =&gt; { axis.LabelFormatter = Degrees; axis.Reversed(); })
             .AddSeries(observed).AddSeries(target);
     }
 

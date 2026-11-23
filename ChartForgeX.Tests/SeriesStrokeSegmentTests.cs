@@ -21,7 +21,7 @@ public sealed class SeriesStrokeSegmentTests {
         var chart = Create(kind, interpolation, horizontal);
         var plain = Prepare(chart);
         var original = Assert.Single(Lines(plain));
-        chart.Series[0].WithStrokeStyleFrom(2.5, new ChartStrokeStyle(dash: Dash));
+        chart.Series[0].StrokeStyleFrom(2.5, new ChartStrokeStyle(dash: Dash));
         var prepared = Prepare(chart);
         var pieces = Lines(prepared);
         Assert.Equal(2, pieces.Length);
@@ -45,11 +45,11 @@ public sealed class SeriesStrokeSegmentTests {
 
     [Fact]
     public void NativePngAndSvgRasterChangeOnlyAfterTheSegmentStarts() {
-        var chart = Chart.Create().WithSize(420, 90).WithSparkline().WithYAxisBounds(0, 100).WithLineVisualStyle(ChartLineVisualStyle.Plain())
+        var chart = Chart.Create().Size(420, 90).Sparkline().YAxis(y => y.Bounds(0, 100)).Lines(l => l.VisualStyle(ChartLineVisualStyle.Plain()))
             .AddLine("Signal", new[] { new ChartPoint(0, 50), new ChartPoint(100, 50) }, Stroke);
-        var series = chart.Series[0].WithMarkerRadius(0).WithStrokeStyle(new ChartStrokeStyle(width: 4));
+        var series = chart.Series[0].MarkerRadius(0).StrokeStyle(new ChartStrokeStyle(width: 4));
         var solid = Prepare(chart);
-        series.WithStrokeStyleFrom(40, new ChartStrokeStyle(dash: new[] { 9d, 15d }));
+        series.StrokeStyleFrom(40, new ChartStrokeStyle(dash: new[] { 9d, 15d }));
         var segmented = Prepare(chart);
         var join = Lines(segmented)[1].Commands.First().X;
         foreach (var (before, after) in new[] {
@@ -66,8 +66,8 @@ public sealed class SeriesStrokeSegmentTests {
     public void LegendKeyShowsTheSolidStartThenTheDashAndCapturedVisibilityKeepsSegments() {
         var points = new[] { new ChartPoint(1, 30), new ChartPoint(2, 60), new ChartPoint(3, 40) };
         var series = ChartSeries.CreateLine(new ChartSeriesId("demand"), "Demand", points, Stroke)
-            .WithStrokeStyleFrom(2, new ChartStrokeStyle(dash: Dash));
-        var chart = Chart.Create().WithSize(420, 300).WithHeader(false).WithDataLabels(false).AddSeries(series)
+            .StrokeStyleFrom(2, new ChartStrokeStyle(dash: Dash));
+        var chart = Chart.Create().Size(420, 300).ShowHeader(false).DataLabels(false).AddSeries(series)
             .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("other"), "Other", points, Stroke));
         var keys = Prepare(chart).Scene.Nodes.OfType<VisualSceneLine>().Where(line => line.Role == "legend-line").ToArray();
         Assert.Equal(2, keys.Length);
@@ -122,15 +122,15 @@ public sealed class SeriesStrokeSegmentTests {
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
 
     private static Chart Create(ChartSeriesKind kind, ChartInterpolation interpolation, bool horizontal) {
-        var chart = Chart.Create().WithSize(420, 300).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithLineVisualStyle(ChartLineVisualStyle.Plain());
-        if (horizontal) chart.Options.LineOrientation = ChartOrientation.Horizontal;
+        var chart = Chart.Create().Size(420, 300).ShowHeader(false).Legend(false).DataLabels(false)
+            .Lines(l => l.VisualStyle(ChartLineVisualStyle.Plain()));
+        if (horizontal) chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
         var points = new[] { new ChartPoint(1, 30), new ChartPoint(2, 60), new ChartPoint(3, 40), new ChartPoint(4, 70) };
         if (kind == ChartSeriesKind.StepLine) chart.AddStepLine("Series", points, Stroke);
         else if (kind == ChartSeriesKind.Area) chart.AddArea("Series", points, Stroke);
         else chart.AddLine("Series", points, Stroke);
-        if (kind == ChartSeriesKind.Line) chart.Series[0].WithInterpolation(interpolation);
-        chart.Series[0].WithMarkerRadius(4);
+        if (kind == ChartSeriesKind.Line) chart.Series[0].Interpolation(interpolation);
+        chart.Series[0].MarkerRadius(4);
         return chart;
     }
 }

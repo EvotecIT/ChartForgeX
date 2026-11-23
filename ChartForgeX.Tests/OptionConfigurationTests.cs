@@ -29,24 +29,24 @@ public sealed class OptionConfigurationTests {
     public void ChartCallbacksRollBackExceptionsAndDetachRetainedCandidates(string family) {
         var chart = Chart.Create();
         switch (family) {
-            case "bubble": Verify(() => chart.Options.Bubble, action => chart.ConfigureBubble(action), (options, value) => options.MinimumRadius = value, options => options.MinimumRadius, 8d, 9d); break;
-            case "box-plot": Verify(() => chart.Options.BoxPlot, action => chart.ConfigureBoxPlot(action), (options, value) => options.Orientation = value, options => options.Orientation, ChartOrientation.Horizontal, ChartOrientation.Vertical); break;
-            case "chord": Verify(() => chart.Options.Chord, action => chart.ConfigureChord(action), (options, value) => options.NodeGapDegrees = value, options => options.NodeGapDegrees, 5d, 7d); break;
-            case "funnel": Verify(() => chart.Options.Funnel, action => chart.ConfigureFunnel(action), (options, value) => options.Orientation = value, options => options.Orientation, ChartOrientation.Horizontal, ChartOrientation.Vertical); break;
-            case "gauge": Verify(() => chart.Options.Gauge, action => chart.ConfigureGauge(action), (options, value) => options.Caption = value, options => options.Caption, "Observed", "Retained mutation"); break;
-            case "pyramid": Verify(() => chart.Options.Pyramid, action => chart.ConfigurePyramid(action), (options, value) => options.Reversed = value, options => options.Reversed, true, false); break;
-            case "range-bar": Verify(() => chart.Options.RangeBar, action => chart.ConfigureRangeBar(action), (options, value) => options.Orientation = value, options => options.Orientation, ChartOrientation.Horizontal, ChartOrientation.Vertical); break;
-            case "sankey": Verify(() => chart.Options.Sankey, action => chart.ConfigureSankey(action), (options, value) => options.NodeWidth = value, options => options.NodeWidth, 14d, 18d); break;
-            case "sunburst": Verify(() => chart.Options.Sunburst, action => chart.ConfigureSunburst(action), (options, value) => options.CornerRadius = value, options => options.CornerRadius, 3d, 5d); break;
-            case "treemap": Verify(() => chart.Options.Treemap, action => chart.ConfigureTreemap(action), (options, value) => options.Gap = value, options => options.Gap, 4d, 6d); break;
-            case "waterfall": Verify(() => chart.Options.Waterfall, action => chart.ConfigureWaterfall(action), (options, value) => options.Orientation = value, options => options.Orientation, ChartOrientation.Horizontal, ChartOrientation.Vertical); break;
-            case "map-color": Verify(() => chart.Options.MapColorDimension, action => chart.ConfigureMapColorDimension(action), (options, value) => options.Name = value, options => options.Name, "Population", "Retained mutation"); break;
-            case "heatmap-color": Verify(() => chart.Options.HeatmapColorDimension, action => chart.ConfigureHeatmapColorDimension(action), (options, value) => options.Name = value, options => options.Name, "Temperature", "Retained mutation"); break;
-            case "labels": Verify(() => chart.Options.Labels, action => chart.ConfigureLabels(action), (options, value) => options.Now = value, options => options.Now, "Jetzt", "Retained mutation"); break;
-            case "accessibility": Verify(() => chart.Accessibility, action => chart.ConfigureAccessibility(action), (options, value) => options.Description = value, options => options.Description, "Observed trend", "Retained mutation"); break;
-            case "line-style": Verify(() => chart.Options.LineVisualStyle, action => chart.ConfigureLineVisualStyle(action), (options, value) => options.HaloOpacity = value, options => options.HaloOpacity, .2, .3); break;
-            case "bar-style": Verify(() => chart.Options.BarVisualStyle, action => chart.ConfigureBarVisualStyle(action), (options, value) => options.CornerRadius = value, options => options.CornerRadius, 3d, 5d); break;
-            case "grid-style": Verify(() => chart.Options.GridLineStyle, action => chart.ConfigureGridStyle(action), (options, value) => options.Dash = value, options => options.Dash, 3d, 5d); break;
+            case "bubble": Verify(() => chart.Options.Bubble, action => chart.Bubble(action), (options, value) => options.MinimumRadius = value, options => options.MinimumRadius, 8d, 9d); break;
+            case "box-plot": Verify(() => chart.Options.BoxPlot, action => chart.BoxPlot(action), (options, value) => options.Orientation = value, options => options.Orientation, ChartOrientation.Horizontal, ChartOrientation.Vertical); break;
+            case "chord": Verify(() => chart.Options.Chord, action => chart.Chord(action), (options, value) => options.NodeGapDegrees = value, options => options.NodeGapDegrees, 5d, 7d); break;
+            case "funnel": Verify(() => chart.Options.Funnel, action => chart.Funnel(action), (options, value) => options.Orientation = value, options => options.Orientation, ChartOrientation.Horizontal, ChartOrientation.Vertical); break;
+            case "gauge": Verify(() => chart.Options.Gauge, action => chart.Gauge(action), (options, value) => options.Caption = value, options => options.Caption, "Observed", "Retained mutation"); break;
+            case "pyramid": Verify(() => chart.Options.Pyramid, action => chart.Pyramid(action), (options, value) => options.Reversed = value, options => options.Reversed, true, false); break;
+            case "range-bar": Verify(() => chart.Options.RangeBar, action => chart.RangeBar(action), (options, value) => options.Orientation = value, options => options.Orientation, ChartOrientation.Horizontal, ChartOrientation.Vertical); break;
+            case "sankey": Verify(() => chart.Options.Sankey, action => chart.Sankey(action), (options, value) => options.NodeWidth = value, options => options.NodeWidth, 14d, 18d); break;
+            case "sunburst": Verify(() => chart.Options.Sunburst, action => chart.Sunburst(action), (options, value) => options.CornerRadius = value, options => options.CornerRadius, 3d, 5d); break;
+            case "treemap": Verify(() => chart.Options.Treemap, action => chart.Treemap(action), (options, value) => options.Gap = value, options => options.Gap, 4d, 6d); break;
+            case "waterfall": Verify(() => chart.Options.Waterfall, action => chart.Waterfall(action), (options, value) => options.Orientation = value, options => options.Orientation, ChartOrientation.Horizontal, ChartOrientation.Vertical); break;
+            case "map-color": Verify(() => chart.Options.Map.ColorDimension, action => chart.Map(map => map.ColorDimension(action)), (options, value) => options.Name = value, options => options.Name, "Population", "Retained mutation"); break;
+            case "heatmap-color": Verify(() => chart.Options.Heatmap.ColorDimension, action => chart.Heatmap(heatmap => heatmap.ColorDimension(action)), (options, value) => options.Name = value, options => options.Name, "Temperature", "Retained mutation"); break;
+            case "labels": Verify(() => chart.Options.Labels, action => chart.Labels(action), (options, value) => options.Now = value, options => options.Now, "Jetzt", "Retained mutation"); break;
+            case "accessibility": Verify(() => chart.Accessibility, action => chart.Accessibility(action), (options, value) => options.Description = value, options => options.Description, "Observed trend", "Retained mutation"); break;
+            case "line-style": Verify(() => chart.Options.Lines.VisualStyle, action => chart.Lines(lines => lines.VisualStyle(action)), (options, value) => options.HaloOpacity = value, options => options.HaloOpacity, .2, .3); break;
+            case "bar-style": Verify(() => chart.Options.Bars.VisualStyle, action => chart.Bars(bars => bars.VisualStyle(action)), (options, value) => options.CornerRadius = value, options => options.CornerRadius, 3d, 5d); break;
+            case "grid-style": Verify(() => chart.Options.GridLineStyle, action => chart.GridLineStyle(action), (options, value) => options.Dash = value, options => options.Dash, 3d, 5d); break;
             default: throw new ArgumentOutOfRangeException(nameof(family));
         }
     }
@@ -59,9 +59,9 @@ public sealed class OptionConfigurationTests {
         var chart = Chart.Create();
         ChartAxis Current() => axisIndex == 0 ? chart.Options.XAxis : axisIndex == 1 ? chart.Options.YAxis : chart.Options.SecondaryYAxis;
         void Configure(Action<ChartAxis> action) {
-            if (axisIndex == 0) chart.ConfigureXAxis(action);
-            else if (axisIndex == 1) chart.ConfigureYAxis(action);
-            else chart.ConfigureSecondaryYAxis(action);
+            if (axisIndex == 0) chart.XAxis(action);
+            else if (axisIndex == 1) chart.YAxis(action);
+            else chart.SecondaryYAxis(action);
         }
         Verify(Current, Configure, (axis, value) => axis.TickCount = value, axis => axis.TickCount, 8, 12);
         Current().Scale = ChartScaleKind.Linear;
@@ -81,20 +81,20 @@ public sealed class OptionConfigurationTests {
         var chart = Chart.Create();
         chart.Options.Gauge.Bands.Add(new ChartGaugeBand(0, 50, ChartSeriesState.Success));
         ChartGaugeOptions? gauge = null;
-        Assert.Throws<InvalidOperationException>(() => chart.ConfigureGauge(options => { options.Bands.Clear(); throw new InvalidOperationException(); }));
-        chart.ConfigureGauge(options => { gauge = options; options.Bands.Add(new ChartGaugeBand(50, 100, ChartSeriesState.Warning)); });
+        Assert.Throws<InvalidOperationException>(() => chart.Gauge(options => { options.Bands.Clear(); throw new InvalidOperationException(); }));
+        chart.Gauge(options => { gauge = options; options.Bands.Add(new ChartGaugeBand(50, 100, ChartSeriesState.Warning)); });
         gauge!.Bands.Clear();
         Assert.Equal(2, chart.Options.Gauge.Bands.Count);
 
         ChartSunburstOptions? sunburst = null;
-        chart.ConfigureSunburst(options => { sunburst = options; options.ColorDimension.Name = "Cost"; options.SecondaryLabelStyle.FontSize = 14; });
+        chart.Sunburst(options => { sunburst = options; options.ColorDimension.Name = "Cost"; options.SecondaryLabelStyle.FontSize = 14; });
         sunburst!.ColorDimension.Name = "Other"; sunburst.SecondaryLabelStyle.FontSize = 18;
         Assert.Equal("Cost", chart.Options.Sunburst.ColorDimension.Name);
         Assert.Equal(14, chart.Options.Sunburst.SecondaryLabelStyle.FontSize);
-        Assert.Throws<InvalidOperationException>(() => chart.ConfigureSunburst(options => { options.SecondaryLabelStyle.FontSize = 21; throw new InvalidOperationException(); }));
+        Assert.Throws<InvalidOperationException>(() => chart.Sunburst(options => { options.SecondaryLabelStyle.FontSize = 21; throw new InvalidOperationException(); }));
         Assert.Equal(14, chart.Options.Sunburst.SecondaryLabelStyle.FontSize);
         ChartTreemapOptions? treemap = null;
-        chart.ConfigureTreemap(options => { treemap = options; options.ColorDimension.Name = "Revenue"; });
+        chart.Treemap(options => { treemap = options; options.ColorDimension.Name = "Revenue"; });
         treemap!.ColorDimension.Name = "Other";
         Assert.Equal("Revenue", chart.Options.Treemap.ColorDimension.Name);
     }
@@ -115,12 +115,12 @@ public sealed class OptionConfigurationTests {
         else chart.AddScatter("Samples", points);
         var series = chart.Series[0];
         switch (family) {
-            case "markers": Verify(() => series.Markers, action => series.ConfigureMarkers(action), (options, value) => options.Radius = value, options => options.Radius, (double?)7, 9); break;
-            case "radar": Verify(() => series.Radar, action => series.ConfigureRadar(action), (options, value) => options.CurveTension = value, options => options.CurveTension, (double?).2, .4); break;
-            case "difference": Verify(() => series.DifferenceArea, action => series.ConfigureDifferenceArea(action), (options, value) => options.FirstName = value, options => options.FirstName, "Before", "Other"); break;
-            case "financial": Verify(() => series.Financial, action => series.ConfigureFinancial(action), (options, value) => options.Rising.Wick.StrokeWidth = value, options => options.Rising.Wick.StrokeWidth, (double?)3, 5); break;
-            case "color": Verify(() => series.ColorDimension, action => series.ConfigureColorDimension(action), (options, value) => options.Name = value, options => options.Name, "Temperature", "Other"); break;
-            case "label": Verify(() => series.DataLabelStyle, action => series.ConfigureDataLabelStyle(action), (options, value) => options.FontSize = value, options => options.FontSize, (double?)14, 18); break;
+            case "markers": Verify(() => series.Markers, action => series.Markers(action), (options, value) => options.Radius = value, options => options.Radius, (double?)7, 9); break;
+            case "radar": Verify(() => series.Radar, action => series.Radar(action), (options, value) => options.CurveTension = value, options => options.CurveTension, (double?).2, .4); break;
+            case "difference": Verify(() => series.DifferenceArea, action => series.DifferenceArea(action), (options, value) => options.FirstName = value, options => options.FirstName, "Before", "Other"); break;
+            case "financial": Verify(() => series.Financial, action => series.Financial(action), (options, value) => options.Rising.Wick.StrokeWidth = value, options => options.Rising.Wick.StrokeWidth, (double?)3, 5); break;
+            case "color": Verify(() => series.ColorDimension, action => series.ColorDimension(action), (options, value) => options.Name = value, options => options.Name, "Temperature", "Other"); break;
+            case "label": Verify(() => series.DataLabelStyle, action => series.DataLabelStyle(action), (options, value) => options.FontSize = value, options => options.FontSize, (double?)14, 18); break;
             default: throw new ArgumentOutOfRangeException(nameof(family));
         }
     }
@@ -129,13 +129,13 @@ public sealed class OptionConfigurationTests {
     public void PointStyleFailureDoesNotGrowTheOverrideCollectionAndSuccessDetachesTheCandidate() {
         var chart = Chart.Create().AddLine("Samples", new[] { new ChartPoint(0, 1), new ChartPoint(1, 2) });
         var series = chart.Series[0];
-        Assert.Throws<InvalidOperationException>(() => series.ConfigurePointDataLabelStyle(1, style => { style.FontSize = 18; throw new InvalidOperationException(); }));
+        Assert.Throws<InvalidOperationException>(() => series.PointDataLabelStyle(1, style => { style.FontSize = 18; throw new InvalidOperationException(); }));
         Assert.Empty(series.PointDataLabelStyles);
         TextStyleOverride? retained = null;
-        series.ConfigurePointDataLabelStyle(1, style => { retained = style; style.FontSize = 14; });
+        series.PointDataLabelStyle(1, style => { retained = style; style.FontSize = 14; });
         retained!.FontSize = 21;
         Assert.Equal(14, series.PointDataLabelStyles[1]!.FontSize);
-        Verify(() => series.PointDataLabelStyles[1]!, action => series.ConfigurePointDataLabelStyle(1, action), (style, value) => style.FontSize = value, style => style.FontSize, (double?)16, 22);
+        Verify(() => series.PointDataLabelStyles[1]!, action => series.PointDataLabelStyle(1, action), (style, value) => style.FontSize = value, style => style.FontSize, (double?)16, 22);
     }
 
     [Theory]
@@ -147,16 +147,16 @@ public sealed class OptionConfigurationTests {
     [InlineData(ChartTextRole.DataLabel)]
     public void EveryChartTextRoleAndItsConvenienceCallbackOwnsDetachedStyles(ChartTextRole role) {
         var chart = Chart.Create();
-        Verify(() => chart.Options.GetTextStyle(role), action => chart.ConfigureTextStyle(role, action),
+        Verify(() => chart.Options.GetTextStyle(role), action => chart.TextStyle(role, action),
             (style, value) => style.FontSize = value, style => style.FontSize, (double?)14, 18);
         void Configure(Action<TextStyleOverride> action) {
             switch (role) {
-                case ChartTextRole.Title: chart.ConfigureTitleStyle(action); break;
-                case ChartTextRole.Subtitle: chart.ConfigureSubtitleStyle(action); break;
-                case ChartTextRole.AxisTitle: chart.ConfigureAxisTitleStyle(action); break;
-                case ChartTextRole.TickLabel: chart.ConfigureTickLabelStyle(action); break;
-                case ChartTextRole.Legend: chart.ConfigureLegendStyle(action); break;
-                case ChartTextRole.DataLabel: chart.ConfigureDataLabelStyle(action); break;
+                case ChartTextRole.Title: chart.TitleStyle(action); break;
+                case ChartTextRole.Subtitle: chart.SubtitleStyle(action); break;
+                case ChartTextRole.AxisTitle: chart.AxisTitleStyle(action); break;
+                case ChartTextRole.TickLabel: chart.TickLabelStyle(action); break;
+                case ChartTextRole.Legend: chart.LegendStyle(action); break;
+                case ChartTextRole.DataLabel: chart.DataLabelStyle(action); break;
             }
         }
         Verify(() => chart.Options.GetTextStyle(role), Configure, (style, value) => style.FontSize = value, style => style.FontSize, (double?)16, 20);
@@ -165,8 +165,8 @@ public sealed class OptionConfigurationTests {
     [Fact]
     public void ChartGridTextCallbacksFollowTheSameOwnershipContract() {
         var grid = ChartGrid.Create();
-        Verify(() => grid.TitleStyle, action => grid.ConfigureTitleStyle(action), (style, value) => style.FontSize = value, style => style.FontSize, (double?)14, 18);
-        Verify(() => grid.SubtitleStyle, action => grid.ConfigureSubtitleStyle(action), (style, value) => style.FontSize = value, style => style.FontSize, (double?)12, 16);
+        Verify(() => grid.TitleStyle, action => grid.TitleStyle(action), (style, value) => style.FontSize = value, style => style.FontSize, (double?)14, 18);
+        Verify(() => grid.SubtitleStyle, action => grid.SubtitleStyle(action), (style, value) => style.FontSize = value, style => style.FontSize, (double?)12, 16);
     }
 
     private static void Verify<T, TValue>(Func<T> current, Action<Action<T>> configure,

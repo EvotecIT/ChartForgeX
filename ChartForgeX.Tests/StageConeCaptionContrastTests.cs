@@ -15,8 +15,8 @@ public sealed partial class StageConeCaptionContrastTests {
     [InlineData(ChartOrientation.Horizontal, 390, ThemeMode.Dark)]
     [InlineData(ChartOrientation.Horizontal, 800, ThemeMode.Light)]
     public void AutomaticFirstConeValueContrastsWithItsActualUnpaintedFrameRatherThanAnOpaqueStage(ChartOrientation orientation, int width, ThemeMode mode) {
-        var chart = StagePresentationOptionsTests.Create(false, ChartFunnelForm.Cone, orientation, width, 640).WithTheme(VisualTheme.Graphite(), mode);
-        chart.ConfigureFunnel(options => {
+        var chart = StagePresentationOptionsTests.Create(false, ChartFunnelForm.Cone, orientation, width, 640).Theme(VisualTheme.Graphite()).ThemeMode(mode);
+        chart.Funnel(options => {
             options.LabelContent = ChartStageLabelContent.Separate; options.CategoryLabel.Visible = false;
             options.RetentionLabel.Visible = false; options.DropOffLabel.Visible = false; options.ValueLabel.Style.FontSize = 13;
         });

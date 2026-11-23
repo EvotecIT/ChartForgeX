@@ -32,7 +32,7 @@ public static class OrgChartRecipe {
     public static TopologyChart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant == "compact";
-        var chart = TopologyChart.Create().WithViewport(compact ? 390 : 960, compact ? 520 : 520).WithLegend(null);
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(compact ? 390 : 960, compact ? 520 : 520)).Legend((TopologyLegend?)null);
         chart.Theme = VisualTheme.Graphite(); chart.ThemeMode = mode;
         chart.DefaultRenderOptions = new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true };
         chart.AddTeam("company", "Northwind Services", new[] {

@@ -9,19 +9,19 @@ ExampleOutputDirectory.Reset(output);
 const ChartPngOutputScale DemoPngOutputScale = ChartPngOutputScale.Retina;
 if (ExampleProgramOptions.TryHandle(args, output, DemoPngOutputScale)) return;
 void SaveChart(Chart chart, string name) => ExampleArtifactWriter.SaveChart(chart, output, name, DemoPngOutputScale);
-var passed = ChartSeries.CreateArea(new ChartSeriesId("passed"), "Passed", Points(820, 940, 980, 1040, 1120, 1180, 1230, 1260)).WithSmooth();
-var warnings = ChartSeries.CreateLine(new ChartSeriesId("warnings"), "Warnings", Points(120, 138, 132, 110, 98, 86, 72, 68), ChartColor.FromRgb(251, 191, 36)).WithSmooth();
-var failed = ChartSeries.CreateLine(new ChartSeriesId("failed"), "Failed", Points(22, 30, 28, 21, 18, 15, 13, 10), ChartColor.FromRgb(248, 113, 113)).WithSmooth();
+var passed = ChartSeries.CreateArea(new ChartSeriesId("passed"), "Passed", Points(820, 940, 980, 1040, 1120, 1180, 1230, 1260)).Smooth();
+var warnings = ChartSeries.CreateLine(new ChartSeriesId("warnings"), "Warnings", Points(120, 138, 132, 110, 98, 86, 72, 68), ChartColor.FromRgb(251, 191, 36)).Smooth();
+var failed = ChartSeries.CreateLine(new ChartSeriesId("failed"), "Failed", Points(22, 30, 28, 21, 18, 15, 13, 10), ChartColor.FromRgb(248, 113, 113)).Smooth();
 var warningTarget = new ChartAnnotationId("warning-target");
 var dnssec = Chart.Create()
-    .WithTitle("Domain Security Checks")
-    .WithSubtitle("Dependency-free SVG, HTML and PNG chart rendering")
-    .WithXAxis("Run")
-    .WithYAxis("Checks")
-    .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
-    .WithSize(800, 434)
-    .WithTransparentBackground(true)
-    .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun", "Next")
+    .Title("Domain Security Checks")
+    .Subtitle("Dependency-free SVG, HTML and PNG chart rendering")
+    .XAxis(x => x.Title("Run"))
+    .YAxis(y => y.Title("Checks"))
+    .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
+    .Size(800, 434)
+    .TransparentBackground(true)
+    .XLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun", "Next")
     .AddSeries(passed)
     .AddSeries(warnings)
     .AddSeries(failed)
@@ -60,15 +60,14 @@ EnhanceExamples.Write(output);
 StoryPlaybackExamples.Write(output);
 StoryReplayExamples.Write(output);
 var bars = Chart.Create()
-    .WithTitle("Certificate Transparency Volume")
-    .WithSubtitle("Bar-line combo with a secondary y-axis and no JavaScript runtime")
-    .WithXAxis("Day")
-    .WithYAxis("Certificates")
-    .WithSecondaryYAxis("Pass rate", value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
-    .WithSecondaryYAxisBounds(0, 100)
-    .WithTheme(VisualTheme.Graphite())
-    .WithSize(800, 434)
-    .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+    .Title("Certificate Transparency Volume")
+    .Subtitle("Bar-line combo with a secondary y-axis and no JavaScript runtime")
+    .XAxis(x => x.Title("Day"))
+    .YAxis(y => y.Title("Certificates"))
+    .SecondaryYAxis(s => s.Title("Pass rate").LabelBy(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%").Bounds(0, 100))
+    .Theme(VisualTheme.Graphite())
+    .Size(800, 434)
+    .XLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
     .AddBarLineCombo(
         "Certificates",
         Points(4200, 5300, 6100, 5900, 7200, 8100, 7900),
@@ -83,20 +82,20 @@ var bars = Chart.Create()
 SaveChart(bars, "ct-volume-light");
 
 var grouped = Chart.Create()
-    .WithTitle("Security Findings by Severity")
-    .WithSubtitle("Grouped bar comparison across two report runs")
-    .WithXAxis("Severity")
-    .WithYAxis("Findings")
-    .WithTheme(VisualTheme.Graphite())
-    .WithSize(800, 487)
-    .WithXLabels("Critical", "High", "Medium", "Low", "Informational")
+    .Title("Security Findings by Severity")
+    .Subtitle("Grouped bar comparison across two report runs")
+    .XAxis(x => x.Title("Severity"))
+    .YAxis(y => y.Title("Findings"))
+    .Theme(VisualTheme.Graphite())
+    .Size(800, 487)
+    .XLabels("Critical", "High", "Medium", "Low", "Informational")
     .AddBar("Current run", Points(8, 32, 84, 126, 210), ChartColor.FromRgb(37, 99, 235))
     .AddBar("Previous run", Points(12, 41, 97, 118, 188), ChartColor.FromRgb(14, 165, 233))
     .AddHorizontalLine(40, "review threshold", ChartColor.FromRgb(245, 158, 11));
 
 SaveChart(grouped, "security-findings-grouped-light");
 // The dashboard shares one page, so its charts share the dark mode of the first chart.
-foreach (var light in new[] { bars, grouped }) light.WithTheme(VisualTheme.Graphite(), ThemeMode.Dark);
+foreach (var light in new[] { bars, grouped }) light.Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark);
 new[] { dnssec, bars, grouped }.SaveInteractiveHtmlDashboard(Path.Combine(output, "executive-interactive-dashboard.html"), options => {
     options.PageTitle = "Executive Interactive Dashboard";
     options.IdScope = "executive-interactive-dashboard";
@@ -106,17 +105,16 @@ new[] { dnssec, bars, grouped }.SaveInteractiveHtmlDashboard(Path.Combine(output
 });
 
 var horizontal = Chart.Create()
-    .WithTitle("Domain Control Composition")
-    .WithSubtitle("Stacked horizontal bars keep long category labels readable")
-    .WithXAxis("Coverage")
-    .WithYAxis("Control")
-    .WithTheme(VisualTheme.Graphite())
-    .WithSize(800, 487)
-    .WithStackedHorizontalBars()
-    .WithStackTotals()
-    .WithDataLabels()
-    .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
-    .WithXLabels("SPF alignment", "DMARC policy enforcement", "DNSSEC coverage", "Certificate transparency monitoring", "MTA-STS deployment")
+    .Title("Domain Control Composition")
+    .Subtitle("Stacked horizontal bars keep long category labels readable")
+    .XAxis(x => x.Title("Coverage"))
+    .YAxis(y => y.Title("Control"))
+    .Theme(VisualTheme.Graphite())
+    .Size(800, 487)
+    .Bars(b => b.Stacked().ShowTotals())
+    .DataLabels()
+    .FormatValuesBy(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
+    .XLabels("SPF alignment", "DMARC policy enforcement", "DNSSEC coverage", "Certificate transparency monitoring", "MTA-STS deployment")
     .AddHorizontalBar("Complete", Points(72, 64, 52, 78, 44), ChartColor.FromRgb(16, 185, 129))
     .AddHorizontalBar("Partial", Points(24, 24, 22, 14, 19), ChartColor.FromRgb(245, 158, 11))
     .AddHorizontalBar("Missing", Points(4, 12, 26, 8, 37), ChartColor.FromRgb(239, 68, 68));
@@ -132,42 +130,42 @@ BrowserDataExamples.Write(output);
 if (!ExampleProgramOptions.HasArg(args, "--skip-topology")) { TopologyExamples.Write(output); ReadableTopologyExamples.Write(output); } MarkupExamples.Write(output); ArchitectureExamples.Write(output); GraphExplorerExamples.Write(output);
 
 var gauge = Chart.Create()
-    .WithTitle("Security Posture Score")
-    .WithSubtitle("Single-value gauge for executive report summaries")
-    .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
-    .WithSize(800, 484)
-    .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
+    .Title("Security Posture Score")
+    .Subtitle("Single-value gauge for executive report summaries")
+    .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
+    .Size(800, 484)
+    .FormatValuesBy(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
     .AddGauge("Overall domain readiness", 87, 0, 100, ChartColor.FromRgb(52, 211, 153));
 
 SaveChart(gauge, "security-posture-gauge-dark");
 
 var policyReadinessCircle = Chart.Create()
-    .WithTitle("Policy Readiness Circle")
-    .WithSubtitle("Circle charts keep single-value progress KPIs compact")
-    .WithTheme(VisualTheme.Graphite())
-    .WithSize(800, 484)
-    .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
+    .Title("Policy Readiness Circle")
+    .Subtitle("Circle charts keep single-value progress KPIs compact")
+    .Theme(VisualTheme.Graphite())
+    .Size(800, 484)
+    .FormatValuesBy(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
     .AddCircle("Ready", 87, 0, 100, ChartColor.FromRgb(16, 185, 129));
 
 SaveChart(policyReadinessCircle, "policy-readiness-circle-light");
 
 var radialBar = Chart.Create()
-    .WithTitle("Control Coverage Rings")
-    .WithSubtitle("Progress rings compare core security control completion")
-    .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
-    .WithSize(800, 484)
-    .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
-    .WithXLabels("Mail auth", "DNSSEC", "Transport TLS", "Certificate CT")
+    .Title("Control Coverage Rings")
+    .Subtitle("Progress rings compare core security control completion")
+    .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
+    .Size(800, 484)
+    .FormatValuesBy(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
+    .XLabels("Mail auth", "DNSSEC", "Transport TLS", "Certificate CT")
     .AddProgressRing("Average coverage", Points(92, 74, 88, 96));
 
 SaveChart(radialBar, "control-coverage-radialbar-dark");
 
 var bullet = Chart.Create()
-    .WithTitle("Control Targets")
-    .WithSubtitle("Bullet rows compare current posture against target thresholds")
-    .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
-    .WithSize(800, 452)
-    .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
+    .Title("Control Targets")
+    .Subtitle("Bullet rows compare current posture against target thresholds")
+    .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
+    .Size(800, 452)
+    .FormatValuesBy(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
     .AddBullet("DMARC enforcement", 88, 95, 0, 100, new[] { 60d, 80d }, ChartColor.FromRgb(52, 211, 153))
     .AddBullet("DNSSEC coverage", 74, 90, 0, 100, new[] { 55d, 78d }, ChartColor.FromRgb(96, 165, 250))
     .AddBullet("MTA-STS deployment", 63, 85, 0, 100, new[] { 50d, 75d }, ChartColor.FromRgb(251, 191, 36))
@@ -176,25 +174,25 @@ var bullet = Chart.Create()
 SaveChart(bullet, "control-targets-bullet-dark");
 
 var waterfall = Chart.Create()
-    .WithTitle("Remediation Impact")
-    .WithSubtitle("Waterfall deltas show how findings changed during a cleanup cycle")
-    .WithXAxis("Change")
-    .WithYAxis("Open findings")
-    .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
-    .WithSize(800, 470)
-    .WithDataLabels()
-    .WithXLabels("Opened", "Resolved", "Suppressed", "Accepted", "Regressed")
+    .Title("Remediation Impact")
+    .Subtitle("Waterfall deltas show how findings changed during a cleanup cycle")
+    .XAxis(x => x.Title("Change"))
+    .YAxis(y => y.Title("Open findings"))
+    .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
+    .Size(800, 470)
+    .DataLabels()
+    .XLabels("Opened", "Resolved", "Suppressed", "Accepted", "Regressed")
     .AddWaterfall("Finding delta", Points(24, -68, -18, -9, 11), ChartColor.FromRgb(52, 211, 153));
 
 SaveChart(waterfall, "remediation-impact-waterfall-dark");
 
 var radar = Chart.Create()
-    .WithTitle("Security Posture Radar")
-    .WithSubtitle("Radial comparison across major domain control areas")
-    .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
-    .WithSize(800, 487)
-    .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
-    .WithXLabels("Mail auth", "DNSSEC", "TLS", "CT", "Policy", "Monitoring")
+    .Title("Security Posture Radar")
+    .Subtitle("Radial comparison across major domain control areas")
+    .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
+    .Size(800, 487)
+    .FormatValuesBy(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
+    .XLabels("Mail auth", "DNSSEC", "TLS", "CT", "Policy", "Monitoring")
     .AddRadar("Current posture", Points(92, 74, 88, 96, 81, 84), ChartColor.FromRgb(96, 165, 250))
     .AddRadar("Target posture", Points(96, 90, 94, 98, 92, 90), ChartColor.FromRgb(52, 211, 153));
 
@@ -203,21 +201,21 @@ SaveChart(radar, "security-posture-radar-dark");
 SaveChart(PolarExamples.CreateIncidentDirection(), "incident-direction-polar-dark");
 
 var polarArea = Chart.Create()
-    .WithTitle("Control Contribution")
-    .WithSubtitle("Polar area segments compare major control contributions")
-    .WithTheme(VisualTheme.Graphite())
-    .WithSize(800, 484)
-    .WithDataLabels()
-    .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
-    .WithXLabels("Mail auth", "DNSSEC", "TLS", "CT", "Policy", "Monitoring")
+    .Title("Control Contribution")
+    .Subtitle("Polar area segments compare major control contributions")
+    .Theme(VisualTheme.Graphite())
+    .Size(800, 484)
+    .DataLabels()
+    .FormatValuesBy(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
+    .XLabels("Mail auth", "DNSSEC", "TLS", "CT", "Policy", "Monitoring")
     .AddPolarArea("Control share", Points(92, 74, 88, 96, 81, 84));
 
 SaveChart(polarArea, "control-contribution-polar-area-light");
 
 var controlScorecardGrid = ChartGrid.Create()
-    .WithTitle("Control Scorecard Small Multiples")
-    .WithSubtitle("Static report grid composed from existing dependency-free chart renderers")
-    .WithColumns(2)
+    .Title("Control Scorecard Small Multiples")
+    .Subtitle("Static report grid composed from existing dependency-free chart renderers")
+    .Columns(2)
     .Add(gauge)
     .Add(bullet)
     .Add(radar)
@@ -226,55 +224,55 @@ var controlScorecardGrid = ChartGrid.Create()
 ExampleArtifactWriter.SaveGrid(controlScorecardGrid, output, "control-scorecards-grid", DemoPngOutputScale);
 
 var sharedCoverageNorth = Chart.Create()
-    .WithTitle("Primary Domains")
-    .WithSubtitle("Shared y-axis small multiple")
-    .WithTheme(VisualTheme.Graphite())
-    .WithSize(600, 369)
-    .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
-    .WithXLabels("SPF", "DMARC", "DNSSEC", "MTA-STS")
+    .Title("Primary Domains")
+    .Subtitle("Shared y-axis small multiple")
+    .Theme(VisualTheme.Graphite())
+    .Size(600, 369)
+    .FormatValuesBy(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
+    .XLabels("SPF", "DMARC", "DNSSEC", "MTA-STS")
     .AddBar("Coverage", Points(96, 88, 74, 63), ChartColor.FromRgb(37, 99, 235));
 
 var sharedCoverageAcquired = Chart.Create()
-    .WithTitle("Acquired Domains")
-    .WithSubtitle("Shared y-axis small multiple")
-    .WithTheme(VisualTheme.Graphite())
-    .WithSize(600, 369)
-    .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
-    .WithXLabels("SPF", "DMARC", "DNSSEC", "MTA-STS")
+    .Title("Acquired Domains")
+    .Subtitle("Shared y-axis small multiple")
+    .Theme(VisualTheme.Graphite())
+    .Size(600, 369)
+    .FormatValuesBy(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
+    .XLabels("SPF", "DMARC", "DNSSEC", "MTA-STS")
     .AddBar("Coverage", Points(72, 54, 46, 31), ChartColor.FromRgb(14, 165, 233));
 
 var sharedAxisGrid = ChartGrid.Create()
-    .WithTitle("Shared Axis Coverage Comparison")
-    .WithSubtitle("Two panels keep shared x and y ranges for honest visual comparison")
-    .WithTheme(VisualTheme.Graphite())
-    .WithColumns(2)
-    .WithPadding(32)
-    .WithPanelSize(600, 360)
+    .Title("Shared Axis Coverage Comparison")
+    .Subtitle("Two panels keep shared x and y ranges for honest visual comparison")
+    .Theme(VisualTheme.Graphite())
+    .Columns(2)
+    .Padding(32)
+    .PanelSize(600, 360)
     .Add(sharedCoverageNorth)
     .Add(sharedCoverageAcquired)
-    .WithSharedAxes();
+    .ShareAxes();
 
 ExampleArtifactWriter.SaveGrid(sharedAxisGrid, output, "shared-axis-coverage-grid", DemoPngOutputScale);
 
 ExpressiveExamples.Write(output, DemoPngOutputScale); WellnessDashboardExamples.Write(output, DemoPngOutputScale); PremiumSurfaceExamples.Write(output, DemoPngOutputScale); VisualCanvasTypographyExamples.Write(output); DashboardPortfolioExamples.Write(output, DemoPngOutputScale); DashboardPatternExamples.Write(output, DemoPngOutputScale); AxisQualityExamples.Write(output, DemoPngOutputScale);
 
 var funnel = Chart.Create()
-    .WithTitle("Domain Remediation Funnel")
-    .WithSubtitle("Stage retention from discovery to monitored remediation")
-    .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
-    .WithSize(800, 487)
-    .WithXLabels("Discovered", "Verified", "Prioritized", "Remediated", "Monitored")
+    .Title("Domain Remediation Funnel")
+    .Subtitle("Stage retention from discovery to monitored remediation")
+    .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
+    .Size(800, 487)
+    .XLabels("Discovered", "Verified", "Prioritized", "Remediated", "Monitored")
     .AddFunnel("Domains", Points(420, 318, 174, 96, 72));
 
 SaveChart(funnel, "domain-remediation-funnel-dark");
 
 var findingsTreemap = Chart.Create()
-    .WithDataLabels()
-    .WithTitle("Findings Composition")
-    .WithSubtitle("Treemap tiles show proportional contribution by category")
-    .WithTheme(VisualTheme.Graphite())
-    .WithSize(800, 487)
-    .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
+    .DataLabels()
+    .Title("Findings Composition")
+    .Subtitle("Treemap tiles show proportional contribution by category")
+    .Theme(VisualTheme.Graphite())
+    .Size(800, 487)
+    .FormatValuesBy(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
     .AddTreemap("Finding share", new[] {
         new ChartHierarchyItem("Authentication", "Authentication", value: 34),
         new ChartHierarchyItem("Certificate lifecycle", "Certificate lifecycle", value: 24),
@@ -286,13 +284,13 @@ var findingsTreemap = Chart.Create()
 SaveChart(findingsTreemap, "findings-composition-treemap-light");
 
 var timeline = Chart.Create()
-    .WithTitle("Domain Remediation Timeline")
-    .WithSubtitle("Date-range items for certificate and policy rollout planning")
-    .WithXAxis("Schedule")
-    .WithYAxis("Workstream")
-    .WithTheme(VisualTheme.Graphite())
-    .WithSize(800, 457)
-    .WithDataLabels()
+    .Title("Domain Remediation Timeline")
+    .Subtitle("Date-range items for certificate and policy rollout planning")
+    .XAxis(x => x.Title("Schedule"))
+    .YAxis(y => y.Title("Workstream"))
+    .Theme(VisualTheme.Graphite())
+    .Size(800, 457)
+    .DataLabels()
     .AddTimelineItem("Certificate renewal", new DateTime(2026, 1, 4), new DateTime(2026, 2, 10), ChartColor.FromRgb(37, 99, 235))
     .AddTimelineItem("DMARC enforcement", new DateTime(2026, 1, 18), new DateTime(2026, 3, 5), ChartColor.FromRgb(14, 165, 233))
     .AddTimelineItem("DNSSEC rollout", new DateTime(2026, 2, 1), new DateTime(2026, 3, 22), ChartColor.FromRgb(16, 185, 129))
@@ -301,14 +299,14 @@ var timeline = Chart.Create()
 SaveChart(timeline, "domain-remediation-timeline-light");
 
 var gantt = Chart.Create()
-    .WithTitle("Domain Remediation Gantt")
-    .WithSubtitle("Progress, task dependencies, milestones, and current schedule marker")
-    .WithXAxis("Schedule")
-    .WithYAxis("Workstream")
-    .WithTheme(VisualTheme.Graphite())
-    .WithSize(800, 462)
-    .WithDataLabels()
-    .WithGanttToday(new DateTime(2026, 2, 18))
+    .Title("Domain Remediation Gantt")
+    .Subtitle("Progress, task dependencies, milestones, and current schedule marker")
+    .XAxis(x => x.Title("Schedule"))
+    .YAxis(y => y.Title("Workstream"))
+    .Theme(VisualTheme.Graphite())
+    .Size(800, 462)
+    .DataLabels()
+    .GanttToday(new DateTime(2026, 2, 18))
     .AddGanttTask("Inventory scope", new DateTime(2026, 1, 5), new DateTime(2026, 1, 24), 0.90, color: ChartColor.FromRgb(37, 99, 235))
     .AddGanttTask("Owner remediation", new DateTime(2026, 1, 20), new DateTime(2026, 2, 24), 0.62, color: ChartColor.FromRgb(16, 185, 129))
     .AddGanttTask("Control retesting", new DateTime(2026, 2, 18), new DateTime(2026, 3, 12), 0.28, color: ChartColor.FromRgb(14, 165, 233))
@@ -319,11 +317,11 @@ for (var stage = 1; stage < gantt.Series.Count; stage++) gantt.AddGanttDependenc
 SaveChart(gantt, "domain-remediation-gantt-light");
 
 var findingFlow = Chart.Create()
-    .WithTitle("Finding Flow Sankey")
-    .WithSubtitle("Weighted paths from discovery through remediation outcomes")
-    .WithTheme(VisualTheme.Graphite())
-    .WithSize(800, 462)
-    .WithDataLabels()
+    .Title("Finding Flow Sankey")
+    .Subtitle("Weighted paths from discovery through remediation outcomes")
+    .Theme(VisualTheme.Graphite())
+    .Size(800, 462)
+    .DataLabels()
     .AddSankey("Findings", new[] { new ChartNode("Discovered", "Discovered"), new ChartNode("Validated", "Validated"), new ChartNode("Accepted risk", "Accepted risk"), new ChartNode("Owner remediation", "Owner remediation"), new ChartNode("Monitoring", "Monitoring"), new ChartNode("Closed", "Closed"), new ChartNode("Retesting", "Retesting") }, new[] {
         new ChartFlowLink("flow-1", "Discovered", "Validated", 72),
         new ChartFlowLink("flow-2", "Discovered", "Accepted risk", 18),
@@ -338,11 +336,11 @@ var findingFlow = Chart.Create()
 SaveChart(findingFlow, "finding-flow-sankey-light");
 
 var controlHierarchy = Chart.Create()
-    .WithDataLabels()
-    .WithTitle("Control Hierarchy Tree")
-    .WithSubtitle("Static hierarchy map for ownership and remediation structure")
-    .WithTheme(VisualTheme.Graphite())
-    .WithSize(800, 462)
+    .DataLabels()
+    .Title("Control Hierarchy Tree")
+    .Subtitle("Static hierarchy map for ownership and remediation structure")
+    .Theme(VisualTheme.Graphite())
+    .Size(800, 462)
     .AddTree("Control hierarchy", new[] { new ChartNode("Security posture", "Security posture"), new ChartNode("Mail authentication", "Mail authentication"), new ChartNode("Certificate lifecycle", "Certificate lifecycle"), new ChartNode("DNS hygiene", "DNS hygiene"), new ChartNode("SPF alignment", "SPF alignment"), new ChartNode("DKIM rotation", "DKIM rotation"), new ChartNode("Expiry monitoring", "Expiry monitoring"), new ChartNode("SAN inventory", "SAN inventory"), new ChartNode("DNSSEC rollout", "DNSSEC rollout"), new ChartNode("Stale record cleanup", "Stale record cleanup") }, new[] {
         new ChartTreeLink("Security posture", "Mail authentication", 3),
         new ChartTreeLink("Security posture", "Certificate lifecycle", 2),
@@ -358,15 +356,14 @@ var controlHierarchy = Chart.Create()
 SaveChart(controlHierarchy, "control-hierarchy-tree-light");
 
 var stacked = Chart.Create()
-    .WithTitle("Domain Findings Composition")
-    .WithSubtitle("Stacked bar mode for report totals")
-    .WithXAxis("Run")
-    .WithYAxis("Findings")
-    .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
-    .WithSize(800, 487)
-    .WithStackedBars()
-    .WithStackTotals()
-    .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri")
+    .Title("Domain Findings Composition")
+    .Subtitle("Stacked bar mode for report totals")
+    .XAxis(x => x.Title("Run"))
+    .YAxis(y => y.Title("Findings"))
+    .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
+    .Size(800, 487)
+    .Bars(b => b.Stacked().ShowTotals())
+    .XLabels("Mon", "Tue", "Wed", "Thu", "Fri")
     .AddBar("Passed", Points(180, 220, 245, 260, 280), ChartColor.FromRgb(52, 211, 153))
     .AddBar("Warnings", Points(42, 38, 32, 28, 24), ChartColor.FromRgb(251, 191, 36))
     .AddBar("Failed", Points(12, 10, 8, 6, 5), ChartColor.FromRgb(248, 113, 113))
@@ -375,13 +372,13 @@ var stacked = Chart.Create()
 SaveChart(stacked, "domain-findings-stacked-dark");
 
 var signalMix = Chart.Create()
-    .WithTitle("Domain Signal Mix")
-    .WithSubtitle("Stacked areas show how checks contribute to total signal volume")
-    .WithXAxis("Run")
-    .WithYAxis("Signals")
-    .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
-    .WithSize(800, 487)
-    .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+    .Title("Domain Signal Mix")
+    .Subtitle("Stacked areas show how checks contribute to total signal volume")
+    .XAxis(x => x.Title("Run"))
+    .YAxis(y => y.Title("Signals"))
+    .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
+    .Size(800, 487)
+    .XLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
     .AddSmoothStackedArea("Passed", Points(820, 940, 980, 1040, 1120, 1180, 1230), ChartColor.FromRgb(52, 211, 153))
     .AddSmoothStackedArea("Warnings", Points(120, 138, 132, 110, 98, 86, 72), ChartColor.FromRgb(251, 191, 36))
     .AddSmoothStackedArea("Failed", Points(22, 30, 28, 21, 18, 15, 13), ChartColor.FromRgb(248, 113, 113))
@@ -390,14 +387,14 @@ var signalMix = Chart.Create()
 SaveChart(signalMix, "domain-signal-mix-stacked-area-dark");
 
 var beforeAfter = Chart.Create()
-    .WithTitle("Control Improvement Slope")
-    .WithSubtitle("Endpoint comparisons make before/after movement easy to scan")
-    .WithXAxis("Review")
-    .WithYAxis("Coverage")
-    .WithTheme(VisualTheme.Graphite())
-    .WithSize(800, 484)
-    .WithDataLabels()
-    .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
+    .Title("Control Improvement Slope")
+    .Subtitle("Endpoint comparisons make before/after movement easy to scan")
+    .XAxis(x => x.Title("Review"))
+    .YAxis(y => y.Title("Coverage"))
+    .Theme(VisualTheme.Graphite())
+    .Size(800, 484)
+    .DataLabels()
+    .FormatValuesBy(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
     .AddSlope("DMARC enforcement", 58, 88, "Before", "After", ChartColor.FromRgb(37, 99, 235))
     .AddSlope("DNSSEC coverage", 42, 74, ChartColor.FromRgb(16, 185, 129))
     .AddSlope("MTA-STS deployment", 37, 63, ChartColor.FromRgb(245, 158, 11));
@@ -405,44 +402,44 @@ var beforeAfter = Chart.Create()
 SaveChart(beforeAfter, "control-improvement-slope-light");
 
 var sparkline = Chart.Create()
-    .WithTitle("Warnings Sparkline")
-    .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
-    .WithSize(360, 90)
-    .WithSparkline()
+    .Title("Warnings Sparkline")
+    .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
+    .Size(360, 90)
+    .Sparkline()
     .AddSmoothArea("Warnings", Points(120, 138, 132, 110, 98, 86, 72, 68), ChartColor.FromRgb(251, 191, 36));
 
 SaveChart(sparkline, "warnings-sparkline");
 
 var donut = Chart.Create()
-    .WithTitle("Domain Check Result Mix")
-    .WithSubtitle("Static donut chart with zero JavaScript")
-    .WithTheme(VisualTheme.Graphite())
-    .WithSize(800, 449)
-    .WithXLabels("Passed", "Warnings", "Failed")
+    .Title("Domain Check Result Mix")
+    .Subtitle("Static donut chart with zero JavaScript")
+    .Theme(VisualTheme.Graphite())
+    .Size(800, 449)
+    .XLabels("Passed", "Warnings", "Failed")
     .AddDonut("Checks", Points(1260, 68, 10));
 
 SaveChart(donut, "result-mix-donut");
 
-SaveChart(Chart.Create().WithTitle("Domain Check Result Pie").WithSubtitle("Pie slices expose value and percentage metadata for static reports").WithTheme(VisualTheme.Graphite()).WithSize(800, 449).WithDataLabels().WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent).WithXLabels("Passed", "Warnings", "Failed").AddPie("Checks", Points(1260, 68, 10)), "result-mix-pie-light");
-var zeroValueDonut = Chart.Create().WithTitle("Zero-Value Donut").WithSubtitle("Zero slices stay out of the ring without shifting colors or labels").WithTheme(VisualTheme.Graphite()).WithSize(800, 449).WithXLabels("No findings", "Reviewed", "Escalated").AddDonut("Review mix", Points(0, 82, 18));
-zeroValueDonut.Series[0].WithPointColor(1, ChartColor.FromRgb(15, 118, 110)).WithPointSliceOffset(1, 0.08);
+SaveChart(Chart.Create().Title("Domain Check Result Pie").Subtitle("Pie slices expose value and percentage metadata for static reports").Theme(VisualTheme.Graphite()).Size(800, 449).DataLabels().Pie(p => p.SliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent)).XLabels("Passed", "Warnings", "Failed").AddPie("Checks", Points(1260, 68, 10)), "result-mix-pie-light");
+var zeroValueDonut = Chart.Create().Title("Zero-Value Donut").Subtitle("Zero slices stay out of the ring without shifting colors or labels").Theme(VisualTheme.Graphite()).Size(800, 449).XLabels("No findings", "Reviewed", "Escalated").AddDonut("Review mix", Points(0, 82, 18));
+zeroValueDonut.Series[0].PointColor(1, ChartColor.FromRgb(15, 118, 110)).PointSliceOffset(1, 0.08);
 SaveChart(zeroValueDonut, "zero-value-donut-light");
 
 SaveChart(PolarExamples.CreateZeroValueArea(), "zero-value-polar-area-light");
 
-var zeroValueFunnel = Chart.Create().WithTitle("Zero-Value Funnel Stage").WithSubtitle("Zero stages stay visible and later stages avoid fake drop-off from zero").WithTheme(VisualTheme.Graphite()).WithSize(800, 487).WithXLabels("Opened", "Deferred", "Closed").AddFunnel("Review flow", Points(100, 0, 18));
-zeroValueFunnel.Series[0].WithPointColor(2, ChartColor.FromRgb(124, 58, 237));
+var zeroValueFunnel = Chart.Create().Title("Zero-Value Funnel Stage").Subtitle("Zero stages stay visible and later stages avoid fake drop-off from zero").Theme(VisualTheme.Graphite()).Size(800, 487).XLabels("Opened", "Deferred", "Closed").AddFunnel("Review flow", Points(100, 0, 18));
+zeroValueFunnel.Series[0].PointColor(2, ChartColor.FromRgb(124, 58, 237));
 SaveChart(zeroValueFunnel, "zero-value-funnel-stage-light");
 
 var monthly = Chart.Create()
-    .WithTitle("Monthly Security Posture")
-    .WithSubtitle("Automatic label density with wrapped legend rows")
-    .WithXAxis("Month")
-    .WithYAxis("Score")
-    .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
-    .WithSize(800, 568)
-    .WithXAxisLabelDensity(ChartLabelDensity.Auto)
-    .WithXLabels("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
+    .Title("Monthly Security Posture")
+    .Subtitle("Automatic label density with wrapped legend rows")
+    .XAxis(x => x.Title("Month"))
+    .YAxis(y => y.Title("Score"))
+    .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
+    .Size(800, 568)
+    .XAxis(x => x.LabelDensity(ChartLabelDensity.Auto))
+    .XLabels("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
     .AddSmoothLine("Primary domain checks", Points(82, 84, 86, 87, 88, 89, 91, 92, 93, 94, 95, 96), ChartColor.FromRgb(96, 165, 250))
     .AddSmoothLine("Certificate transparency drift", Points(78, 79, 81, 83, 85, 85, 86, 88, 89, 90, 91, 93), ChartColor.FromRgb(34, 211, 238))
     .AddSmoothLine("Mail authentication alignment", Points(72, 73, 75, 76, 78, 80, 82, 83, 84, 86, 87, 89), ChartColor.FromRgb(52, 211, 153))
@@ -452,13 +449,13 @@ var monthly = Chart.Create()
 SaveChart(monthly, "monthly-posture-dark");
 
 var annotationEdge = Chart.Create()
-    .WithTitle("Annotation Edge Handling")
-    .WithSubtitle("Line labels clamp to the plot instead of overflowing")
-    .WithXAxis("Run")
-    .WithYAxis("Checks")
-    .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
-    .WithSize(800, 484)
-    .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+    .Title("Annotation Edge Handling")
+    .Subtitle("Line labels clamp to the plot instead of overflowing")
+    .XAxis(x => x.Title("Run"))
+    .YAxis(y => y.Title("Checks"))
+    .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
+    .Size(800, 484)
+    .XLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
     .AddSmoothLine("Checks", Points(42, 68, 72, 95, 104, 118), ChartColor.FromRgb(96, 165, 250))
     .AddVerticalLine(6, "right edge marker", ChartColor.FromRgb(251, 191, 36))
     .AddHorizontalLine(100, "target", ChartColor.FromRgb(52, 211, 153));
@@ -468,57 +465,57 @@ annotationEdge.Annotations[1].StrokeStyle = new ChartStrokeStyle(width: 12, opac
 SaveChart(annotationEdge, "annotation-edge-dark");
 
 var labels = Chart.Create()
-    .WithTitle("Data Label Readability")
-    .WithSubtitle("Edge-aware labels with SVG text halos")
-    .WithXAxis("Day")
-    .WithYAxis("Signals")
-    .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
-    .WithSize(800, 484)
-    .WithDataLabels()
-    .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+    .Title("Data Label Readability")
+    .Subtitle("Edge-aware labels with SVG text halos")
+    .XAxis(x => x.Title("Day"))
+    .YAxis(y => y.Title("Signals"))
+    .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
+    .Size(800, 484)
+    .DataLabels()
+    .XLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
     .AddSmoothLine("Detected", Points(980, 760, 880, 920, 1020, 990), ChartColor.FromRgb(96, 165, 250))
     .AddBar("Escalated", Points(240, 320, 280, 410, 390, 450), ChartColor.FromRgb(251, 191, 36));
 
 SaveChart(labels, "data-label-readability-dark");
 
 var latency = Chart.Create()
-    .WithTitle("Endpoint Latency")
-    .WithSubtitle("Custom value formatting for report units")
-    .WithXAxis("Probe")
-    .WithYAxis("Response time")
-    .WithTheme(VisualTheme.Graphite())
-    .WithSize(800, 484)
-    .WithDataLabels()
-    .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + " ms")
-    .WithXLabels("DNS", "TCP", "TLS", "HTTP", "Render")
+    .Title("Endpoint Latency")
+    .Subtitle("Custom value formatting for report units")
+    .XAxis(x => x.Title("Probe"))
+    .YAxis(y => y.Title("Response time"))
+    .Theme(VisualTheme.Graphite())
+    .Size(800, 484)
+    .DataLabels()
+    .FormatValuesBy(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + " ms")
+    .XLabels("DNS", "TCP", "TLS", "HTTP", "Render")
     .AddSmoothLine("P95", Points(28, 64, 118, 146, 182), ChartColor.FromRgb(37, 99, 235))
     .AddHorizontalLine(150, "budget", ChartColor.FromRgb(245, 158, 11));
 
 SaveChart(latency, "endpoint-latency-light");
 
 var stateChanges = Chart.Create()
-    .WithTitle("Policy State Changes")
-    .WithSubtitle("Step lines show discrete report state transitions")
-    .WithXAxis("Stage")
-    .WithYAxis("Controls")
-    .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
-    .WithSize(800, 484)
-    .WithDataLabels()
-    .WithXLabels("Draft", "Review", "Approved", "Published", "Monitored")
+    .Title("Policy State Changes")
+    .Subtitle("Step lines show discrete report state transitions")
+    .XAxis(x => x.Title("Stage"))
+    .YAxis(y => y.Title("Controls"))
+    .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
+    .Size(800, 484)
+    .DataLabels()
+    .XLabels("Draft", "Review", "Approved", "Published", "Monitored")
     .AddStepLine("Required controls", Points(12, 18, 18, 26, 31), ChartColor.FromRgb(96, 165, 250))
     .AddHorizontalLine(24, "release gate", ChartColor.FromRgb(251, 191, 36));
 
 SaveChart(stateChanges, "policy-state-step-line-dark");
 
 var policyBacklog = Chart.Create()
-    .WithTitle("Policy Backlog Step Area")
-    .WithSubtitle("Step areas fill discrete state changes without implying smooth interpolation")
-    .WithXAxis("Stage")
-    .WithYAxis("Open Controls")
-    .WithTheme(VisualTheme.Graphite())
-    .WithSize(800, 484)
-    .WithDataLabels()
-    .WithXLabels("Draft", "Review", "Approved", "Published", "Monitored")
+    .Title("Policy Backlog Step Area")
+    .Subtitle("Step areas fill discrete state changes without implying smooth interpolation")
+    .XAxis(x => x.Title("Stage"))
+    .YAxis(y => y.Title("Open Controls"))
+    .Theme(VisualTheme.Graphite())
+    .Size(800, 484)
+    .DataLabels()
+    .XLabels("Draft", "Review", "Approved", "Published", "Monitored")
     .AddStepArea("Open controls", Points(31, 26, 26, 18, 12), ChartColor.FromRgb(14, 165, 233))
     .AddStepLine("Release gate", Points(24, 24, 20, 16, 12), ChartColor.FromRgb(37, 99, 235));
 
@@ -529,56 +526,56 @@ var cost = LicenseCostRecipe.Create();
 SaveChart(cost, "license-cost-light");
 
 var regional = Chart.Create()
-    .WithTitle("Certificate Transparency by Region")
-    .WithSubtitle("Horizontal bars keep region names readable at catalog size")
-    .WithXAxis("Certificates")
-    .WithYAxis("Region")
-    .WithTheme(VisualTheme.Graphite())
-    .WithSize(800, 509)
-    .WithValueFormatter(value => (value / 1000000d).ToString("0.#", System.Globalization.CultureInfo.InvariantCulture) + "M")
-    .WithXLabels("North America", "Western Europe", "Central Europe", "Asia Pacific", "Latin America", "Middle East")
+    .Title("Certificate Transparency by Region")
+    .Subtitle("Horizontal bars keep region names readable at catalog size")
+    .XAxis(x => x.Title("Certificates"))
+    .YAxis(y => y.Title("Region"))
+    .Theme(VisualTheme.Graphite())
+    .Size(800, 509)
+    .FormatValuesBy(value => (value / 1000000d).ToString("0.#", System.Globalization.CultureInfo.InvariantCulture) + "M")
+    .XLabels("North America", "Western Europe", "Central Europe", "Asia Pacific", "Latin America", "Middle East")
     .AddHorizontalBar("Logged certificates", Points(1200000, 2350000, 1840000, 3120000, 980000, 760000))
     .AddVerticalLine(2000000, "2M benchmark", ChartColor.FromRgb(245, 158, 11));
 
 SaveChart(regional, "ct-regional-light");
 
 var latencyDistribution = Chart.Create()
-    .WithTitle("Endpoint Latency Distribution")
-    .WithSubtitle("Histogram bins raw samples without caller-side preprocessing")
-    .WithXAxis("Latency")
-    .WithYAxis("Samples")
-    .WithTheme(VisualTheme.Graphite())
-    .WithSize(800, 484)
-    .WithDataLabels()
+    .Title("Endpoint Latency Distribution")
+    .Subtitle("Histogram bins raw samples without caller-side preprocessing")
+    .XAxis(x => x.Title("Latency"))
+    .YAxis(y => y.Title("Samples"))
+    .Theme(VisualTheme.Graphite())
+    .Size(800, 484)
+    .DataLabels()
     .AddHistogram("P95 samples", new[] { 28d, 31d, 36d, 42d, 47d, 58d, 64d, 72d, 86d, 91d, 118d, 146d, 182d }, ChartHistogramBinLayout.FromWidth(28, 182, 35), ChartColor.FromRgb(37, 99, 235));
 
 SaveChart(latencyDistribution, "endpoint-latency-histogram-light");
 
 var readinessLollipop = Chart.Create()
-    .WithTitle("Control Readiness")
-    .WithSubtitle("Lollipop markers keep category comparison lighter than bars")
-    .WithXAxis("Control")
-    .WithYAxis("Coverage")
-    .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
-    .WithSize(800, 484)
-    .WithDataLabels()
-    .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
-    .WithXLabels("SPF", "DMARC", "DNSSEC", "MTA-STS", "TLS-RPT")
+    .Title("Control Readiness")
+    .Subtitle("Lollipop markers keep category comparison lighter than bars")
+    .XAxis(x => x.Title("Control"))
+    .YAxis(y => y.Title("Coverage"))
+    .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
+    .Size(800, 484)
+    .DataLabels()
+    .FormatValuesBy(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
+    .XLabels("SPF", "DMARC", "DNSSEC", "MTA-STS", "TLS-RPT")
     .AddLollipop("Coverage", Points(96, 88, 74, 63, 58), ChartColor.FromRgb(96, 165, 250))
     .AddHorizontalLine(80, "target", ChartColor.FromRgb(251, 191, 36));
 
 SaveChart(readinessLollipop, "control-readiness-lollipop-dark");
 
 var latencyRanges = Chart.Create()
-    .WithTitle("Endpoint Latency Ranges")
-    .WithSubtitle("Range bars show observed min/max values")
-    .WithXAxis("Probe")
-    .WithYAxis("Response time")
-    .WithTheme(VisualTheme.Graphite())
-    .WithSize(800, 484)
-    .WithDataLabels()
-    .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + " ms")
-    .WithXLabels("DNS", "TCP", "TLS", "HTTP", "Render")
+    .Title("Endpoint Latency Ranges")
+    .Subtitle("Range bars show observed min/max values")
+    .XAxis(x => x.Title("Probe"))
+    .YAxis(y => y.Title("Response time"))
+    .Theme(VisualTheme.Graphite())
+    .Size(800, 484)
+    .DataLabels()
+    .FormatValuesBy(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + " ms")
+    .XLabels("DNS", "TCP", "TLS", "HTTP", "Render")
     .AddRangeBar("Observed", new[] {
         new ChartInterval(1, 18, 42),
         new ChartInterval(2, 44, 88),

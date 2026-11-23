@@ -42,8 +42,8 @@ public static class NativeHierarchyWebsiteRecipe {
     static Chart CreateChart(ChartSeriesKind kind, ThemeMode mode) {
         if (kind is not (ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst)) throw new ArgumentOutOfRangeException(nameof(kind));
         // This existing recipe owns every ID, parent and value. Its null group values are valid for both families.
-        var sunburst = SunburstRecipe.Create("wide", mode).WithSize(800, 505);
-        if (kind == ChartSeriesKind.Sunburst) return sunburst.ConfigureSunburst(options => {
+        var sunburst = SunburstRecipe.Create("wide", mode).Size(800, 505);
+        if (kind == ChartSeriesKind.Sunburst) return sunburst.Sunburst(options => {
             options.SectorGap = 6;
             options.MinimumLabelFontSize = 10;
             options.CornerRadius = 4;
@@ -52,9 +52,9 @@ public static class NativeHierarchyWebsiteRecipe {
         var treemap = ChartSeries.CreateTreemap(source.Id, source.Name, source.HierarchyItems);
         treemap.PointColors.AddRange(source.PointColors);
         treemap.PointFillPatterns.AddRange(source.PointFillPatterns);
-        foreach (var state in source.NodeStates) treemap.WithNodeState(state.Key, state.Value);
-        return Chart.Create().WithSize(800, 505).WithDataLabels().AddSeries(treemap)
-            .WithValueFormat(sunburst.Options.ValueFormat);
+        foreach (var state in source.NodeStates) treemap.NodeState(state.Key, state.Value);
+        return Chart.Create().Size(800, 505).DataLabels().AddSeries(treemap)
+            .ValueFormat(sunburst.Options.ValueFormat);
     }
 
     static VisualRenderContext Context(ThemeMode mode) => new(

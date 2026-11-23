@@ -17,7 +17,7 @@ public sealed class MapCalendarObservationLifecycleTests {
     [InlineData(ChartSeriesKind.RegionMap)]
     [InlineData(ChartSeriesKind.TileMap)]
     public void EmptyConvenienceFactoriesKeepGeometryAndCanRefillTheAttachedSeries(ChartSeriesKind kind) {
-        var chart = Chart.Create().WithSize(480, 280);
+        var chart = Chart.Create().Size(480, 280);
         switch (kind) {
             case ChartSeriesKind.DottedMap: chart.AddDottedMap("Items", Array.Empty<ChartMapPoint>()); break;
             case ChartSeriesKind.CalendarHeatmap: chart.AddCalendarHeatmap("Items", Array.Empty<ChartCalendarHeatmapItem>()); break;
@@ -29,7 +29,7 @@ public sealed class MapCalendarObservationLifecycleTests {
         Assert.Equal(0, series.ObservationCount); Assert.Equal(0, series.SourcePointCount);
         var empty = chart.Prepare(VisualExportRequest.ForChart(chart).Context); var svg = empty.ToSvg();
         var png = empty.ToPng(new VisualRenderOptions(supersampling: 1));
-        Refill(series); series.WithObservationId(0, new ChartObservationId("arrived"));
+        Refill(series); series.ObservationId(0, new ChartObservationId("arrived"));
         var filled = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var mark = Assert.Single(Marks(chart), item => item.Attribute("data-cfx-observation-id")?.Value == "arrived");
         Assert.Equal("4", mark.Attribute("data-cfx-value")?.Value);
@@ -61,8 +61,8 @@ public sealed class MapCalendarObservationLifecycleTests {
     [InlineData(ChartSeriesKind.RegionMap)]
     [InlineData(ChartSeriesKind.TileMap)]
     public void CompleteUpdatesKeepIdentityAndPreparedExportsRemainDetached(ChartSeriesKind kind) {
-        var series = Create(kind).WithObservationId(0, new ChartObservationId("retained"));
-        var chart = Chart.Create().WithSize(640, 360).AddSeries(series);
+        var series = Create(kind).ObservationId(0, new ChartObservationId("retained"));
+        var chart = Chart.Create().Size(640, 360).AddSeries(series);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var before = prepared.ToSvg();
         Update(series);
@@ -85,9 +85,9 @@ public sealed class MapCalendarObservationLifecycleTests {
     [InlineData(ChartSeriesKind.RegionMap)]
     [InlineData(ChartSeriesKind.TileMap)]
     public void ReplacementClearsObservationMetadataAndSupportsEmptyRefill(ChartSeriesKind kind) {
-        var series = Create(kind).WithObservationId(0, new ChartObservationId("old"))
-            .WithPointColor(0, "#123456").WithPointLabel(0, "Old label").WithState(ChartSeriesState.Warning);
-        var chart = Chart.Create().WithSize(480, 280).AddSeries(series);
+        var series = Create(kind).ObservationId(0, new ChartObservationId("old"))
+            .PointColor(0, "#123456").PointLabel(0, "Old label").StateRole(ChartSeriesState.Warning);
+        var chart = Chart.Create().Size(480, 280).AddSeries(series);
         ReplaceEmpty(series);
         Assert.Equal(0, series.SourcePointCount);
         Assert.Equal(0, series.ObservationCount);
@@ -106,7 +106,7 @@ public sealed class MapCalendarObservationLifecycleTests {
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartMapPoint("Invalid weight", 21, 52, -1));
         var input = new[] { new ChartMapPoint("Warsaw", 21, 52, 5), new ChartMapPoint("Paris", 2, 48, 9, ChartColor.FromHex("#123456")), new ChartMapPoint("Paris peer", 2, 48, 1) };
         var series = ChartSeries.CreateDottedMap(new ChartSeriesId("sites"), "Sites", input);
-        var chart = Chart.Create().AddSeries(series).WithXLabels("Unrelated axis label");
+        var chart = Chart.Create().AddSeries(series).XLabels("Unrelated axis label");
         input[1] = new ChartMapPoint("Changed input", 1, 1);
         Assert.Equal(3, series.ObservationCount); Assert.Equal("Paris", series.MapPoints[1].Label);
         Assert.Throws<NotSupportedException>(() => ((IList<ChartMapPoint>)series.MapPoints)[1] = input[1]);
@@ -119,8 +119,8 @@ public sealed class MapCalendarObservationLifecycleTests {
         Assert.Equal(ChartColor.FromHex("#123456"), glyph.Fill);
         chart.AddMapRouteBetweenPoints("Route snapshot", "Paris", "Paris peer");
         series.UpdateMapPoint(0, new ChartMapPoint("Paris moved", 5, 50, 7));
-        Assert.Equal(2, chart.Options.MapConnectors[0].FromLongitude);
-        Assert.Equal(48, chart.Options.MapConnectors[0].FromLatitude);
+        Assert.Equal(2, chart.Options.Map.Connectors[0].FromLongitude);
+        Assert.Equal(48, chart.Options.Map.Connectors[0].FromLatitude);
     }
 
     [Fact]
@@ -129,7 +129,7 @@ public sealed class MapCalendarObservationLifecycleTests {
         var series = ChartSeries.CreateCalendarHeatmap(new ChartSeriesId("days"), "Days", new[] {
             new ChartCalendarHeatmapItem(First.AddDays(2), 2), new ChartCalendarHeatmapItem(First.AddHours(4), 3, red),
             new ChartCalendarHeatmapItem(First, 4), new ChartCalendarHeatmapItem(First.AddDays(1), 1)
-        }).WithObservationId(0, new ChartObservationId("original-day"));
+        }).ObservationId(0, new ChartObservationId("original-day"));
         Assert.Equal(new[] { First, First.AddDays(1), First.AddDays(2) }, series.CalendarItems.Select(item => item.Date));
         Assert.Equal(7, series.CalendarItems[0].Value); Assert.Equal(red, series.CalendarItems[0].Color);
         var chart = Chart.Create().AddSeries(series);
@@ -151,8 +151,8 @@ public sealed class MapCalendarObservationLifecycleTests {
             : ChartSeries.CreateRegionMap(new ChartSeriesId("regions"), "Regions", Regions(), Values());
         Assert.Equal(new[] { "a-Mixed", "b-Mixed" }, series.RegionValues.Select(item => item.Region));
         Assert.Equal(-5, series.RegionValues[0].Value);
-        series.WithObservationId(0, new ChartObservationId("a"));
-        var first = Chart.Create().WithXLabels("Unrelated").AddSeries(series);
+        series.ObservationId(0, new ChartObservationId("a"));
+        var first = Chart.Create().XLabels("Unrelated").AddSeries(series);
         var before = first.ToSvg();
         Assert.Throws<ArgumentException>(() => series.UpdateRegionValue(0, new ChartRegionMapItem("Beta", 20)));
         Assert.Equal(before, first.ToSvg());
@@ -173,7 +173,7 @@ public sealed class MapCalendarObservationLifecycleTests {
     [InlineData(ChartSeriesKind.RegionMap)]
     [InlineData(ChartSeriesKind.TileMap)]
     public void FailedReplacementKeepsInstalledDataMetadataAndGeometry(ChartSeriesKind kind) {
-        var series = Create(kind).WithObservationId(0, new ChartObservationId("first")).WithPointColor(0, "#123456");
+        var series = Create(kind).ObservationId(0, new ChartObservationId("first")).PointColor(0, "#123456");
         var chart = Chart.Create().AddSeries(series);
         var before = chart.ToSvg();
         Assert.ThrowsAny<ArgumentException>(() => {
@@ -189,13 +189,13 @@ public sealed class MapCalendarObservationLifecycleTests {
 
     [Fact]
     public void FailedConvenienceAddDoesNotChangePaintGeometryOrAxisLabels() {
-        var chart = Chart.Create().WithXLabels("Host label");
+        var chart = Chart.Create().XLabels("Host label");
         var scale = ChartColorScale.Sequential(ChartColor.FromHex("#123456"), ChartColor.FromHex("#ABCDEF"));
         Assert.Throws<ArgumentException>(() => chart.AddRegionHeatmap("Bad", Regions(), new[] { new ChartRegionMapItem("Missing", 1) }, scale));
-        Assert.Empty(chart.Series); Assert.Null(chart.Options.MapColorScale);
-        Assert.Equal("Host label", Assert.Single(chart.Options.XAxisLabels).Text);
+        Assert.Empty(chart.Series); Assert.Null(chart.Options.Map.ColorScale);
+        Assert.Equal("Host label", Assert.Single(chart.Options.XAxis.Labels).Text);
         Assert.Throws<ArgumentException>(() => chart.AddTileHeatmap("Bad", Tiles(), new[] { default(ChartRegionMapItem) }, scale));
-        Assert.Empty(chart.Series); Assert.Null(chart.Options.MapColorScale);
+        Assert.Empty(chart.Series); Assert.Null(chart.Options.Map.ColorScale);
         Assert.Throws<ArgumentOutOfRangeException>(() => ChartSeries.CreateCalendarHeatmap(new ChartSeriesId("bad"), "Bad", new[] { default(ChartCalendarHeatmapItem) }));
     }
 

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.VisualBlocks;
 
@@ -24,6 +25,7 @@ public enum SegmentedMetricStyle {
 /// <summary>
 /// A generic segmented metric block for progress rows, part-to-whole strips, and distribution rows.
 /// </summary>
+[Fluent]
 public sealed class SegmentedMetricBlock : FactualVisualBlock<SegmentedMetricBlock> {
     private readonly List<SegmentedMetricItem> _items = new();
     private string _label = string.Empty;
@@ -72,21 +74,12 @@ public sealed class SegmentedMetricBlock : FactualVisualBlock<SegmentedMetricBlo
     /// <summary>Creates a new segmented metric block.</summary>
     public static SegmentedMetricBlock Create(SegmentedMetricStyle style = SegmentedMetricStyle.ProgressRows) => new() { Style = style };
 
-    /// <summary>Sets the segmented metric visual treatment.</summary>
-    public SegmentedMetricBlock WithStyle(SegmentedMetricStyle style) { Style = style; return this; }
-
     /// <summary>Sets the card metric label and value.</summary>
-    public SegmentedMetricBlock WithMetric(string label, object? value, string? unit = null, string? caption = null, string? format = null) {
+    public SegmentedMetricBlock Metric(string label, object? value, string? unit = null, string? caption = null, string? format = null) {
         Label = label ?? throw new ArgumentNullException(nameof(label));
         Value = ChartTableCell.FromValue(value, format).Text;
         Unit = unit ?? string.Empty;
         Caption = caption ?? string.Empty;
-        return this;
-    }
-
-    /// <summary>Sets optional caption text.</summary>
-    public SegmentedMetricBlock WithCaption(string caption) {
-        Caption = caption ?? throw new ArgumentNullException(nameof(caption));
         return this;
     }
 
@@ -130,12 +123,6 @@ public sealed class SegmentedMetricBlock : FactualVisualBlock<SegmentedMetricBlo
         return AddItem(ChartOptionConfiguration.Configure(new SegmentedMetricItem(label, value), configure, item => item.Clone()));
     }
 
-    /// <summary>Sets optional compact header symbol rendered in a badge.</summary>
-    public SegmentedMetricBlock WithHeaderSymbol(string symbol) {
-        HeaderSymbol = symbol ?? throw new ArgumentNullException(nameof(symbol));
-        return this;
-    }
-
 
 
 
@@ -146,6 +133,7 @@ public sealed class SegmentedMetricBlock : FactualVisualBlock<SegmentedMetricBlo
 /// <summary>
 /// One item in a segmented metric block.
 /// </summary>
+[Fluent]
 public sealed class SegmentedMetricItem {
     private string _label;
     private string _delta = string.Empty;
@@ -196,45 +184,8 @@ public sealed class SegmentedMetricItem {
         }
     }
 
-    /// <summary>Sets the progress maximum and fixed segment count.</summary>
-    public SegmentedMetricItem WithProgress(double maximum, int segments) {
-        Maximum = maximum;
-        Segments = segments;
-        return this;
-    }
-
-    /// <summary>Sets an explicit item color.</summary>
-    public SegmentedMetricItem WithColor(ChartColor? color) {
-        Color = color;
-        return this;
-    }
-
-    /// <summary>Sets the semantic item status.</summary>
-    public SegmentedMetricItem WithStatus(Tone status) {
-        Status = status;
-        return this;
-    }
-
-    /// <summary>Sets the optional fill pattern hint.</summary>
-    public SegmentedMetricItem WithPattern(ChartFillPattern pattern) {
-        Pattern = pattern;
-        return this;
-    }
-
-    /// <summary>Sets optional delta text.</summary>
-    public SegmentedMetricItem WithDelta(string delta) {
-        Delta = delta ?? throw new ArgumentNullException(nameof(delta));
-        return this;
-    }
-
-    /// <summary>Sets compact symbol text shown by visual treatments that use symbols.</summary>
-    public SegmentedMetricItem WithSymbol(string symbol) {
-        Symbol = symbol ?? throw new ArgumentNullException(nameof(symbol));
-        return this;
-    }
-
     /// <summary>Sets optional display text used instead of a derived item value.</summary>
-    public SegmentedMetricItem WithDisplayValue(object? displayValue, string? format = null) {
+    internal SegmentedMetricItem SetDisplayValue(object? displayValue, string? format = null) {
         DisplayValue = SegmentedMetricBlock.FormatDisplayValue(displayValue, format);
         return this;
     }

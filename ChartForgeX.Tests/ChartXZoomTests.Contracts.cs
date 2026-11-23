@@ -20,10 +20,10 @@ public sealed partial class ChartXZoomTests {
             new ChartPoint(10, 8)
         };
         var series = new ChartSeries(new ChartSeriesId("observed"), "Observed", step ? ChartSeriesKind.StepLine : ChartSeriesKind.Line, points)
-            .WithObservationIds(new[] { new ChartObservationId("zero"), new ChartObservationId("five"), new ChartObservationId("ten") })
-            .WithMarkOptions(new ChartMarkOptions(href: "#series", cssClass: "series-hooks"));
-        if (step) series.WithInterpolation(ChartInterpolation.Step);
-        var chart = Bare().WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).AddSeries(series);
+            .ObservationIds(new[] { new ChartObservationId("zero"), new ChartObservationId("five"), new ChartObservationId("ten") })
+            .MarkOptions(new ChartMarkOptions(href: "#series", cssClass: "series-hooks"));
+        if (step) series.Interpolation(ChartInterpolation.Step);
+        var chart = Bare().XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10)).AddSeries(series);
         chart.Options.XAxis.Reversed = step;
         var bank = chart.PrepareXZoom(Context(), new ChartXZoomLevels(1, 2));
         chart.ClearSeries();
@@ -51,10 +51,10 @@ public sealed partial class ChartXZoomTests {
     [InlineData("y")]
     [InlineData("secondary-y")]
     public void BankRejectsInteriorRuleCrossingsRatherThanFreezingTheirMotion(string slot) {
-        var chart = Bare().WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+        var chart = Bare().XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
             .AddLine("Primary", new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) })
             .AddLine("Secondary", new[] { new ChartPoint(0, 4), new ChartPoint(10, 6) });
-        chart.Series[1].UseSecondaryValueAxis();
+        chart.Series[1].SecondaryAxis();
         var axis = slot == "x" ? chart.Options.XAxis : slot == "y" ? chart.Options.YAxis : chart.Options.SecondaryYAxis;
         axis.RuleCrossAt = 5;
         Assert.Throws<NotSupportedException>(() => chart.PrepareXZoom(Context(), new ChartXZoomLevels(1, 2)));
@@ -65,7 +65,7 @@ public sealed partial class ChartXZoomTests {
     [InlineData(2)]
     [InlineData(4)]
     public void MagnifiedTrackRetainsIntegerTickPositions(double factor) {
-        var chart = Bare().WithXAxisBounds(0, 1).WithXAxisIntegerTicks()
+        var chart = Bare().XAxis(x => x.Bounds(0, 1).IntegerTicks())
             .AddLine("Counts", new[] { new ChartPoint(0, 2), new ChartPoint(1, 8) });
         var bank = chart.PrepareXZoom(Context(), factor == 1 ? new ChartXZoomLevels(1) : new ChartXZoomLevels(1, factor));
         Assert.All(bank.Bank[^1].Ticks, tick => Assert.Equal(Math.Truncate(tick), tick));
@@ -92,10 +92,10 @@ public sealed partial class ChartXZoomTests {
             "image" => ChartFill.Image(image),
             _ => ChartFill.Pattern(image, 2, 2)
         };
-        var chart = Bare().WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+        var chart = Bare().XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
             .AddLine("Observed", new[] { new ChartPoint(5, 5) }, Blue).AddHorizontalLine(5, "Fixed reference");
         chart.Series[0].Color = ChartColor.Transparent;
-        chart.Series[0].WithFill(fill).ConfigureMarkers(marker => { marker.Enabled = true; marker.Radius = 24; marker.StrokeWidth = 0; });
+        chart.Series[0].Fill(fill).Markers(marker => { marker.Enabled = true; marker.Radius = 24; marker.StrokeWidth = 0; });
         var bank = chart.PrepareXZoom(Context(), new ChartXZoomLevels(1, 2));
         var level = bank.Bank[1];
         var caption = level.Layers.Select(layer => layer.Caption).Single(item => item?.Id == "annotation-0-label")!;

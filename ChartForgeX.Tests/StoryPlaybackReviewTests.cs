@@ -29,7 +29,7 @@ public sealed class StoryPlaybackReviewTests {
     [InlineData(.4, true)]
     [InlineData(.2, false)]
     public void IncomingCrossFadeVisibilityUsesBothOpacityAndDisplayDuration(double transition, bool readable) {
-        var story = VisualStory.Create("Incoming chapter").WithSize(480, 320);
+        var story = VisualStory.Create("Incoming chapter").Size(480, 320);
         story.Scene("first", "First", .6).Panel("first", new VisualStoryTextSurface("First"));
         story.Scene("middle", "Middle", .35).Panel("middle", new VisualStoryTextSurface("Middle"));
         story.Scene("last", "Last", .5).Panel("last", new VisualStoryTextSurface("Last"));
@@ -83,7 +83,7 @@ public sealed class StoryPlaybackReviewTests {
 
     [Fact]
     public void AOneMillisecondCompletedChapterFailsEverySampledExportBeforeWriting() {
-        var story = VisualStory.Create("Readable duration").WithSize(480, 320);
+        var story = VisualStory.Create("Readable duration").Size(480, 320);
         story.Scene("first", "First", .251).Panel("first", new VisualStoryTextSurface("First"));
         story.Scene("last", "Last", .25).Panel("last", new VisualStoryTextSurface("Last"));
         story.Outcome("last", "Last", "last");
@@ -127,9 +127,9 @@ public sealed class StoryPlaybackReviewTests {
     [InlineData(false)]
     [InlineData(true)]
     public void RetainedTerminalPanelsAndCrossFadesAreRejectedBeforeAllocatingOrWriting(bool crossFade) {
-        var terminal = TerminalStory.Create().WithWidth(1800).WithTypography(24, 40).WithFinalPrompt(false);
+        var terminal = TerminalStory.Create().Width(1800).Typography(24, 40).ShowFinalPrompt(false);
         for (var i = 0; i < 104; i++) terminal.Output("line " + i);
-        var story = VisualStory.Create("Retained terminal images").WithSize(1400, 788);
+        var story = VisualStory.Create("Retained terminal images").Size(1400, 788);
         var surface = new VisualStoryTerminalSurface(terminal);
         if (crossFade) {
             story.Scene("first", "First", 1).Panel("result", surface);
@@ -164,7 +164,7 @@ public sealed class StoryPlaybackReviewTests {
     [Fact]
     public void AnimatedSvgKeepsTranscriptOnceAndDecoratesEmbeddedFrames() {
         var story = Basic(new VisualStorySourceSurface(StorySourceText.Create("Ready")));
-        story.WithDescription("Unique complete transcript sentinel");
+        story.Description("Unique complete transcript sentinel");
         var animation = XDocument.Parse(story.Prepare().ToAnimatedSvg(new VisualStoryFrameOptions(2)));
         Assert.Contains("Unique complete transcript sentinel", animation.Root!.Elements().Single(element => element.Name.LocalName == "desc").Value);
         foreach (var image in animation.Descendants().Where(element => element.Name.LocalName == "image")) {
@@ -177,7 +177,7 @@ public sealed class StoryPlaybackReviewTests {
 
     [Fact]
     public void SvgDensityScalesEmbeddedTerminalPixels() {
-        var prepared = Basic(new VisualStoryTerminalSurface(TerminalStory.Create().WithWidth(480).WithFinalPrompt(false).Output("Ready"))).Prepare();
+        var prepared = Basic(new VisualStoryTerminalSurface(TerminalStory.Create().Width(480).ShowFinalPrompt(false).Output("Ready"))).Prepare();
         var one = TerminalPixels(prepared.ToAnimatedSvg(new VisualStoryFrameOptions(2, 1)));
         var two = TerminalPixels(prepared.ToAnimatedSvg(new VisualStoryFrameOptions(2, 2)));
         Assert.Equal(one.Width * 2, two.Width);
@@ -194,7 +194,7 @@ public sealed class StoryPlaybackReviewTests {
         var surface = highlighted < 0
             ? new VisualStorySourceSurface(StorySourceTimeline.Create(source).Select(6, 0, TimeSpan.Zero).Pause(TimeSpan.FromSeconds(1)), options: options)
             : new VisualStorySourceSurface(source, options: options);
-        var story = VisualStory.Create("One visible row").WithSize(600, 400);
+        var story = VisualStory.Create("One visible row").Size(600, 400);
         story.Scene("edit", "Edit", 1, VisualStorySceneLayout.Stacked).Panel("source", surface).Panel("result", new VisualStoryTextSurface("Ready"));
         story.Outcome("result", "Ready", "result");
         var svg = XDocument.Parse(story.Prepare().ToSvg());
@@ -205,7 +205,7 @@ public sealed class StoryPlaybackReviewTests {
 
     [Fact]
     public void DefaultSvgSamplingCoversShortChaptersAndExplicitSamplingStaysExplicit() {
-        var story = VisualStory.Create("Short chapters").WithSize(480, 320);
+        var story = VisualStory.Create("Short chapters").Size(480, 320);
         story.Scene("first", "First", .501).Panel("first", new VisualStoryTextSurface("First"));
         story.Scene("last", "Last", .25).Panel("last", new VisualStoryTextSurface("Last"));
         story.Outcome("last", "Last", "last");
@@ -220,7 +220,7 @@ public sealed class StoryPlaybackReviewTests {
     [InlineData(60, 1.5)]
     [InlineData(2, .26)]
     public void GifRejectsViewerClampedDelaysBeforeWriting(int rate, double hold) {
-        var story = VisualStory.Create("GIF delays").WithSize(480, 320);
+        var story = VisualStory.Create("GIF delays").Size(480, 320);
         story.Scene("result", "Result", .25).Panel("result", new VisualStoryTextSurface("Ready"));
         story.Outcome("ready", "Ready", "result");
         var prepared = story.Prepare(new VisualStoryPlaybackOptions(TimeSpan.FromSeconds(hold), TimeSpan.Zero, 1));
@@ -237,7 +237,7 @@ public sealed class StoryPlaybackReviewTests {
     }
 
     private static VisualStory Basic(VisualStorySurface surface) {
-        var story = VisualStory.Create("Review contract").WithSize(480, 320);
+        var story = VisualStory.Create("Review contract").Size(480, 320);
         story.Scene("result", "Result", 1).Panel("result", surface);
         return story.Outcome("first", "First result", "result");
     }

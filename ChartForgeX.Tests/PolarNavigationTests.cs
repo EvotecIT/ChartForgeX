@@ -21,7 +21,7 @@ public sealed class PolarNavigationTests {
         Assert.Equal(Math.Pow(10, secondaryReversed ? 1.2 : 1.3), request.SecondaryRadius!.Minimum, 8);
         Assert.Equal(Math.Pow(10, secondaryReversed ? 1.7 : 1.8), request.SecondaryRadius.Maximum, 8);
         Assert.Equal(5.8, request.Angle!.Minimum, 9); Assert.Equal(6.45, request.Angle.Maximum, 9);
-        Assert.Equal(20, projection.GetRadiusWindow().Minimum); Assert.Equal(1, chart.Options.SecondaryYAxis.Minimum);
+        Assert.Equal(20, projection.GetRadiusWindow().Minimum); Assert.Equal(1, chart.Options.SecondaryYAxis.Min);
     }
     [Theory]
     [InlineData(false)] [InlineData(true)]
@@ -39,7 +39,7 @@ public sealed class PolarNavigationTests {
     [Theory]
     [InlineData(360, false)] [InlineData(360, true)] [InlineData(800, false)] [InlineData(800, true)]
     public void AcceptedNativeViewsRetainSourceIdentitiesAndBothExportSurfacesAcrossAllPoses(int width, bool dark) {
-        var chart = Model().WithSize(width, 420).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+        var chart = Model().Size(width, 420).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         var original = chart.Series.Select(series => series.Points.ToArray()).ToArray();
         var prepared = Prepare(chart, Window()); var projection = prepared.PolarProjection!;
         var zoomed = Prepare(chart, projection.Zoom(1.5, Anchor(projection, 6.1, .8), All));
@@ -118,14 +118,14 @@ public sealed class PolarNavigationTests {
     public void DetachedNavigationIgnoresLaterSourceAxisMutation() {
         var chart = Model(); var p = Prepare(chart, Window()).PolarProjection!; var anchor = Anchor(p, 6.1, .8);
         var expected = p.Zoom(2, anchor, All)!;
-        chart.Options.YAxis.Minimum = -100; chart.Options.YAxis.Reversed = true; chart.Options.SecondaryYAxis.LogarithmBase = 2;
+        chart.Options.YAxis.Min = -100; chart.Options.YAxis.Reversed = true; chart.Options.SecondaryYAxis.LogarithmBase = 2;
         chart.ClearSeries(); var actual = p.Zoom(2, anchor, All)!;
         Assert.Equal(expected.Radius!.Minimum, actual.Radius!.Minimum); Assert.Equal(expected.SecondaryRadius!.Maximum, actual.SecondaryRadius!.Maximum);
     }
     internal static Chart Model() {
         var values = new[] { new ChartPoint(-.25, 35), new ChartPoint(.1, 60), new ChartPoint(.4, 75), new ChartPoint(3, 50, true), new ChartPoint(6.1, 90) };
-        var chart = PolarViewportContractTests.Create(values).WithSecondaryYAxisBounds(1, 1000).AddPolar("Log radius", values.Select(point => new ChartPoint(point.X, 30)).ToArray());
-        chart.Series[1].UseSecondaryValueAxis(); chart.Options.SecondaryYAxis.Scale = ChartScaleKind.Logarithmic; return chart;
+        var chart = PolarViewportContractTests.Create(values).SecondaryYAxis(s => s.Bounds(1, 1000)).AddPolar("Log radius", values.Select(point => new ChartPoint(point.X, 30)).ToArray());
+        chart.Series[1].SecondaryAxis(); chart.Options.SecondaryYAxis.Scale = ChartScaleKind.Logarithmic; return chart;
     }
     internal static ChartPolarViewport Window() => new(angle: new ChartAxisWindow(5.5, 6.8), radius: new ChartAxisWindow(20, 80), secondaryRadius: new ChartAxisWindow(10, 100));
     internal static PreparedVisual Prepare(Chart chart, ChartPolarViewport? view) => chart.PreparePolar(VisualExportRequest.ForChart(chart).Context, view);

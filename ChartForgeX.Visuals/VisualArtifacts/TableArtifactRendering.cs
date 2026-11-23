@@ -18,11 +18,11 @@ public static class TableArtifactRendering {
     public static ChartTable ToPreviewBlock(this TableArtifact table) {
         if (table == null) throw new ArgumentNullException(nameof(table));
         var preview = ChartTable.Create()
-            .WithTitle(table.Title)
-            .WithSubtitle(table.Subtitle)
-            .WithSize(PreviewWidth, PreviewHeight)
-            .WithTransparentBackground()
-            .WithCard(false);
+            .Title(table.Title)
+            .Subtitle(table.Subtitle)
+            .Size(PreviewWidth, PreviewHeight)
+            .TransparentBackground()
+            .ShowCard(false);
 
         int? statusColumnIndex = null;
         for (var columnIndex = 0; columnIndex < table.Columns.Count; columnIndex++) {
@@ -31,13 +31,13 @@ public static class TableArtifactRendering {
             if (!statusColumnIndex.HasValue && column.Type == TableArtifactColumnType.Status) statusColumnIndex = columnIndex;
         }
 
-        if (statusColumnIndex.HasValue) preview.WithStatusColumn(statusColumnIndex.Value);
+        if (statusColumnIndex.HasValue) preview.StatusColumn(statusColumnIndex.Value);
         for (var rowIndex = 0; rowIndex < table.Rows.Count; rowIndex++) {
             var row = table.Rows[rowIndex];
             var values = new object?[row.Cells.Count];
             for (var cellIndex = 0; cellIndex < row.Cells.Count; cellIndex++) values[cellIndex] = row.Cells[cellIndex].DisplayText;
             preview.AddRow(values);
-            preview.ConfigureRow(rowIndex, targetRow => {
+            preview.UpdateRow(rowIndex, targetRow => {
                 for (var cellIndex = 0; cellIndex < row.Cells.Count; cellIndex++) {
                     targetRow.Cells[cellIndex].Status = row.Cells[cellIndex].Status == Tone.None ? row.Status : row.Cells[cellIndex].Status;
                 }

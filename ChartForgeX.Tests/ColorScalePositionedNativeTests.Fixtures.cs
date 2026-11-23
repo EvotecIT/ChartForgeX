@@ -21,14 +21,14 @@ public sealed partial class ColorScalePositionedNativeTests {
     private static Chart Create(string family, ChartColorScale scale, int width = 800, bool dark = false) {
         const string font = "CFX Positioned Native Carlito";
         FontRegistry.Register(font, Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
-        var chart = Chart.Create().WithSize(width, 480).WithDataLabels(false).WithPngSupersampling(1)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(font), dark ? ThemeMode.Dark : ThemeMode.Light);
+        var chart = Chart.Create().Size(width, 480).DataLabels(false).Png(p => p.SupersamplingScale(1))
+            .Theme(VisualTheme.Graphite().WithFontFamily(font)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         chart.Options.TransparentBackground = false; chart.Options.ShowCard = false; chart.Options.ShowPlotBackground = false; chart.Options.ShowGrid = false;
         var values = new double?[] { 0, 2.5, 5, 100, null };
         if (family is "scatter" or "bubble") {
             if (family == "bubble") chart.AddBubble("Observations", values.Select((value, index) => new ChartBubble(index + 1, 10 + index * 4, (index + 1) * (index + 1)).WithColorValue(value)));
             else chart.AddScatter("Observations", values.Select((value, index) => new ChartPoint(index + 1, 10 + index * 4).WithColorValue(value)));
-            chart.WithXAxisBounds(0, 6).WithYAxisBounds(0, 40);
+            chart.XAxis(x => x.Bounds(0, 6)).YAxis(y => y.Bounds(0, 40));
         } else if (family is "heatmap" or "hexbin") {
             var rows = new[] { ChartHeatmapRow.CreateMasked("Observations", values) };
             if (family == "heatmap") chart.AddHeatmapRows(rows); else chart.AddHexbinHeatmapRows(rows);
@@ -41,7 +41,7 @@ public sealed partial class ColorScalePositionedNativeTests {
             else chart.AddTreemap("Observations", leaves);
         } else {
             var items = new[] { new ChartRegionMapItem("CA", 0), new ChartRegionMapItem("NY", 2.5), new ChartRegionMapItem("TX", 5), new ChartRegionMapItem("WA", 100) };
-            chart.WithMapLabels(false);
+            chart.Map(m => m.ShowLabels(false));
             if (family == "region-map") chart.AddRegionMap("Observations", ChartMapCatalog.Get("us-states"), items);
             else chart.AddTileMap("Observations", ChartTileMapCatalog.Get("us-states"), items);
         }
@@ -50,11 +50,11 @@ public sealed partial class ColorScalePositionedNativeTests {
     }
 
     private static void SetScale(Chart chart, string family, ChartColorScale scale) {
-        if (family is "scatter" or "bubble") chart.Series[0].WithColorScale(scale);
-        else if (family is "heatmap" or "hexbin" or "calendar") chart.WithHeatmapColorScale(scale);
-        else if (family == "sunburst") chart.ConfigureSunburst(options => options.ColorScale = scale);
-        else if (family == "treemap") chart.ConfigureTreemap(options => options.ColorScale = scale);
-        else chart.WithMapColorScale(scale);
+        if (family is "scatter" or "bubble") chart.Series[0].ColorScale(scale);
+        else if (family is "heatmap" or "hexbin" or "calendar") chart.Heatmap(h => h.ColorScale(scale));
+        else if (family == "sunburst") chart.Sunburst(options => options.ColorScale = scale);
+        else if (family == "treemap") chart.Treemap(options => options.ColorScale = scale);
+        else chart.Map(m => m.ColorScale(scale));
     }
 
     private static string Prefix(string family) => family switch {

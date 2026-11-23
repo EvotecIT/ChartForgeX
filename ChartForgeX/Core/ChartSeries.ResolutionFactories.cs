@@ -47,7 +47,7 @@ public sealed partial class ChartSeries {
             : id.HasValue ? new ChartSeries(id.Value, name, kind, source) { Color = color }
                 : new ChartSeries(name, kind, source) { Color = color };
         if (kind != ChartSeriesKind.Scatter && series.Points.Count > effective.MaximumMarkerCount) {
-            series.WithMarkerRadius(0);
+            series.MarkerRadius(0);
             series.PreserveHiddenMarkerInteractionTargets();
         }
         return series;

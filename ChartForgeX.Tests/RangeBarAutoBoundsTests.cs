@@ -28,12 +28,12 @@ public sealed class RangeBarAutoBoundsTests {
         var chart = V2GalleryModels.Create(ChartSeriesKind.RangeBar, compact ? "compact-horizontal" : "horizontal");
         chart.Options.XAxis.Reversed = scenario is "reversed-value" or "reversed-both-thumbnail" or "reversed-logarithmic";
         chart.Options.YAxis.Reversed = scenario is "reversed-category" or "reversed-both-thumbnail" or "reversed-logarithmic";
-        if (scenario is "logarithmic" or "reversed-logarithmic") chart.Options.XAxis.WithScale(ChartScaleKind.Logarithmic);
-        if (scenario == "flat") chart.WithBarStyle(ChartBarStyle.Flat);
+        if (scenario is "logarithmic" or "reversed-logarithmic") chart.Options.XAxis.Scale(ChartScaleKind.Logarithmic);
+        if (scenario == "flat") chart.Bars(b => b.Style(ChartBarStyle.Flat));
         // The raw-data domain remains exact; pixel gutters belong to preparation, not authored bounds.
         var raw = ChartRange.FromChart(chart);
         Assert.Equal(10, raw.MinX); Assert.Equal(55, raw.MaxX);
-        Assert.Null(chart.Options.XAxis.Minimum); Assert.Null(chart.Options.XAxis.Maximum);
+        Assert.Null(chart.Options.XAxis.Min); Assert.Null(chart.Options.XAxis.Max);
         var prepared = chart.Prepare(Context(width, height, mode, thumbnail));
         var groups = PointGroups(prepared);
         Assert.Equal(8, groups.Length);
@@ -55,9 +55,9 @@ public sealed class RangeBarAutoBoundsTests {
     [InlineData(true)]
     public void ExplicitValueBoundsKeepEndpointsAtThePlotEdgesAndIntentionallyClipTheirCaps(bool reversed) {
         var chart = V2GalleryModels.Create(ChartSeriesKind.RangeBar, "horizontal");
-        chart.Options.XAxis.WithBounds(10, 55).WithReversal(reversed);
+        chart.Options.XAxis.Bounds(10, 55).Reversed(reversed);
         var groups = PointGroups(chart.Prepare(Context(800, 440, ThemeMode.Light)));
-        Assert.Equal(10, chart.Options.XAxis.Minimum); Assert.Equal(55, chart.Options.XAxis.Maximum);
+        Assert.Equal(10, chart.Options.XAxis.Min); Assert.Equal(55, chart.Options.XAxis.Max);
         AssertPinned(MainCaps(groups[1])[0], maximum: false, reversed);
         AssertPinned(MainCaps(groups[7])[1], maximum: true, reversed);
     }
@@ -67,8 +67,8 @@ public sealed class RangeBarAutoBoundsTests {
     [InlineData(true)]
     public void OneExplicitValueEndClipsOnlyThatEndWhileTheAutomaticEndContainsItsLighting(bool explicitMaximum) {
         var chart = V2GalleryModels.Create(ChartSeriesKind.RangeBar, "horizontal");
-        if (explicitMaximum) chart.Options.XAxis.Maximum = 55;
-        else chart.Options.XAxis.Minimum = 10;
+        if (explicitMaximum) chart.Options.XAxis.Max = 55;
+        else chart.Options.XAxis.Min = 10;
         var groups = PointGroups(chart.Prepare(Context(800, 440, ThemeMode.Light)));
         AssertPinned(explicitMaximum ? MainCaps(groups[7])[1] : MainCaps(groups[1])[0], explicitMaximum, false);
         var automatic = Parts(explicitMaximum ? groups[1] : groups[7]).Where(part => part.Name.LocalName == "line")
@@ -82,8 +82,8 @@ public sealed class RangeBarAutoBoundsTests {
     [InlineData(true, 0)]
     [InlineData(false, .000001)]
     public void ZeroOrTinyFlatIntervalsKeepTheirMinimumBodyInsideAutomaticBounds(bool reversed, double delta) {
-        var chart = Chart.Create().ConfigureRangeBar(options => options.Orientation = ChartOrientation.Horizontal)
-            .WithBarStyle(ChartBarStyle.Flat).WithXLabels("Minimum", "Maximum")
+        var chart = Chart.Create().RangeBar(options => options.Orientation = ChartOrientation.Horizontal)
+            .Bars(b => b.Style(ChartBarStyle.Flat)).XLabels("Minimum", "Maximum")
             .AddRangeBar("Range", new[] { new ChartInterval(1, 10, 10 + delta), new ChartInterval(2, 55, 55 + delta) });
         chart.Series[0].StrokeWidth = .1; chart.Options.XAxis.Reversed = reversed;
         var prepared = chart.Prepare(Context(360, 360, ThemeMode.Dark)); var groups = PointGroups(prepared);

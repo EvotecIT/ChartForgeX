@@ -41,9 +41,9 @@ public sealed class NativeRadialBandBeforeControls {
         var values = other ? new[] { outer, 20d, 9d, 3d, 1d } : new[] { outer, 20d, 5d };
         var outside = new ChartSeries(new ChartSeriesId("outer"), "Outer", family == "pie" ? ChartSeriesKind.Pie : ChartSeriesKind.Donut,
             values.Select((value, index) => new ChartPoint(index + 1, value)))
-            .WithObservationIds(values.Select((_, index) => new ChartObservationId(index == 0 ? "primary" : "part-" + index)));
-        if (automatic) chart.WithAutomaticRadialBands(new ChartRadialBandAllocation(.12, .06));
-        else { chart.Series[0].WithRadialBand(new ChartRadialBand(.12, .49)); outside.WithRadialBand(new ChartRadialBand(.55, 1)); }
+            .ObservationIds(values.Select((_, index) => new ChartObservationId(index == 0 ? "primary" : "part-" + index)));
+        if (automatic) chart.RadialBandAllocation(new ChartRadialBandAllocation(.12, .06));
+        else { chart.Series[0].RadialBand(new ChartRadialBand(.12, .49)); outside.RadialBand(new ChartRadialBand(.55, 1)); }
         chart.AddSeries(outside); return chart;
     }
     internal static ChartVisibilityView View(params ChartVisibilityTarget[] targets) => new(targets, ChartVisibilityLayout.Reflow);

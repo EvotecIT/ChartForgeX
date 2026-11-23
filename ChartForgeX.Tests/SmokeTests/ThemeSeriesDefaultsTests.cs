@@ -10,17 +10,17 @@ namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
     private static void ThemeSeriesDefaultsResolveBelowExplicitSeriesSettings() {
-        var theme = VisualTheme.Graphite().Configure(builder => builder.ConfigureSeries(ChartSeriesKind.Line, line => {
+        var theme = VisualTheme.Graphite().Configure(builder => builder.Series(ChartSeriesKind.Line, line => {
             line.StrokeWidth = 3.5; line.Dash = new[] { 6d, 3d }; line.Interpolation = ChartInterpolation.Smooth;
-            line.ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Diamond; markers.Radius = 5; });
-            line.ConfigureDataLabelStyle(style => { style.FontSize = 13; style.FontWeight = "700"; style.Color = ChartColor.FromHex("#112233"); });
+            line.Markers(markers => { markers.Shape = ChartMarkerShape.Diamond; markers.Radius = 5; });
+            line.DataLabelStyle(style => { style.FontSize = 13; style.FontWeight = "700"; style.Color = ChartColor.FromHex("#112233"); });
         }));
         var options = new ChartOptions();
         options.DataLabelStyle.Color = ChartColor.FromHex("#445566");
         var plain = ChartSeries.CreateLine(new ChartSeriesId("plain"), "Plain", Points(1, 2, 3));
-        var authored = ChartSeries.CreateLine(new ChartSeriesId("authored"), "Authored", Points(3, 2, 1)).WithStrokeWidth(1.25)
-            .WithStrokeStyle(new ChartStrokeStyle(dash: Array.Empty<double>())).WithInterpolation(ChartInterpolation.Linear)
-            .ConfigureMarkers(markers => markers.Radius = 2).ConfigureDataLabelStyle(style => style.FontSize = 9);
+        var authored = ChartSeries.CreateLine(new ChartSeriesId("authored"), "Authored", Points(3, 2, 1)).StrokeWidth(1.25)
+            .StrokeStyle(new ChartStrokeStyle(dash: Array.Empty<double>())).Interpolation(ChartInterpolation.Linear)
+            .Markers(markers => markers.Radius = 2).DataLabelStyle(style => style.FontSize = 9);
 
         var themed = plain.WithThemeDefaults(theme, options);
         Assert(VisualSeriesStroke.Width(themed, theme.SeriesStrokeWidth) == 3.5 && themed.StrokeStyle!.Dash!.SequenceEqual(new[] { 6d, 3d })
@@ -39,14 +39,14 @@ internal static partial class SmokeTests {
         var bar = ChartSeries.CreateBar(new ChartSeriesId("bars"), "Bars", Points(1, 2, 3));
         Assert(ReferenceEquals(bar.WithThemeDefaults(theme, options), bar), "A kind without defaults should keep the global theme values.");
 
-        var barTheme = theme.Configure(builder => builder.ConfigureSeries(ChartSeriesKind.Bar, defaults => defaults.CornerRadius = 9));
-        var prepared = PreparedFamily(Chart.Create().WithTheme(barTheme).WithSize(480, 320)
+        var barTheme = theme.Configure(builder => builder.Series(ChartSeriesKind.Bar, defaults => defaults.CornerRadius = 9));
+        var prepared = PreparedFamily(Chart.Create().Theme(barTheme).Size(480, 320)
             .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("plain"), "Plain", Points(1, 4, 2))).AddSeries(ChartSeries.CreateBar(new ChartSeriesId("bars"), "Bars", Points(5, 6, 7))));
         Assert(prepared.Scene.Nodes.OfType<VisualScenePath>().Any(path => path.StrokeWidth == 3.5 && path.Dash != null && path.Dash.SequenceEqual(new[] { 6d, 3d })),
             "Prepared lines should draw the theme's per-kind width and dash.");
         Assert(prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "bar").All(node => node.Radius == 9)
             && prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Any(node => node.Role == "bar"), "Prepared bars should draw the theme's per-kind corner radius.");
-        AssertThrows<ArgumentException>(() => VisualTheme.Graphite().Configure(builder => builder.ConfigureSeries(ChartSeriesKind.Bar, defaults => defaults.ConfigureMarkers(markers => markers.Radius = 3))),
+        AssertThrows<ArgumentException>(() => VisualTheme.Graphite().Configure(builder => builder.Series(ChartSeriesKind.Bar, defaults => defaults.Markers(markers => markers.Radius = 3))),
             "Themes should reject defaults the kind never draws.");
     }
 
@@ -65,7 +65,7 @@ internal static partial class SmokeTests {
         Assert(theme.SeriesDefaults[ChartSeriesKind.HorizontalBar].CornerRadius == 7 && !theme.SeriesDefaults.ContainsKey(ChartSeriesKind.Bar),
             "Theme JSON should key defaults by camel-case series kind.");
 
-        var svg = Chart.Create().WithTheme(theme).AddLine("Values", Points(1, 3, 2)).ToSvg();
+        var svg = Chart.Create().Theme(theme).AddLine("Values", Points(1, 3, 2)).ToSvg();
         Assert(svg.Contains("stroke-width=\"4\"", StringComparison.Ordinal) && svg.Contains("stroke-dasharray=\"5 2\"", StringComparison.Ordinal),
             "A theme file should restyle a line chart that carries no styling code.");
         var reloaded = VisualTheme.FromJson(theme.ToJson());

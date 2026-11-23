@@ -12,7 +12,7 @@ public sealed class V2MatrixTests {
     [Fact]
     public void NumericHeatmapKeepsZeroSurfaceGapAndObservedScaleValues() {
         var chart = Chart.Create().AddHeatmapRow("Count", new[] { 0d, 20, 100 });
-        chart.Options.HeatmapRelativeScale = true;
+        chart.Options.Heatmap.RelativeScale = true;
         var context = Context(); var prepared = chart.Prepare(context); var document = XDocument.Parse(prepared.ToSvg());
         Assert.Equal("2", ByRole(document, "heatmap").Single().Attribute("data-cfx-cell-gap")?.Value);
         var zero = ByRole(document, "heatmap-cell").Single(element => element.Attribute("data-cfx-value")?.Value == "0");
@@ -32,7 +32,7 @@ public sealed class V2MatrixTests {
     [InlineData(true, ThemeMode.Light)]
     [InlineData(true, ThemeMode.Dark)]
     public void NativeMatricesPreserveMasksPointColorsBoundsAndDetachedExports(bool hexagonal, ThemeMode mode) {
-        var chart = Chart.Create().WithXLabels("A", "B", "C", "D").ConfigureHeatmapColorDimension(options => options.ShowLegend = false);
+        var chart = Chart.Create().XLabels("A", "B", "C", "D").Heatmap(heatmap => heatmap.ColorDimension(options => options.ShowLegend = false));
         if (hexagonal) chart.AddHexbinHeatmapRow("Service", new double?[] { 0, null, 20, null });
         else chart.AddHeatmapRow("Service", new double?[] { 0, null, 20, null });
         var color = ChartColor.FromHex("#d4302f"); chart.Series[0].PointColors.Add(color);
@@ -45,18 +45,18 @@ public sealed class V2MatrixTests {
         var image = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
         var offset = ((int)(cells[0].Bounds.Top + cells[0].Bounds.Height / 2) * image.Width + (int)(cells[0].Bounds.Left + cells[0].Bounds.Width / 2)) * 4;
         Assert.Equal(color.R, image.Pixels[offset]); Assert.Equal(color.G, image.Pixels[offset + 1]); Assert.Equal(color.B, image.Pixels[offset + 2]);
-        var svg = prepared.ToSvg(); var png = prepared.ToPng(); chart.ClearSeries(); chart.Options.XAxisLabels.Clear();
+        var svg = prepared.ToSvg(); var png = prepared.ToPng(); chart.ClearSeries(); chart.Options.XAxis.Labels.Clear();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
         Assert.Equal(640, image.Width); Assert.Equal(400, image.Height);
     }
 
     [Fact]
     public void CategoricalCellsRetainSafeLinksTooltipsPatternsUnknownKeysAndFullIdentity() {
-        var chart = Chart.Create().WithLegend(true).WithXLabels("Check A", "Check B", "Check C")
-            .WithStateCategories(new ChartStateCategory("quiet", "Not evaluated", ChartColor.FromHex("#7c818a"), ChartStatePattern.CrossHatched, ChartStateEmphasis.Quiet))
+        var chart = Chart.Create().Legend(true).XLabels("Check A", "Check B", "Check C")
+            .StateCategories(new ChartStateCategory("quiet", "Not evaluated", ChartColor.FromHex("#7c818a"), ChartStatePattern.CrossHatched, ChartStateEmphasis.Quiet))
             .AddHeatmapCategoryRow("Same", new ChartHeatmapCell?[] { new("quiet", "1", "Full evidence", "#details"), null, new("pending") }, "Group")
             .AddHeatmapCategoryRow("Same", new ChartHeatmapCell("quiet"));
-        chart.Options.PinStateColorsInForcedColors = true;
+        chart.Options.StateTimeline.PinColorsInForcedColors = true;
         var prepared = chart.Prepare(Context()); var document = XDocument.Parse(prepared.ToSvg());
         var cells = ByRole(document, "heatmap-cell"); Assert.Equal(3, cells.Length);
         Assert.Equal(3, prepared.Regions.Where(region => region.Role == "heatmap-cell").Select(region => region.Id).Distinct().Count());
@@ -72,7 +72,7 @@ public sealed class V2MatrixTests {
     [Fact]
     public void CalendarRetainsZeroMissingLocalizedDatesAndSizingAcrossBothBackends() {
         var start = new DateTime(2026, 9, 28);
-        var chart = Chart.Create().ConfigureCalendar(options => {
+        var chart = Chart.Create().Calendar(options => {
             options.FirstDayOfWeek = DayOfWeek.Monday;
             options.DayNames = new[] { "So", "Mo", "Di", "Mi", "Do", "Fr", "Sa" };
             options.MaximumCellSize = 18; options.Gap = 4;
@@ -93,10 +93,10 @@ public sealed class V2MatrixTests {
 
     [Fact]
     public void RotatedColumnsAndExplicitCellTextStylesArePreparedWithNativeTransforms() {
-        var chart = Chart.Create().WithXLabels("Long first column", "Long second column").WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always)
+        var chart = Chart.Create().XLabels("Long first column", "Long second column").Heatmap(h => h.ValueTextMode(ChartHeatmapValueTextMode.Always))
             .AddHeatmapRow("Row", new[] { 12d, 34d });
-        chart.Options.XAxisLabelAngle = -45;
-        chart.Series[0].ConfigurePointDataLabelStyle(0, style => style.FontSize = 17);
+        chart.Options.XAxis.LabelAngle = -45;
+        chart.Series[0].PointDataLabelStyle(0, style => style.FontSize = 17);
         var prepared = chart.Prepare(Context());
         Assert.Contains("rotate(-45", prepared.ToSvg());
         Assert.Equal(2, ByRole(XDocument.Parse(prepared.ToSvg()), "data-label").Length);
@@ -106,8 +106,8 @@ public sealed class V2MatrixTests {
     [Fact]
     public void QuietStateLabelsUsePreparedBackdropRatherThanLegacyTheme() {
         var state = new ChartStateCategory("quiet", "Quiet", ChartColor.FromHex("#777777"), emphasis: ChartStateEmphasis.Quiet);
-        var chart = Chart.Create().WithStateCategories(state).WithMarkBackdrop(ChartMarkBackdrop.Background)
-            .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always).AddHeatmapCategoryRow("Service", new ChartHeatmapCell("quiet", "Ready"));
+        var chart = Chart.Create().StateCategories(state).MarkBackdrop(ChartMarkBackdrop.Background)
+            .Heatmap(h => h.ValueTextMode(ChartHeatmapValueTextMode.Always)).AddHeatmapCategoryRow("Service", new ChartHeatmapCell("quiet", "Ready"));
         var context = Context(ThemeMode.Dark); var prepared = chart.Prepare(context);
         var svg = prepared.ToSvg(); chart.Options.Theme = VisualTheme.Graphite();
         Assert.Equal(svg, prepared.ToSvg());
@@ -120,7 +120,7 @@ public sealed class V2MatrixTests {
     [Fact]
     public void TranslucentStateColorKeepsAlphaAndResolvesContrastAgainstPreparedSurface() {
         var state = new ChartStateCategory("partial", "Partial", ChartColor.FromRgba(240, 40, 50, 96));
-        var chart = Chart.Create().WithStateCategories(state).WithMarkBackdrop(ChartMarkBackdrop.Plot)
+        var chart = Chart.Create().StateCategories(state).MarkBackdrop(ChartMarkBackdrop.Plot)
             .AddHeatmapCategoryRow("Service", new ChartHeatmapCell("partial"));
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(320, 240)), frame: new VisualFrame(showLegend: false, showSurface: true));
         var prepared = chart.Prepare(context); var box = prepared.Regions.Single(region => region.Role == "heatmap-cell").Bounds;
@@ -138,7 +138,7 @@ public sealed class V2MatrixTests {
         var variables = new SvgColorVariables().Add("--source", same, SvgColorRole.Series).Add("--state", same, SvgColorRole.Status)
             .Add("--surface", same, SvgColorRole.Surface);
         var numeric = Chart.Create().AddHeatmapRow("Source", new[] { 12d }); numeric.Series[0].PointColors.Add(same);
-        var state = Chart.Create().WithStateCategories(new ChartStateCategory("known", "Known", same)).AddHeatmapCategoryRow("State", new ChartHeatmapCell("known"));
+        var state = Chart.Create().StateCategories(new ChartStateCategory("known", "Known", same)).AddHeatmapCategoryRow("State", new ChartHeatmapCell("known"));
         var sourceFill = ByRole(XDocument.Parse(numeric.Prepare(Context()).ToSvg(new VisualSvgOptions(colorVariables: variables))), "heatmap-cell-shape").Single().Attribute("fill")!.Value;
         var stateFill = ByRole(XDocument.Parse(state.Prepare(Context()).ToSvg(new VisualSvgOptions(colorVariables: variables))), "heatmap-cell-shape").Single().Attribute("fill")!.Value;
         Assert.Contains("--source", sourceFill); Assert.DoesNotContain("--state", sourceFill);
@@ -148,10 +148,10 @@ public sealed class V2MatrixTests {
     [Fact]
     public void PreparedMapBlendSharesScaleInterpolationAndRetainsStopOperands() {
         var low = ChartColor.FromHex("#102030"); var high = ChartColor.FromHex("#90a0b0");
-        var chart = Chart.Create(); chart.Options.MapColorScale = ChartColorScale.Sequential(low, high);
+        var chart = Chart.Create(); chart.Options.Map.ColorScale = ChartColorScale.Sequential(low, high);
         var colors = Context().Theme.Resolve(ThemeMode.Light);
         var blend = ChartHeatmapSurface.MapBlend(chart, colors, null, null, 25, 0, 100);
-        Assert.Equal(chart.Options.MapColorScale.ColorFor(25, 0, 100), blend.Color);
+        Assert.Equal(chart.Options.Map.ColorScale.ColorFor(25, 0, 100), blend.Color);
         Assert.Equal(low, blend.From); Assert.Equal(high, blend.To); Assert.Equal(.25, blend.Amount);
         var explicitPoint = ChartHeatmapSurface.MapBlend(chart, colors, high, low, 25, 0, 100);
         Assert.Equal(high, explicitPoint.Color); Assert.Equal(SvgColorRole.Series, explicitPoint.FromRole);

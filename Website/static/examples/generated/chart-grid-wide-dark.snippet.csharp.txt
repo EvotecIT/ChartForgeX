@@ -19,14 +19,14 @@ var theme = VisualTheme.Graphite();
 #endregion
 
 var observations = Enumerable.Range(1, 6).Select(index => new ChartPoint(index, 20 + index * 7 % 29)).ToArray();
-var requests = Chart.Create().WithTitle("Observed requests").WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+var requests = Chart.Create().Title("Observed requests").XLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
     .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("requests"), "Requests", observations));
-var reviewed = Chart.Create().WithTitle("Reviewed requests").WithXLabels("North", "South", "East", "West", "Central", "Online")
+var reviewed = Chart.Create().Title("Reviewed requests").XLabels("North", "South", "East", "West", "Central", "Online")
     .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("orders"), "Orders", observations));
-var capacity = Chart.Create().WithTitle("Capacity used").WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+var capacity = Chart.Create().Title("Capacity used").XLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
     .AddSeries(ChartSeries.CreateArea(new ChartSeriesId("used-capacity"), "Used capacity", observations));
-var chart = ChartGrid.Create().WithColumns(2).WithGap(16).WithPanelSize(600, 375)
-    .Add(requests).Add(reviewed).Add(capacity, 2).WithSharedAxes();
+var chart = ChartGrid.Create().Columns(2).Gap(16).PanelSize(600, 375)
+    .Add(requests).Add(reviewed).Add(capacity, 2).ShareAxes();
 
 #region Output
 var context = new VisualRenderContext(

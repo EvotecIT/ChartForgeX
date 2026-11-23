@@ -21,7 +21,7 @@ public sealed class SpecialtyEmptyLifecycleTests {
             ChartSeriesKind.Pictorial => Chart.Create().AddPictorial("Items", Array.Empty<ChartPictorialItem>(), ChartPictorialShape.Star),
             _ => Chart.Create().AddWordCloud("Items", Array.Empty<ChartWordCloudItem>())
         };
-        chart.WithSize(400, 300).WithHeader(false).WithLegend(false);
+        chart.Size(400, 300).ShowHeader(false).Legend(false);
         var series = Assert.Single(chart.Series); var id = series.Id;
         Assert.Equal(0, series.ObservationCount); Assert.Equal(0, series.SourcePointCount);
         var empty = chart.Prepare(Context()); var svg = empty.ToSvg(); var png = empty.ToPng(Raster());
@@ -30,15 +30,15 @@ public sealed class SpecialtyEmptyLifecycleTests {
         if (kind == ChartSeriesKind.LayeredRadial) series.ReplaceRadialLayers(new[] { new ChartRadialLayer("Arrived", 40) });
         else if (kind == ChartSeriesKind.ProgressBar) series.ReplaceProgressItems(new[] { new ChartProgressItem("Arrived", 40) });
         else series.Points.Add(new ChartPoint(1, 40));
-        series.WithObservationId(0, new ChartObservationId("arrived"));
+        series.ObservationId(0, new ChartObservationId("arrived"));
         var filled = chart.Prepare(Context());
         var mark = Assert.Single(filled.Scene.Nodes.OfType<VisualSceneGroup>(), node => node.Role == role);
         Assert.Equal("arrived", mark.Metadata["data-cfx-observation-id"]);
         Assert.Equal("40", mark.Metadata["data-cfx-value"]);
         Assert.Same(series, Assert.Single(chart.Series)); Assert.Equal(id, series.Id);
         Assert.Equal(1, series.ObservationCount); Assert.Equal(1, series.SourcePointCount);
-        if (kind == ChartSeriesKind.ProgressBar) Assert.Equal(200, chart.Options.ProgressMaximum);
-        if (kind == ChartSeriesKind.Pictorial) Assert.Equal(ChartPictorialShape.Star, chart.Options.PictorialShape);
+        if (kind == ChartSeriesKind.ProgressBar) Assert.Equal(200, chart.Options.Progress.Max);
+        if (kind == ChartSeriesKind.Pictorial) Assert.Equal(ChartPictorialShape.Star, chart.Options.Pictorial.Shape);
         Assert.NotEqual(svg, filled.ToSvg()); Assert.NotEmpty(filled.ToPng(Raster()));
         Assert.Equal(svg, empty.ToSvg()); Assert.Equal(png, empty.ToPng(Raster()));
         if (kind == ChartSeriesKind.LayeredRadial) series.ReplaceRadialLayers(Array.Empty<ChartRadialLayer>());

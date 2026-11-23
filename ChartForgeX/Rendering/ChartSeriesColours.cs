@@ -26,7 +26,7 @@ internal static class ChartSeriesColours {
     internal static bool IsOtherCategory(ChartSeries series, int point) {
         if (series.Owner == null || point < 0 || point >= series.RenderPoints.Count || !ChartSeriesKindTraits.IsPieLikeKind(series.Kind)) return false;
         var x = series.RenderPoints[point].X;
-        foreach (var label in series.Owner.Options.XAxisLabels) if (Math.Abs(label.Value - x) < 0.000001) return IsOther(label.Text);
+        foreach (var label in series.Owner.Options.XAxis.Labels) if (Math.Abs(label.Value - x) < 0.000001) return IsOther(label.Text);
         return false;
     }
 

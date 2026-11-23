@@ -17,7 +17,7 @@ internal static class CapturedNativeLayerExamples {
             var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
             var theme = VisualTheme.Graphite().WithFontFamily(ExampleTypography.FontFamily);
             var childWidth = width - 72; var childHeight = 210;
-            var chart = Chart.Create().WithTitle("Completed work").WithSize(childWidth, childHeight).WithTheme(theme, mode);
+            var chart = Chart.Create().Title("Completed work").Size(childWidth, childHeight).Theme(theme).ThemeMode(mode);
             chart.AddBar("Completed", new[] { new ChartPoint(1, 12), new ChartPoint(2, 28), new ChartPoint(3, 19) });
             var source = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(childWidth, childHeight), 24),
                 theme, mode, new VisualFrame(showLegend: false, transparentBackground: true), FontSpec.FromFamily(ExampleTypography.FontFamily)));
@@ -26,8 +26,8 @@ internal static class CapturedNativeLayerExamples {
             var color = ChartColor.FromHex(dark ? "#F8FAFC" : "#0F172A");
             var composition = ImageComposition.Create(width, 320, background).DrawLayer(layer, 36, 32)
                 .DrawText(32, 272, width - 64, "One captured chart and caption", 16, color);
-            var canvas = VisualCanvas.Create(width, 320).WithTitle("Captured native report inset").WithPngOutputScale(1)
-                .WithBackdrop(VisualCanvasBackdropStyle.Transparent).AddImage(composition.ToImage(), 0, 0, width, 320);
+            var canvas = VisualCanvas.Create(width, 320).Title("Captured native report inset").PngOutputScale(1)
+                .BackdropStyle(VisualCanvasBackdropStyle.Transparent).AddImage(composition.ToImage(), 0, 0, width, 320);
             var name = "captured-native-layer-" + (dark ? "dark-" : "light-") + width;
             File.WriteAllText(Path.Combine(output, name + ".layer.svg"), layer.Visual.ToSvg());
             File.WriteAllBytes(Path.Combine(output, name + ".layer.png"), PngWriter.WriteRgba(layer.ToImage()));

@@ -7,18 +7,18 @@ public static class ScatterMarkerShapesRecipe {
     }
 
     private static Chart MarkerShapes() {
-        var chart = Chart.Create().WithXAxis("Sample position").WithYAxis("Example level");
+        var chart = Chart.Create().XAxis(x => x.Title("Sample position")).YAxis(y => y.Title("Example level"));
         var shapes = Enum.GetValues<ChartMarkerShape>();
         for (var index = 0; index < shapes.Length; index++) {
             var shape = shapes[index];
             var sample = ChartSeries.CreateScatter(new ChartSeriesId("marker-" + shape.ToString().ToLowerInvariant()), shape.ToString(),
                 new[] { new ChartPoint(index % 3 + 1, index / 3 + 1) });
-            sample.WithPointLabel(0, shape.ToString()).WithDataLabels()
-                .ConfigureMarkers(markers => { markers.Shape = shape; markers.Radius = 8; markers.StrokeWidth = 1; });
+            sample.PointLabel(0, shape.ToString()).ShowDataLabels(true)
+                .Markers(markers => { markers.Shape = shape; markers.Radius = 8; markers.StrokeWidth = 1; });
             chart.AddSeries(sample);
         }
-        chart.Options.XAxis.WithBounds(0, 4);
-        chart.Options.YAxis.WithBounds(0, 4);
+        chart.Options.XAxis.Bounds(0, 4);
+        chart.Options.YAxis.Bounds(0, 4);
         return chart;
     }
 }

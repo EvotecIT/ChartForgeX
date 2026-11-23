@@ -9,7 +9,7 @@ namespace ChartForgeX.Tests;
 public sealed class HtmlChartHostingOptionsTests {
     [Fact]
     public void AdaptivePreparationCapturesDetachedNativeDrawingsWithoutMutatingTheChart() {
-        var chart = Chart.Create().WithSize(640, 360).WithTitle("Requests by region").WithXLabels("North", "South")
+        var chart = Chart.Create().Size(640, 360).Title("Requests by region").XLabels("North", "South")
             .AddBar("Requests", new[] { new ChartPoint(0, 12), new ChartPoint(1, 24) });
         var section = new HtmlInteractiveChartRenderer().PrepareSection(chart, configure: options => {
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Adaptive;
@@ -27,7 +27,7 @@ public sealed class HtmlChartHostingOptionsTests {
         var png = PngReader.Decode(narrow.ToPng());
         Assert.Equal(360, png.Width);
         Assert.Equal(420, png.Height);
-        chart.WithSize(900, 700).WithTitle("Changed after preparation");
+        chart.Size(900, 700).Title("Changed after preparation");
         Assert.Contains("Requests by region", narrow.ToSvg(), StringComparison.Ordinal);
         Assert.DoesNotContain("Changed after preparation", narrow.ToSvg(), StringComparison.Ordinal);
     }

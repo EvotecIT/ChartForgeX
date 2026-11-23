@@ -112,7 +112,7 @@ public sealed class TopologyReplicationBudgetTests {
     }
 
     private static int Crossings(TopologyEdgeRouting routing, double middleX, double middleY) {
-        var chart = TopologyChart.Create().WithId("crossing").WithViewport(600, 240, 0).WithLegend(null)
+        var chart = TopologyChart.Create().Id("crossing").Viewport(new TopologyViewport(600, 240, 0)).Legend((TopologyLegend?)null)
             .AddNode("a", "A", 10, 80, width: 60, height: 40)
             .AddNode("b", "B", middleX, middleY, width: 60, height: 40)
             .AddNode("c", "C", 530, 80, width: 60, height: 40)

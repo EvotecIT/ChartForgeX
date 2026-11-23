@@ -19,7 +19,7 @@ public sealed class RadarFormTests {
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Series[0].Radar.FillOpacity = double.NaN);
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Series[0].Radar.FillOpacity = 1.1);
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Series[0].Radar.FillOpacity = -.1);
-        Assert.Throws<ArgumentNullException>(() => chart.Series[0].ConfigureRadar(null!));
+        Assert.Throws<ArgumentNullException>(() => chart.Series[0].Radar((Action<ChartRadarOptions>)null!));
         chart.Series[1].Radar.FillOpacity = .4;
         Assert.Throws<InvalidOperationException>(() => Prepare(chart));
         var scatter = Chart.Create().AddScatter("Samples", points);
@@ -63,8 +63,8 @@ public sealed class RadarFormTests {
         var color = ChartColor.FromHex("#2468AC");
         var chart = Bare().AddRadarArea("Area", new[] { new ChartPoint(3, 80), new ChartPoint(1, 0), new ChartPoint(2, 50) }, color)
             .AddRadarLine("Line", new[] { new ChartPoint(1 + 4e-16, 0), new ChartPoint(3, 80), new ChartPoint(4, 20) }, color);
-        chart.Series[0].ConfigureMarkers(marker => { marker.Shape = ChartMarkerShape.Star; marker.Radius = 6; });
-        chart.Series[0].WithPointColor(0, ChartColor.FromHex("#AB1234")).WithPointLabel(0, "Complete source label");
+        chart.Series[0].Markers(marker => { marker.Shape = ChartMarkerShape.Star; marker.Radius = 6; });
+        chart.Series[0].PointColor(0, ChartColor.FromHex("#AB1234")).PointLabel(0, "Complete source label");
         var prepared = Prepare(chart);
         Assert.Single(prepared.Scene.Nodes, node => node.Role == "radar-area");
         Assert.Equal(2, prepared.Scene.Nodes.Count(node => node.Role == "radar-outline"));
@@ -92,7 +92,7 @@ public sealed class RadarFormTests {
         var chart = Bare().AddRadar("Samples", new[] {
             new ChartPoint(1, 10), new ChartPoint(1.0000000001, 90), new ChartPoint(2, 40), new ChartPoint(3, 60)
         });
-        chart.Series[0].WithObservationId(1, new ChartObservationId("nearby"));
+        chart.Series[0].ObservationId(1, new ChartObservationId("nearby"));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var sources = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "radar-point-source").ToArray();
         Assert.Equal(4, sources.Length); Assert.Equal(4, sources.Select(source => source.Id).Distinct().Count());
@@ -104,8 +104,8 @@ public sealed class RadarFormTests {
 
     [Fact]
     public void ZeroOpacityRemovesAreaInkIncludingPatternWhileKeepingOutlineAndSourceFacts() {
-        var chart = Bare().WithLegend().AddRadarArea("Signal", SixValues(50));
-        chart.Series[0].ConfigureRadar(radar => radar.FillOpacity = 0);
+        var chart = Bare().Legend().AddRadarArea("Signal", SixValues(50));
+        chart.Series[0].Radar(radar => radar.FillOpacity = 0);
         chart.Series[0].FillPattern = ChartFillPattern.Crosshatch;
         chart.Series[0].Markers.Enabled = false;
         var prepared = Prepare(chart);
@@ -121,7 +121,7 @@ public sealed class RadarFormTests {
     }
 
     private static Chart Bare() {
-        var chart = Chart.Create().WithSize(320, 220).WithHeader(false).WithLegend(false).WithDataLabels(false).WithYAxisBounds(0, 100);
+        var chart = Chart.Create().Size(320, 220).ShowHeader(false).Legend(false).DataLabels(false).YAxis(y => y.Bounds(0, 100));
         chart.Options.ShowAxes = false; chart.Options.ShowGrid = false; return chart;
     }
 
@@ -130,6 +130,6 @@ public sealed class RadarFormTests {
     private static PreparedVisual Prepare(Chart chart) {
         var request = VisualExportRequest.ForChart(chart).Context;
         return chart.Prepare(new VisualRenderContext(request.Layout, request.Theme, request.ThemeMode,
-            new VisualFrame(showLegend: chart.Options.ShowLegend, transparentBackground: true), request.Font));
+            new VisualFrame(showLegend: chart.Options.Legend.Visible, transparentBackground: true), request.Font));
     }
 }

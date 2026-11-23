@@ -49,11 +49,11 @@ public sealed class ChartLinkedProjectionContractsTests {
     [Fact]
     public void NativeNegativeOleCoordinatesKeepNumericIdentityMetadata() {
         var instant = new DateTime(1899, 12, 29, 12, 0, 0, DateTimeKind.Utc);
-        var point = Chart.Create().WithXAxisTimeScale().AddLine("Earlier", new[] { new ChartPoint(instant, 5) });
+        var point = Chart.Create().XAxis(x => x.TimeScale()).AddLine("Earlier", new[] { new ChartPoint(instant, 5) });
         var mark = XDocument.Parse(point.ToSvg()).Descendants().Single(node => (string?)node.Attribute("data-cfx-role") == "point");
         Assert.Equal("-1.5", mark.Attribute("data-cfx-x")!.Value);
         Assert.Null(mark.Attribute("data-cfx-x-instant"));
-        var range = Chart.Create().WithXAxisTimeScale().AddTimelineRange("Crossing", -1, 1);
+        var range = Chart.Create().XAxis(x => x.TimeScale()).AddTimelineRange("Crossing", -1, 1);
         var interval = XDocument.Parse(range.ToSvg()).Descendants().Single(node => node.Attribute("data-cfx-range-start") != null);
         Assert.Equal("-1", interval.Attribute("data-cfx-range-start")!.Value);
         Assert.Equal("1", interval.Attribute("data-cfx-range-end")!.Value);
@@ -62,7 +62,7 @@ public sealed class ChartLinkedProjectionContractsTests {
 
     [Fact]
     public void APreparedLegacyTimeDomainKeepsItsPositiveSourceFactsNumericToo() {
-        var chart = Chart.Create().WithXAxisTimeScale().WithXAxisBounds(-2, 2)
+        var chart = Chart.Create().XAxis(x => x.TimeScale().Bounds(-2, 2))
             .AddLine("Crossing", new[] { new ChartPoint(-1, 5), new ChartPoint(1, 8) });
         var marks = XDocument.Parse(chart.ToSvg()).Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "point").ToArray();
         Assert.Equal(new[] { "-1", "1" }, marks.Select(mark => mark.Attribute("data-cfx-x")!.Value));
@@ -100,11 +100,11 @@ public sealed class ChartLinkedProjectionContractsTests {
     }
 
     internal static Chart ValueDomainsChart(string domains) {
-        var chart = Chart.Create().WithSize(640, 360).WithXAxisBounds(0, 3).WithYAxisBounds(0, 10).WithSecondaryYAxisBounds(1000, 2000);
+        var chart = Chart.Create().Size(640, 360).XAxis(x => x.Bounds(0, 3)).YAxis(y => y.Bounds(0, 10)).SecondaryYAxis(s => s.Bounds(1000, 2000));
         if (!domains.StartsWith("secondary", StringComparison.Ordinal)) chart.AddSeries(ChartSeries.CreateLine(new ChartSeriesId("primary"), "Primary",
             domains == "empty-primary" ? Array.Empty<ChartPoint>() : new[] { new ChartPoint(1, 2), new ChartPoint(2, 8) }));
         if (domains != "primary") chart.AddSeries(ChartSeries.CreateLine(new ChartSeriesId("secondary"), "Secondary",
-            domains == "empty-secondary" ? Array.Empty<ChartPoint>() : new[] { new ChartPoint(1, 1200), new ChartPoint(2, 1800) }).UseSecondaryValueAxis());
+            domains == "empty-secondary" ? Array.Empty<ChartPoint>() : new[] { new ChartPoint(1, 1200), new ChartPoint(2, 1800) }).SecondaryAxis());
         if (domains == "secondary-primary-y-line") chart.AddHorizontalLine(5, "Primary threshold");
         if (domains == "secondary-primary-y-region") chart.AddPlotRegion(new ChartPlotRegion(0, yMinimum: 2, yMaximum: 8));
         if (domains == "secondary-x-only") chart.AddVerticalLine(1.5, "Shared X").AddPlotRegion(new ChartPlotRegion(0, xMinimum: 1, xMaximum: 2));
@@ -112,10 +112,10 @@ public sealed class ChartLinkedProjectionContractsTests {
     }
 
     internal static Chart OverflowChart(bool schedule) {
-        if (!schedule) return Chart.Create().WithSize(640, 360).AddBar("Large finite X",
+        if (!schedule) return Chart.Create().Size(640, 360).AddBar("Large finite X",
             new[] { new ChartPoint(double.MaxValue * .5, 1), new ChartPoint(double.MaxValue, 2) });
-        var chart = Chart.Create().WithSize(640, 360).WithXAxisBounds(1, 2)
-            .WithXLabels(new[] { new ChartAxisLabel(1, "Start"), new ChartAxisLabel(2, "End") }).AddGanttTask("Task", 1, 2, .5);
+        var chart = Chart.Create().Size(640, 360).XAxis(x => x.Bounds(1, 2))
+            .XLabels(new[] { new ChartAxisLabel(1, "Start"), new ChartAxisLabel(2, "End") }).AddGanttTask("Task", 1, 2, .5);
         chart.Options.XAxis.Scale = ChartScaleKind.SymmetricLogarithmic;
         chart.Options.XAxis.SymmetricLogarithmThreshold = double.Epsilon;
         return chart;
@@ -123,26 +123,26 @@ public sealed class ChartLinkedProjectionContractsTests {
 
     internal static Chart HalfOpenLegacyTimeChart(string family, double start, double boundary) {
         var last = boundary + (boundary - start);
-        var chart = Chart.Create().WithSize(640, 360).WithXAxisTimeScale().WithXAxisBounds(Math.Min(start, last), Math.Max(start, last));
+        var chart = Chart.Create().Size(640, 360).XAxis(x => x.TimeScale().Bounds(Math.Min(start, last), Math.Max(start, last)));
         if (family == "cadence") chart.AddSeries(ChartSeries.CreateBar(new ChartSeriesId("legacy-hours"), "Hours",
-            new[] { new ChartPoint(start, 5), new ChartPoint(boundary, 8) }).WithTimeBuckets(new ChartTimeTickInterval(ChartTimeTickUnit.Hour)));
-        else chart.WithStateCategories(new ChartStateCategory("up", "Up", ChartColor.FromRgb(13, 148, 136)),
+            new[] { new ChartPoint(start, 5), new ChartPoint(boundary, 8) }).TimeBuckets(new ChartTimeTickInterval(ChartTimeTickUnit.Hour)));
+        else chart.StateCategories(new ChartStateCategory("up", "Up", ChartColor.FromRgb(13, 148, 136)),
                 new ChartStateCategory("down", "Down", ChartColor.FromRgb(220, 38, 38)))
             .AddStateTimelineLane("States", new[] { new ChartStateTimelineSegment(start, boundary, "up"),
                 new ChartStateTimelineSegment(boundary, boundary + (boundary - start), "down") });
-        chart.Series[0].WithObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("second") });
+        chart.Series[0].ObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("second") });
         return chart;
     }
 
     internal static Chart PreciseTimeIntervalsChart(string family, DateTime start) {
         var boundary = start.AddDays(1); var end = start.AddDays(2);
-        var chart = Chart.Create().WithSize(640, 360).WithXAxisTimeScale();
+        var chart = Chart.Create().Size(640, 360).XAxis(x => x.TimeScale());
         if (family == "cadence") chart.AddSeries(ChartSeries.CreateBar(new ChartSeriesId("precise-days"), "Days",
-            new[] { new ChartPoint(start, 5), new ChartPoint(boundary, 8) }).WithTimeBuckets(new ChartTimeTickInterval(ChartTimeTickUnit.Day)));
-        else chart.WithStateCategories(new ChartStateCategory("up", "Up", ChartColor.FromRgb(13, 148, 136)),
+            new[] { new ChartPoint(start, 5), new ChartPoint(boundary, 8) }).TimeBuckets(new ChartTimeTickInterval(ChartTimeTickUnit.Day)));
+        else chart.StateCategories(new ChartStateCategory("up", "Up", ChartColor.FromRgb(13, 148, 136)),
                 new ChartStateCategory("down", "Down", ChartColor.FromRgb(220, 38, 38)))
             .AddStateTimelineLane("States", new[] { new ChartStateTimelineSegment(start, boundary, "up"), new ChartStateTimelineSegment(boundary, end, "down") });
-        chart.Series[0].WithObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("second") });
+        chart.Series[0].ObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("second") });
         return chart;
     }
 }

@@ -14,7 +14,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
     [InlineData(900, 400, 1)]
     [InlineData(520, 260, 2)]
     public void FittedTopologyKeepsSelectedNodeStrokeInsideTheContentClip(int width, int height, int pngScale) {
-        var chart = TopologyChart.Create().WithViewport(width, height).WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(width, height)).LayoutMode(TopologyLayoutMode.Manual)
             .AddGroup("selected-group", "Selected group", 24, 24, 240, 150)
             .AddNode("selected", "Selected service", 30, 30, width: 160, height: 84, groupId: "selected-group");
         var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, PngOutputScale = pngScale };
@@ -40,7 +40,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
 
     [Fact]
     public void FittedTopologyPreservesDisabledNodeLabelWrapping() {
-        var chart = TopologyChart.Create().WithViewport(520, 260).WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(520, 260)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("service", "A long service label that should stay on one line", 40, 80, width: 230, height: 72);
         var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, WrapNodeLabels = false };
         var svg = XDocument.Parse(chart.ToSvg(options));
@@ -57,7 +57,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
     [InlineData(560, 300, 1)]
     [InlineData(480, 260, 2)]
     public void FittedCloudGeometryStaysInsideTheContentClip(int width, int height, int pngScale) {
-        var chart = TopologyChart.Create().WithViewport(width, height).WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(width, height)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("cloud", "Cloud", 10, 10, width: 180, height: 120);
         chart.Nodes[0].Shape = TopologyNodeShape.Cloud;
         var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, IncludeNodeLabels = false, PngOutputScale = pngScale };
@@ -107,7 +107,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
 
     [Fact]
     public void CloudStatusBadgeSitsInsideTheCloudOutline() {
-        var chart = TopologyChart.Create().WithViewport(560, 300).WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(560, 300)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("cloud", "Cloud", 10, 10, width: 180, height: 120);
         chart.Nodes[0].Shape = TopologyNodeShape.Cloud;
         var svg = XDocument.Parse(chart.ToSvg(new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, IncludeNodeLabels = false }));
@@ -160,8 +160,8 @@ public sealed partial class ConsumerRenderingRegressionTests {
     [InlineData(900, 400, 2)]
     [InlineData(520, 260, 2)]
     public void FittedTopologyRoutesMeetNodeBordersAtEveryScale(int width, int height, int pngOutputScale) {
-        var chart = TopologyChart.Create().WithViewport(width, height).WithLegend(null)
-            .WithLayout(TopologyLayoutMode.Layered).WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(width, height)).Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddAutoGroup("edge", "Edge").AddAutoGroup("core", "Core")
             .AddAutoNode("gateway", "Gateway", groupId: "edge")
             .AddAutoNode("identity", "Identity service", groupId: "core")
@@ -228,13 +228,13 @@ public sealed partial class ConsumerRenderingRegressionTests {
     [InlineData(900, 340)]
     [InlineData(600, 280)]
     public void FittedTopologyRoutesPreserveNamedPortOffsets(int width, int height) {
-        var chart = TopologyChart.Create().WithViewport(width, height).WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(width, height)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("source", "Source", 50, 70, width: 130, height: 72)
             .AddNode("target", "Target", 390, 70, width: 130, height: 72)
             .AddNodePort("source", "upper", TopologyEdgePort.Right, 0.2)
             .AddNodePort("target", "lower", TopologyEdgePort.Left, 0.8)
             .AddEdge("link", "source", "target", "HTTPS")
-            .WithEdgeNamedPorts("link", "upper", "lower");
+            .UpdateEdge("link", e => e.SourcePortId("upper").TargetPortId("lower"));
         var svg = XDocument.Parse(chart.ToSvg(new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false }));
         var edge = svg.Descendants().Single(element => Role(element) == "topology-edge");
         var surfaces = svg.Descendants().Where(element => Role(element) == "topology-node-surface")
@@ -252,12 +252,12 @@ public sealed partial class ConsumerRenderingRegressionTests {
 
     [Fact]
     public void FittedShapedNodesPreserveNamedPortOffsets() {
-        var chart = TopologyChart.Create().WithViewport(900, 360).WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(900, 360)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("source", "Source", 70, 90, width: 140, height: 120)
             .AddNode("target", "Target", 650, 90, width: 140, height: 120)
             .AddNodePort("source", "upper", TopologyEdgePort.Right, 0.2)
             .AddNodePort("target", "lower", TopologyEdgePort.Left, 0.8)
-            .AddEdge("link", "source", "target", "HTTPS").WithEdgeNamedPorts("link", "upper", "lower");
+            .AddEdge("link", "source", "target", "HTTPS").UpdateEdge("link", e => e.SourcePortId("upper").TargetPortId("lower"));
         chart.Nodes[0].Shape = TopologyNodeShape.Diamond;
         chart.Nodes[1].Shape = TopologyNodeShape.Diamond;
         var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, PngOutputScale = 2 };
@@ -286,7 +286,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
     [InlineData(900, 400, 1)]
     [InlineData(620, 300, 2)]
     public void FittedTopologyRoutesPreservePortFanOutAtEveryScale(int width, int height, int outputScale) {
-        var chart = TopologyChart.Create().WithViewport(width, height).WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(width, height)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("source", "Source", 50, 150, width: 120, height: 72)
             .AddNode("upper", "Upper target", 420, 40, width: 120, height: 72)
             .AddNode("lower", "Lower target", 420, 270, width: 120, height: 72)
@@ -312,7 +312,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
     [Fact]
     public void FittedContentIgnoresGroupShellsThatAreNotRendered() {
         TopologyChart Create(bool addOmittedGroup) {
-            var chart = TopologyChart.Create().WithViewport(1000, 420).WithLayout(TopologyLayoutMode.Manual)
+            var chart = TopologyChart.Create().Viewport(new TopologyViewport(1000, 420)).LayoutMode(TopologyLayoutMode.Manual)
                 .AddNode("visible", "Visible service", 40, 50, width: 110, height: 64);
             if (addOmittedGroup) chart.AddGroup("omitted", "Omitted group", 12000, 12000, 1800, 1200);
             return chart;
@@ -332,8 +332,8 @@ public sealed partial class ConsumerRenderingRegressionTests {
     [InlineData(TopologyNodeDisplayMode.Icon, 720, 300)]
     [InlineData(TopologyNodeDisplayMode.Icon, 440, 220)]
     public void FittedTopologyKeepsExternalBadgesInsideTheContentClip(TopologyNodeDisplayMode mode, int width, int height) {
-        var chart = TopologyChart.Create().WithViewport(width, height).WithLayout(TopologyLayoutMode.Layered)
-            .WithLayoutDirection(TopologyLayoutDirection.TopToBottom)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(width, height)).LayoutMode(TopologyLayoutMode.Layered)
+            .LayoutDirection(TopologyLayoutDirection.TopToBottom)
             .AddAutoNode("one", "Database cluster")
             .AddAutoNode("two", "Directory service")
             .AddAutoNode("three", "Recovery controller")
@@ -366,11 +366,11 @@ public sealed partial class ConsumerRenderingRegressionTests {
     [InlineData(900, 360, 2)]
     [InlineData(560, 260, 2)]
     public void FittedTopologyKeepsLongEndpointLabelsInsideTheContentClip(int width, int height, int pngScale) {
-        var chart = TopologyChart.Create().WithViewport(width, height).WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(width, height)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("source", "Source", 120, 100, width: 80, height: 60)
             .AddNode("target", "Target", 330, 100, width: 80, height: 60)
             .AddEdge("link", "source", "target")
-            .WithEdgeEndpointLabels("link", "Long source relationship label", "Long target relationship label");
+            .UpdateEdge("link", e => e.SourceLabel("Long source relationship label").TargetLabel("Long target relationship label"));
         var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, PngOutputScale = pngScale };
         var svg = XDocument.Parse(chart.ToSvg(options));
         var clipPath = svg.Descendants().Single(element => element.Name.LocalName == "clipPath");
@@ -393,7 +393,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
     [InlineData(TopologyNodeDisplayMode.Icon, 1)]
     [InlineData(TopologyNodeDisplayMode.Icon, 2)]
     public void FittedIconCaptionPlateStrokeStaysInsideTheContentClip(TopologyNodeDisplayMode mode, int outputScale) {
-        var chart = TopologyChart.Create().WithViewport(460, 240).WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(460, 240)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("icon", "Caption plate at canvas edge", 10, 10, width: 84, height: 54);
         chart.Nodes[0].DisplayMode = mode;
         var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false, IncludeIconLabels = true, PngOutputScale = outputScale };
@@ -410,7 +410,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
 
     [Fact]
     public void FittedActorCaptionContributesToTheContentBounds() {
-        var chart = TopologyChart.Create().WithViewport(480, 260).WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(480, 260)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("actor", "Escalation contact", 42, 28, width: 100, height: 108);
         chart.Nodes[0].Shape = TopologyNodeShape.Actor;
         var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false };
@@ -433,7 +433,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
     [InlineData(TopologyMarkerKind.OpenTriangle, TopologyMarkerKind.ZeroOrMany)]
     [InlineData(TopologyMarkerKind.OneOrMany, TopologyMarkerKind.Diamond)]
     public void FittedEndpointMarkersStayInsideTheContentClip(TopologyMarkerKind sourceMarker, TopologyMarkerKind targetMarker) {
-        var chart = TopologyChart.Create().WithViewport(500, 260).WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(500, 260)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("source", "Source", 18, 92, width: 92, height: 62)
             .AddNode("target", "Target", 378, 92, width: 92, height: 62)
             .AddEdge("marked", "source", "target", "HTTPS");
@@ -467,8 +467,8 @@ public sealed partial class ConsumerRenderingRegressionTests {
 
     [Fact]
     public void LayeredLayoutPacksOneAutomaticGroupAgainstAnExplicitShell() {
-        var chart = TopologyChart.Create().WithViewport(1000, 520).WithLayout(TopologyLayoutMode.Layered)
-            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(1000, 520)).LayoutMode(TopologyLayoutMode.Layered)
+            .LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddGroup("fixed", "Fixed shell", 0, 0, 520, 360)
             .AddAutoGroup("automatic", "Automatic shell")
             .AddAutoNode("fixed-node", "Fixed member", groupId: "fixed")
@@ -488,8 +488,8 @@ public sealed partial class ConsumerRenderingRegressionTests {
 
     [Fact]
     public void LayeredLayoutKeepsAnUpstreamAutomaticGroupBeforeAnExplicitShell() {
-        var chart = TopologyChart.Create().WithViewport(1000, 520).WithLayout(TopologyLayoutMode.Layered)
-            .WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(1000, 520)).LayoutMode(TopologyLayoutMode.Layered)
+            .LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddGroup("explicit", "Explicit downstream shell", 0, 0, 520, 360)
             .AddAutoGroup("automatic", "Automatic upstream shell")
             .AddAutoNode("automatic-source", "Automatic source", groupId: "automatic")
@@ -509,8 +509,8 @@ public sealed partial class ConsumerRenderingRegressionTests {
     [InlineData(TopologyLayoutDirection.RightToLeft)]
     [InlineData(TopologyLayoutDirection.BottomToTop)]
     public void LayeredLayoutPreservesAutomaticGroupFlowOrderWithoutCrossGroupEdges(TopologyLayoutDirection direction) {
-        var chart = TopologyChart.Create().WithViewport(1000, 520).WithLayout(TopologyLayoutMode.Layered)
-            .WithLayoutDirection(direction)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(1000, 520)).LayoutMode(TopologyLayoutMode.Layered)
+            .LayoutDirection(direction)
             .AddGroup("fixed", "Fixed shell", 0, 0, 520, 360)
             .AddAutoGroup("automatic", "Automatic shell")
             .AddAutoNode("fixed-node", "Fixed member", groupId: "fixed")
@@ -529,7 +529,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
     [Fact]
     public void FittedContentIgnoresHiddenNonGenericManualNodesWhenChoosingItsScale() {
         TopologyChart Create(bool addHidden) {
-            var chart = TopologyChart.Create().WithViewport(1000, 420).WithLayout(TopologyLayoutMode.Manual)
+            var chart = TopologyChart.Create().Viewport(new TopologyViewport(1000, 420)).LayoutMode(TopologyLayoutMode.Manual)
                 .AddNode("visible", "Visible service", 40, 50, width: 110, height: 64);
             if (addHidden) {
                 var hidden = chart.AddNode("anchor", "Hidden anchor", 12000, 12000, width: 110, height: 64).Nodes.Single(node => node.Id == "anchor");
@@ -547,11 +547,11 @@ public sealed partial class ConsumerRenderingRegressionTests {
 
     [Fact]
     public void FittedContentKeepsSelectedRouteStrokeInsideTheContentClip() {
-        var chart = TopologyChart.Create().WithViewport(560, 320).WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(560, 320)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("source", "Source", 70, 130, width: 100, height: 64)
             .AddNode("target", "Target", 390, 130, width: 100, height: 64)
             .AddEdge("link", "source", "target", "Selected route")
-            .WithEdgeWaypoints("link", new ChartPoint(260, 18));
+            .EdgeWaypoints("link", new ChartPoint(260, 18));
         var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false };
         options.SelectedEdgeIds.Add("link");
         var svg = XDocument.Parse(chart.ToSvg(options));

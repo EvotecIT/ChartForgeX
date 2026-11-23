@@ -5,9 +5,9 @@ public static class EqualDonutRecipe {
         if (variant is not ("wide" or "above-labels" or "below-labels")) throw new ArgumentOutOfRangeException(nameof(variant));
         var shares = new ChartSeries(new ChartSeriesId("equal-shares"), "Equal shares", ChartSeriesKind.Donut,
             Enumerable.Range(1, 4).Select(index => new ChartPoint(index, 1)));
-        return Chart.Create().WithXLabels("A", "B", "C", "D").WithDataLabels()
-            .WithPieSliceLabelContent(ChartPieSliceLabelContent.Label).WithDonutCenterLabel(false)
-            .WithDataLabelPlacement(variant == "below-labels" ? ChartDataLabelPlacement.Below : ChartDataLabelPlacement.Above)
+        return Chart.Create().XLabels("A", "B", "C", "D").DataLabels()
+            .Pie(p => p.SliceLabelContent(ChartPieSliceLabelContent.Label).ShowCenterLabel(false))
+            .DataLabels(d => d.Placement(variant == "below-labels" ? ChartDataLabelPlacement.Below : ChartDataLabelPlacement.Above))
             .AddSeries(shares);
     }
 }

@@ -9,10 +9,10 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void SuperTopologyBridgeMapsTopologyToGraphExplorerContract() {
         var topology = TopologyChart.Create()
-            .WithId("super-topology")
-            .WithTitle("Super Topology")
-            .WithSubtitle("Topology projected into graph exploration")
-            .WithLayout(TopologyLayoutMode.Manual)
+            .Id("super-topology")
+            .Title("Super Topology")
+            .Subtitle("Topology projected into graph exploration")
+            .LayoutMode(TopologyLayoutMode.Manual)
             .AddGroup("core", "Core", 20, 20, 280, 180, TopologyHealthStatus.Warning, subtitle: "Primary services", iconId: "common:service")
             .AddGroup("edge", "Edge", 360, 20, 280, 180, TopologyHealthStatus.Healthy)
             .AddNode("api", "API", 64, 82, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, groupId: "core", subtitle: "Public API", symbol: "API", iconId: "common:service")
@@ -20,7 +20,7 @@ internal static partial class SmokeTests {
             .AddNode("cdn", "CDN", 440, 92, TopologyNodeKind.Network, TopologyHealthStatus.Healthy, groupId: "edge", subtitle: "Ingress", symbol: "NET")
             .AddEdge("cdn-api", "cdn", "api", "routes", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Curved)
             .AddEdge("api-db", "api", "db", "queries", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal, secondaryLabel: "32 ms");
-        topology.WithNodeColor("api", "#0F766E").WithNodeBackground("api", "#CCFBF1").WithEdgeColor("cdn-api", "#7C3AED").WithEdgeEmphasis("cdn-api", TopologyEdgeEmphasis.Strong);
+        topology.UpdateNode("api", n => n.Color("#0F766E")).UpdateNode("api", n => n.BackgroundColor("#CCFBF1")).UpdateEdge("cdn-api", e => e.Color("#7C3AED")).UpdateEdge("cdn-api", e => e.Emphasis(TopologyEdgeEmphasis.Strong));
         topology.Nodes[0].Metadata["owner"] = "identity";
         topology.Nodes[1].Metrics["latency"] = "32";
         topology.Edges[1].Metrics["transport"] = "tcp";
@@ -67,27 +67,27 @@ internal static partial class SmokeTests {
         Assert(leanManipulation.Options.HasFeature(GraphSceneFeatures.IncrementalUpdates) && leanManipulation.Options.HasFeature(GraphSceneFeatures.Manipulation) && leanManipulation.Options.Manipulation.CanAddNodes && leanManipulation.Options.Manipulation.CanEditEdges && leanManipulation.Options.Manipulation.CanPersistPositions, "Topology graph bridge should honor valid opt-in manipulation even when large-topology defaults are disabled.");
 
         var anchored = TopologyChart.Create()
-            .WithId("hidden-anchor")
+            .Id("hidden-anchor")
             .AddNode("source", "Source", 20, 20, TopologyNodeKind.Service, TopologyHealthStatus.Healthy)
             .AddNode("anchor", "Anchor", 140, 20, TopologyNodeKind.Network, TopologyHealthStatus.Unknown)
             .AddNode("target", "Target", 260, 20, TopologyNodeKind.Database, TopologyHealthStatus.Healthy)
             .AddEdge("source-anchor", "source", "anchor", "route", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy)
             .AddEdge("anchor-target", "anchor", "target", "route", TopologyEdgeKind.Connectivity, TopologyHealthStatus.Healthy, VisualLinkDirection.Bidirectional);
-        anchored.WithNodeDisplay("anchor", TopologyNodeDisplayMode.Hidden);
+        anchored.UpdateNode("anchor", n => n.DisplayMode(TopologyNodeDisplayMode.Hidden).Badge(null));
         var anchoredScene = anchored.ToGraphScene();
         Assert(anchoredScene.Nodes.Single(node => node.Id == "anchor").Hidden && anchoredScene.Edges.Single(edge => edge.Id == "anchor-target").SourceArrow && anchoredScene.Edges.Single(edge => edge.Id == "anchor-target").TargetArrow, "Topology graph bridge should preserve hidden routing anchors and bidirectional edge markers.");
         var anchoredHtml = anchored.ToGraphExplorerHtmlFragment();
         Assert(anchoredHtml.Contains("data-node-id=\"anchor\"", StringComparison.Ordinal) && anchoredHtml.Contains("data-node-hidden=\"true\"", StringComparison.Ordinal) && anchoredHtml.Contains("endpointVisible(edgeVisualNode", StringComparison.Ordinal) && anchoredHtml.Contains("endpointAvailable(attr(edge, 'data-source-node-id'))", StringComparison.Ordinal) && anchoredHtml.Contains("data-edge-source-arrow=\"true\"", StringComparison.Ordinal), "Graph explorer output should keep hidden topology anchors available for Canvas, PNG, overview, and filter routing without drawing visible node marks.");
 
         var dashedTopology = TopologyChart.Create()
-            .WithId("dash-parity")
+            .Id("dash-parity")
             .AddNode("api", "API", 20, 40, TopologyNodeKind.Service, TopologyHealthStatus.Healthy)
             .AddNode("db", "DB", 160, 40, TopologyNodeKind.Database, TopologyHealthStatus.Healthy)
             .AddNode("queue", "Queue", 300, 40, TopologyNodeKind.Queue, TopologyHealthStatus.Healthy)
             .AddEdge("api-db", "api", "db", "warning", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning)
             .AddEdge("db-queue", "db", "queue", "dotted", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy)
             .AddEdge("queue-api", "queue", "api", "muted", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning);
-        dashedTopology.WithEdgeLineStyle("db-queue", TopologyEdgeLineStyle.Dotted);
+        dashedTopology.UpdateEdge("db-queue", e => e.LineStyle(TopologyEdgeLineStyle.Dotted));
         dashedTopology.Edges[1].SecondaryLabel = "queue 7";
         dashedTopology.Edges[1].TertiaryLabel = "3m ago";
         dashedTopology.Edges[2].IsMuted = true;
@@ -101,12 +101,12 @@ internal static partial class SmokeTests {
         var dashedHtml = dashedTopology.ToGraphExplorerHtmlFragment();
         Assert(dashedHtml.Contains("data-edge-dash-pattern=\"8 5\"", StringComparison.Ordinal) && dashedHtml.Contains("data-edge-dash-pattern=\"2 5\"", StringComparison.Ordinal) && dashedHtml.Contains("stroke-dasharray:2 5", StringComparison.Ordinal) && dashedHtml.Contains("dashPattern: dashPattern(attr(el, 'data-edge-dash-pattern'), [8, 6])", StringComparison.Ordinal), "Graph explorer output should carry topology dash patterns into SVG and Canvas/PNG rendering state.");
 
-        dashedTopology.WithEdgeEmphasis("db-queue", TopologyEdgeEmphasis.Subtle);
+        dashedTopology.UpdateEdge("db-queue", e => e.Emphasis(TopologyEdgeEmphasis.Subtle));
         var subtleScene = dashedTopology.ToGraphScene();
         Assert(subtleScene.Edges.Single(edge => edge.Id == "db-queue").Style.Width == 1.05 && subtleScene.Edges.Single(edge => edge.Id == "db-queue").Weight == 0.7, "Topology graph bridge should keep subtle topology edges visually thinner than normal graph edges while preserving low runtime force weight.");
 
         var duplicateEdges = TopologyChart.Create()
-            .WithId("duplicate-edge-parity")
+            .Id("duplicate-edge-parity")
             .AddNode("a", "A", 20, 40, TopologyNodeKind.Service, TopologyHealthStatus.Healthy)
             .AddNode("b", "B", 160, 40, TopologyNodeKind.Database, TopologyHealthStatus.Healthy)
             .AddNode("c", "C", 300, 40, TopologyNodeKind.Queue, TopologyHealthStatus.Healthy)
@@ -117,7 +117,7 @@ internal static partial class SmokeTests {
         Assert(duplicateScene.Edges.Select(edge => edge.Id).Distinct(StringComparer.Ordinal).Count() == 2 && duplicateScene.Edges.Single(edge => edge.SourceNodeId == "b").Label == "secondary only", "Topology graph bridge should generate unique graph ids for duplicate topology edge ids and keep secondary-only labels visible.");
 
         var autoOrigin = TopologyChart.Create()
-            .WithLayout(TopologyLayoutMode.Manual)
+            .LayoutMode(TopologyLayoutMode.Manual)
             .AddAutoNode("auto", "Auto", TopologyNodeKind.Service, TopologyHealthStatus.Healthy)
             .AddNode("origin", "Origin", 0, 0, TopologyNodeKind.Database, TopologyHealthStatus.Healthy);
         autoOrigin.Nodes.Single(node => node.Id == "auto").X = 220;
@@ -126,7 +126,7 @@ internal static partial class SmokeTests {
         Assert(autoOriginScene.Nodes.Single(node => node.Id == "auto").Fixed && autoOriginScene.Nodes.Single(node => node.Id == "auto").HasExplicitPosition && autoOriginScene.Nodes.Single(node => node.Id == "origin").Fixed && autoOriginScene.Nodes.Single(node => node.Id == "origin").HasExplicitPosition, "Topology graph bridge should preserve explicit coordinate mutations after AddAutoNode while preserving explicit manual origin nodes.");
 
         var freeAutoOrigin = TopologyChart.Create()
-            .WithLayout(TopologyLayoutMode.Manual)
+            .LayoutMode(TopologyLayoutMode.Manual)
             .AddAutoNode("auto", "Auto", TopologyNodeKind.Service, TopologyHealthStatus.Healthy)
             .AddAutoNode("free-target", "Free target", TopologyNodeKind.Database, TopologyHealthStatus.Healthy)
             .AddEdge("free-route", "auto", "free-target", "free", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal);
@@ -135,16 +135,16 @@ internal static partial class SmokeTests {
         Assert(freeAutoOriginScene.Edges.Single(edge => edge.Id == "free-route").RoutePoints.Count == 0 && freeAutoOriginScene.Edges.Single(edge => edge.Id == "free-route").Shape == GraphEdgeShape.Polyline, "Topology graph bridge should not emit prepared route points when generated node positions will use a different coordinate space.");
 
         var curvedWaypoint = TopologyChart.Create()
-            .WithLayout(TopologyLayoutMode.Manual)
+            .LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("left", "Left", 20, 40, TopologyNodeKind.Service, TopologyHealthStatus.Healthy)
             .AddNode("right", "Right", 260, 40, TopologyNodeKind.Database, TopologyHealthStatus.Healthy)
             .AddEdge("curved-route", "left", "right", "manual", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Curved)
-            .WithEdgeWaypoints("curved-route", new ChartForgeX.Primitives.ChartPoint(130, 20), new ChartForgeX.Primitives.ChartPoint(170, 120));
+            .EdgeWaypoints("curved-route", new ChartForgeX.Primitives.ChartPoint(130, 20), new ChartForgeX.Primitives.ChartPoint(170, 120));
         var curvedWaypointEdge = curvedWaypoint.ToGraphScene().Edges.Single(edge => edge.Id == "curved-route");
         Assert(curvedWaypointEdge.Shape == GraphEdgeShape.Polyline && curvedWaypointEdge.RoutePoints.Count >= 4, "Topology graph bridge should preserve caller-specified manual waypoints even when the edge routing remains curved.");
 
         var friendlyIds = TopologyChart.Create()
-            .WithId("app map")
+            .Id("app map")
             .AddGroup("core services", "Core Services", 0, 0, 240, 160, TopologyHealthStatus.Healthy)
             .AddNode("app server", "App Server", 40, 50, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, groupId: "core services")
             .AddNode("sql db", "SQL DB", 160, 50, TopologyNodeKind.Database, TopologyHealthStatus.Warning, groupId: "core services")
@@ -161,17 +161,17 @@ internal static partial class SmokeTests {
 
     private static void TopologyGraphExplorerScalesFromCardsToClusteredOverviews() {
         var small = TopologyChart.Create()
-            .WithId("relationship-overview")
-            .WithTitle("Relationship overview")
-            .WithLayout(TopologyLayoutMode.RelationshipRadial)
+            .Id("relationship-overview")
+            .Title("Relationship overview")
+            .LayoutMode(TopologyLayoutMode.RelationshipRadial)
             .AddAutoIconNode("a", "alpha.example", "microsoft-ad:domain", TopologyHealthStatus.Healthy, subtitle: "Domain", width: 180, height: 72)
             .AddAutoIconNode("b", "beta.example", "microsoft-ad:domain", TopologyHealthStatus.Warning, subtitle: "Domain", width: 180, height: 72)
             .AddAutoNode("c", "gamma.example", TopologyNodeKind.Namespace, TopologyHealthStatus.Critical, subtitle: "Domain", width: 180, height: 72, symbol: "AD")
             .AddAutoNode("d", "KERBEROS.MICROSOFTONLINE.COM😀", TopologyNodeKind.Namespace, TopologyHealthStatus.Unknown, subtitle: "Domain", width: 180, height: 72, symbol: "AD")
             .AddEdge("a-b", "a", "b", "Forest · Bidirectional", TopologyEdgeKind.Trust, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional)
             .AddEdge("a-c", "a", "c", "External · Outbound", TopologyEdgeKind.Trust, TopologyHealthStatus.Critical, VisualLinkDirection.Forward);
-        small.WithNodeDisplay("a", TopologyNodeDisplayMode.Card)
-            .WithNodeDisplay("b", TopologyNodeDisplayMode.Card);
+        small.UpdateNode("a", n => n.DisplayMode(TopologyNodeDisplayMode.Card).Badge(null))
+            .UpdateNode("b", n => n.DisplayMode(TopologyNodeDisplayMode.Card).Badge(null));
 
         var smallScene = small.ToGraphScene();
         Assert(smallScene.Nodes.All(node => node.HasExplicitPosition && !node.Fixed), "Prepared topology layouts should seed stable opening coordinates while keeping interactive nodes movable.");
@@ -217,11 +217,11 @@ internal static partial class SmokeTests {
         Assert(callerThreshold.Options.LevelOfDetail.HideEdgeLabelsThreshold == 500, "An explicit dense-edge threshold should replace the preset so callers can retain labels beyond the topology default.");
 
         var movablePrepared = TopologyChart.Create()
-            .WithLayout(TopologyLayoutMode.ForceDirected)
+            .LayoutMode(TopologyLayoutMode.ForceDirected)
             .AddAutoNode("left", "Left", TopologyNodeKind.Service, TopologyHealthStatus.Healthy)
             .AddAutoNode("right", "Right", TopologyNodeKind.Database, TopologyHealthStatus.Healthy)
             .AddEdge("route", "left", "right", "route", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal);
-        movablePrepared.WithEdgeWaypoints("route", new ChartForgeX.Primitives.ChartPoint(150, 60), new ChartForgeX.Primitives.ChartPoint(210, 140));
+        movablePrepared.EdgeWaypoints("route", new ChartForgeX.Primitives.ChartPoint(150, 60), new ChartForgeX.Primitives.ChartPoint(210, 140));
         Assert(movablePrepared.ToGraphScene().Edges.Single().RoutePoints.Count == 0, "Movable prepared nodes should not retain absolute intermediate route bends that become stale after dragging or stabilization.");
         Assert(movablePrepared.ToGraphScene(options => options.FixPreparedLayout = true).Edges.Single().RoutePoints.Count >= 2, "Fixed prepared layouts should retain deterministic route geometry.");
 
@@ -242,7 +242,7 @@ internal static partial class SmokeTests {
     }
 
     private static TopologyChart BuildScaleTopology(string id, int nodeCount) {
-        var chart = TopologyChart.Create().WithId(id).WithLayout(TopologyLayoutMode.ForceDirected);
+        var chart = TopologyChart.Create().Id(id).LayoutMode(TopologyLayoutMode.ForceDirected);
         for (var site = 0; site < 5; site++) chart.AddGroup("site-" + site, "Site " + site, 0, 0, 320, 220, TopologyHealthStatus.Healthy);
         for (var index = 0; index < nodeCount; index++) {
             chart.AddAutoNode("node-" + index, "Node " + index, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, groupId: "site-" + index % 5, subtitle: "Site " + index % 5, width: 164, height: 72);

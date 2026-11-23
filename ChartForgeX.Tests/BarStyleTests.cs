@@ -13,8 +13,8 @@ public sealed class BarStyleTests {
 
     [Fact]
     public void Flat_VerticalBars_AreTheirColourWithoutGradientOrHighlight() {
-        var chart = Chart.Create().WithSize(480, 300).WithBarStyle(ChartBarStyle.Flat).AddBar("Count", Values(3, 7, 5), Blue);
-        Assert.Equal(ChartBarStyle.Flat, chart.Options.BarVisualStyle.Kind);
+        var chart = Chart.Create().Size(480, 300).Bars(b => b.Style(ChartBarStyle.Flat)).AddBar("Count", Values(3, 7, 5), Blue);
+        Assert.Equal(ChartBarStyle.Flat, chart.Options.Bars.VisualStyle.Kind);
         var svg = XDocument.Parse(chart.ToSvg());
         var bars = ByRole(svg, "bar");
         Assert.Equal(3, bars.Length);
@@ -35,7 +35,7 @@ public sealed class BarStyleTests {
 
     [Fact]
     public void Flat_HorizontalAndHistogramBars_AreTheirColour() {
-        var horizontal = XDocument.Parse(Chart.Create().WithSize(480, 300).WithBarStyle(ChartBarStyle.Flat).AddHorizontalBar("Count", Values(3, 7), Blue).ToSvg());
+        var horizontal = XDocument.Parse(Chart.Create().Size(480, 300).Bars(b => b.Style(ChartBarStyle.Flat)).AddHorizontalBar("Count", Values(3, 7), Blue).ToSvg());
         Assert.Equal(2, ByRole(horizontal, "horizontal-bar").Length);
         Assert.All(ByRole(horizontal, "horizontal-bar"), bar => {
             Assert.Equal(Blue.ToCss(), (string?)bar.Attribute("fill"));
@@ -43,11 +43,11 @@ public sealed class BarStyleTests {
         });
         Assert.Empty(ByRole(horizontal, "bar-highlight"));
 
-        var histogram = Chart.Create().WithSize(480, 300).WithBarStyle(ChartBarStyle.Flat).AddHistogram("Latency", new[] { 1d, 2d, 2d, 3d, 3d, 3d, 4d }, 4);
+        var histogram = Chart.Create().Size(480, 300).Bars(b => b.Style(ChartBarStyle.Flat)).AddHistogram("Latency", new[] { 1d, 2d, 2d, 3d, 3d, 3d, 4d }, 4);
         Assert.NotEmpty(ByRole(XDocument.Parse(histogram.ToSvg()), "bar"));
         Assert.All(ByRole(XDocument.Parse(histogram.ToSvg()), "bar"), bar => Assert.DoesNotContain("url(", (string?)bar.Attribute("fill"), StringComparison.Ordinal));
 
-        var solid = XDocument.Parse(Chart.Create().WithSize(480, 300).WithBarStyle(ChartBarStyle.Solid).AddBar("Count", Values(3, 7), Blue).ToSvg());
+        var solid = XDocument.Parse(Chart.Create().Size(480, 300).Bars(b => b.Style(ChartBarStyle.Solid)).AddBar("Count", Values(3, 7), Blue).ToSvg());
         Assert.All(ByRole(solid, "bar"), bar => Assert.StartsWith("url(", (string?)bar.Attribute("fill"), StringComparison.Ordinal));
         Assert.NotEmpty(ByRole(solid, "bar-highlight"));
     }

@@ -18,10 +18,10 @@ var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 #endregion
 
-var chart = TopologyChart.Create().WithId("native-usecase-depth").WithTitle("Publish prepared documents")
-    .WithSubtitle("Actors, stereotypes, approval notes and named associations")
-    .WithTheme(VisualTheme.Graphite(), mode).WithViewport(900, 520, 28)
-    .WithLayout(TopologyLayoutMode.Swimlane, TopologyLayoutDirection.LeftToRight);
+var chart = TopologyChart.Create().Id("native-usecase-depth").Title("Publish prepared documents")
+    .Subtitle("Actors, stereotypes, approval notes and named associations")
+    .Theme(VisualTheme.Graphite(), mode).Viewport(new TopologyViewport(900, 520, 28))
+    .LayoutMode(TopologyLayoutMode.Swimlane).LayoutDirection(TopologyLayoutDirection.LeftToRight);
 chart.DefaultRenderOptions = new TopologyRenderOptions { FitContentToViewport = true,
     MaxNodeLabelLines = 8, MaxNodeSubtitleLines = 8, WrapNodeLabels = true, AllowMultilineNodeLabels = true };
 chart.AddAutoGroup("Service", "Publication service");

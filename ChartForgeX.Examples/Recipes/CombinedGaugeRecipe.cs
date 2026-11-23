@@ -5,11 +5,11 @@ public static class CombinedGaugeRecipe {
         var compact = variant == "compact";
         var series = ChartSeries.CreateGauge(new ChartSeriesId("pressure"), "Pressure",
             new ChartGaugeValue(3.25, 2, 3, new[] { new ChartGaugeTarget(2.4, "Minimum"), new ChartGaugeTarget(2.8, "Target") }), ChartColor.FromHex("#176B88"))
-            .WithObservationId(0, new ChartObservationId("current"));
-        return Chart.Create().WithSize(compact ? 390 : 760, compact ? 360 : 440).WithTitle("Pressure against operating bands")
-            .WithTheme(VisualTheme.Graphite(), mode).WithLegend(false).AddSeries(series)
-            .WithValueFormat(ChartValueFormat.Number("0.00' MPa'"))
-            .ConfigureGauge(options => {
+            .ObservationId(0, new ChartObservationId("current"));
+        return Chart.Create().Size(compact ? 390 : 760, compact ? 360 : 440).Title("Pressure against operating bands")
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Legend(false).AddSeries(series)
+            .ValueFormat(ChartValueFormat.Number("0.00' MPa'"))
+            .Gauge(options => {
                 options.Form = ChartGaugeForm.ArcWithNeedle; options.StartAngleDegrees = 180; options.SweepAngleDegrees = 180;
                 options.TickCount = 5; options.BandGap = 4; options.NeedleColor = ChartColor.FromHex("#9D3C20"); options.Caption = "Raw reading above the operating range";
                 options.Bands.Add(new ChartGaugeBand(2, 2.4, ChartSeriesState.Warning, ChartColor.FromHex("#D4A72C"), .8));

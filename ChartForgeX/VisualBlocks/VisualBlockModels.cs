@@ -5,6 +5,7 @@ using ChartForgeX.Accessibility;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.VisualBlocks;
 
@@ -110,6 +111,7 @@ public interface IVisualBlock : ChartForgeX.Rendering.IStaticVisualSource {
 /// Base class for fluent visual block models.
 /// </summary>
 /// <typeparam name="TSelf">The concrete visual block type.</typeparam>
+[Fluent]
 public abstract class VisualBlock<TSelf> : IVisualBlock where TSelf : VisualBlock<TSelf> {
     private string _title = string.Empty;
     private string _subtitle = string.Empty;
@@ -127,6 +129,7 @@ public abstract class VisualBlock<TSelf> : IVisualBlock where TSelf : VisualBloc
     }
 
     /// <summary>Gets shared rendering options.</summary>
+    [FluentInline]
     public VisualBlockOptions Options { get; } = new();
 
     /// <summary>Gets a concise accessibility label.</summary>
@@ -138,50 +141,17 @@ public abstract class VisualBlock<TSelf> : IVisualBlock where TSelf : VisualBloc
     /// <summary>Renders the producer-owned static pixels.</summary>
     public virtual ChartForgeX.Raster.RgbaImage RenderRgba() => new PngVisualBlockRenderer().RenderNativeImage(this);
 
-    /// <summary>Sets the block title.</summary>
-    public TSelf WithTitle(string title) { Title = title ?? throw new ArgumentNullException(nameof(title)); return Self(); }
-
-    /// <summary>Sets the block subtitle.</summary>
-    public TSelf WithSubtitle(string subtitle) { Subtitle = subtitle ?? throw new ArgumentNullException(nameof(subtitle)); return Self(); }
-
     /// <summary>Sets the rendered block size.</summary>
-    public TSelf WithSize(int width, int height) { Options.Size = new ChartSize(width, height); return Self(); }
+    public TSelf Size(int width, int height) { Options.Size = new ChartSize(width, height); return Self(); }
 
     /// <summary>Sets uniform inner content padding.</summary>
-    public TSelf WithPadding(double padding) { Options.Padding = new ChartPadding(padding, padding, padding, padding); return Self(); }
+    public TSelf Padding(double padding) { Options.Padding = new ChartPadding(padding, padding, padding, padding); return Self(); }
 
     /// <summary>Sets the inner content padding.</summary>
-    public TSelf WithPadding(double left, double top, double right, double bottom) { Options.Padding = new ChartPadding(left, top, right, bottom); return Self(); }
-
-    /// <summary>Sets the visual theme.</summary>
-    public TSelf WithTheme(VisualTheme theme, ThemeMode? mode = null) {
-        Options.Theme = theme ?? throw new ArgumentNullException(nameof(theme));
-        if (mode.HasValue) Options.ThemeMode = mode.Value;
-        return Self();
-    }
-
-    /// <summary>Sets the light or dark mode without changing the shared theme.</summary>
-    public TSelf WithThemeMode(ThemeMode mode) { Options.ThemeMode = mode; return Self(); }
-
-    /// <summary>Writes theme colours in SVG output as CSS custom properties (see <see cref="VisualBlockOptions.SvgColorVariables"/>).</summary>
-    /// <param name="variables">The colour variables, or null to write literal colours.</param>
-    /// <returns>The current block.</returns>
-    public TSelf WithSvgColorVariables(SvgColorVariables? variables) { Options.SvgColorVariables = variables; return Self(); }
+    public TSelf Padding(double left, double top, double right, double bottom) { Options.Padding = new ChartPadding(left, top, right, bottom); return Self(); }
 
     /// <summary>Atomically replaces the shared theme using an isolated configuration builder.</summary>
-    public TSelf ConfigureTheme(Action<VisualThemeBuilder> configure) { Options.Theme = Options.Theme.Configure(configure); return Self(); }
-
-    /// <summary>Lets the embedding host own the surface and removes outer padding.</summary>
-    public TSelf WithHostFrame(bool hostOwnsFrame = true) { Options.HostOwnsFrame = hostOwnsFrame; return Self(); }
-
-    /// <summary>Sets whether the full background should stay transparent.</summary>
-    public TSelf WithTransparentBackground(bool enabled = true) { Options.TransparentBackground = enabled; return Self(); }
-
-    /// <summary>Sets whether the outer card surface should be rendered.</summary>
-    public TSelf WithCard(bool enabled = true) { Options.ShowCard = enabled; return Self(); }
-
-    /// <summary>Sets the output pixel multiplier used by PNG exports.</summary>
-    public TSelf WithPngOutputScale(int scale) { Options.PngOutputScale = scale; return Self(); }
+    public TSelf Theme(Action<VisualThemeBuilder> configure) { Options.Theme = Options.Theme.Configure(configure); return Self(); }
 
     private TSelf Self() => (TSelf)this;
 }

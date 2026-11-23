@@ -68,9 +68,9 @@ public sealed class GaugeHorizontalExplicitScaleTests {
         series.ShowDataLabels = false;
         var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(font), "The existing Carlito fixture makes the footer's glyph geometry independent of host fallback fonts.");
-        return Chart.Create().WithSize(360, 180).WithHeader(false).WithLegend(false).WithPngFont(font)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).AddSeries(series)
-            .ConfigureGauge(options => {
+        return Chart.Create().Size(360, 180).ShowHeader(false).Legend(false).Png(p => p.FontPath(font))
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).AddSeries(series)
+            .Gauge(options => {
                 options.Form = ChartGaugeForm.Linear;
                 options.TickLabels = new[] { new ChartAxisLabel(0, "Minimum"), new ChartAxisLabel(middle, middleCaption), new ChartAxisLabel(100, "Maximum") };
             });

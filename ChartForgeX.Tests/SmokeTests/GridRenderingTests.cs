@@ -10,11 +10,11 @@ namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
     private static void SmallMultipleGridRendersStaticHtml() {
-        var coverage = Chart.Create().WithTitle("Coverage").WithSize(320, 220).AddBar("Values", Points(80, 72, 91));
-        var readiness = Chart.Create().WithTitle("Readiness").WithSize(320, 220).AddLine("Values", Points(62, 70, 84));
-        var grid = ChartGrid.Create().WithTitle("Control scorecards").WithSubtitle("Small multiples for a static report")
-            .WithTheme(VisualTheme.Graphite()).WithColumns(2).WithGap(20).WithPadding(30).WithPanelSize(300, 200)
-            .Add(coverage).Add(readiness).WithSharedYAxis();
+        var coverage = Chart.Create().Title("Coverage").Size(320, 220).AddBar("Values", Points(80, 72, 91));
+        var readiness = Chart.Create().Title("Readiness").Size(320, 220).AddLine("Values", Points(62, 70, 84));
+        var grid = ChartGrid.Create().Title("Control scorecards").Subtitle("Small multiples for a static report")
+            .Theme(VisualTheme.Graphite()).Columns(2).Gap(20).Padding(30).PanelSize(300, 200)
+            .Add(coverage).Add(readiness).ShareYAxis();
         var html = grid.ToHtmlPage();
         Assert(html.Contains("<section class=\"chartforgex-grid\"", StringComparison.Ordinal), "Chart grids should render a stable report container.");
         Assert(CountOccurrences(html, "<svg ") == 1, "Static HTML should embed the complete prepared grid layout.");
@@ -28,17 +28,17 @@ internal static partial class SmokeTests {
         Assert(CountOccurrences(svg, "<svg ") == 1, "Grid panels should be translated scene geometry in one SVG viewport.");
         var prepared = grid.Prepare(VisualExportRequest.ForGrid(grid).Context);
         Assert(prepared.Regions.Count(region => region.Role == "panel") == 2, "The prepared grid should retain inspectable panel regions.");
-        Assert(coverage.Options.YAxisMinimum == readiness.Options.YAxisMinimum && coverage.Options.YAxisMaximum == readiness.Options.YAxisMaximum,
+        Assert(coverage.Options.YAxis.Min == readiness.Options.YAxis.Min && coverage.Options.YAxis.Max == readiness.Options.YAxis.Max,
             "Shared y-axis grids should apply equal bounds to compatible charts.");
         var png = grid.ToPng();
         Assert(ReadBigEndianInt32(png, 16) == 680 && ReadBigEndianInt32(png, 20) == (int)Math.Ceiling(prepared.Size.Height), "PNG should use the same logical grid viewport.");
         AssertRgbaParity(grid.ToRgbaImage(), png, "Prepared ChartGrid");
         var tintedTheme = VisualTheme.Graphite(); tintedTheme = tintedTheme.Configure(builder => { builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#F4F7FB"); });
-        var tinted = ChartGrid.Create().WithTitle(grid.Title).WithSubtitle(grid.Subtitle).WithTheme(tintedTheme)
-            .WithColumns(2).WithGap(20).WithPadding(30).WithPanelSize(300, 200).Add(coverage).Add(readiness);
+        var tinted = ChartGrid.Create().Title(grid.Title).Subtitle(grid.Subtitle).Theme(tintedTheme)
+            .Columns(2).Gap(20).Padding(30).PanelSize(300, 200).Add(coverage).Add(readiness);
         Assert(!png.SequenceEqual(tinted.ToPng()), "The shared grid export should honor explicit background colors.");
 
-        var repeated = Chart.Create().WithTitle("Repeated").WithSize(320, 220).AddLine("Values", Points(10, 20, 30));
+        var repeated = Chart.Create().Title("Repeated").Size(320, 220).AddLine("Values", Points(10, 20, 30));
         var repeatedGrid = ChartGrid.Create().Add(repeated).Add(repeated);
         AssertNoDuplicateIds(repeatedGrid.ToHtmlPage(), "Repeated prepared grid panels");
         Assert(repeatedGrid.ToHtmlFragment() == repeatedGrid.ToHtmlFragment(), "Default HTML grid fragments should be deterministic.");
@@ -47,7 +47,7 @@ internal static partial class SmokeTests {
         AssertNoDuplicateIds(repeatedGrid.ToHtmlFragment("scope with spaces") + repeatedGrid.ToHtmlFragment("scope|with|spaces"), "External host scopes");
         Assert(grid.ToSvg() == grid.ToSvg(), "Prepared SVG grids should be deterministic.");
         Assert(grid.ToSvg("stable-grid") == grid.ToSvg("stable-grid"), "Host-scoped SVG grids should be deterministic.");
-        grid.WithAutomaticPanelSize().WithTheme(VisualTheme.Graphite(), ThemeMode.Dark);
+        grid.PanelSize(null).Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark);
         Assert(!grid.PanelSize.HasValue && ReferenceEquals(grid.Theme, VisualTheme.Graphite()) && grid.ThemeMode == ThemeMode.Dark, "Automatic panel sizing should preserve the explicitly selected paired theme and mode.");
     }
 }

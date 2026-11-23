@@ -4,12 +4,12 @@ public static class TravelDottedMapRecipe {
     public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Dark) {
         if (variant != "wide") throw new ArgumentOutOfRangeException(nameof(variant));
         return Chart.Create()
-            .WithTitle("Travel Map")
-            .WithSubtitle("Dotted world layer with highlighted longitude and latitude points")
-            .WithTheme(VisualTheme.Graphite(), mode)
-            .WithSize(800, 457)
-            .WithLegend(false)
-            .WithDataLabels()
+            .Title("Travel Map")
+            .Subtitle("Dotted world layer with highlighted longitude and latitude points")
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode)
+            .Size(800, 457)
+            .Legend(false)
+            .DataLabels()
             .AddDottedMap("Visited", new[] {
                 new ChartMapPoint("Indonesia", 113.9213, -0.7893, ChartColor.FromRgb(34, 197, 94)),
                 new ChartMapPoint("Spain", -3.7038, 40.4168, ChartColor.FromRgb(34, 197, 94)),

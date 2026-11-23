@@ -29,15 +29,15 @@ var transfers = ChartSeries.CreateChord(new ChartSeriesId("transfer-source"), "T
     new ChartFlowLink("zero-transfer", "north-support", "south-support", 0)
 });
 var chart = Chart.Create().AddSeries(transfers);
-chart.ConfigureChord(options => {
+chart.Chord(options => {
     options.StartAngleDegrees = -120; options.SweepAngleDegrees = 300;
     options.NodeGapDegrees = 5; options.NodeThicknessRatio = .09; options.RibbonOpacity = .45;
     options.LabelContent = ChartChordLabelContent.LabelAndTotals;
 });
-transfers.WithNodeState("north-support", ChartSeriesState.Warning)
-    .WithFlowStyle("north-priority", new ChartFlowStyle(fill: ChartColor.FromHex("#AF6B24"), fillOpacity: .7,
+transfers.NodeState("north-support", ChartSeriesState.Warning)
+    .FlowStyle("north-priority", new ChartFlowStyle(fill: ChartColor.FromHex("#AF6B24"), fillOpacity: .7,
         fillPattern: ChartFillPattern.DiagonalForward, stroke: ChartColor.FromHex("#764415"), strokeWidth: 1))
-    .WithFlowState("north-priority", ChartSeriesState.Warning).WithFlowStyle("support-internal", new ChartFlowStyle(strokeWidth: 1));
+    .FlowState("north-priority", ChartSeriesState.Warning).FlowStyle("support-internal", new ChartFlowStyle(strokeWidth: 1));
 
 #region Output
 var context = new VisualRenderContext(

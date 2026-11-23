@@ -70,10 +70,10 @@ public static class PlaygroundAnnotations {
     };
 
     private static Chart Create(IEnumerable<Drawing> drawings, ThemeMode mode) {
-        var chart = Chart.Create().WithSize(800, 480)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily("Carlito, sans-serif"), mode)
-            .WithTitle("Review a measured trend").WithSubtitle("Add, move or delete drawings; the engine re-prepares the chart")
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 100).WithLegend(false)
+        var chart = Chart.Create().Size(800, 480)
+            .Theme(VisualTheme.Graphite().WithFontFamily("Carlito, sans-serif")).ThemeMode(mode)
+            .Title("Review a measured trend").Subtitle("Add, move or delete drawings; the engine re-prepares the chart")
+            .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 100)).Legend(false)
             .AddLine("Observed", new[] { new ChartPoint(0, 10), new ChartPoint(2, 24), new ChartPoint(3, 40), new ChartPoint(5, 46),
                 new ChartPoint(7, 58), new ChartPoint(8, 61), new ChartPoint(10, 70) });
         // Theme-owned colours keep each drawing readable after a theme switch.

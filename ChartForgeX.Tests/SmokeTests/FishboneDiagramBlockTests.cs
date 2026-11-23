@@ -7,8 +7,8 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void FishboneDiagramBlockRendersStaticSvgAndPng() {
         var block = FishboneDiagramBlock.Create("Delayed release")
-            .WithTitle("Release Root Cause")
-            .WithSize(840, 460);
+            .Title("Release Root Cause")
+            .Size(840, 460);
         block.AddCause("People").AddChild("Handoffs").AddChild("Timezone");
         block.AddCause("Process").AddChild("Late review");
         block.AddCause("Platform").AddChild("Slow build");

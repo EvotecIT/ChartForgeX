@@ -27,13 +27,13 @@ internal static class ArchitectureExamples {
             throw new InvalidOperationException("Architecture example '" + name + "' has errors: " + string.Join("; ", result.Diagnostics.Select(diagnostic => diagnostic.Code + "(" + diagnostic.Line + "): " + diagnostic.Message)));
         }
 
-        var chart = result.Document.WithTheme(result.Document.Theme.WithFontFamily(ExampleTypography.FontFamily));
+        var chart = result.Document.Theme(result.Document.Theme.WithFontFamily(ExampleTypography.FontFamily));
         var prepared = chart.Prepare();
         File.WriteAllText(Path.Combine(output, name + ".svg"), prepared.ToSvg(), Encoding.UTF8);
         File.WriteAllBytes(Path.Combine(output, name + ".png"), prepared.ToPng());
-        var options = new TopologyRenderOptions { EnableHtmlScenarioUrlState = true, ActiveScenarioId = chart.Scenarios.FirstOrDefault()?.Id }
-            .WithHtmlScenarioPanel()
-            .WithHtmlScenarioSequence();
+        var options = new TopologyRenderOptions { Html = { ScenarioUrlState = true }, ActiveScenarioId = chart.Scenarios.FirstOrDefault()?.Id }
+            .HtmlScenarioPanel()
+            .HtmlScenarioSequence();
         File.WriteAllText(Path.Combine(output, name + ".html"), ExampleTypography.EmbedInHtml(chart.ToInteractiveHtmlPage(options)), Encoding.UTF8);
         File.WriteAllText(Path.Combine(output, name + ".cfx.md"), source.Replace("\r\n", "\n"), Encoding.UTF8);
         var layout = TopologyCellLayout.Create(prepared, new TopologyCellLayoutOptions { MaximumColumns = 110 });

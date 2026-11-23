@@ -47,7 +47,7 @@ public sealed class NativeStaticSnapshotBoundaryTests {
     }
 
     private static TopologyChart Chart() {
-        var chart = TopologyChart.Create().WithTitle("").WithViewport(240, 160, 8).WithLegend(null); chart.Id = "native-static"; chart.LayoutMode = TopologyLayoutMode.Manual;
+        var chart = TopologyChart.Create().Title("").Viewport(new TopologyViewport(240, 160, 8)).Legend((TopologyLegend?)null); chart.Id = "native-static"; chart.LayoutMode = TopologyLayoutMode.Manual;
         chart.Nodes.Add(new TopologyNode { Id = "node", Label = "Node", X = 30, Y = 30, Width = 100, Height = 50, ShowStatusBadge = false }); return chart;
     }
     private static (T? Value, Exception? Error) Observe<T>(string name, Func<T> action) {

@@ -1,7 +1,9 @@
+using PowerForge.Fluent;
 namespace ChartForgeX.Core;
 
 /// <summary>Independent endpoint glyph overrides for a dumbbell series, rendered through the shared numeric marker owner.</summary>
 /// <remarks>Unspecified values inherit the series' marker settings, then the family defaults. Explicit observation colors retain their existing precedence over marker fill. Endpoint configuration never changes authored values, order or observation identity.</remarks>
+[Fluent(Copy = nameof(Clone))]
 public sealed class ChartDumbbellOptions {
     /// <summary>Gets the authored Start endpoint's marker overrides. The default fill remains the theme's muted foreground.</summary>
     public ChartMarkerOptions StartMarker { get; private set; } = new();

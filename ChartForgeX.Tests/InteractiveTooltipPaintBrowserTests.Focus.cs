@@ -2,6 +2,7 @@ using ChartForgeX.Interactivity.Html;
 using Microsoft.Playwright;
 using Xunit;
 using static ChartForgeX.Tests.InteractiveChartBrowser;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.Tests;
 
@@ -9,7 +10,7 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
     [BrowserFact]
     public async Task FullyOffscreenOversizedScheduleTargetScrollsIntoViewAndOrdinaryNavigationStillReturns() {
         if (!Enabled) return;
-        var chart = Frame(false).WithTitle("Offscreen intervals").WithXAxisBounds(0, 10)
+        var chart = Frame(false).Title("Offscreen intervals").XAxis(x => x.Bounds(0, 10))
             .AddTimelineRange("Beginning", 0, 1).AddTimelineRange("Outside", 5, 10);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             ExactFeatures(options);

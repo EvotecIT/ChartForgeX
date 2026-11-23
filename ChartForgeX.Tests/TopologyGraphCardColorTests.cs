@@ -14,10 +14,10 @@ public sealed class TopologyGraphCardColorTests {
     [InlineData(TopologyNodeDisplayMode.Icon)]
     [InlineData(TopologyNodeDisplayMode.Tile)]
     public void ProjectionKeepsThemeDefaultsImplicitAndAuthoredFillsExplicit(TopologyNodeDisplayMode display) {
-        var chart = TopologyChart.Create().WithLayout(TopologyLayoutMode.Manual)
-            .AddNode("default", "Default", 0, 0).WithNodeDisplay("default", display)
-            .AddNode("white", "White", 160, 0, backgroundColor: "#ffffff").WithNodeDisplay("white", display)
-            .AddNode("purple", "Purple", 320, 0, backgroundColor: "#7c3aed").WithNodeDisplay("purple", display);
+        var chart = TopologyChart.Create().LayoutMode(TopologyLayoutMode.Manual)
+            .AddNode("default", "Default", 0, 0).UpdateNode("default", n => n.DisplayMode(display).Badge(null))
+            .AddNode("white", "White", 160, 0, backgroundColor: "#ffffff").UpdateNode("white", n => n.DisplayMode(display).Badge(null))
+            .AddNode("purple", "Purple", 320, 0, backgroundColor: "#7c3aed").UpdateNode("purple", n => n.DisplayMode(display).Badge(null));
 
         var scene = chart.ToGraphScene();
         Assert.Null(scene.Nodes.Single(node => node.Id == "default").Style.BackgroundColor);
@@ -34,8 +34,8 @@ public sealed class TopologyGraphCardColorTests {
     public void StaticCardPaintPreservesTheProjectedThemeWithoutAuthoringIt(string surface) {
         var theme = VisualTheme.Graphite();
         theme = theme.Configure(builder => builder.Light.Surface = ChartForgeX.Primitives.ChartColor.FromHex(surface));
-        var chart = TopologyChart.Create().WithTheme(theme).AddNode("card", "Card", 0, 0)
-            .WithNodeDisplay("card", TopologyNodeDisplayMode.Card);
+        var chart = TopologyChart.Create().Theme(theme).AddNode("card", "Card", 0, 0)
+            .UpdateNode("card", n => n.DisplayMode(TopologyNodeDisplayMode.Card).Badge(null));
         var implicitScene = chart.ToGraphScene();
         Assert.Null(implicitScene.Nodes[0].Style.BackgroundColor);
         Assert.Equal(ChartForgeX.Primitives.ChartColor.FromHex(surface).ToCss(), implicitScene.Nodes[0].Metadata["topology.cardBackgroundColor"]);
@@ -56,8 +56,8 @@ public sealed class TopologyGraphCardColorTests {
     [InlineData(TopologyNodeDisplayMode.Icon, false)]
     [InlineData(TopologyNodeDisplayMode.Icon, true)]
     public void StaticNonCardPaintRetainsTheProjectedSurfaceWithoutFreezingInteractivePaint(TopologyNodeDisplayMode display, bool dark) {
-        var chart = TopologyChart.Create().WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .AddNode("node", "Service", 0, 0).WithNodeDisplay("node", display);
+        var chart = TopologyChart.Create().Theme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
+            .AddNode("node", "Service", 0, 0).UpdateNode("node", n => n.DisplayMode(display).Badge(null));
         var scene = chart.ToGraphScene();
         Assert.Null(scene.Nodes[0].Style.BackgroundColor);
         Assert.Equal("theme", scene.Nodes[0].Metadata["topology.backgroundSource"]);

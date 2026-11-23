@@ -24,22 +24,11 @@ public static partial class VisualsExtensions {
     /// <param name="grid">The visual grid to configure.</param>
     /// <param name="configure">The theme customization callback.</param>
     /// <returns>The current visual grid.</returns>
-    public static VisualGrid ConfigureTheme(this VisualGrid grid, Action<VisualThemeBuilder> configure) {
+    public static VisualGrid Theme(this VisualGrid grid, Action<VisualThemeBuilder> configure) {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         grid.Theme = grid.Theme.Configure(configure);
         return grid;
-    }
-
-    /// <summary>
-    /// Sets the output pixel multiplier used by visual grid PNG exports using a named density preset.
-    /// </summary>
-    /// <param name="grid">The visual grid to configure.</param>
-    /// <param name="scale">The output density preset.</param>
-    /// <returns>The current visual grid.</returns>
-    public static VisualGrid WithPngOutputScale(this VisualGrid grid, ChartPngOutputScale scale) {
-        if (grid == null) throw new ArgumentNullException(nameof(grid));
-        return grid.WithPngOutputScale((int)scale);
     }
 
     /// <summary>
@@ -167,7 +156,7 @@ public static partial class VisualsExtensions {
     public static VisualCanvas ToVisualCanvas(this RgbaImage image, VisualCanvasImageFit fit = VisualCanvasImageFit.Stretch) {
         VisualCanvas.ValidateEnum(fit, nameof(fit));
         return VisualCanvas.Create(image.Width, image.Height)
-            .WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+            .BackdropStyle(VisualCanvasBackdropStyle.Transparent)
             .AddRasterImage(0, 0, image.Width, image.Height, image, fit);
     }
 

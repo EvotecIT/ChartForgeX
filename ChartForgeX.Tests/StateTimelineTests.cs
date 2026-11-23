@@ -49,7 +49,7 @@ public sealed class StateTimelineTests {
     public void ToSvg_ContiguousBucketsInSameState_DrawAsOneRun() {
         var buckets = Enumerable.Range(0, 4).Select(index => new ChartStateTimelineSegment(Day.AddHours(index), Day.AddHours(index + 1), "up")).ToList();
         buckets.Add(new ChartStateTimelineSegment(Day.AddHours(4), Day.AddHours(5), "up", "patched"));
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(640, 240).WithStateCategories(new ChartStateCategory("up", "Up", Up)).AddStateTimelineLane("DC01", buckets);
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).Size(640, 240).StateCategories(new ChartStateCategory("up", "Up", Up)).AddStateTimelineLane("DC01", buckets);
         var segments = ByRole(XDocument.Parse(chart.ToSvg()), "state-timeline-segment");
         Assert.Equal(2, segments.Length);
         Assert.Equal(new[] { "0", "4" }, segments.Select(segment => (string)segment.Attribute("data-cfx-point")!).ToArray());
@@ -80,7 +80,7 @@ public sealed class StateTimelineTests {
 
     [Fact]
     public void ToSvg_UnregisteredState_UsesMutedColourAndRawKey() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(640, 240).AddStateTimelineLane("DC01", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(2), "pending") });
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).Size(640, 240).AddStateTimelineLane("DC01", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(2), "pending") });
         var segment = ByRole(XDocument.Parse(chart.ToSvg()), "state-timeline-segment").Single();
         Assert.Equal(chart.Options.Theme.Resolve(chart.Options.ThemeMode).Muted.ToCss(), (string)segment.RenderedAttribute("fill")!);
         Assert.Equal("DC01 · pending", (string)segment.Attribute("data-cfx-label")!);
@@ -89,7 +89,7 @@ public sealed class StateTimelineTests {
     [Fact]
     public void ToSvg_DisplayTimeZone_ShiftsTickLabels() {
         var zone = TimeZoneInfo.CreateCustomTimeZone("Test/Plus2", TimeSpan.FromHours(2), "Test +02", "Test +02");
-        var chart = CreateChart().WithXAxisTimeScale(zone, true, "CEST");
+        var chart = CreateChart().XAxis(x => x.TimeScale(timeZone: zone, showTimeZone: true, label: "CEST"));
         var svg = XDocument.Parse(chart.ToSvg());
         Assert.Contains("2026-09-25 08:00 CEST", ByRole(svg, "state-timeline-segment")[1].Tooltip(), StringComparison.Ordinal);
         Assert.Contains("CEST", svg.ToString(), StringComparison.Ordinal);
@@ -99,9 +99,9 @@ public sealed class StateTimelineTests {
     public void ValidationRejectsInvalidSegmentsAndStatesAndRendersEmptyLanesAsNoData() {
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartStateTimelineSegment(Day, Day, "up"));
         Assert.Throws<ArgumentException>(() => new ChartStateTimelineSegment(Day, Day.AddHours(1), " "));
-        Assert.Throws<ArgumentException>(() => Chart.Create().WithTheme(VisualTheme.Graphite()).WithStateCategories(new ChartStateCategory("up", "Up", Up), new ChartStateCategory("up", "Again", Down)));
-        Assert.Throws<ArgumentException>(() => Chart.Create().WithTheme(VisualTheme.Graphite()).AddStateTimelineLane("DC01", new[] { default(ChartStateTimelineSegment) }));
-        var empty = Chart.Create().WithTheme(VisualTheme.Graphite()).AddStateTimelineLane("DC01", Array.Empty<ChartStateTimelineSegment>());
+        Assert.Throws<ArgumentException>(() => Chart.Create().Theme(VisualTheme.Graphite()).StateCategories(new ChartStateCategory("up", "Up", Up), new ChartStateCategory("up", "Again", Down)));
+        Assert.Throws<ArgumentException>(() => Chart.Create().Theme(VisualTheme.Graphite()).AddStateTimelineLane("DC01", new[] { default(ChartStateTimelineSegment) }));
+        var empty = Chart.Create().Theme(VisualTheme.Graphite()).AddStateTimelineLane("DC01", Array.Empty<ChartStateTimelineSegment>());
         Assert.Empty(ByRole(XDocument.Parse(empty.ToSvg()), "state-timeline-segment"));
         Assert.True(empty.ToPng().Length > 64);
     }
@@ -109,7 +109,7 @@ public sealed class StateTimelineTests {
     [Fact]
     public void ToSvg_ExplicitAxisBounds_ClipSegmentsAndKeepEmptyLanes() {
         var chart = CreateChart().AddStateTimelineLane("DC04", Array.Empty<ChartStateTimelineSegment>());
-        chart.Options.XAxis.WithBounds(Day.AddHours(7).ToOADate(), Day.AddHours(20).ToOADate());
+        chart.Options.XAxis.Bounds(Day.AddHours(7).ToOADate(), Day.AddHours(20).ToOADate());
         var svg = XDocument.Parse(chart.ToSvg());
         var lanes = Lanes(chart); var track = lanes[0].Bounds;
         var segments = ByRole(svg, "state-timeline-segment");
@@ -121,7 +121,7 @@ public sealed class StateTimelineTests {
 
     [Fact]
     public void Render_LegendAndAxesDisabled_OmitsThemInSvgAndPng() {
-        var chart = CreateChart().WithLegend(false).WithAxes(false);
+        var chart = CreateChart().Legend(false).Axes(false);
         var svg = XDocument.Parse(chart.ToSvg());
         Assert.Empty(ByRole(svg, "legend-label"));
         Assert.Empty(ByRole(svg, "schedule-row-label"));
@@ -131,7 +131,7 @@ public sealed class StateTimelineTests {
 
     [Fact]
     public void Render_ManyLanes_KeepsBandsInsideTheirSlots() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(480, 240);
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).Size(480, 240);
         for (var lane = 0; lane < 80; lane++) chart.AddStateTimelineLane("L" + lane.ToString(CultureInfo.InvariantCulture), new[] { new ChartStateTimelineSegment(Day, Day.AddHours(1), "up") });
         var tracks = Lanes(chart);
         Assert.Equal(80, tracks.Length);
@@ -149,10 +149,10 @@ public sealed class StateTimelineTests {
     [Fact]
     public void Validation_RejectsNullAndDuplicateStatesAddedDirectly() {
         var withNull = CreateChart();
-        withNull.Options.StateCategories.Add(null!);
+        withNull.Options.StateTimeline.Categories.Add(null!);
         Assert.Throws<InvalidOperationException>(() => withNull.ToSvg());
         var duplicate = CreateChart();
-        duplicate.Options.StateCategories.Add(new ChartStateCategory("up", "Again", Down));
+        duplicate.Options.StateTimeline.Categories.Add(new ChartStateCategory("up", "Again", Down));
         Assert.Throws<InvalidOperationException>(() => duplicate.ToPng());
     }
 
@@ -176,8 +176,8 @@ public sealed class StateTimelineTests {
     {
         var shown = CreateChart();
         var hidden = CreateChart();
-        if (configureAxis) hidden.ConfigureXAxis(axis => axis.Visible = false);
-        else hidden.Options.ShowXAxis = false;
+        if (configureAxis) hidden.XAxis(axis => axis.Visible = false);
+        else hidden.Options.XAxis.Visible = false;
         var svg = XDocument.Parse(hidden.ToSvg());
         Assert.Empty(ByRole(svg, "schedule-tick-label"));
         Assert.Empty(ByRole(svg, "schedule-axis"));
@@ -194,8 +194,8 @@ public sealed class StateTimelineTests {
     public void Render_SubSecondTicks_RemainDistinctAndExactLabelsWin()
     {
         var end = Day.AddMilliseconds(80);
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(720, 300).WithXAxisTimeScale()
-            .WithStateCategories(new ChartStateCategory("up", "Up", Up))
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).Size(720, 300).XAxis(x => x.TimeScale())
+            .StateCategories(new ChartStateCategory("up", "Up", Up))
             .AddStateTimelineLane("DC", new[] { new ChartStateTimelineSegment(Day, end, "up") });
         var model = ChartStateTimelineModel.Build(chart);
         var labels = Texts(XDocument.Parse(chart.ToSvg()), "schedule-tick-label");
@@ -210,13 +210,13 @@ public sealed class StateTimelineTests {
     public void Render_LongSummaryHeader_FitsReservedColumn()
     {
         var chart = CreateChart();
-        chart.Options.LaneSummaryHeader = "Very long summary header that must stay outside the lane plot";
+        chart.Options.StateTimeline.SummaryHeader = "Very long summary header that must stay outside the lane plot";
         var header = Texts(XDocument.Parse(chart.ToSvg()), "lane-summary-header").Single();
-        Assert.NotEqual(chart.Options.LaneSummaryHeader, header);
+        Assert.NotEqual(chart.Options.StateTimeline.SummaryHeader, header);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var column = Assert.Single(prepared.Regions, region => region.Role == "lane-summary-header");
         var text = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "lane-summary-header");
-        Assert.Equal(chart.Options.LaneSummaryHeader, column.Label);
+        Assert.Equal(chart.Options.StateTimeline.SummaryHeader, column.Label);
         Assert.All(text.Text.Lines, line => Assert.True(line.Width <= column.Bounds.Width + .001));
     }
 
@@ -224,7 +224,7 @@ public sealed class StateTimelineTests {
     public void Render_ConfiguredVerticalGridStyle_AppliesToBothOutputs()
     {
         var chart = CreateChart();
-        chart.ConfigureGridStyle(style => { style.ShowVerticalLines = true; style.StrokeWidth = 3; style.VerticalOpacity = 0.8; style.Dash = 4; style.Gap = 6; });
+        chart.GridLineStyle(style => { style.ShowVerticalLines = true; style.StrokeWidth = 3; style.VerticalOpacity = 0.8; style.Dash = 4; style.Gap = 6; });
         var lines = ByRole(XDocument.Parse(chart.ToSvg()), "schedule-grid");
         Assert.NotEmpty(lines);
         Assert.All(lines, line => { Assert.Equal(3, Number(line, "stroke-width")); Assert.Equal("4 6", (string?)line.RenderedAttribute("stroke-dasharray")); });
@@ -236,19 +236,19 @@ public sealed class StateTimelineTests {
     [Fact]
     public void Render_VerticalGridDisabled_MatchesGlobalGridDisabled()
     {
-        var vertical = CreateChart().ConfigureGridStyle(style => style.ShowVerticalLines = false);
+        var vertical = CreateChart().GridLineStyle(style => style.ShowVerticalLines = false);
         var global = CreateChart(); global.Options.ShowGrid = false;
         Assert.Empty(ByRole(XDocument.Parse(vertical.ToSvg()), "schedule-grid"));
         // Schedules draw no row rules by default (design rule 2); only tick guides are optional.
         Assert.Empty(ByRole(XDocument.Parse(vertical.ToSvg()), "schedule-row-grid"));
-        vertical.ConfigureGridStyle(style => style.ShowHorizontalLines = false);
+        vertical.GridLineStyle(style => style.ShowHorizontalLines = false);
         Assert.Equal(global.ToPng(), vertical.ToPng());
     }
 
     [Fact]
     public void Render_YAxisHidden_ReclaimsLaneLabelColumnButKeepsTimeAxis() {
         var shown = CreateChart();
-        var hidden = CreateChart().ConfigureYAxis(axis => axis.Visible = false);
+        var hidden = CreateChart().YAxis(axis => axis.Visible = false);
         var svg = XDocument.Parse(hidden.ToSvg());
         Assert.Empty(ByRole(svg, "schedule-row-label"));
         Assert.NotEmpty(ByRole(svg, "schedule-tick-label"));
@@ -259,7 +259,7 @@ public sealed class StateTimelineTests {
 
     [Fact]
     public void Render_XAxisLineHidden_KeepsTickLabelsAndTitle() {
-        var chart = CreateChart().ConfigureXAxis(axis => axis.ShowLine = false);
+        var chart = CreateChart().XAxis(axis => axis.ShowLine = false);
         var svg = XDocument.Parse(chart.ToSvg());
         Assert.Empty(ByRole(svg, "schedule-axis"));
         Assert.NotEmpty(ByRole(svg, "schedule-tick-label"));
@@ -269,8 +269,8 @@ public sealed class StateTimelineTests {
     [Fact]
     public void Render_SubSecondSegment_MetadataRetainsEndpointsAndDuration() {
         var end = Day.AddMilliseconds(80);
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(720, 300).WithXAxisTimeScale()
-            .WithStateCategories(new ChartStateCategory("up", "Up", Up))
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).Size(720, 300).XAxis(x => x.TimeScale())
+            .StateCategories(new ChartStateCategory("up", "Up", Up))
             .AddStateTimelineLane("DC", new[] { new ChartStateTimelineSegment(Day, end, "up") });
         var segment = ByRole(XDocument.Parse(chart.ToSvg()), "state-timeline-segment").Single();
         Assert.NotEqual((string?)segment.Attribute("data-cfx-start"), (string?)segment.Attribute("data-cfx-end"));
@@ -279,9 +279,9 @@ public sealed class StateTimelineTests {
 
     [Fact]
     public void Render_CompactTimeline_UsesAxisLabelDensity() {
-        var auto = CreateChart().WithSize(390, 300).WithTickCount(25);
-        var all = CreateChart().WithSize(390, 300).WithTickCount(25);
-        all.Options.XAxisLabelDensity = ChartLabelDensity.All;
+        var auto = CreateChart().Size(390, 300).TickCount(25);
+        var all = CreateChart().Size(390, 300).TickCount(25);
+        all.Options.XAxis.LabelDensity = ChartLabelDensity.All;
         var a = Texts(XDocument.Parse(auto.ToSvg()), "schedule-tick-label");
         var b = Texts(XDocument.Parse(all.ToSvg()), "schedule-tick-label");
         Assert.True(a.Length >= 2 && a.Length < b.Length);
@@ -292,7 +292,7 @@ public sealed class StateTimelineTests {
 
     [Fact]
     public void Render_DefaultDateTimeLane_UsesDistinctCalendarLabelsWithoutMutatingAxis() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(720, 300)
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).Size(720, 300)
             .AddStateTimelineLane("DC", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(6), "up") });
         var labels = Texts(XDocument.Parse(chart.ToSvg()), "schedule-tick-label");
         Assert.True(labels.Length > 1);
@@ -306,7 +306,7 @@ public sealed class StateTimelineTests {
     [InlineData(45)]
     public void Render_ConfiguredTickRotation_AppliesToBothOutputsAndReservesHeight(double angle) {
         var normal = CreateChart();
-        var rotated = CreateChart().ConfigureXAxis(axis => axis.LabelAngle = angle);
+        var rotated = CreateChart().XAxis(axis => axis.LabelAngle = angle);
         var svg = XDocument.Parse(rotated.ToSvg());
         Assert.All(ByRole(svg, "schedule-tick-label"), label => Assert.Contains("rotate(" + angle.ToString(CultureInfo.InvariantCulture), (string?)label.RenderedAttribute("transform") ?? ""));
         // Rows keep their fixed slot from the top (design rule 10); rotated captions reserve their height below them.
@@ -316,8 +316,8 @@ public sealed class StateTimelineTests {
 
     [Fact]
     public void Render_DefaultDateTimeLane_KeepsCenteredCaptionsOnTheirOwnTicksInsideTheViewport() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(720, 300)
-            .ConfigureGridStyle(style => style.ShowVerticalLines = true)
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).Size(720, 300)
+            .GridLineStyle(style => style.ShowVerticalLines = true)
             .AddStateTimelineLane("Default DateTime lane", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(6), "up") });
         var svg = XDocument.Parse(chart.ToSvg());
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -337,7 +337,7 @@ public sealed class StateTimelineTests {
     [InlineData(720, 400)]
     public void Render_ManyStateCategories_BudgetsLegendAndKeepsVisibleLane(int width, int height) {
         var states = Enumerable.Range(0, 40).Select(i => new ChartStateCategory("s" + i, "Long category " + i, Up)).ToArray();
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(width, height).WithStateCategories(states)
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).Size(width, height).StateCategories(states)
             .AddStateTimelineLane("Lane", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(6), "s0") });
         var svg = XDocument.Parse(chart.ToSvg());
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -366,8 +366,8 @@ public sealed class StateTimelineTests {
     public void Render_OneSidedBoundOutsideSegments_PreservesBoundAndEmptyWindow(bool maximum) {
         var chart = CreateChart();
         var bound = maximum ? Day.AddHours(-1).ToOADate() : Day.AddDays(2).ToOADate();
-        if (maximum) chart.Options.XAxis.Maximum = bound;
-        else chart.Options.XAxis.Minimum = bound;
+        if (maximum) chart.Options.XAxis.Max = bound;
+        else chart.Options.XAxis.Min = bound;
         var model = ChartStateTimelineModel.Build(chart);
         Assert.Equal(bound, maximum ? model.Max : model.Min);
         Assert.True(model.Max > model.Min);
@@ -381,8 +381,8 @@ public sealed class StateTimelineTests {
     [InlineData(false, ChartLegendPosition.Bottom)]
     [InlineData(true, ChartLegendPosition.Bottom)]
     public void Render_LargeAxisStyles_KeepTicksTitleAndLegendSeparated(bool largeTicks, ChartLegendPosition position) {
-        var chart = CreateChart().WithSize(720, 500).WithXAxis("Time");
-        chart.WithLegendPosition(position);
+        var chart = CreateChart().Size(720, 500).XAxis(x => x.Title("Time"));
+        chart.Legend(l => l.Position(position));
         if (largeTicks) chart.Options.TickLabelStyle.FontSize = 32;
         chart.Options.XAxis.LabelFormatter = _ => "T";
         chart.Options.AxisTitleStyle.FontSize = 42;
@@ -407,7 +407,7 @@ public sealed class StateTimelineTests {
 
     [Fact]
     public void Render_LargeLegendWithoutAxes_KeepsDefaultTopLegendAboveVisibleLanes() {
-        var chart = CreateChart().WithSize(390, 400).WithAxes(false);
+        var chart = CreateChart().Size(390, 400).Axes(false);
         chart.Options.LegendStyle.FontSize = 32;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var lanes = prepared.Regions.Where(region => region.Role == "schedule-lane").ToArray();
@@ -427,7 +427,7 @@ public sealed class StateTimelineTests {
     [InlineData(null, -1e20)]
     [InlineData(1e20, null)]
     public void Render_FiniteNumericBounds_UseFiniteNonzeroWindow(double? minimum, double? maximum) {
-        var chart = CreateChart().ConfigureXAxis(axis => { axis.Minimum = minimum; axis.Maximum = maximum; });
+        var chart = CreateChart().XAxis(axis => { axis.Min = minimum; axis.Max = maximum; });
         var model = ChartStateTimelineModel.Build(chart);
         Assert.True(model.Max > model.Min);
         var plot = new ChartRect(10, 10, 500, 100);
@@ -442,16 +442,16 @@ public sealed class StateTimelineTests {
     [InlineData(false)]
     public void Render_OneSidedNumericLimit_RejectsAnUnrepresentableWindow(bool lowerBound) {
         var chart = CreateChart();
-        if (lowerBound) chart.Options.XAxis.Minimum = double.MaxValue;
-        else chart.Options.XAxis.Maximum = -double.MaxValue;
+        if (lowerBound) chart.Options.XAxis.Min = double.MaxValue;
+        else chart.Options.XAxis.Max = -double.MaxValue;
         Assert.Throws<ArgumentOutOfRangeException>(() => ChartStateTimelineModel.Build(chart));
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.ToSvg());
     }
 
     private static Chart CreateChart() {
         // Tall enough for three readable lanes below the legend and summary header, with space for the axis and its title.
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(720, 360).WithXAxisTimeScale(showTimeZone: true)
-            .WithStateCategories(
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).Size(720, 360).XAxis(x => x.TimeScale(showTimeZone: true))
+            .StateCategories(
                 new ChartStateCategory("up", "Up", Up),
                 new ChartStateCategory("down", "Down", Down),
                 new ChartStateCategory("notObservable", "Not observable", Neutral, ChartStatePattern.Hatched))
@@ -465,7 +465,7 @@ public sealed class StateTimelineTests {
                 new ChartStateTimelineSegment(Day.AddHours(12), Day.AddHours(24), "notObservable")
             }, "100%")
             .AddStateTimelineLane("DC03", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(24), "up") });
-        chart.Options.LaneSummaryHeader = "Available";
+        chart.Options.StateTimeline.SummaryHeader = "Available";
         return chart;
     }
 

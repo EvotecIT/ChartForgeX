@@ -38,7 +38,7 @@ var prices = ChartSeries.CreateCandlestick(new ChartSeriesId("market-price"), "M
 var average = ChartSeries.CreateLine(new ChartSeriesId("five-session-average"), "Five-session average",
     quotes.Select((quote, index) => new ChartPoint(index + 1,
         Math.Round(quotes.Skip(Math.Max(0, index - 4)).Take(Math.Min(5, index + 1)).Average(item => item.Item4), 2))));
-chart.WithXLabels(sessions).WithYAxis("Price (USD)").WithYAxisBounds(44, 58).AddSeries(prices).AddSeries(average);
+chart.XLabels(sessions).YAxis(y => y.Title("Price (USD)").Bounds(44, 58)).AddSeries(prices).AddSeries(average);
 
 #region Output
 var context = new VisualRenderContext(

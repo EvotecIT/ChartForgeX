@@ -1,8 +1,10 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>Controls funnel anatomy and orientation without changing its ordered source stages.</summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class ChartFunnelOptions {
     private ChartFunnelForm _form;
     private ChartOrientation _orientation;

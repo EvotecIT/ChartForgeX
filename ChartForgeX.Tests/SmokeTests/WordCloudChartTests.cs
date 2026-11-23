@@ -9,8 +9,8 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void WordCloudTermsRenderWeightedLayout() {
         var chart = Chart.Create()
-            .WithSize(760, 430)
-            .WithTheme(VisualTheme.Graphite())
+            .Size(760, 430)
+            .Theme(VisualTheme.Graphite())
             .AddWordCloud("Topics", new[] {
                 new ChartWordCloudItem("Security", 100),
                 new ChartWordCloudItem("Automation", 82),
@@ -28,9 +28,8 @@ internal static partial class SmokeTests {
         Assert(chart.ToPng().Length > 64, "Word clouds should render PNG output.");
 
         var expressive = Chart.Create()
-            .WithSize(760, 430)
-            .WithWordCloudFontRange(18, 54)
-            .WithWordCloudAngles(-30, 0, 30)
+            .Size(760, 430)
+            .WordCloud(w => w.FontRange(18, 54).Angles(new double[] { -30, 0, 30 }))
             .AddWordCloud("Topics", new[] {
                 new ChartWordCloudItem("Security", 100),
                 new ChartWordCloudItem("Automation", 50),
@@ -43,7 +42,7 @@ internal static partial class SmokeTests {
         Assert(expressive.ToPng().Length > 64, "Word cloud customization should render PNG output.");
 
         var colored = Chart.Create()
-            .WithSize(760, 430)
+            .Size(760, 430)
             .AddWordCloud("Topics", new[] {
                 new ChartWordCloudItem("Security", 100, ChartColor.FromRgb(14, 165, 233)),
                 new ChartWordCloudItem("Automation", 50, ChartColor.FromRgb(236, 72, 153)),
@@ -55,9 +54,8 @@ internal static partial class SmokeTests {
         Assert(colored.ToPng().Length > 64, "Word cloud term colors should render PNG output.");
 
         var curated = Chart.Create()
-            .WithSize(760, 430)
-            .WithWordCloudMaximumTerms(3)
-            .WithWordCloudDensity(1.6)
+            .Size(760, 430)
+            .WordCloud(w => w.MaxTerms(3).Density(1.6))
             .AddWordCloud("Topics", new[] {
                 new ChartWordCloudItem("Security", 100),
                 new ChartWordCloudItem("Automation", 90),

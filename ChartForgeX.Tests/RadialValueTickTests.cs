@@ -12,8 +12,8 @@ public sealed class RadialValueTickTests {
     [InlineData(ChartSeriesKind.RadialBar, "radial-value-label")]
     [InlineData(ChartSeriesKind.RadialColumn, "radial-value-label")]
     public void PartialValueLabelsRetainGeneratedTicksAndFormatting(ChartSeriesKind kind, string role) {
-        var chart = Chart.Create().WithSize(700, 480).WithLegend(false).WithDataLabels(false)
-            .WithXLabels("Coverage", "Policy", "Alerts", "Response");
+        var chart = Chart.Create().Size(700, 480).Legend(false).DataLabels(false)
+            .XLabels("Coverage", "Policy", "Alerts", "Response");
         var values = new[] { new ChartPoint(1, 92), new ChartPoint(2, 74), new ChartPoint(3, 88), new ChartPoint(4, 81) };
         switch (kind) {
             case ChartSeriesKind.Radar: chart.AddRadar("Current", values); break;
@@ -21,7 +21,7 @@ public sealed class RadialValueTickTests {
             case ChartSeriesKind.RadialBar: chart.AddRadialBar("Current", values); break;
             case ChartSeriesKind.RadialColumn: chart.AddRadialColumn("Current", values); break;
         }
-        chart.Options.YAxis.WithBounds(0, 100); chart.Options.YAxis.TickCount = 6;
+        chart.Options.YAxis.Bounds(0, 100); chart.Options.YAxis.TickCount = 6;
         chart.Options.YAxis.Labels.Add(new ChartAxisLabel(20, "explicit-ring"));
         chart.Options.YAxis.Labels.Add(new ChartAxisLabel(35, "extra-ring"));
         chart.Options.YAxis.Labels.Add(new ChartAxisLabel(120, "outside-ring"));

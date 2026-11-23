@@ -11,10 +11,10 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
     [BrowserFact]
     public async Task AdaptiveRedrawPreservesResetDismissalUntilFreshPointerOrKeyboardInput() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(800, 440).WithHeader(false).WithAxes(false).WithGrid(false)
-            .WithLegend(false).WithDataLabels(false).WithXAxisBounds(0, 10)
+        var chart = Chart.Create().Size(800, 440).ShowHeader(false).Axes(false).ShowGrid(false)
+            .Legend(false).DataLabels(false).XAxis(x => x.Bounds(0, 10))
             .AddHorizontalBar("Reading", new[] { new ChartPoint(1, 5) });
-        chart.Series[0].WithObservationId(0, new ChartObservationId("reading"));
+        chart.Series[0].ObservationId(0, new ChartObservationId("reading"));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             ConfigureDelay(options, "exact");
             options.Tooltip.Mode = HtmlChartTooltipMode.Single;

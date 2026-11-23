@@ -22,8 +22,8 @@ internal static class CompositionEffectsExamples {
             var composition = ImageComposition.Create(width, height, background).DrawImage(glow.ToImage(), 0, 0, width, height)
                 .DrawImage(panel.ToImage(), 32, 28, panel.Width, panel.Height);
             var image = composition.ToImage();
-            var canvas = VisualCanvas.Create(width, height).WithTitle("Blurred mark and text with panel shadow")
-                .WithPngOutputScale(1).WithBackdrop(VisualCanvasBackdropStyle.Transparent).AddImage(image, 0, 0, width, height);
+            var canvas = VisualCanvas.Create(width, height).Title("Blurred mark and text with panel shadow")
+                .PngOutputScale(1).BackdropStyle(VisualCanvasBackdropStyle.Transparent).AddImage(image, 0, 0, width, height);
             var name = "composition-effects-" + (dark ? "dark-" : "light-") + width;
             composition.Save(Path.Combine(output, name + ".source.png"));
             canvas.SaveSvg(Path.Combine(output, name + ".svg")); canvas.SavePng(Path.Combine(output, name + ".png"));

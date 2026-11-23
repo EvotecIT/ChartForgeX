@@ -28,25 +28,25 @@ public static class NativeAxisWebsiteRecipe {
 
 #region helpers
     static Chart CreateChart(string variant, ThemeMode mode) {
-        var chart = Chart.Create().WithSize(800, 463).WithThemeMode(mode).WithLegend(false);
+        var chart = Chart.Create().Size(800, 463).ThemeMode(mode).Legend(false);
         if (variant is "positive-log" or "negative-log") {
             var negative = variant == "negative-log";
             var magnitudes = new[] { 1d, 8, 64 };
             var values = negative ? magnitudes.AsEnumerable().Reverse().Select(value => -value) : magnitudes.AsEnumerable();
-            return chart.WithTitle(negative ? "Negative logarithmic domain" : "Positive logarithmic domain")
-                .WithSubtitle("Base two; the authored sign remains part of the data")
+            return chart.Title(negative ? "Negative logarithmic domain" : "Positive logarithmic domain")
+                .Subtitle("Base two; the authored sign remains part of the data")
                 .AddLine(negative ? "Loss" : "Capacity", values.Select((value, index) => new ChartPoint(index + 1, value)))
-                .ConfigureYAxis(axis => axis.WithLogarithmicScale(2, negative ? ChartLogarithmicDomain.Negative : ChartLogarithmicDomain.Positive)
-                    .WithBounds(negative ? -64 : 1, negative ? -1 : 64));
+                .YAxis(axis => axis.LogarithmicScale(2, negative ? ChartLogarithmicDomain.Negative : ChartLogarithmicDomain.Positive)
+                    .Bounds(negative ? -64 : 1, negative ? -1 : 64));
         }
         if (variant is not ("ordinal" or "calendar-month")) throw new ArgumentOutOfRangeException(nameof(variant));
-        return chart.WithTitle(variant == "ordinal" ? "Ordinal observations" : "Calendar-month bands")
-            .WithSubtitle(variant == "ordinal" ? "January and March are adjacent supplied observations" : "An empty February band remains visible")
+        return chart.Title(variant == "ordinal" ? "Ordinal observations" : "Calendar-month bands")
+            .Subtitle(variant == "ordinal" ? "January and March are adjacent supplied observations" : "An empty February band remains visible")
             .AddBar("Orders", new[] {
                 new ChartPoint(new DateTime(2026, 1, 10, 0, 0, 0, DateTimeKind.Utc), 18),
                 new ChartPoint(new DateTime(2026, 3, 30, 0, 0, 0, DateTimeKind.Utc), 27)
             })
-            .ConfigureXAxis(axis => axis.WithTimeScale(TimeZoneInfo.Utc).WithTimeSpacing(variant == "ordinal"
+            .XAxis(axis => axis.TimeScale(TimeZoneInfo.Utc).TimeSpacing(variant == "ordinal"
                 ? ChartTimeSpacing.Ordinal : ChartTimeSpacing.Unit(new ChartTimeTickInterval(ChartTimeTickUnit.Month))));
     }
 #endregion

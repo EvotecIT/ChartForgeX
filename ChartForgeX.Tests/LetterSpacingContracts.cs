@@ -79,7 +79,7 @@ public sealed class LetterSpacingContracts : IDisposable {
     }
     [Fact]
     public void PreparedNativeOwnedFontsAndPortableJsonRetainSpacingAfterCallerEdits() {
-        var chart = TopologyChart.Create().WithTitle("").WithLegend(null).WithViewport(240, 120, 8); chart.LayoutMode = TopologyLayoutMode.Manual;
+        var chart = TopologyChart.Create().Title("").Legend((TopologyLegend?)null).Viewport(new TopologyViewport(240, 120, 8)); chart.LayoutMode = TopologyLayoutMode.Manual;
         chart.Nodes.Add(new TopologyNode { Id = "tracked", Label = "HOO", X = 20, Y = 20, Width = 160, Height = 56,
             TextStyle = new TextStyleOverride { FontFamily = Family, FontSize = 20, LetterSpacing = 1.2 }, ShowStatusBadge = false });
         var options = new TopologyRenderOptions { FitContentToViewport = false, IncludeLegend = false, IncludeTitle = false };
@@ -99,7 +99,7 @@ public sealed class LetterSpacingContracts : IDisposable {
     }
     [Fact]
     public void CanvasTextAndHeroUseOnlyTheOptionalSharedStyleHookAndLeaveZeroRequestsExact() {
-        VisualCanvas Make(TextStyleOverride? textStyle) => VisualCanvas.Create(280, 130).WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+        VisualCanvas Make(TextStyleOverride? textStyle) => VisualCanvas.Create(280, 130).BackdropStyle(VisualCanvasBackdropStyle.Transparent)
             .AddLayer(new VisualCanvasTextLayer(8, 8, 260, "HOO", 20) { TextStyle = textStyle })
             .AddLayer(new VisualCanvasHeroTitleLayer(8, 48, 260, 28, new[] { new VisualCanvasTextRun("H", ChartColor.Black), new VisualCanvasTextRun("OO", ChartColor.FromHex("#245090")) }) { TextStyle = textStyle });
         var ordinary = Make(null); var zero = Make(new TextStyleOverride { LetterSpacing = 0 });

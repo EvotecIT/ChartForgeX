@@ -60,7 +60,7 @@ public sealed class TopologyInheritedMarkerFitCausalTests {
     }
 
     private static TopologyChart Source(string policy) {
-        var chart = TopologyChart.Create().WithId("marker-fit-causal").WithViewport(760, 440, 24).WithLayout(TopologyLayoutMode.Manual).WithLegend(null);
+        var chart = TopologyChart.Create().Id("marker-fit-causal").Viewport(new TopologyViewport(760, 440, 24)).LayoutMode(TopologyLayoutMode.Manual).Legend((TopologyLegend?)null);
         chart.AddNode("a", "A", 50, 160, width: 150, height: 70); chart.AddNode("b", "B", 540, 160, width: 150, height: 70);
         foreach (var node in chart.Nodes) { node.Kind = TopologyNodeKind.Generic; node.ShowStatusBadge = false; }
         chart.AddEdge("handoff", "a", "b", direction: policy == "none" ? VisualLinkDirection.None : VisualLinkDirection.Bidirectional);

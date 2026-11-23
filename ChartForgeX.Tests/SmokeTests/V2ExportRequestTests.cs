@@ -12,10 +12,10 @@ namespace ChartForgeX.Tests;
 public sealed class V2ExportRequestTests {
     [Fact]
     public void CompactConvenienceExportsMeasureAxesInsideTheSameDefaultFrame() {
-        var chart = Chart.Create().WithSize(240, 160)
-            .WithTheme(VisualTheme.Graphite())
+        var chart = Chart.Create().Size(240, 160)
+            .Theme(VisualTheme.Graphite())
             .AddBar("Capacity", new[] { new ChartPoint(1, 2), new ChartPoint(2, 5), new ChartPoint(3, 3) });
-        chart.Options.ShowHeader = false; chart.Options.ShowLegend = false;
+        chart.Options.ShowHeader = false; chart.Options.Legend.Visible = false;
         var svg = XDocument.Parse(chart.ToSvg());
         Assert.Equal(3, svg.Descendants().Count(node => (string?)node.Attribute("data-cfx-role") == "point"));
         Assert.Equal(ChartPadding.All(24), chart.Options.Padding);
@@ -37,14 +37,14 @@ public sealed class V2ExportRequestTests {
 
     [Fact]
     public void WallpaperExportPreservesTransparencyDensityThemeAndHiddenHeadings() {
-        var chart = Chart.Create().WithTitle("Host-owned metric").AddBar("Capacity", new[] {
+        var chart = Chart.Create().Title("Host-owned metric").AddBar("Capacity", new[] {
             new ChartPoint(1, 2), new ChartPoint(2, 5), new ChartPoint(3, 3)
         });
         chart.Options.Size = new ChartSize(240, 150);
         chart.Options.Padding = new ChartPadding(9, 11, 15, 17);
-        chart.Options.ShowHeader = false; chart.Options.ShowLegend = false;
+        chart.Options.ShowHeader = false; chart.Options.Legend.Visible = false;
         chart.Options.ShowCard = false; chart.Options.ShowPlotBackground = false;
-        chart.Options.TransparentBackground = true; chart.Options.PngOutputScale = 2;
+        chart.Options.TransparentBackground = true; chart.Options.Png.OutputScale = 2;
         chart.Options.Theme = chart.Options.Theme.Configure(builder => { builder.Light.Palette = builder.Dark.Palette = new[] { ChartColor.FromHex("#306090") }; });
         var pixels = chart.ToRgbaImage();
         Assert.Equal(480, pixels.Width); Assert.Equal(300, pixels.Height);

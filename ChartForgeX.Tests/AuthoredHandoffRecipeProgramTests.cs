@@ -11,7 +11,7 @@ public sealed class AuthoredHandoffRecipeProgramTests {
     [Theory]
     [InlineData(ThemeMode.Light)] [InlineData(ThemeMode.Dark)]
     public void CompleteNativeConsumerProgramCapturesTheAuthoredRouteAndSeparateLabelSurface(ThemeMode mode) {
-        var chart = TopologyAuthoredPathBadgeRecipe.Create().WithTheme(VisualTheme.Graphite(), mode);
+        var chart = TopologyAuthoredPathBadgeRecipe.Create().Theme(VisualTheme.Graphite(), mode);
         var artifact = chart.ToVisualArtifact(); var svg = artifact.ToSvg(); var png = artifact.ToPng();
         var json = artifact.ToInterchangeJson(); var html = artifact.ToHtmlPage();
         var program = ExampleRecipeSource.EmitAuthoredHandoff(mode);

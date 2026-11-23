@@ -81,15 +81,15 @@ public sealed partial class CartesianPlotRegionBrowserTests {
     [InlineData(true, 390)]
     public async Task ScenarioRevealLabelsSeparateNearbyNativeTargetsWithoutDimmingChartStructure(bool dark, int width) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(width < 500 ? 350 : 600, 360).WithTitle("Nearby observations")
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).WithLegend(false)
+        var chart = Chart.Create().Size(width < 500 ? 350 : 600, 360).Title("Nearby observations")
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10)).Legend(false)
             .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("observations"), "Observed",
                 new[] { new ChartPoint(4.98, 5), new ChartPoint(5.02, 5), new ChartPoint(8, 1) }));
         var html = chart.ToInteractiveHtmlPage(options => {
             options.Interaction.Features = ChartInteractionFeatures.RevealLabels | ChartInteractionFeatures.FocusTrail;
             options.Interaction.AddScenario("neighbors", "Nearby measurements", scenario => scenario
-                .WithFocusMode(ChartInteractionScenarioFocusMode.Spotlight).AddRoleStep("point", "5", "Both measured observations"));
+                .FocusMode(ChartInteractionScenarioFocusMode.Spotlight).AddRoleStep("point", "5", "Both measured observations"));
         });
         await using var session = await OpenAsync(html, width, 820);
         var page = session.Page;
@@ -137,8 +137,8 @@ public sealed partial class CartesianPlotRegionBrowserTests {
     }
 
     private static string ScenarioFixture(bool dark, int width) {
-        var chart = PassiveChart().WithSize(width < 500 ? 350 : 600, 360).WithLegend(true)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+        var chart = PassiveChart().Size(width < 500 ? 350 : 600, 360).Legend(true)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         var html = chart.ToInteractiveHtmlPage(options => {
             options.Interaction.Features = ChartInteractionFeatures.RevealLabels | ChartInteractionFeatures.FocusTrail;
             options.Interaction.AddScenario("element-route", "Element route", scenario => scenario
@@ -148,7 +148,7 @@ public sealed partial class CartesianPlotRegionBrowserTests {
                 .AddElementStep("legend-detail", "Legend detail")
                 .AddElementStep("host-control", "Host control"));
             options.Interaction.AddScenario("passive-route", "Passive route", scenario => scenario
-                .WithFocusMode(ChartInteractionScenarioFocusMode.Spotlight)
+                .FocusMode(ChartInteractionScenarioFocusMode.Spotlight)
                 .AddElementStep("guidance-group", "Guidance group")
                 .AddElementStep("guidance-caption", "Guidance caption")
                 .AddRoleStep("plot-region", Guidance, "Guidance role")

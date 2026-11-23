@@ -116,24 +116,24 @@ public static class HorizontalBarRecipe {
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create();
         if (variant is &quot;options&quot; or &quot;compact-options&quot;) {
-            chart.WithXLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;).WithXAxis(&quot;Share (%)&quot;);
+            chart.XLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;).XAxis(x =&gt; x.Title(&quot;Share (%)&quot;));
             var names = new[] { &quot;First half &#183; Completed&quot;, &quot;First half &#183; Remaining&quot;, &quot;Second half &#183; Completed&quot;, &quot;Second half &#183; Remaining&quot; };
             var ids = new[] { &quot;first-half-completed&quot;, &quot;first-half-remaining&quot;, &quot;second-half-completed&quot;, &quot;second-half-remaining&quot; };
             var values = new[] { new[] { 60d, 75, 40, 90 }, new[] { 40d, 25, 60, 30 }, new[] { 90d, 60, 100, 70 }, new[] { 30d, 40, 25, 30 } };
             for (var index = 0; index &lt; names.Length; index++) {
                 var points = values[index].Select((value, point) =&gt; new ChartPoint(point + 1, value));
                 var series = new ChartSeries(new ChartSeriesId(ids[index]), names[index], ChartSeriesKind.HorizontalBar, points)
-                    .WithStackGroup(index &lt; 2 ? &quot;first-half&quot; : &quot;second-half&quot;).WithNormalization(100);
+                    .StackGroup(index &lt; 2 ? &quot;first-half&quot; : &quot;second-half&quot;).NormalizedTo(100);
                 chart.AddSeries(series);
             }
-            chart.Options.XAxis.WithBounds(0, 100).WithLabelFormatter(Percent).WithReversal(variant == &quot;compact-options&quot;);
-            chart.WithBarStyle(ChartBarStyle.SegmentedCapsule).WithStackTotals().WithDataLabels(false);
+            chart.Options.XAxis.Bounds(0, 100).LabelBy(Percent).Reversed(variant == &quot;compact-options&quot;);
+            chart.Bars(b =&gt; b.Style(ChartBarStyle.SegmentedCapsule).ShowTotals()).DataLabels(false);
         }
         else {
             var points = Enumerable.Range(1, 6).Where(index =&gt; variant != &quot;sparse&quot; || index is 1 or 3 or 6)
                 .Select(index =&gt; new ChartPoint(index, 20 + index * 7 % 29));
             var orders = new ChartSeries(new ChartSeriesId(&quot;orders&quot;), &quot;Orders&quot;, ChartSeriesKind.HorizontalBar, points);
-            chart.WithXLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;, &quot;Central&quot;, &quot;Online&quot;).AddSeries(orders);
+            chart.XLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;, &quot;Central&quot;, &quot;Online&quot;).AddSeries(orders);
         }
         return chart;
     }
@@ -176,24 +176,24 @@ public static class HorizontalBarRecipe {
             throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = Chart.Create();
         if (variant is &quot;options&quot; or &quot;compact-options&quot;) {
-            chart.WithXLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;).WithXAxis(&quot;Share (%)&quot;);
+            chart.XLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;).XAxis(x =&gt; x.Title(&quot;Share (%)&quot;));
             var names = new[] { &quot;First half &#183; Completed&quot;, &quot;First half &#183; Remaining&quot;, &quot;Second half &#183; Completed&quot;, &quot;Second half &#183; Remaining&quot; };
             var ids = new[] { &quot;first-half-completed&quot;, &quot;first-half-remaining&quot;, &quot;second-half-completed&quot;, &quot;second-half-remaining&quot; };
             var values = new[] { new[] { 60d, 75, 40, 90 }, new[] { 40d, 25, 60, 30 }, new[] { 90d, 60, 100, 70 }, new[] { 30d, 40, 25, 30 } };
             for (var index = 0; index &lt; names.Length; index++) {
                 var points = values[index].Select((value, point) =&gt; new ChartPoint(point + 1, value));
                 var series = new ChartSeries(new ChartSeriesId(ids[index]), names[index], ChartSeriesKind.HorizontalBar, points)
-                    .WithStackGroup(index &lt; 2 ? &quot;first-half&quot; : &quot;second-half&quot;).WithNormalization(100);
+                    .StackGroup(index &lt; 2 ? &quot;first-half&quot; : &quot;second-half&quot;).NormalizedTo(100);
                 chart.AddSeries(series);
             }
-            chart.Options.XAxis.WithBounds(0, 100).WithLabelFormatter(Percent).WithReversal(variant == &quot;compact-options&quot;);
-            chart.WithBarStyle(ChartBarStyle.SegmentedCapsule).WithStackTotals().WithDataLabels(false);
+            chart.Options.XAxis.Bounds(0, 100).LabelBy(Percent).Reversed(variant == &quot;compact-options&quot;);
+            chart.Bars(b =&gt; b.Style(ChartBarStyle.SegmentedCapsule).ShowTotals()).DataLabels(false);
         }
         else {
             var points = Enumerable.Range(1, 6).Where(index =&gt; variant != &quot;sparse&quot; || index is 1 or 3 or 6)
                 .Select(index =&gt; new ChartPoint(index, 20 + index * 7 % 29));
             var orders = new ChartSeries(new ChartSeriesId(&quot;orders&quot;), &quot;Orders&quot;, ChartSeriesKind.HorizontalBar, points);
-            chart.WithXLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;, &quot;Central&quot;, &quot;Online&quot;).AddSeries(orders);
+            chart.XLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;, &quot;Central&quot;, &quot;Online&quot;).AddSeries(orders);
         }
         return chart;
     }

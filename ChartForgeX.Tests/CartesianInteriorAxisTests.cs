@@ -12,7 +12,7 @@ public sealed class CartesianInteriorAxisTests {
     [Theory]
     [InlineData(false, false)] [InlineData(false, true)] [InlineData(true, false)] [InlineData(true, true)]
     public void PrimaryRulesCaptionsAndTitlesMoveTogetherWithoutChangingMarksOrTheMeasuredPlot(bool horizontal, bool reversed) {
-        var chart = CartesianAxisRuleCrossingTests.Fixture(horizontal).WithXAxis("Domain").WithYAxis("Reading");
+        var chart = CartesianAxisRuleCrossingTests.Fixture(horizontal).XAxis(xAxis => xAxis.Title("Domain")).YAxis(yAxis => yAxis.Title("Reading"));
         chart.Options.XAxis.Reversed = reversed; chart.Options.YAxis.Reversed = reversed;
         var before = Prepare(chart); var beforeSvg = before.ToSvg(); var beforePng = before.ToPng();
         chart.Options.XAxis.CrossAt = 4; chart.Options.YAxis.CrossAt = 3;
@@ -37,9 +37,9 @@ public sealed class CartesianInteriorAxisTests {
     public void SecondaryCompleteAxesUseTheirOwnTicksButTheOppositePrimaryCrossingCoordinate(bool horizontal, bool reversed) {
         var chart = CartesianAxisRuleCrossingTests.Fixture(horizontal);
         var points = new[] { new ChartPoint(2, 100), new ChartPoint(8, 900) };
-        if (horizontal) chart.AddHorizontalBar("Auxiliary", points).WithSecondaryXAxisBounds(0, 1000).WithSecondaryXAxis("Auxiliary scale");
-        else chart.AddLine("Auxiliary", points).WithSecondaryYAxisBounds(0, 1000).WithSecondaryYAxis("Auxiliary scale");
-        chart.Series[1].UseSecondaryValueAxis(); chart.Options.XAxis.Reversed = reversed; chart.Options.YAxis.Reversed = reversed;
+        if (horizontal) chart.AddHorizontalBar("Auxiliary", points).SecondaryXAxis(s => s.Bounds(0, 1000).Title("Auxiliary scale"));
+        else chart.AddLine("Auxiliary", points).SecondaryYAxis(s => s.Bounds(0, 1000).Title("Auxiliary scale"));
+        chart.Series[1].SecondaryAxis(); chart.Options.XAxis.Reversed = reversed; chart.Options.YAxis.Reversed = reversed;
         var before = Prepare(chart); var axis = horizontal ? chart.Options.SecondaryXAxis : chart.Options.SecondaryYAxis;
         axis.CrossAt = horizontal ? 4 : 3; var prepared = Prepare(chart); var role = horizontal ? "axis-secondary-x" : "axis-secondary-y";
         var rule = Rule(prepared, role); Assert.NotEmpty(Ink(prepared, role + "-label"));
@@ -54,8 +54,8 @@ public sealed class CartesianInteriorAxisTests {
     [InlineData(ChartScaleKind.Logarithmic, false)] [InlineData(ChartScaleKind.Logarithmic, true)]
     [InlineData(ChartScaleKind.SymmetricLogarithmic, false)] [InlineData(ChartScaleKind.SymmetricLogarithmic, true)]
     public void CompleteAxesReuseNonlinearOppositeProjectionsAndRetainRealTickValues(ChartScaleKind scale, bool reversed) {
-        var chart = CartesianAxisRuleCrossingTests.Fixture(false).WithXAxisBounds(scale == ChartScaleKind.Logarithmic ? 1 : -100, 100)
-            .WithYAxisBounds(scale == ChartScaleKind.Logarithmic ? 1 : -100, 100);
+        var chart = CartesianAxisRuleCrossingTests.Fixture(false).XAxis(x => x.Bounds(scale == ChartScaleKind.Logarithmic ? 1 : -100, 100))
+            .YAxis(y => y.Bounds(scale == ChartScaleKind.Logarithmic ? 1 : -100, 100));
         chart.Options.XAxis.Scale = scale; chart.Options.YAxis.Scale = scale;
         chart.Options.XAxis.Reversed = reversed; chart.Options.YAxis.Reversed = reversed;
         var before = Prepare(chart); chart.Options.XAxis.CrossAt = 10; chart.Options.YAxis.CrossAt = 10;
@@ -68,10 +68,10 @@ public sealed class CartesianInteriorAxisTests {
     [Theory]
     [InlineData(false)] [InlineData(true)]
     public void NegativeLogarithmicCompleteAxesUseTheSameCapturedSignAndReversal(bool reversed) {
-        var chart = Chart.Create().WithSize(600, 400).WithHeader(false).WithLegend(false).WithGrid(false).WithDataLabels(false)
+        var chart = Chart.Create().Size(600, 400).ShowHeader(false).Legend(false).ShowGrid(false).DataLabels(false)
             .AddScatter("Negative", new[] { new ChartPoint(-80, -80), new ChartPoint(-2, -2) });
-        chart.Options.XAxis.WithLogarithmicScale(10, ChartLogarithmicDomain.Negative).WithBounds(-100, -1).WithReversal(reversed);
-        chart.Options.YAxis.WithLogarithmicScale(10, ChartLogarithmicDomain.Negative).WithBounds(-100, -1).WithReversal(reversed);
+        chart.Options.XAxis.LogarithmicScale(10, ChartLogarithmicDomain.Negative).Bounds(-100, -1).Reversed(reversed);
+        chart.Options.YAxis.LogarithmicScale(10, ChartLogarithmicDomain.Negative).Bounds(-100, -1).Reversed(reversed);
         chart.Options.XAxis.CrossAt = -10; chart.Options.YAxis.CrossAt = -10;
         var prepared = Prepare(chart);
         Assert.Equal(prepared.XProjection!.Project(-10), Rule(prepared, "axis-y").Start.X, 7);
@@ -82,9 +82,9 @@ public sealed class CartesianInteriorAxisTests {
     [Fact]
     public void CompleteAxisCrossingSharesIncludedTimeProjectionAndRejectsClosedAliases() {
         var start = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc).ToOADate();
-        var chart = CartesianAxisRuleCrossingTests.Fixture(false).WithXAxisBounds(start, start + 4);
+        var chart = CartesianAxisRuleCrossingTests.Fixture(false).XAxis(x => x.Bounds(start, start + 4));
         chart.ClearSeries(); chart.AddLine("Included time", new[] { new ChartPoint(start, 2), new ChartPoint(start + 4, 8) });
-        chart.Options.XAxis.WithTimeSessions(new ChartTimeSessionDomain(new[] { new ChartTimeSession(start, start + 1), new ChartTimeSession(start + 3, start + 4) }));
+        chart.Options.XAxis.TimeSessions(new ChartTimeSessionDomain(new[] { new ChartTimeSession(start, start + 1), new ChartTimeSession(start + 3, start + 4) }));
         chart.Options.YAxis.CrossAt = start + 1;
         var prepared = Prepare(chart); Assert.Equal(prepared.XProjection!.Project(start + 1), Rule(prepared, "axis-y").Start.X, 7);
         chart.Options.YAxis.CrossAt = start + 2; Assert.Throws<InvalidOperationException>(() => Prepare(chart));
@@ -92,7 +92,7 @@ public sealed class CartesianInteriorAxisTests {
 
     [Fact]
     public void OutsideAndExclusiveMaximumWindowsOmitTheCompleteAnatomyButKeepRawFactsAndReset() {
-        var chart = CartesianAxisRuleCrossingTests.Fixture(false).WithYAxis("Complete reading"); chart.Options.YAxis.CrossAt = 5;
+        var chart = CartesianAxisRuleCrossingTests.Fixture(false).YAxis(y => y.Title("Complete reading")); chart.Options.YAxis.CrossAt = 5;
         var context = VisualExportRequest.ForChart(chart).Context; var full = chart.Prepare(context); var svg = full.ToSvg(); var png = full.ToPng();
         foreach (var window in new[] { new ChartAxisWindow(6, 9), new ChartAxisWindow(1, 5, maximumInclusive: false) }) {
             var hidden = chart.Prepare(context, new ChartCartesianViewport(x: window));
@@ -109,7 +109,7 @@ public sealed class CartesianInteriorAxisTests {
     [Fact]
     public void ActualMarksCanOmitConflictingTickInkWhileCompleteCaptionsRemainSemanticFacts() {
         var chart = CartesianAxisRuleCrossingTests.Fixture(false); chart.ClearSeries(); chart.AddScatter("Blocking mark", new[] { new ChartPoint(5, 5) });
-        chart.Series[0].WithMarkerRadius(50); chart.Options.YAxis.Labels.Add(new ChartAxisLabel(5, "CENTER")); chart.Options.YAxis.CrossAt = 5;
+        chart.Series[0].MarkerRadius(50); chart.Options.YAxis.Labels.Add(new ChartAxisLabel(5, "CENTER")); chart.Options.YAxis.CrossAt = 5;
         var prepared = Prepare(chart);
         Assert.DoesNotContain(Ink(prepared, "axis-y-label"), text => string.Join("", text.Text.Lines.Select(line => line.Text)) == "CENTER");
         Assert.Contains(prepared.Regions, region => region.Role == "axis-y-label" && region.Label!.Contains("CENTER", StringComparison.Ordinal));
@@ -133,10 +133,10 @@ public sealed class CartesianInteriorAxisTests {
     [Fact]
     public void RuleVisibilityIsIndependentAndTheTwoCrossingPoliciesAreAtomicAndMutuallyExclusive() {
         var chart = CartesianAxisRuleCrossingTests.Fixture(false); var axis = chart.Options.XAxis;
-        axis.WithCrossAt(4); axis.ShowLine = false; var prepared = Prepare(chart);
+        axis.CrossAt(4); axis.ShowLine = false; var prepared = Prepare(chart);
         Assert.DoesNotContain(prepared.Scene.Nodes, node => node.Role == "axis-x"); Assert.NotEmpty(Ink(prepared, "axis-x-label"));
         Assert.Throws<InvalidOperationException>(() => axis.RuleCrossAt = 3); Assert.Equal(4, axis.CrossAt); Assert.Null(axis.RuleCrossAt);
-        axis.WithCrossAt(null).WithRuleCrossAt(3);
+        axis.CrossAt(null).RuleCrossAt(3);
         Assert.Throws<InvalidOperationException>(() => axis.CrossAt = 4); Assert.Equal(3, axis.RuleCrossAt); Assert.Null(axis.CrossAt);
         Assert.Throws<ArgumentOutOfRangeException>(() => axis.CrossAt = double.NaN);
         axis.RuleCrossAt = null; axis.CrossAt = 4; axis.Visible = false;

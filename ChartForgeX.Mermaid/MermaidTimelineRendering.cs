@@ -12,8 +12,8 @@ public static class MermaidTimelineRendering {
     public static TimelineDiagramBlock ToTimelineDiagramBlock(this MermaidTimelineDocument document, MermaidTimelineRenderOptions? options = null) {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidTimelineRenderOptions();
-        var block = TimelineDiagramBlock.Create().WithTitle(MermaidHeading.Title(document, options.Title, document.Title, "Mermaid timeline"))
-            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle)).WithSize(options.Width, options.Height);
+        var block = TimelineDiagramBlock.Create().Title(MermaidHeading.Title(document, options.Title, document.Title, "Mermaid timeline"))
+            .Subtitle(MermaidHeading.Subtitle(options.Subtitle)).Size(options.Width, options.Height);
         for (var index = 0; index < document.Sections.Count; index++) block.AddSection("section-" + index.ToString(CultureInfo.InvariantCulture), document.Sections[index].Name);
         block.Direction = document.Direction == MermaidTimelineDirection.TopDown ? TimelineDiagramDirection.TopToBottom : TimelineDiagramDirection.LeftToRight;
         for (var index = 0; index < document.Periods.Count; index++) {

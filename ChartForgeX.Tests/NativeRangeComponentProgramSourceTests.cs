@@ -12,6 +12,6 @@ public sealed class NativeRangeComponentProgramSourceTests {
         Assert.Contains("CaptureNativeValueSource = true", program, StringComparison.Ordinal); Assert.Contains("PrepareNativeTransitionJson", program, StringComparison.Ordinal); Assert.Contains("FontRegistry.Register", program, StringComparison.Ordinal);
         Assert.Contains("HtmlNativeTransitionEffect.ValueFlash", program, StringComparison.Ordinal); Assert.Contains("output/visual.flash.html", program, StringComparison.Ordinal);
         Assert.Contains("output/visual.flash.transition.json", program, StringComparison.Ordinal);
-        Assert.DoesNotContain("WithSizeDomain", program, StringComparison.Ordinal); Assert.DoesNotContain("requestAnimationFrame", program, StringComparison.Ordinal);
+        Assert.DoesNotContain("SizeDomain", program, StringComparison.Ordinal); Assert.DoesNotContain("requestAnimationFrame", program, StringComparison.Ordinal);
     }
 }

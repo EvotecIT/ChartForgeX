@@ -12,8 +12,8 @@ public sealed class NativeTopologyArtworkTests {
     [InlineData("xMidYMid meet", 1)]
     [InlineData("none", 1.875)]
     public void BitmapArtworkUsesItsAuthoredAspectPolicyInTheNativeScene(string aspect, double ratio) {
-        var artwork = Bitmap().WithPreserveAspectRatio(aspect);
-        var chart = TopologyChart.Create().WithViewport(220, 140, 10).WithLegend(null)
+        var artwork = Bitmap().PreserveAspectRatio(aspect);
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(220, 140, 10)).Legend((TopologyLegend?)null)
             .AddArtworkNode("image", "Image", artwork, 40, 30, width: 120, height: 64);
         var prepared = chart.Prepare(Options());
         var image = Assert.Single(prepared.Visual.Scene.Nodes.OfType<VisualSceneImage>());
@@ -28,7 +28,7 @@ public sealed class NativeTopologyArtworkTests {
 
     [Fact]
     public void FittedArtworkFallbackKeepsItsExternalCaptionInTheViewport() {
-        var chart = TopologyChart.Create().WithViewport(460, 240, 8).WithLegend(null)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(460, 240, 8)).Legend((TopologyLegend?)null)
             .AddArtworkNode("fallback", "Artwork fallback caption", TopologyIconArtwork.Image("data:image/png;base64,AA=="),
                 12, 10, width: 88, height: 52);
         var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeLegend = false };
@@ -52,8 +52,8 @@ public sealed class NativeTopologyArtworkTests {
     [Fact]
     public void BitmapSliceKeepsAlignedSourcePixelsAndClipsToTheNativeNodeViewport() {
         var artwork = TopologyIconArtwork.Image("data:image/png;base64," + Convert.ToBase64String(PngWriter.WriteRgba(
-            new RgbaImage(2, 1, new byte[] { 220, 30, 40, 255, 30, 40, 220, 255 })))).WithPreserveAspectRatio("xMaxYMid slice");
-        var chart = TopologyChart.Create().WithViewport(220, 140, 10).WithLegend(null)
+            new RgbaImage(2, 1, new byte[] { 220, 30, 40, 255, 30, 40, 220, 255 })))).PreserveAspectRatio("xMaxYMid slice");
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(220, 140, 10)).Legend((TopologyLegend?)null)
             .AddArtworkNode("image", "Image", artwork, 80, 30, width: 40, height: 64);
         var prepared = chart.Prepare(Options()); var scene = prepared.Visual.Scene;
         var image = Assert.Single(scene.Nodes.OfType<VisualSceneImage>());
@@ -77,7 +77,7 @@ public sealed class NativeTopologyArtworkTests {
         const string svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 2 1\"><rect width=\"2\" height=\"1\" fill=\"#DC2626\"/></svg>";
         foreach (var href in new[] { "data:image/svg+xml;base64," + Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(svg)),
             "data:image/svg+xml," + Uri.EscapeDataString(svg) }) {
-            var chart = TopologyChart.Create().WithViewport(220, 140, 10).WithLegend(null)
+            var chart = TopologyChart.Create().Viewport(new TopologyViewport(220, 140, 10)).Legend((TopologyLegend?)null)
                 .AddArtworkNode("image", "Image", TopologyIconArtwork.Image(href), 40, 30, width: 120, height: 64);
             var prepared = chart.Prepare(Options());
             var image = Assert.Single(prepared.Visual.Scene.Nodes.OfType<VisualSceneImage>());
@@ -90,7 +90,7 @@ public sealed class NativeTopologyArtworkTests {
 
     [Fact]
     public void HighlightDimsResolvedArtworkAndCardGlyphPixelsWhileSelectionKeepsItsNativeOutline() {
-        var chart = TopologyChart.Create().WithViewport(400, 180, 10).WithLegend(null)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(400, 180, 10)).Legend((TopologyLegend?)null)
             .AddArtworkNode("active", "Active", Bitmap(), 20, 40, width: 60, height: 60)
             .AddArtworkNode("dim", "Dim", Bitmap(), 130, 40, width: 60, height: 60, color: "var(--selection, #22AA44)")
             .AddArtworkNode("card", "Card", Bitmap(), 240, 40, width: 120, height: 64, displayMode: TopologyNodeDisplayMode.Card);
@@ -120,8 +120,8 @@ public sealed class NativeTopologyArtworkTests {
         var catalog = TopologyIconCatalog.Default().AddPack(new TopologyIconPack("legend-art", "Legend Artwork")
             .AddIcon(new TopologyIconDefinition("legend-art", "bitmap", "Bitmap", TopologyNodeKind.Server) { Artwork = Bitmap() })
             .AddIcon(new TopologyIconDefinition("legend-art", "hosted", "Hosted", TopologyNodeKind.Server) { Artwork = TopologyIconArtwork.Image("/assets/legend-server.png") }));
-        var chart = TopologyChart.Create().WithViewport(600, 360, 20)
-            .WithLegend(TopologyLegend.Create("Artwork legend")
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(600, 360, 20))
+            .Legend(TopologyLegend.Create("Artwork legend")
                 .AddNodeKind("Embedded", TopologyNodeKind.Server, iconId: "legend-art:bitmap")
                 .AddNodeKind("Hosted", TopologyNodeKind.Server, iconId: "legend-art:hosted"))
             .AddNode("source", "Source", 60, 60, width: 100, height: 60);
@@ -145,8 +145,8 @@ public sealed class NativeTopologyArtworkTests {
     public void CatalogImageGlyphsAndHostedArtworkRetainDetachedResourcesWithNetworkFreeNativeFallback() {
         var icon = new TopologyIconDefinition("custom", "bitmap", "Bitmap", TopologyNodeKind.Server) { Artwork = Bitmap(), DisplayMode = TopologyNodeDisplayMode.Card };
         var catalog = TopologyIconCatalog.Default().AddPack(new TopologyIconPack("custom", "Custom").AddIcon(icon));
-        var chart = TopologyChart.Create().WithViewport(360, 180, 10).WithLegend(null)
-            .AddNode("card", "Card", 20, 40, width: 120, height: 64).WithNodeIcon("card", "custom:bitmap", catalog)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(360, 180, 10)).Legend((TopologyLegend?)null)
+            .AddNode("card", "Card", 20, 40, width: 120, height: 64).NodeIcon("card", "custom:bitmap", catalog)
             .AddArtworkNode("external", "External", TopologyIconArtwork.Image("/assets/device.png?x=1&y=2"), 200, 40, width: 120, height: 64);
         var options = Options(); options.IconCatalog = catalog;
         var prepared = chart.Prepare(options); var svg = prepared.ToSvg(); var png = prepared.ToPng();

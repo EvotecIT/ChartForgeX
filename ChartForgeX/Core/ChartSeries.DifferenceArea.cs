@@ -4,15 +4,11 @@ namespace ChartForgeX.Core;
 
 public sealed partial class ChartSeries {
     /// <summary>Gets the names and positive/negative fill overrides for a difference area.</summary>
-    public ChartDifferenceAreaOptions DifferenceArea { get; private set; } = new();
-
-    /// <summary>Configures paired readout names and fills without changing authored values or boundary order.</summary>
-    /// <param name="configure">The configuration callback.</param>
-    /// <returns>The current series.</returns>
-    public ChartSeries ConfigureDifferenceArea(Action<ChartDifferenceAreaOptions> configure) {
-        if (configure == null) throw new ArgumentNullException(nameof(configure));
-        DifferenceArea = ChartOptionConfiguration.Configure(DifferenceArea, configure, options => options.Clone()); return this;
+    public ChartDifferenceAreaOptions DifferenceArea {
+        get => _differenceArea;
+        set => _differenceArea = value ?? throw new ArgumentNullException(nameof(value));
     }
+    private ChartDifferenceAreaOptions _differenceArea = new();
 
     internal void ValidateDifferenceArea(ChartOptions options) {
         if (Kind != ChartSeriesKind.DifferenceArea) {

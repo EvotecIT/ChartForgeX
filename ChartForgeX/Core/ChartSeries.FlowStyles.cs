@@ -20,7 +20,7 @@ public sealed partial class ChartSeries {
     /// <param name="id">The exact authored flow ID, including the distinct ID of a parallel flow.</param>
     /// <param name="style">Immutable paint overrides, or null to remove them.</param>
     /// <returns>This mutable series builder.</returns>
-    public ChartSeries WithFlowStyle(string id, ChartFlowStyle? style) {
+    public ChartSeries FlowStyle(string id, ChartFlowStyle? style) {
         RequireFlow(id);
         if (style.HasValue) _flowStyles[id] = style.Value;
         else _flowStyles.Remove(id);
@@ -31,7 +31,7 @@ public sealed partial class ChartSeries {
     /// <param name="id">The exact authored flow ID.</param>
     /// <param name="state">An explicit semantic state, or null to restore inheritance. Explicit colors still take precedence over semantic colors.</param>
     /// <returns>This mutable series builder.</returns>
-    public ChartSeries WithFlowState(string id, ChartSeriesState? state) {
+    public ChartSeries FlowState(string id, ChartSeriesState? state) {
         RequireFlow(id);
         if (state.HasValue && !Enum.IsDefined(typeof(ChartSeriesState), state.Value)) throw new ArgumentOutOfRangeException(nameof(state));
         if (state.HasValue) _flowStates[id] = state.Value;

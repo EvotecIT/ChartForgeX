@@ -1,10 +1,12 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Interactivity;
 
 /// <summary>
 /// Describes reusable parent-child navigation behavior for graph explorer adapters.
 /// </summary>
+[Fluent]
 public sealed class GraphHierarchyOptions {
     private string? _initialRootNodeId;
 

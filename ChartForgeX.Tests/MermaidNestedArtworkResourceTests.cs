@@ -20,10 +20,10 @@ public sealed class MermaidNestedArtworkResourceTests {
         var body = "<rect width='32' height='32' fill='#24A060'/><image width='32' height='32' href='" + header + "'/>";
         var artwork = dataSvg ? TopologyIconArtwork.Image("data:image/svg+xml;base64," + Convert.ToBase64String(Encoding.UTF8.GetBytes(
             "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'>" + body + "</svg>"))) : TopologyIconArtwork.InlineSvg(body, "0 0 32 32");
-        var chart = TopologyChart.Create().WithTitle("").WithViewport(320, 240, 12).WithLegend(null); chart.LayoutMode = TopologyLayoutMode.Manual;
+        var chart = TopologyChart.Create().Title("").Viewport(new TopologyViewport(320, 240, 12)).Legend((TopologyLegend?)null); chart.LayoutMode = TopologyLayoutMode.Manual;
         chart.Nodes.Add(new TopologyNode { Id = "image", Label = "Image", X = 40, Y = 40, Width = 32, Height = 32,
             DisplayMode = TopologyNodeDisplayMode.Artwork, Artwork = artwork, ShowLabel = false, ShowStatusBadge = false, PreserveDisplayModeSize = true });
-        chart.WithRenderOptions(new TopologyRenderOptions { FitContentToViewport = false, IncludeLegend = false, IncludeTitle = false });
+        chart.DefaultRenderOptions(new TopologyRenderOptions { FitContentToViewport = false, IncludeLegend = false, IncludeTitle = false });
         // This supported host model replacement retains the actual source export policy and image property span.
         artifact.Model = chart; artifact.NaturalSize = new VisualArtifactSize(320, 240); artifact.PreserveNaturalSize = true;
         foreach (var export in new Action[] { () => artifact.ToPng(), () => artifact.ToSvg(), () => artifact.ToHtmlPage() }) {

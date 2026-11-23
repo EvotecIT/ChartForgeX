@@ -18,19 +18,19 @@ var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 #endregion
 
-var chart = Chart.Create().WithLegend(false).WithDataLabels().WithTransparentBackground(false)
+var chart = Chart.Create().Legend(false).DataLabels().TransparentBackground(false)
     .AddTreemap("Reconciliation", new[] {
         new ChartHierarchyItem("all", "International reconciliation, settlement and regional ownership — complete source caption"),
         new ChartHierarchyItem("processing", "Regional processing reconciliation and settlement allocation", "all", 55),
         new ChartHierarchyItem("regional", "North America processing", "all", 30),
         new ChartHierarchyItem("reserve", "Reserve capacity", "all", 15)
-    }).ConfigureTreemap(options => {
+    }).Treemap(options => {
         options.MinimumLabelFontSize = 11;
         options.LabelTrimming = ChartForgeX.Typography.TextTrimming.Ellipsis;
         options.ShowValues = true;
     });
-chart.Series[0].ConfigureDataLabelStyle(style => style.WithFontSize(14));
-chart.WithValueFormat(ChartValueFormat.Number("0", System.Globalization.CultureInfo.InvariantCulture));
+chart.Series[0].DataLabelStyle(style => style.FontSize(14));
+chart.ValueFormat(ChartValueFormat.Number("0", System.Globalization.CultureInfo.InvariantCulture));
 
 #region Output
 var context = new VisualRenderContext(

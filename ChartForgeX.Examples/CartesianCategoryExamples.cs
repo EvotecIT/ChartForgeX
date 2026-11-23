@@ -7,21 +7,21 @@ internal static class CartesianCategoryExamples {
     internal static void Write(string output, ChartPngOutputScale pngOutputScale) {
         var peer = BitConverter.Int64BitsToDouble(BitConverter.DoubleToInt64Bits(1.5) + 3);
         var observations = new[] { new ChartPoint(1.5, 2), new ChartPoint(3.5, 3) };
-        var mixed = Chart.Create().WithTitle("Bars and interval observations")
-            .WithSubtitle("Each mark family retains its category margin")
-            .WithXAxis("Category").WithYAxis("Value").WithTheme(VisualTheme.Graphite())
-            .WithBarStyle(ChartBarStyle.Flat).WithDataLabels(false)
+        var mixed = Chart.Create().Title("Bars and interval observations")
+            .Subtitle("Each mark family retains its category margin")
+            .XAxis(x => x.Title("Category")).YAxis(y => y.Title("Value")).Theme(VisualTheme.Graphite())
+            .Bars(b => b.Style(ChartBarStyle.Flat)).DataLabels(false)
             .AddBar("Observed", observations)
             .AddRangeBar("Reference range", new[] { new ChartInterval(peer, 1, 4) });
-        var stacked = Chart.Create().WithTitle("Horizontal category stacks")
-            .WithSubtitle("Equivalent numeric categories share one slot")
-            .WithXAxis("Value").WithYAxis("Category").WithTheme(VisualTheme.Graphite())
-            .WithBarStyle(ChartBarStyle.Flat).WithDataLabels(false).WithStackedBars()
+        var stacked = Chart.Create().Title("Horizontal category stacks")
+            .Subtitle("Equivalent numeric categories share one slot")
+            .XAxis(x => x.Title("Value")).YAxis(y => y.Title("Category")).Theme(VisualTheme.Graphite())
+            .Bars(b => b.Style(ChartBarStyle.Flat)).DataLabels(false).Bars(b => b.Stacked())
             .AddHorizontalBar("First", observations)
             .AddHorizontalBar("Second", new[] { new ChartPoint(peer, 4), new ChartPoint(3.5, 5) });
-        var grid = ChartGrid.Create().WithTitle("Automatic category margins")
-            .WithSubtitle("Complete edge bars with mixed marks and equivalent source coordinates")
-            .WithColumns(2).WithGap(20).WithPanelSize(600, 415)
+        var grid = ChartGrid.Create().Title("Automatic category margins")
+            .Subtitle("Complete edge bars with mixed marks and equivalent source coordinates")
+            .Columns(2).Gap(20).PanelSize(600, 415)
             .Add(mixed).Add(stacked);
         ExampleArtifactWriter.SaveGrid(grid, output, "cartesian-automatic-category-margins", pngOutputScale);
         WriteGrouped(output, pngOutputScale);
@@ -41,16 +41,16 @@ internal static class CartesianCategoryExamples {
         var ids = new[] { "jan", "mar", "apr", "may", "jun" }.Select(value => new ChartObservationId(value)).ToArray();
         var actual = ChartSeries.CreateBar(new ChartSeriesId("monthly-actual"), "Actual", new[] {
             new ChartPoint(1.5, 48), new ChartPoint(4, 62), new ChartPoint(5.25, 53), new ChartPoint(6.75, 70), new ChartPoint(8.5, 68)
-        }).WithObservationIds(ids);
+        }).ObservationIds(ids);
         var plan = ChartSeries.CreateLine(new ChartSeriesId("monthly-plan"), "Plan", new[] {
             new ChartPoint(1.5, 52), new ChartPoint(4, 58, breakBefore: true), new ChartPoint(5.25, 60),
             new ChartPoint(6.75, 65), new ChartPoint(8.5, 72)
-        }).WithObservationIds(ids).ConfigureMarkers(markers => { markers.Enabled = true; markers.Radius = 3; });
-        return Chart.Create().WithSize(width, 520).WithTheme(VisualTheme.Graphite(), mode)
-            .WithTitle("Monthly orders").WithSubtitle("February has no observation")
-            .WithXAxis("Month").WithYAxis("Orders").WithBarStyle(ChartBarStyle.Flat).WithDataLabels(false)
-            .ConfigureTickLabelStyle(style => style.FontSize = 12)
-            .WithXLabels(new[] {
+        }).ObservationIds(ids).Markers(markers => { markers.Enabled = true; markers.Radius = 3; });
+        return Chart.Create().Size(width, 520).Theme(VisualTheme.Graphite()).ThemeMode(mode)
+            .Title("Monthly orders").Subtitle("February has no observation")
+            .XAxis(x => x.Title("Month")).YAxis(y => y.Title("Orders")).Bars(b => b.Style(ChartBarStyle.Flat)).DataLabels(false)
+            .TickLabelStyle(style => style.FontSize = 12)
+            .XLabels(new[] {
                 new ChartAxisLabel(1.5, "Jan", "2026", "Q1"), new ChartAxisLabel(2.5, "Feb", "2026", "Q1"),
                 new ChartAxisLabel(4, "Mar", "2026", "Q1"), new ChartAxisLabel(5.25, "Apr", "2026", "Q2"),
                 new ChartAxisLabel(6.75, "May", "2026", "Q2"), new ChartAxisLabel(8.5, "Jun", "2026", "Q2")
@@ -61,13 +61,13 @@ internal static class CartesianCategoryExamples {
     internal static Chart CreateGroupedSites(int width, ThemeMode mode) {
         var series = new ChartSeries(new ChartSeriesId("site-orders"), "Orders", ChartSeriesKind.HorizontalBar, new[] {
             new ChartPoint(1.5, 48), new ChartPoint(3.25, 62), new ChartPoint(7.5, 53), new ChartPoint(11, 70)
-        }).WithObservationIds(new[] { "north-central", "north-harbor", "europe-central", "europe-harbor" }
+        }).ObservationIds(new[] { "north-central", "north-harbor", "europe-central", "europe-harbor" }
             .Select(value => new ChartObservationId(value)));
-        return Chart.Create().WithSize(width, 520).WithTheme(VisualTheme.Graphite(), mode)
-            .WithTitle("Orders by site").WithSubtitle("Repeated names retain their region")
-            .WithXAxis("Orders").WithYAxis("Site").WithLegend(false).WithDataLabels(false).WithBarStyle(ChartBarStyle.Flat)
-            .ConfigureTickLabelStyle(style => style.FontSize = 12)
-            .ConfigureYAxis(axis => axis.Labels.AddRange(new[] {
+        return Chart.Create().Size(width, 520).Theme(VisualTheme.Graphite()).ThemeMode(mode)
+            .Title("Orders by site").Subtitle("Repeated names retain their region")
+            .XAxis(x => x.Title("Orders")).YAxis(y => y.Title("Site")).Legend(false).DataLabels(false).Bars(b => b.Style(ChartBarStyle.Flat))
+            .TickLabelStyle(style => style.FontSize = 12)
+            .YAxis(axis => axis.Labels.AddRange(new[] {
                 new ChartAxisLabel(1.5, "Central", "North America"), new ChartAxisLabel(3.25, "Harbor", "North America"),
                 new ChartAxisLabel(7.5, "Central", "Western Europe"), new ChartAxisLabel(11, "Harbor", "Western Europe")
             })).AddSeries(series);

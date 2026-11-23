@@ -1,8 +1,10 @@
 using ChartForgeX.Interactivity;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Interactivity.Html;
 
 /// <summary>Configures HTML tooltip content, acquisition, timing and positioning without enabling interaction features.</summary>
+[Fluent]
 public sealed class HtmlChartTooltipOptions {
     /// <summary>Gets or sets whether selecting a mark pins its readout. The default is true.
     /// Disabling pinning retains ordinary pointer and keyboard tooltips.</summary>

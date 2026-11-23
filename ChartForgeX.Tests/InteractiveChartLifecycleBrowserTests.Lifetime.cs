@@ -28,7 +28,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
             options.Tooltip.DelayMilliseconds = 350;
             options.Interaction.Enable(ChartInteractionFeatures.Scenarios | ChartInteractionFeatures.StepPlayback);
             options.Interaction.AddScenario("loop", "Review observations", scenario => scenario
-                .WithPlayback(250, loop: true)
+                .PlaybackDelayMilliseconds(250).LoopPlayback().AutoPlay(false)
                 .AddSeriesStep("samples", "Samples").AddSeriesStep("reference", "Reference"));
         });
         var samples = new List<JsonElement>();

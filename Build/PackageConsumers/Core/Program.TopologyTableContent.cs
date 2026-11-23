@@ -9,7 +9,7 @@ internal static partial class Program {
         var table = TableArtifact.Create("facts").AddColumn("name", "Property").AddColumn("value", "Value")
             .AddRow("/count", "count", "0").AddRow("/state", "state", "false");
         table.Rows[0].Cells[1].Metadata["raw.type"] = "Number"; table.Rows[1].Cells[1].Metadata["raw.type"] = "Boolean";
-        var chart = TopologyChart.Create().WithViewport(760, 460).WithLayout(TopologyLayoutMode.Layered, TopologyLayoutDirection.LeftToRight);
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(760, 460)).LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(TopologyLayoutDirection.LeftToRight);
         chart.AddAutoNode("facts", "Captured facts", width: 220, height: 150); var node = chart.Nodes[0];
         node.Kind = TopologyNodeKind.Generic; node.Shape = TopologyNodeShape.Rectangle; node.ShowStatusBadge = false; node.FitLabelToContent = true; node.TableContent = table;
         chart.Annotations.Add(new TopologyAnnotation("note", "Same graph identity", "facts"));

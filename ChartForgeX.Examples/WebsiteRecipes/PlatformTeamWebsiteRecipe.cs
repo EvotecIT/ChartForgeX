@@ -34,10 +34,10 @@ public static class PlatformTeamWebsiteRecipe {
 #endregion
 #region chart
         var chart = TopologyChart.Create()
-            .WithThemeMode(mode)
-            .WithTitle("Platform team")
-            .WithSubtitle("Standard, compact and vertical branches")
-            .WithViewport(1180, 620, 28)
+            .ThemeMode(mode)
+            .Title("Platform team")
+            .Subtitle("Standard, compact and vertical branches")
+            .Viewport(new TopologyViewport(1180, 620, 28))
             .AddTeam("platform", "Platform team", members,
                 new TopologyTeamOptions { MaxLevel = 3 });
 #endregion

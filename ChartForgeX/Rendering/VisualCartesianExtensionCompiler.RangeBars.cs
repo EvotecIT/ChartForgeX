@@ -15,7 +15,7 @@ internal static partial class VisualCartesianCompiler {
         IReadOnlyDictionary<double, string> categories) {
         var series = chart.Series[index]; var count = series.RenderPoints.Count / 2;
         var horizontal = ChartCartesianOrientation.IsHorizontal(chart, series);
-        var style = chart.Options.ResolvePreparedBarVisualStyle();
+        var style = chart.Options.Bars.ResolvePreparedVisualStyle();
         var segmented = style.Kind == ChartBarStyle.SegmentedCapsule;
         var layout = ResolveRangeBarLayout(chart, context, plot, map, index, out var padding);
         var thickness = layout.Thickness;
@@ -87,7 +87,7 @@ internal static partial class VisualCartesianCompiler {
     private static ChartCategorySlotLayout ResolveRangeBarLayout(Chart chart, VisualRenderContext context, ChartRect plot,
         ChartMapper map, int index, out double padding) {
         var horizontal = ChartCartesianOrientation.IsHorizontal(chart, chart.Series[index]);
-        var style = chart.Options.ResolvePreparedBarVisualStyle();
+        var style = chart.Options.Bars.ResolvePreparedVisualStyle();
         var participants = Enumerable.Range(0, chart.Series.Count).Where(i => chart.Series[i].Kind == ChartSeriesKind.RangeBar).ToArray();
         padding = participants.Max(i => chart.Series[i].HasExplicitStrokeWidth ? chart.Series[i].StrokeWidth : ChartVisualPrimitives.RangeBarCapStrokeWidth);
         return ChartCategorySlotLayout.Create(participants.SelectMany(i => chart.Series[i].RenderPoints.Select(point => horizontal ? map.Y(point.X) : map.X(point.X))),
@@ -98,7 +98,7 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static double RangeBarValuePaintRadius(Chart chart, VisualRenderContext context, ChartRect plot, ChartMapper map, int index) {
-        var series = chart.Series[index]; var style = chart.Options.ResolvePreparedBarVisualStyle();
+        var series = chart.Series[index]; var style = chart.Options.Bars.ResolvePreparedVisualStyle();
         var layout = ResolveRangeBarLayout(chart, context, plot, map, index, out _);
         if (style.Kind != ChartBarStyle.SegmentedCapsule)
             return Math.Max(RangeBarMinimumLength, (series.HasExplicitStrokeWidth ? series.StrokeWidth : ChartVisualPrimitives.RangeBarCapStrokeWidth) / 2);

@@ -5,6 +5,7 @@ using ChartForgeX.Rendering;
 using Microsoft.Playwright;
 using Xunit;
 using static ChartForgeX.Tests.InteractiveChartBrowser;
+using ChartForgeX.Core;
 namespace ChartForgeX.Tests;
 public sealed partial class NativeTransitionBrowserTests {
     [BrowserTheory][InlineData(false,390,false,false)][InlineData(false,760,true,true)][InlineData(true,760,true,false)][InlineData(true,390,false,true)]
@@ -22,7 +23,7 @@ public sealed partial class NativeTransitionBrowserTests {
     private async Task ObserveJointValuesVisibilityAsync(bool bar,int width,bool dark,bool reverse,bool retainedAppearance,bool enabledLabels=false,string? stackVariant=null) {
         if(!Enabled)return;var renderer=new HtmlInteractiveChartRenderer();
         HtmlChartSection Section(double value,bool hidden) {
-            var model=stackVariant==null?NativeJointValuesVisibilityBeforeControls.Model(bar,value,width,dark).WithDataLabels(enabledLabels):NativeJointStackValueBeforeControls.Model(stackVariant,value,enabledLabels,width,dark);
+            var model=stackVariant==null?NativeJointValuesVisibilityBeforeControls.Model(bar,value,width,dark).DataLabels(enabledLabels):NativeJointStackValueBeforeControls.Model(stackVariant,value,enabledLabels,width,dark);
             var ordinary=renderer.PrepareVisibilitySection(model,NativeJointValuesVisibilityBeforeControls.View(hidden,enabledLabels?ChartForgeX.Core.ChartVisibilityLabelLayering.GroupWithSeries:ChartForgeX.Core.ChartVisibilityLabelLayering.PreserveOverlay),configure:options=>{options.Interaction.ChartId="joint-browser";options.Interaction.Enable(ChartInteractionFeatures.Export|ChartInteractionFeatures.LegendToggles);});
             if(!retainedAppearance)return ordinary;
             // The existing internal emission boundary supplies a real native appearance endpoint without adding a public Chart effect policy.

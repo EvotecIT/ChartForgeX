@@ -11,11 +11,11 @@ internal static class JourneyTimelineInterchangeExamples {
         foreach (var dark in new[] { false, true }) foreach (var width in new[] { 390, 1100 }) {
             var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
             var theme = VisualTheme.Graphite().WithFontFamily(ExampleTypography.FontFamily);
-            var journey = JourneyDiagramBlock.Create().WithTitle("Review journey").WithSize(width, 500).WithTheme(theme, mode)
+            var journey = JourneyDiagramBlock.Create().Title("Review journey").Size(width, 500).Theme(theme).ThemeMode(mode)
                 .AddSection("draft", "Review").AddSection("accepted", "Review")
                 .AddTask("read", "Read proposal", 2, new[] { "Author", "Reviewer" }, "draft")
                 .AddTask("accept", "Accept update", 5, new[] { "Reviewer" }, "accepted");
-            var timeline = TimelineDiagramBlock.Create().WithTitle("Delivery history").WithSize(width, 500).WithTheme(theme, mode)
+            var timeline = TimelineDiagramBlock.Create().Title("Delivery history").Size(width, 500).Theme(theme).ThemeMode(mode)
                 .AddSection("before", "Delivery").AddSection("after", "Delivery")
                 .AddPeriod("prepare", "Before launch", new[] { "Review", "Document" }, "before")
                 .AddPeriod("observe", "After launch", new[] { "Observe" }, "after");

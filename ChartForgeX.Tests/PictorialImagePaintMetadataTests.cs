@@ -14,21 +14,21 @@ public sealed class PictorialImagePaintMetadataTests {
     public void CapturedSparseAlphaExtentSurvivesCallerEditsAndIsSharedByEverySymbolPlacement() {
         var source = Sparse(); var artwork = ChartPictorialArtwork.FromImage(source); Array.Clear(source.Pixels);
         Assert.Equal(new ChartRect(1, 1, 2, 2), artwork.Resource.AlphaBounds);
-        var chart = PictorialArtworkTests.Model(2.5).WithPictorialColumns(4).WithPictorialArtwork(artwork);
+        var chart = PictorialArtworkTests.Model(2.5).Pictorial(p => p.Columns(4).Artwork(artwork));
         var prepared = PictorialArtworkTests.Prepare(chart); var images = prepared.Scene.Nodes.OfType<VisualSceneImage>().ToArray(); Assert.NotEmpty(images);
         Assert.All(images, image => { Assert.Equal(artwork.Resource.AlphaBounds, image.AlphaBounds); Assert.Same(artwork.Resource.Image.Pixels, image.Image.Pixels); });
         var xml = XDocument.Parse(prepared.ToSvg());
         Assert.All(xml.Descendants().Where(node => node.Name.LocalName == "image"), node => Assert.Equal("1 1 2 2 4 3", (string?)node.Attribute("data-cfx-image-alpha-bounds")));
         Assert.Single(images.Select(image => image.DataUri).Distinct());
         var capturedSvg = prepared.ToSvg(); var capturedPng = prepared.ToPng();
-        chart.WithPictorialArtwork(null); Assert.Equal(capturedSvg, prepared.ToSvg()); Assert.Equal(capturedPng, prepared.ToPng());
+        chart.Pictorial(p => p.Artwork((ChartPictorialArtwork?)null)); Assert.Equal(capturedSvg, prepared.ToSvg()); Assert.Equal(capturedPng, prepared.ToPng());
         PictorialArtworkTests.Save(prepared, "alpha-extent-shared-capture");
     }
 
     [Fact]
     public void FullyTransparentCapturedPixelsHaveNoInventedPaintExtent() {
         var artwork = ChartPictorialArtwork.FromImage(new RgbaImage(4, 3, new byte[48])); Assert.Null(artwork.Resource.AlphaBounds);
-        var prepared = PictorialArtworkTests.Prepare(PictorialArtworkTests.Model(.5).WithPictorialArtwork(artwork));
+        var prepared = PictorialArtworkTests.Prepare(PictorialArtworkTests.Model(.5).Pictorial(p => p.Artwork(artwork)));
         var images = XDocument.Parse(prepared.ToSvg()).Descendants().Where(node => node.Name.LocalName == "image").ToArray(); Assert.NotEmpty(images);
         Assert.All(images, node => Assert.Equal("0 0 0 0 4 3", (string?)node.Attribute("data-cfx-image-alpha-bounds")));
         PictorialArtworkTests.Save(prepared, "transparent-native-alpha");
@@ -38,7 +38,7 @@ public sealed class PictorialImagePaintMetadataTests {
     [InlineData(ChartPictorialFillDirection.LeftToRight)] [InlineData(ChartPictorialFillDirection.RightToLeft)]
     [InlineData(ChartPictorialFillDirection.BottomToTop)] [InlineData(ChartPictorialFillDirection.TopToBottom)]
     public void PrivatePaintMetadataDoesNotChangeCapturedSourcePixelsOrNativeSvgPartialClipGeometry(ChartPictorialFillDirection direction) {
-        var chart = PictorialArtworkTests.Model(.25).WithPictorialArtwork(ChartPictorialArtwork.FromImage(PictorialArtworkTests.Image())).WithPictorialFillDirection(direction);
+        var chart = PictorialArtworkTests.Model(.25).Pictorial(p => p.Artwork(ChartPictorialArtwork.FromImage(PictorialArtworkTests.Image())).FillDirection(direction));
         var prepared = PictorialArtworkTests.Prepare(chart); var svg = prepared.ToSvg(); var xml = XDocument.Parse(svg);
         var native = prepared.ToRgba(); var fromSvg = SvgRasterizer.Rasterize(svg, 480, 220, strict: true).Image;
         var shape = prepared.Scene.Nodes.OfType<VisualSceneImage>().Single(image => image.Role == "pictorial-fill");

@@ -274,14 +274,14 @@ public sealed partial class ManagedNativeConnectionBrowserTests {
             return new { html = section.Html, basis };
         }
         private Chart Model() {
-            var chart = Chart.Create().WithSize(_width, 480).WithTheme(VisualTheme.Graphite(), _mode)
-                .WithFontFamily(BrowserProofFonts.Family)
-                .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"))
-                .WithTitle("Native host edits").WithLegend(false).WithXAxisBounds(0, 10).WithYAxisBounds(0, 100);
+            var chart = Chart.Create().Size(_width, 480).Theme(VisualTheme.Graphite()).ThemeMode(_mode)
+                .FontFamily(BrowserProofFonts.Family)
+                .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
+                .Title("Native host edits").Legend(false).XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 100));
             var source = _typed
                 ? ChartSeries.CreateRangeBar(new ChartSeriesId("readings"), "Readings", Enumerable.Range(0, 11)
                     .Select(value => new ChartInterval(value, 20 + value * 5 + _producerOffset, 28 + value * 5 + _producerOffset)))
-                    .WithObservationIds(Enumerable.Range(0, 11).Select(value => new ChartObservationId("reading-" + value)))
+                    .ObservationIds(Enumerable.Range(0, 11).Select(value => new ChartObservationId("reading-" + value)))
                 : new ChartSeries(new ChartSeriesId("readings"), "Readings", ChartSeriesKind.Line,
                     Enumerable.Range(0, 11).Select(value => new ChartPoint(value, 20 + value * 5 + _producerOffset)));
             return chart.AddSeries(source)

@@ -14,16 +14,16 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void SvgAxisLayoutUsesResolvedTypography() {
         static Chart AxisChart() => Chart.Create()
-            .WithSize(900, 300)
-            .ConfigureTickLabelStyle(style => style.WithFontSize(10))
-            .WithXAxis("delivery status")
-            .WithXLabels("mmmm one", "mmmm two", "mmmm three", "mmmm four", "mmmm five", "mmmm six", "mmmm seven", "mmmm eight", "mmmm nine")
+            .Size(900, 300)
+            .TickLabelStyle(style => style.FontSize(10))
+            .XAxis(x => x.Title("delivery status"))
+            .XLabels("mmmm one", "mmmm two", "mmmm three", "mmmm four", "mmmm five", "mmmm six", "mmmm seven", "mmmm eight", "mmmm nine")
             .AddLine("Values", Points(1, 2, 3, 4, 5, 6, 7, 8, 9));
 
         var regular = AxisChart().ToSvg();
         var styledChart = AxisChart()
-            .ConfigureTickLabelStyle(style => style.WithFontFamily("monospace").WithFontSize(18).WithItalic().WithTextCase(TextCaseTransform.Uppercase))
-            .ConfigureAxisTitleStyle(style => style.WithFontFamily("serif").WithFontSize(32).WithItalic().WithUnderline(TextDecorationStyle.Wavy).WithTextCase(TextCaseTransform.Uppercase));
+            .TickLabelStyle(style => style.FontFamily("monospace").FontSize(18).Italic().TextCase(TextCaseTransform.Uppercase))
+            .AxisTitleStyle(style => style.FontFamily("serif").FontSize(32).Italic().UnderlineStyle(TextDecorationStyle.Wavy).TextCase(TextCaseTransform.Uppercase));
         var styled = styledChart.ToSvg();
 
         var regularLabels = CountOccurrences(regular, "data-cfx-role=\"axis-x-label\"");
@@ -39,18 +39,18 @@ internal static partial class SmokeTests {
     }
 
     private static void SpecializedLegendsHonorRoleTypography() {
-        static void ApplyLegendStyle(Chart chart) => chart.ConfigureLegendStyle(style => style
-            .WithColor("#d946ef")
-            .WithFontFamily("monospace")
-            .WithFontSize(18)
-            .WithWeight("800")
-            .WithItalic()
-            .WithUnderline(TextDecorationStyle.Double)
-            .WithStrikethrough(TextDecorationStyle.Wavy)
-            .WithSuperscript()
-            .WithTextCase(TextCaseTransform.Uppercase));
+        static void ApplyLegendStyle(Chart chart) => chart.LegendStyle(style => style
+            .Color(ChartColor.FromHex("#d946ef"))
+            .FontFamily("monospace")
+            .FontSize(18)
+            .FontWeight("800")
+            .Italic()
+            .UnderlineStyle(TextDecorationStyle.Double)
+            .StrikethroughStyle(TextDecorationStyle.Wavy)
+            .Baseline(TextBaseline.Superscript)
+            .TextCase(TextCaseTransform.Uppercase));
 
-        var pie = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(560, 360).WithXLabels("north region", "south region").AddDonut("Coverage", Points(62, 38));
+        var pie = Chart.Create().Theme(VisualTheme.Graphite()).Size(560, 360).XLabels("north region", "south region").AddDonut("Coverage", Points(62, 38));
         var plainPiePng = pie.ToPng();
         ApplyLegendStyle(pie);
         var pieSvg = pie.ToSvg();
@@ -58,7 +58,7 @@ internal static partial class SmokeTests {
         AssertNativeStyledText(pie, "legend-label", "NORTH REGION", 18 * .65, "#D946EF", "monospace", true);
         Assert(!plainPiePng.SequenceEqual(pie.ToPng()), "Custom slice legends should preserve the complete legend style in raster output.");
 
-        var radial = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(560, 360).WithXLabels("mail controls", "dns controls").AddProgressRing("Coverage", Points(82, 71));
+        var radial = Chart.Create().Theme(VisualTheme.Graphite()).Size(560, 360).XLabels("mail controls", "dns controls").AddProgressRing("Coverage", Points(82, 71));
         var plainRadialPng = radial.ToPng();
         ApplyLegendStyle(radial);
         var radialSvg = radial.ToSvg();
@@ -71,22 +71,22 @@ internal static partial class SmokeTests {
 
     private static void SpecializedAxesHonorTickTypography() {
         var heatmap = Chart.Create()
-            .WithSize(620, 380)
-            .WithXAxis("control family")
-            .WithYAxis("domain group")
-            .WithXLabels("mail auth", "transport security")
+            .Size(620, 380)
+            .XAxis(x => x.Title("control family"))
+            .YAxis(y => y.Title("domain group"))
+            .XLabels("mail auth", "transport security")
             .AddHeatmapRow("primary domains", Points(92, 81))
             .AddHeatmapRow("regional domains", Points(78, 69));
         var plainPng = heatmap.ToPng();
-        heatmap.ConfigureTickLabelStyle(style => style
-            .WithColor("#d946ef")
-            .WithFontFamily("monospace")
-            .WithFontSize(17)
-            .WithWeight("800")
-            .WithItalic()
-            .WithUnderline(TextDecorationStyle.Dashed)
-            .WithSuperscript()
-            .WithTextCase(TextCaseTransform.Uppercase));
+        heatmap.TickLabelStyle(style => style
+            .Color(ChartColor.FromHex("#d946ef"))
+            .FontFamily("monospace")
+            .FontSize(17)
+            .FontWeight("800")
+            .Italic()
+            .UnderlineStyle(TextDecorationStyle.Dashed)
+            .Baseline(TextBaseline.Superscript)
+            .TextCase(TextCaseTransform.Uppercase));
 
         var svg = heatmap.ToSvg();
         Assert(svg.Contains("data-cfx-role=\"heatmap-row-label\"", StringComparison.Ordinal) && svg.Contains(">PRIMARY DOMAINS</text>", StringComparison.Ordinal), "Heatmap row axes should apply tick casing before fitting.");
@@ -97,43 +97,43 @@ internal static partial class SmokeTests {
         Assert(!plainPng.SequenceEqual(heatmap.ToPng()), "Heatmap row, column, and scale labels should preserve tick styles in raster output.");
 
         AssertSpecializedTickStyle(
-            Chart.Create().WithSize(640, 360).AddCalendarHeatmap("Commits", new[] {
+            Chart.Create().Size(640, 360).AddCalendarHeatmap("Commits", new[] {
                 new ChartCalendarHeatmapItem(new DateTime(2026, 1, 5), 7),
                 new ChartCalendarHeatmapItem(new DateTime(2026, 2, 2), 12)
             }), "calendar-weekday", "MON");
         AssertSpecializedTickStyle(
-            Chart.Create().WithSize(640, 360).WithXLabels("mail", "dns").AddHexbinHeatmapRow("primary domains", Points(82, 91)),
+            Chart.Create().Size(640, 360).XLabels("mail", "dns").AddHexbinHeatmapRow("primary domains", Points(82, 91)),
             "heatmap-row-label", "PRIMARY DOMAINS");
         AssertSpecializedTickStyle(
-            Chart.Create().WithSize(640, 360).AddTimelineItem("certificate renewal", new DateTime(2026, 1, 5), new DateTime(2026, 2, 5)),
+            Chart.Create().Size(640, 360).AddTimelineItem("certificate renewal", new DateTime(2026, 1, 5), new DateTime(2026, 2, 5)),
             "schedule-row-label", "CERTIFICATE RENEWAL");
         AssertSpecializedTickStyle(
-            Chart.Create().WithSize(640, 360).WithGanttToday(new DateTime(2026, 1, 15)).AddGanttTask("inventory scope", new DateTime(2026, 1, 5), new DateTime(2026, 2, 5), 0.6),
+            Chart.Create().Size(640, 360).GanttToday(new DateTime(2026, 1, 15)).AddGanttTask("inventory scope", new DateTime(2026, 1, 5), new DateTime(2026, 2, 5), 0.6),
             "schedule-row-label", "INVENTORY SCOPE");
         AssertSpecializedTickStyle(
-            Chart.Create().WithSize(640, 360).WithXLabels("mail", "dns", "web").AddRadar("Coverage", Points(92, 81, 74)),
+            Chart.Create().Size(640, 360).XLabels("mail", "dns", "web").AddRadar("Coverage", Points(92, 81, 74)),
             "radar-axis-label", "MAIL");
         AssertSpecializedTickStyle(
-            Chart.Create().WithSize(640, 360).AddPictorial("Coverage", new[] { new ChartPictorialItem("primary domains", 4) }),
+            Chart.Create().Size(640, 360).AddPictorial("Coverage", new[] { new ChartPictorialItem("primary domains", 4) }),
             "pictorial-label", "PRIMARY DOMAINS");
         AssertSpecializedTickStyle(
-            Chart.Create().WithSize(640, 360).AddProgressBars("Coverage", new[] { new ChartProgressItem("mail auth", 82) }),
+            Chart.Create().Size(640, 360).AddProgressBars("Coverage", new[] { new ChartProgressItem("mail auth", 82) }),
             "progress-label", "MAIL AUTH");
         AssertSpecializedTickStyle(
-            Chart.Create().WithSize(700, 420).AddTileMap("Revenue", ChartTileMapCatalog.Get("us-states"), new[] { new ChartRegionMapItem("CA", 95) }),
+            Chart.Create().Size(700, 420).AddTileMap("Revenue", ChartTileMapCatalog.Get("us-states"), new[] { new ChartRegionMapItem("CA", 95) }),
             "map-scale-label", "LESS");
 
         static void AssertSpecializedTickStyle(Chart chart, string role, string expectedText) {
             var plain = chart.ToPng();
-            chart.ConfigureTickLabelStyle(style => style
-                .WithColor("#d946ef")
-                .WithFontFamily("monospace")
-                .WithFontSize(17)
-                .WithWeight("800")
-                .WithItalic()
-                .WithUnderline(TextDecorationStyle.Dashed)
-                .WithSuperscript()
-                .WithTextCase(TextCaseTransform.Uppercase));
+            chart.TickLabelStyle(style => style
+                .Color(ChartColor.FromHex("#d946ef"))
+                .FontFamily("monospace")
+                .FontSize(17)
+                .FontWeight("800")
+                .Italic()
+                .UnderlineStyle(TextDecorationStyle.Dashed)
+                .Baseline(TextBaseline.Superscript)
+                .TextCase(TextCaseTransform.Uppercase));
             var styled = chart.ToSvg();
             Assert(styled.Contains("fill=\"#D946EF\"", StringComparison.Ordinal) && styled.Contains("font-family=\"monospace\"", StringComparison.Ordinal) && styled.Contains("font-style=\"italic\"", StringComparison.Ordinal), role + " should preserve tick color, family, and italic style in SVG.");
             AssertNativeStyledText(chart, role, expectedText, 17 * .65, "#D946EF", "monospace", true, allowPrefix: true);
@@ -163,9 +163,9 @@ internal static partial class SmokeTests {
 
     private static void FunnelGalleryTextStaysReadable() {
         var svg = Chart.Create()
-            .WithSize(920, 560)
-            .WithDataLabels()
-            .WithXLabels("Opened", "Deferred", "Closed")
+            .Size(920, 560)
+            .DataLabels()
+            .XLabels("Opened", "Deferred", "Closed")
             .AddFunnel("Review flow", Points(100, 0, 18))
             .ToSvg();
         var document = XDocument.Parse(svg);

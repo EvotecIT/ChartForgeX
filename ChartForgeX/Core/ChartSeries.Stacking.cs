@@ -20,9 +20,6 @@ public sealed partial class ChartSeries {
         }
     }
 
-    /// <summary>Chooses independent, group-wide gaps or zero-contribution alignment at the group's observed X union.</summary>
-    public ChartSeries WithStackedAreaMissingData(ChartStackedAreaMissingDataPolicy policy) { StackedAreaMissingData = policy; return this; }
-
     /// <summary>
     /// Gets or sets the ordinal key of an independent Cartesian/radial bar, radial column, or stacked-area stack.
     /// A named bar stack participates in stacking even when the chart's bar mode is grouped.
@@ -57,14 +54,6 @@ public sealed partial class ChartSeries {
             _normalizedTo = value;
         }
     }
-
-    /// <summary>Assigns an independent stack key; null restores the chart's default arrangement.</summary>
-    /// <param name="group">An ordinal key shared by the series in one stack, or null.</param>
-    public ChartSeries WithStackGroup(string? group) { StackGroup = group; return this; }
-
-    /// <summary>Normalizes positive and negative stack totals separately while retaining source values.</summary>
-    /// <param name="target">The finite positive total, normally 100 for percentage stacks; null retains source units.</param>
-    public ChartSeries WithNormalization(double? target = 100) { NormalizedTo = target; return this; }
 
     private void RequireStackingKind() {
         if (Kind != ChartSeriesKind.Bar && Kind != ChartSeriesKind.HorizontalBar && Kind != ChartSeriesKind.StackedArea

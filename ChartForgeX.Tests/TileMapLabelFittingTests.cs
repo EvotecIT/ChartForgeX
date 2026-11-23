@@ -45,7 +45,7 @@ public sealed class TileMapLabelFittingTests : IDisposable {
             var label = labels[labelId];
             Assert.Equal(code, string.Join("\n", label.Text.Lines.Select(line => line.Text)));
             Assert.InRange(label.Text.Size, 10, context.Theme.Typography.AxisSize);
-            Assert.True(FitsHex(tile, label.Text.Metrics, chart.Options.MapRegionStrokeWidth), code + " must clear every slanted edge and its stroke.");
+            Assert.True(FitsHex(tile, label.Text.Metrics, chart.Options.Map.RegionStrokeWidth), code + " must clear every slanted edge and its stroke.");
             Assert.Equal(tile.Left + tile.Width / 2, label.X, 6);
             Assert.Equal(tile.Top + (tile.Height - label.Text.Metrics.Height) / 2, label.Baseline - label.Text.Ascent, 6);
         }
@@ -110,7 +110,7 @@ public sealed class TileMapLabelFittingTests : IDisposable {
         var definition = new ChartTileMapDefinition("identities", "Identities", new[] {
             new ChartTileMapRegion(longCode, "Long name", 0, 0), new ChartTileMapRegion("OK", "Other name", 1, 0) });
         var chart = Chart.Create().AddTileMap("Samples", definition, new[] { new ChartRegionMapItem(longCode, 0) })
-            .ConfigureMapColorDimension(options => options.ShowLegend = false).WithMapSurface(false);
+            .Map(map => map.ColorDimension(options => options.ShowLegend = false)).Map(m => m.ShowSurface(false));
         var scene = Compile(chart, 120, 70);
         Assert.DoesNotContain(scene.Nodes.OfType<VisualSceneText>(), text => text.Id == "series-0-point-0-label");
         Assert.Contains(scene.Nodes.OfType<VisualSceneText>(), text => text.Id == "tile-map-empty-OK-label" && text.Text.Lines[0].Text == "OK");
@@ -123,7 +123,7 @@ public sealed class TileMapLabelFittingTests : IDisposable {
         var tiny = Compile(chart, 5, 5);
         Assert.DoesNotContain(tiny.Nodes, node => node is VisualSceneText && node.Role == "tile-map-label");
         Assert.Equal(2, tiny.Diagnostics.Count(diagnostic => diagnostic.Code == "map.label-overflow"));
-        chart.WithMapLabels(false);
+        chart.Map(m => m.ShowLabels(false));
         var hidden = Compile(chart, 120, 70);
         Assert.DoesNotContain(hidden.Nodes, node => node.Role is "tile-map-label" or "tile-map-label-source");
         Assert.Equal(2, hidden.Nodes.Count(node => node.Role == "tile-map-region"));
@@ -135,7 +135,7 @@ public sealed class TileMapLabelFittingTests : IDisposable {
     public void AuthoredSmallTypeAndExplicitInkArePreservedWithoutChangingSharedTickStyle() {
         var chart = Chart.Create().AddTileMap("Samples", new ChartTileMapDefinition("small", "Small", new[] {
             new ChartTileMapRegion("OK", "Other name", 0, 0) }), new[] { new ChartRegionMapItem("OK", 10) })
-            .ConfigureMapColorDimension(options => options.ShowLegend = false).WithMapSurface(false);
+            .Map(map => map.ColorDimension(options => options.ShowLegend = false)).Map(m => m.ShowSurface(false));
         var ink = ChartColor.FromHex("#1234AB");
         chart.Options.TickLabelStyle.FontSize = 6;
         chart.Options.TickLabelStyle.Color = ink;
@@ -152,7 +152,7 @@ public sealed class TileMapLabelFittingTests : IDisposable {
     public void OversizedAuthoredCodesFitWithoutCrossingTheReadableFloorOrChangingTheRequest() {
         var chart = Chart.Create().AddTileMap("Samples", new ChartTileMapDefinition("large", "Large", new[] {
             new ChartTileMapRegion("OK", "Other name", 0, 0) }), new[] { new ChartRegionMapItem("OK", 10) })
-            .ConfigureMapColorDimension(options => options.ShowLegend = false).WithMapSurface(false);
+            .Map(map => map.ColorDimension(options => options.ShowLegend = false)).Map(m => m.ShowSurface(false));
         chart.Options.TickLabelStyle.FontSize = 40;
         var scene = Compile(chart, 30, 30);
         var label = Assert.Single(scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "tile-map-label");

@@ -113,11 +113,10 @@ public static class HexbinHeatmapRecipe {
     /// &lt;summary&gt;Creates numeric coverage rows with explicit missing-cell positions.&lt;/summary&gt;
     public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
-        return Chart.Create().WithXLabels(&quot;Identity&quot;, &quot;Network&quot;, &quot;Storage&quot;, &quot;Backup&quot;, &quot;Access&quot;, &quot;Recovery&quot;)
+        return Chart.Create().XLabels(&quot;Identity&quot;, &quot;Network&quot;, &quot;Storage&quot;, &quot;Backup&quot;, &quot;Access&quot;, &quot;Recovery&quot;)
             .AddHexbinHeatmapRow(&quot;Primary&quot;, new double?[] { 92, 70, 56, null, 84, 41 }, id: new ChartSeriesId(&quot;primary-measurements&quot;))
             .AddHexbinHeatmapRow(&quot;Secondary&quot;, new double?[] { 76, 84, 46, 70, 90, 62 }, id: new ChartSeriesId(&quot;secondary-measurements&quot;))
-            .WithHeatmapScale(ChartHeatmapScale.Sequential).WithHeatmapCellGap(3).WithHeatmapCellRadius(3)
-            .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Auto);
+            .Heatmap(h =&gt; h.Scale(ChartHeatmapScale.Sequential).CellGap(3).CellRadius(3).ValueTextMode(ChartHeatmapValueTextMode.Auto));
     }
 }
 </code></pre><pre data-visual-theme="dark"><code data-example-source>#region Setup
@@ -153,11 +152,10 @@ public static class HexbinHeatmapRecipe {
     /// &lt;summary&gt;Creates numeric coverage rows with explicit missing-cell positions.&lt;/summary&gt;
     public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
-        return Chart.Create().WithXLabels(&quot;Identity&quot;, &quot;Network&quot;, &quot;Storage&quot;, &quot;Backup&quot;, &quot;Access&quot;, &quot;Recovery&quot;)
+        return Chart.Create().XLabels(&quot;Identity&quot;, &quot;Network&quot;, &quot;Storage&quot;, &quot;Backup&quot;, &quot;Access&quot;, &quot;Recovery&quot;)
             .AddHexbinHeatmapRow(&quot;Primary&quot;, new double?[] { 92, 70, 56, null, 84, 41 }, id: new ChartSeriesId(&quot;primary-measurements&quot;))
             .AddHexbinHeatmapRow(&quot;Secondary&quot;, new double?[] { 76, 84, 46, 70, 90, 62 }, id: new ChartSeriesId(&quot;secondary-measurements&quot;))
-            .WithHeatmapScale(ChartHeatmapScale.Sequential).WithHeatmapCellGap(3).WithHeatmapCellRadius(3)
-            .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Auto);
+            .Heatmap(h =&gt; h.Scale(ChartHeatmapScale.Sequential).CellGap(3).CellRadius(3).ValueTextMode(ChartHeatmapValueTextMode.Auto));
     }
 }
 </code></pre></section></main><footer><a href="catalog.html">Explore more examples</a><a href="fonts/OFL.txt">Font license</a></footer><script data-gallery-script>(() => {

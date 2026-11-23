@@ -21,14 +21,14 @@ var theme = VisualTheme.Graphite();
 
 var requests = new ChartSeries(new ChartSeriesId("requests"), "Requests", ChartSeriesKind.RadialColumn, Points(1200, 950, 680, 1050));
 var followUps = new ChartSeries(new ChartSeriesId("follow-ups"), "Follow-ups", ChartSeriesKind.RadialColumn, Points(320, 410, 260, 360));
-var chart = Chart.Create().WithXLabels("North", "South", "East", "West")
-    .WithRadialGeometry(new ChartRadialGeometryOptions(-90, 180, .22, .22, .15))
-    .AddSeries(requests).AddSeries(followUps).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
-requests.WithStackGroup("work").WithNormalization(100);
-followUps.WithStackGroup("work").WithNormalization(100).WithPointFillPattern(1, ChartFillPattern.DiagonalForward);
-chart.WithRadialGeometry(new ChartRadialGeometryOptions(-90, 180, .22, .22, .15, cornerRadius: 6))
-    .WithYAxisBounds(0, 100).WithXAxis("Region").WithYAxis("Share of regional workload (%)")
-    .ConfigureXAxis(axis => axis.LabelAngle = -30).ConfigureYAxis(axis => axis.LabelAngle = 30);
+var chart = Chart.Create().XLabels("North", "South", "East", "West")
+    .RadialGeometry(new ChartRadialGeometryOptions(-90, 180, .22, .22, .15))
+    .AddSeries(requests).AddSeries(followUps).DataLabels().DataLabels(d => d.Placement(ChartDataLabelPlacement.Inside));
+requests.StackGroup("work").NormalizedTo(100);
+followUps.StackGroup("work").NormalizedTo(100).PointFillPattern(1, ChartFillPattern.DiagonalForward);
+chart.RadialGeometry(new ChartRadialGeometryOptions(-90, 180, .22, .22, .15, cornerRadius: 6))
+    .YAxis(y => y.Bounds(0, 100)).XAxis(x => x.Title("Region")).YAxis(y => y.Title("Share of regional workload (%)"))
+    .XAxis(axis => axis.LabelAngle = -30).YAxis(axis => axis.LabelAngle = 30);
 
 #region Output
 var context = new VisualRenderContext(

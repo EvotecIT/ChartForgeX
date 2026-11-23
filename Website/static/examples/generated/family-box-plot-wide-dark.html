@@ -126,42 +126,42 @@ public static class BoxPlotRecipe {
             var observed = ChartSeries.CreateBoxPlot(new ChartSeriesId(&quot;observed&quot;), &quot;Observed&quot;, new[] {
                 new ChartBoxPlot(1, 12, 22, 30, 38, 48), new ChartBoxPlot(2, 8, 12, 22, 30, 42),
                 new ChartBoxPlot(3, 15, 24, 32, 40, 50), new ChartBoxPlot(4, 22, 35, 40, 48, 58)
-            }).WithPointFillPattern(2, ChartFillPattern.DiagonalForward);
-            chart.WithXLabels(&quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;).AddSeries(expected).AddSeries(observed)
-                .ConfigureBoxPlot(options =&gt; options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
-                .WithDataLabels();
-            if (horizontal) chart.WithXAxis(&quot;Delivery time (minutes)&quot;).WithYAxis(&quot;Service&quot;);
-            else chart.WithYAxis(&quot;Delivery time (minutes)&quot;);
+            }).PointFillPattern(2, ChartFillPattern.DiagonalForward);
+            chart.XLabels(&quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;).AddSeries(expected).AddSeries(observed)
+                .BoxPlot(options =&gt; options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
+                .DataLabels();
+            if (horizontal) chart.XAxis(x =&gt; x.Title(&quot;Delivery time (minutes)&quot;)).YAxis(y =&gt; y.Title(&quot;Service&quot;));
+            else chart.YAxis(y =&gt; y.Title(&quot;Delivery time (minutes)&quot;));
         }
         else {
             var count = variant == &quot;sparse&quot; ? 2 : 5;
             var distributions = Enumerable.Range(1, count)
                 .Select(index =&gt; new ChartBoxPlot(index, 10 + index, 20 + index, 30 + index, 38 + index, 50 + index));
             var delivery = ChartSeries.CreateBoxPlot(new ChartSeriesId(&quot;delivery-time&quot;), &quot;Delivery time&quot;, distributions);
-            chart.WithXLabels(&quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;, &quot;Return&quot;).AddSeries(delivery);
+            chart.XLabels(&quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;, &quot;Return&quot;).AddSeries(delivery);
         }
         return chart;
     }
 
     private static Chart StatisticLabels(string variant, ThemeMode mode) {
         var horizontal = variant.Contains(&quot;horizontal&quot;);
-        var chart = Chart.Create().WithTitle(&quot;Five-number delivery summaries&quot;).WithXLabels(&quot;Standard&quot;, &quot;Express&quot;)
+        var chart = Chart.Create().Title(&quot;Five-number delivery summaries&quot;).XLabels(&quot;Standard&quot;, &quot;Express&quot;)
             .AddSeries(ChartSeries.CreateBoxPlot(new ChartSeriesId(&quot;delivery&quot;), &quot;Delivery time&quot;, new[] {
                 new ChartBoxPlot(1, 10, 20, 30, 40, 50), new ChartBoxPlot(2, 5, 15, 25, 35, 45)
-            }).WithPointLabel(0, &quot;Standard delivery summary&quot;))
-            .ConfigureBoxPlot(options =&gt; {
+            }).PointLabel(0, &quot;Standard delivery summary&quot;))
+            .BoxPlot(options =&gt; {
                 options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
                 options.LabelContent = ChartBoxPlotLabelContent.Statistics;
                 foreach (var label in new[] { options.MinimumLabel, options.Q1Label, options.MedianLabel, options.Q3Label, options.MaximumLabel }) {
                     label.Placement = horizontal ? ChartDataLabelPlacement.Above : ChartDataLabelPlacement.Right;
-                    label.Style.WithFontSize(10);
+                    label.Style.FontSize(10);
                 }
-                options.MinimumLabel.Style.WithColor(mode == ThemeMode.Dark ? &quot;#82b8ff&quot; : &quot;#235b9f&quot;);
-                options.MaximumLabel.Style.WithColor(mode == ThemeMode.Dark ? &quot;#ffbe79&quot; : &quot;#975000&quot;);
-                options.MedianLabel.Style.WithFontSize(12).WithWeight(&quot;700&quot;);
-            }).WithDataLabels();
-        (horizontal ? chart.Options.XAxis : chart.Options.YAxis).WithBounds(0, 60);
-        return horizontal ? chart.WithXAxis(&quot;Delivery time (minutes)&quot;).WithYAxis(&quot;Service&quot;) : chart.WithYAxis(&quot;Delivery time (minutes)&quot;);
+                options.MinimumLabel.Style.Color(ChartColor.FromHex(mode == ThemeMode.Dark ? &quot;#82b8ff&quot; : &quot;#235b9f&quot;));
+                options.MaximumLabel.Style.Color(ChartColor.FromHex(mode == ThemeMode.Dark ? &quot;#ffbe79&quot; : &quot;#975000&quot;));
+                options.MedianLabel.Style.FontSize(12).FontWeight(&quot;700&quot;);
+            }).DataLabels();
+        (horizontal ? chart.Options.XAxis : chart.Options.YAxis).Bounds(0, 60);
+        return horizontal ? chart.XAxis(x =&gt; x.Title(&quot;Delivery time (minutes)&quot;)).YAxis(y =&gt; y.Title(&quot;Service&quot;)) : chart.YAxis(y =&gt; y.Title(&quot;Delivery time (minutes)&quot;));
     }
 }
 </code></pre><pre data-visual-theme="dark"><code data-example-source>#region Setup
@@ -210,42 +210,42 @@ public static class BoxPlotRecipe {
             var observed = ChartSeries.CreateBoxPlot(new ChartSeriesId(&quot;observed&quot;), &quot;Observed&quot;, new[] {
                 new ChartBoxPlot(1, 12, 22, 30, 38, 48), new ChartBoxPlot(2, 8, 12, 22, 30, 42),
                 new ChartBoxPlot(3, 15, 24, 32, 40, 50), new ChartBoxPlot(4, 22, 35, 40, 48, 58)
-            }).WithPointFillPattern(2, ChartFillPattern.DiagonalForward);
-            chart.WithXLabels(&quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;).AddSeries(expected).AddSeries(observed)
-                .ConfigureBoxPlot(options =&gt; options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
-                .WithDataLabels();
-            if (horizontal) chart.WithXAxis(&quot;Delivery time (minutes)&quot;).WithYAxis(&quot;Service&quot;);
-            else chart.WithYAxis(&quot;Delivery time (minutes)&quot;);
+            }).PointFillPattern(2, ChartFillPattern.DiagonalForward);
+            chart.XLabels(&quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;).AddSeries(expected).AddSeries(observed)
+                .BoxPlot(options =&gt; options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
+                .DataLabels();
+            if (horizontal) chart.XAxis(x =&gt; x.Title(&quot;Delivery time (minutes)&quot;)).YAxis(y =&gt; y.Title(&quot;Service&quot;));
+            else chart.YAxis(y =&gt; y.Title(&quot;Delivery time (minutes)&quot;));
         }
         else {
             var count = variant == &quot;sparse&quot; ? 2 : 5;
             var distributions = Enumerable.Range(1, count)
                 .Select(index =&gt; new ChartBoxPlot(index, 10 + index, 20 + index, 30 + index, 38 + index, 50 + index));
             var delivery = ChartSeries.CreateBoxPlot(new ChartSeriesId(&quot;delivery-time&quot;), &quot;Delivery time&quot;, distributions);
-            chart.WithXLabels(&quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;, &quot;Return&quot;).AddSeries(delivery);
+            chart.XLabels(&quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;, &quot;Return&quot;).AddSeries(delivery);
         }
         return chart;
     }
 
     private static Chart StatisticLabels(string variant, ThemeMode mode) {
         var horizontal = variant.Contains(&quot;horizontal&quot;);
-        var chart = Chart.Create().WithTitle(&quot;Five-number delivery summaries&quot;).WithXLabels(&quot;Standard&quot;, &quot;Express&quot;)
+        var chart = Chart.Create().Title(&quot;Five-number delivery summaries&quot;).XLabels(&quot;Standard&quot;, &quot;Express&quot;)
             .AddSeries(ChartSeries.CreateBoxPlot(new ChartSeriesId(&quot;delivery&quot;), &quot;Delivery time&quot;, new[] {
                 new ChartBoxPlot(1, 10, 20, 30, 40, 50), new ChartBoxPlot(2, 5, 15, 25, 35, 45)
-            }).WithPointLabel(0, &quot;Standard delivery summary&quot;))
-            .ConfigureBoxPlot(options =&gt; {
+            }).PointLabel(0, &quot;Standard delivery summary&quot;))
+            .BoxPlot(options =&gt; {
                 options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
                 options.LabelContent = ChartBoxPlotLabelContent.Statistics;
                 foreach (var label in new[] { options.MinimumLabel, options.Q1Label, options.MedianLabel, options.Q3Label, options.MaximumLabel }) {
                     label.Placement = horizontal ? ChartDataLabelPlacement.Above : ChartDataLabelPlacement.Right;
-                    label.Style.WithFontSize(10);
+                    label.Style.FontSize(10);
                 }
-                options.MinimumLabel.Style.WithColor(mode == ThemeMode.Dark ? &quot;#82b8ff&quot; : &quot;#235b9f&quot;);
-                options.MaximumLabel.Style.WithColor(mode == ThemeMode.Dark ? &quot;#ffbe79&quot; : &quot;#975000&quot;);
-                options.MedianLabel.Style.WithFontSize(12).WithWeight(&quot;700&quot;);
-            }).WithDataLabels();
-        (horizontal ? chart.Options.XAxis : chart.Options.YAxis).WithBounds(0, 60);
-        return horizontal ? chart.WithXAxis(&quot;Delivery time (minutes)&quot;).WithYAxis(&quot;Service&quot;) : chart.WithYAxis(&quot;Delivery time (minutes)&quot;);
+                options.MinimumLabel.Style.Color(ChartColor.FromHex(mode == ThemeMode.Dark ? &quot;#82b8ff&quot; : &quot;#235b9f&quot;));
+                options.MaximumLabel.Style.Color(ChartColor.FromHex(mode == ThemeMode.Dark ? &quot;#ffbe79&quot; : &quot;#975000&quot;));
+                options.MedianLabel.Style.FontSize(12).FontWeight(&quot;700&quot;);
+            }).DataLabels();
+        (horizontal ? chart.Options.XAxis : chart.Options.YAxis).Bounds(0, 60);
+        return horizontal ? chart.XAxis(x =&gt; x.Title(&quot;Delivery time (minutes)&quot;)).YAxis(y =&gt; y.Title(&quot;Service&quot;)) : chart.YAxis(y =&gt; y.Title(&quot;Delivery time (minutes)&quot;));
     }
 }
 </code></pre></section></main><footer><a href="catalog.html">Explore more examples</a><a href="fonts/OFL.txt">Font license</a></footer><script data-gallery-script>(() => {

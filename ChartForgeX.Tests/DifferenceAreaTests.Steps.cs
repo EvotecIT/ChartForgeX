@@ -13,8 +13,8 @@ public sealed partial class DifferenceAreaTests {
     [InlineData(ChartStepPosition.End)]
     public void StepHoldsUseDeclaredTransitionsAndRawPolarityInBothNativeExports(ChartStepPosition position) {
         var chart = Model(new(0, 8, 2), new(10, 2, 5));
-        chart.Options.XAxis.WithBounds(0, 10); chart.Options.YAxis.WithBounds(0, 10);
-        chart.Series[0].WithInterpolation(ChartInterpolation.Step, position);
+        chart.Options.XAxis.Bounds(0, 10); chart.Options.YAxis.Bounds(0, 10);
+        chart.Series[0].Interpolation(ChartInterpolation.Step, position);
         var prepared = Prepare(chart);
         var first = Boundary(prepared, "difference-first"); var second = Boundary(prepared, "difference-second");
         var start = first.Commands[0]; var end = first.Commands[^1];
@@ -50,8 +50,8 @@ public sealed partial class DifferenceAreaTests {
     [Fact]
     public void SameSignStepHoldsKeepVerticalKnotsAndOneTranslucentEnvelope() {
         var chart = Model(new(0, 4, 1), new(1, 8, 5), new(2, 6, 2));
-        chart.Options.XAxis.WithBounds(0, 2); chart.Options.YAxis.WithBounds(0, 10);
-        chart.Series[0].WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+        chart.Options.XAxis.Bounds(0, 2); chart.Options.YAxis.Bounds(0, 10);
+        chart.Series[0].Interpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
         var prepared = Prepare(chart);
         var fill = Boundary(prepared, "difference-positive");
         AssertAxisAligned(fill);
@@ -76,7 +76,7 @@ public sealed partial class DifferenceAreaTests {
     [InlineData(ChartStepPosition.End)]
     public void TiedStepHoldsCutFillWithoutInventingTerminalOrSingletonRegions(ChartStepPosition position) {
         var chart = Model(new(0, 8, 2), new(1, 8, 2), new(2, 4, 4), new(3, 4, 4), new(4, 8, 2), new(5, 8, 2));
-        chart.Series[0].WithInterpolation(ChartInterpolation.Step, position);
+        chart.Series[0].Interpolation(ChartInterpolation.Step, position);
         var prepared = Prepare(chart);
         Assert.Equal(2, prepared.Scene.Nodes.Count(node => node.Role == "difference-positive"));
         Assert.DoesNotContain(prepared.Scene.Nodes, node => node.Role == "difference-negative");
@@ -87,7 +87,7 @@ public sealed partial class DifferenceAreaTests {
         Assert.Equal(6, prepared.Regions.Count(region => region.Role == "point"));
         Assert.Equal("4", Group(prepared, "series-0-point-2")["data-cfx-first"]);
         foreach (var empty in new[] { Model(new(0, 4, 4), new(1, 4, 4)), Model(new ChartDifferencePoint(0, 8, 2)) }) {
-            empty.Series[0].WithInterpolation(ChartInterpolation.Step, position);
+            empty.Series[0].Interpolation(ChartInterpolation.Step, position);
             Assert.DoesNotContain(Prepare(empty).Scene.Nodes, node => node.Role is "difference-positive" or "difference-negative");
         }
     }
@@ -96,7 +96,7 @@ public sealed partial class DifferenceAreaTests {
     public void TypedPairCutsStepBoundariesAndNativeFill() {
         var chart = Model(new(0, 8, 2), new(1, 8, 2), new(3, 8, 2), new(4, 8, 2));
         var series = chart.Series[0];
-        series.WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+        series.Interpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
         series.UpdateDifferencePoint(2, new ChartDifferencePoint(3, 8, 2, true));
         var prepared = Prepare(chart);
         foreach (var role in new[] { "difference-first", "difference-second" })
@@ -119,12 +119,12 @@ public sealed partial class DifferenceAreaTests {
     public void TimeStepsUseSecondaryScaleAndMappedTransitionThroughClippingAndReversal(bool reverseX, bool reverseY) {
         var date = new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Utc);
         var chart = Model(new(date, 600, 100), new(date.AddDays(10), 100, 500));
-        chart.Series[0].UseSecondaryValueAxis().WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+        chart.Series[0].SecondaryAxis().Interpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
         chart.AddLine("Primary", new[] { new ChartPoint(date.ToOADate(), 1), new ChartPoint(date.AddDays(10).ToOADate(), 2) });
         chart.Options.XAxis.Scale = ChartScaleKind.Time;
-        chart.Options.XAxis.WithBounds(date.AddDays(2).ToOADate(), date.AddDays(8).ToOADate()).WithReversal(reverseX);
-        chart.Options.YAxis.WithBounds(0, 3);
-        chart.Options.SecondaryYAxis.WithBounds(150, 450).WithReversal(reverseY);
+        chart.Options.XAxis.Bounds(date.AddDays(2).ToOADate(), date.AddDays(8).ToOADate()).Reversed(reverseX);
+        chart.Options.YAxis.Bounds(0, 3);
+        chart.Options.SecondaryYAxis.Bounds(150, 450).Reversed(reverseY);
         var prepared = Prepare(chart);
         var first = Boundary(prepared, "difference-first"); var second = Boundary(prepared, "difference-second");
         var transition = first.Commands[0].X / 2 + first.Commands[^1].X / 2;
@@ -144,10 +144,10 @@ public sealed partial class DifferenceAreaTests {
     [Fact]
     public void ExtremeFinitePairsUseRawStepPolarityWithoutCrossingArithmetic() {
         var chart = Model(new(0, double.MaxValue, -double.MaxValue), new(1, -double.MaxValue, double.MaxValue));
-        chart.Series[0].WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+        chart.Series[0].Interpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
         // Ordinary mapped coordinates isolate sign/step arithmetic from the separate axis-domain contract.
         var ordinary = Model(new(0, 1, 0), new(1, 0, 1));
-        ordinary.Options.XAxis.WithBounds(0, 1); ordinary.Options.YAxis.WithBounds(0, 1);
+        ordinary.Options.XAxis.Bounds(0, 1); ordinary.Options.YAxis.Bounds(0, 1);
         var mapped = new ChartPairedBoundaryGeometry(ordinary.Series[0], new ChartMapper(new ChartRect(0, 0, 100, 100),
             ChartRange.FromChart(ordinary), ordinary.Options.XAxis, ordinary.Options.YAxis));
         var regions = ChartDifferenceAreaGeometry.Regions(chart.Series[0], mapped);

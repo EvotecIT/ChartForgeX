@@ -10,7 +10,7 @@ public sealed class GalleryLabelQualityTests {
         var output = Path.Combine(Path.GetTempPath(), "ChartForgeX-nested-quality-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(output);
         try {
-            var chart = Chart.Create().WithSize(320, 180).AddLine("Values", Enumerable.Range(1, 3).Select(i => new ChartForgeX.Primitives.ChartPoint(i, i)));
+            var chart = Chart.Create().Size(320, 180).AddLine("Values", Enumerable.Range(1, 3).Select(i => new ChartForgeX.Primitives.ChartPoint(i, i)));
             var svg = chart.ToSvg().Replace("</svg>", "<svg x='200' y='130' width='80' height='40' viewBox='0 0 800 400'>"
                 + "<text x='700' y='200' font-size='12'>Nested</text></svg>"
                 + "<g display='none'><text x='9999' y='9999' font-size='1'>Dropped</text></g>"

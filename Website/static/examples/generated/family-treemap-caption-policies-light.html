@@ -113,19 +113,19 @@ public static class TreemapCaptionPoliciesRecipe {
     /// &lt;summary&gt;Creates the complete source model; layout and exports use the existing Treemap owner.&lt;/summary&gt;
     public static Chart Create(string variant = &quot;caption-policies&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;caption-policies&quot; or &quot;compact-caption-policies&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
-        var chart = Chart.Create().WithLegend(false).WithDataLabels().WithTransparentBackground(false)
+        var chart = Chart.Create().Legend(false).DataLabels().TransparentBackground(false)
             .AddTreemap(&quot;Reconciliation&quot;, new[] {
                 new ChartHierarchyItem(&quot;all&quot;, &quot;International reconciliation, settlement and regional ownership — complete source caption&quot;),
                 new ChartHierarchyItem(&quot;processing&quot;, &quot;Regional processing reconciliation and settlement allocation&quot;, &quot;all&quot;, 55),
                 new ChartHierarchyItem(&quot;regional&quot;, &quot;North America processing&quot;, &quot;all&quot;, 30),
                 new ChartHierarchyItem(&quot;reserve&quot;, &quot;Reserve capacity&quot;, &quot;all&quot;, 15)
-            }).ConfigureTreemap(options =&gt; {
+            }).Treemap(options =&gt; {
                 options.MinimumLabelFontSize = 11;
                 options.LabelTrimming = ChartForgeX.Typography.TextTrimming.Ellipsis;
                 options.ShowValues = true;
             });
-        chart.Series[0].ConfigureDataLabelStyle(style =&gt; style.WithFontSize(14));
-        return chart.WithValueFormat(ChartValueFormat.Number(&quot;0&quot;, System.Globalization.CultureInfo.InvariantCulture));
+        chart.Series[0].DataLabelStyle(style =&gt; style.FontSize(14));
+        return chart.ValueFormat(ChartValueFormat.Number(&quot;0&quot;, System.Globalization.CultureInfo.InvariantCulture));
     }
 }
 </code></pre><pre data-visual-theme="dark"><code data-example-source>#region Setup
@@ -161,19 +161,19 @@ public static class TreemapCaptionPoliciesRecipe {
     /// &lt;summary&gt;Creates the complete source model; layout and exports use the existing Treemap owner.&lt;/summary&gt;
     public static Chart Create(string variant = &quot;caption-policies&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;caption-policies&quot; or &quot;compact-caption-policies&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
-        var chart = Chart.Create().WithLegend(false).WithDataLabels().WithTransparentBackground(false)
+        var chart = Chart.Create().Legend(false).DataLabels().TransparentBackground(false)
             .AddTreemap(&quot;Reconciliation&quot;, new[] {
                 new ChartHierarchyItem(&quot;all&quot;, &quot;International reconciliation, settlement and regional ownership — complete source caption&quot;),
                 new ChartHierarchyItem(&quot;processing&quot;, &quot;Regional processing reconciliation and settlement allocation&quot;, &quot;all&quot;, 55),
                 new ChartHierarchyItem(&quot;regional&quot;, &quot;North America processing&quot;, &quot;all&quot;, 30),
                 new ChartHierarchyItem(&quot;reserve&quot;, &quot;Reserve capacity&quot;, &quot;all&quot;, 15)
-            }).ConfigureTreemap(options =&gt; {
+            }).Treemap(options =&gt; {
                 options.MinimumLabelFontSize = 11;
                 options.LabelTrimming = ChartForgeX.Typography.TextTrimming.Ellipsis;
                 options.ShowValues = true;
             });
-        chart.Series[0].ConfigureDataLabelStyle(style =&gt; style.WithFontSize(14));
-        return chart.WithValueFormat(ChartValueFormat.Number(&quot;0&quot;, System.Globalization.CultureInfo.InvariantCulture));
+        chart.Series[0].DataLabelStyle(style =&gt; style.FontSize(14));
+        return chart.ValueFormat(ChartValueFormat.Number(&quot;0&quot;, System.Globalization.CultureInfo.InvariantCulture));
     }
 }
 </code></pre></section></main><footer><a href="catalog.html">Explore more examples</a><a href="fonts/OFL.txt">Font license</a></footer><script data-gallery-script>(() => {

@@ -9,10 +9,10 @@ internal static partial class SmokeTests {
     private static void DenseBarLabelsAvoidCollisions() {
         var values = Enumerable.Range(1, 14).Select(value => 40d + value).ToArray();
         var vertical = Chart.Create()
-            .WithSize(320, 220)
-            .WithDataLabels()
+            .Size(320, 220)
+            .DataLabels()
             .AddBar("Values", Points(values));
-        for (var index = 0; index < values.Length; index++) vertical.Series[0].WithPointLabel(index,
+        for (var index = 0; index < values.Length; index++) vertical.Series[0].PointLabel(index,
             "Remediation " + values[index].ToString("0", System.Globalization.CultureInfo.InvariantCulture));
         var verticalSvg = vertical.ToSvg();
         var verticalLabels = CountVisibleDataLabels(verticalSvg);
@@ -21,10 +21,10 @@ internal static partial class SmokeTests {
         ScatterBubbleColorRenderingTests.Capture(vertical.Prepare(ChartForgeX.Rendering.VisualExportRequest.ForChart(vertical).Context), "smoke-dense-authored-bars-vertical");
 
         var horizontal = Chart.Create()
-            .WithSize(320, 220)
-            .WithDataLabels()
+            .Size(320, 220)
+            .DataLabels()
             .AddHorizontalBar("Coverage", Points(values));
-        for (var index = 0; index < values.Length; index++) horizontal.Series[0].WithPointLabel(index,
+        for (var index = 0; index < values.Length; index++) horizontal.Series[0].PointLabel(index,
             "Coverage " + values[index].ToString("0", System.Globalization.CultureInfo.InvariantCulture));
         var horizontalSvg = horizontal.ToSvg();
         var horizontalLabels = CountVisibleDataLabels(horizontalSvg);
@@ -36,8 +36,8 @@ internal static partial class SmokeTests {
             .Select(value => new ChartInterval(value, 20 + value, 48 + value))
             .ToArray();
         var range = Chart.Create()
-            .WithSize(320, 220)
-            .WithDataLabels()
+            .Size(320, 220)
+            .DataLabels()
             .AddRangeBar("Ranges", intervals);
         var rangeSvg = range.ToSvg();
         var rangeLabels = CountVisibleDataLabels(rangeSvg);

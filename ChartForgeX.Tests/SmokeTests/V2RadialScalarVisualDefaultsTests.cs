@@ -34,7 +34,7 @@ public sealed class V2RadialScalarVisualDefaultsTests {
     [InlineData(ChartSeriesState.Danger)]
     public void GaugeBandsReserveAttentionForWarningsAndDangersWhileExplicitStateAndPaintWin(ChartSeriesState state) {
         var context = new VisualRenderContext(); var colors = context.Theme.Resolve(context.ThemeMode);
-        var chart = Chart.Create().AddGauge("Declared bands", 40).ConfigureGauge(options => options.Bands.Add(new ChartGaugeBand(0, 100, state)));
+        var chart = Chart.Create().AddGauge("Declared bands", 40).Gauge(options => options.Bands.Add(new ChartGaugeBand(0, 100, state)));
         var scene = Compile(chart, context);
         // Bands carry the status; the value arc stays the measurement unless the series itself declares a state (design rule 10).
         var expected = colors.Palette[0];
@@ -43,7 +43,7 @@ public sealed class V2RadialScalarVisualDefaultsTests {
             - Assert.Single(scene.Nodes.OfType<VisualSceneSlice>(), mark => mark.Role == "gauge-band").Inner, 8);
         chart.Series[0].StateRole = ChartSeriesState.Info;
         Assert.Equal(colors.Status.Info.Fill, Assert.Single(Compile(chart, context).Nodes.OfType<VisualSceneSlice>(), mark => mark.Role == "gauge-value").Fill);
-        var authored = ChartColor.FromHex("#123456"); chart.Series[0].WithPointColor(0, authored);
+        var authored = ChartColor.FromHex("#123456"); chart.Series[0].PointColor(0, authored);
         Assert.Equal(authored, Assert.Single(Compile(chart, context).Nodes.OfType<VisualSceneSlice>(), mark => mark.Role == "gauge-value").Fill);
     }
 
@@ -56,7 +56,7 @@ public sealed class V2RadialScalarVisualDefaultsTests {
         var path = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(path), "The gallery's Carlito fixture must be available.");
         var chart = Chart.Create().AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Capacity",
-            new ChartGaugeValue(76, targets: new[] { new ChartGaugeTarget(85) }))).ConfigureGauge(options => {
+            new ChartGaugeValue(76, targets: new[] { new ChartGaugeTarget(85) }))).Gauge(options => {
             options.Form = form; options.Caption = "Available capacity";
             options.Bands.Add(new ChartGaugeBand(0, 50, ChartSeriesState.Danger));
             options.Bands.Add(new ChartGaugeBand(50, 80, ChartSeriesState.Warning));
@@ -124,16 +124,16 @@ public sealed class V2RadialScalarVisualDefaultsTests {
                 targets[index].Baseline - targets[index].Text.Ascent + targets[index].Text.Metrics.Height / 2, 8);
             Assert.True(targets[index].X >= values[index].X + values[index].Text.Metrics.Width);
         }
-        chart.Series[0].WithPointColor(0, ChartColor.FromHex("#123456"));
+        chart.Series[0].PointColor(0, ChartColor.FromHex("#123456"));
         Assert.Equal(ChartColor.FromHex("#123456"), Compile(chart, context).Nodes.OfType<VisualSceneRectangle>().First(mark => mark.Role == "bullet-value").Fill);
     }
 
     [Fact]
     public void DonutDescendingLayoutAndNumericLegendKeepAuthoredSourceIdentityAndPaint() {
         var points = new[] { new ChartPoint(1, 20), new ChartPoint(2, 200), new ChartPoint(3, 80) };
-        var chart = Chart.Create().AddDonut("Findings", points).WithXLabels("Small", "Largest", "Middle");
+        var chart = Chart.Create().AddDonut("Findings", points).XLabels("Small", "Largest", "Middle");
         chart.Options.ValueFormatter = value => value.ToString("0", CultureInfo.InvariantCulture) + " units";
-        var authored = ChartColor.FromHex("#123456"); chart.Series[0].WithPointColor(0, authored).WithPointSliceOffset(0, .1);
+        var authored = ChartColor.FromHex("#123456"); chart.Series[0].PointColor(0, authored).PointSliceOffset(0, .1);
         var context = new VisualRenderContext(); var colors = context.Theme.Resolve(context.ThemeMode);
         var scene = Compile(chart, context);
         var marks = scene.Nodes.OfType<VisualSceneSlice>().Where(mark => mark.Role == "donut-slice").ToArray();

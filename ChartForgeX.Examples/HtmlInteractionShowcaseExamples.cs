@@ -56,27 +56,27 @@ public static class HtmlInteractionShowcaseExamples {
         """;
 
     internal static Chart CreateChart(ChartSeriesKind kind, bool dark) {
-        var chart = Chart.Create().WithSize(800, 440)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithLegend().WithDataLabels(false);
+        var chart = Chart.Create().Size(800, 440)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Legend().DataLabels(false);
         switch (kind) {
             case ChartSeriesKind.Line:
-                return chart.WithTitle("Response time by service").WithSubtitle("Median milliseconds per hour; double-click a line to isolate it")
+                return chart.Title("Response time by service").Subtitle("Median milliseconds per hour; double-click a line to isolate it")
                     .AddLine("API", Hours(index => 120 + 30 * Math.Sin(index / 3.0) + index * 2))
                     .AddLine("Web", Hours(index => 180 + 25 * Math.Cos(index / 4.0) + index))
                     .AddLine("Batch", Hours(index => 260 - index * 3 + 20 * Math.Sin(index / 2.0)));
             case ChartSeriesKind.Area:
-                return chart.WithTitle("Storage in use").WithSubtitle("Terabytes per day; toggle a series to rescale")
+                return chart.Title("Storage in use").Subtitle("Terabytes per day; toggle a series to rescale")
                     .AddArea("Primary", Hours(index => 40 + index * 1.5 + 4 * Math.Sin(index / 2.0)))
                     .AddArea("Replica", Hours(index => 22 + index * .8 + 3 * Math.Cos(index / 3.0)));
             case ChartSeriesKind.Scatter:
-                return chart.WithTitle("Request size and latency").WithSubtitle("Each point is one sampled request")
-                    .WithXAxisBounds(0, 100).WithYAxisBounds(0, 500)
+                return chart.Title("Request size and latency").Subtitle("Each point is one sampled request")
+                    .XAxis(x => x.Bounds(0, 100)).YAxis(y => y.Bounds(0, 500))
                     .AddScatter("Cached", Samples(17, 0, 40))
                     .AddScatter("Uncached", Samples(29, 120, 60));
             case ChartSeriesKind.Bar:
-                return chart.WithTitle("Requests by weekday").WithSubtitle("Thousands of requests; brush or zoom to compare days")
-                    .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+                return chart.Title("Requests by weekday").Subtitle("Thousands of requests; brush or zoom to compare days")
+                    .XLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
                     .AddBar("Search", Week(42, 48, 51, 47, 55, 31, 27))
                     .AddBar("Checkout", Week(18, 21, 24, 22, 29, 15, 12));
             case ChartSeriesKind.Candlestick:
@@ -88,8 +88,8 @@ public static class HtmlInteractionShowcaseExamples {
                     price = close;
                     return new ChartCandlestick(day, Math.Round(open, 2), Math.Round(high, 2), Math.Round(low, 2), Math.Round(close, 2));
                 }).ToArray();
-                return chart.WithTitle("Share price, last 30 sessions").WithSubtitle("Open, high, low and close; zoom to a week")
-                    .WithYAxisBounds(100, 145)
+                return chart.Title("Share price, last 30 sessions").Subtitle("Open, high, low and close; zoom to a week")
+                    .YAxis(y => y.Bounds(100, 145))
                     .AddSeries(ChartSeries.CreateCandlestick(new ChartSeriesId("price"), "Price", candles))
                     .AddLine("Moving average", candles.Select((candle, index) => new ChartPoint(candle.X,
                         Math.Round(candles.Skip(Math.Max(0, index - 4)).Take(Math.Min(5, index + 1)).Average(item => item.Close), 2))));

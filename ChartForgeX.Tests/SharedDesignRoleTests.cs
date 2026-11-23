@@ -7,6 +7,7 @@ using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 using Xunit;
 using Xunit.Abstractions;
+using ChartForgeX.VisualBlocks;
 
 namespace ChartForgeX.Tests;
 
@@ -46,13 +47,13 @@ public sealed class SharedDesignRoleTests {
         Assert.Equal(gray, colors.Other.ToHex());
         Assert.DoesNotContain(colors.Other, colors.Palette);
         foreach (var preserve in new[] { false, true }) {
-            var chart = Chart.Create().WithThemeMode(mode).AddPie("Share", Enumerable.Range(0, 9).Select(i => new ChartPoint(i, 9 - i)));
-            chart.Options.PiePreserveSourceOrder = preserve;
+            var chart = Chart.Create().ThemeMode(mode).AddPie("Share", Enumerable.Range(0, 9).Select(i => new ChartPoint(i, 9 - i)));
+            chart.Options.Pie.PreserveSourceOrder = preserve;
             var prepared = chart.Prepare(new VisualRenderContext(theme: chart.Options.Theme, themeMode: mode));
             var legend = prepared.Regions.Where(region => region.Role == "legend").Select(region => region.Label).ToArray();
-            Assert.Equal(chart.Options.MaximumPieSlices, legend.Length);
+            Assert.Equal(chart.Options.Pie.MaxSlices, legend.Length);
             Assert.StartsWith("Other", legend[legend.Length - 1]);
-            var svg = chart.WithSvgColorVariables(SvgColorVariables.SharedRoles(mode: mode)).ToSvg();
+            var svg = chart.SvgColorVariables(SvgColorVariables.SharedRoles(mode: mode)).ToSvg();
             var fill = XDocument.Parse(svg).Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "pie-slice"
                 && (string?)e.Attribute("data-cfx-source-id") == "series-0-point-other").Attribute("fill")!.Value;
             Assert.Contains("var(--hfx-color-chart-other,", fill, StringComparison.Ordinal);
@@ -88,7 +89,7 @@ public sealed class SharedDesignRoleTests {
 
     [Fact]
     public void SharedRoles_WriteHfxPropertiesWithTheThemeAsFallback_AndFontsInheritThePage() {
-        var chart = Chart.Create().AddBar("A", Points(3, 5)).AddBar("B", Points(4, 2)).WithTitle("Roles");
+        var chart = Chart.Create().AddBar("A", Points(3, 5)).AddBar("B", Points(4, 2)).Title("Roles");
         var svg = chart.Prepare(new VisualRenderContext()).ToSvg(new VisualSvgOptions("roles").WithSharedDesignRoles());
         Assert.Contains("var(--hfx-color-chart-series-1, #2A78D6)", svg, StringComparison.Ordinal);
         Assert.Contains("var(--hfx-color-chart-series-2, #0F9F8C)", svg, StringComparison.Ordinal);
@@ -97,7 +98,7 @@ public sealed class SharedDesignRoleTests {
         Assert.DoesNotContain("font-size=\"inherit\"", svg, StringComparison.Ordinal);
         Assert.Contains("font-size=", svg, StringComparison.Ordinal);
         // A page that defines nothing: PNG and the literal SVG are unchanged by the opt-in.
-        Assert.Equal(chart.ToPng(), chart.WithSvgColorVariables(SvgColorVariables.SharedRoles()).ToPng());
+        Assert.Equal(chart.ToPng(), chart.SvgColorVariables(SvgColorVariables.SharedRoles()).ToPng());
     }
 
     [Fact]
@@ -106,8 +107,8 @@ public sealed class SharedDesignRoleTests {
         var tokens = VisualDesignTokens.GraphiteLight();
         tokens.Palette = new[] { twin, ChartColor.FromHex("#0F9F8C"), twin };
         var theme = new VisualTheme(tokens, tokens);
-        var chart = Chart.Create().WithTheme(theme).AddBar("One", Points(1, 2)).AddBar("Two", Points(2, 3)).AddBar("Three", Points(3, 4))
-            .WithSvgColorVariables(SvgColorVariables.SharedRoles(theme));
+        var chart = Chart.Create().Theme(theme).AddBar("One", Points(1, 2)).AddBar("Two", Points(2, 3)).AddBar("Three", Points(3, 4))
+            .SvgColorVariables(SvgColorVariables.SharedRoles(theme));
         // Bars and legend swatches draw series in order; by colour alone the third would name slot 1.
         var fills = XDocument.Parse(chart.ToSvg()).Descendants().Where(e => (string?)e.Attribute("data-cfx-role") is "bar" or "legend-swatch")
             .Select(e => (string)e.Attribute("fill")!).ToArray();
@@ -117,7 +118,7 @@ public sealed class SharedDesignRoleTests {
         Assert.Equal(fills.Count(fill => fill.Contains("series-1,", StringComparison.Ordinal)), fills.Count(fill => fill.Contains("series-3,", StringComparison.Ordinal)));
         // A caller can use a ramp step as a series colour without losing the series role.
         var rampTheme = VisualTheme.Graphite().WithPalette(VisualTheme.Graphite().Resolve(ThemeMode.Light).SequentialRamp[2]);
-        var graphite = Chart.Create().WithTheme(rampTheme).AddBar("A", Points(1, 2)).WithSvgColorVariables(SvgColorVariables.SharedRoles(rampTheme)).ToSvg();
+        var graphite = Chart.Create().Theme(rampTheme).AddBar("A", Points(1, 2)).SvgColorVariables(SvgColorVariables.SharedRoles(rampTheme)).ToSvg();
         Assert.Contains("var(--hfx-color-chart-series-1, " + rampTheme.Resolve(ThemeMode.Light).Palette[0].ToHex() + ")", graphite, StringComparison.Ordinal);
         Assert.DoesNotContain("--hfx-ramp-sequential-3", graphite, StringComparison.Ordinal);
     }
@@ -159,7 +160,7 @@ public sealed class SharedDesignRoleTests {
         var theme = VisualTheme.Graphite();
         var variables = SvgColorVariables.SharedRoles(theme, mode);
         if (family == "topology")
-            return TopologyChart.Create().WithId("roles").WithViewport(640, 360).WithTheme(theme, mode)
+            return TopologyChart.Create().Id("roles").Viewport(new TopologyViewport(640, 360)).Theme(theme, mode)
                 .AddAutoGroup("waw", "Warsaw", TopologyHealthStatus.Healthy)
                 .AddAutoNode("dc1", "DC01", TopologyNodeKind.Server, TopologyHealthStatus.Healthy, groupId: "waw")
                 .AddAutoNode("dc2", "DC02", TopologyNodeKind.Server, TopologyHealthStatus.Warning, groupId: "waw")
@@ -170,23 +171,23 @@ public sealed class SharedDesignRoleTests {
             return new Sparkline(SparklineData.FromValues(new[] { 1d, 3, 2, 5, 4 })).Prepare(new VisualRenderContext(theme: theme, themeMode: mode))
                 .ToSvg(new VisualSvgOptions("roles").WithSharedDesignRoles(theme, mode));
         if (family == "venn")
-            return ChartForgeX.VisualBlocks.VennDiagramBlock.Create().WithTheme(theme, mode).AddSet("A", "Alpha", 60).AddSet("B", "Beta", 50)
-                .AddIntersection(new[] { "A", "B" }, "Both", 10).WithSvgColorVariables(variables).ToSvg();
+            return ChartForgeX.VisualBlocks.VennDiagramBlock.Create().Theme(theme).ThemeMode(mode).AddSet("A", "Alpha", 60).AddSet("B", "Beta", 50)
+                .AddIntersection(new[] { "A", "B" }, "Both", 10).SvgColorVariables(variables).ToSvg();
         if (family == "git-graph")
-            return ChartForgeX.VisualBlocks.GitGraphBlock.Create().WithTheme(theme, mode).AddBranch("main").AddCommit("base", "main", tag: "v1")
-                .WithSvgColorVariables(variables).ToSvg();
-        return Build(family, mode).WithTheme(theme).WithThemeMode(mode).WithSvgColorVariables(variables).ToSvg();
+            return ChartForgeX.VisualBlocks.GitGraphBlock.Create().Theme(theme).ThemeMode(mode).AddBranch("main").AddCommit("base", "main", tag: "v1")
+                .SvgColorVariables(variables).ToSvg();
+        return Build(family, mode).Theme(theme).ThemeMode(mode).SvgColorVariables(variables).ToSvg();
     }
 
     private static Chart Build(string family, ThemeMode mode) {
         var start = new DateTime(2026, 9, 1);
-        var chart = Chart.Create().WithSize(640, 360).WithTitle("Roles");
+        var chart = Chart.Create().Size(640, 360).Title("Roles");
         switch (family) {
             case "line": return chart.AddLine("A", Points(1, 3, 2)).AddLine("B", Points(2, 1, 3));
             case "area": return chart.AddArea("A", Points(1, 3, 2)).AddArea("B", Points(2, 1, 3));
             case "stacked-area": return chart.AddStackedArea("A", Points(1, 3, 2)).AddStackedArea("B", Points(2, 1, 3));
             case "bars": return chart.AddBar("A", Points(3, 5)).AddBar("B", Points(4, 2));
-            case "stacked-bars": return chart.AddBar("A", Points(3, 5)).AddBar("B", Points(4, 2)).AddBar("C", Points(1, 2)).WithStackedBars();
+            case "stacked-bars": return chart.AddBar("A", Points(3, 5)).AddBar("B", Points(4, 2)).AddBar("C", Points(1, 2)).Bars(b => b.Stacked());
             case "scatter": return chart.AddScatter("A", Points(1, 3, 2)).AddScatter("B", Points(2, 1, 3));
             case "waterfall": return chart.AddWaterfall("Bridge", Points(10, -3, 5, -2));
             case "box-plot": return chart.AddBoxPlot("Latency", 1, new[] { 1d, 2, 3, 4, 5, 9 });
@@ -205,14 +206,14 @@ public sealed class SharedDesignRoleTests {
             case "tree": return chart.AddTree("Org", new[] { new ChartNode("a", "A"), new ChartNode("b", "B"), new ChartNode("c", "C") }, new[] { new ChartTreeLink("a", "b"), new ChartTreeLink("a", "c") });
             case "sankey": return chart.AddSankey("Flow", new[] { new ChartNode("a", "A"), new ChartNode("b", "B"), new ChartNode("c", "C") }, new[] { new ChartFlowLink("l1", "a", "b", 5), new ChartFlowLink("l2", "c", "b", 2) });
             case "chord": return chart.AddChord("Flow", new[] { new ChartNode("a", "A"), new ChartNode("b", "B"), new ChartNode("c", "C") }, new[] { new ChartFlowLink("l1", "a", "b", 5), new ChartFlowLink("l2", "c", "b", 2) });
-            case "funnel": return chart.WithXLabels("A", "B", "C").AddFunnel("Steps", Points(100, 70, 40));
-            case "pyramid": return chart.WithXLabels("A", "B", "C").AddPyramid("Steps", Points(100, 70, 40));
+            case "funnel": return chart.XLabels("A", "B", "C").AddFunnel("Steps", Points(100, 70, 40));
+            case "pyramid": return chart.XLabels("A", "B", "C").AddPyramid("Steps", Points(100, 70, 40));
             case "word-cloud": return chart.AddWordCloud("Words", new[] { new ChartWordCloudItem("charts", 9), new ChartWordCloudItem("tokens", 5), new ChartWordCloudItem("roles", 3) });
-            case "heatmap": return chart.WithXLabels("A", "B", "C").AddHeatmapRow("R1", new[] { 0d, 3, 7 }).AddHeatmapRow("R2", new[] { 5d, 1, 2 });
+            case "heatmap": return chart.XLabels("A", "B", "C").AddHeatmapRow("R1", new[] { 0d, 3, 7 }).AddHeatmapRow("R2", new[] { 5d, 1, 2 });
             case "calendar": return chart.AddCalendarHeatmap("Days", Enumerable.Range(0, 40).Select(i => new ChartCalendarHeatmapItem(start.AddDays(i), i % 5)).ToArray());
             case "state-timeline":
                 var states = VisualTheme.Graphite().Resolve(mode).Status.OperationalStateCategories().ToArray();
-                return chart.WithStateCategories(states).AddStateTimelineLane("DC01", new[] {
+                return chart.StateCategories(states).AddStateTimelineLane("DC01", new[] {
                     new ChartStateTimelineSegment(start, start.AddHours(6), "up"), new ChartStateTimelineSegment(start.AddHours(6), start.AddHours(8), "down") });
             case "gantt": return chart.AddGanttTask("Build", start, start.AddDays(3), 0.5).AddGanttTask("Ship", start.AddDays(3), start.AddDays(5));
             case "timeline": return chart.AddTimelineItem("Preview", start, start.AddDays(10)).AddTimelineItem("GA", start.AddDays(10), start.AddDays(30));

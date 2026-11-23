@@ -7,7 +7,7 @@ namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
     private static void WaterfallHonorsAxesVisibility() {
-        var compact = WaterfallSample().WithAxes(false);
+        var compact = WaterfallSample().Axes(false);
         var compactScene = compact.Prepare(VisualExportRequest.ForChart(compact).Context).Scene;
         Assert(compactScene.Nodes.Count(node => node.Role == "waterfall-bar") == 5, "Disabling axes must preserve every waterfall step and its derived total.");
         Assert(!compactScene.Nodes.Any(node => node.Role?.StartsWith("axis-", System.StringComparison.Ordinal) == true), "Disabling axes must suppress both value and category axes.");
@@ -20,7 +20,7 @@ internal static partial class SmokeTests {
         Assert(fullScene.Regions.Any(region => region.Role == "axis-x-label" && region.Label?.StartsWith("Total", System.StringComparison.Ordinal) == true), "The derived total must keep its category label.");
 
         foreach (var hideX in new[] { false, true }) {
-            var chart = WaterfallSample().WithLegend(false).ConfigureTickLabelStyle(style => style.WithColor("#00FFFF"));
+            var chart = WaterfallSample().Legend(false).TickLabelStyle(style => style.Color(ChartColor.FromHex("#00FFFF")));
             chart.Options.XAxis.Visible = !hideX;
             chart.Options.YAxis.Visible = hideX;
             var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -36,19 +36,19 @@ internal static partial class SmokeTests {
         var ticks = independentTicks.Prepare(VisualExportRequest.ForChart(independentTicks).Context).Scene;
         Assert(ticks.Nodes.Count(node => node.Role == "axis-y-label") > 2, "Value ticks must honor their own density independently of categorical ticks.");
 
-        var cramped = Chart.Create().WithSize(420, 220).WithLegend(false).WithDataLabels()
-            .WithDataLabelPlacement(ChartDataLabelPlacement.Inside)
-            .ConfigureDataLabelStyle(style => style.WithColor("#FF00FF").WithFontSize(72))
+        var cramped = Chart.Create().Size(420, 220).Legend(false).DataLabels()
+            .DataLabels(d => d.Placement(ChartDataLabelPlacement.Inside))
+            .DataLabelStyle(style => style.Color(ChartColor.FromHex("#FF00FF")).FontSize(72))
             .AddWaterfall("Delta", Points(.01, 100, -25));
         cramped.Options.YAxis.Visible = false;
         var withLabels = cramped.Prepare(VisualExportRequest.ForChart(cramped).Context).Scene;
-        var withoutLabels = cramped.WithDataLabels(false).Prepare(VisualExportRequest.ForChart(cramped).Context).Scene;
+        var withoutLabels = cramped.DataLabels(false).Prepare(VisualExportRequest.ForChart(cramped).Context).Scene;
         string[] Categories(VisualScene scene) => scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "axis-x-label")
             .SelectMany(node => node.Text.Lines.Select(line => line.Text)).ToArray();
         Assert(Categories(withLabels).SequenceEqual(Categories(withoutLabels)), "An oversized inside data label must not suppress an independent category label.");
     }
 
-    private static Chart WaterfallSample() => Chart.Create().WithSize(560, 320).WithXAxis("Stage")
+    private static Chart WaterfallSample() => Chart.Create().Size(560, 320).XAxis(x => x.Title("Stage"))
         .AddWaterfall("Delta", Points(18, -42, -12, 9));
 
     private static void WaterfallAutomaticLabelsFollowMappedValueEnds() {
@@ -56,8 +56,8 @@ internal static partial class SmokeTests {
         foreach (var reversed in new[] { false, true })
         foreach (var sign in new[] { 1, -1 }) {
             var chart = WaterfallLabelSample(640, false).AddWaterfall("Delta", Points(40 * sign, -20 * sign), ChartColor.FromHex("#172554"));
-            if (secondary) chart.Series[0].UseSecondaryValueAxis();
-            (secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis).WithBounds(-100, 100).WithReversal(reversed);
+            if (secondary) chart.Series[0].SecondaryAxis();
+            (secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis).Bounds(-100, 100).Reversed(reversed);
             var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
             var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label").ToArray();
             Assert(labels.Length == 3, "Every Waterfall delta and derived total must retain its data label.");
@@ -80,11 +80,11 @@ internal static partial class SmokeTests {
         foreach (var paint in new[] { "status", "series", "point" }) {
             // Pin the controlled Carlito pixel fixture at 12px; responsive Archivo sizes are checked separately.
             // Automatic captions take a reserved lane outside full-height levels; this checks the contained ink.
-            var chart = WaterfallLabelSample(180, dark).WithPngFont(font).WithBarStyle(style).WithDataLabelPlacement(ChartDataLabelPlacement.Inside)
-                .ConfigureDataLabelStyle(label => label.WithFontSize(12))
+            var chart = WaterfallLabelSample(180, dark).Png(p => p.FontPath(font)).Bars(b => b.Style(style)).DataLabels(d => d.Placement(ChartDataLabelPlacement.Inside))
+                .DataLabelStyle(label => label.FontSize(12))
                 .AddWaterfall("Delta", Points(100), paint == "series" ? ChartColor.FromHex("#172554") : null);
-            if (paint == "point") chart.Series[0].WithPointColor(0, ChartColor.FromHex("#172554"));
-            chart.Options.YAxis.WithBounds(0, 100).WithReversal();
+            if (paint == "point") chart.Series[0].PointColor(0, ChartColor.FromHex("#172554"));
+            chart.Options.YAxis.Bounds(0, 100).Reversed();
             var context = VisualExportRequest.ForChart(chart).Context;
             var prepared = chart.Prepare(context);
             var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label").ToArray();
@@ -129,20 +129,20 @@ internal static partial class SmokeTests {
         }
 
         foreach (var level in new[] { "chart", "series", "point" }) {
-            var chart = WaterfallLabelSample(180, false).WithPngFont(font).WithDataLabelPlacement(ChartDataLabelPlacement.Inside).AddWaterfall("Delta", Points(100), ChartColor.FromHex("#172554"));
-            chart.Options.YAxis.WithBounds(0, 100).WithReversal();
-            if (level == "chart") chart.ConfigureDataLabelStyle(style => style.WithColor("#FFFF00"));
-            else if (level == "series") chart.Series[0].ConfigureDataLabelStyle(style => style.WithColor("#FFFF00"));
-            else chart.Series[0].ConfigurePointDataLabelStyle(0, style => style.WithColor("#FFFF00"));
+            var chart = WaterfallLabelSample(180, false).Png(p => p.FontPath(font)).DataLabels(d => d.Placement(ChartDataLabelPlacement.Inside)).AddWaterfall("Delta", Points(100), ChartColor.FromHex("#172554"));
+            chart.Options.YAxis.Bounds(0, 100).Reversed();
+            if (level == "chart") chart.DataLabelStyle(style => style.Color(ChartColor.FromHex("#FFFF00")));
+            else if (level == "series") chart.Series[0].DataLabelStyle(style => style.Color(ChartColor.FromHex("#FFFF00")));
+            else chart.Series[0].PointDataLabelStyle(0, style => style.Color(ChartColor.FromHex("#FFFF00")));
             var labels = chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label").ToArray();
             Assert(labels[0].Color.Equals(ChartColor.FromHex("#FFFF00")), "Chart, series, and point authored label ink must remain authoritative inside Waterfall marks.");
             Assert(labels[1].Color.Equals(level == "point" ? ChartColor.White : ChartColor.FromHex("#FFFF00")), "A source point ink override must not spill into the independently derived total.");
         }
     }
 
-    private static Chart WaterfallLabelSample(int width, bool dark) => Chart.Create().WithSize(width, width == 180 ? 180 : 360)
-        .WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false).WithDataLabels().WithBarStyle(ChartBarStyle.Flat)
-        .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+    private static Chart WaterfallLabelSample(int width, bool dark) => Chart.Create().Size(width, width == 180 ? 180 : 360)
+        .ShowHeader(false).Legend(false).Axes(false).ShowGrid(false).DataLabels().Bars(b => b.Style(ChartBarStyle.Flat))
+        .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
 
     private static ChartRect WaterfallLabelBounds(VisualSceneText text) =>
         new(text.LineLeft(text.Text.Lines[0]), text.Baseline - text.Text.Ascent, text.Text.Metrics.Width, text.Text.Metrics.Height);

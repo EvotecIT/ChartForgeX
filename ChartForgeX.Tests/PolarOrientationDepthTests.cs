@@ -10,12 +10,12 @@ public sealed class PolarOrientationDepthTests {
     [Theory]
     [InlineData(false, false)] [InlineData(false, true)] [InlineData(true, false)] [InlineData(true, true)]
     public void RadarAndPolarMarksAndSpokesRotateTogetherWithoutChangingSourceFacts(bool radar, bool reverse) {
-        var chart = Chart.Create().WithSize(600, 420).WithHeader(false).WithLegend(false).WithDataLabels(false).WithAxes(false).WithYAxisBounds(0, 100);
+        var chart = Chart.Create().Size(600, 420).ShowHeader(false).Legend(false).DataLabels(false).Axes(false).YAxis(y => y.Bounds(0, 100));
         var points = Enumerable.Range(0, 4).Select(index => new ChartPoint(radar ? index + 1 : index * Math.PI / 2, 80)).ToArray();
         if (radar) chart.AddRadarLine("Signal", points); else chart.AddPolar("Signal", points);
         chart.Options.XAxis.Reversed = reverse;
         var before = PolarDepthContractTests.Prepare(chart); var old = Centres(before); var cx = old.Average(point => point.X); var cy = old.Average(point => point.Y);
-        chart.Options.PolarRotationDegrees = 90; var after = PolarDepthContractTests.Prepare(chart); var rotated = Centres(after);
+        chart.Options.Polar.RotationDegrees = 90; var after = PolarDepthContractTests.Prepare(chart); var rotated = Centres(after);
         for (var index = 0; index < old.Length; index++) {
             Assert.Equal(cx - (old[index].Y - cy), rotated[index].X, 7); Assert.Equal(cy + (old[index].X - cx), rotated[index].Y, 7);
         }
@@ -29,9 +29,9 @@ public sealed class PolarOrientationDepthTests {
 
     [Fact]
     public void PolarAreaSlotsUseTheSameRotationWhileAllRawValuesRemainExact() {
-        var chart = Chart.Create().WithHeader(false).WithLegend(false).WithDataLabels(false)
+        var chart = Chart.Create().ShowHeader(false).Legend(false).DataLabels(false)
             .AddPolarArea("Parts", new[] { new ChartPoint(1, 20), new ChartPoint(2, 0), new ChartPoint(3, 80) });
-        var before = PolarDepthContractTests.Prepare(chart); chart.Options.PolarRotationDegrees = 90;
+        var before = PolarDepthContractTests.Prepare(chart); chart.Options.Polar.RotationDegrees = 90;
         var after = PolarDepthContractTests.Prepare(chart);
         var old = before.Scene.Nodes.OfType<VisualSceneSlice>().ToArray(); var actual = after.Scene.Nodes.OfType<VisualSceneSlice>().ToArray();
         Assert.Equal(3, actual.Length);
@@ -42,16 +42,16 @@ public sealed class PolarOrientationDepthTests {
     [Fact]
     public void FiniteRotationRetainsAuthoredDegreesAndRejectsForeignPhysicalOwners() {
         var chart = PolarDepthContractTests.Fixture();
-        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.PolarRotationDegrees = double.NaN);
-        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.PolarRotationDegrees = double.PositiveInfinity);
-        chart.Options.PolarRotationDegrees = 450; var fullTurn = PolarDepthContractTests.Prepare(chart);
-        Assert.Equal(450, chart.Options.PolarRotationDegrees); chart.Options.PolarRotationDegrees = 90;
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.Polar.RotationDegrees = double.NaN);
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.Polar.RotationDegrees = double.PositiveInfinity);
+        chart.Options.Polar.RotationDegrees = 450; var fullTurn = PolarDepthContractTests.Prepare(chart);
+        Assert.Equal(450, chart.Options.Polar.RotationDegrees); chart.Options.Polar.RotationDegrees = 90;
         Assert.Equal(fullTurn.ToPng(), PolarDepthContractTests.Prepare(chart).ToPng());
-        var foreign = Chart.Create().AddLine("Signal", new[] { new ChartPoint(1, 1), new ChartPoint(2, 2) }); foreign.Options.PolarRotationDegrees = 90;
+        var foreign = Chart.Create().AddLine("Signal", new[] { new ChartPoint(1, 1), new ChartPoint(2, 2) }); foreign.Options.Polar.RotationDegrees = 90;
         Assert.Throws<NotSupportedException>(() => PolarDepthContractTests.Prepare(foreign));
         var mixed = Chart.Create().AddRadialColumn("Counts", new[] { new ChartPoint(1, 1), new ChartPoint(2, 2), new ChartPoint(3, 3) })
             .AddRadarLine("Target", new[] { new ChartPoint(1, 1), new ChartPoint(2, 2), new ChartPoint(3, 3) });
-        mixed.Options.PolarRotationDegrees = 90; Assert.Throws<NotSupportedException>(() => PolarDepthContractTests.Prepare(mixed));
+        mixed.Options.Polar.RotationDegrees = 90; Assert.Throws<NotSupportedException>(() => PolarDepthContractTests.Prepare(mixed));
     }
 
     private static ChartPoint[] Centres(PreparedVisual prepared) => prepared.Regions.Where(region => region.Role is "radar-point" or "polar-point")

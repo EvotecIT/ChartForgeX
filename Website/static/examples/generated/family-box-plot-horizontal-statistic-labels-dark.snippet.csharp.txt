@@ -34,22 +34,22 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 
 static class BoxPlotRecipe {
     internal static Chart StatisticLabels(ThemeMode mode) {
-        var chart = Chart.Create().WithTitle("Five-number delivery summaries").WithXLabels("Standard", "Express")
+        var chart = Chart.Create().Title("Five-number delivery summaries").XLabels("Standard", "Express")
             .AddSeries(ChartSeries.CreateBoxPlot(new ChartSeriesId("delivery"), "Delivery time", new[] {
                 new ChartBoxPlot(1, 10, 20, 30, 40, 50), new ChartBoxPlot(2, 5, 15, 25, 35, 45)
-            }).WithPointLabel(0, "Standard delivery summary"))
-            .ConfigureBoxPlot(options => {
+            }).PointLabel(0, "Standard delivery summary"))
+            .BoxPlot(options => {
                 options.Orientation = ChartOrientation.Horizontal;
                 options.LabelContent = ChartBoxPlotLabelContent.Statistics;
                 foreach (var label in new[] { options.MinimumLabel, options.Q1Label, options.MedianLabel, options.Q3Label, options.MaximumLabel }) {
                     label.Placement = ChartDataLabelPlacement.Above;
-                    label.Style.WithFontSize(10);
+                    label.Style.FontSize(10);
                 }
-                options.MinimumLabel.Style.WithColor(mode == ThemeMode.Dark ? "#82b8ff" : "#235b9f");
-                options.MaximumLabel.Style.WithColor(mode == ThemeMode.Dark ? "#ffbe79" : "#975000");
-                options.MedianLabel.Style.WithFontSize(12).WithWeight("700");
-            }).WithDataLabels();
-        chart.Options.XAxis.WithBounds(0, 60);
-        return chart.WithXAxis("Delivery time (minutes)").WithYAxis("Service");
+                options.MinimumLabel.Style.Color(ChartColor.FromHex(mode == ThemeMode.Dark ? "#82b8ff" : "#235b9f"));
+                options.MaximumLabel.Style.Color(ChartColor.FromHex(mode == ThemeMode.Dark ? "#ffbe79" : "#975000"));
+                options.MedianLabel.Style.FontSize(12).FontWeight("700");
+            }).DataLabels();
+        chart.Options.XAxis.Bounds(0, 60);
+        return chart.XAxis(x => x.Title("Delivery time (minutes)")).YAxis(y => y.Title("Service"));
     }
 }

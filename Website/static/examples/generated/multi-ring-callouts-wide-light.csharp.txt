@@ -34,19 +34,19 @@ public static class MultiRingCalloutsRecipe {
         if (variant is not ("wide" or "compact" or "automatic" or "compact-automatic" or "vertical" or "compact-vertical" or "mixed" or "compact-mixed"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant.StartsWith("compact", StringComparison.Ordinal);
-        var chart = Chart.Create().WithSize(compact ? 390 : 900, compact ? 580 : 560)
-            .WithTitle("Service intake across two periods").WithSubtitle("Caption leaders retain their own ring and observation")
-            .WithTheme(VisualTheme.Graphite(), mode).WithXLabels("Consulting", "Subscriptions")
-            .WithDataLabels().WithDonutCenterLabel(false).WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent);
+        var chart = Chart.Create().Size(compact ? 390 : 900, compact ? 580 : 560)
+            .Title("Service intake across two periods").Subtitle("Caption leaders retain their own ring and observation")
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).XLabels("Consulting", "Subscriptions")
+            .DataLabels().Pie(p => p.ShowCenterLabel(false).SliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent));
         var automatic = variant.EndsWith("automatic", StringComparison.Ordinal);
-        if (automatic) chart.WithAutomaticRadialBands(new ChartRadialBandAllocation(.18, .14));
+        if (automatic) chart.RadialBandAllocation(new ChartRadialBandAllocation(.18, .14));
         for (var index = 0; index < 2; index++) {
             var values = index == 0 ? new[] { 60d, 30 } : new[] { 40d, 80 };
             var series = new ChartSeries(new ChartSeriesId(index == 0 ? "prior" : "current"), index == 0 ? "Prior period" : "Current period", ChartSeriesKind.Donut,
                 values.Select((value, category) => new ChartPoint(category + 1, value)))
-                .WithObservationIds(new[] { new ChartObservationId("consulting"), new ChartObservationId("subscriptions") })
-                .WithPointSliceOffset(index, index == 0 ? .16 : .1);
-            if (!automatic) series.WithRadialBand(index == 0 ? new ChartRadialBand(.18, .48) : new ChartRadialBand(.62, 1));
+                .ObservationIds(new[] { new ChartObservationId("consulting"), new ChartObservationId("subscriptions") })
+                .PointSliceOffset(index, index == 0 ? .16 : .1);
+            if (!automatic) series.RadialBand(index == 0 ? new ChartRadialBand(.18, .48) : new ChartRadialBand(.62, 1));
             series.DataLabelPlacement = variant.EndsWith("vertical", StringComparison.Ordinal) ? ChartDataLabelPlacement.Above
                 : variant.EndsWith("mixed", StringComparison.Ordinal) && index == 1 ? ChartDataLabelPlacement.Below : ChartDataLabelPlacement.Outside;
             chart.AddSeries(series);

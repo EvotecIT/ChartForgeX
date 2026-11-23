@@ -7,7 +7,7 @@ namespace ChartForgeX.Tests;
 public sealed class TreemapValueCaptionTests {
     [Fact]
     public void ValueVisibilityPreservesLabelsSemanticValuesAndPreparedSnapshots() {
-        var chart = Chart.Create().WithDataLabels().AddTreemap("Allocation", new[] {
+        var chart = Chart.Create().DataLabels().AddTreemap("Allocation", new[] {
             new ChartHierarchyItem("root", "All"),
             new ChartHierarchyItem("alpha", "Alpha", "root", 7),
             new ChartHierarchyItem("beta", "Beta", "root", 3)
@@ -31,7 +31,7 @@ public sealed class TreemapValueCaptionTests {
         Assert.Equal(originalSvg, frozen.ToSvg()); Assert.Equal(originalPng, frozen.ToPng());
         chart.Options.Treemap.ShowValues = true;
         Assert.Equal(originalSvg, TreemapHierarchyTests.Prepare(chart).ToSvg());
-        chart.WithDataLabels(false);
+        chart.DataLabels(false);
         Assert.Empty(Captions(TreemapHierarchyTests.Prepare(chart).ToSvg()));
     }
 

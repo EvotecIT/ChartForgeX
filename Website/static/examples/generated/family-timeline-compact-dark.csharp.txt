@@ -38,7 +38,7 @@ public static class TimelineRecipe {
             ("rollout", "Rollout", 19, 23) })
             chart.AddSeries(new ChartSeries(new ChartSeriesId(id), name, ChartSeriesKind.Timeline,
                 new[] { new ChartPoint(start.AddDays(from).ToOADate(), start.AddDays(to).ToOADate()) }));
-        return chart.ConfigureXAxis(axis => {
+        return chart.XAxis(axis => {
             axis.Scale = ChartScaleKind.Time;
             axis.ValueFormat = ChartValueFormat.Custom(value => DateTime.FromOADate(value).ToString("MMM d", CultureInfo.InvariantCulture));
         });

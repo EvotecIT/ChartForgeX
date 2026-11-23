@@ -19,8 +19,8 @@ var theme = VisualTheme.Graphite();
 #endregion
 
 Chart chart;
-chart = Chart.Create().WithTitle("Observed service intervals")
-    .WithXLabels(Enumerable.Range(1, 8).Select(index => "Region " + index).ToArray()).WithDataLabels()
+chart = Chart.Create().Title("Observed service intervals")
+    .XLabels(Enumerable.Range(1, 8).Select(index => "Region " + index).ToArray()).DataLabels()
     .AddSeries(ChartSeries.CreateRangeBar(new ChartSeriesId("range"), "Delivery range",
         new[] { new ChartInterval(1, -7, -1), new ChartInterval(4, 0, 0), new ChartInterval(8, 4, -4) }));
 

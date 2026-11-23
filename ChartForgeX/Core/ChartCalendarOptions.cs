@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>Controls the week layout, localized names, and cell sizing of calendar heatmaps in a chart.</summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class ChartCalendarOptions {
     private DayOfWeek _firstDayOfWeek;
     private string[]? _dayNames;

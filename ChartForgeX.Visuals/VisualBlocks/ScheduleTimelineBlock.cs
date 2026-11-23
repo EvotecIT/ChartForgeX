@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.VisualBlocks;
 
 /// <summary>
 /// A dense dashboard schedule timeline with time-of-day axis, grid lines, lanes, and event pills.
 /// </summary>
+[Fluent]
 public sealed class ScheduleTimelineBlock : FactualVisualBlock<ScheduleTimelineBlock> {
     private readonly List<ScheduleTimelineEvent> _events = new();
     private readonly List<string> _headerActions = new();
@@ -37,20 +39,6 @@ public sealed class ScheduleTimelineBlock : FactualVisualBlock<ScheduleTimelineB
 
     /// <summary>Creates a new schedule timeline block.</summary>
     public static ScheduleTimelineBlock Create() => new();
-
-    /// <summary>Sets the visible time range and tick interval.</summary>
-    public ScheduleTimelineBlock WithTimeRange(double start, double end, double tickInterval = 1) {
-        Start = start;
-        End = end;
-        TickInterval = tickInterval;
-        return this;
-    }
-
-    /// <summary>Sets the optional current-time marker.</summary>
-    public ScheduleTimelineBlock WithCurrentTime(double? value) { CurrentTime = value; return this; }
-
-    /// <summary>Sets whether vertical time grid lines are shown.</summary>
-    public ScheduleTimelineBlock WithGrid(bool enabled = true) { ShowGrid = enabled; return this; }
 
 
     /// <summary>Adds a schedule event.</summary>

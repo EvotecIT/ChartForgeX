@@ -34,7 +34,7 @@ public sealed class SeriesLineStrokeStyleTests {
         var before = Prepare(chart);
         var series = chart.Series.Single();
         var dash = new[] { 7d, 13d };
-        Assert.Same(series, series.WithStrokeStyle(new ChartStrokeStyle(Stroke, 4, .5, dash)));
+        Assert.Same(series, series.StrokeStyle(new ChartStrokeStyle(Stroke, 4, .5, dash)));
         dash[0] = 99;
         var prepared = Prepare(chart);
         var svg = XDocument.Parse(prepared.ToSvg());
@@ -58,7 +58,7 @@ public sealed class SeriesLineStrokeStyleTests {
         Assert.Equal(before.Scene.Nodes.OfType<VisualSceneMark>().Where(mark => mark.Fill.HasValue).Select(mark => (mark.Role, mark.Fill)),
             prepared.Scene.Nodes.OfType<VisualSceneMark>().Where(mark => mark.Fill.HasValue).Select(mark => (mark.Role, mark.Fill)));
         var dashed = RasterImageDecoder.Decode(prepared.ToPng());
-        series.WithStrokeStyle(new ChartStrokeStyle(Stroke, 4, .5, Array.Empty<double>()));
+        series.StrokeStyle(new ChartStrokeStyle(Stroke, 4, .5, Array.Empty<double>()));
         var solid = RasterImageDecoder.Decode(Prepare(chart).ToPng());
         Assert.False(dashed.Pixels.SequenceEqual(solid.Pixels), "Native PNG must paint the authored dash/gap pattern.");
         Assert.Equal(new[] { 7d, 13d }, prepared.Scene.Nodes.OfType<VisualScenePath>().FirstOrDefault(mark => mark.Role == roles.Split(',')[0])?.Dash
@@ -69,13 +69,13 @@ public sealed class SeriesLineStrokeStyleTests {
     public void StyleWidthWinsRegardlessOfSetterOrderAndClearingRestoresExplicitLegacyWidth() {
         var chart = Create(ChartSeriesKind.Line);
         var series = chart.Series[0];
-        series.WithStrokeWidth(9).WithStrokeStyle(new ChartStrokeStyle(width: 4));
+        series.StrokeWidth(9).StrokeStyle(new ChartStrokeStyle(width: 4));
         Assert.Equal(4, Foreground(Prepare(chart), "line").StrokeWidth);
-        series.WithStrokeWidth(12);
+        series.StrokeWidth(12);
         Assert.Equal(4, Foreground(Prepare(chart), "line").StrokeWidth);
-        series.WithStrokeStyle(new ChartStrokeStyle(dash: new[] { 7d, 13d }));
+        series.StrokeStyle(new ChartStrokeStyle(dash: new[] { 7d, 13d }));
         Assert.Equal(12, Foreground(Prepare(chart), "line").StrokeWidth);
-        series.WithStrokeStyle(null);
+        series.StrokeStyle((ChartStrokeStyle?)null);
         Assert.Equal(12, Foreground(Prepare(chart), "line").StrokeWidth);
         Assert.Null(series.StrokeStyle);
     }
@@ -84,8 +84,8 @@ public sealed class SeriesLineStrokeStyleTests {
     public void StaticReflowRetainsCapturedStrokeAfterAuthoredStyleChanges() {
         var points = new[] { new ChartPoint(1, 30), new ChartPoint(2, 60), new ChartPoint(3, 40) };
         var series = ChartSeries.CreateLine(new ChartSeriesId("signal"), "Signal", points, Fill)
-            .WithStrokeWidth(9).WithStrokeStyle(new ChartStrokeStyle(Stroke, 4, .5, new[] { 7d, 13d }));
-        var chart = Chart.Create().WithSize(420, 300).WithHeader(false).WithLegend(false).WithDataLabels(false).AddSeries(series)
+            .StrokeWidth(9).StrokeStyle(new ChartStrokeStyle(Stroke, 4, .5, new[] { 7d, 13d }));
+        var chart = Chart.Create().Size(420, 300).ShowHeader(false).Legend(false).DataLabels(false).AddSeries(series)
             .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("other"), "Other", points, Fill));
         var context = VisualExportRequest.ForChart(chart).Context;
         var prepared = chart.PrepareVisibility(context, new ChartVisibilityView(new[] { ChartVisibilityTarget.Series(new ChartSeriesId("other")) }, layout: ChartVisibilityLayout.Reflow));
@@ -94,7 +94,7 @@ public sealed class SeriesLineStrokeStyleTests {
         Assert.Equal(4, line.StrokeWidth);
         Assert.Equal(new[] { 7d, 13d }, line.Dash);
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
-        series.WithStrokeStyle(new ChartStrokeStyle(width: 0));
+        series.StrokeStyle(new ChartStrokeStyle(width: 0));
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
         Assert.NotEqual(png, chart.PrepareVisibility(context,
             new ChartVisibilityView(new[] { ChartVisibilityTarget.Series(new ChartSeriesId("other")) }, layout: ChartVisibilityLayout.Reflow)).ToPng());
@@ -102,13 +102,13 @@ public sealed class SeriesLineStrokeStyleTests {
 
     [Fact]
     public void ZeroWidthHidesAllLineLayersAndFamilyOutlineWinsOverSeriesDefaults() {
-        var chart = Create(ChartSeriesKind.Radar).WithLineVisualStyle(ChartLineVisualStyle.Luminous());
+        var chart = Create(ChartSeriesKind.Radar).Lines(l => l.VisualStyle(ChartLineVisualStyle.Luminous()));
         var series = chart.Series[0];
-        series.WithStrokeStyle(new ChartStrokeStyle(Stroke, 0));
+        series.StrokeStyle(new ChartStrokeStyle(Stroke, 0));
         var hidden = Prepare(chart);
         Assert.DoesNotContain(hidden.Scene.Nodes, node => node.Role?.StartsWith("radar-outline", StringComparison.Ordinal) == true);
         Assert.Contains(hidden.Scene.Nodes, node => node.Role == "radar-area");
-        series.ConfigureRadar(options => options.OutlineStroke = new ChartStrokeStyle(Fill, 6, dash: Array.Empty<double>()));
+        series.Radar(options => options.OutlineStroke = new ChartStrokeStyle(Fill, 6, dash: Array.Empty<double>()));
         var outline = Assert.IsType<VisualScenePath>(Foreground(Prepare(chart), "radar-outline"));
         Assert.Equal(Fill, outline.Stroke);
         Assert.Equal(6, outline.StrokeWidth);
@@ -117,15 +117,15 @@ public sealed class SeriesLineStrokeStyleTests {
 
     [Fact]
     public void DecodedNativePngAndSvgRasterAgreeOnTranslucentDashCoverageAndGaps() {
-        var chart = Chart.Create().WithSize(420, 90).WithSparkline().WithYAxisBounds(0, 100).WithLineVisualStyle(ChartLineVisualStyle.Plain())
+        var chart = Chart.Create().Size(420, 90).Sparkline().YAxis(y => y.Bounds(0, 100)).Lines(l => l.VisualStyle(ChartLineVisualStyle.Plain()))
             .AddLine("Signal", new[] { new ChartPoint(0, 50), new ChartPoint(100, 50) }, Fill);
-        var series = chart.Series[0].WithMarkerRadius(0).WithStrokeStyle(new ChartStrokeStyle(Stroke, 4, .5, new[] { 9d, 15d }));
+        var series = chart.Series[0].MarkerRadius(0).StrokeStyle(new ChartStrokeStyle(Stroke, 4, .5, new[] { 9d, 15d }));
         var prepared = Prepare(chart);
         var path = Assert.IsType<VisualScenePath>(Foreground(prepared, "line"));
         var start = path.Commands.First(); var end = path.Commands.Last();
         var native = RasterImageDecoder.Decode(prepared.ToPng());
         var svg = SvgRasterizer.ToImage(prepared.ToSvg());
-        series.WithStrokeStyle(new ChartStrokeStyle(width: 0));
+        series.StrokeStyle(new ChartStrokeStyle(width: 0));
         var hidden = Prepare(chart);
         var nativeBackground = RasterImageDecoder.Decode(hidden.ToPng());
         var svgBackground = SvgRasterizer.ToImage(hidden.ToSvg());
@@ -166,8 +166,8 @@ public sealed class SeriesLineStrokeStyleTests {
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
 
     private static Chart Create(ChartSeriesKind kind) {
-        var chart = Chart.Create().WithSize(420, 300).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithLineVisualStyle(ChartLineVisualStyle.Plain());
+        var chart = Chart.Create().Size(420, 300).ShowHeader(false).Legend(false).DataLabels(false)
+            .Lines(l => l.VisualStyle(ChartLineVisualStyle.Plain()));
         var points = new[] { new ChartPoint(1, 30), new ChartPoint(2, 60), new ChartPoint(3, 40), new ChartPoint(4, 70) };
         var ranges = new[] { new ChartRangeBand(1, 20, 50), new ChartRangeBand(2, 35, 70), new ChartRangeBand(3, 25, 60) };
         switch (kind) {

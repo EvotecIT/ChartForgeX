@@ -106,7 +106,7 @@ public sealed class MermaidArtifactContractTests {
 
     [Fact]
     public void PngDiagramSurfaceIncludesItsClosingBorder() {
-        var chart = TopologyChart.Create().WithViewport(360, 280, 20).AddNode("box", "Box", 60, 80, width: 180, height: 100);
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(360, 280, 20)).AddNode("box", "Box", 60, 80, width: 180, height: 100);
         chart.Nodes[0].Shape = TopologyNodeShape.Rectangle;
         chart.Nodes[0].ShowStatusBadge = false;
         var image = RasterImageDecoder.Decode(chart.ToPng());

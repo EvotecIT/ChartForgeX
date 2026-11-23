@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Topology;
 
 /// <summary>
 /// Describes one reusable hierarchy item that can be promoted into topology nodes and parent-child edges.
 /// </summary>
+[Fluent]
 public sealed class TopologyHierarchyItem {
     /// <summary>Creates a hierarchy item.</summary>
     public TopologyHierarchyItem(string id, string label, string? parentId = null) {
@@ -80,7 +82,7 @@ public sealed class TopologyHierarchyItem {
     public Dictionary<string, string> Metadata { get; } = new();
 
     /// <summary>Adds metadata and returns the same item.</summary>
-    public TopologyHierarchyItem WithMetadata(string key, string value) {
+    internal TopologyHierarchyItem SetMetadata(string key, string value) {
         Metadata[Required(key, nameof(key))] = value ?? string.Empty;
         return this;
     }
@@ -277,7 +279,7 @@ public static class TopologyHierarchyExtensions {
             edge.Metadata["hierarchy.relationship"] = "parent-child";
         }
 
-        if (options.ApplyLayeredLayout) chart.WithLayout(TopologyLayoutMode.Layered, options.LayoutDirection);
+        if (options.ApplyLayeredLayout) chart.LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(options.LayoutDirection);
         return chart;
     }
 

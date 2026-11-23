@@ -29,7 +29,7 @@ internal static partial class VisualCartesianCompiler {
         var horizontal = ChartCartesianOrientation.IsHorizontal(chart);
         // Horizontal categories are mapped linearly, including reference stroke footprints.
         var primaryAxis = horizontal && chart.Options.YAxis.Scale != ChartScaleKind.Time
-            ? new ChartAxis { Minimum = chart.Options.YAxis.Minimum, Maximum = chart.Options.YAxis.Maximum } : chart.Options.YAxis;
+            ? new ChartAxis { Min = chart.Options.YAxis.Min, Max = chart.Options.YAxis.Max } : chart.Options.YAxis;
         for (var index = 0; index < chart.Series.Count; index++) {
             var series = chart.Series[index];
             // An additional axis snaps its own domain; its marks must not widen the primary extents.
@@ -142,12 +142,12 @@ internal static partial class VisualCartesianCompiler {
         double originalMinimum, double originalMaximum, out double minimum, out double maximum) {
         minimum = originalMinimum; maximum = originalMaximum;
         var min = ChartScaleTransform.Bound(minimum, axis, false); var max = ChartScaleTransform.Bound(maximum, axis, true);
-        if (!markers.Bounds.TryExpand(min, max, pixels, axis.Minimum.HasValue, axis.Maximum.HasValue, out min, out max)) return false;
+        if (!markers.Bounds.TryExpand(min, max, pixels, axis.Min.HasValue, axis.Max.HasValue, out min, out max)) return false;
         var paddedMinimum = ChartScaleTransform.InverseBound(min, axis, false); var paddedMaximum = ChartScaleTransform.InverseBound(max, axis, true);
         if (!ChartMath.IsFinite(paddedMinimum) || !ChartMath.IsFinite(paddedMaximum)
             || axis.Scale == ChartScaleKind.Logarithmic && (!axis.IsInLogarithmicDomain(paddedMinimum) || !axis.IsInLogarithmicDomain(paddedMaximum))) return false;
-        minimum = axis.Minimum.HasValue ? originalMinimum : Math.Min(originalMinimum, paddedMinimum);
-        maximum = axis.Maximum.HasValue ? originalMaximum : Math.Max(originalMaximum, paddedMaximum);
+        minimum = axis.Min.HasValue ? originalMinimum : Math.Min(originalMinimum, paddedMinimum);
+        maximum = axis.Max.HasValue ? originalMaximum : Math.Max(originalMaximum, paddedMaximum);
         return minimum < originalMinimum || maximum > originalMaximum;
     }
 }

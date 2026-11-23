@@ -7,9 +7,9 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualSpecialtyCompiler {
     private static void PictorialImage(VisualSceneBuilder builder, ChartPictorialArtwork artwork, ChartRect slot, double amount, ChartOptions options) {
         var bounds = VisualSceneBuilder.FitImageBounds(artwork.Width, artwork.Height, slot, SvgRasterPreserveAspectRatio.Parse("xMidYMid meet"));
-        if (amount < 1) builder.Image(artwork.Resource, bounds, "pictorial-empty", opacity: options.PictorialEmptyOpacity);
+        if (amount < 1) builder.Image(artwork.Resource, bounds, "pictorial-empty", opacity: options.Pictorial.EmptyOpacity);
         if (amount <= 0) return;
-        using (builder.PushClip(PictorialPartialBounds(bounds, amount, options.PictorialFillDirection)))
+        using (builder.PushClip(PictorialPartialBounds(bounds, amount, options.Pictorial.FillDirection)))
             builder.Image(artwork.Resource, bounds, "pictorial-fill");
     }
 

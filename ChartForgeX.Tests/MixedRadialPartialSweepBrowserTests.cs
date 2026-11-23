@@ -12,7 +12,7 @@ public sealed class MixedRadialPartialSweepBrowserTests {
     [InlineData(false, false)] [InlineData(false, true)] [InlineData(true, false)] [InlineData(true, true)]
     public async Task PartialSweepNativeDrawingsKeepReferencePointSelectionAcrossResponsiveReplacements(bool dark, bool narrow) {
         if (!Enabled) return;
-        var chart = MixedRadialPartialSweepTests.Create(270, 800, dark).WithTitle("Regional counts and references").WithHeader(true).WithLegend().WithAxes().WithGrid();
+        var chart = MixedRadialPartialSweepTests.Create(270, 800, dark).Title("Regional counts and references").ShowHeader(true).Legend().Axes().ShowGrid();
         chart.Options.XAxis.LabelOrientation = ChartAxisLabelOrientation.Parallel;
         var html = chart.ToInteractiveHtmlPage(options => { options.ResponsiveLayout = HtmlChartResponsiveLayout.Adaptive; options.Adaptive.NarrowWidth = 360; });
         await using var session = await OpenAsync(html, narrow ? 390 : 1100, 760); var page = session.Page;

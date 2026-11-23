@@ -23,7 +23,7 @@ public sealed class PyramidGeometryTests {
         Assert.False(chart.Options.Pyramid.Reversed); Assert.Null(chart.Options.Pyramid.AspectRatio);
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.Pyramid.ValueEncoding = (ChartPyramidValueEncoding)99);
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.Pyramid.Orientation = (ChartOrientation)99);
-        Assert.Throws<ArgumentNullException>(() => chart.ConfigurePyramid(null!));
+        Assert.Throws<ArgumentNullException>(() => chart.Pyramid((Action<ChartPyramidOptions>)null!));
         foreach (var ratio in new[] { 0d, -1, double.NaN, double.PositiveInfinity })
             Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.Pyramid.AspectRatio = ratio);
         foreach (var values in new[] { new[] { 1d, -1 }, new[] { 1d, double.NaN }, new[] { double.PositiveInfinity }, new[] { double.MaxValue, double.MaxValue } }) {
@@ -46,7 +46,7 @@ public sealed class PyramidGeometryTests {
     [InlineData(ChartOrientation.Horizontal, false, ChartPyramidValueEncoding.Area)]
     [InlineData(ChartOrientation.Horizontal, true, ChartPyramidValueEncoding.Area)]
     public void IndependentLengthsAreasAndNativePixelsFollowTheDeclaredEncoding(ChartOrientation orientation, bool reversed, ChartPyramidValueEncoding encoding) {
-        var chart = Pyramid(50, 30, 20).ConfigurePyramid(options => { options.Orientation = orientation; options.Reversed = reversed; options.ValueEncoding = encoding;
+        var chart = Pyramid(50, 30, 20).Pyramid(options => { options.Orientation = orientation; options.Reversed = reversed; options.ValueEncoding = encoding;
             if (orientation == ChartOrientation.Vertical) options.AspectRatio = FullPlotAspect; });
         var scene = Compile(chart); var marks = Marks(scene); var stages = Stages(scene);
         var expected = new[] { .5, .3, .2 };
@@ -81,7 +81,7 @@ public sealed class PyramidGeometryTests {
     [InlineData(ChartPyramidValueEncoding.Height)]
     [InlineData(ChartPyramidValueEncoding.Area)]
     public void ZeroSingletonAndAllZeroInputsKeepHonestGeometryAndSourceSlots(ChartPyramidValueEncoding encoding) {
-        var scene = Compile(Pyramid(0, 50, 0, 50, 0).ConfigurePyramid(options => { options.ValueEncoding = encoding; options.AspectRatio = FullPlotAspect; }));
+        var scene = Compile(Pyramid(0, 50, 0, 50, 0).Pyramid(options => { options.ValueEncoding = encoding; options.AspectRatio = FullPlotAspect; }));
         Assert.Equal(2, Marks(scene).Length); Assert.Equal(5, Stages(scene).Length);
         foreach (var index in new[] { 0, 2, 4 }) {
             Assert.Equal(0, Number(Stages(scene)[index], "data-cfx-length-fraction"));
@@ -89,9 +89,9 @@ public sealed class PyramidGeometryTests {
             Assert.Equal("true", Stages(scene)[index].Metadata["data-cfx-zero"]);
             Assert.Equal(0, scene.Regions.Single(region => region.Id == "series-0-point-" + index).Bounds.Height);
         }
-        var singleton = Compile(Pyramid(8).ConfigurePyramid(options => { options.ValueEncoding = encoding; options.AspectRatio = FullPlotAspect; }));
+        var singleton = Compile(Pyramid(8).Pyramid(options => { options.ValueEncoding = encoding; options.AspectRatio = FullPlotAspect; }));
         Assert.Equal(400 * 240 / 2d, PolygonArea(Assert.Single(Marks(singleton))), 8);
-        var empty = Compile(Pyramid(0, 0, 0).ConfigurePyramid(options => options.ValueEncoding = encoding));
+        var empty = Compile(Pyramid(0, 0, 0).Pyramid(options => options.ValueEncoding = encoding));
         Assert.Empty(Marks(empty)); Assert.Equal(3, Stages(empty).Length);
         Assert.All(Stages(empty), stage => {
             Assert.Equal(0, Number(stage, "data-cfx-area-fraction"));
@@ -123,7 +123,7 @@ public sealed class PyramidGeometryTests {
     [InlineData(true, ChartPyramidValueEncoding.Area)]
     public void FiniteRoundedAggregateIsAcceptedInBothOrdersWithoutChangingSourceWeights(bool maximumFirst, ChartPyramidValueEncoding encoding) {
         var values = maximumFirst ? new[] { double.MaxValue, 1d } : new[] { 1d, double.MaxValue };
-        var chart = Pyramid(values).ConfigurePyramid(options => options.ValueEncoding = encoding);
+        var chart = Pyramid(values).Pyramid(options => options.ValueEncoding = encoding);
         var prepared = chart.Prepare(new VisualRenderContext());
         var stages = Stages(prepared.Scene);
         Assert.Equal(values, chart.Series[0].Points.Select(point => point.Y));
@@ -159,7 +159,7 @@ public sealed class PyramidGeometryTests {
     [InlineData(ChartPyramidValueEncoding.Height)]
     [InlineData(ChartPyramidValueEncoding.Area)]
     public void PositiveWeightsBelowBoundaryPrecisionKeepTheirSourceFactAndExplicitDiagnostic(ChartPyramidValueEncoding encoding) {
-        var scene = Compile(Pyramid(1, 1E-20).ConfigurePyramid(options => options.ValueEncoding = encoding));
+        var scene = Compile(Pyramid(1, 1E-20).Pyramid(options => options.ValueEncoding = encoding));
         Assert.Single(Marks(scene));
         var tiny = Stages(scene)[1];
         Assert.Equal("1E-20", tiny.Metadata["data-cfx-value"]);
@@ -174,7 +174,7 @@ public sealed class PyramidGeometryTests {
     [InlineData(ChartOrientation.Vertical)]
     [InlineData(ChartOrientation.Horizontal)]
     public void AspectRatioFitsAndCentersTheTriangleWithoutChangingTheEncoding(ChartOrientation orientation) {
-        var chart = Pyramid(50, 30, 20).ConfigurePyramid(options => { options.Orientation = orientation; options.AspectRatio = 1.5; });
+        var chart = Pyramid(50, 30, 20).Pyramid(options => { options.Orientation = orientation; options.AspectRatio = 1.5; });
         var marks = Marks(Compile(chart));
         var cross = orientation == ChartOrientation.Vertical ? marks.Max(mark => Extent(mark, true)) : marks.Max(mark => Extent(mark, false));
         var process = marks.Sum(mark => Extent(mark, orientation == ChartOrientation.Horizontal));
@@ -190,10 +190,10 @@ public sealed class PyramidGeometryTests {
 
     [Fact]
     public void PreparedPaintPatternsReadableLabelsAndDetachedExportsSurviveSourceMutation() {
-        var chart = Pyramid(50, 30, 20, 0).WithDataLabels().WithSize(360, 360).WithPointLegend()
-            .ConfigurePyramid(options => { options.ValueEncoding = ChartPyramidValueEncoding.Area; options.Reversed = true; });
-        chart.Series[0].WithPointFillPattern(1, ChartFillPattern.Crosshatch).WithPointLabel(0, "Complete")
-            .ConfigurePointDataLabelStyle(0, style => { style.Color = ChartColor.FromHex("#B14091"); style.FontWeight = "700"; });
+        var chart = Pyramid(50, 30, 20, 0).DataLabels().Size(360, 360).Legend(l => l.ShowPoints())
+            .Pyramid(options => { options.ValueEncoding = ChartPyramidValueEncoding.Area; options.Reversed = true; });
+        chart.Series[0].PointFillPattern(1, ChartFillPattern.Crosshatch).PointLabel(0, "Complete")
+            .PointDataLabelStyle(0, style => { style.Color = ChartColor.FromHex("#B14091"); style.FontWeight = "700"; });
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 360))));
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
         Assert.Contains(prepared.Scene.Nodes, node => node.Role == "fill-pattern");
@@ -206,7 +206,7 @@ public sealed class PyramidGeometryTests {
         Assert.Contains("data-cfx-value=\"50\"", artifact.ToHtmlPage());
         Assert.DoesNotContain("<script", artifact.ToHtmlPage());
         var json = artifact.ToInterchangeJson();
-        chart.Series[0].WithPointColor(0, "#000000"); chart.Series[0].Points.Clear();
+        chart.Series[0].PointColor(0, "#000000"); chart.Series[0].Points.Clear();
         chart.Options.Pyramid.ValueEncoding = ChartPyramidValueEncoding.Height; chart.Options.Pyramid.Reversed = false;
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng()); Assert.Equal(png, artifact.ToPng());
         Assert.Equal(json, artifact.ToInterchangeJson());
@@ -230,9 +230,9 @@ public sealed class PyramidGeometryTests {
     [InlineData(true)]
     public async Task ReversedPyramidUsesAuthoredSourceIdentityForRealKeyboardSelection(bool dark) {
         if (!InteractiveChartBrowser.Enabled) return;
-        var chart = Pyramid(50, 30, 20, 0).WithSize(596, 338).WithDataLabels()
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .ConfigurePyramid(options => { options.Orientation = ChartOrientation.Horizontal; options.Reversed = true; });
+        var chart = Pyramid(50, 30, 20, 0).Size(596, 338).DataLabels()
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Pyramid(options => { options.Orientation = ChartOrientation.Horizontal; options.Reversed = true; });
         await using var session = await InteractiveChartBrowser.OpenAsync(chart.ToInteractiveHtmlPage());
         var page = session.Page;
         var stage = page.Locator("g[data-cfx-role='pyramid-stage'][data-cfx-point='1']");
@@ -257,9 +257,9 @@ public sealed class PyramidGeometryTests {
 
     private static Chart Pyramid(params double[] values) {
         // Geometry is measured without the default stage captions, which take plot space.
-        var chart = Chart.Create().WithDataLabels(false).WithXLabels(values.Select((_, index) => "Stage " + index).ToArray()).AddSeries(new ChartSeries(new ChartSeriesId("allocation"), "Allocation", ChartSeriesKind.Pyramid, Points(values)));
+        var chart = Chart.Create().DataLabels(false).XLabels(values.Select((_, index) => "Stage " + index).ToArray()).AddSeries(new ChartSeries(new ChartSeriesId("allocation"), "Allocation", ChartSeriesKind.Pyramid, Points(values)));
         var colors = new[] { "#2468AC", "#BA7542", "#34957A", "#8762A3", "#7297AA" };
-        for (var index = 0; index < values.Length; index++) chart.Series[0].WithPointColor(index, colors[index % colors.Length]);
+        for (var index = 0; index < values.Length; index++) chart.Series[0].PointColor(index, colors[index % colors.Length]);
         return chart;
     }
     private static ChartPoint[] Points(params double[] values) => values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();

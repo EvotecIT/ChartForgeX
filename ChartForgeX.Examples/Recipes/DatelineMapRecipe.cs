@@ -10,15 +10,15 @@ public static class DatelineMapRecipe {
             new ChartMapPoint("Fiji", 178, -18, 10), new ChartMapPoint("Samoa", -172, -14, 20),
             new ChartMapPoint("Seam east", 180, -10, 30), new ChartMapPoint("Seam west", -180, -10, 40),
             new ChartMapPoint("Outside this window", 160, -16, 50)
-        }).WithMarkerRadius(4).WithObservationIds(new[] {
+        }).MarkerRadius(4).ObservationIds(new[] {
             new ChartObservationId("fiji"), new ChartObservationId("samoa"), new ChartObservationId("seam-east"), new ChartObservationId("seam-west"), new ChartObservationId("outside")
         }).ReplaceMapConnectors(new[] {
             new ChartMapConnector("Across the seam", 178, -18, -172, -14),
             new ChartMapConnector("Clipped window-edge route", new[] { new ChartMapPoint("West outside", 168, -22), new ChartMapPoint("Inside", 175, -20), new ChartMapPoint("East outside", -168, -18) }),
             new ChartMapConnector("Opposite meridian is outside", -10, 0, 10, 0)
         });
-        return Chart.Create().WithSize(width, 520).WithTheme(VisualTheme.Graphite(), mode).WithLegend().WithDataLabels()
-            .WithTitle("One window across the dateline").WithSubtitle("Raw bearings and IDs remain intact; native curves are clipped to the view")
-            .WithMapViewport(window).AddSeries(series);
+        return Chart.Create().Size(width, 520).Theme(VisualTheme.Graphite()).ThemeMode(mode).Legend().DataLabels()
+            .Title("One window across the dateline").Subtitle("Raw bearings and IDs remain intact; native curves are clipped to the view")
+            .Map(m => m.Viewport(window)).AddSeries(series);
     }
 }

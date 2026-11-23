@@ -65,7 +65,7 @@ internal sealed class TopologyGeographicCallout {
 
 internal static class TopologyGeographicCallouts {
     public static List<TopologyGeographicCallout> Build(TopologyChart chart, TopologyRenderOptions options, TopologyPaint theme) {
-        if (!options.IncludeGeographicCallouts || chart.LayoutMode != TopologyLayoutMode.Geographic || options.GeographicCalloutMaxItems <= 0) return new List<TopologyGeographicCallout>();
+        if (!options.Geography.IncludeCallouts || chart.LayoutMode != TopologyLayoutMode.Geographic || options.Geography.CalloutMaxItems <= 0) return new List<TopologyGeographicCallout>();
 
         var map = TopologyMapProjection.MapRect(chart);
         var nodes = chart.Nodes.ToDictionary(node => node.Id, StringComparer.Ordinal);
@@ -92,7 +92,7 @@ internal static class TopologyGeographicCallouts {
                       .OrderBy(group => options.SelectedGroupIds.Contains(group.Id) ? 0 : 1)
                       .ThenBy(group => group.Longitude!.Value)
                       .ThenBy(group => group.Id, StringComparer.Ordinal)
-                      .Take(options.GeographicCalloutMaxItems)
+                      .Take(options.Geography.CalloutMaxItems)
                       .ToList();
         var longitudeRank = eligibleGroups
             .OrderBy(group => group.Longitude!.Value)
@@ -111,8 +111,8 @@ internal static class TopologyGeographicCallouts {
                     : members.Count.ToString(CultureInfo.InvariantCulture) + " nodes";
             var width = 186.0;
             var height = 92.0;
-            var preferredPlacement = PreferredPlacement(group, longitudeRank, options.PreferGeographicCalloutMapEdges);
-            var placement = Place(anchor.X, anchor.Y, width, height, map, chart, placed, obstacleBoxes, options.PreferGeographicCalloutMapEdges, preferredPlacement);
+            var preferredPlacement = PreferredPlacement(group, longitudeRank, options.Geography.PreferCalloutMapEdges);
+            var placement = Place(anchor.X, anchor.Y, width, height, map, chart, placed, obstacleBoxes, options.Geography.PreferCalloutMapEdges, preferredPlacement);
             var box = CalloutBox.FromRect(placement.X, placement.Y, width, height);
             placed.Add(box);
             callouts.Add(new TopologyGeographicCallout(

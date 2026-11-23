@@ -48,7 +48,7 @@ public sealed class InteractiveTopologyPresentationTests {
             Assert.Contains(((string)reference.Attribute("href")!)[1..], ids);
         }
         Assert.Contains(ids, id => id.Contains("motion-embed", StringComparison.Ordinal));
-        Assert.False(options.EnableHtmlInteractions);
+        Assert.False(options.Html.Interactions);
         Assert.Equal("delivery", options.ActiveScenarioId);
         Assert.Equal(480, chart.Viewport.Width);
         Assert.Equal(260, chart.Viewport.Height);
@@ -83,7 +83,7 @@ public sealed class InteractiveTopologyPresentationTests {
     public async Task TopologyPresentationKeepsSelectionAndViewportControlsWorking(int width, bool dark, bool animate) {
         if (!InteractiveChartBrowser.Enabled) return;
         var chart = CreateTopology();
-        chart.WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+        chart.Theme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         var renderer = new HtmlInteractiveTopologyRenderer();
         var html = animate
             ? renderer.RenderPresentationPage(chart,
@@ -176,7 +176,7 @@ public sealed class InteractiveTopologyPresentationTests {
         var chart = CreateTopology();
         chart.LayoutMode = TopologyLayoutMode.ForceDirected;
         var options = Options();
-        options.EnableHtmlForceGraphControls = true;
+        options.Html.ForceGraphControls = true;
         await using var session = await InteractiveChartBrowser.OpenAsync(
             new HtmlInteractiveTopologyRenderer().RenderPage(chart, options), 1024, 720);
         var page = session.Page;
@@ -216,16 +216,13 @@ public sealed class InteractiveTopologyPresentationTests {
         InteractiveChartBrowser.AssertNoConsoleErrors(session);
     }
 
-    private static TopologyChart CreateTopology() => TopologyChart.Create().WithId("motion-page")
-        .WithViewport(480, 260, 20).WithTitle("Service route")
+    private static TopologyChart CreateTopology() => TopologyChart.Create().Id("motion-page")
+        .Viewport(new TopologyViewport(480, 260, 20)).Title("Service route")
         .AddNode("source", "Source", 30, 70, width: 100, height: 60)
         .AddNode("target", "Target", 280, 180, width: 100, height: 60)
         .AddNode("observer", "Observer", 30, 210, width: 100, height: 60)
         .AddEdge("route", "source", "target", routing: TopologyEdgeRouting.Straight)
-        .AddScenario("delivery", "Delivery", scenario => scenario.AddEdgeStep("route").WithSpotlight());
+        .AddScenario("delivery", "Delivery", scenario => scenario.AddEdgeStep("route").Spotlight());
 
-    private static TopologyRenderOptions Options() => new() {
-        IncludeLegend = false, EnableHtmlViewportControls = true, EnableHtmlSelectionPanel = true,
-        EnableHtmlScenarioControls = true, ActiveScenarioId = "delivery", IdScope = "motion-embed"
-    };
+    private static TopologyRenderOptions Options() => new() { IncludeLegend = false, Html = { ViewportControls = true, SelectionPanel = true, ScenarioControls = true }, ActiveScenarioId = "delivery", IdScope = "motion-embed" };
 }

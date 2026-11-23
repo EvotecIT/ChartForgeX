@@ -41,14 +41,14 @@ public class SectionPreparationBenchmarkFixture {
         var tokens = File.ReadAllText(tokenPath);
         var theme = VisualTheme.FromPaletteJson(tokens, new VisualTypography("CFX Section Proof Carlito", 22, 13, 11, 12, 11));
         var series = ChartSeries.CreateScatter(new ChartSeriesId("samples"), "Samples", _points)
-            .WithObservationIds(Enumerable.Range(0, count).Select(index => new ChartObservationId("row-" + index.ToString(CultureInfo.InvariantCulture))));
-        series.ConfigureMarkers(markers => { markers.Enabled = true; markers.Radius = radius; });
-        SourceChart = Chart.Create().WithSize(800, 440).WithPadding(24, 24, 24, 24).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithTheme(theme, ThemeMode.Light).AddSeries(series);
-        SourceChart.Options.PngFontPath = fontPath;
-        if (parts[1] == "explicit") SourceChart.WithXAxisBounds(0, 12).WithYAxisBounds(0, 40);
-        _authoredXMinimum = SourceChart.Options.XAxis.Minimum; _authoredXMaximum = SourceChart.Options.XAxis.Maximum;
-        _authoredYMinimum = SourceChart.Options.YAxis.Minimum; _authoredYMaximum = SourceChart.Options.YAxis.Maximum;
+            .ObservationIds(Enumerable.Range(0, count).Select(index => new ChartObservationId("row-" + index.ToString(CultureInfo.InvariantCulture))));
+        series.Markers(markers => { markers.Enabled = true; markers.Radius = radius; });
+        SourceChart = Chart.Create().Size(800, 440).Padding(24, 24, 24, 24).ShowHeader(false).Legend(false).DataLabels(false)
+            .Theme(theme).ThemeMode(ThemeMode.Light).AddSeries(series);
+        SourceChart.Options.Png.FontPath = fontPath;
+        if (parts[1] == "explicit") SourceChart.XAxis(x => x.Bounds(0, 12)).YAxis(y => y.Bounds(0, 40));
+        _authoredXMinimum = SourceChart.Options.XAxis.Min; _authoredXMaximum = SourceChart.Options.XAxis.Max;
+        _authoredYMinimum = SourceChart.Options.YAxis.Min; _authoredYMaximum = SourceChart.Options.YAxis.Max;
         _xViewport = Window == "x" ? new ChartCartesianViewport(x: new ChartAxisWindow(2, 10)) : null;
         var source = new StringBuilder("section-preparation-v1|800x440|390x440|640|24|light|samples|")
             .Append(caseName).Append('|').Append(radius).Append('|').Append(Hash(tokens)).Append('|')
@@ -156,8 +156,8 @@ public class SectionPreparationBenchmarkFixture {
                     throw new InvalidOperationException("A native section changed source identity or coordinates.");
             }
         }
-        if (SourceChart.Options.XAxis.Minimum != _authoredXMinimum || SourceChart.Options.XAxis.Maximum != _authoredXMaximum
-            || SourceChart.Options.YAxis.Minimum != _authoredYMinimum || SourceChart.Options.YAxis.Maximum != _authoredYMaximum)
+        if (SourceChart.Options.XAxis.Min != _authoredXMinimum || SourceChart.Options.XAxis.Max != _authoredXMaximum
+            || SourceChart.Options.YAxis.Min != _authoredYMinimum || SourceChart.Options.YAxis.Max != _authoredYMaximum)
             throw new InvalidOperationException("Section preparation mutated authored domain policy.");
     }
 

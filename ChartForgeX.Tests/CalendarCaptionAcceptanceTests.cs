@@ -22,10 +22,10 @@ public sealed class CalendarCaptionAcceptanceTests {
     [InlineData("window", ThemeMode.Light)]
     [InlineData("window", ThemeMode.Dark)]
     public void AnAutomaticGanttMonthCaptionIsAcceptedOnceWhenItCannotDistinguishTheProjectEnds(string policy, ThemeMode mode) {
-        var chart = Fixture(ChartSeriesKind.Gantt).WithThemeMode(mode);
-        if (policy == "rejected") chart.WithGanttTickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Millisecond));
-        if (policy == "count") chart.ConfigureXAxis(axis => axis.TickCount = 2);
-        if (policy == "window") chart.ConfigureXAxis(axis => axis.WithBounds(Start.AddDays(4).ToOADate(), Finish.AddDays(-4).ToOADate()));
+        var chart = Fixture(ChartSeriesKind.Gantt).ThemeMode(mode);
+        if (policy == "rejected") chart.Gantt(g => g.TickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Millisecond)));
+        if (policy == "count") chart.XAxis(axis => axis.TickCount = 2);
+        if (policy == "window") chart.XAxis(axis => axis.Bounds(Start.AddDays(4).ToOADate(), Finish.AddDays(-4).ToOADate()));
         var prepared = Prepare(chart);
         var caption = Assert.Single(Captions(prepared));
         Assert.Equal("2026-03", caption.Text.Lines.Single().Text);
@@ -58,8 +58,8 @@ public sealed class CalendarCaptionAcceptanceTests {
     [InlineData("MMM")]
     public void EqualPeriodicEndpointCaptionsRetainMeaningfulDifferentCalendarCaptionsBetweenThem(string format) {
         var start = new DateTime(2026, 1, 1);
-        var chart = Base().WithSize(960, 300).AddGanttTask("Year", start, start.AddYears(1))
-            .ConfigureXAxis(axis => axis.WithLabelFormatter(value => DateTime.FromOADate(value).ToString(format, CultureInfo.InvariantCulture)));
+        var chart = Base().Size(960, 300).AddGanttTask("Year", start, start.AddYears(1))
+            .XAxis(axis => axis.LabelBy(value => DateTime.FromOADate(value).ToString(format, CultureInfo.InvariantCulture)));
         var prepared = Prepare(chart);
         var labels = Captions(prepared).Select(node => node.Text.Lines.Single().Text).ToArray();
         Assert.InRange(labels.Length, 3, 8);
@@ -78,11 +78,11 @@ public sealed class CalendarCaptionAcceptanceTests {
     public void SharedCalendarFallbackKeepsMeasuredClockCadenceWhenCoarserBoundariesRepeat(ChartSeriesKind kind) {
         var start = new DateTime(2026, 1, 1);
         var finish = start.AddDays(7);
-        var chart = Base().ConfigureTickLabelStyle(style => style.WithFontSize(18))
-            .ConfigureXAxis(axis => {
-                axis.WithBounds(start.ToOADate(), finish.ToOADate());
+        var chart = Base().TickLabelStyle(style => style.FontSize(18))
+            .XAxis(axis => {
+                axis.Bounds(start.ToOADate(), finish.ToOADate());
                 axis.LabelDensity = ChartLabelDensity.Dense;
-                axis.WithLabelFormatter(value => DateTime.FromOADate(value).ToString("HH:mm", CultureInfo.InvariantCulture));
+                axis.LabelBy(value => DateTime.FromOADate(value).ToString("HH:mm", CultureInfo.InvariantCulture));
             });
         if (kind == ChartSeriesKind.StateTimeline) chart.AddStateTimelineLane("Window", new[] { new ChartStateTimelineSegment(start, finish, "up") });
         else chart.AddLine("Window", new[] { new ChartPoint(start, 10), new ChartPoint(finish, 20) });
@@ -113,9 +113,9 @@ public sealed class CalendarCaptionAcceptanceTests {
     [InlineData(false)]
     [InlineData(true)]
     public void AuthoredFixedIntervalsAndAllDensityKeepIntentionalRepeatedMonthCaptions(bool fixedInterval) {
-        var chart = Fixture(ChartSeriesKind.Gantt).WithSize(1200, 300);
-        if (fixedInterval) chart.WithGanttTickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Day, 2));
-        else chart.ConfigureXAxis(axis => axis.LabelDensity = ChartLabelDensity.All);
+        var chart = Fixture(ChartSeriesKind.Gantt).Size(1200, 300);
+        if (fixedInterval) chart.Gantt(g => g.TickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Day, 2)));
+        else chart.XAxis(axis => axis.LabelDensity = ChartLabelDensity.All);
         var prepared = Prepare(chart);
         var labels = Captions(prepared);
         Assert.True(labels.Length > 1);
@@ -131,7 +131,7 @@ public sealed class CalendarCaptionAcceptanceTests {
     [InlineData(ChartSeriesKind.Timeline, ThemeMode.Dark)]
     public async Task AcceptedMonthFallbackMatchesNativeSvgAndStaticBrowserPaint(ChartSeriesKind kind, ThemeMode mode) {
         if (!InteractiveChartBrowser.Enabled) return;
-        var chart = Fixture(kind).WithThemeMode(mode);
+        var chart = Fixture(kind).ThemeMode(mode);
         var prepared = Prepare(chart);
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + chart.ToHtmlFragment() + "</body></html>", 400, 300);
         Assert.Equal(new[] { "2026-03" }, await session.Page.Locator("[data-cfx-role='schedule-tick-label']").AllTextContentsAsync());
@@ -148,7 +148,7 @@ public sealed class CalendarCaptionAcceptanceTests {
     }
 
     private static Chart Fixture(ChartSeriesKind kind) {
-        var chart = Base().ConfigureXAxis(axis => axis.WithLabelFormatter(value => DateTime.FromOADate(value).ToString("yyyy-MM", CultureInfo.InvariantCulture)));
+        var chart = Base().XAxis(axis => axis.LabelBy(value => DateTime.FromOADate(value).ToString("yyyy-MM", CultureInfo.InvariantCulture)));
         switch (kind) {
             case ChartSeriesKind.Gantt: chart.AddGanttTask("Project", Start, Finish); break;
             case ChartSeriesKind.Timeline: chart.AddTimelineItem("Project", Start, Finish); break;
@@ -159,9 +159,9 @@ public sealed class CalendarCaptionAcceptanceTests {
         }
         return chart;
     }
-    private static Chart Base() => Chart.Create().WithSize(400, 300).WithHeader(false).WithLegend(false).WithXAxisTimeScale()
-        .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"))
-        .ConfigureGridStyle(style => style.ShowVerticalLines = true);
+    private static Chart Base() => Chart.Create().Size(400, 300).ShowHeader(false).Legend(false).XAxis(x => x.TimeScale())
+        .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
+        .GridLineStyle(style => style.ShowVerticalLines = true);
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
     private static VisualSceneText[] Captions(PreparedVisual prepared) => prepared.Scene.Nodes.OfType<VisualSceneText>()
         .Where(node => node.Role is "schedule-tick-label" or "axis-x-label").ToArray();

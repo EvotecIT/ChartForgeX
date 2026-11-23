@@ -18,15 +18,15 @@ public static class MermaidGanttRendering {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidGanttRenderOptions();
         var chart = Chart.Create()
-            .WithTitle(ResolveTitle(document, options))
-            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
-            .WithSize(options.Width, options.Height);
+            .Title(ResolveTitle(document, options))
+            .Subtitle(MermaidHeading.Subtitle(options.Subtitle))
+            .Size(options.Width, options.Height);
         if (!string.IsNullOrWhiteSpace(document.AxisFormat))
-            chart.WithXAxisValueFormatter(value => FormatAxisValue(value, document, null, chart.Options.XAxis.TimeZone));
+            chart.XAxis(x => x.LabelBy(value => FormatAxisValue(value, document, null, chart.Options.XAxis.TimeZone)));
         chart.Options.XAxis.TimeTickLabelFormatter = (value, effectiveInterval) => FormatAxisValue(value, document, effectiveInterval, chart.Options.XAxis.TimeZone);
-        if (options.Today.HasValue && !string.Equals(document.TodayMarker, "off", StringComparison.OrdinalIgnoreCase)) chart.WithGanttToday(options.Today.Value);
-        chart.Options.GanttTodayStyle = options.TodayStyle ?? MermaidGanttTodayStyle.Parse(document.TodayMarker, out _);
-        chart.WithGanttTickInterval(MermaidGanttTicks.Parse(document.TickInterval, document.Weekday));
+        if (options.Today.HasValue && !string.Equals(document.TodayMarker, "off", StringComparison.OrdinalIgnoreCase)) chart.GanttToday(options.Today.Value);
+        chart.Options.Gantt.TodayStyle = options.TodayStyle ?? MermaidGanttTodayStyle.Parse(document.TodayMarker, out _);
+        chart.Gantt(g => g.TickInterval(MermaidGanttTicks.Parse(document.TickInterval, document.Weekday)));
         foreach (var task in document.Tasks) {
             // The section is named once beside its band; the row keeps the task's own title.
             var name = task.Title;

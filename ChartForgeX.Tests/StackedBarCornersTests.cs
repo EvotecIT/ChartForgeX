@@ -14,8 +14,8 @@ public sealed class StackedBarCornersTests {
     [InlineData(true, 1)]
     [InlineData(true, -1)]
     public void TinyTerminalCapsuleRetainsItsMinimumPaintedExtent(bool horizontal, int sign) {
-        var chart = Chart.Create().WithSize(640, 360).WithHeader(false).WithLegend(false).WithAxes(false).WithDataLabels(false)
-            .WithBarStyle(ChartBarStyle.SegmentedCapsule).WithStackedBars().WithMaximumBarWidth(50);
+        var chart = Chart.Create().Size(640, 360).ShowHeader(false).Legend(false).Axes(false).DataLabels(false)
+            .Bars(b => b.Style(ChartBarStyle.SegmentedCapsule).Stacked().MaxWidth(50));
         var first = new[] { new ChartPoint(1, sign * 1000000) }; var last = new[] { new ChartPoint(1, sign * .001) };
         if (horizontal) chart.AddHorizontalBar("First", first).AddHorizontalBar("Terminal", last);
         else chart.AddBar("First", first).AddBar("Terminal", last);
@@ -36,9 +36,9 @@ public sealed class StackedBarCornersTests {
     [InlineData(true, true)]
     public void SignedStacksKeepSquareJoinsAndRoundedOuterEndsInNativePngAndSvg(bool horizontal, bool dark) {
         var red = ChartColor.FromHex("#DE4239"); var blue = ChartColor.FromHex("#2877D7");
-        var chart = Chart.Create().WithSize(640, 360).WithHeader(false).WithLegend(false).WithAxes(false).WithDataLabels(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithBarVisualStyle(ChartBarVisualStyle.Flat().WithCornerRadius(10)).WithStackedBars().WithMaximumBarWidth(50);
+        var chart = Chart.Create().Size(640, 360).ShowHeader(false).Legend(false).Axes(false).DataLabels(false)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Bars(barsOptions => barsOptions.VisualStyle(ChartBarVisualStyle.Flat().CornerRadius(10)).Stacked().MaxWidth(50));
         var first = new[] { new ChartPoint(1, 3), new ChartPoint(2, -3) };
         var second = new[] { new ChartPoint(1, 2), new ChartPoint(2, -2) };
         if (horizontal) chart.AddHorizontalBar("First", first, red).AddHorizontalBar("Second", second, blue);

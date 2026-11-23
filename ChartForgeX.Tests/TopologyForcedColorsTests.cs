@@ -15,7 +15,7 @@ public sealed class TopologyForcedColorsTests {
         Assert.DoesNotContain("forced-color-adjust", Diagram().ToSvg(), StringComparison.Ordinal);
         Assert.False(new TopologyRenderOptions().PinStateColorsInForcedColors);
 
-        var pinned = Diagram().ToSvg("report", new TopologyRenderOptions().WithStateColorsPinnedInForcedColors());
+        var pinned = Diagram().ToSvg("report", new TopologyRenderOptions().PinStateColorsInForcedColors());
         var document = XDocument.Parse(pinned);
         var groups = document.Descendants().Where(element => (string?)element.Attribute("data-cfx-pin-state-colors") == "true").ToArray();
         Assert.NotEmpty(groups);
@@ -27,7 +27,7 @@ public sealed class TopologyForcedColorsTests {
         Assert.DoesNotContain(groups.SelectMany(group => group.Descendants()), element =>
             (string?)element.Attribute("data-cfx-role") == "topology-node" || (string?)element.Attribute("data-cfx-role") == "topology-group");
 
-        Assert.Equal(Diagram().ToPng(), Diagram().ToPng(new TopologyRenderOptions().WithStateColorsPinnedInForcedColors()));
+        Assert.Equal(Diagram().ToPng(), Diagram().ToPng(new TopologyRenderOptions().PinStateColorsInForcedColors()));
     }
 
     [Fact]
@@ -41,12 +41,12 @@ public sealed class TopologyForcedColorsTests {
         Assert.DoesNotContain(styles, style => style.Contains("forced-color-adjust", StringComparison.Ordinal));
     }
 
-    private static TopologyChart Diagram() => TopologyChart.Create().WithId("sites").WithViewport(720, 420)
+    private static TopologyChart Diagram() => TopologyChart.Create().Id("sites").Viewport(new TopologyViewport(720, 420))
         .AddAutoGroup("waw", "Warsaw", TopologyHealthStatus.Warning)
         .AddAutoNode("dc1", "DC01", TopologyNodeKind.Server, TopologyHealthStatus.Healthy, groupId: "waw")
         .AddAutoNode("dc2", "DC02", TopologyNodeKind.Server, TopologyHealthStatus.Critical, groupId: "waw")
         .AddAutoNode("dc3", "DC03", TopologyNodeKind.Server, TopologyHealthStatus.Warning)
         .AddEdge("a", "dc1", "dc2", status: TopologyHealthStatus.Critical, direction: VisualLinkDirection.Forward)
         .AddEdge("b", "dc2", "dc3", status: TopologyHealthStatus.Warning, direction: VisualLinkDirection.Bidirectional)
-        .WithLegend(TopologyLegend.Create("Health").AddStatus("Healthy", TopologyHealthStatus.Healthy).AddStatus("Critical", TopologyHealthStatus.Critical));
+        .Legend(TopologyLegend.Create("Health").AddStatus("Healthy", TopologyHealthStatus.Healthy).AddStatus("Critical", TopologyHealthStatus.Critical));
 }

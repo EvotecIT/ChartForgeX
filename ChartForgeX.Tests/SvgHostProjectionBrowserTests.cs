@@ -143,12 +143,12 @@ public sealed class SvgHostProjectionBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    private static Chart ProjectionChart() => Chart.Create().WithSize(680, 380).WithLegend(false)
-        .WithXAxisBounds(0, 2).WithYAxisBounds(0, 10)
-        .WithXLabels(new[] { new ChartAxisLabel(0, "First"), new ChartAxisLabel(1, "Middle"), new ChartAxisLabel(2, "Last") })
+    private static Chart ProjectionChart() => Chart.Create().Size(680, 380).Legend(false)
+        .XAxis(x => x.Bounds(0, 2)).YAxis(y => y.Bounds(0, 10))
+        .XLabels(new[] { new ChartAxisLabel(0, "First"), new ChartAxisLabel(1, "Middle"), new ChartAxisLabel(2, "Last") })
         .AddSeries(new ChartSeries(new ChartSeriesId("readings"), "Readings", ChartSeriesKind.Scatter,
             new[] { new ChartPoint(0, 2), new ChartPoint(1, 5), new ChartPoint(2, 8) })
-            .WithObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("middle"), new ChartObservationId("last") }));
+            .ObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("middle"), new ChartObservationId("last") }));
 
     private static void ProjectionOptions(HtmlChartInteractionOptions options) {
         options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;

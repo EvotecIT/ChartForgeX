@@ -61,19 +61,19 @@ public sealed class TopologyTableAttachmentPrecisionTests {
     private static TopologyChart Source(TopologyNodeShape shape, TopologyEdgePort side, bool named, bool table) {
         const double x = 100.123456, y = 100.234567, width = 220.345678, height = 180.456789;
         var horizontal = side == TopologyEdgePort.Right;
-        var chart = TopologyChart.Create().WithId("fractional-table-attachments").WithViewport(900, 800, 24).WithLegend(null)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().Id("fractional-table-attachments").Viewport(new TopologyViewport(900, 800, 24)).Legend((TopologyLegend?)null)
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("facts", "Facts", x, y, width: width, height: height)
             .AddNode("outside", "Outside", horizontal ? x + width + 140 : x + width / 2 - 40,
                 horizontal ? y + height / 2 - 20 : y + height + 140, width: 80, height: 40)
             .AddEdge("arrive", "outside", "facts", routing: TopologyEdgeRouting.Straight)
-            .WithEdgePorts("arrive", horizontal ? TopologyEdgePort.Left : TopologyEdgePort.Top, side);
+            .UpdateEdge("arrive", e => e.SourcePort(horizontal ? TopologyEdgePort.Left : TopologyEdgePort.Top).TargetPort(side));
         foreach (var node in chart.Nodes) {
             node.Kind = TopologyNodeKind.Generic; node.Shape = TopologyNodeShape.Rectangle;
             node.PreserveDisplayModeSize = true; node.ShowStatusBadge = false; node.ShowLabel = false;
         }
         chart.Nodes[0].Shape = shape; chart.Nodes[0].TableContent = table ? Table() : null;
-        if (named) chart.AddNodePort("facts", "incoming", side, .5).WithEdgeNamedPorts("arrive", null, "incoming");
+        if (named) chart.AddNodePort("facts", "incoming", side, .5).UpdateEdge("arrive", e => e.SourcePortId(null).TargetPortId("incoming"));
         return chart;
     }
     private static TableArtifact Table() => TableArtifact.Create("readings").AddColumn("property", "Property").AddColumn("value", "Value").AddRow("/count", "count", "0");

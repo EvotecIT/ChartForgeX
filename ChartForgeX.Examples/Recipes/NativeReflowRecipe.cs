@@ -5,16 +5,16 @@ internal static class NativeReflowRecipe {
         if (kind == "raw") {
             series = ChartSeries.CreateBoxPlot(id, "Delivery", new[] { new ChartBoxPlotSampleGroup(1, new double[] { 0, 1, 2, 3, 4, 5, 6, 7, 8 }),
                 new ChartBoxPlotSampleGroup(2, new double[] { 2, 3, 4, 5, 6 }), new ChartBoxPlotSampleGroup(3, new double[] { 4, 5, 6, 7, 8 }) });
-            series.WithBoxPlotGroupIds(new[] { new ChartObservationId("earlier"), new ChartObservationId("current"), new ChartObservationId("later") });
+            series.BoxPlotGroupIds(new[] { new ChartObservationId("earlier"), new ChartObservationId("current"), new ChartObservationId("later") });
         } else if (kind == "boxes") series = ChartSeries.CreateBoxPlot(id, "Delivery", new[] { new ChartBoxPlot(1, 0, 2, 4, 6, 8), new ChartBoxPlot(2, 2, 3, 4, 5, 6), new ChartBoxPlot(3, 4, 5, 6, 7, 8) });
         else {
             var points = new[] { new ChartPoint(1, 20), new ChartPoint(2, 80), new ChartPoint(3, 40) };
             series = kind == "bar" ? ChartSeries.CreateBar(id, "Delivery", points) : kind == "line" ? ChartSeries.CreateLine(id, "Delivery", points) : throw new ArgumentOutOfRangeException(nameof(kind));
         }
-        if (kind != "raw") series.WithObservationIds(new[] { new ChartObservationId("earlier"), new ChartObservationId("current"), new ChartObservationId("later") });
-        var chart = Chart.Create().WithTitle("Native visibility").WithSubtitle("Hide an authored source observation or group")
-            .WithSize(width, 420).WithTheme(VisualTheme.Graphite(), mode).WithLegend(true).WithDataLabels(true).AddSeries(series);
-        chart.Options.ShowPointLegend = true; return chart;
+        if (kind != "raw") series.ObservationIds(new[] { new ChartObservationId("earlier"), new ChartObservationId("current"), new ChartObservationId("later") });
+        var chart = Chart.Create().Title("Native visibility").Subtitle("Hide an authored source observation or group")
+            .Size(width, 420).Theme(VisualTheme.Graphite()).ThemeMode(mode).Legend(true).DataLabels(true).AddSeries(series);
+        chart.Options.Legend.ShowPoints = true; return chart;
     }
     internal static ChartVisibilityView View(string kind, bool hidden) => new(hidden ? new[] {
         kind == "raw" ? ChartVisibilityTarget.BoxPlotGroup(new ChartSeriesId("delivery"), new ChartObservationId("current"))

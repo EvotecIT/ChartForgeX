@@ -13,6 +13,6 @@ public sealed class NativeRadialBandProgramSourceTests {
         var program = ExampleRecipeSource.EmitNativeRadialBands(family,automatic,intent,width,mode); NativeRadialMotionBeforeControls.Save("bands-program-" + family + "-" + automatic + "-" + intent + "-" + width + "-" + mode + ".cs",program);
         Assert.DoesNotContain("{{",program,StringComparison.Ordinal); Assert.Contains("class NativeRadialBandMotionRecipe",program,StringComparison.Ordinal);
         Assert.Contains("PrepareNativeTransitionJson",program,StringComparison.Ordinal); Assert.Contains("ChartVisibilityTarget.RadialOther",program,StringComparison.Ordinal);
-        Assert.Contains("WithAutomaticRadialBands",program,StringComparison.Ordinal); Assert.Contains("WithRadialBand",program,StringComparison.Ordinal); Assert.Contains("using ChartForgeX.Interactivity.Html;",program,StringComparison.Ordinal);
+        Assert.Contains("RadialBandAllocation",program,StringComparison.Ordinal); Assert.Contains("RadialBand",program,StringComparison.Ordinal); Assert.Contains("using ChartForgeX.Interactivity.Html;",program,StringComparison.Ordinal);
     }
 }

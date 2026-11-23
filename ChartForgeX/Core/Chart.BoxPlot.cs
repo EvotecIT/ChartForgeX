@@ -11,13 +11,6 @@ public sealed partial class Chart {
         var series = ChartSeries.CreateBoxPlot(name, groups, color);
         AppendSeries(series); return this;
     }
-    /// <summary>Configures box plot value direction. Multiple box plot series share distinct category slots.</summary>
-    /// <remarks>Horizontal box plots require only box plot series on the primary X value axis, with categories on Y. Configure before or after adding series.</remarks>
-    public Chart ConfigureBoxPlot(Action<ChartBoxPlotOptions> configure) {
-        if (configure == null) throw new ArgumentNullException(nameof(configure));
-        Options.BoxPlot = ChartOptionConfiguration.Configure(Options.BoxPlot, configure, options => options.Clone());
-        return this;
-    }
 
     /// <summary>
     /// Adds one box plot from raw sample values, using linearly interpolated quartiles and minimum/maximum whiskers.

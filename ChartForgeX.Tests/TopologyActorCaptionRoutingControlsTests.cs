@@ -19,8 +19,8 @@ public sealed class TopologyActorCaptionRoutingControlsTests {
     [InlineData("nonactor")]
     [InlineData("hidden-caption")]
     public void OrdinaryAndAuthoredRouteOwnersRetainTheirFacts(string control) {
-        var chart = TopologyChart.Create().WithId("actor-caption-control-" + control).WithViewport(800, 500, 24)
-            .WithLayout(TopologyLayoutMode.Manual).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family))
+        var chart = TopologyChart.Create().Id("actor-caption-control-" + control).Viewport(new TopologyViewport(800, 500, 24))
+            .LayoutMode(TopologyLayoutMode.Manual).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family))
             .AddNode("source", "Participant", 60, 150, width: 140, height: 116)
             .AddNode("target", "Action", 580, 150, width: 160, height: 100)
             .AddEdge("association", "source", "target", routing: TopologyEdgeRouting.Straight);

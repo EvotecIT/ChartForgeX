@@ -18,10 +18,10 @@ var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 #endregion
 
-var chart = TopologyChart.Create().WithId("native-usecase-advanced-actors").WithTitle("Participants in a request")
-    .WithSubtitle("Plain, hollow, business, silhouette and finite native icon actors")
-    .WithTheme(VisualTheme.Graphite(), mode).WithViewport(390, 1160, 28)
-    .WithLayout(TopologyLayoutMode.Layered, TopologyLayoutDirection.LeftToRight);
+var chart = TopologyChart.Create().Id("native-usecase-advanced-actors").Title("Participants in a request")
+    .Subtitle("Plain, hollow, business, silhouette and finite native icon actors")
+    .Theme(VisualTheme.Graphite(), mode).Viewport(new TopologyViewport(390, 1160, 28))
+    .LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(TopologyLayoutDirection.LeftToRight);
 chart.DefaultRenderOptions = new TopologyRenderOptions { FitContentToViewport = false, IncludeLegend = false,
     WrapNodeLabels = true, AllowMultilineNodeLabels = true, MaxNodeLabelLines = 6, MaxNodeSubtitleLines = 6 };
 var ids = new[] { "Plain", "Hollow", "Business", "BusinessHollow", "Silhouette", "Icon" };
@@ -53,7 +53,7 @@ chart.Accessibility.Name = "Finite native use case actor forms";
 
 #region Output
 if ((object)chart is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.WithTitle("Finite native actor forms").WithSubtitle("Hollow, business, silhouette and retained native icon participants share measured captions and routes").WithTheme(theme, mode).ToVisualArtifact();
+    var natural = topology.Title("Finite native actor forms").Subtitle("Hollow, business, silhouette and retained native icon participants share measured captions and routes").Theme(theme, mode).ToVisualArtifact();
     natural.SaveSvg("visual.svg");
     File.WriteAllBytes("visual.png", natural.ToPng());
     File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));

@@ -30,18 +30,18 @@ var orders = ChartSeries.CreateBar(new ChartSeriesId("orders"), "Orders",
     ChartPoints.FromValues(28, 34, 41));
 var latency = ChartSeries.CreateLine(new ChartSeriesId("latency"), "Latency",
     ChartPoints.FromValues(120, 95, 110));
-latency.UseSecondaryValueAxis();
+latency.SecondaryAxis();
 
 var chart = Chart.Create()
-    .WithTheme(VisualTheme.Graphite())
-    .WithTitle("Orders and response time")
-    .WithXLabels("Monday", "Tuesday", "Wednesday")
-    .WithYAxis("Orders")
-    .WithSecondaryYAxis("Latency (ms)")
+    .Theme(VisualTheme.Graphite())
+    .Title("Orders and response time")
+    .XLabels("Monday", "Tuesday", "Wednesday")
+    .YAxis(y => y.Title("Orders"))
+    .SecondaryYAxis(s => s.Title("Latency (ms)"))
     .AddSeries(orders)
     .AddSeries(latency);
-chart.ConfigureYAxis(axis => axis.Minimum = 0);
-chart.ConfigureSecondaryYAxis(axis => axis.Minimum = 0);
+chart.YAxis(axis => axis.Min = 0);
+chart.SecondaryYAxis(axis => axis.Min = 0);
 chart.SaveSvg("orders-and-latency.svg");
 chart.SavePng("orders-and-latency.png");
 ```
@@ -52,19 +52,19 @@ A horizontal mixture uses the same `ValueAxis` assignment and configures its two
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
 
-var chart = Chart.Create().WithSize(800, 440)
+var chart = Chart.Create().Size(800, 440)
     .AddHorizontalBar("Orders", new[] { new ChartPoint(1, 28), new ChartPoint(2, 34), new ChartPoint(3, 41) })
     .AddLine("Latency", new[] { new ChartPoint(1, 120), new ChartPoint(2, 95), new ChartPoint(3, 110) })
-    .WithXAxis("Orders").WithSecondaryXAxis("Latency (ms)")
-    .WithXAxisBounds(0, 50).WithSecondaryXAxisBounds(0, 150)
-    .WithXLabels("Monday", "Tuesday", "Wednesday");
-chart.Options.LineOrientation = ChartOrientation.Horizontal;
-chart.Series[1].UseSecondaryValueAxis();
+    .XAxis(x => x.Title("Orders")).SecondaryXAxis(s => s.Title("Latency (ms)"))
+    .XAxis(x => x.Bounds(0, 50)).SecondaryXAxis(s => s.Bounds(0, 150))
+    .XLabels("Monday", "Tuesday", "Wednesday");
+chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
+chart.Series[1].SecondaryAxis();
 var svg = chart.ToSvg();
 var png = chart.ToPng();
 ```
 
-Here `WithXLabels` supplies the existing fallback category catalog on physical Y. Explicit Y labels take precedence. A horizontal source point still stores category in `ChartPoint.X` and value in `Y`; orientation changes their physical projection, not their source meaning. Native viewport requests use physical names, so this chart's category window is `y` and secondary value window is `secondaryX`.
+Here `XLabels` supplies the existing fallback category catalog on physical Y. Explicit Y labels take precedence. A horizontal source point still stores category in `ChartPoint.X` and value in `Y`; orientation changes their physical projection, not their source meaning. Native viewport requests use physical names, so this chart's category window is `y` and secondary value window is `secondaryX`.
 
 Category alignment follows source X coordinates rather than series positions. The shared category owner groups corresponding bar and radial coordinates within four floating-point ULPs while retaining the original observations. Missing observations stay absent unless the selected family explicitly defines derived values. A line gap requires an authored segment break; an omitted point alone does not promise a gap in a connected line. An authored zero remains an observation.
 

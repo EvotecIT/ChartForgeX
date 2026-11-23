@@ -15,7 +15,7 @@ public sealed partial class CartesianPlotRegionTests {
     [InlineData(false, true)]
     [InlineData(true, true)]
     public void ArbitraryPivotKeepsFourPaintedRegionsAndRawBoundsUnderReversal(bool reverseX, bool reverseY) {
-        var chart = Bare().WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+        var chart = Bare().XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
             .AddScatter("Observed", new[] { new ChartPoint(1, 1), new ChartPoint(9, 9) });
         chart.Options.XAxis.Reversed = reverseX; chart.Options.YAxis.Reversed = reverseY;
         var colors = new[] { new ChartColor(180, 40, 40), new ChartColor(40, 130, 60), new ChartColor(40, 80, 180), new ChartColor(150, 90, 30) };
@@ -60,7 +60,7 @@ public sealed partial class CartesianPlotRegionTests {
 
     [Fact]
     public void OverlappingBackgroundsCompositeAuthoredAlphaAndOpacityInInsertionOrder() {
-        var chart = Bare().WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+        var chart = Bare().XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
             .AddPlotRegion(new(new ChartColor(200, 0, 0), opacity: 1))
             .AddPlotRegion(new(new ChartColor(0, 0, 200, 128), xMinimum: 5, opacity: .5));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -75,8 +75,8 @@ public sealed partial class CartesianPlotRegionTests {
     [InlineData(false)]
     [InlineData(true)]
     public void OverlappingBackgroundCaptionsKeepOpaqueReadableInkWithinTheirRegion(bool dark) {
-        var chart = Bare().WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+        var chart = Bare().Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
             .AddPlotRegion(new(new ChartColor(0, 0, 0), opacity: 1))
             .AddPlotRegion(new(new ChartColor(255, 255, 255, 128), label: "Review", opacity: .14));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -99,7 +99,7 @@ public sealed partial class CartesianPlotRegionTests {
     [InlineData(false)]
     [InlineData(true)]
     public void HorizontalChartsUsePhysicalValueXAndLinearCategorySlotsDespiteStoredCategoryScale(bool reversed) {
-        var chart = Bare().WithXAxisBounds(0, 10).WithYAxisBounds(.5, 4.5)
+        var chart = Bare().XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(.5, 4.5))
             .AddHorizontalBar("Observed", new[] { new ChartPoint(1, 2), new ChartPoint(3, 9) })
             .AddPlotRegion(new(new ChartColor(0, 0, 0), opacity: 0))
             .AddPlotRegion(new(new ChartColor(60, 120, 170), xMaximum: 4, yMinimum: -2, yMaximum: 2.5, showLabel: false));
@@ -122,12 +122,12 @@ public sealed partial class CartesianPlotRegionTests {
     [InlineData(true)]
     public void DatedXAndSecondaryLogarithmicYUseTheSelectedFinalDomain(bool reversed) {
         var start = new DateTime(2026, 3, 1).ToOADate();
-        var chart = Bare().WithXAxisBounds(start, start + 10).WithYAxisBounds(0, 10)
+        var chart = Bare().XAxis(x => x.Bounds(start, start + 10)).YAxis(y => y.Bounds(0, 10))
             .AddScatter("Primary", new[] { new ChartPoint(start, 1), new ChartPoint(start + 10, 9) })
             .AddScatter("Secondary", new[] { new ChartPoint(start, 1), new ChartPoint(start + 10, 100) });
-        chart.Series[1].UseSecondaryValueAxis(); chart.Options.XAxis.Scale = ChartScaleKind.Time;
+        chart.Series[1].SecondaryAxis(); chart.Options.XAxis.Scale = ChartScaleKind.Time;
         chart.Options.SecondaryYAxis.Scale = ChartScaleKind.Logarithmic;
-        chart.Options.SecondaryYAxis.Minimum = 1; chart.Options.SecondaryYAxis.Maximum = 100;
+        chart.Options.SecondaryYAxis.Min = 1; chart.Options.SecondaryYAxis.Max = 100;
         chart.Options.XAxis.Reversed = reversed; chart.Options.SecondaryYAxis.Reversed = reversed;
         chart.AddPlotRegion(new(new ChartColor(0, 0, 0), opacity: 0))
             .AddPlotRegion(new(new ChartColor(50, 150, 90), xMinimum: start + 4, xMaximum: start + 20, yMinimum: 10,
@@ -144,7 +144,7 @@ public sealed partial class CartesianPlotRegionTests {
     [InlineData(360)]
     [InlineData(800)]
     public void CaptionFitsInsideItsRegionOrReportsOverflowWithOriginalTextRetained(int width) {
-        var chart = Bare().WithSize(width, 300).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+        var chart = Bare().Size(width, 300).XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
             .AddScatter("Observed", new[] { new ChartPoint(2, 2), new ChartPoint(8, 8) })
             .AddPlotRegion(new(new ChartColor(120, 170, 80), xMinimum: 3, xMaximum: 7, yMinimum: 3, yMaximum: 7, label: "Review"))
             .AddPlotRegion(new(new ChartColor(220, 80, 40), xMinimum: 9.9, label: "A caption that cannot fit"));
@@ -176,8 +176,8 @@ public sealed partial class CartesianPlotRegionTests {
         chart.AddPlotRegion(new(color, xMinimum: 0)); Assert.Throws<InvalidOperationException>(() => chart.ToSvg());
     }
 
-    private static Chart Bare() => Chart.Create().WithSize(600, 360).WithHeader(false).WithLegend(false)
-        .WithAxes(false).WithGrid(false).WithDataLabels(false).WithTheme(VisualTheme.Graphite());
+    private static Chart Bare() => Chart.Create().Size(600, 360).ShowHeader(false).Legend(false)
+        .Axes(false).ShowGrid(false).DataLabels(false).Theme(VisualTheme.Graphite());
     private static double Luminance(ChartColor color) {
         double Channel(byte value) { var n = value / 255d; return n <= .04045 ? n / 12.92 : Math.Pow((n + .055) / 1.055, 2.4); }
         return .2126 * Channel(color.R) + .7152 * Channel(color.G) + .0722 * Channel(color.B);

@@ -11,12 +11,12 @@ public static class MermaidRailroadRendering {
     public static RailroadDiagramBlock ToRailroadDiagramBlock(this MermaidRailroadDocument document, MermaidRailroadRenderOptions? options = null) {
         if (document == null) throw new ArgumentNullException(nameof(document)); options ??= new MermaidRailroadRenderOptions();
         if (!Enum.IsDefined(typeof(MermaidRailroadDialect), document.Dialect)) throw new ArgumentOutOfRangeException(nameof(document), "Unknown railroad source dialect.");
-        var block = RailroadDiagramBlock.Create().WithTitle(MermaidHeading.Title(document, options.Title, document.Title, "Railroad grammar"))
-            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle));
+        var block = RailroadDiagramBlock.Create().Title(MermaidHeading.Title(document, options.Title, document.Title, "Railroad grammar"))
+            .Subtitle(MermaidHeading.Subtitle(options.Subtitle));
         block.RuleComparison = document.Dialect == MermaidRailroadDialect.Abnf ? RailroadRuleComparison.OrdinalIgnoreCase : RailroadRuleComparison.Ordinal;
         foreach (var rule in document.Rules) block.AddRule(rule.Id, rule.Definition.Expression);
         MermaidPresentation.Apply(block, document, options.Presentation);
-        return block.WithNaturalSize(options.Width ?? 0, options.Height ?? 0);
+        return block.NaturalSize(options.Width ?? 0, options.Height ?? 0);
     }
     /// <summary>Wraps the measured native producer in the existing bounded Mermaid artifact policy.</summary>
     public static VisualArtifact ToVisualArtifact(this MermaidRailroadDocument document, MermaidRailroadRenderOptions? options = null) {

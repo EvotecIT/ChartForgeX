@@ -16,7 +16,7 @@ internal static class DirectoryScaleTopologyFixture {
     public static TopologyChart CriticalGroups(int domains = 5) {
         var nodes = domains * 20;
         var chart = Create("critical-groups", "Critical group membership", Height(260, nodes + domains * 2, 420, 1400));
-        chart.WithRenderOptions(new TopologyRenderOptions {
+        chart.DefaultRenderOptions(new TopologyRenderOptions {
             ReadableDenseLayout = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeTileSubtitles = true,
             IncludeEdgeLabels = false, IncludeStatusBadges = false
         });
@@ -47,10 +47,10 @@ internal static class DirectoryScaleTopologyFixture {
         if (links > (long)sites * (sites - 1) / 2) throw new ArgumentOutOfRangeException(nameof(links), "More links than distinct site pairs.");
         var regions = new[] { "AMER", "APAC", "EMEA" };
         var chart = Create("site-overview", "Replication topology", Height(300, sites + regions.Length * 2, 520, 1800));
-        chart.WithRenderOptions(new TopologyRenderOptions {
+        chart.DefaultRenderOptions(new TopologyRenderOptions {
             ReadableDenseLayout = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeTileSubtitles = true, IncludeEdgeLabels = false
         });
-        chart.WithLegend(TopologyLegend.Create("Legend")
+        chart.Legend(TopologyLegend.Create("Legend")
             .AddStatus("Healthy", TopologyHealthStatus.Healthy).AddStatus("Delayed", TopologyHealthStatus.Warning)
             .AddStatus("Failing", TopologyHealthStatus.Critical).AddStatus("Not observed", TopologyHealthStatus.Unknown)
             .AddNodeKind("Site", TopologyNodeKind.Location).AddEdgeKind("Replication", TopologyEdgeKind.Replication));
@@ -91,7 +91,7 @@ internal static class DirectoryScaleTopologyFixture {
         var domains = new[] { ("CORP", -1), ("EMEA", 2), ("AMER", 0), ("APAC", 1), ("LAB", -1) };
         var regions = new[] { "AMER", "APAC", "EMEA" };
         var chart = Create("controller-detail", "Replication topology", Height(300, controllers + sites * 2, 520, 1800));
-        chart.WithRenderOptions(new TopologyRenderOptions {
+        chart.DefaultRenderOptions(new TopologyRenderOptions {
             ReadableDenseLayout = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeEdgeLabels = false
         });
         var random = new Random(200);
@@ -127,8 +127,8 @@ internal static class DirectoryScaleTopologyFixture {
         return chart;
     }
 
-    private static TopologyChart Create(string id, string title, double height) => TopologyChart.Create().WithId("directory-scale-" + id).WithTitle(title)
-        .WithViewport(ReportWidth, height, 24).WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.LeftToRight);
+    private static TopologyChart Create(string id, string title, double height) => TopologyChart.Create().Id("directory-scale-" + id).Title(title)
+        .Viewport(new TopologyViewport(ReportWidth, height, 24)).LayoutMode(TopologyLayoutMode.DenseGrouped).LayoutDirection(TopologyLayoutDirection.LeftToRight);
 
     private static double Height(double baseHeight, int items, double minimum, double maximum) =>
         Math.Max(minimum, Math.Min(maximum, baseHeight + Math.Ceiling(Math.Sqrt(items)) * 90));

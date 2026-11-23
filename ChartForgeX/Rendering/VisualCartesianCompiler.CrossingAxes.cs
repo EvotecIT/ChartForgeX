@@ -27,16 +27,16 @@ internal static partial class VisualCartesianCompiler {
         DrawCrossingAxis(chart.Options.XAxis, xAxis, xTicks, primaryMap.X, primaryRange.MinX, primaryRange.MaxX,
             XAxisTitle(chart), true, false, !horizontal);
         DrawCrossingAxis(chart.Options.YAxis, yAxis, yTicks, primaryMap.Y, primaryRange.MinY, primaryRange.MaxY,
-            horizontal ? ChartTimeScale.DecorateTitle(chart.Options.YAxis, chart.YAxisTitle) : chart.YAxisTitle, false, false, horizontal);
+            horizontal ? ChartTimeScale.DecorateTitle(chart.Options.YAxis, chart.Options.YAxis.Title) : chart.Options.YAxis.Title, false, false, horizontal);
         if (secondaryRange != null && secondaryMap != null) {
             if (horizontal) {
                 var secondary = chart.Options.SecondaryXAxis; labels.IncludeValueTicks(secondary, secondaryRange.MinX, secondaryRange.MaxX);
                 DrawCrossingAxis(secondary, secondary, labels.Ticks(secondary, secondaryRange.MinX, secondaryRange.MaxX), secondaryMap.X,
-                    secondaryRange.MinX, secondaryRange.MaxX, ChartTimeScale.DecorateTitle(secondary, chart.SecondaryXAxisTitle), true, true, false);
+                    secondaryRange.MinX, secondaryRange.MaxX, ChartTimeScale.DecorateTitle(secondary, chart.Options.SecondaryXAxis.Title), true, true, false);
             } else {
                 var secondary = chart.Options.SecondaryYAxis;
                 DrawCrossingAxis(secondary, secondary, labels.Ticks(secondary, secondaryRange.MinY, secondaryRange.MaxY), secondaryMap.Y,
-                    secondaryRange.MinY, secondaryRange.MaxY, chart.SecondaryYAxisTitle, false, true, false);
+                    secondaryRange.MinY, secondaryRange.MaxY, chart.Options.SecondaryYAxis.Title, false, true, false);
             }
         }
 

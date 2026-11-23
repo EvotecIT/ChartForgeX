@@ -10,10 +10,10 @@ internal static class NativeHierarchyMotionRecipe {
             new ChartHierarchyItem("subscriptions", "Subscriptions", "recurring", reading),
             new ChartHierarchyItem("support", "Support", "recurring", 20), new ChartHierarchyItem("services", "Services", "revenue", 25) };
         var id = new ChartSeriesId("revenue"); var series = family == "treemap" ? ChartSeries.CreateTreemap(id, "Revenue", items) : ChartSeries.CreateSunburst(id, "Revenue", items);
-        var chart = Chart.Create().WithTitle("Native hierarchy presentation").WithSubtitle("Values, source membership and native roots retain authored identity")
-            .WithSize(width, 420).WithTheme(VisualTheme.Graphite().WithFontFamily(fontFamily), mode).WithLegend(true).WithDataLabels(true).AddSeries(series);
-        chart.Options.ShowPointLegend = family == "treemap";
-        if (family != "treemap") chart.ConfigureSunburst(options => options.ParentValuePolicy = authored ? ChartHierarchyValuePolicy.AuthoredTotal : ChartHierarchyValuePolicy.LeafAggregate);
+        var chart = Chart.Create().Title("Native hierarchy presentation").Subtitle("Values, source membership and native roots retain authored identity")
+            .Size(width, 420).Theme(VisualTheme.Graphite().WithFontFamily(fontFamily)).ThemeMode(mode).Legend(true).DataLabels(true).AddSeries(series);
+        chart.Options.Legend.ShowPoints = family == "treemap";
+        if (family != "treemap") chart.Sunburst(options => options.ParentValuePolicy = authored ? ChartHierarchyValuePolicy.AuthoredTotal : ChartHierarchyValuePolicy.LeafAggregate);
         return chart;
     }
     internal static ChartVisibilityView View(bool hidden = false, bool subroot = false) => new(hidden

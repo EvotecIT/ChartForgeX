@@ -5,7 +5,7 @@ using ChartForgeX.VisualArtifacts;
 
 internal static partial class Program {
     private static void TopologyAlignmentReviewContracts() {
-        var chart = TopologyChart.Create().WithTitle("").WithViewport(900, 700).WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().Title("").Viewport(new TopologyViewport(900, 700)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("source", "Source", 160, 80, width: 150, height: 72)
             .AddNode("obstacle", "Audit", 160, 168, width: 150, height: 72)
             .AddNode("target", "Bus", 206, 256, width: 58, height: 44)
@@ -17,7 +17,7 @@ internal static partial class Program {
         var restored = VisualArtifactInterchangeEnvelope.FromJson(saved.ToJson()).ToTopologyChart(); Clear(restored.ToVisualArtifact().ToInterchangeEnvelope());
         PackageAssertions.Require(restored.Edges[0].Routing == TopologyEdgeRouting.Orthogonal && restored.Edges[0].SourcePort == TopologyEdgePort.Bottom
             && restored.Edges[0].TargetPort == TopologyEdgePort.Top, "Packed body-clear route changed authored routing or ports.");
-        var nested = TopologyChart.Create().WithTitle("").WithLayout(TopologyLayoutMode.Layered, TopologyLayoutDirection.TopToBottom)
+        var nested = TopologyChart.Create().Title("").LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(TopologyLayoutDirection.TopToBottom)
             .AddAutoGroup("outer", "Outer").AddAutoGroup("inner", "Inner").AddAutoGroup("first", "First").AddAutoGroup("second", "Second")
             .AddAutoNode("a", "A", groupId: "first").AddAutoNode("b", "B", groupId: "second");
         nested.Groups.Single(group => group.Id == "outer").LayoutDirection = TopologyLayoutDirection.LeftToRight;

@@ -11,7 +11,7 @@ internal static partial class VisualCartesianCompiler {
     internal static IVisualValuePlan? TryCaptureErrorValues(Chart chart, VisualRenderContext context,
         VisualSceneTextCapture text, VisualScene scene, ChartCartesianProjection? axes) {
         if (!context.CaptureNativeValueSource || axes == null || ChartCartesianOrientation.IsHorizontal(chart) || !text.SupportsCapturedReplay
-            || chart.Series.Count == 0 || chart.Options.ShowPointLegend || chart.Options.ValueFormatter != null
+            || chart.Series.Count == 0 || chart.Options.Legend.ShowPoints || chart.Options.ValueFormatter != null
             || chart.Series.Any(series => series.Kind != ChartSeriesKind.ErrorBar || series.Id.IsAutomatic || series.ErrorBars.Count == 0
                 || series.ObservationIds.Count != series.ErrorBars.Count || Enumerable.Range(0, series.ErrorBars.Count).Any(index => !series.ObservationIds.ContainsKey(index)))) return null;
         if (!ComponentValueAxesSupported(chart)) return null;

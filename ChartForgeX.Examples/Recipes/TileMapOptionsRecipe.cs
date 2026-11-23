@@ -11,9 +11,7 @@ public static class TileMapOptionsRecipe {
                 new ChartRegionMapItem("WA", 74), new ChartRegionMapItem("IL", 58),
                 new ChartRegionMapItem("CO", 39), new ChartRegionMapItem("NC", 66)
             }, id: new ChartSeriesId("state-observations"))
-            .WithMapLabels()
-            .WithMapColorScale(ChartColorScale.Diverging(colors.Status.Critical.Fill, colors.Surface, colors.Status.Pass.Fill, 50)
-                .WithValueRange(0, 100).WithLabels("Below target", "Target", "Above target").WithNoDataColor(colors.Border))
-            .WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right);
+            .Map(m => m.ShowLabels().ColorScale(ChartColorScale.Diverging(colors.Status.Critical.Fill, colors.Surface, colors.Status.Pass.Fill, 50)
+                .WithValueRange(0, 100).WithLabels("Below target", "Target", "Above target").WithNoDataColor(colors.Border)).ScaleLegendPosition(ChartMapScaleLegendPosition.Right));
     }
 }

@@ -218,22 +218,22 @@ public sealed partial class AnnotationTargetIdentityBrowserTests {
     }
 
     private static Chart Model(bool dark, bool reversed = false) {
-        var chart = Chart.Create().WithSize(640, 360).WithHeader(false).WithLegend(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10);
+        var chart = Chart.Create().Size(640, 360).ShowHeader(false).Legend(false)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10));
         chart.AddHorizontalLine(reversed ? 7 : 3, "Target").AddHorizontalLine(reversed ? 3 : 7, "Target")
             .AddVerticalLine(5).AddVerticalLine(5).AddHorizontalBand(4, 6, "annotation-0");
         return chart;
     }
 
     private static Chart PeerModel(bool dark, bool reversed = false) {
-        var chart = Model(dark, reversed).WithXLabels("East", "West");
+        var chart = Model(dark, reversed).XLabels("East", "West");
         chart.AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("shared-readings"), "Shared readings",
             new[] { new ChartPoint(1, 2), new ChartPoint(2, 8) })
-            .WithObservationId(0, new ChartObservationId("shared-east")).WithObservationId(1, new ChartObservationId("shared-west")));
+            .ObservationId(0, new ChartObservationId("shared-east")).ObservationId(1, new ChartObservationId("shared-west")));
         chart.AddScatter("Local readings", new[] { new ChartPoint(1, 3), new ChartPoint(2, 7), new ChartPoint(3, 5) });
-        chart.Series[^1].WithObservationId(0, new ChartObservationId("local-east")).WithObservationId(1, new ChartObservationId("local-west"))
-            .WithObservationId(2, new ChartObservationId("shared-east"));
+        chart.Series[^1].ObservationId(0, new ChartObservationId("local-east")).ObservationId(1, new ChartObservationId("local-west"))
+            .ObservationId(2, new ChartObservationId("shared-east"));
         return chart;
     }
 
@@ -241,9 +241,9 @@ public sealed partial class AnnotationTargetIdentityBrowserTests {
         var series = new ChartSeries(new ChartSeriesId("parts"), "Parts", ChartSeriesKind.Pie,
             new[] { new ChartPoint(1, 40), new ChartPoint(2, 30), new ChartPoint(3, 20), new ChartPoint(4, 10) });
         foreach (var (id, index) in new[] { "part-a", "part-b", "part-c", "part-d" }.Select((id, index) => (id, index)))
-            series.WithObservationId(index, new ChartObservationId(id));
-        var chart = Chart.Create().WithSize(520, 320).WithHeader(false).WithLegend(false).AddSeries(series);
-        chart.Options.MaximumPieSlices = maximumSlices;
+            series.ObservationId(index, new ChartObservationId(id));
+        var chart = Chart.Create().Size(520, 320).ShowHeader(false).Legend(false).AddSeries(series);
+        chart.Options.Pie.MaxSlices = maximumSlices;
         return chart;
     }
 

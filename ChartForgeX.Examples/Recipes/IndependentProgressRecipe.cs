@@ -6,10 +6,10 @@ public static class IndependentProgressRecipe {
             new ChartProgressItem("Reviewed fraction", .72, 0, 1),
             new ChartProgressItem("Verified jobs", 1250, 0, 2000),
             new ChartProgressItem("Temperature change", -8, -20, 20)
-        }).WithObservationId(0, new ChartObservationId("reviewed"))
-            .WithObservationId(1, new ChartObservationId("verified"))
-            .WithObservationId(2, new ChartObservationId("temperature"));
-        return Chart.Create().WithSize(variant == "compact" ? 390 : 760, 340).WithTitle("Progress in each row's units")
-            .WithTheme(VisualTheme.Graphite(), mode).WithLegend(false).AddSeries(rows);
+        }).ObservationId(0, new ChartObservationId("reviewed"))
+            .ObservationId(1, new ChartObservationId("verified"))
+            .ObservationId(2, new ChartObservationId("temperature"));
+        return Chart.Create().Size(variant == "compact" ? 390 : 760, 340).Title("Progress in each row's units")
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Legend(false).AddSeries(rows);
     }
 }

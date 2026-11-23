@@ -84,9 +84,7 @@ internal static class VisualCanvasTypographyExamples {
 
     private static VisualCanvas CreateCanvas(int width, int height, ThemeMode mode) =>
         VisualCanvas.Create(width, height)
-            .WithTheme(VisualTheme.Graphite(), mode)
-            .WithBackdrop(VisualCanvasBackdropStyle.Plain)
-            .WithBackground(
-                mode == ThemeMode.Dark ? ChartColor.FromHex("#071426") : ChartColor.FromHex("#EAF1FA"),
-                mode == ThemeMode.Dark ? ChartColor.FromHex("#020713") : ChartColor.FromHex("#F8FAFC"));
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode)
+            .BackdropStyle(VisualCanvasBackdropStyle.Plain)
+            .BackgroundTop(mode == ThemeMode.Dark ? ChartColor.FromHex("#071426") : ChartColor.FromHex("#EAF1FA")).BackgroundBottom(mode == ThemeMode.Dark ? ChartColor.FromHex("#020713") : ChartColor.FromHex("#F8FAFC"));
 }

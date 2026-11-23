@@ -14,7 +14,7 @@ namespace ChartForgeX.Tests;
 [Trait("BrowserSuite", "Compatibility")]
 public sealed class TopologyExplicitLabelMarkerTests {
     internal static TopologyChart Source(TopologyLabelVerticalAnchor anchor = TopologyLabelVerticalAnchor.TextBaseline) {
-        var chart = TopologyChart.Create().WithId("pinned-handoff").WithViewport(760, 440, 24);
+        var chart = TopologyChart.Create().Id("pinned-handoff").Viewport(new TopologyViewport(760, 440, 24));
         chart.AddNode("a", "Accept", 50, 160, width: 150, height: 70); chart.AddNode("b", "Build", 540, 160, width: 150, height: 70);
         chart.AddEdge("handoff", "a", "b", "Review", direction: VisualLinkDirection.Bidirectional);
         var edge = chart.Edges[0]; edge.PathGeometry = new TopologyPathGeometry("M 200 195 C 300 25 440 25 540 195");

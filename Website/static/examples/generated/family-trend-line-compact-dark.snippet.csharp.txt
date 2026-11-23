@@ -24,7 +24,7 @@ var requests = new[] { 1180d, 1242, 1214, 1302, 1287, 1356, 1341, 1408, 1397, 14
 var points = requests.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();
 var observations = ChartSeries.CreateScatter(new ChartSeriesId("observations"), "Weekly requests", points);
 var trend = ChartSeries.CreateTrendLine(new ChartSeriesId("least-squares-trend"), "Least-squares trend", points);
-var chart = Chart.Create().WithXLabels(weeks).WithYAxis("Requests").AddSeries(observations).AddSeries(trend);
+var chart = Chart.Create().XLabels(weeks).YAxis(y => y.Title("Requests")).AddSeries(observations).AddSeries(trend);
 
 #region Output
 var context = new VisualRenderContext(

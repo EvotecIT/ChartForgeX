@@ -37,7 +37,7 @@ public sealed class GanttDependencyWindowTests {
     public async Task ClippedTasksDoNotLeavePhantomDependencyInkInStaticBrowserOutput(bool dark, int width) {
         if (!InteractiveChartBrowser.Enabled) return;
         var chart = Create(1, 2, 3, 4, false, width)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         chart.AddGanttTask("Visible", 12, 18).AddGanttDependency(chart.Series[1], chart.Series[2]);
         await using var session = await InteractiveChartBrowser.OpenAsync(
             "<!doctype html><html><body style='margin:0'>" + chart.ToHtmlFragment() + "</body></html>", width, 400);
@@ -55,8 +55,8 @@ public sealed class GanttDependencyWindowTests {
     }
 
     private static Chart Create(double firstStart, double firstEnd, double nextStart, double nextEnd, bool milestones, int width) {
-        var chart = Chart.Create().WithSize(width, 360).WithLegend(false).WithDataLabels(false)
-            .ConfigureXAxis(axis => { axis.Minimum = 10; axis.Maximum = 20; });
+        var chart = Chart.Create().Size(width, 360).Legend(false).DataLabels(false)
+            .XAxis(axis => { axis.Min = 10; axis.Max = 20; });
         if (milestones) chart.AddGanttMilestone("First", firstStart).AddGanttMilestone("Next", nextStart);
         else chart.AddGanttTask("First", firstStart, firstEnd).AddGanttTask("Next", nextStart, nextEnd);
         return chart.AddGanttDependency(chart.Series[0], chart.Series[1]);

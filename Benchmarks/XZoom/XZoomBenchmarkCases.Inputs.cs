@@ -55,14 +55,14 @@ public static partial class XZoomBenchmarkCases {
         input.Count = shape[1] switch { "small" => 8, "regular" => 256, "default" => 256, "dense" => 2048, "labeled" => 128, "references" => 64,
             _ => throw new ArgumentOutOfRangeException(nameof(descriptor)) };
         var labeled = shape[1] is "labeled" or "references";
-        var chart = Chart.Create().WithLegend(false).WithXAxis("Sample").WithYAxis("Primary")
-            .WithXAxisBounds(0, input.Count - 1).WithYAxisBounds(0, 100);
-        if (labeled) chart.WithDataLabels();
+        var chart = Chart.Create().Legend(false).XAxis(x => x.Title("Sample")).YAxis(y => y.Title("Primary"))
+            .XAxis(x => x.Bounds(0, input.Count - 1)).YAxis(y => y.Bounds(0, 100));
+        if (labeled) chart.DataLabels();
         AddSeries(chart, shape[0] == "step", "Primary", Points(input.Count, false), Blue, labeled || shape[1] == "small");
         if (shape[1] == "references") {
             AddSeries(chart, shape[0] == "step", "Secondary", Points(input.Count, true), Purple, true);
-            chart.Series[1].UseSecondaryValueAxis();
-            chart.WithSecondaryYAxis("Secondary").WithSecondaryYAxisBounds(1, 1000).WithSecondaryYAxisScale(ChartScaleKind.Logarithmic);
+            chart.Series[1].SecondaryAxis();
+            chart.SecondaryYAxis(s => s.Title("Secondary").Bounds(1, 1000).Scale(ChartScaleKind.Logarithmic));
             chart.AddHorizontalLine(40, "Fixed Y reference").AddVerticalLine((input.Count - 1) * .37, "Moving X reference")
                 .AddHorizontalBand(10, 20, "Fixed Y band").AddVerticalBand((input.Count - 1) * .55, (input.Count - 1) * .7, "Moving X band")
                 .AddPlotRegion(new ChartPlotRegion(new ChartColor(200, 160, 45), xMinimum: (input.Count - 1) * .2, xMaximum: (input.Count - 1) * .4,
@@ -89,9 +89,9 @@ public static partial class XZoomBenchmarkCases {
     private static void AddSeries(Chart chart, bool step, string name, ChartPoint[] points, ChartColor color, bool markers) {
         if (step) chart.AddStepLine(name, points, color); else chart.AddLine(name, points, color);
         var series = chart.Series[^1];
-        if (step) series.WithInterpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
+        if (step) series.Interpolation(ChartInterpolation.Step, ChartStepPosition.Middle);
         series.StrokeWidth = 1.5;
-        series.ConfigureMarkers(options => { options.Enabled = markers; options.Radius = 2.5; options.StrokeWidth = 1; });
+        series.Markers(options => { options.Enabled = markers; options.Radius = 2.5; options.StrokeWidth = 1; });
     }
 
     private static string SourceDigest(ZoomInput input) {
@@ -99,9 +99,9 @@ public static partial class XZoomBenchmarkCases {
         var source = new StringBuilder();
         void Add(object? value) => source.Append(Convert.ToString(value, CultureInfo.InvariantCulture)).Append('|');
         void Number(double? value) => source.Append(value?.ToString("R", CultureInfo.InvariantCulture) ?? "null").Append('|');
-        Add(chart.Options.XAxis.Reversed); Number(chart.Options.XAxis.Minimum); Number(chart.Options.XAxis.Maximum);
-        Number(chart.Options.YAxis.Minimum); Number(chart.Options.YAxis.Maximum); Add(chart.Options.ShowDataLabels);
-        Number(chart.Options.SecondaryYAxis.Minimum); Number(chart.Options.SecondaryYAxis.Maximum); Add(chart.Options.SecondaryYAxis.Scale);
+        Add(chart.Options.XAxis.Reversed); Number(chart.Options.XAxis.Min); Number(chart.Options.XAxis.Max);
+        Number(chart.Options.YAxis.Min); Number(chart.Options.YAxis.Max); Add(chart.Options.DataLabels.Visible);
+        Number(chart.Options.SecondaryYAxis.Min); Number(chart.Options.SecondaryYAxis.Max); Add(chart.Options.SecondaryYAxis.Scale);
         foreach (var series in chart.Series) {
             Add(series.Name); Add(series.Kind); Add(series.Interpolation); Add(series.StepPosition); Add(series.ValueAxis);
             Add(series.Color?.ToHexRgba()); Number(series.StrokeWidth); Add(series.Markers.Enabled); Number(series.Markers.Radius);

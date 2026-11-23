@@ -141,8 +141,8 @@ internal static partial class VisualCartesianCompiler {
         var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.FontWithWeight(context.Theme.Typography.AxisTitleWeight),
             FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.MutedForeground });
         var titled = new[] {
-            chart.Options.YAxis.Visible && chart.YAxisTitle.Length > 0 || columns.Any(column => !column.State.End && column.State.Definition.Title.Length > 0),
-            secondaryShown && chart.SecondaryYAxisTitle.Length > 0 || columns.Any(column => column.State.End && column.State.Definition.Title.Length > 0)
+            chart.Options.YAxis.Visible && chart.Options.YAxis.Title.Length > 0 || columns.Any(column => !column.State.End && column.State.Definition.Title.Length > 0),
+            secondaryShown && chart.Options.SecondaryYAxis.Title.Length > 0 || columns.Any(column => column.State.End && column.State.Definition.Title.Length > 0)
         };
         foreach (var end in new[] { false, true }) {
             var side = columns.Where(column => column.State.End == end && column.State.Definition.Title.Length > 0).ToList();
@@ -153,7 +153,7 @@ internal static partial class VisualCartesianCompiler {
                 : Math.Max(viewport.Left, plot.Left - columns.Where(column => !column.State.End).Max(column => column.Outer));
             var entries = side.OrderByDescending(column => column.Outer)
                 .Select(column => (Text: column.State.Definition.Title, Color: (ChartColor?)column.State.Color, Role: "axis-additional-y-title")).ToList();
-            var inner = end ? secondaryShown ? chart.SecondaryYAxisTitle : string.Empty : chart.Options.YAxis.Visible ? chart.YAxisTitle : string.Empty;
+            var inner = end ? secondaryShown ? chart.Options.SecondaryYAxis.Title : string.Empty : chart.Options.YAxis.Visible ? chart.Options.YAxis.Title : string.Empty;
             if (inner.Length > 0) entries.Add((inner, end ? secondaryAccent : primaryAccent, end ? "axis-secondary-y-title" : "axis-y-title"));
             var cursor = outerEdge;
             foreach (var entry in entries) {

@@ -15,11 +15,11 @@ public sealed class EmptyHorizontalLineCategoryCaptionTests {
     [InlineData(false, false, 800, false)]
     [InlineData(true, false, 360, true)]
     public async Task EmptyLineCompanionsPreserveBarCategoryCaptionsAndPixels(bool step, bool legacy, int width, bool dark) {
-        var chart = Chart.Create().WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
+        var chart = Chart.Create().ShowHeader(false).Legend(false).DataLabels(false)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddHorizontalBar("Readings", new[] { new ChartPoint(1, 20), new ChartPoint(2, 40), new ChartPoint(3, 60) });
-        chart.WithSize(width, 320);
-        chart.Options.LineOrientation = ChartOrientation.Horizontal;
+        chart.Size(width, 320);
+        chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
         var labels = legacy ? chart.Options.XAxis.Labels : chart.Options.YAxis.Labels;
         labels.Add(new ChartAxisLabel(1, "Alpha")); labels.Add(new ChartAxisLabel(2, "Beta")); labels.Add(new ChartAxisLabel(3, "Gamma"));
         var before = chart.Prepare(VisualExportRequest.ForChart(chart).Context);

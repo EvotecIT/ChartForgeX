@@ -1,8 +1,10 @@
+using PowerForge.Fluent;
 namespace ChartForgeX.Interactivity;
 
 /// <summary>
 /// Describes clustering and detail-reduction thresholds for graph explorer adapters.
 /// </summary>
+[Fluent]
 public sealed class GraphLevelOfDetailOptions {
     /// <summary>Gets or sets the node count at which adapters should prefer collapsed or summarized views.</summary>
     public int ClusterNodeThreshold { get; set; } = 150;

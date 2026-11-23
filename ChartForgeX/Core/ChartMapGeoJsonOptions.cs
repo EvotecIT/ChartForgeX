@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>
 /// Configures how GeoJSON features are converted into map regions and geographic observations.
 /// </summary>
+[Fluent]
 public sealed class ChartMapGeoJsonOptions {
     private string[] _codePropertyNames = new[] { "NUTS_ID", "nuts_id", "id", "code", "CODE", "ISO_A2", "iso_a2", "GEOID", "geoid" };
     private string[] _namePropertyNames = new[] { "NUTS_NAME", "NAME_LATN", "name", "NAME", "nam_en", "label", "LABEL" };
@@ -191,24 +193,6 @@ public sealed class ChartMapGeoJsonOptions {
             if (value < 0 || value > 8) throw new ArgumentOutOfRangeException(nameof(value), value, "Coordinate precision must be between zero and eight decimal places.");
             _coordinatePrecision = value;
         }
-    }
-
-    /// <summary>
-    /// Configures a longitude/latitude window used to include imported GeoJSON features.
-    /// </summary>
-    /// <param name="minimumLongitude">The minimum longitude in degrees.</param>
-    /// <param name="maximumLongitude">The maximum longitude in degrees.</param>
-    /// <param name="minimumLatitude">The minimum latitude in degrees.</param>
-    /// <param name="maximumLatitude">The maximum latitude in degrees.</param>
-    /// <param name="includeIntersections">Whether features crossing the window are included.</param>
-    /// <returns>The current options instance.</returns>
-    public ChartMapGeoJsonOptions WithCoordinateBounds(double minimumLongitude, double maximumLongitude, double minimumLatitude, double maximumLatitude, bool includeIntersections = true) {
-        MinimumLongitude = minimumLongitude;
-        MaximumLongitude = maximumLongitude;
-        MinimumLatitude = minimumLatitude;
-        MaximumLatitude = maximumLatitude;
-        IncludeFeaturesIntersectingCoordinateBounds = includeIntersections;
-        return this;
     }
 
     /// <summary>

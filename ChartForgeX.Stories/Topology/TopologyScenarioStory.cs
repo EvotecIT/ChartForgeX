@@ -49,7 +49,7 @@ public static class TopologyScenarioStoryExtensions {
         }
 
         var story = VisualStory.Create(chart.Title is { Length: > 0 } title ? title + " · " + resolved.Label : resolved.Label)
-            .WithDescription(string.IsNullOrWhiteSpace(resolved.Scenario.Description) ? resolved.Label : resolved.Scenario.Description!.Trim());
+            .Description(string.IsNullOrWhiteSpace(resolved.Scenario.Description) ? resolved.Label : resolved.Scenario.Description!.Trim());
         PreparedTopology? first = null;
         var digits = resolved.Steps.Count.ToString(CultureInfo.InvariantCulture).Length;
         foreach (var step in resolved.Steps) {
@@ -63,8 +63,8 @@ public static class TopologyScenarioStoryExtensions {
             scene.Panel("step", StepSurface(step), Heading(step), weight: wide ? 0.8 : 1);
         }
 
-        if (options.Format.HasValue) story.WithFormat(options.Format.Value);
-        else story.WithSize(StoryWidth(first!), StoryHeight(first!));
+        if (options.Format.HasValue) story.Format(options.Format.Value);
+        else story.Size(StoryWidth(first!), StoryHeight(first!));
         story.Outcome("flow", resolved.Label, "topology");
         return story;
     }

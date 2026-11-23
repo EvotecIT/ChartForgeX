@@ -20,7 +20,7 @@ var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = TopologyRecipe.Create("expanded", mode);
 if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.WithTitle("Service request topology").WithSubtitle("Groups, status, details and routed links").WithTheme(theme.WithFontFamily(ChartFontStacks.ProductSans), mode).ToVisualArtifact();
+    var natural = topology.Title("Service request topology").Subtitle("Groups, status, details and routed links").Theme(theme.WithFontFamily(ChartFontStacks.ProductSans), mode).ToVisualArtifact();
     natural.SaveSvg("visual.svg");
     File.WriteAllBytes("visual.png", natural.ToPng());
     File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
@@ -73,8 +73,8 @@ public static class TopologyRecipe {
             return chart;
         }
 
-        chart.WithViewport(variant == "compact" ? 390 : 1100, 620).WithLayout(TopologyLayoutMode.Layered)
-            .WithLayoutDirection(variant == "compact" ? TopologyLayoutDirection.TopToBottom : TopologyLayoutDirection.LeftToRight);
+        chart.Viewport(new TopologyViewport(variant == "compact" ? 390 : 1100, 620)).LayoutMode(TopologyLayoutMode.Layered)
+            .LayoutDirection(variant == "compact" ? TopologyLayoutDirection.TopToBottom : TopologyLayoutDirection.LeftToRight);
 
         chart.Groups.Add(new TopologyGroup {
             Id = "primary", Label = "Primary region",

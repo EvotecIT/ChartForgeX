@@ -25,7 +25,7 @@ public sealed class TopologyOptionalCaptionFieldsTests {
             frame: new VisualFrame(showLegend: false), font: FontSpec.FromFamily("CFX Unresolvable Optional Caption Font"));
         var options = new TopologyRenderOptions { IncludeLegend = false, MaxNodeLabelLines = 1 };
         TopologyChart Chart(bool blank) {
-            var chart = TopologyChart.Create().WithViewport(700, 250);
+            var chart = TopologyChart.Create().Viewport(new TopologyViewport(700, 250));
             chart.Nodes.Add(new TopologyNode {
                 Id = "owner", Label = label, X = 30, Y = 30, Width = 70, Height = 24,
                 Shape = shaped ? TopologyNodeShape.Rectangle : null,
@@ -66,7 +66,7 @@ public sealed class TopologyOptionalCaptionFieldsTests {
     [InlineData(" \t")]
     public void StrictIconResolutionTreatsBlankNodeGroupAndLegendIconsAsAbsent(string blank) {
         TopologyChart Chart(string? icon) {
-            var chart = TopologyChart.Create().WithViewport(700, 350);
+            var chart = TopologyChart.Create().Viewport(new TopologyViewport(700, 350));
             chart.Groups.Add(new TopologyGroup { Id = "service", Label = "Service", X = 30, Y = 30, Width = 500, Height = 180, IconId = icon });
             chart.Nodes.Add(new TopologyNode { Id = "owner", Label = "Owner", GroupId = "service", X = 70, Y = 100, Width = 130, Height = 50, IconId = icon });
             chart.Legend = TopologyLegend.Create().AddNodeKind("Owner", TopologyNodeKind.Generic, iconId: icon);

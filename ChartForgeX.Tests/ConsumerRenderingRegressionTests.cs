@@ -42,8 +42,8 @@ public sealed partial class ConsumerRenderingRegressionTests {
     [InlineData(1)]
     [InlineData(2)]
     public void CardStatusBarSpansTheLogicalCardAtEveryOutputScale(int scale) {
-        var card = MetricCard.Create().WithSize(460, 200).WithCard(true).WithMetric("CPU", "38")
-            .WithStatus(Tone.Warning).WithPngOutputScale(scale);
+        var card = MetricCard.Create().Size(460, 200).ShowCard().Metric("CPU", "38")
+            .Status(Tone.Warning).PngOutputScale(scale);
         var image = card.RenderRgba();
         var svg = XDocument.Parse(card.ToSvg());
         var bar = svg.Descendants().Single(e => Role(e) == "metric-status-bar");
@@ -55,7 +55,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
     }
     [Fact]
     public void ZeroPaddingListKeepsItsTextWithoutLeaderLines() {
-        var list = ChartList.Create().WithSize(330, 140).WithPadding(0).WithCard(false)
+        var list = ChartList.Create().Size(330, 140).Padding(0).ShowCard(false)
             .AddCheckItem("Backups verified", true, "02:10").AddCheckItem("DR test", false, "due 30 Oct");
         var svg = XDocument.Parse(list.ToSvg());
         Assert.Contains(svg.Descendants(), e => e.Name.LocalName == "text" && e.Value == "Backups verified");
@@ -86,7 +86,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
     [InlineData(TopologyLayoutDirection.TopToBottom)]
     [InlineData(TopologyLayoutDirection.BottomToTop)]
     public void LayeredAutomaticGroupsHaveSeparateShells(TopologyLayoutDirection direction) {
-        var chart = TopologyChart.Create().WithViewport(680, 330).WithLayout(TopologyLayoutMode.Layered).WithLayoutDirection(direction)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(680, 330)).LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(direction)
             .AddAutoGroup("edge", "Edge").AddAutoGroup("core", "Core")
             .AddAutoNode("gw", "Gateway", TopologyNodeKind.Network, groupId: "edge")
             .AddAutoNode("api", "API", TopologyNodeKind.Service, groupId: "core")
@@ -108,7 +108,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
     }
     [Fact]
     public void CardHeadingUsesSpaceAboveItsGlyph() {
-        var chart = TopologyChart.Create().WithViewport(300, 180).WithLegend(null)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(300, 180)).Legend((TopologyLegend?)null)
             .AddNode("paw", "PAW-ADM-03", 40, 40, TopologyNodeKind.Network);
         var svg = XDocument.Parse(chart.ToSvg());
         Assert.Contains(svg.Descendants(), e => e.Name.LocalName == "text" && e.Value == "PAW-ADM-03");
@@ -120,8 +120,8 @@ public sealed partial class ConsumerRenderingRegressionTests {
         XElement[] Texts(double size) {
             var theme = VisualTheme.Graphite().WithTypography(new VisualTypography(dataLabelSize: size));
             IVisualBlock block = kind == "table"
-                ? ChartTable.Create().WithTheme(theme).WithSize(400, 300).WithColumns("Name").AddRow("First").AddRow("Second")
-                : ChartList.Create().WithTheme(theme).WithSize(400, 300).AddItem("First").AddItem("Second");
+                ? ChartTable.Create().Theme(theme).Size(400, 300).Columns("Name").AddRow("First").AddRow("Second")
+                : ChartList.Create().Theme(theme).Size(400, 300).AddItem("First").AddItem("Second");
             return XDocument.Parse(block.ToSvg()).Descendants().Where(e => e.Name.LocalName == "text" && (e.Value == "First" || e.Value == "Second")).ToArray();
         }
         var small = Texts(12); var large = Texts(24);
@@ -134,8 +134,8 @@ public sealed partial class ConsumerRenderingRegressionTests {
     public void TableBadgeTypographyAndBoundsFollowThemeBodyScale() {
         (XElement Surface, XElement Text) Render(double dataLabelSize) {
             var theme = VisualTheme.Graphite().WithTypography(new VisualTypography(dataLabelSize: dataLabelSize));
-            var table = ChartTable.Create().WithTheme(theme).WithSize(420, 240).WithColumns("State").AddRow("placeholder");
-            table.ConfigureRow(0, row => row.Cells[0].WithBadge("Verified", Tone.Success));
+            var table = ChartTable.Create().Theme(theme).Size(420, 240).Columns("State").AddRow("placeholder");
+            table.UpdateRow(0, row => row.Cells[0].Badge("Verified", Tone.Success));
             var nodes = XDocument.Parse(table.ToSvg()).Descendants().ToArray();
             return (nodes.Single(element => Role(element) == "visual-badge"),
                 nodes.Single(element => element.Name.LocalName == "text" && element.Value == "Verified"));
@@ -150,8 +150,8 @@ public sealed partial class ConsumerRenderingRegressionTests {
 
     [Fact]
     public void MetricBadgeClearsInlineHistoryAndUsesThemeInk() {
-        var card = MetricCard.Create().WithTheme(VisualTheme.Graphite(), ThemeMode.Dark).WithSize(330, 150).WithPadding(0)
-            .WithMetric("CPU", "38").WithSymbol("CPU").WithMiniSparkline(new[] { 12d, 24, 18, 38 });
+        var card = MetricCard.Create().Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark).Size(330, 150).Padding(0)
+            .Metric("CPU", "38").Symbol("CPU").MiniSparkline(new[] { 12d, 24, 18, 38 });
         var nodes = XDocument.Parse(card.ToSvg()).Descendants().ToArray();
         var badge = nodes.Single(e => Role(e) == "metric-symbol-badge");
         var line = nodes.Single(e => Role(e) == "metric-mini-sparkline-line");
@@ -165,8 +165,8 @@ public sealed partial class ConsumerRenderingRegressionTests {
     [InlineData(1)]
     [InlineData(2)]
     public void MetricRoundBadgeStaysInsideCardPaddingAtEveryOutputScale(int scale) {
-        var card = MetricCard.Create().WithTheme(VisualTheme.Graphite(), ThemeMode.Dark).WithSize(330, 150)
-            .WithCard(true).WithPadding(0).WithMetric("CPU", "38").WithSymbol("CPU").WithPngOutputScale(scale);
+        var card = MetricCard.Create().Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark).Size(330, 150)
+            .ShowCard().Padding(0).Metric("CPU", "38").Symbol("CPU").PngOutputScale(scale);
         var nodes = XDocument.Parse(card.ToSvg()).Descendants().ToArray();
         var badge = nodes.Single(e => Role(e) == "metric-symbol-badge");
         Assert.True(N(badge, "cx") + N(badge, "r") <= 314);
@@ -194,7 +194,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
     [InlineData(1)]
     [InlineData(2)]
     public void FitContentToViewportExpandsSmallTopologyAndKeepsOutputScale(int scale) {
-        var chart = TopologyChart.Create().WithViewport(1300, 560).WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(1300, 560)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("gateway", "Gateway", 30, 40, width: 90, height: 52).AddNode("identity", "Identity service", 180, 40, width: 90, height: 52)
             .AddEdge("request", "gateway", "identity", "HTTPS");
         var options = new TopologyRenderOptions { FitContentToViewport = true, IncludeTitle = false, IncludeLegend = false, PngSupersamplingScale = scale };
@@ -213,7 +213,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
 
     [Fact]
     public void FitContentScalesFixedCardsWithoutChangingTheirRelativeDimensions() {
-        var chart = TopologyChart.Create().WithViewport(960, 400).WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(960, 400)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("short", "A", 40, 60, width: 90, height: 52)
             .AddNode("long", "A long service label that needs wrapping", 210, 60, width: 90, height: 52)
             .AddEdge("link", "short", "long");
@@ -227,7 +227,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
 
     [Fact]
     public void HubAndSpokeContentUsesAvailablePanelSizeWhenFittingIsEnabled() {
-        var chart = TopologyChart.Create().WithViewport(1300, 560).WithLayout(TopologyLayoutMode.HubAndSpoke)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(1300, 560)).LayoutMode(TopologyLayoutMode.HubAndSpoke)
             .AddAutoNode("site", "AMS-HQ", TopologyNodeKind.Hub)
             .AddAutoNode("dc", "DC01", TopologyNodeKind.Server)
             .AddAutoNode("branch", "Branch office", TopologyNodeKind.Server)
@@ -253,7 +253,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
 
     [Fact]
     public void FitContentToViewportKeepsLongTopologyCardCaptionsWhole() {
-        var chart = TopologyChart.Create().WithViewport(1200, 260).WithLayout(TopologyLayoutMode.GroupGrid)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(1200, 260)).LayoutMode(TopologyLayoutMode.GroupGrid)
             .AddAutoGroup("site-a", "Primary authentication and directory services")
             .AddAutoGroup("site-b", "Secondary recovery services")
             .AddAutoNode("dc1", "DC01", groupId: "site-a")
@@ -328,7 +328,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
 
     [Fact]
     public void CardLabelPaintPreservesHostColorVariablesAndHighlightDimming() {
-        var chart = TopologyChart.Create().WithViewport(1120, 260).WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(1120, 260)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("card", "Card label", 20, 60, width: 150, height: 70)
             .AddNode("shape", "Shape label", 230, 60, width: 150, height: 70)
             .AddNode("icon", "Icon label", 440, 60, width: 150, height: 70)
@@ -376,8 +376,8 @@ public sealed partial class ConsumerRenderingRegressionTests {
     [InlineData(TopologyNodeDisplayMode.Tile)]
     [InlineData(TopologyNodeDisplayMode.Icon)]
     public void FitContentKeepsExternalNodeCaptionsInsideTheViewport(TopologyNodeDisplayMode mode) {
-        var chart = TopologyChart.Create().WithViewport(520, 150).WithLayout(TopologyLayoutMode.Layered)
-            .WithLayoutDirection(TopologyLayoutDirection.TopToBottom)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(520, 150)).LayoutMode(TopologyLayoutMode.Layered)
+            .LayoutDirection(TopologyLayoutDirection.TopToBottom)
             .AddAutoNode("one", "Primary directory controller")
             .AddAutoNode("two", "Secondary directory controller")
             .AddAutoNode("three", "Recovery services controller")
@@ -398,7 +398,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
 
     [Fact]
     public void EnclosedShapeCaptionsKeepTheirMeasuredMultilineLayout() {
-        var chart = TopologyChart.Create().WithViewport(320, 220)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(320, 220))
             .AddAutoNode("decision", "Review service health before changing production traffic");
         chart.Nodes[0].Shape = TopologyNodeShape.Diamond;
         var svg = XDocument.Parse(chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false, MaxNodeLabelLines = 3, WrapNodeLabels = true }));
@@ -415,7 +415,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
         var chart = Assert.IsType<TopologyChart>(result.Artifact!.Model);
         TopologyRenderOptions RenderOptions(bool fit) => new() { FitContentToViewport = fit, IncludeLegend = false, IncludeTitle = false };
         string Render(bool fit) {
-            chart.WithViewport(2400, 1000, 32);
+            chart.Viewport(new TopologyViewport(2400, 1000, 32));
             return chart.ToSvg(RenderOptions(fit));
         }
         double LargestNodeFont(string svg) => XDocument.Parse(svg).Descendants()
@@ -430,7 +430,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
     }
     [Fact]
     public void GroupGridKeepsEveryGroupShellSeparateInWideShortViewports() {
-        var chart = TopologyChart.Create().WithViewport(1000, 180).WithLayout(TopologyLayoutMode.GroupGrid)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(1000, 180)).LayoutMode(TopologyLayoutMode.GroupGrid)
             .AddAutoGroup("one", "One").AddAutoGroup("two", "Two").AddAutoGroup("three", "Three").AddAutoGroup("four", "Four")
             .AddAutoNode("a", "A", groupId: "one").AddAutoNode("b", "B", groupId: "two")
             .AddAutoNode("c", "C", groupId: "three").AddAutoNode("d", "D", groupId: "four");
@@ -445,11 +445,11 @@ public sealed partial class ConsumerRenderingRegressionTests {
     [Fact]
     public void InfoStatusUsesThemeInfoAndListMarkersUseOnePaletteColor() {
         var theme = VisualTheme.Graphite().WithPalette(ChartColor.FromRgb(210, 30, 45), ChartColor.FromRgb(20, 170, 90), ChartColor.FromRgb(40, 90, 220));
-        var status = MetricCard.Create().WithTheme(theme).WithSize(260, 120).WithStatus(Tone.Info).WithMetric("Replication", "Pending");
+        var status = MetricCard.Create().Theme(theme).Size(260, 120).Status(Tone.Info).Metric("Replication", "Pending");
         var statusBar = XDocument.Parse(status.ToSvg()).Descendants().Single(e => Role(e) == "metric-status-bar");
         Assert.Equal(theme.Resolve(ThemeMode.Light).Info.ToCss(), (string?)statusBar.Attribute("fill"));
 
-        var list = ChartList.Create().WithTheme(theme).WithSize(360, 160)
+        var list = ChartList.Create().Theme(theme).Size(360, 160)
             .AddItem("First").AddItem("Second").AddItem("Third");
         var markers = XDocument.Parse(list.ToSvg()).Descendants().Where(e => Role(e) == "list-marker")
             .Select(e => (string?)e.Attribute("fill")).Where(color => color != null).Distinct().ToArray();
@@ -464,7 +464,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
     public void ListMarkersAndReservedWidthFollowThemeBodyTypography(VisualListMarker markerType, string geometryAttribute, double baselineGeometry) {
         static (double Geometry, double MarkerStroke, double CheckStroke, double TextGap) Render(double size, VisualListMarker markerType, string geometryAttribute) {
             var theme = VisualTheme.Graphite().WithTypography(new VisualTypography(dataLabelSize: size));
-            var list = ChartList.Create().WithTheme(theme).WithSize(360, 160).WithMarker(markerType).AddItem("First");
+            var list = ChartList.Create().Theme(theme).Size(360, 160).Marker(markerType).AddItem("First");
             var svg = XDocument.Parse(list.ToSvg());
             var marker = svg.Descendants().Single(element => Role(element) == "list-marker");
             var check = svg.Descendants().FirstOrDefault(element => Role(element) == "list-check");
@@ -485,9 +485,9 @@ public sealed partial class ConsumerRenderingRegressionTests {
     }
     [Fact]
     public void HorizontalBarsHonorPointColorsAndCategoryCaptions() {
-        var chart = Chart.Create().WithSize(520, 220).WithXLabels("Alpha", "Beta", "Gamma")
+        var chart = Chart.Create().Size(520, 220).XLabels("Alpha", "Beta", "Gamma")
             .AddHorizontalBar("Count", new[] { new ChartPoint(1, 26), new ChartPoint(2, 24), new ChartPoint(3, 19) });
-        chart.Series[0].WithPointColor(0, ChartColor.FromRgb(255, 0, 0)).WithPointColor(1, ChartColor.FromRgb(0, 180, 0));
+        chart.Series[0].PointColor(0, ChartColor.FromRgb(255, 0, 0)).PointColor(1, ChartColor.FromRgb(0, 180, 0));
         var nodes = XDocument.Parse(chart.ToSvg()).Descendants().ToArray();
         Assert.Contains(nodes, e => e.Name.LocalName == "text" && e.Value == "Alpha");
         Assert.Contains(nodes, e => e.Name.LocalName == "text" && e.Value == "Beta");
@@ -498,7 +498,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
     }
     [Fact]
     public void BulletHasThreeDistinctRangeBands() {
-        var chart = Chart.Create().WithSize(520, 200).AddBullet("Coverage", 72, 85);
+        var chart = Chart.Create().Size(520, 200).AddBullet("Coverage", 72, 85);
         var ranges = XDocument.Parse(chart.ToSvg()).Descendants().Where(e => Role(e) == "bullet-range").ToArray();
         Assert.Equal(3, ranges.Length);
         Assert.Equal(3, ranges.Select(e => (string?)e.Attribute("fill")).Distinct().Count());
@@ -564,14 +564,14 @@ public sealed partial class ConsumerRenderingRegressionTests {
     [InlineData(false, false)]
     [InlineData(true, true)]
     public void TreemapDefaultCaptionsRespectExplicitVisibility(bool? visible, bool expected) {
-        var chart = Chart.Create().WithSize(520, 300).AddTreemap("Work", new[] { new ChartHierarchyItem("a", "Alpha", value: 3), new ChartHierarchyItem("b", "Beta", value: 2) });
-        if (visible.HasValue) chart.WithDataLabels(visible.Value);
+        var chart = Chart.Create().Size(520, 300).AddTreemap("Work", new[] { new ChartHierarchyItem("a", "Alpha", value: 3), new ChartHierarchyItem("b", "Beta", value: 2) });
+        if (visible.HasValue) chart.DataLabels(visible.Value);
         var nodes = XDocument.Parse(chart.ToSvg()).Descendants();
         Assert.Equal(expected, nodes.Any(e => Role(e) == "treemap-label"));
     }
     [Fact]
     public void CloseBarValuesKeepTheirCaptionsCenteredOnTheirOwnMark() {
-        var chart = Chart.Create().WithSize(520, 220).WithDataLabels(true)
+        var chart = Chart.Create().Size(520, 220).DataLabels(true)
             .AddBar("Count", new[] { new ChartPoint(1, 26), new ChartPoint(2, 24), new ChartPoint(3, 19) });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var marks = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(e => e.Role == "bar").OrderBy(e => e.Bounds.Left).ToArray();
@@ -581,7 +581,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
     }
     [Fact]
     public void RadarCeilingCaptionDoesNotCoverItsFirstVertex() {
-        var chart = Chart.Create().WithSize(520, 320).WithXLabels("Mail auth", "DNSSEC", "TLS", "CT", "Policy", "Monitoring")
+        var chart = Chart.Create().Size(520, 320).XLabels("Mail auth", "DNSSEC", "TLS", "CT", "Policy", "Monitoring")
             .AddRadar("Current", new[] { 78d, 62, 74, 80, 70, 66 }.Select((v, i) => new ChartPoint(i + 1, v)).ToArray())
             .AddRadar("Target", Enumerable.Range(1, 6).Select(i => new ChartPoint(i, 80)).ToArray());
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -591,7 +591,7 @@ public sealed partial class ConsumerRenderingRegressionTests {
 
     [Fact]
     public void GroupedLayeredEdgeBadgesStayOnTheirOwnRoutes() {
-        var chart = TopologyChart.Create().WithViewport(680, 330).WithLayout(TopologyLayoutMode.Layered).WithLayoutDirection(TopologyLayoutDirection.LeftToRight)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(680, 330)).LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddAutoGroup("edge", "Edge").AddAutoGroup("core", "Core")
             .AddAutoNode("gw", "Gateway", TopologyNodeKind.Network, groupId: "edge")
             .AddAutoNode("api", "API", TopologyNodeKind.Service, groupId: "core")

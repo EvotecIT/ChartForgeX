@@ -23,48 +23,13 @@ public static partial class TopologyChartExtensions {
         return chart;
     }
 
-    /// <summary>Connects an edge through named ports on its source and target nodes.</summary>
-    public static TopologyChart WithEdgeNamedPorts(this TopologyChart chart, string edgeId, string? sourcePortId, string? targetPortId) {
-        var edge = RequiredEdge(chart, edgeId);
-        edge.SourcePortId = string.IsNullOrWhiteSpace(sourcePortId) ? null : sourcePortId!.Trim();
-        edge.TargetPortId = string.IsNullOrWhiteSpace(targetPortId) ? null : targetPortId!.Trim();
-        return chart;
-    }
-
     /// <summary>Applies edge-specific stroke width, opacity, and an optional alternating dash/gap pattern.</summary>
-    public static TopologyChart WithEdgeStroke(this TopologyChart chart, string edgeId, double? width = null, double? opacity = null, params double[] dashPattern) {
+    public static TopologyChart EdgeStroke(this TopologyChart chart, string edgeId, double? width = null, double? opacity = null, params double[] dashPattern) {
         var edge = RequiredEdge(chart, edgeId);
         edge.StrokeWidth = width;
         edge.Opacity = opacity;
         edge.DashPattern.Clear();
         if (dashPattern != null) edge.DashPattern.AddRange(dashPattern);
-        return chart;
-    }
-
-    /// <summary>Sets explicit markers at both edge endpoints. Null keeps direction-derived behavior.</summary>
-    public static TopologyChart WithEdgeMarkers(this TopologyChart chart, string edgeId, TopologyMarkerKind? source, TopologyMarkerKind? target) {
-        var edge = RequiredEdge(chart, edgeId);
-        if (source.HasValue) ValidateEnum(typeof(TopologyMarkerKind), source.Value, nameof(source), "Topology marker kinds");
-        if (target.HasValue) ValidateEnum(typeof(TopologyMarkerKind), target.Value, nameof(target), "Topology marker kinds");
-        edge.SourceMarker = source;
-        edge.TargetMarker = target;
-        return chart;
-    }
-
-    /// <summary>Sets optional labels near the source and target edge endpoints.</summary>
-    public static TopologyChart WithEdgeEndpointLabels(this TopologyChart chart, string edgeId, string? sourceLabel, string? targetLabel) {
-        var edge = RequiredEdge(chart, edgeId);
-        edge.SourceLabel = sourceLabel;
-        edge.TargetLabel = targetLabel;
-        return chart;
-    }
-
-    /// <summary>Sets soft layout intent without promising exact rendered edge length.</summary>
-    public static TopologyChart WithEdgeLayoutHints(this TopologyChart chart, string edgeId, double? preferredLength = null, int minimumRankSpan = 1, int routingPriority = 0) {
-        var edge = RequiredEdge(chart, edgeId);
-        edge.PreferredLength = preferredLength;
-        edge.MinimumRankSpan = minimumRankSpan;
-        edge.RoutingPriority = routingPriority;
         return chart;
     }
 

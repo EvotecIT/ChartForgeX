@@ -14,7 +14,7 @@ public sealed class NativeTopologyMotionSizingTests {
     [InlineData(false)]
     [InlineData(true)]
     public void AnimationBudgetIncludesSupersampledRenderBuffersBeforeStreamWrites(bool apng) {
-        var chart = TopologyChart.Create().WithViewport(1200, 800, 20)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(1200, 800, 20))
             .AddNode("source", "Source", 20, 80)
             .AddNode("target", "Target", 280, 180)
             .AddEdge("route", "source", "target", routing: TopologyEdgeRouting.Straight);
@@ -22,7 +22,7 @@ public sealed class NativeTopologyMotionSizingTests {
             FitContentToViewport = true,
             PngSupersamplingScale = 8
         };
-        var motion = TopologyMotionOptions.RoutePulseForEdges("route").WithDuration(.8).WithFrameRate(10).WithFrameLimit(8);
+        var motion = TopologyMotionOptions.RoutePulseForEdges("route").DurationSeconds(.8).FramesPerSecond(10).MaximumRasterFrames(8);
         using var output = new MemoryStream();
         var error = Assert.Throws<InvalidOperationException>(() => {
             if (apng) chart.WriteApng(output, options, motion); else chart.WriteGif(output, options, motion);
@@ -35,7 +35,7 @@ public sealed class NativeTopologyMotionSizingTests {
     [InlineData(false)]
     [InlineData(true)]
     public void OversizedAnimationFailsBeforeWritingOrReplacingExistingFiles(bool apng) {
-        var chart = TopologyChart.Create().WithViewport(640, 360, 20)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(640, 360, 20))
             .AddNode("source", "Source", 20, 80)
             .AddNode("target", "Target", 280, 180)
             .AddEdge("route", "source", "target", routing: TopologyEdgeRouting.Straight);
@@ -43,7 +43,7 @@ public sealed class NativeTopologyMotionSizingTests {
             FitContentToViewport = true,
             PngSupersamplingScale = 1
         };
-        var motion = TopologyMotionOptions.RoutePulseForEdges("route").WithDuration(200).WithFrameRate(10).WithFrameLimit(2000);
+        var motion = TopologyMotionOptions.RoutePulseForEdges("route").DurationSeconds(200).FramesPerSecond(10).MaximumRasterFrames(2000);
         var error = Assert.Throws<InvalidOperationException>(() => {
             if (apng) chart.ToApng(options, motion); else chart.ToGif(options, motion);
         });
@@ -67,9 +67,9 @@ public sealed class NativeTopologyMotionSizingTests {
     [InlineData(false)]
     [InlineData(true)]
     public void AnimatedConvenienceExportsShareNaturalOrFittedCommonFrameWithoutMutatingSource(bool fit) {
-        var chart = TopologyChart.Create().WithId("motion-frame").WithViewport(420, 240, 20)
-            .WithTitle("Service route").WithSubtitle("A shared heading and legend surround the complete route")
-            .WithLegend(TopologyLegend.Create("Route health").AddStatus("Healthy", TopologyHealthStatus.Healthy))
+        var chart = TopologyChart.Create().Id("motion-frame").Viewport(new TopologyViewport(420, 240, 20))
+            .Title("Service route").Subtitle("A shared heading and legend surround the complete route")
+            .Legend(TopologyLegend.Create("Route health").AddStatus("Healthy", TopologyHealthStatus.Healthy))
             .AddNode("source", "Source", 20, 80, width: 100, height: 60)
             .AddNode("target", "Target", 280, 210, width: 100, height: 60)
             .AddEdge("route", "source", "target", routing: TopologyEdgeRouting.Straight)

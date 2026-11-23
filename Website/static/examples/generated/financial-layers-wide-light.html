@@ -120,12 +120,12 @@ public static class FinancialLayersRecipe {
             new ChartCandlestick(times[0], 102, 106, 100, 105), new ChartCandlestick(times[1], 105, 108, 102, 104),
             new ChartCandlestick(times[2], 104, 109, 103, 108), new ChartCandlestick(times[3], 108, 112, 106, 110),
             new ChartCandlestick(times[4], 110, 113, 107, 109), new ChartCandlestick(times[5], 109, 115, 108, 114)
-        }).WithObservationIds(Enumerable.Range(1001, times.Length).Select(value =&gt; new ChartObservationId(value.ToString(CultureInfo.InvariantCulture))));
-        prices.ConfigureFinancial(options =&gt; {
+        }).ObservationIds(Enumerable.Range(1001, times.Length).Select(value =&gt; new ChartObservationId(value.ToString(CultureInfo.InvariantCulture))));
+        prices.Financial(options =&gt; {
             options.Rising.Stroke = ChartColor.FromHex(&quot;#218C74&quot;); options.Rising.FillOpacity = .25;
             options.Falling.Stroke = ChartColor.FromHex(&quot;#CF6D45&quot;); options.Falling.FillOpacity = .25;
         });
-        prices.ConfigureFinancialValue(1, options =&gt; {
+        prices.FinancialValue(1, options =&gt; {
             options.Stroke = ChartColor.FromHex(&quot;#3987E5&quot;); options.StrokeWidth = 2.5;
             options.Wick.Stroke = ChartColor.FromHex(&quot;#3987E5&quot;);
         });
@@ -137,18 +137,17 @@ public static class FinancialLayersRecipe {
 
         var expected = ChartSeries.CreateRangeArea(new ChartSeriesId(&quot;102&quot;), &quot;Expected range&quot;,
             prices.FinancialValues.Select((value, index) =&gt; new ChartRangeBand(value.X, 101 + index * 1.5, 110 + index * 1.5)))
-            .WithColor(ChartColor.FromHex(&quot;#729BB7&quot;));
+            .Color(ChartColor.FromHex(&quot;#729BB7&quot;));
         var reference = ChartSeries.CreateLine(new ChartSeriesId(&quot;103&quot;), &quot;Reference close&quot;,
             prices.FinancialValues.Select((value, index) =&gt; new ChartPoint(value.X, 104 + index * 1.8)))
-            .WithColor(ChartColor.FromHex(&quot;#E2A336&quot;));
-        reference.ConfigureMarkers(options =&gt; { options.Enabled = true; options.Radius = 2.5; });
-        return Chart.Create().WithSize(variant == &quot;compact&quot; ? 390 : 800, 460).WithTheme(VisualTheme.Graphite(), mode)
-            .WithTitle(&quot;Prices across trading sessions&quot;).WithSubtitle(&quot;Candles, reference close and expected range&quot;)
-            .WithLegend().WithDataLabels(false).WithYAxis(&quot;Price&quot;).WithYAxisBounds(98, 120)
-            .WithValueFormat(ChartValueFormat.Number(&quot;0.0&quot;, CultureInfo.InvariantCulture))
-            .WithXAxisTimeScale(TimeZoneInfo.Utc, showTimeZone: true)
-            .WithXAxisBounds(friday.ToOADate(), monday.AddHours(8).ToOADate())
-            .ConfigureXAxis(axis =&gt; axis.WithTimeSessions(new ChartTimeSessionDomain(new[] {
+            .Color(ChartColor.FromHex(&quot;#E2A336&quot;));
+        reference.Markers(options =&gt; { options.Enabled = true; options.Radius = 2.5; });
+        return Chart.Create().Size(variant == &quot;compact&quot; ? 390 : 800, 460).Theme(VisualTheme.Graphite()).ThemeMode(mode)
+            .Title(&quot;Prices across trading sessions&quot;).Subtitle(&quot;Candles, reference close and expected range&quot;)
+            .Legend().DataLabels(false).YAxis(y =&gt; y.Title(&quot;Price&quot;).Bounds(98, 120))
+            .ValueFormat(ChartValueFormat.Number(&quot;0.0&quot;, CultureInfo.InvariantCulture))
+            .XAxis(x =&gt; x.TimeScale(timeZone: TimeZoneInfo.Utc, showTimeZone: true).Bounds(friday.ToOADate(), monday.AddHours(8).ToOADate()))
+            .XAxis(axis =&gt; axis.TimeSessions(new ChartTimeSessionDomain(new[] {
                 new ChartTimeSession(friday, friday.AddHours(8)), new ChartTimeSession(monday, monday.AddHours(8))
             })))
             .AddSeries(expected).AddSeries(prices).AddSeries(reference);
@@ -194,12 +193,12 @@ public static class FinancialLayersRecipe {
             new ChartCandlestick(times[0], 102, 106, 100, 105), new ChartCandlestick(times[1], 105, 108, 102, 104),
             new ChartCandlestick(times[2], 104, 109, 103, 108), new ChartCandlestick(times[3], 108, 112, 106, 110),
             new ChartCandlestick(times[4], 110, 113, 107, 109), new ChartCandlestick(times[5], 109, 115, 108, 114)
-        }).WithObservationIds(Enumerable.Range(1001, times.Length).Select(value =&gt; new ChartObservationId(value.ToString(CultureInfo.InvariantCulture))));
-        prices.ConfigureFinancial(options =&gt; {
+        }).ObservationIds(Enumerable.Range(1001, times.Length).Select(value =&gt; new ChartObservationId(value.ToString(CultureInfo.InvariantCulture))));
+        prices.Financial(options =&gt; {
             options.Rising.Stroke = ChartColor.FromHex(&quot;#218C74&quot;); options.Rising.FillOpacity = .25;
             options.Falling.Stroke = ChartColor.FromHex(&quot;#CF6D45&quot;); options.Falling.FillOpacity = .25;
         });
-        prices.ConfigureFinancialValue(1, options =&gt; {
+        prices.FinancialValue(1, options =&gt; {
             options.Stroke = ChartColor.FromHex(&quot;#3987E5&quot;); options.StrokeWidth = 2.5;
             options.Wick.Stroke = ChartColor.FromHex(&quot;#3987E5&quot;);
         });
@@ -211,18 +210,17 @@ public static class FinancialLayersRecipe {
 
         var expected = ChartSeries.CreateRangeArea(new ChartSeriesId(&quot;102&quot;), &quot;Expected range&quot;,
             prices.FinancialValues.Select((value, index) =&gt; new ChartRangeBand(value.X, 101 + index * 1.5, 110 + index * 1.5)))
-            .WithColor(ChartColor.FromHex(&quot;#729BB7&quot;));
+            .Color(ChartColor.FromHex(&quot;#729BB7&quot;));
         var reference = ChartSeries.CreateLine(new ChartSeriesId(&quot;103&quot;), &quot;Reference close&quot;,
             prices.FinancialValues.Select((value, index) =&gt; new ChartPoint(value.X, 104 + index * 1.8)))
-            .WithColor(ChartColor.FromHex(&quot;#E2A336&quot;));
-        reference.ConfigureMarkers(options =&gt; { options.Enabled = true; options.Radius = 2.5; });
-        return Chart.Create().WithSize(variant == &quot;compact&quot; ? 390 : 800, 460).WithTheme(VisualTheme.Graphite(), mode)
-            .WithTitle(&quot;Prices across trading sessions&quot;).WithSubtitle(&quot;Candles, reference close and expected range&quot;)
-            .WithLegend().WithDataLabels(false).WithYAxis(&quot;Price&quot;).WithYAxisBounds(98, 120)
-            .WithValueFormat(ChartValueFormat.Number(&quot;0.0&quot;, CultureInfo.InvariantCulture))
-            .WithXAxisTimeScale(TimeZoneInfo.Utc, showTimeZone: true)
-            .WithXAxisBounds(friday.ToOADate(), monday.AddHours(8).ToOADate())
-            .ConfigureXAxis(axis =&gt; axis.WithTimeSessions(new ChartTimeSessionDomain(new[] {
+            .Color(ChartColor.FromHex(&quot;#E2A336&quot;));
+        reference.Markers(options =&gt; { options.Enabled = true; options.Radius = 2.5; });
+        return Chart.Create().Size(variant == &quot;compact&quot; ? 390 : 800, 460).Theme(VisualTheme.Graphite()).ThemeMode(mode)
+            .Title(&quot;Prices across trading sessions&quot;).Subtitle(&quot;Candles, reference close and expected range&quot;)
+            .Legend().DataLabels(false).YAxis(y =&gt; y.Title(&quot;Price&quot;).Bounds(98, 120))
+            .ValueFormat(ChartValueFormat.Number(&quot;0.0&quot;, CultureInfo.InvariantCulture))
+            .XAxis(x =&gt; x.TimeScale(timeZone: TimeZoneInfo.Utc, showTimeZone: true).Bounds(friday.ToOADate(), monday.AddHours(8).ToOADate()))
+            .XAxis(axis =&gt; axis.TimeSessions(new ChartTimeSessionDomain(new[] {
                 new ChartTimeSession(friday, friday.AddHours(8)), new ChartTimeSession(monday, monday.AddHours(8))
             })))
             .AddSeries(expected).AddSeries(prices).AddSeries(reference);

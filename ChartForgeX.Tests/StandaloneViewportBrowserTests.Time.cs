@@ -23,11 +23,11 @@ public sealed partial class StandaloneViewportBrowserTests {
         var first = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         var points = Enumerable.Range(0, 90).Select(day => new ChartPoint(first.AddDays(day), 40 + 30 * Math.Sin(day / 9.0))).ToArray();
         var series = new ChartSeries(new ChartSeriesId("samples"), "Samples", kind, points);
-        if (kind == ChartSeriesKind.Line) series.ConfigureMarkers(markers => { markers.Enabled = true; markers.Radius = 4; });
-        var chart = Chart.Create().WithSize(800, 440).WithTitle("Saved daily readings").WithLegend().WithDataLabels(false)
-            .WithXAxisTimeScale(zone == null ? null : CentralEurope).WithYAxisBounds(0, 100).AddSeries(series);
+        if (kind == ChartSeriesKind.Line) series.Markers(markers => { markers.Enabled = true; markers.Radius = 4; });
+        var chart = Chart.Create().Size(800, 440).Title("Saved daily readings").Legend().DataLabels(false)
+            .XAxis(x => x.TimeScale(timeZone: zone == null ? null : CentralEurope)).YAxis(y => y.Bounds(0, 100)).AddSeries(series);
         if (culture != null) chart.Options.XAxis.Culture = System.Globalization.CultureInfo.GetCultureInfo(culture);
-        if (minimum.HasValue && maximum.HasValue) chart.WithXAxisBounds(minimum.Value, maximum.Value);
+        if (minimum.HasValue && maximum.HasValue) chart.XAxis(x => x.Bounds(minimum.Value, maximum.Value));
         return chart;
     }
 

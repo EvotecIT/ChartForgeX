@@ -17,17 +17,17 @@ public sealed class NumericRadialBrowserTests {
     [InlineData(false, false, true, true)]
     public async Task NumericMarksRetainPointerTooltipKeyboardSelectionAndSeriesLegend(bool bars, bool dark, bool compact, bool nonzero) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(compact ? 360 : 800, compact ? 360 : 440)
-            .WithTitle(bars ? "Regional requests" : "Regional workload")
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithXLabels("North", "South", "East", "West").WithLegend().WithDataLabels(false)
-            .WithRadialGeometry(new ChartRadialGeometryOptions(-90, 180));
+        var chart = Chart.Create().Size(compact ? 360 : 800, compact ? 360 : 440)
+            .Title(bars ? "Regional requests" : "Regional workload")
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .XLabels("North", "South", "East", "West").Legend().DataLabels(false)
+            .RadialGeometry(new ChartRadialGeometryOptions(-90, 180));
         var first = new[] { new ChartPoint(1, 1200), new ChartPoint(2, 800), new ChartPoint(3, 500), new ChartPoint(4, 900) };
         var second = new[] { new ChartPoint(1, 300), new ChartPoint(2, 200), new ChartPoint(3, 100), new ChartPoint(4, 250) };
         NumericRadialSeriesTests.Add(chart, bars, new ChartSeriesId("requests"), "Requests", first);
         NumericRadialSeriesTests.Add(chart, bars, new ChartSeriesId("follow-ups"), "Follow-ups", second);
-        if (dark) foreach (var series in chart.Series) series.WithStackGroup("work");
-        chart.WithYAxisBounds(nonzero ? 100 : 0, 1600);
+        if (dark) foreach (var series in chart.Series) series.StackGroup("work");
+        chart.YAxis(y => y.Bounds(nonzero ? 100 : 0, 1600));
         var mark = NumericRadialSeriesTests.Marks(chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene)[0];
         var angle = mark.Start + mark.Sweep * .45; var radius = (mark.Inner + mark.Outer) / 2;
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), compact ? 390 : 880, compact ? 460 : 560);

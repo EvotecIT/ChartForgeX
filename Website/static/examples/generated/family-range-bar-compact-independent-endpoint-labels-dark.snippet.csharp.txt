@@ -39,19 +39,19 @@ static class RangeBarRecipe {
         });
         var observed = ChartSeries.CreateRangeBar(new ChartSeriesId("observed"), "Observed", new[] {
             new ChartInterval(1, 20, 42), new ChartInterval(2, 32, 12), new ChartInterval(3, 30, 55)
-        }).WithPointLabel(1, "Recorded express delivery");
-        var chart = Chart.Create().WithXLabels("Standard", "Express", "Bulk").AddSeries(expected).AddSeries(observed)
-            .ConfigureRangeBar(options => {
+        }).PointLabel(1, "Recorded express delivery");
+        var chart = Chart.Create().XLabels("Standard", "Express", "Bulk").AddSeries(expected).AddSeries(observed)
+            .RangeBar(options => {
                 options.Orientation = ChartOrientation.Vertical;
                 options.LabelContent = ChartRangeBarLabelContent.Endpoints;
                 options.EndpointLabelFormatter = label => label.FormattedValue + (label.Endpoint == ChartRangeBarEndpoint.Start ? " S" : " E");
-                    options.StartLabel.Style.WithColor(mode == ThemeMode.Dark ? "#82b8ff" : "#235b9f").WithFontSize(10);
-                    options.EndLabel.Style.WithColor(mode == ThemeMode.Dark ? "#ffbe79" : "#975000").WithFontSize(12).WithWeight("700");
+                    options.StartLabel.Style.Color(ChartColor.FromHex(mode == ThemeMode.Dark ? "#82b8ff" : "#235b9f")).FontSize(10);
+                    options.EndLabel.Style.Color(ChartColor.FromHex(mode == ThemeMode.Dark ? "#ffbe79" : "#975000")).FontSize(12).FontWeight("700");
                     options.StartLabel.Placement = ChartDataLabelPlacement.Left;
                     options.EndLabel.Placement = ChartDataLabelPlacement.Right;
-            }).WithBarStyle(ChartBarStyle.Flat).WithDataLabels();
-        chart.Options.YAxis.WithBounds(0, 70);
-    chart.WithYAxis("Delivery time (minutes)");
+            }).Bars(b => b.Style(ChartBarStyle.Flat)).DataLabels();
+        chart.Options.YAxis.Bounds(0, 70);
+    chart.YAxis(y => y.Title("Delivery time (minutes)"));
         return chart;
     }
 }

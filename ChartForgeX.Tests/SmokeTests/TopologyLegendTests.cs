@@ -6,13 +6,13 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void TopologyNodesCanBeStyledByKindAndReflectedInLegends() {
         var chart = TopologyChart.Create()
-            .WithId("styled-node-kind-map")
-            .WithViewport(560, 340, 24)
+            .Id("styled-node-kind-map")
+            .Viewport(new TopologyViewport(560, 340, 24))
             .AddNode("cert-a", "Certificate A", 90, 120, TopologyNodeKind.Certificate, TopologyHealthStatus.Healthy, symbol: "TLS")
             .AddNode("cert-b", "Certificate B", 300, 120, TopologyNodeKind.Certificate, TopologyHealthStatus.Warning, symbol: "TLS")
             .AddNode("risk", "Risk", 300, 220, TopologyNodeKind.Process, TopologyHealthStatus.Critical, symbol: "!")
             .AddEdge("cert-risk", "cert-a", "risk", "flags", TopologyEdgeKind.Mapping, TopologyHealthStatus.Critical, VisualLinkDirection.Forward)
-            .WithNodesOfKind(TopologyNodeKind.Certificate, color: "#2563EB", backgroundColor: "#EFF6FF");
+            .UpdateNodes(TopologyNodeKind.Certificate, n => n.Color("#2563EB").BackgroundColor("#EFF6FF"));
 
         var svg = chart.ToSvg(new TopologyRenderOptions { LegendMode = TopologyLegendMode.Auto });
         Assert(svg.Contains("data-node-color=\"#2563EB\"", StringComparison.Ordinal), "Bulk node-kind styling should apply reusable node accent colors.");
@@ -29,15 +29,15 @@ internal static partial class SmokeTests {
 
     private static void TopologyInferredLegendsUseSharedEdgeKindStyling() {
         var chart = TopologyChart.Create()
-            .WithId("styled-relationship-map")
-            .WithTitle("Styled Relationship Map")
-            .WithViewport(560, 340, 24)
+            .Id("styled-relationship-map")
+            .Title("Styled Relationship Map")
+            .Viewport(new TopologyViewport(560, 340, 24))
             .AddNode("app", "Application", 80, 110, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, symbol: "APP")
             .AddNode("db", "Database", 300, 90, TopologyNodeKind.Database, TopologyHealthStatus.Healthy, symbol: "SQL")
             .AddNode("queue", "Queue", 300, 180, TopologyNodeKind.Service, TopologyHealthStatus.Warning, symbol: "Q")
             .AddEdge("app-db", "app", "db", "reads", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward)
             .AddEdge("app-queue", "app", "queue", "publishes", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward)
-            .WithEdgesOfKind(TopologyEdgeKind.Dependency, lineStyle: TopologyEdgeLineStyle.Dotted, color: "#64748B");
+            .UpdateEdges(TopologyEdgeKind.Dependency, e => e.LineStyle(TopologyEdgeLineStyle.Dotted).Color("#64748B"));
 
         var svg = chart.ToSvg(new TopologyRenderOptions { LegendMode = TopologyLegendMode.Auto });
         var legend = TopologyLegendMarkup(svg);
@@ -50,9 +50,9 @@ internal static partial class SmokeTests {
     private static void TopologyMergedLegendsEnrichExplicitItems() {
         var catalog = TopologyIconCatalog.Default();
         var chart = TopologyChart.Create()
-            .WithId("merged-legend-style")
-            .WithViewport(560, 340, 24)
-            .WithLegend(TopologyLegend.Create("Focused Legend")
+            .Id("merged-legend-style")
+            .Viewport(new TopologyViewport(560, 340, 24))
+            .Legend(TopologyLegend.Create("Focused Legend")
                 .AddNodeKind("Certificates", TopologyNodeKind.Certificate)
                 .AddEdgeKind("Ownership path", TopologyEdgeKind.Ownership)
                 .AddEdgeKind("Observed path", TopologyEdgeKind.Mapping))
@@ -60,9 +60,9 @@ internal static partial class SmokeTests {
             .AddNode("cert-b", "Certificate B", 300, 120, TopologyNodeKind.Certificate, TopologyHealthStatus.Warning)
             .AddNode("owner", "Owner", 300, 220, TopologyNodeKind.Person, TopologyHealthStatus.Healthy)
             .AddEdge("cert-owner", "cert-a", "owner", "owned by", TopologyEdgeKind.Ownership, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward)
-            .WithNodesOfKind(TopologyNodeKind.Certificate, color: "#2563EB", backgroundColor: "#EFF6FF")
-            .WithNodesOfKindIcon(TopologyNodeKind.Certificate, "common:certificate", catalog)
-            .WithEdgesOfKind(TopologyEdgeKind.Ownership, lineStyle: TopologyEdgeLineStyle.Dashed, color: "#7C3AED");
+            .UpdateNodes(TopologyNodeKind.Certificate, n => n.Color("#2563EB").BackgroundColor("#EFF6FF"))
+            .NodesOfKindIcon(TopologyNodeKind.Certificate, "common:certificate", catalog)
+            .UpdateEdges(TopologyEdgeKind.Ownership, e => e.LineStyle(TopologyEdgeLineStyle.Dashed).Color("#7C3AED"));
 
         var svg = chart.ToSvg(new TopologyRenderOptions { IconCatalog = catalog, LegendMode = TopologyLegendMode.Merge });
         var legend = TopologyLegendMarkup(svg);

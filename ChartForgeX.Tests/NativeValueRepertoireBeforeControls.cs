@@ -29,8 +29,8 @@ public sealed class NativeValueRepertoireBeforeControls : IDisposable {
         FontRegistry.Register(NativeFallbackClusterBeforeControls.Fallback, OpenTypeTestFonts.NameKeyed(extraGlyphs: ".,kMBE+- >%".Distinct().ToDictionary(character => (int)character, _ => OpenTypeTestFonts.Box)));
     }
     internal static Chart Model(bool donut, string policy, double value) {
-        var chart = NativeFallbackClusterBeforeControls.Model(donut, false, value).WithPieSliceLabelContent(ChartPieSliceLabelContent.Value);
-        if (policy == "compact") chart.WithValueFormat(ChartValueFormat.Compact()); else if (policy == "number") chart.WithValueFormat(ChartValueFormat.Number("0"));
+        var chart = NativeFallbackClusterBeforeControls.Model(donut, false, value).Pie(p => p.SliceLabelContent(ChartPieSliceLabelContent.Value));
+        if (policy == "compact") chart.ValueFormat(ChartValueFormat.Compact()); else if (policy == "number") chart.ValueFormat(ChartValueFormat.Number("0"));
         return chart;
     }
     public void Dispose() { FontRegistry.Clear(); _ = BrowserProofFonts.Family; }

@@ -24,7 +24,7 @@ public static partial class VisualArtifactInterchangeMapping {
 
     internal static Chart CreateWaterfallChart(VisualArtifactInterchangeEnvelope envelope) {
         var source = envelope.Waterfall!;
-        var chart = Chart.Create().WithTitle(envelope.Title).WithSubtitle(envelope.Subtitle);
+        var chart = Chart.Create().Title(envelope.Title).Subtitle(envelope.Subtitle);
         var points = source.TypedItems ? Array.Empty<ChartPoint>() : source.DeltaPoints.ToArray();
         var series = source.AutomaticSeriesId
             ? new ChartSeries(source.SeriesName, ChartSeriesKind.Waterfall, points)
@@ -36,7 +36,7 @@ public static partial class VisualArtifactInterchangeMapping {
         series.ShowInLegend = source.ShowInLegend; series.SemanticRole = source.SemanticRole;
         series.ValueAxis = source.ValueAxis; series.ShowDataLabels = source.SeriesShowDataLabels;
         series.DataLabelPlacement = source.SeriesDataLabelPlacement;
-        series.ConfigureDataLabelStyle(style => CopyWaterfallTextStyle(source.SeriesDataLabelStyle, style));
+        series.DataLabelStyle(style => CopyWaterfallTextStyle(source.SeriesDataLabelStyle, style));
         if (source.StrokeWidth.HasValue) series.StrokeWidth = source.StrokeWidth.Value;
         series.RestoreObservationIds(source.PointPresentation.Where(point => point.ObservationId != null)
             .Select(point => new KeyValuePair<int, ChartObservationId>(point.Index, new ChartObservationId(point.ObservationId!))));
@@ -50,14 +50,14 @@ public static partial class VisualArtifactInterchangeMapping {
                 series.PointColors[point.Index] = point.Color; series.PointFillPatterns[point.Index] = point.FillPattern;
                 series.PointLabels[point.Index] = point.Label; series.PointDataLabelStyles[point.Index] = point.TextStyle?.Clone();
             } else {
-                if (point.Color.HasValue) series.WithPointColor(point.Index, point.Color);
-                if (point.FillPattern.HasValue) series.WithPointFillPattern(point.Index, point.FillPattern);
-                if (point.Label != null) series.WithPointLabel(point.Index, point.Label);
-                if (point.TextStyle != null) series.ConfigurePointDataLabelStyle(point.Index, style => CopyWaterfallTextStyle(point.TextStyle, style));
+                if (point.Color.HasValue) series.PointColor(point.Index, point.Color);
+                if (point.FillPattern.HasValue) series.PointFillPattern(point.Index, point.FillPattern);
+                if (point.Label != null) series.PointLabel(point.Index, point.Label);
+                if (point.TextStyle != null) series.PointDataLabelStyle(point.Index, style => CopyWaterfallTextStyle(point.TextStyle, style));
             }
         }
         ApplyWaterfallPresentation(chart, source);
-        if (envelope.Width.HasValue) chart.WithSize((int)envelope.Width.Value, (int)envelope.Height!.Value);
+        if (envelope.Width.HasValue) chart.Size((int)envelope.Width.Value, (int)envelope.Height!.Value);
         chart.Accessibility.Name = envelope.AccessibleName; chart.Accessibility.Description = envelope.AccessibleDescription;
         chart.Accessibility.Language = envelope.Language; chart.Accessibility.IsDecorative = envelope.IsDecorative;
         return chart;

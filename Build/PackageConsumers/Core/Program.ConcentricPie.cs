@@ -10,11 +10,11 @@ using ChartForgeX.VisualArtifacts;
 internal static partial class Program {
     private static void ConcentricPieBands() {
         var inner = new ChartSeries(new ChartSeriesId("prior"), "Prior", ChartSeriesKind.Donut,
-            new[] { new ChartPoint(1, 3), new ChartPoint(2, 1) }).WithRadialBand(new ChartRadialBand(.2, .5));
+            new[] { new ChartPoint(1, 3), new ChartPoint(2, 1) }).RadialBand(new ChartRadialBand(.2, .5));
         inner.DataLabelPlacement = ChartDataLabelPlacement.Inside;
         var outer = new ChartSeries(new ChartSeriesId("current"), "Current", ChartSeriesKind.Pie,
-            new[] { new ChartPoint(1, 1), new ChartPoint(2, 1) }).WithRadialBand(new ChartRadialBand(.65, 1));
-        var chart = Chart.Create().WithSize(520, 340).WithLegend(false).AddSeries(inner).AddSeries(outer);
+            new[] { new ChartPoint(1, 1), new ChartPoint(2, 1) }).RadialBand(new ChartRadialBand(.65, 1));
+        var chart = Chart.Create().Size(520, 340).Legend(false).AddSeries(inner).AddSeries(outer);
         var prepared = chart.Prepare(DepthContext(chart, showLegend: false));
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
         var points = XDocument.Parse(svg).Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "radial-point").ToArray();
@@ -28,7 +28,7 @@ internal static partial class Program {
         inner.RadialBand = new ChartRadialBand(.1, .4); outer.Points[0] = new ChartPoint(1, 5);
         PackageAssertions.Require(prepared.ToSvg() == svg && prepared.ToPng().SequenceEqual(png), "A source band edit changed an existing prepared export.");
         inner.ShowDataLabels = true; inner.DataLabelPlacement = ChartDataLabelPlacement.Outside;
-        inner.WithPointSliceOffset(0, .12);
+        inner.PointSliceOffset(0, .12);
         var callouts = chart.Prepare(DepthContext(chart, showLegend: false)); var calloutXml = XDocument.Parse(callouts.ToSvg());
         PackageAssertions.Require(calloutXml.Descendants().Any(node => (string?)node.Attribute("data-cfx-radial-callout") == "overlay"
             && (string?)node.Attribute("data-cfx-series") == "0" && (string?)node.Attribute("data-cfx-label-dropped") == "false"),
@@ -37,12 +37,12 @@ internal static partial class Program {
             "Packed multiring explosion lost its source displacement fact.");
         PackageAssertions.Png(callouts.ToPng());
         inner.ShowDataLabels = false;
-        var ordinary = Chart.Create().WithSize(520, 340).WithHeader(false).WithLegend(false)
+        var ordinary = Chart.Create().Size(520, 340).ShowHeader(false).Legend(false)
             .AddDonut("Ordinary", new[] { new ChartPoint(1, 3), new ChartPoint(2, 1) });
         var defaultSvg = ordinary.ToSvg(); var defaultPng = ordinary.ToPng();
-        ordinary.Series[0].WithRadialBand(new ChartRadialBand(.1, .7));
+        ordinary.Series[0].RadialBand(new ChartRadialBand(.1, .7));
         PackageAssertions.Require(ordinary.ToSvg() != defaultSvg, "Packed explicit single-band geometry was ignored.");
-        ordinary.Series[0].WithRadialBand(null);
+        ordinary.Series[0].RadialBand((ChartRadialBand?)null);
         PackageAssertions.Require(ordinary.ToSvg() == defaultSvg && ordinary.ToPng().SequenceEqual(defaultPng),
             "Clearing a packed explicit band did not recover the ordinary single-series output.");
         PackageAssertions.Png(png);

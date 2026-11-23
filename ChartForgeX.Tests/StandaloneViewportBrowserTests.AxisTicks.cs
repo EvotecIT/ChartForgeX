@@ -50,12 +50,12 @@ public sealed partial class StandaloneViewportBrowserTests {
     }
 
     private static Chart AxisPolicyChart(bool bands) {
-        var chart = Chart.Create().WithSize(800, 440).WithTitle("Saved axis policy")
-            .WithXAxisBounds(0, 12).WithYAxisBounds(0, 100)
+        var chart = Chart.Create().Size(800, 440).Title("Saved axis policy")
+            .XAxis(x => x.Bounds(0, 12)).YAxis(y => y.Bounds(0, 100))
             .AddLine("Samples", Enumerable.Range(0, 13).Select(index => new ChartPoint(index, 10 + index * 6)).ToArray())
-            .ConfigureXAxis(axis => axis.WithTickValues(0, 3, 6, 9, 12))
-            .ConfigureYAxis(axis => axis.WithTickStep(10).WithMinorTicks(1));
-        if (bands) chart.Options.YAxis.ConfigureGrid(grid => grid.WithBands(ChartColor.FromHex("#3979C6")));
+            .XAxis(axis => axis.TickValues(0, 3, 6, 9, 12))
+            .YAxis(axis => axis.TickStep(10).MinorTickCount(1));
+        if (bands) chart.Options.YAxis.Grid(grid => grid.BandOpacity(null).BandColor(ChartColor.FromHex("#3979C6")).ShowBands());
         return chart;
     }
 }

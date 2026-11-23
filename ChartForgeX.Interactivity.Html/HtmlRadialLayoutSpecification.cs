@@ -57,7 +57,7 @@ internal static class HtmlRadialLayoutSpecification {
         json.Append(",\"radial\":{\"height\":").Append(authoredHeight).Append(",\"padding\":[").Append(N(padding.Left)).Append(',').Append(N(padding.Top)).Append(',').Append(N(padding.Right)).Append(',').Append(N(padding.Bottom))
             .Append("],\"plot\":[").Append(N(plot.X)).Append(',').Append(N(plot.Y)).Append(',').Append(N(plot.Width)).Append(',').Append(N(plot.Height)).Append(']')
             .Append(",\"centerSize\":").Append(N(typography.CenterValueSize)).Append(",\"captionSize\":").Append(N(typography.CenterCaptionSize))
-            .Append(",\"connector\":").Append(HtmlJsonString.Encode(chart.Options.DataLabelConnectorStyle.ToString()));
+            .Append(",\"connector\":").Append(HtmlJsonString.Encode(chart.Options.DataLabels.ConnectorStyle.ToString()));
         Metrics(legend, headings.Select(item => item.Style).ToArray(), typography.DataLabelSize, true);
         // Below the breakpoint the native drawing uses the compact type roles. Carry their measurements so a narrow
         // container matches the static drawing at the same width; authored or fitted sizes keep their painted size.
@@ -103,11 +103,11 @@ internal static class HtmlRadialLayoutSpecification {
         for (var index = 0; index < frames.Length; index++) {
             if (!first) json.Append(','); first = false;
             var frame = frames[index];
-            var inner = bands[index]?.InnerRatio ?? (chart.Series[index].Kind == ChartSeriesKind.Donut ? chart.Options.DonutInnerRadiusRatio : 0);
+            var inner = bands[index]?.InnerRatio ?? (chart.Series[index].Kind == ChartSeriesKind.Donut ? chart.Options.Pie.InnerRadiusRatio : 0);
             json.Append('[').Append(N(frame.Horizontal)).Append(',').Append(N(frame.Vertical)).Append(',').Append(N(frame.Extent)).Append(',')
                 .Append(N(frame.Radius(plot, context.Theme.Spacing))).Append(',').Append(N(inner)).Append(',').Append(N(bands[index]?.OuterRatio ?? 1))
-                .Append(',').Append(HtmlJsonString.Encode((chart.Series[index].DataLabelPlacement ?? chart.Options.DataLabelPlacement).ToString()))
-                .Append(',').Append(chart.Options.PieInsideLabelRadiusRatio.HasValue ? N(chart.Options.PieInsideLabelRadiusRatio.Value) : "null")
+                .Append(',').Append(HtmlJsonString.Encode((chart.Series[index].DataLabelPlacement ?? chart.Options.DataLabels.Placement).ToString()))
+                .Append(',').Append(chart.Options.Pie.InsideLabelRadiusRatio.HasValue ? N(chart.Options.Pie.InsideLabelRadiusRatio.Value) : "null")
                 .Append(',').Append(bands[index] != null || chart.Series.Count > 1 ? "true" : "false");
             var overflow = VisualRadialCompiler.ResponsiveOverflowCenter(chart, context, index);
             json.Append(',').Append(overflow == null ? "null" : "[" + string.Join(",", overflow.Select(HtmlJsonString.Encode)) + "]").Append(']');

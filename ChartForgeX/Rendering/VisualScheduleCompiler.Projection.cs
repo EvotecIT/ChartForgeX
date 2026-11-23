@@ -9,7 +9,7 @@ internal static partial class VisualScheduleCompiler {
     private const double GanttLaneOpenEndStrokeWidth = 1.5;
 
     private static double TodayWidth(Chart chart, VisualRenderContext context) => VisualReferenceStroke.PaintedWidth(
-        chart.Options.GanttTodayStyle, context.Theme.Resolve(context.ThemeMode).Status.Critical.Fill, context.Theme.AxisStrokeWidth);
+        chart.Options.Gantt.TodayStyle, context.Theme.Resolve(context.ThemeMode).Status.Critical.Fill, context.Theme.AxisStrokeWidth);
 
     private static ChartRect GuideProjection(Chart chart, VisualRenderContext context, ChartRect plot, double min, double max,
         double minimumExtent, double maximumExtent, double? now, bool lanes = false) {
@@ -25,8 +25,8 @@ internal static partial class VisualScheduleCompiler {
                 Include(annotation.Value, VisualReferenceStroke.PaintedWidth(annotation.StrokeStyle, annotation.Color, context.Theme.AxisStrokeWidth));
         }
         var axis = chart.Options.XAxis;
-        var leftPinned = axis.Reversed ? axis.Maximum.HasValue : axis.Minimum.HasValue;
-        var rightPinned = axis.Reversed ? axis.Minimum.HasValue : axis.Maximum.HasValue;
+        var leftPinned = axis.Reversed ? axis.Max.HasValue : axis.Min.HasValue;
+        var rightPinned = axis.Reversed ? axis.Min.HasValue : axis.Max.HasValue;
         var initial = MarkProjection(axis, plot, minimumExtent, maximumExtent);
         var left = initial.Left - plot.Left; var right = plot.Right - initial.Right;
         var largest = 0d;
@@ -53,8 +53,8 @@ internal static partial class VisualScheduleCompiler {
 
     /// <summary>Reserves painted mark extents at automatic axis sides without changing dates or authored clipping windows.</summary>
     private static ChartRect MarkProjection(ChartAxis axis, ChartRect plot, double minimumExtent, double maximumExtent) {
-        var left = (axis.Reversed ? axis.Maximum.HasValue : axis.Minimum.HasValue) ? 0 : Math.Min(plot.Width / 2, axis.Reversed ? maximumExtent : minimumExtent);
-        var right = (axis.Reversed ? axis.Minimum.HasValue : axis.Maximum.HasValue) ? 0 : Math.Min(plot.Width / 2, axis.Reversed ? minimumExtent : maximumExtent);
+        var left = (axis.Reversed ? axis.Max.HasValue : axis.Min.HasValue) ? 0 : Math.Min(plot.Width / 2, axis.Reversed ? maximumExtent : minimumExtent);
+        var right = (axis.Reversed ? axis.Min.HasValue : axis.Max.HasValue) ? 0 : Math.Min(plot.Width / 2, axis.Reversed ? minimumExtent : maximumExtent);
         return new ChartRect(plot.Left + left, plot.Top, Math.Max(0, plot.Width - left - right), plot.Height);
     }
 }

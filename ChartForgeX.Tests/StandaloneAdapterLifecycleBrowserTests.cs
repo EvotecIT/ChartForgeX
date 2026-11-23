@@ -16,10 +16,7 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
     [InlineData("report-route")]
     public async Task TopologyRemovalAndExplicitDisposalStopPlaybackAndReleaseListenersBeforeRemount(string prefix) {
         if (!Enabled) return;
-        var options = new TopologyRenderOptions {
-            CssClassPrefix = prefix, ActiveScenarioId = "route", EnableHtmlViewportControls = true,
-            EnableHtmlFullscreenControl = true
-        };
+        var options = new TopologyRenderOptions { CssClassPrefix = prefix, ActiveScenarioId = "route", Html = { ViewportControls = true, FullscreenControl = true } };
         options.SelectedNodeIds.Add("b");
         await using var session = await OpenAsync(Instrument(new HtmlInteractiveTopologyRenderer().RenderPage(Topology(), options)), 900, 720);
         var page = session.Page;
@@ -172,9 +169,9 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    private static TopologyChart Topology() => TopologyChart.Create().WithId("loop-lifetime").WithViewport(720, 400)
+    private static TopologyChart Topology() => TopologyChart.Create().Id("loop-lifetime").Viewport(new TopologyViewport(720, 400))
         .AddNode("a", "API", 100, 130).AddNode("b", "Database", 430, 130)
-        .AddScenario("route", "Request route", route => route.WithPlayback(200, loop: true).AddNodeStep("a").AddNodeStep("b"));
+        .AddScenario("route", "Request route", route => route.PlaybackDelayMilliseconds(200).LoopPlayback().AutoPlay(false).AddNodeStep("a").AddNodeStep("b"));
 
     private static async Task AssertReleasedAsync(IPage page, string name) {
         var result = await page.EvaluateAsync<JsonElement>("""

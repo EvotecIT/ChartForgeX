@@ -61,7 +61,7 @@ public sealed class V2FrameBudgetTests {
         var headings = frame.WithHeadings("Other", "Subtitle");
         Assert.Equal(1, headings.LegendMaximumRows); Assert.Equal(.4, headings.LegendMaximumHeightFraction);
         Assert.True(headings.ShowCard);
-        var grid = ChartGrid.Create().WithColumns(1).Add(ManySeries());
+        var grid = ChartGrid.Create().Columns(1).Add(ManySeries());
         var prepared = grid.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(320, 300), new ChartPadding(10, 20, 30, 40)), frame: frame));
         Assert.Single(ByRole(XDocument.Parse(prepared.ToSvg()), "legend-entry"));
         Assert.Contains(prepared.Regions, region => region.Label != null && region.Label.Contains("6 more entries"));

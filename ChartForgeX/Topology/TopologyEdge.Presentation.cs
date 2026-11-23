@@ -69,7 +69,9 @@ public sealed partial class TopologyEdge {
     }
 
     /// <summary>Gets or sets text explaining the evidence, for example how an assumed link was inferred. It is appended to the tooltip.</summary>
-    public string? EvidenceText { get; set; }
+    /// <remarks>Blank text is stored as null; other text is trimmed.</remarks>
+    public string? EvidenceText { get => _evidenceText; set => _evidenceText = string.IsNullOrWhiteSpace(value) ? null : value!.Trim(); }
+    private string? _evidenceText;
 
     /// <summary>Gets the colours drawn as repeating stripes along the edge. Two or more stripes replace the single edge colour.</summary>
     public List<TopologyEdgeStripe> Stripes { get; } = new();

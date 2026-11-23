@@ -22,7 +22,7 @@ public sealed partial class MermaidMindMapColorModeTests {
         var parsed = new MermaidParser().ParseMindMap(Configuration(mode, false) + Uneven);
         Assert.Empty(parsed.Diagnostics);
         var chart = parsed.Document!.ToTopologyChart(new MermaidTopologyRenderOptions { Width = 760, Height = 460 })
-            .WithTheme(VisualTheme.Graphite(), themeMode);
+            .Theme(VisualTheme.Graphite(), themeMode);
         var artifact = chart.ToVisualArtifact();
         var png = artifact.ToPng(); var svg = artifact.ToSvg();
         var html = "<!doctype html><html><body style='margin:0;background:" + chart.Theme.Resolve(themeMode).Background.ToCss()
@@ -61,8 +61,8 @@ public sealed partial class MermaidMindMapColorModeTests {
         var document = new MermaidParser().ParseMindMap("mindmap\n Root\n   Owner\n      Child").Document!;
         document.ColorBy = MermaidMindMapColorMode.Depth;
         var chart = document.ToTopologyChart(new MermaidTopologyRenderOptions { Width = 640, Height = 360 })
-            .WithTheme(new VisualTheme(tokens, tokens));
-        var options = new TopologyRenderOptions { SvgColorVariables = tokens.ToSvgColorVariables(path => "--host-" + path.Replace('.', '-')) }.WithMindMapStyle();
+            .Theme(new VisualTheme(tokens, tokens));
+        var options = new TopologyRenderOptions { SvgColorVariables = tokens.ToSvgColorVariables(path => "--host-" + path.Replace('.', '-')) }.MindMapStyle();
         var prepared = chart.Prepare(options); var svg = prepared.ToSvg();
         await using var session = await OpenAsync("<!doctype html><html><body style='margin:0'>" + svg + "</body></html>", 960, 540);
         var target = tokens.Clone();
@@ -70,7 +70,7 @@ public sealed partial class MermaidMindMapColorModeTests {
         var variables = target.ToSvgColorVariables(path => "--host-" + path.Replace('.', '-'));
         await session.Page.Locator("svg").EvaluateAsync("(svg,css)=>svg.setAttribute('style',css)",
             string.Join(";", variables.GetVariablesForSvg(svg).Select(variable => variable.Name + ":" + variable.Color.ToCss())));
-        chart.WithTheme(new VisualTheme(target, target));
+        chart.Theme(new VisualTheme(target, target));
         var receipt = await session.Page.Locator("[data-cfx-role=topology-node-surface]").EvaluateAllAsync<object>(
             "nodes=>nodes.map(node=>({stroke:getComputedStyle(node).stroke,fill:getComputedStyle(node).fill,source:node.getAttribute('fill')}))");
         await CaptureAsync(session.Page, "mindmap-equal-palette-host-slots", svg, chart.ToPng(options), new {

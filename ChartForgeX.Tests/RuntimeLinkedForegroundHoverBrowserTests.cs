@@ -70,12 +70,12 @@ public sealed class RuntimeLinkedForegroundHoverBrowserTests {
     private static Chart Create(ChartSeriesKind kind, bool graphite, bool dark) {
         var series = new ChartSeries(new ChartSeriesId("parts"), "Parts", kind,
             new[] { new ChartPoint(1, 7), new ChartPoint(2, 3), new ChartPoint(3, 2) })
-            .WithPointColor(1, ChartColor.FromRgb(40, 120, 200).WithOpacity(.65))
-            .WithObservationIds(new[] { new ChartObservationId("a"), new ChartObservationId("b"), new ChartObservationId("c") });
-        var chart = Chart.Create().WithSize(640, 360).WithTitle("Linked foreground")
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithXLabels("A", "B", "C").WithPointLegend().AddSeries(series);
-        return kind == ChartSeriesKind.Bar ? chart.WithBarStyle(ChartBarStyle.Flat) : chart;
+            .PointColor(1, ChartColor.FromRgb(40, 120, 200).WithOpacity(.65))
+            .ObservationIds(new[] { new ChartObservationId("a"), new ChartObservationId("b"), new ChartObservationId("c") });
+        var chart = Chart.Create().Size(640, 360).Title("Linked foreground")
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .XLabels("A", "B", "C").Legend(l => l.ShowPoints()).AddSeries(series);
+        return kind == ChartSeriesKind.Bar ? chart.Bars(b => b.Style(ChartBarStyle.Flat)) : chart;
     }
 
     private static string Mark(int index) => ".cfx-stage [data-cfx-target-kind='point']:not([data-cfx-role='legend-native']):not([data-cfx-role='legend-item'])[data-cfx-series='0'][data-cfx-point='" + index + "']";

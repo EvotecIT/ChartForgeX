@@ -9,7 +9,7 @@ public sealed class GanttRelationshipLifecycleTests {
     [Fact]
     public void MovingDuplicateNamesPreservesStableRelationshipsAndRemovalPrunesOnlyIncidentLinks() {
         var first = Task("first", 1, 3); var other = Task("other", 2, 4); var last = Task("last", 4, 6);
-        var chart = Chart.Create().WithLegend(false).AddSeries(first).AddSeries(other).AddSeries(last).AddGanttDependency(first, last);
+        var chart = Chart.Create().Legend(false).AddSeries(first).AddSeries(other).AddSeries(last).AddGanttDependency(first, last);
         var original = Prepare(chart); var svg = original.ToSvg(); var png = original.ToPng(new VisualRenderOptions(supersampling: 1));
         var links = chart.GanttDependencies;
         chart.MoveSeries(first, 1);
@@ -42,7 +42,7 @@ public sealed class GanttRelationshipLifecycleTests {
         var first = Task("first", 1, 3);
         var emptyBetween = Task("between", 3, 5).ReplaceGanttItems(Array.Empty<ChartGanttItem>());
         var last = Task("last", 5, 7);
-        var chart = Chart.Create().WithLegend(false).AddSeries(emptyBefore).AddSeries(first).AddSeries(emptyBetween).AddSeries(last)
+        var chart = Chart.Create().Legend(false).AddSeries(emptyBefore).AddSeries(first).AddSeries(emptyBetween).AddSeries(last)
             .AddGanttDependency(first, last).AddGanttDependency(first, emptyBetween).AddGanttDependency(emptyBetween, last);
         var links = chart.GanttDependencies;
         var sparse = Prepare(chart); var svg = sparse.ToSvg(); var png = sparse.ToPng(new VisualRenderOptions(supersampling: 1));

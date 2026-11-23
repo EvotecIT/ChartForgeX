@@ -1,0 +1,150 @@
+# ChartForgeX core: series, axes, text styles, themes, colours and data structs.
+
+# --- ChartAxis ------------------------------------------------------------------------------------
+keep ChartAxis.WithBounds -> Bounds  # sets both bounds with a cross-check (maximum above minimum, scale domain)
+call ChartAxis.WithAutomaticBounds -> Min(null) ; Max(null)
+keep ChartAxis.WithAutomaticLabelAngle -> AutomaticLabelAngle  # restores the measured automatic angle, which has no value of its own
+keep ChartAxis.WithAutomaticTickCount -> AutomaticTickCount  # restores the automatic tick count, which has no value of its own
+keep ChartAxis.WithAutomaticTicks -> AutomaticTicks  # clears step, values and spacing policy together
+keep ChartAxis.WithLogarithmicScale -> LogarithmicScale  # sets scale, base and domain as one validated configuration
+keep ChartAxis.WithTickSpacing -> TickSpacing  # validates the minimum/maximum spacing pair
+keep ChartAxis.WithTickStep -> TickStep  # a numeric or calendar step; each clears the other tick policies
+keep ChartAxis.WithTickValues -> TickValues  # validates, orders and de-duplicates explicit ticks and clears the step
+keep ChartAxis.WithTimeSessions -> TimeSessions  # selects the time scale only after checking the sessions against the spacing
+keep ChartAxis.WithTimeSpacing -> TimeSpacing  # selects the time scale only after checking the spacing against sessions and bounds
+call ChartAxis.ConfigureGrid -> !Grid({configure})
+
+# --- ChartSeries: indexed and keyed edits ---------------------------------------------------------
+keep ChartSeries.WithPointColor -> PointColor  # validates the point index and grows the per-point list
+call ChartSeries.UseSeriesColor -> PointColor({pointIndex}, (ChartColor?)null)
+keep ChartSeries.WithPointColorRange -> PointColorRange  # validates and colours a run of points
+keep ChartSeries.WithPointFillPattern -> PointFillPattern  # validates the point index and pattern
+call ChartSeries.UseSeriesFillPattern -> PointFillPattern({pointIndex}, null)
+keep ChartSeries.WithPointLabel -> PointLabel  # validates the point index and grows the per-point list
+keep ChartSeries.UseFormattedPointLabel -> ResetPointLabel  # clears one point's label override
+keep ChartSeries.WithPointSliceOffset -> PointSliceOffset  # validates the index and the offset range
+call ChartSeries.UseDefaultSliceOffset -> PointSliceOffset({pointIndex}, 0)
+keep ChartSeries.WithPointSliceRadiusRatio -> PointSliceRadiusRatio  # pie/donut only; validates the index and ratio
+keep ChartSeries.UseDefaultSliceRadius -> ResetPointSliceRadius  # pie/donut only; clears one point's radius override
+keep ChartSeries.WithPointStrokeColor -> PointStrokeColor  # validates the point index and the series kind
+call ChartSeries.UseSeriesStrokeColor -> PointStrokeColor({pointIndex}, null)
+keep ChartSeries.ConfigurePointDataLabelStyle -> PointDataLabelStyle  # validates the index and configures one point's style on a copy
+keep ChartSeries.UseSeriesDataLabelStyle -> ResetPointDataLabelStyle  # clears one point's label style override
+keep ChartSeries.ConfigurePointMarkers -> PointMarkers  # validates the index and configures one point's marker on a copy
+keep ChartSeries.UseSeriesMarkers -> ResetPointMarkers  # clears one point's marker override
+keep ChartSeries.ConfigureFinancialValue -> FinancialValue  # validates the index and configures one candle's style on a copy
+keep ChartSeries.ConfigureFinancialValues -> FinancialValues  # configures every candle's style from its value
+keep ChartSeries.UseSeriesFinancialStyle -> ResetFinancialValue  # clears one candle's style override
+keep ChartSeries.WithFlowState -> FlowState  # validates the flow id and state
+keep ChartSeries.WithFlowStyle -> FlowStyle  # validates the flow id
+keep ChartSeries.WithNodeState -> NodeState  # validates the node id and state
+keep ChartSeries.WithFunnelConnectorStyle -> FunnelConnectorStyle  # funnel only; validates the source index
+keep ChartSeries.WithObservationId -> ObservationId  # validates the source index and identity uniqueness
+keep ChartSeries.WithObservationIds -> ObservationIds  # validates count and uniqueness of all identities
+keep ChartSeries.WithBoxPlotGroupId -> BoxPlotGroupId  # raw box plots only; validates the group index and uniqueness
+keep ChartSeries.WithBoxPlotGroupIds -> BoxPlotGroupIds  # raw box plots only; validates count and uniqueness
+keep ChartSeries.WithStrokeStyleFrom -> StrokeStyleFrom  # adds a stroke segment starting at an x position or date
+
+# --- ChartSeries: kind-checked or computed settings -----------------------------------------------
+keep ChartSeries.UseValueAxis -> ValueAxis  # binds the series to an additional axis of the same chart
+keep ChartSeries.WithBoundaryInterpolation -> BoundaryInterpolation  # paired-boundary kinds only; sets both edges together
+keep ChartSeries.WithInterpolation -> Interpolation  # validates the interpolation with its step position
+keep ChartSeries.WithItemStyler -> ItemStyleBy  # checks the styler's datum type against the series data
+keep ChartSeries.WithMapClustering -> MapClustering  # dotted maps only
+keep ChartSeries.WithMapInset -> MapInset  # tile maps only; validates the inset rectangle
+keep ChartSeries.WithTimeBuckets -> TimeBuckets  # ordinary bar series only; regroups observations into calendar buckets
+keep ChartSeries.ConfigureBoxPlotStatistics -> BoxPlotStatistics  # recomputes the box plot from its raw samples
+keep ChartSeries.ConfigureBulletAxis -> BulletAxis  # bullet series only; validates the configured axis
+keep ChartSeries.ConfigureColorDimension -> ColorDimension  # numeric-colour kinds only
+keep ChartSeries.ConfigureDumbbell -> Dumbbell  # dumbbell series only
+keep ChartSeries.ConfigureMapPointSize -> MapPointSize  # dotted maps only
+keep ChartSeries.ConfigureTrendLine -> TrendLine  # refits the trend line from its source points
+call ChartSeries.WithDataLabelFormatter -> DataLabelBy({formatter})
+call ChartSeries.WithTooltipFormatter -> TooltipBy({formatter})
+
+# --- Text styles ----------------------------------------------------------------------------------
+call TextStyleOverride.WithColor(string) -> Color(ChartColor.FromHex({hex}))
+call TextStyleOverride.WithUnderline(bool) -> Underline([{enabled}])
+call TextStyleOverride.WithUnderline(TextDecorationStyle) -> UnderlineStyle({style})
+call TextStyleOverride.WithStrikethrough(bool) -> Strikethrough([{enabled}])
+call TextStyleOverride.WithStrikethrough(TextDecorationStyle) -> StrikethroughStyle({style})
+call TextStyleOverride.WithSuperscript -> Baseline(TextBaseline.Superscript)
+call TextStyleOverride.WithSubscript -> Baseline(TextBaseline.Subscript)
+keep TextStyleOverride.WithVariation -> Variation  # adds one axis to an immutable variation set
+keep FontSpec.WithVariation -> Variation  # adds one axis to an immutable variation set
+
+# --- Settings with paired values ------------------------------------------------------------------
+keep ChartBubbleOptions.WithSizeDomain -> SizeDomain  # validates the minimum/maximum pair
+keep ChartBubbleOptions.UseAutomaticSizeDomain -> AutomaticSizeDomain  # clears both ends of the size domain, which are set only as a pair
+keep ChartMapPointSizeOptions.WithSizeDomain -> SizeDomain  # validates the minimum/maximum pair
+keep ChartMapPointSizeOptions.UseAutomaticSizeDomain -> AutomaticSizeDomain  # clears both ends of the size domain, which are set only as a pair
+keep ChartRadialLayer.WithScale -> Scale  # validates the minimum/maximum pair
+keep ChartAxisGridStyle.WithDash -> Dash  # validates the dash/gap pair
+keep ChartAxisGridStyle.WithInheritedDash -> InheritDash  # restores the chart grid's dash, which has no value of its own
+keep ChartGridLineStyle.WithDash -> Dash  # sets the dash/gap pair together
+keep VisualAccessibility.WithTextAlternative -> TextAlternative  # sets name, description and language and clears the decorative flag
+keep VisualThemeBuilder.ConfigureSeries -> Series  # configures the defaults of one series kind
+
+# --- Immutable values: With returns a new instance ------------------------------------------------
+stay ChartColor.WithAlpha  # returns a new colour; ChartColor is an immutable value
+stay ChartColor.WithOpacity  # returns a new colour; ChartColor is an immutable value
+stay ChartColor.WithCssVariable  # returns a new colour; ChartColor is an immutable value
+stay ChartColorScale.WithCaptions  # returns a new scale; ChartColorScale is immutable
+stay ChartColorScale.WithLabels  # returns a new scale; ChartColorScale is immutable
+stay ChartColorScale.WithMidpoint  # returns a new scale; ChartColorScale is immutable
+stay ChartColorScale.WithNoDataColor  # returns a new scale; ChartColorScale is immutable
+stay ChartColorScale.WithValueRange  # returns a new scale; ChartColorScale is immutable
+stay VisualTheme.Configure  # returns a new theme; VisualTheme is immutable
+stay VisualTheme.WithFontFamily  # returns a new theme; VisualTheme is immutable
+stay VisualTheme.WithMinimumReadableTextSize  # returns a new theme; VisualTheme is immutable
+stay VisualTheme.WithPalette  # returns a new theme; VisualTheme is immutable
+stay VisualTheme.WithTypography  # returns a new theme; VisualTheme is immutable
+stay VisualTypography.WithFamily  # returns new typography; VisualTypography is immutable
+stay VisualTypography.WithMinimumReadableTextSize  # returns new typography; VisualTypography is immutable
+stay FontVariationSettings.WithAxis  # returns new settings; FontVariationSettings is immutable
+stay ChartLegendItem.WithKeySize  # returns a new legend item; ChartLegendItem is immutable
+stay ChartPlotRegion.WithBorder  # returns a new region; ChartPlotRegion is immutable
+stay ChartPlotRegion.WithLabelPosition  # returns a new region; ChartPlotRegion is immutable
+stay ChartMapDefinition.WithGeographicProjection  # returns a new map definition; definitions are immutable
+stay ChartMapDefinition.WithPolygonViewport  # returns a new map definition; definitions are immutable
+stay SparklineData.WithPointOptions  # returns new sparkline data; SparklineData is immutable
+stay SvgPathCommand.WithValues  # returns a new command; SVG values are immutable
+stay SvgTransform.WithValues  # returns a new transform; SVG values are immutable
+stay SvgViewBox.WithMin  # returns a new view box; SVG values are immutable
+stay SvgViewBox.WithSize  # returns a new view box; SVG values are immutable
+stay ChartPoint.WithColorValue  # returns a new point; observations are immutable values
+stay ChartPoint.WithMarkOptions  # returns a new point; observations are immutable values
+stay ChartBubble.WithColorValue  # returns a new bubble; observations are immutable values
+stay ChartMapPoint.WithColorValue  # returns a new map point; observations are immutable values
+stay ChartMapPoint.WithFeature  # returns a new map point; observations are immutable values
+stay ChartMapRegion.WithFeature  # returns a new region; observations are immutable values
+stay ChartMapConnector.WithFeature  # returns a new connector; observations are immutable values
+stay ChartMapConnector.WithEndpointClearance  # returns a new connector; observations are immutable values
+stay ChartCalendarHeatmapItem.WithMarkOptions  # returns a new item; observations are immutable values
+stay ChartDumbbell.WithMarkOptions  # returns a new item; observations are immutable values
+stay ChartGanttItem.WithMarkOptions  # returns a new item; observations are immutable values
+stay ChartGanttLaneItem.WithMarkOptions  # returns a new item; observations are immutable values
+stay ChartHeatmapCell.WithMarkOptions  # returns a new cell; observations are immutable values
+stay ChartHeatmapRow.WithMarkOptions  # returns a new row; observations are immutable values
+stay ChartInterval.WithMarkOptions  # returns a new interval; observations are immutable values
+stay ChartRangeBand.WithMarkOptions  # returns a new band; observations are immutable values
+stay ChartStateTimelineSegment.WithMarkOptions  # returns a new segment; observations are immutable values
+
+# --- Theme helpers shared by charts, grids and blocks ---------------------------------------------
+keep ChartExtensions.WithPalette -> Palette  # derives a new immutable theme with the palette for the current mode
+keep ChartExtensions.ConfigureTheme -> Theme  # VisualTheme is immutable; the builder produces a new theme
+call ChartAdditionalValueAxis.Configure -> !Axis({configure})
+
+# --- Presets (generated from [FluentPreset] on the properties) ------------------------------------
+call ChartSeries.UsePrimaryValueAxis -> PrimaryAxis()
+call ChartSeries.UseSecondaryValueAxis -> SecondaryAxis()
+call ChartSeries.UseSolidFill -> SolidFill()
+call ChartSeries.UseThemeColor -> ThemeColor()
+stay CapturedVisualLayer.WithMask  # returns a new masked layer; captured layers are immutable
+
+# --- Delegate verbs on settings ---------------------------------------------------------------------
+verb ChartBoxPlotOptions.StatisticLabelFormatter -> StatisticLabelBy
+verb ChartLabels.AccessibleTextFormatter -> AccessibleTextBy
+verb ChartLabels.DateFormatter -> DateTextBy
+verb ChartRangeBarOptions.EndpointLabelFormatter -> EndpointLabelBy
+verb ChartSunburstOptions.SecondaryLabelFormatter -> SecondaryLabelBy

@@ -10,22 +10,22 @@ public sealed class CalendarConfigurationTests {
 
     [Fact]
     public void CallbackFailureOrInvalidNamesPreserveEveryInstalledSetting() {
-        var chart = Chart.Create().ConfigureCalendar(options => {
+        var chart = Chart.Create().Calendar(options => {
             options.FirstDayOfWeek = DayOfWeek.Monday; options.DayNames = Days; options.MonthNames = Months;
             options.CellSize = 12; options.MaximumCellSize = 30; options.Gap = 2;
         });
         var installed = chart.Options.Calendar;
 
-        Assert.Throws<InvalidOperationException>(() => chart.ConfigureCalendar(options => {
+        Assert.Throws<InvalidOperationException>(() => chart.Calendar(options => {
             options.FirstDayOfWeek = DayOfWeek.Saturday; options.DayNames = null; options.Gap = 0;
             throw new InvalidOperationException("The host rejected these settings.");
         }));
         Assert.Same(installed, chart.Options.Calendar);
-        Assert.Throws<ArgumentException>(() => chart.ConfigureCalendar(options => {
+        Assert.Throws<ArgumentException>(() => chart.Calendar(options => {
             options.CellSize = 16; options.MonthNames = new[] { "January" };
         }));
         Assert.Same(installed, chart.Options.Calendar);
-        Assert.Throws<ArgumentNullException>(() => chart.ConfigureCalendar(null!));
+        Assert.Throws<ArgumentNullException>(() => chart.Calendar((Action<ChartCalendarOptions>)null!));
         Assert.Same(installed, chart.Options.Calendar);
         Assert.Equal(DayOfWeek.Monday, installed.FirstDayOfWeek);
         Assert.Equal(Days, installed.DayNames);
@@ -39,13 +39,13 @@ public sealed class CalendarConfigurationTests {
     public void NamesAndOptionHandlesRemainDetachedAndExplicitDefaultsSurviveCloning() {
         var dayNames = Days.ToList();
         var monthNames = (string[])Months.Clone();
-        var chart = Chart.Create().ConfigureCalendar(options => {
+        var chart = Chart.Create().Calendar(options => {
             options.FirstDayOfWeek = DayOfWeek.Monday; options.DayNames = dayNames; options.MonthNames = monthNames;
             options.CellSize = 12; options.MaximumCellSize = 30; options.Gap = 2;
         });
         var previous = chart.Options.Calendar;
         ChartCalendarOptions? retained = null;
-        chart.ConfigureCalendar(options => {
+        chart.Calendar(options => {
             retained = options; options.FirstDayOfWeek = DayOfWeek.Sunday; options.Gap = 0; options.CellSize = 16;
         });
 
@@ -68,10 +68,10 @@ public sealed class CalendarConfigurationTests {
     [InlineData(true)]
     [InlineData(false)]
     public void WhitespaceNamesAreRejectedWithoutChangingPresentation(bool weekdays) {
-        var chart = Chart.Create().ConfigureCalendar(options => { options.DayNames = Days; options.MonthNames = Months; });
+        var chart = Chart.Create().Calendar(options => { options.DayNames = Days; options.MonthNames = Months; });
         var names = (string[])(weekdays ? Days : Months).Clone();
         names[1] = " ";
-        Assert.Throws<ArgumentException>(() => chart.ConfigureCalendar(options => {
+        Assert.Throws<ArgumentException>(() => chart.Calendar(options => {
             if (weekdays) options.DayNames = names;
             else options.MonthNames = names;
         }));

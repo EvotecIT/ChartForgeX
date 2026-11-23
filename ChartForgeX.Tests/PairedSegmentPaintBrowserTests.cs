@@ -32,7 +32,7 @@ public sealed class PairedSegmentPaintBrowserTests {
         var first = cap ? 10.02 : scenario == "opposite-reversed" ? 12 : -2;
         var second = cap ? 10.04 : scenario == "opposite-reversed" ? -2 : 12;
         var chart = Create(kind, false, true);
-        chart.Series[0].WithStrokeWidth(6);
+        chart.Series[0].StrokeWidth(6);
         if (kind == ChartSeriesKind.DifferenceArea) chart.Series[0].UpdateDifferencePoint(2, new ChartDifferencePoint(2, first, second, !connected));
         else chart.Series[0].UpdateRange(2, new ChartRangeBand(2, first, second, !connected));
         if (connected) {
@@ -40,7 +40,7 @@ public sealed class PairedSegmentPaintBrowserTests {
             else chart.Series[0].UpdateRange(3, new ChartRangeBand(3, 2, 8));
         }
         var transparent = scenario == "connected-transparent";
-        if (transparent && kind == ChartSeriesKind.DifferenceArea) chart.Series[0].ConfigureDifferenceArea(options => {
+        if (transparent && kind == ChartSeriesKind.DifferenceArea) chart.Series[0].DifferenceArea(options => {
             options.PositiveFillOpacity = 0; options.NegativeFillOpacity = 0;
         });
         var html = chart.ToInteractiveHtmlPage();
@@ -163,12 +163,12 @@ public sealed class PairedSegmentPaintBrowserTests {
     }
 
     private static Chart Create(ChartSeriesKind kind, bool markers, bool boundary) {
-        var chart = Chart.Create().WithSize(600, 380).WithTitle("Disconnected paired observations")
-            .WithTheme(VisualTheme.Graphite()).WithLegend(false).WithDataLabels(false)
-            .WithXAxisBounds(0, 4).WithYAxisBounds(0, 10).WithLineVisualStyle(ChartLineVisualStyle.Plain());
+        var chart = Chart.Create().Size(600, 380).Title("Disconnected paired observations")
+            .Theme(VisualTheme.Graphite()).Legend(false).DataLabels(false)
+            .XAxis(xAxis => xAxis.Bounds(0, 4)).YAxis(y => y.Bounds(0, 10)).Lines(l => l.VisualStyle(ChartLineVisualStyle.Plain()));
         if (kind == ChartSeriesKind.DifferenceArea) {
             chart.AddSeries(ChartSeries.CreateDifferenceArea(new ChartSeriesId("paired"), "Pair", Enumerable.Range(0, 5).Select(x => new ChartDifferencePoint(x, 8, 2, x is 2 or 3))));
-            chart.Series[0].WithColor(boundary ? ChartColor.FromHex("#DF3040") : ChartColor.Transparent).ConfigureDifferenceArea(options => {
+            chart.Series[0].Color(boundary ? ChartColor.FromHex("#DF3040") : ChartColor.Transparent).DifferenceArea(options => {
                 options.PositiveFill = ChartColor.FromHex("#DF3040"); options.PositiveFillOpacity = .6;
             });
         } else {
@@ -176,8 +176,8 @@ public sealed class PairedSegmentPaintBrowserTests {
             if (kind == ChartSeriesKind.RangeArea) chart.AddSeries(ChartSeries.CreateRangeArea(new ChartSeriesId("paired"), "Pair", pairs));
             else chart.AddSeries(ChartSeries.CreateRangeBand(new ChartSeriesId("paired"), "Pair", pairs));
         }
-        chart.Series[0].WithPointColor(2, ChartColor.FromHex("#DF3040"))
-            .ConfigureMarkers(options => options.Enabled = markers);
+        chart.Series[0].PointColor(2, ChartColor.FromHex("#DF3040"))
+            .Markers(options => options.Enabled = markers);
         return chart;
     }
 

@@ -20,9 +20,9 @@ public static partial class VisualArtifactInterchangeMapping {
 
     internal static TimelineDiagramBlock CreateTimelineDiagramBlock(VisualArtifactInterchangeEnvelope envelope) {
         var source = envelope.Timeline!;
-        var block = TimelineDiagramBlock.Create().WithTitle(envelope.Title).WithSubtitle(envelope.Subtitle)
-            .WithTheme(source.Theme, source.ThemeMode).WithTransparentBackground(source.TransparentBackground)
-            .WithCard(source.ShowCard).WithPngOutputScale(source.PngOutputScale);
+        var block = TimelineDiagramBlock.Create().Title(envelope.Title).Subtitle(envelope.Subtitle)
+            .Theme(source.Theme).ThemeMode(source.ThemeMode).TransparentBackground(source.TransparentBackground)
+            .ShowCard(source.ShowCard).PngOutputScale(source.PngOutputScale);
         block.Options.Padding = source.Padding; block.Options.HostOwnsFrame = source.HostOwnsFrame;
         block.Options.Accessibility.Name = envelope.AccessibleName;
         block.Options.Accessibility.Description = envelope.AccessibleDescription;

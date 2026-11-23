@@ -18,13 +18,13 @@ public static partial class PlaygroundEngine {
         if (!UsesPreviewFont(artifact)) return;
         switch (artifact.Model) {
             case Chart chart:
-                chart.WithTheme(chart.Options.Theme.WithFontFamily(PreviewFontFamily));
+                chart.Theme(chart.Options.Theme.WithFontFamily(PreviewFontFamily));
                 break;
             case ChartGrid grid:
                 grid.Theme = grid.Theme.WithFontFamily(PreviewFontFamily);
                 break;
             case TopologyChart topology:
-                topology.WithTheme(topology.Theme.WithFontFamily(PreviewFontFamily));
+                topology.Theme(topology.Theme.WithFontFamily(PreviewFontFamily));
                 break;
             case SequenceArtifact sequence:
                 sequence.Theme = sequence.Theme.WithFontFamily(PreviewFontFamily);
@@ -33,7 +33,7 @@ public static partial class PlaygroundEngine {
                 block.Options.Theme = block.Options.Theme.WithFontFamily(PreviewFontFamily);
                 if (block is RailroadDiagramBlock railroad) {
                     // The producer measured in its default font and the playground sets no frame of its own, so measure again in the preview font.
-                    railroad.WithNaturalSize();
+                    railroad.NaturalSize();
                     artifact.NaturalSize = new VisualArtifactSize(railroad.Options.Size.Width, railroad.Options.Size.Height);
                 }
                 break;

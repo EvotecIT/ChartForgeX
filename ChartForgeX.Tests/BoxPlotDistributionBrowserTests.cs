@@ -21,7 +21,7 @@ public sealed class BoxPlotDistributionBrowserTests {
     public async Task RawGroupLegendsOwnAllTheirMarksWhileOutliersKeepSampleSelectionAndLocalizedReadouts(bool dark, int width) {
         if (!Enabled) return;
         var chart = Model(dark, width);
-        chart.ConfigureLabels(labels => {
+        chart.Labels(labels => {
             labels.Category = "Kategoria"; labels.LowerWhisker = "Dolny wąs"; labels.UpperWhisker = "Górny wąs";
             labels.SampleCount = "Próbki"; labels.SourceMinimum = "Minimum próbek"; labels.OutlierCount = "Odstające";
             labels.Outlier = "Pomiar odstający";
@@ -75,9 +75,9 @@ public sealed class BoxPlotDistributionBrowserTests {
         if (!Enabled) return;
         var series = ChartSeries.CreateBoxPlot(new ChartSeriesId("sparse"), "Sparse measurements", new[] {
             new ChartBoxPlotSampleGroup(1, new[] { 0d, 100, 101, 102 }), new ChartBoxPlotSampleGroup(2, new[] { 0d, 100 })
-        }).ConfigureBoxPlotStatistics(options => { options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr; options.IqrMultiplier = 0.0001; });
-        var chart = Chart.Create().WithSize(700, 400).WithXLabels("Sparse", "No inliers").WithDataLabels(false).AddSeries(series);
-        chart.ConfigureLabels(labels => { labels.SourceMinimum = "Minimum źródła"; labels.InlierMinimum = "Minimum wewnętrzne"; labels.NoInliers = "Brak"; });
+        }).BoxPlotStatistics(options => { options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr; options.IqrMultiplier = 0.0001; });
+        var chart = Chart.Create().Size(700, 400).XLabels("Sparse", "No inliers").DataLabels(false).AddSeries(series);
+        chart.Labels(labels => { labels.SourceMinimum = "Minimum źródła"; labels.InlierMinimum = "Minimum wewnętrzne"; labels.NoInliers = "Brak"; });
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), 740, 600);
         var page = session.Page;
         await FocusWithKeyboardAsync(page, page.Locator(Summary + "[data-cfx-group-index='0']"));
@@ -112,7 +112,7 @@ public sealed class BoxPlotDistributionBrowserTests {
         Assert.Equal("true", await page.Locator(Outlier).GetAttributeAsync("aria-selected"));
         Assert.Equal("14", await page.Locator(Outlier).GetAttributeAsync("data-cfx-source-point"));
         var noOutliers = Model(false, 700, reverse: true);
-        noOutliers.Series[0].ConfigureBoxPlotStatistics(options => options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.MinMax);
+        noOutliers.Series[0].BoxPlotStatistics(options => options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.MinMax);
         await UpdateAsync(noOutliers);
         Assert.Equal(0, await page.Locator(Outlier).CountAsync()); Assert.Equal(1, await CountAsync());
         Assert.Equal("[\"latency\",\"five-number-summary\",\"A\"]", await page.EvaluateAsync<string>("() => distributionController.getSelection()[0].targetId"));
@@ -132,14 +132,14 @@ public sealed class BoxPlotDistributionBrowserTests {
         var second = new ChartBoxPlotSampleGroup(2, new[] { 2d, 3, 4, 5, 6 });
         var groups = onlySecond ? new[] { second } : reverse ? new[] { second, first } : new[] { first, second };
         var series = ChartSeries.CreateBoxPlot(new ChartSeriesId("latency"), "Latency", groups)
-            .ConfigureBoxPlotStatistics(options => options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr);
+            .BoxPlotStatistics(options => options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr);
         if (keyed) {
-            series.WithBoxPlotGroupIds(groups.Select(group => new ChartObservationId(group.X == 1 ? "A" : "B")));
-            series.WithObservationIds(groups.SelectMany(group => group.Samples.Select((_, index) =>
+            series.BoxPlotGroupIds(groups.Select(group => new ChartObservationId(group.X == 1 ? "A" : "B")));
+            series.ObservationIds(groups.SelectMany(group => group.Samples.Select((_, index) =>
                 new ChartObservationId(group.X == 1 && index == 9 ? "A" : (group.X == 1 ? "a-" : "b-") + index))));
         }
-        return Chart.Create().WithSize(width, 400).WithTitle("Service latency").WithXLabels("Service A", "Service B")
-            .WithPointLegend().WithDataLabels(false).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).AddSeries(series);
+        return Chart.Create().Size(width, 400).Title("Service latency").XLabels("Service A", "Service B")
+            .Legend(l => l.ShowPoints()).DataLabels(false).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).AddSeries(series);
     }
 
     private static Task<string[]> RowsAsync(IPage page) => page.Locator(".cfx-tooltip__meta").EvaluateAsync<string[]>("node => Array.from(node.children).map(child => child.textContent)");

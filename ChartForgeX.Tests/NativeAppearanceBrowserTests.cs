@@ -27,7 +27,7 @@ public sealed class NativeAppearanceBrowserTests {
             .Count(item => item.Name.LocalName == "text");
         var glass = NativeGlassCompositionExample.Create(variant, mode);
         var image = glass.ToImage();
-        var svg = VisualCanvas.Create(image.Width, image.Height).WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+        var svg = VisualCanvas.Create(image.Width, image.Height).BackdropStyle(VisualCanvasBackdropStyle.Transparent)
             .AddImage(image, 0, 0, image.Width, image.Height).ToSvg();
         var width = variant == "compact" ? 390 : 1100;
         var html = "<style>body{margin:0}section svg{max-width:100%;height:auto}</style>"

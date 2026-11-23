@@ -127,7 +127,7 @@ public sealed partial class MarkupChartFamiliesTests {
                 var parsed = new ChartForgeX.Markup.VisualMarkupParser().Parse(Fence(source));
                 Assert.Empty(parsed.Diagnostics);
                 var chart = Assert.IsType<Chart>(Assert.Single(parsed.Artifacts).Model);
-                AssertNativeArtifacts(NativeTyped(family).WithSize(width, 420), chart, width, mode, family + (index == 0 ? "-commands" : "-table"));
+                AssertNativeArtifacts(NativeTyped(family).Size(width, 420), chart, width, mode, family + (index == 0 ? "-commands" : "-table"));
             }
         }
     }

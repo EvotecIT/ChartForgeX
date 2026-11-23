@@ -14,8 +14,8 @@ public sealed class SankeyTinyFlowTests {
     public void OmittedTinyRibbonsRetainEndpointSlotsNodesConservationAndIndependentColorDomain() {
         var chart = Model(999, 1); var source = SankeyFlowColorTests.Prepare(chart);
         var raw = chart.Series[0].FlowLinks.ToArray();
-        chart.ConfigureSankey(options => options.RibbonVisibilityThreshold = 2);
-        chart.Series[0].WithFlowStyle("small", new ChartFlowStyle(fillPattern: ChartFillPattern.Crosshatch,
+        chart.Sankey(options => options.RibbonVisibilityThreshold = 2);
+        chart.Series[0].FlowStyle("small", new ChartFlowStyle(fillPattern: ChartFillPattern.Crosshatch,
             outlineStroke: new ChartStrokeStyle(ChartColor.Black, 3, dash: new[] { 2d, 2d })));
         var omitted = SankeyFlowColorTests.Prepare(chart); var small = SankeyFlowColorTests.Link(omitted, "small");
         Assert.Equal("below-paint-threshold", (string?)small.Attribute("data-cfx-geometry-status"));
@@ -32,7 +32,7 @@ public sealed class SankeyTinyFlowTests {
         var root = omitted.Regions.Single(region => region.Id == "series-0-node-r");
         var widths = SankeyFlowColorTests.Links(omitted).Select(link => Number(link, "width")).ToArray();
         Assert.Equal(root.Bounds.Height, widths.Sum(), 10); Assert.Equal(999, widths[0] / widths[1], 10);
-        chart.WithLegend(true); var keyed = SankeyFlowColorTests.Prepare(chart);
+        chart.Legend(true); var keyed = SankeyFlowColorTests.Prepare(chart);
         var key = Assert.Single(SankeyFlowColorTests.Role(keyed, "sankey-color-scale"));
         Assert.Equal("-5", (string?)key.Attribute("data-cfx-min-value")); Assert.Equal("100", (string?)key.Attribute("data-cfx-max-value"));
         var snapshot = omitted.ToSvg(); chart.Options.Sankey.RibbonVisibilityThreshold = 0;
@@ -41,7 +41,7 @@ public sealed class SankeyTinyFlowTests {
 
     [Fact]
     public void UnrepresentablePositiveWidthKeepsItsRawFlowIdentityAndReportsPrecisionCollapse() {
-        var chart = Model(1e308, double.Epsilon).WithLegend(true);
+        var chart = Model(1e308, double.Epsilon).Legend(true);
         var prepared = SankeyFlowColorTests.Prepare(chart); var tiny = SankeyFlowColorTests.Link(prepared, "small");
         Assert.Equal(double.Epsilon.ToString("R", CultureInfo.InvariantCulture), (string?)tiny.Attribute("data-cfx-value"));
         Assert.Equal("0", (string?)tiny.Attribute("data-cfx-width"));
@@ -56,10 +56,10 @@ public sealed class SankeyTinyFlowTests {
     [Theory]
     [InlineData(360, false)] [InlineData(360, true)] [InlineData(800, false)] [InlineData(800, true)]
     public void CompactAndWideTinyFlowCapturesRetainReadableFactsWithoutInflatingRibbons(int width, bool dark) {
-        var chart = Model(999, 1).WithSize(width, 400).WithDataLabels(true).WithLegend(true)
-            .WithHeader(true).WithTitle("Large and small request flows")
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
-        chart.ConfigureSankey(options => { options.RibbonVisibilityThreshold = 2; options.ColorDimension.Name = "Latency (ms)"; });
+        var chart = Model(999, 1).Size(width, 400).DataLabels(true).Legend(true)
+            .ShowHeader(true).Title("Large and small request flows")
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
+        chart.Sankey(options => { options.RibbonVisibilityThreshold = 2; options.ColorDimension.Name = "Latency (ms)"; });
         var prepared = SankeyFlowColorTests.Prepare(chart);
         Assert.Equal("below-paint-threshold", (string?)SankeyFlowColorTests.Link(prepared, "small").Attribute("data-cfx-geometry-status"));
         Assert.Equal(2, SankeyFlowColorTests.Links(prepared).Length); Assert.Equal(3, SankeyFlowColorTests.Role(prepared, "sankey-node").Length);
@@ -71,14 +71,14 @@ public sealed class SankeyTinyFlowTests {
     [InlineData(-1)] [InlineData(double.NaN)] [InlineData(double.PositiveInfinity)]
     public void InvalidVisibilityThresholdLeavesThePreviousSnapshotInstalled(double invalid) {
         var chart = Model(999, 1); var original = chart.Options.Sankey;
-        Assert.Throws<ArgumentOutOfRangeException>(() => chart.ConfigureSankey(options => options.RibbonVisibilityThreshold = invalid));
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Sankey(options => options.RibbonVisibilityThreshold = invalid));
         Assert.Same(original, chart.Options.Sankey); Assert.Equal(0, original.RibbonVisibilityThreshold);
     }
 
-    private static Chart Model(double large, double small) => Chart.Create().WithSize(800, 400).WithHeader(false).WithLegend(false).WithDataLabels(false)
+    private static Chart Model(double large, double small) => Chart.Create().Size(800, 400).ShowHeader(false).Legend(false).DataLabels(false)
         .AddSankey("Requests", new[] { new ChartNode("r", "Received"), new ChartNode("large", "Automatic"), new ChartNode("small", "Manual") },
             new[] { new ChartFlowLink("large", "r", "large", large, -5), new ChartFlowLink("small", "r", "small", small, 100) })
-        .ConfigureSankey(options => { options.FlowColorMode = ChartSankeyFlowColorMode.Quantitative;
+        .Sankey(options => { options.FlowColorMode = ChartSankeyFlowColorMode.Quantitative;
             options.ColorScale = ChartColorScale.Sequential(SankeyFlowColorTests.Low, SankeyFlowColorTests.High); });
     private static double Number(XElement element, string name) => double.Parse(element.Attribute("data-cfx-" + name)!.Value, CultureInfo.InvariantCulture);
 }

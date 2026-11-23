@@ -93,7 +93,7 @@ public sealed class PreparedSequenceTests {
     [InlineData(ThemeMode.Light)]
     [InlineData(ThemeMode.Dark)]
     public void NestedFragmentsNotesAndActivationsHaveDisjointMeasuredRows(ThemeMode mode) {
-        var model = SequenceArtifact.Create("fragments").WithTitle("Shared frame")
+        var model = SequenceArtifact.Create("fragments").Title("Shared frame")
             .AddParticipant("client", "Client", SequenceArtifactParticipantKind.Actor)
             .AddParticipant("server", "Server", SequenceArtifactParticipantKind.Control)
             .AddMessage("client", "server", "Request a long description that must wrap within the lane")
@@ -186,7 +186,7 @@ public sealed class PreparedSequenceTests {
 
     [Fact]
     public void PublicExportsUseNativeContentSizingWhileSourceEnvelopeRetainsAuthoredBounds() {
-        var model = SequenceArtifact.Create("public-native").WithSize(500, 240)
+        var model = SequenceArtifact.Create("public-native").Width(500).Height(240)
             .AddParticipant("a", "Caller", SequenceArtifactParticipantKind.Actor).AddParticipant("b", "Worker");
         for (int i = 0; i < 8; i++) model.AddMessage("a", "b", "Request " + i);
         model.AddActivation("b", true, 0).AddActivation("b", false, 7)

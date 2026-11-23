@@ -26,14 +26,14 @@ public sealed class EnhanceRuntimeBrowserTests {
         ChartPoint Point(int index, double value, string kind) => new ChartPoint(index + 1, value).WithMarkOptions(new ChartMarkOptions(
             keys: Enumerable.Range(0, (int)value).Select(n => kind + "-" + index + "-" + n),
             fields: new Dictionary<string, object> { ["day"] = day.AddDays(index), ["kind"] = kind }));
-        return Chart.Create().WithStackedBars().WithLegend(true).WithXLabels("Thu", "Fri", "Sat", "Sun")
+        return Chart.Create().Bars(b => b.Stacked()).Legend(true).XLabels("Thu", "Fri", "Sat", "Sun")
             .AddBar("Updates", new[] { 3d, 2, 4, 1 }.Select((v, i) => Point(i, v, "update")))
             .AddBar("Notes", new[] { 1d, 2, 1, 2 }.Select((v, i) => Point(i, v, "note")));
     }
 
     private static Chart Trend() {
         var start = new DateTime(2026, 10, 1);
-        return Chart.Create().WithLegend(true).ConfigureXAxis(axis => axis.Scale = ChartScaleKind.Time)
+        return Chart.Create().Legend(true).XAxis(axis => axis.Scale = ChartScaleKind.Time)
             .AddLine("Updates", Enumerable.Range(0, 4).Select(i => new ChartPoint(start.AddDays(i).ToOADate(), new[] { 3, 2, 4, 1 }[i])))
             .AddLine("Notes", Enumerable.Range(0, 4).Select(i => new ChartPoint(start.AddDays(i).ToOADate(), new[] { 1, 2, 1, 2 }[i])));
     }
@@ -274,7 +274,7 @@ public sealed class EnhanceRuntimeBrowserTests {
     [BrowserFact]
     public async Task LinkedRecords_KeepKeysAndFieldsThatMatchObjectPropertyNames() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithLegend(false).AddBar("Records", new[] {
+        var chart = Chart.Create().Legend(false).AddBar("Records", new[] {
             new ChartPoint(1, 3).WithMarkOptions(new ChartMarkOptions(keys: new[] {"__proto__", "constructor", "toString"},
                 fields: new Dictionary<string, object> { ["__proto__"] = "keep", ["constructor"] = "record" })),
             new ChartPoint(2, 4).WithMarkOptions(new ChartMarkOptions(keys: new[] {"other"},
@@ -304,7 +304,7 @@ public sealed class EnhanceRuntimeBrowserTests {
     [BrowserFact]
     public async Task DisconnectingLinkedViews_RestoresNativeMarkNavigation() {
         if (!Enabled) return;
-        var source = Chart.Create().WithLegend(false).AddLine("Source", new[] {
+        var source = Chart.Create().Legend(false).AddLine("Source", new[] {
             new ChartPoint(1, 3).WithMarkOptions(new ChartMarkOptions(href: "#record-detail", keys: new[] {"record"})), new ChartPoint(2, 4)
         }).AddLine("Peer", new[] { new ChartPoint(1, 2), new ChartPoint(2, 3) })
             .Prepare(Context()).ToSvg(new VisualSvgOptions("source").WithEnhanceHooks());

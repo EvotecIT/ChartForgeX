@@ -14,11 +14,11 @@ public sealed class TreemapColorTests {
     private static readonly ChartColor Red = ChartColor.FromRgb(255, 0, 0);
     private static readonly ChartColor Blue = ChartColor.FromRgb(0, 0, 255);
     private static readonly ChartColor Missing = ChartColor.FromRgb(13, 47, 81);
-    private static Chart Colored(double multiplier = 1, bool reverseColors = false) => Chart.Create().WithDataLabels(false).AddTreemap("Sizes", new[] {
+    private static Chart Colored(double multiplier = 1, bool reverseColors = false) => Chart.Create().DataLabels(false).AddTreemap("Sizes", new[] {
         new ChartHierarchyItem("a", "A", value: 9 * multiplier, colorValue: reverseColors ? 20 : 10),
         new ChartHierarchyItem("b", "B", value: 1 * multiplier, colorValue: reverseColors ? 10 : 20),
         new ChartHierarchyItem("missing", "Missing", value: 2 * multiplier)
-    }).ConfigureTreemap(options => { options.Gap = 0; options.ColorScale = ChartColorScale.Sequential(Red, Blue).WithNoDataColor(Missing); });
+    }).Treemap(options => { options.Gap = 0; options.ColorScale = ChartColorScale.Sequential(Red, Blue).WithNoDataColor(Missing); });
     private static XElement OwnMark(XElement target) => target.Elements().Single(element => (string?)element.Attribute("data-cfx-role") is "treemap-tile-mark" or "treemap-group-mark");
 
     [Fact]
@@ -42,11 +42,11 @@ public sealed class TreemapColorTests {
     [InlineData(false)]
     [InlineData(true)]
     public void GroupsWithoutColorValuesAreContainersWhileAnUncoloredLeafIsMissingData(bool uncoloredLeaf) {
-        var chart = Chart.Create().WithSize(720, 460).AddTreemap("Work", new[] {
+        var chart = Chart.Create().Size(720, 460).AddTreemap("Work", new[] {
             new ChartHierarchyItem("south", "South"), new ChartHierarchyItem("north", "North"),
             new ChartHierarchyItem("support", "Support", "south", 22, 6), new ChartHierarchyItem("field", "Field", "south", 15, -4),
             new ChartHierarchyItem("platform", "Platform", "north", 18, uncoloredLeaf ? null : 2)
-        }).ConfigureTreemap(options => options.ColorScale = ChartColorScale.Diverging(Red, ChartColor.White, Blue, 0)
+        }).Treemap(options => options.ColorScale = ChartColorScale.Diverging(Red, ChartColor.White, Blue, 0)
             .WithLabels("Decrease", "No change", "Increase"));
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(720, 460)), frame: new VisualFrame(showLegend: true)));
         var missing = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Id == "treemap-color-scale-label-missing");
@@ -55,9 +55,9 @@ public sealed class TreemapColorTests {
 
     [Fact]
     public void ADivergingMidpointCaptionSitsUnderItsValueBetweenTheEndCaptions() {
-        var chart = Chart.Create().WithSize(800, 440).AddTreemap("Work", new[] {
+        var chart = Chart.Create().Size(800, 440).AddTreemap("Work", new[] {
             new ChartHierarchyItem("a", "A", value: 6, colorValue: -10), new ChartHierarchyItem("b", "B", value: 4, colorValue: 15)
-        }).ConfigureTreemap(options => options.ColorScale = ChartColorScale.Diverging(Red, ChartColor.White, Blue, 0)
+        }).Treemap(options => options.ColorScale = ChartColorScale.Diverging(Red, ChartColor.White, Blue, 0)
             .WithLabels("Decrease", "No change", "Increase"));
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 440)), frame: new VisualFrame(showLegend: true)));
         var captions = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "treemap-color-scale-label").ToDictionary(node => node.Id!);
@@ -78,7 +78,7 @@ public sealed class TreemapColorTests {
         var chart = Colored();
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(720, 460)), themeMode: mode, frame: new VisualFrame(showLegend: true));
         var original = chart.Prepare(context);
-        chart.Series[0].WithNodeState("a", ChartSeriesState.Warning);
+        chart.Series[0].NodeState("a", ChartSeriesState.Warning);
         var prepared = chart.Prepare(context); var svg = prepared.ToSvg();
         var node = Targets(prepared).Single(target => (string?)target.Attribute("data-cfx-target-id") == "a");
         var mark = OwnMark(node); var warning = context.Theme.Resolve(mode).Status.Medium.Fill;
@@ -93,7 +93,7 @@ public sealed class TreemapColorTests {
         var bounds = prepared.Regions.Single(region => region.Id == "series-0-node-a").Bounds;
         Pixel(native, bounds, Red);
         Assert.True(ContainsPixel(native, bounds, warning), "Native state outline must retain its semantic color.");
-        chart.Series[0].WithNodeState("a", ChartSeriesState.None);
+        chart.Series[0].NodeState("a", ChartSeriesState.None);
         Assert.Equal(svg, prepared.ToSvg());
         Assert.Equal("none", (string?)OwnMark(Targets(chart.Prepare(context)).Single(target => (string?)target.Attribute("data-cfx-target-id") == "a")).Attribute("stroke"));
     }
@@ -102,11 +102,11 @@ public sealed class TreemapColorTests {
     [InlineData(ThemeMode.Light)]
     [InlineData(ThemeMode.Dark)]
     public void NodeStateWithoutColorScaleUsesSharedPaintAndExplicitOverrides(ThemeMode mode) {
-        var chart = Chart.Create().WithDataLabels(false).AddTreemap("States", new[] {
+        var chart = Chart.Create().DataLabels(false).AddTreemap("States", new[] {
             new ChartHierarchyItem("a", "Same", value: 9), new ChartHierarchyItem("b", "Same", value: 1)
         });
         chart.Series[0].StateRole = ChartSeriesState.Warning;
-        chart.Series[0].WithNodeState("a", ChartSeriesState.None);
+        chart.Series[0].NodeState("a", ChartSeriesState.None);
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(720, 460)), themeMode: mode, frame: new VisualFrame(showLegend: false));
         var colors = context.Theme.Resolve(mode);
         var nodes = Targets(chart.Prepare(context)).ToDictionary(target => (string)target.Attribute("data-cfx-target-id")!);
@@ -114,7 +114,7 @@ public sealed class TreemapColorTests {
         Assert.Equal(colors.Palette[0].ToCss(), (string?)OwnMark(nodes["a"]).Attribute("fill"));
         Assert.Equal("Warning", (string?)nodes["b"].Attribute("data-cfx-state"));
         Assert.Equal(colors.Status.Medium.Fill.ToCss(), (string?)OwnMark(nodes["b"]).Attribute("fill"));
-        chart.Series[0].WithPointColor(1, Missing);
+        chart.Series[0].PointColor(1, Missing);
         var prepared = chart.Prepare(context);
         Assert.Equal(Missing.ToCss(), (string?)OwnMark(Targets(prepared).Single(target => (string?)target.Attribute("data-cfx-target-id") == "b")).Attribute("fill"));
         Pixel(PngReader.Decode(prepared.ToPng(new VisualRenderOptions(supersampling: 1))), prepared.Regions.Single(region => region.Id == "series-0-node-b").Bounds, Missing);
@@ -128,9 +128,9 @@ public sealed class TreemapColorTests {
             ChartColorScale.Sequential(Red, Blue).WithValueRange(0, 100).WithNoDataColor(Missing),
             ChartColorScale.Discrete(new[] { new ChartColorBand(50, Red, "Lower"), new ChartColorBand(null, Blue, "Upper") }).WithNoDataColor(Missing)
         }) {
-            var chart = Chart.Create().WithDataLabels(false).AddTreemap("Colors", new[] {
+            var chart = Chart.Create().DataLabels(false).AddTreemap("Colors", new[] {
                 new ChartHierarchyItem("low", "Low", value: 9, colorValue: 0), new ChartHierarchyItem("high", "High", value: 1, colorValue: 100), new ChartHierarchyItem("missing", "Missing", value: 2)
-            }).ConfigureTreemap(options => { options.Gap = 0; options.ColorScale = scale; });
+            }).Treemap(options => { options.Gap = 0; options.ColorScale = scale; });
             var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(720, 460)), themeMode: mode, frame: new VisualFrame(showLegend: true)));
             var xml = XDocument.Parse(prepared.ToSvg()); var nodes = Targets(prepared).ToDictionary(node => (string)node.Attribute("data-cfx-target-id")!);
             Assert.Equal(Red.ToCss(), (string?)OwnMark(nodes["low"]).Attribute("fill")); Assert.Equal(Blue.ToCss(), (string?)OwnMark(nodes["high"]).Attribute("fill"));
@@ -153,10 +153,10 @@ public sealed class TreemapColorTests {
 
     [Fact]
     public void BoundaryEqualitySelectsNextBandAndPointPaintOverridesRemainExplicit() {
-        var chart = Chart.Create().WithDataLabels(false).AddTreemap("Bands", new[] {
+        var chart = Chart.Create().DataLabels(false).AddTreemap("Bands", new[] {
             new ChartHierarchyItem("before", "Before", value: 4, colorValue: 49), new ChartHierarchyItem("boundary", "Boundary", value: 2, colorValue: 50), new ChartHierarchyItem("override", "Override", value: 3, colorValue: 100)
-        }).ConfigureTreemap(options => options.ColorScale = ChartColorScale.Discrete(new[] { new ChartColorBand(50, Red, "Low"), new ChartColorBand(null, Blue, "High") }));
-        chart.Series[0].WithPointColor(2, Missing); chart.Series[0].WithPointFillPattern(2, ChartFillPattern.Crosshatch);
+        }).Treemap(options => options.ColorScale = ChartColorScale.Discrete(new[] { new ChartColorBand(50, Red, "Low"), new ChartColorBand(null, Blue, "High") }));
+        chart.Series[0].PointColor(2, Missing); chart.Series[0].PointFillPattern(2, ChartFillPattern.Crosshatch);
         var prepared = Prepare(chart); var nodes = Targets(prepared).ToDictionary(node => (string)node.Attribute("data-cfx-target-id")!);
         Assert.Equal(Red.ToCss(), (string?)OwnMark(nodes["before"]).Attribute("fill")); Assert.Equal(Blue.ToCss(), (string?)OwnMark(nodes["boundary"]).Attribute("fill"));
         Assert.Equal(Missing.ToCss(), (string?)OwnMark(nodes["override"]).Attribute("fill"));
@@ -165,8 +165,8 @@ public sealed class TreemapColorTests {
 
     [Fact]
     public void AllMissingColorsDoNotInventAnObservedZeroDomain() {
-        var chart = Chart.Create().WithDataLabels(false).AddTreemap("Unknown", new[] { new ChartHierarchyItem("a", "A", value: 2) })
-            .ConfigureTreemap(options => options.ColorScale = ChartColorScale.Sequential(Red, Blue).WithNoDataColor(Missing));
+        var chart = Chart.Create().DataLabels(false).AddTreemap("Unknown", new[] { new ChartHierarchyItem("a", "A", value: 2) })
+            .Treemap(options => options.ColorScale = ChartColorScale.Sequential(Red, Blue).WithNoDataColor(Missing));
         var prepared = Prepare(chart, true); var xml = XDocument.Parse(prepared.ToSvg()); var node = Assert.Single(Targets(prepared));
         Assert.Equal(Missing.ToCss(), (string?)OwnMark(node).Attribute("fill")); Assert.Null(node.Attribute("data-cfx-color-value"));
         var scale = xml.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "treemap-color-scale");
@@ -189,10 +189,10 @@ public sealed class TreemapColorTests {
 
     [Fact]
     public void LeafLegendAndSpacingOptionsUseCurrentItemFacts() {
-        var chart = Chart.Create().WithPointLegend().AddTreemap("Leaves", new[] {
+        var chart = Chart.Create().Legend(l => l.ShowPoints()).AddTreemap("Leaves", new[] {
             new ChartHierarchyItem("group", "Group"), new ChartHierarchyItem("first", "Support", "group", 1), new ChartHierarchyItem("second", "Support", "group", 2)
         });
-        chart.Series[0].WithPointColor(1, Red); chart.Series[0].WithPointColor(2, Blue);
+        chart.Series[0].PointColor(1, Red); chart.Series[0].PointColor(2, Blue);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Equal(2, prepared.Scene.Nodes.Count(node => node.Role == "legend-entry"));
         var legends = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(node => node.Role == "legend-entry").ToArray();
@@ -206,7 +206,7 @@ public sealed class TreemapColorTests {
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.Treemap.Gap = double.NaN);
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.Treemap.GroupPadding = -1);
         var before = Prepare(chart).Regions.Single(region => region.Id == "series-0-node-first").Bounds;
-        chart.ConfigureTreemap(options => { options.GroupPadding = 0; options.Gap = 0; options.ShowGroupLabels = false; });
+        chart.Treemap(options => { options.GroupPadding = 0; options.Gap = 0; options.ShowGroupLabels = false; });
         var after = Prepare(chart).Regions.Single(region => region.Id == "series-0-node-first").Bounds;
         Assert.True(after.Width * after.Height > before.Width * before.Height);
         Assert.DoesNotContain(XDocument.Parse(Prepare(chart).ToSvg()).Descendants(), element => (string?)element.Attribute("data-cfx-role") == "treemap-group-label");

@@ -138,7 +138,7 @@ public static class TrendLineModelRecipe {
             options.Interval = selection == &quot;prediction&quot; ? ChartTrendLineIntervalKind.Prediction : ChartTrendLineIntervalKind.Confidence;
             options.ConfidenceLevel = .95;
         });
-        return Chart.Create().WithXAxis(&quot;Source X&quot;).WithYAxis(&quot;Observed response&quot;).WithLegend(true).WithDataLabels(false)
+        return Chart.Create().XAxis(xAxis =&gt; xAxis.Title(&quot;Source X&quot;)).YAxis(y =&gt; y.Title(&quot;Observed response&quot;)).Legend(true).DataLabels(false)
             .AddSeries(observations).AddSeries(fit);
     }
 }
@@ -200,7 +200,7 @@ public static class TrendLineModelRecipe {
             options.Interval = selection == &quot;prediction&quot; ? ChartTrendLineIntervalKind.Prediction : ChartTrendLineIntervalKind.Confidence;
             options.ConfidenceLevel = .95;
         });
-        return Chart.Create().WithXAxis(&quot;Source X&quot;).WithYAxis(&quot;Observed response&quot;).WithLegend(true).WithDataLabels(false)
+        return Chart.Create().XAxis(xAxis =&gt; xAxis.Title(&quot;Source X&quot;)).YAxis(y =&gt; y.Title(&quot;Observed response&quot;)).Legend(true).DataLabels(false)
             .AddSeries(observations).AddSeries(fit);
     }
 }

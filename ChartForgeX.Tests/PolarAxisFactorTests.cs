@@ -14,8 +14,8 @@ public sealed class PolarAxisFactorTests {
     [InlineData(double.PositiveInfinity)]
     [InlineData(double.NegativeInfinity)]
     public void FactorsRejectNegativeOrNonFiniteInputs(double value) {
-        Assert.Throws<ArgumentOutOfRangeException>(() => new ChartOptions { PolarAxisScaleFactor = value });
-        Assert.Throws<ArgumentOutOfRangeException>(() => new ChartOptions { PolarAxisLabelFactor = value });
+        Assert.Throws<ArgumentOutOfRangeException>(() => new ChartOptions { Polar = { AxisScaleFactor = value } });
+        Assert.Throws<ArgumentOutOfRangeException>(() => new ChartOptions { Polar = { AxisLabelFactor = value } });
         Assert.Throws<ArgumentOutOfRangeException>(() => new MermaidRadarRenderOptions { AxisScaleFactor = value });
         Assert.Throws<ArgumentOutOfRangeException>(() => new MermaidRadarRenderOptions { AxisLabelFactor = value });
     }
@@ -27,8 +27,8 @@ public sealed class PolarAxisFactorTests {
         var chart = Native(polar);
         var original = Prepare(chart);
         var originalSpoke = Spokes(original).First();
-        chart.Options.PolarAxisScaleFactor = .5;
-        chart.Options.PolarAxisLabelFactor = .75;
+        chart.Options.Polar.AxisScaleFactor = .5;
+        chart.Options.Polar.AxisLabelFactor = .75;
         var changed = Prepare(chart);
         var spoke = Spokes(changed).First();
         Assert.Equal((originalSpoke.End.X - originalSpoke.Start.X) / 2, spoke.End.X - spoke.Start.X, 8);
@@ -38,7 +38,7 @@ public sealed class PolarAxisFactorTests {
         var right = original.Scene.Nodes.OfType<VisualSceneText>().Single(n => n.Role == (polar ? "polar-angle-label" : "radar-axis-label") && n.Text.Lines[0].Text == "East");
         var moved = changed.Scene.Nodes.OfType<VisualSceneText>().Single(n => n.Role == right.Role && n.Text.Lines[0].Text == "East");
         Assert.True(moved.X < right.X);
-        Assert.Equal(0, chart.Options.YAxis.Minimum); Assert.Equal(100, chart.Options.YAxis.Maximum);
+        Assert.Equal(0, chart.Options.YAxis.Min); Assert.Equal(100, chart.Options.YAxis.Max);
         Assert.Equal(new[] { 90d, 45, 80, 60 }, chart.Series[0].Points.Select(p => p.Y));
     }
 
@@ -48,7 +48,7 @@ public sealed class PolarAxisFactorTests {
     [InlineData(false, double.MaxValue)]
     public void LongerSpokesFitTheSharedPlotWithoutLosingObservations(bool polar, double factor) {
         var chart = Native(polar);
-        chart.Options.PolarAxisScaleFactor = factor;
+        chart.Options.Polar.AxisScaleFactor = factor;
         var prepared = Prepare(chart);
         var plot = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Last(g => g.Clip.HasValue).Clip!.Value;
         Assert.Equal(4, Spokes(prepared).Count());
@@ -63,12 +63,12 @@ public sealed class PolarAxisFactorTests {
 
     [Fact]
     public void HiddenFactorsDoNotChangeLayoutAndSubnormalGuideCountsRemainFinite() {
-        var chart = Native(false).WithAxes(false).WithGrid(false);
+        var chart = Native(false).Axes(false).ShowGrid(false);
         var expected = Prepare(chart).ToPng();
-        chart.Options.PolarAxisScaleFactor = double.MaxValue;
-        chart.Options.PolarAxisLabelFactor = double.MaxValue;
+        chart.Options.Polar.AxisScaleFactor = double.MaxValue;
+        chart.Options.Polar.AxisLabelFactor = double.MaxValue;
         Assert.Equal(expected, Prepare(chart).ToPng());
-        chart.WithGrid(true); chart.Options.PolarGridRingCount = double.Epsilon;
+        chart.ShowGrid(true); chart.Options.Polar.GridRingCount = double.Epsilon;
         var visible = Prepare(chart);
         Assert.Single(visible.Scene.Nodes.OfType<VisualSceneEllipse>(), n => n.Role == "radar-ring");
         var numericMarkup = SmokeTests.NumericMarkup(visible.ToSvg());
@@ -77,13 +77,13 @@ public sealed class PolarAxisFactorTests {
     }
 
     private static Chart Native(bool polar) {
-        var chart = Chart.Create().WithSize(420, 360).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithYAxisBounds(0, 100).WithXLabels("North", "East", "South", "West").WithPolarGridShape(ChartPolarGridShape.Circle);
+        var chart = Chart.Create().Size(420, 360).ShowHeader(false).Legend(false).DataLabels(false)
+            .YAxis(y => y.Bounds(0, 100)).XLabels("North", "East", "South", "West").Polar(p => p.GridShape(ChartPolarGridShape.Circle));
         chart.Options.YAxis.Visible = false;
         var values = new[] { 90d, 45, 80, 60 };
         if (polar) {
             chart.Options.XAxis.TickCount = 4;
-            chart.WithXLabels(new[] { "East", "North", "West", "South" }.Select((label, i) => new ChartAxisLabel(i * Math.PI / 2, label)));
+            chart.XLabels(new[] { "East", "North", "West", "South" }.Select((label, i) => new ChartAxisLabel(i * Math.PI / 2, label)));
             chart.AddPolar("Current", values.Select((v, i) => new ChartPoint(i * Math.PI / 2, v)));
         }
         else chart.AddRadarLine("Current", values.Select((v, i) => new ChartPoint(i + 1, v)));

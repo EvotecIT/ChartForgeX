@@ -49,8 +49,8 @@ public sealed class MarkupArchitectureParserTests {
         var chart = new MarkupArchitectureParser().Parse(source).Document!;
         var vertical = direction == "down";
         var natural = vertical ? chart.Prepare().Height : chart.Prepare().Width;
-        if (vertical) chart.WithViewport(chart.Viewport.Width, 300, chart.Viewport.Padding);
-        else chart.WithViewport(480, chart.Viewport.Height, chart.Viewport.Padding);
+        if (vertical) chart.Viewport(new TopologyViewport(chart.Viewport.Width, 300, chart.Viewport.Padding));
+        else chart.Viewport(new TopologyViewport(480, chart.Viewport.Height, chart.Viewport.Padding));
 
         // The estimate is a lower bound along the flow: the layout's own spacing sets the length, nothing spreads it further.
         Assert.Equal(natural, vertical ? chart.Prepare().Height : chart.Prepare().Width, 1);

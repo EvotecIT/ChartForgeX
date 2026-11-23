@@ -6,7 +6,7 @@ namespace ChartForgeX.Rendering;
 
 /// <summary>
 /// Measures the label band and density under matrix heatmaps. The compiler can choose a measured automatic angle;
-/// authored <see cref="ChartOptions.XAxisLabelAngle"/> values retain the same geometry in both static painters.
+/// authored <see cref="ChartAxis.LabelAngle"/> values retain the same geometry in both static painters.
 /// </summary>
 internal static class ChartHeatmapColumnLabels {
     /// <summary>Limits both rotated reaches to the resolved content viewport, retaining room for cells at shallow angles.</summary>
@@ -27,7 +27,7 @@ internal static class ChartHeatmapColumnLabels {
 
     /// <summary>Returns the label angle in degrees, limited to ±80 as x-axis labels are.</summary>
     public static double Angle(Chart chart) {
-        var angle = chart.Options.XAxisLabelAngle;
+        var angle = chart.Options.XAxis.LabelAngle;
         if (double.IsNaN(angle)) return 0;
         return Math.Max(-80, Math.Min(80, angle));
     }

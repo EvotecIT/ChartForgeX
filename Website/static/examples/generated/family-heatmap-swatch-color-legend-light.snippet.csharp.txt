@@ -21,14 +21,14 @@ var theme = VisualTheme.Graphite();
 
 var colors = VisualTheme.Graphite().Resolve(mode);
 var values = new double?[] { -30, -20, -3, 0, 2.5, 5, 10, 22.5, 40, 55, null, null };
-var chart = Chart.Create().ConfigureLabels(labels => labels.NoData = "Not sampled").WithXLabels("A", "B", "C", "D", "E", "F")
+var chart = Chart.Create().Labels(labels => labels.NoData = "Not sampled").XLabels("A", "B", "C", "D", "E", "F")
     .AddHeatmapRow("Primary", values.Take(6), id: new ChartSeriesId("primary-measurements"))
     .AddHeatmapRow("Secondary", values.Skip(6), id: new ChartSeriesId("secondary-measurements"))
-    .WithHeatmapColorScale(TemperatureScale().WithNoDataColor(colors.Border))
-    .ConfigureHeatmapColorDimension(options => {
+    .Heatmap(h => h.ColorScale(TemperatureScale().WithNoDataColor(colors.Border)))
+    .Heatmap(heatmap => heatmap.ColorDimension(options => {
         options.Name = "Temperature"; options.ValueFormat = ChartValueFormat.Number("#,0.### '°C'", CultureInfo.InvariantCulture);
         options.LegendStyle = ChartColorLegendStyle.Swatches;
-    }).WithHeatmapCellGap(3).WithHeatmapCellRadius(3).WithDataLabels();
+    })).Heatmap(h => h.CellGap(3).CellRadius(3)).DataLabels();
 
 #region Output
 var context = new VisualRenderContext(

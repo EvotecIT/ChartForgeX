@@ -58,7 +58,7 @@ public static class TrendLineModelRecipe {
             options.Interval = selection == "prediction" ? ChartTrendLineIntervalKind.Prediction : ChartTrendLineIntervalKind.Confidence;
             options.ConfidenceLevel = .95;
         });
-        return Chart.Create().WithXAxis("Source X").WithYAxis("Observed response").WithLegend(true).WithDataLabels(false)
+        return Chart.Create().XAxis(xAxis => xAxis.Title("Source X")).YAxis(y => y.Title("Observed response")).Legend(true).DataLabels(false)
             .AddSeries(observations).AddSeries(fit);
     }
 }

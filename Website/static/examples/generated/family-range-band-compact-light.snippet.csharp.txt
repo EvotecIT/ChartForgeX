@@ -27,8 +27,8 @@ var expected = ChartSeries.CreateRangeBand(new ChartSeriesId("expected-range"), 
 var observed = ChartSeries.CreateLine(new ChartSeriesId("observed"), "Observed",
     middle.Select((value, index) => new ChartPoint(index + 1,
         Math.Round(value + Math.Sin(index * 2.3) * .8 + (index * step is >= 14 and <= 16 ? 2.6 : 0), 1))));
-var chart = Chart.Create().WithXLabels(Enumerable.Range(0, hours).Select(index => (index * step).ToString("00", CultureInfo.InvariantCulture) + ":00").ToArray())
-    .WithYAxis("Temperature (°C)").AddSeries(expected).AddSeries(observed);
+var chart = Chart.Create().XLabels(Enumerable.Range(0, hours).Select(index => (index * step).ToString("00", CultureInfo.InvariantCulture) + ":00").ToArray())
+    .YAxis(y => y.Title("Temperature (°C)")).AddSeries(expected).AddSeries(observed);
 
 #region Output
 var context = new VisualRenderContext(

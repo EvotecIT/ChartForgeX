@@ -13,7 +13,7 @@ internal static partial class SmokeTests {
             (Chart.Create().AddRadialColumn("Observed", points).AddRadarLine("Target", points), "radial-column")
         };
         foreach (var (chart, role) in charts) {
-            chart.ConfigureXAxis(axis => axis.WithReversal());
+            chart.XAxis(axis => axis.Reversed());
             Assert(chart.ToSvg().Contains("data-cfx-role=\"" + role + "\"", StringComparison.Ordinal), "Angular reversal should render its native family geometry.");
             Assert(chart.ToPng().Length > 64, "Angular reversal should export native PNG through the same prepared projection.");
         }

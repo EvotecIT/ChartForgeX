@@ -15,8 +15,8 @@ public sealed class BulletObservationLifecycleTests {
         var source = Enumerable.Range(0, 3).Select(index => new ChartBulletValue(20 + index * 20, 90,
             maximum: index == emptyIndex ? 100000 : 300, rangeEnds: new[] { 100d, 200d })).ToArray();
         var series = source.Select((value, index) => ChartSeries.CreateBullet(new ChartSeriesId("peer-" + index),
-            "Peer " + index, value, colors[index]).ConfigureDataLabelStyle(style => style.FontSize = 14 + index)).ToArray();
-        var chart = Chart.Create().WithLegend(false).WithHeader(false);
+            "Peer " + index, value, colors[index]).DataLabelStyle(style => style.FontSize = 14 + index)).ToArray();
+        var chart = Chart.Create().Legend(false).ShowHeader(false);
         foreach (var item in series) chart.AddSeries(item);
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(520, 260), 0),
             VisualTheme.Graphite(), frame: new VisualFrame(showLegend: false));

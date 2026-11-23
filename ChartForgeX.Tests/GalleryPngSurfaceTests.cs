@@ -28,7 +28,7 @@ public sealed class GalleryPngSurfaceTests {
     [InlineData("variable-frame", 1)]
     [InlineData("variable-frame", 2)]
     public void DeclaredSurfacesRemainHealthyAndExtraEdgeMarksRemainObservable(string surface, int scale) {
-        var chart = Chart.Create().WithSize(320, 220).WithTitle("Perimeter health")
+        var chart = Chart.Create().Size(320, 220).Title("Perimeter health")
             .AddBar("Observed", new[] { new ChartPoint(1, 20), new ChartPoint(2, 50) });
         string svg;
         byte[] png;
@@ -37,11 +37,11 @@ public sealed class GalleryPngSurfaceTests {
             if (surface == "block-source-dark") {
                 var result = MermaidRenderer.Render("%%{init: {'theme':'dark'}}%%\nblock-beta\ncolumns 1\na[Card]");
                 Assert.False(result.HasErrors);
-                block = Assert.IsType<BlockLayoutBlock>(result.Artifact?.Model).WithSize(320, 220);
+                block = Assert.IsType<BlockLayoutBlock>(result.Artifact?.Model).Size(320, 220);
             } else {
-                block = BlockLayoutBlock.Create().WithSize(320, 220).WithTitle("Block card")
-                    .WithTheme(VisualTheme.Graphite()).AddItem("a", "A");
-                if (surface=="block-contrasting-backdrop") block.ConfigureTheme(builder=> {
+                block = BlockLayoutBlock.Create().Size(320, 220).Title("Block card")
+                    .Theme(VisualTheme.Graphite()).AddItem("a", "A");
+                if (surface=="block-contrasting-backdrop") block.Theme(builder=> {
                     builder.Light.Background=ChartColor.White;
                     builder.Light.ElevatedSurface=ChartColor.FromHex("#FFFFDE");
                     builder.Light.Border=ChartColor.FromHex("#C7C7F1");
@@ -58,18 +58,18 @@ public sealed class GalleryPngSurfaceTests {
             png = prepared.ToPng(new VisualRenderOptions(scale: scale));
         } else if (surface == "variable-frame") {
             var tokens = VisualDesignTokens.Dark();
-            chart.WithTheme(new VisualTheme(tokens, tokens), ThemeMode.Dark)
-                .WithSvgColorVariables(tokens.ToSvgColorVariables()).WithPngOutputScale(scale);
+            chart.Theme(new VisualTheme(tokens, tokens)).ThemeMode(ThemeMode.Dark)
+                .SvgColorVariables(tokens.ToSvgColorVariables()).Png(p => p.OutputScale(scale));
             svg = chart.ToSvg(); png = chart.ToPng();
             Assert.Contains("var(--cfx-surface-card,", svg);
             Assert.Contains("var(--cfx-surface-line,", svg);
         } else if (surface == "shadow") {
-            chart.WithTheme(VisualTheme.Graphite().Configure(builder => { builder.CardShadowOpacity = .24; }), ThemeMode.Dark).WithPngOutputScale(scale);
+            chart.Theme(VisualTheme.Graphite().Configure(builder => { builder.CardShadowOpacity = .24; })).ThemeMode(ThemeMode.Dark).Png(p => p.OutputScale(scale));
             svg = chart.ToSvg(); png = chart.ToPng();
             Assert.Contains("frame-card-shadow", svg);
         } else {
-            var grid = ChartGrid.Create().WithColumns(2).WithTheme(VisualTheme.Graphite(), ThemeMode.Light)
-                .WithPngOutputScale(scale).Add(chart).Add(Chart.Create().WithSize(320, 220)
+            var grid = ChartGrid.Create().Columns(2).Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Light)
+                .PngOutputScale(scale).Add(chart).Add(Chart.Create().Size(320, 220)
                     .AddLine("Trend", new[] { new ChartPoint(1, 10), new ChartPoint(2, 30) }));
             svg = grid.ToSvg(); png = grid.ToPng();
             Assert.True(svg.Split("data-cfx-role=\"frame-card\"").Length > 2);

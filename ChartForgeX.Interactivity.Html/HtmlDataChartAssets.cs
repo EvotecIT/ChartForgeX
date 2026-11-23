@@ -23,7 +23,7 @@ public static class HtmlDataChartAssets {
         var palette = string.Join(",", theme.Resolve(ThemeMode.Light).Palette.Select(color =>
             "\"#" + color.R.ToString("x2") + color.G.ToString("x2") + color.B.ToString("x2") + "\""));
         var policy = FormattableString.Invariant($$"""
-            {"bandFill":{{ChartMarkSurface.BandFill}},"gap":{{ChartMarkSurface.SurfaceGap}},"separator":{{ChartMarkSurface.StackSeparator}},"minimumSegment":{{ChartMarkSurface.MinimumSegmentExtent}},"columnMaximum":{{theme.MaximumBarWidth}},"barMaximum":{{ChartMarkSurface.MaximumThickness(theme.MaximumBarWidth, true)}},"palette":[{{palette}}],"lineWidth":{{theme.SeriesStrokeWidth}},"markerRadius":{{theme.MarkerRadius}},"areaOpacity":{{theme.AreaOpacity}},"donutInner":{{options.DonutInnerRadiusRatio}},"gaugeStart":{{gauge.StartAngleDegrees}},"gaugeSweep":{{gauge.SweepAngleDegrees}}}
+            {"bandFill":{{ChartMarkSurface.BandFill}},"gap":{{ChartMarkSurface.SurfaceGap}},"separator":{{ChartMarkSurface.StackSeparator}},"minimumSegment":{{ChartMarkSurface.MinimumSegmentExtent}},"columnMaximum":{{theme.MaximumBarWidth}},"barMaximum":{{ChartMarkSurface.MaximumThickness(theme.MaximumBarWidth, true)}},"palette":[{{palette}}],"lineWidth":{{theme.SeriesStrokeWidth}},"markerRadius":{{theme.MarkerRadius}},"areaOpacity":{{theme.AreaOpacity}},"donutInner":{{options.Pie.InnerRadiusRatio}},"gaugeStart":{{gauge.StartAngleDegrees}},"gaugeSweep":{{gauge.SweepAngleDegrees}}}
             """);
         return reader.ReadToEnd().Replace("__CFX_NATIVE_SURFACE__", policy);
     });

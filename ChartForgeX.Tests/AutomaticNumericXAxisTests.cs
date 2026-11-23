@@ -19,7 +19,7 @@ public sealed class AutomaticNumericXAxisTests {
         var observed = new[] { 42, 58, 73, 91, 67, 82 };
         var chart = Chart.Create().AddLine("Observed", Enumerable.Range(1, count).Select(index => new ChartPoint(index, observed[(index - 1) % observed.Length])))
             .AddLine("Capacity", Enumerable.Range(1, count).Select(index => new ChartPoint(index, 100)));
-        if (count == 10) chart.WithXAxisBounds(1, count);
+        if (count == 10) chart.XAxis(xAxis => xAxis.Bounds(1, count));
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(600, 360), padding: 24),
             VisualTheme.Graphite().WithTypography(new VisualTypography("Arial", 24, 16, 15, 15, 15)), mode,
             new VisualFrame("Service capacity", "Events per minute · six observation intervals", showLegend: true,
@@ -52,7 +52,7 @@ public sealed class AutomaticNumericXAxisTests {
     [InlineData(1, 8, true)]
     [InlineData(-6, -1, false)]
     public void AutomaticIntegerCaptionsIncludeEveryFittingUnitAndRemainOnTheirTicks(int first, int last, bool reversed) {
-        var chart = Chart.Create().WithSize(600, 360).WithLegend(false)
+        var chart = Chart.Create().Size(600, 360).Legend(false)
             .AddLine("Observed", Enumerable.Range(first, last - first + 1).Select(x => new ChartPoint(x, x * x)));
         chart.Options.XAxis.Reversed = reversed;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -90,14 +90,14 @@ public sealed class AutomaticNumericXAxisTests {
         chart.Options.XAxis.TickCount = 3;
         var explicitLabels = Labels(chart.Prepare(VisualExportRequest.ForChart(chart).Context));
         Assert.InRange(explicitLabels.Length, 1, 3);
-        chart.Options.XAxis.WithAutomaticTickCount();
-        chart.WithXLabels(Enumerable.Range(1, 6).Select(x => new ChartAxisLabel(x, "Run " + x)));
+        chart.Options.XAxis.AutomaticTickCount();
+        chart.XLabels(Enumerable.Range(1, 6).Select(x => new ChartAxisLabel(x, "Run " + x)));
         Assert.Equal(Enumerable.Range(1, 6).Select(x => "Run " + x), Labels(chart.Prepare(VisualExportRequest.ForChart(chart).Context)).Select(Text));
     }
 
     [Fact]
     public void ShortFractionalDomainsKeepUsefulSubunitCaptions() {
-        var chart = Chart.Create().WithSize(600, 360).WithLegend(false).WithXAxisBounds(.1, .5)
+        var chart = Chart.Create().Size(600, 360).Legend(false).XAxis(x => x.Bounds(.1, .5))
             .AddLine("Observed", new[] { new ChartPoint(.1, 1), new ChartPoint(.5, 2) });
         var labels = Labels(chart.Prepare(VisualExportRequest.ForChart(chart).Context));
         Assert.Equal(new[] { "0.1", "0.2", "0.3", "0.4", "0.5" }, labels.Select(Text));
@@ -109,7 +109,7 @@ public sealed class AutomaticNumericXAxisTests {
     [InlineData(1e100, 1e100 + 1e87)]
     [InlineData(-1e308, 1e308)]
     public void AutomaticSearchKeepsExtremeDomainsFiniteDistinctAndBounded(double minimum, double maximum) {
-        var chart = Chart.Create().WithSize(600, 360).WithLegend(false).WithXAxisBounds(minimum, maximum)
+        var chart = Chart.Create().Size(600, 360).Legend(false).XAxis(x => x.Bounds(minimum, maximum))
             .AddLine("Observed", new[] { new ChartPoint(minimum, 1), new ChartPoint(maximum, 2) });
         var labels = Labels(chart.Prepare(VisualExportRequest.ForChart(chart).Context));
         Assert.InRange(labels.Length, 2, 100);
@@ -120,7 +120,7 @@ public sealed class AutomaticNumericXAxisTests {
 
     [Fact]
     public void WideAutomaticScalesKeepBreathingRoomWhileDenseCanUseMoreTicks() {
-        var chart = Chart.Create().WithSize(1200, 360).WithLegend(false).WithXAxisBounds(0, 100)
+        var chart = Chart.Create().Size(1200, 360).Legend(false).XAxis(x => x.Bounds(0, 100))
             .AddLine("Observed", new[] { new ChartPoint(0, 1), new ChartPoint(100, 2) });
         var automatic = Labels(chart.Prepare(VisualExportRequest.ForChart(chart).Context));
         Assert.InRange(automatic.Length, 2, 20);

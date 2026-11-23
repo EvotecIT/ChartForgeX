@@ -69,12 +69,12 @@ using ChartForgeX;
 using ChartForgeX.Core;
 
 var chart = Chart.Create()
-    .WithTitle("Weekly orders")
-    .WithSubtitle("Completed orders across the working week")
-    .WithSize(800, 440)
-    .WithXAxis("Day")
-    .WithYAxis("Orders")
-    .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri")
+    .Title("Weekly orders")
+    .Subtitle("Completed orders across the working week")
+    .Size(800, 440)
+    .XAxis(x => x.Title("Day"))
+    .YAxis(y => y.Title("Orders"))
+    .XLabels("Mon", "Tue", "Wed", "Thu", "Fri")
     .AddLine("Completed", ChartPoints.FromValues(28, 34, 41, 48, 32))
     .AddLine("Target", ChartPoints.FromValues(30, 35, 40, 45, 50));
 
@@ -83,13 +83,13 @@ chart.SavePng("orders.png");
 chart.SaveHtml("orders.html");
 ```
 
-`ChartPoints.FromValues` places observations at X = 1 through N, matching `WithXLabels`. For numeric or time coordinates, use typed observations or map your own records with selectors.
+`ChartPoints.FromValues` places observations at X = 1 through N, matching `XLabels`. For numeric or time coordinates, use typed observations or map your own records with selectors.
 
-For count charts, use `WithYAxisIntegerTicks()` or `WithXAxisIntegerTicks()` for horizontal bars to keep generated linear tick positions whole. See [whole-number axis ticks](docs/integer-axis-ticks.md) for bounds, secondary axes and typed examples.
+For count charts, use `YAxis(y => y.IntegerTicks())`, or `XAxis(x => x.IntegerTicks())` for horizontal bars to keep generated linear tick positions whole. See [whole-number axis ticks](docs/integer-axis-ticks.md) for bounds, secondary axes and typed examples.
 
-To control the ticks themselves, set a fixed step (WithTickStep(25), or a calendar interval on time axes), explicit values (WithTickValues(0, 50, 80)), spacing bounds in drawing units (WithTickSpacing(null, 45)) or minor grid lines (WithMinorTicks(4)) on the axis. Style one axis's grid with ConfigureGrid, including alternating bands. See [axis ticks and grids](docs/axes.md).
+To control the ticks themselves, set a fixed step (TickStep(25), or a calendar interval on time axes), explicit values (TickValues(0, 50, 80)), spacing bounds in drawing units (TickSpacing(null, 45)) or minor grid lines (MinorTickCount(4)) on the axis. Style one axis's grid with Grid, including alternating bands. See [axis ticks and grids](docs/axes.md).
 
-Legends take entries that do not come from a series (AddLegendItem(ChartLegendItem.Line("Target", color, ChartLegendItem.ReferenceDash))), a key shape and size for every entry (WithLegendKey) and a formatter that rewrites entry text from the series and its values (WithLegendFormatter). See [legend entries and keys](docs/legends.md).
+Legends take entries that do not come from a series (AddLegendItem(ChartLegendItem.Line("Target", color, ChartLegendItem.ReferenceDash))), a key shape and size for every entry (Legend(l => l.KeyShape(...).KeySize(...))) and a formatter that rewrites entry text from the series and its values (Legend(l => l.LabelBy(...))). See [legend entries and keys](docs/legends.md).
 
 ## Visual Tour
 
@@ -181,10 +181,10 @@ var readings = new[] {
 };
 
 var chart = Chart.Create()
-    .WithTitle("CPU usage")
-    .WithXAxis("Minutes")
-    .WithYAxis("CPU (%)")
-    .ConfigureYAxis(axis => axis.WithBounds(0, 100))
+    .Title("CPU usage")
+    .XAxis(x => x.Title("Minutes"))
+    .YAxis(y => y.Title("CPU (%)"))
+    .YAxis(axis => axis.Bounds(0, 100))
     .AddLine("CPU", readings, row => row.Minute, row => row.Cpu);
 
 chart.SavePng("cpu.png");
@@ -207,14 +207,14 @@ using ChartForgeX.Themes;
 
 var orders = ChartSeries.CreateLine(new ChartSeriesId("completed-orders"), "Completed",
     ChartPoints.FromValues(28, 34, 41, 48, 32));
-orders.ConfigureMarkers(markers => markers.Radius = 4);
+orders.Markers(markers => markers.Radius = 4);
 
 var chart = Chart.Create()
-    .WithTitle("Weekly orders")
-    .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
+    .Title("Weekly orders")
+    .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
     .AddSeries(orders);
 
-orders.WithName("Completed orders");
+orders.Name("Completed orders");
 chart.SavePng("orders-dark.png");
 ```
 
@@ -232,7 +232,7 @@ using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 
 var chart = Chart.Create()
-    .WithXLabels("North", "South", "East", "West")
+    .XLabels("North", "South", "East", "West")
     .AddBar("Orders", ChartPoints.FromValues(28, 34, 41, 48));
 
 var context = new VisualRenderContext(
@@ -265,16 +265,16 @@ Use `ChartGrid` to arrange charts without turning page layout into chart data:
 using ChartForgeX;
 using ChartForgeX.Core;
 
-var trend = Chart.Create().WithTitle("Orders over time")
+var trend = Chart.Create().Title("Orders over time")
     .AddLine("Orders", ChartPoints.FromValues(28, 34, 41, 48, 32));
-var regions = Chart.Create().WithTitle("Orders by region")
-    .WithXLabels("North", "South", "East")
+var regions = Chart.Create().Title("Orders by region")
+    .XLabels("North", "South", "East")
     .AddBar("Orders", ChartPoints.FromValues(52, 38, 46));
 
 var report = ChartGrid.Create()
-    .WithTitle("Order summary")
-    .WithColumns(2)
-    .WithPanelSize(520, 320)
+    .Title("Order summary")
+    .Columns(2)
+    .PanelSize(520, 320)
     .Add(trend)
     .Add(regions);
 
@@ -340,8 +340,8 @@ using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
 
 var chart = Chart.Create()
-    .WithTitle("Weekly orders")
-    .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri")
+    .Title("Weekly orders")
+    .XLabels("Mon", "Tue", "Wed", "Thu", "Fri")
     .AddLine("Orders", ChartPoints.FromValues(28, 34, 41, 48, 32));
 
 chart.SaveInteractiveHtml("explore.html", options => {

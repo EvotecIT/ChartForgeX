@@ -13,12 +13,12 @@ public sealed class TopologyNaturalRouteInkTests {
     [InlineData(4.4, false)]
     [InlineData(80, true)]
     public void NativeClipContainsFullInkAndGrowsOnlyBeyondAvailablePadding(double strokeWidth, bool grows) {
-        var chart = TopologyChart.Create().WithViewport(640, 300, 24).WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(640, 300, 24)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("a", "Source", 120, 100, width: 80, height: 40)
             .AddNode("b", "Target", 400, 100, width: 80, height: 40)
             .AddEdge("e", "a", "b", direction: VisualLinkDirection.None, routing: TopologyEdgeRouting.Orthogonal)
-            .WithEdgeWaypoints("e", new ChartPoint(24, 120), new ChartPoint(24, 220), new ChartPoint(400, 220))
-            .WithEdgeStroke("e", strokeWidth);
+            .EdgeWaypoints("e", new ChartPoint(24, 120), new ChartPoint(24, 220), new ChartPoint(400, 220))
+            .EdgeStroke("e", strokeWidth);
         var prepared = chart.Prepare(new TopologyRenderOptions { IncludeLegend = false, IncludeEdgeLabels = false });
         if (grows) Assert.True(prepared.Width > 640);
         else Assert.Equal(640, prepared.Width);

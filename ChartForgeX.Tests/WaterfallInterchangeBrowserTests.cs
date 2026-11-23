@@ -15,9 +15,9 @@ public sealed class WaterfallInterchangeBrowserTests {
     public async Task ImportedEditedCheckpointKeepsAuthoredIdentityReadoutAndSelectionAfterResize(bool horizontal, int width, bool dark) {
         if (!Enabled) return;
         var source = WaterfallInterchangeTests.Model(true, horizontal, dark, 800);
-        source.Series[0].WithObservationId(2, new ChartObservationId("stage-checkpoint"));
+        source.Series[0].ObservationId(2, new ChartObservationId("stage-checkpoint"));
         var chart = VisualArtifactInterchangeEnvelope.FromUtf8Json(source.ToVisualArtifact().ToInterchangeUtf8Json()).ToWaterfallChart();
-        chart.Series[0].UpdateWaterfallItem(1, ChartWaterfallItem.Delta(2, -40)); chart.WithLegend(false).WithDataLabels(false);
+        chart.Series[0].UpdateWaterfallItem(1, ChartWaterfallItem.Delta(2, -40)); chart.Legend(false).DataLabels(false);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit), width, 620);
         var page = session.Page;
         const string selector = "[data-cfx-waterfall-kind='subtotal'][data-cfx-point='2']:not([data-cfx-role='legend-item'])";

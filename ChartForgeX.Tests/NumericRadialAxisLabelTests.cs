@@ -55,7 +55,7 @@ public sealed class NumericRadialAxisLabelTests {
     [InlineData(0)]
     [InlineData(-90)]
     public void FullTurnCategoryCaptionsNeverCrossPaintedRingsWhenDataCaptionsAreOff(int start) {
-        var chart = Categories(start, 800, false).WithRadialGeometry(new(start, start + 360, .1, .25, .1));
+        var chart = Categories(start, 800, false).RadialGeometry(new(start, start + 360, .1, .25, .1));
         for (var point = 0; point < chart.Series[0].Points.Count; point++) chart.Series[0].Points[point] = new ChartPoint(point + 1, 100);
         var scene = chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene;
         var shapes = NumericRadialSeriesTests.Marks(scene).Select(mark => new LabelMarkShape(VisualSceneGeometry.Flatten(mark, 8), true, 0)).ToArray();
@@ -66,13 +66,13 @@ public sealed class NumericRadialAxisLabelTests {
     }
 
     internal static Chart DualAxes(int width, bool reversed, int minimum = 0) {
-        var chart = Chart.Create().WithSize(width, width == 360 ? 360 : 440).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithXLabels("North", "South", "East").WithRadialGeometry(new(-75, 195, .2, .25, .1))
+        var chart = Chart.Create().Size(width, width == 360 ? 360 : 440).ShowHeader(false).Legend(false).DataLabels(false)
+            .XLabels("North", "South", "East").RadialGeometry(new(-75, 195, .2, .25, .1))
             .AddRadialBar("Count", new[] { new ChartPoint(1, minimum + 60), new ChartPoint(2, minimum + 70), new ChartPoint(3, minimum + 80) })
             .AddRadialBar("Rate", new[] { new ChartPoint(1, (minimum + 50) / 10d), new ChartPoint(2, (minimum + 65) / 10d), new ChartPoint(3, (minimum + 75) / 10d) });
-        chart.Series[1].UseSecondaryValueAxis();
-        chart.Options.YAxis.WithBounds(minimum, minimum + 100).WithReversal(reversed);
-        chart.Options.SecondaryYAxis.WithBounds(minimum / 10d, (minimum + 100) / 10d).WithReversal(reversed);
+        chart.Series[1].SecondaryAxis();
+        chart.Options.YAxis.Bounds(minimum, minimum + 100).Reversed(reversed);
+        chart.Options.SecondaryYAxis.Bounds(minimum / 10d, (minimum + 100) / 10d).Reversed(reversed);
         chart.Options.YAxis.TickCount = 5; chart.Options.SecondaryYAxis.TickCount = 5;
         foreach (var index in Enumerable.Range(0, 5)) {
             chart.Options.YAxis.Labels.Add(new ChartAxisLabel(minimum + index * 25, "P" + (minimum + index * 25).ToString(CultureInfo.InvariantCulture)));
@@ -82,10 +82,10 @@ public sealed class NumericRadialAxisLabelTests {
     }
 
     internal static Chart Categories(int start, int width, bool reversed) {
-        var chart = Chart.Create().WithSize(width, width == 360 ? 360 : 440).WithHeader(false).WithLegend(false).WithDataLabels(false).WithGrid(false)
-            .WithXLabels("North", "South", "East").WithYAxisBounds(0, 100).WithRadialGeometry(new(start, start + 270, .1, .25, .1))
+        var chart = Chart.Create().Size(width, width == 360 ? 360 : 440).ShowHeader(false).Legend(false).DataLabels(false).ShowGrid(false)
+            .XLabels("North", "South", "East").YAxis(y => y.Bounds(0, 100)).RadialGeometry(new(start, start + 270, .1, .25, .1))
             .AddRadialBar("Observed", new[] { new ChartPoint(1, 80), new ChartPoint(2, 70), new ChartPoint(3, 60) });
-        chart.Options.YAxis.Visible = false; chart.Options.XAxis.WithReversal(reversed);
+        chart.Options.YAxis.Visible = false; chart.Options.XAxis.Reversed(reversed);
         return chart;
     }
 }

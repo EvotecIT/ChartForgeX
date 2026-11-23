@@ -17,8 +17,8 @@ public sealed class GraphiteBulletFormattingTests {
     [InlineData(false, 80, 1)]
     [InlineData(true, 80, 1)]
     public void CompactBulletRowsKeepPositiveMarksInSvgAndPng(bool dark, int height, int rowCount) {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithSize(200, height).WithPngOutputScale(1);
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Size(200, height).Png(p => p.OutputScale(1));
         for (var row = 0; row < rowCount; row++) chart.AddBullet("Count " + row, 40 + row, 70);
         var nodes = XDocument.Parse(chart.ToSvg()).Descendants().ToArray();
         Assert.Equal(rowCount, MarkRoles(nodes, "bullet-row").Length);
@@ -50,8 +50,8 @@ public sealed class GraphiteBulletFormattingTests {
     [InlineData(false, 380)]
     [InlineData(true, 380)]
     public void PercentValuesTargetsAndAxisRetainTheirUnitsWithoutColliding(bool dark, int width) {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithSize(width, 294).WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + " %")
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Size(width, 294).FormatValuesBy(value => value.ToString("0", CultureInfo.InvariantCulture) + " %")
             .AddBullet("DMARC", 88, 95).AddBullet("DNSSEC", 74, 90);
         var nodes = XDocument.Parse(chart.ToSvg()).Descendants().ToArray();
         var values = Roles(nodes, "bullet-value-label");
@@ -79,13 +79,13 @@ public sealed class GraphiteBulletFormattingTests {
     [InlineData(false)]
     [InlineData(true)]
     public void PlainTargetsKeepGroupedValuesAndCompactTicksWhileExplicitFormatOwnsBoth(bool dark) {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithSize(640, 300).AddBullet("Count", 1284, 1900, max: 2000);
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Size(640, 300).AddBullet("Count", 1284, 1900, max: 2000);
         var nodes = XDocument.Parse(chart.ToSvg()).Descendants().ToArray();
         Assert.Equal("1,284", Assert.Single(Roles(nodes, "bullet-value-label")).Value);
         Assert.Equal("/ 1,900", Assert.Single(Roles(nodes, "bullet-target-label")).Value);
         Assert.Equal(new[] { "0", "500", "1k", "1.5k", "2k" }, Roles(nodes, "bullet-axis-label").Select(e => e.Value));
-        chart.WithValueFormat(ChartValueFormat.Number("#,0"));
+        chart.ValueFormat(ChartValueFormat.Number("#,0"));
         nodes = XDocument.Parse(chart.ToSvg()).Descendants().ToArray();
         Assert.Equal("1,284", Assert.Single(Roles(nodes, "bullet-value-label")).Value);
         Assert.Equal("/ 1,900", Assert.Single(Roles(nodes, "bullet-target-label")).Value);
@@ -94,8 +94,8 @@ public sealed class GraphiteBulletFormattingTests {
 
     [Fact]
     public void CustomCultureAndMeasureFormatReachAllBulletNumbers() {
-        var chart = Chart.Create().WithSize(900, 400)
-            .WithValueFormatter(value => value.ToString("N1", CultureInfo.GetCultureInfo("de-DE")) + " ms")
+        var chart = Chart.Create().Size(900, 400)
+            .FormatValuesBy(value => value.ToString("N1", CultureInfo.GetCultureInfo("de-DE")) + " ms")
             .AddBullet("Latency", 1284, 1900, max: 2000);
         var nodes = XDocument.Parse(chart.ToSvg()).Descendants().ToArray();
         Assert.Equal("1.284,0 ms", Assert.Single(Roles(nodes, "bullet-value-label")).Value);

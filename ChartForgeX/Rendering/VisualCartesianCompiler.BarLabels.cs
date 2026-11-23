@@ -13,9 +13,9 @@ internal static partial class VisualCartesianCompiler {
         for (var seriesIndex = 0; seriesIndex < chart.Series.Count; seriesIndex++) {
             var series = chart.Series[seriesIndex];
             var waterfall = series.Kind == ChartSeriesKind.Waterfall && !ChartCartesianOrientation.IsHorizontal(chart, series);
-            if (series.Kind != ChartSeriesKind.Bar && !waterfall || !(series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false))
+            if (series.Kind != ChartSeriesKind.Bar && !waterfall || !(series.ShowDataLabels ?? (chart.Options.DataLabels.Visible ?? false))
                 || ChartStackLayout.Participates(chart, series) || series.AdditionalValueAxis != null) continue;
-            var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
+            var placement = series.DataLabelPlacement ?? chart.Options.DataLabels.Placement;
             if (placement is not (ChartDataLabelPlacement.Auto or ChartDataLabelPlacement.Above or ChartDataLabelPlacement.Below)) continue;
             var axis = ChartCartesianOrientation.ValueAxis(chart, series.ValueAxis);
             var selectedRange = series.ValueAxis == ChartAxisSide.Secondary ? secondaryRange! : range;

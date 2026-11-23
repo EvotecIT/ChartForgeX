@@ -48,14 +48,14 @@ public sealed class TopologyStyledTableFontSnapshotCausalTests {
     private static VisualRenderContext Context(int width, int height) => new(new VisualLayoutOptions(new VisualSize(width, height), 16),
         VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family));
     private static TopologyChart Source(double? font) {
-        var chart = TopologyChart.Create().WithViewport(1000, 700, 24).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family))
-            .WithLayout(TopologyLayoutMode.Layered, TopologyLayoutDirection.LeftToRight)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(1000, 700, 24)).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family))
+            .LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddAutoNode("facts", "Facts", width: 300, height: 240).AddAutoNode("next", "Continue", width: 260, height: 100)
             .AddEdge("next-step", "facts", "next");
         foreach (var node in chart.Nodes) { node.Kind = TopologyNodeKind.Generic; node.Shape = TopologyNodeShape.Rectangle; node.ShowStatusBadge = false; node.PreserveDisplayModeSize = true; }
         chart.Nodes[0].TextStyle = font.HasValue ? new TextStyleOverride { FontSize = font, FontFamily = BrowserProofFonts.Family } : null;
         chart.Nodes[0].FitLabelToContent = true;
-        var table = TableArtifact.Create("readings").WithTitle("Captured readings").WithSubtitle("Reference values")
+        var table = TableArtifact.Create("readings").Title("Captured readings").Subtitle("Reference values")
             .AddColumn("field", "Property").AddColumn("value", "Value").AddRow("/count", "count", "0").AddRow("/active", "active", "false");
         table.Rows[0].Cells[1].Metadata["raw.type"] = "Number"; table.Rows[1].Cells[1].Metadata["raw.type"] = "Boolean"; chart.Nodes[0].TableContent = table;
         return chart;

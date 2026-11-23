@@ -12,9 +12,9 @@ internal static partial class VisualMapCompiler {
     private static MapLayout ScaleLayout(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, double min, double max,
         ChartColorPresentation presentation, TileMapLegendInset? legendInset = null) {
         if (!presentation.ShowLegend || !context.Frame.ShowLegend) return new MapLayout(plot, new ChartRect(0, 0, 0, 0), Array.Empty<string>(), false);
-        if (chart.Options.MapColorScale?.Mode == ChartColorScaleMode.Discrete) return DiscreteScaleLayout(chart, context, builder, plot, presentation);
-        if (chart.Options.MapColorScale?.Captions.Count > 0) return CaptionedScaleLayout(chart, context, builder, plot, min, max, presentation);
-        if (chart.Options.MapColorScale is ChartColorScale scale && !MapHasDomain(chart, scale, min, max))
+        if (chart.Options.Map.ColorScale?.Mode == ChartColorScaleMode.Discrete) return DiscreteScaleLayout(chart, context, builder, plot, presentation);
+        if (chart.Options.Map.ColorScale?.Captions.Count > 0) return CaptionedScaleLayout(chart, context, builder, plot, min, max, presentation);
+        if (chart.Options.Map.ColorScale is ChartColorScale scale && !MapHasDomain(chart, scale, min, max))
             return MissingScaleLayout(chart, context, builder, plot, presentation);
         var texts = ResolveScaleCaptions(chart, min, max, presentation);
         if (legendInset != null) return new MapLayout(legendInset.Map, legendInset.ColorKey, texts, false, inset: true, missingDataKey: legendInset.MissingDataKey);
@@ -22,7 +22,7 @@ internal static partial class VisualMapCompiler {
         var title = presentation.HasName ? presentation.Name : chart.Series[0].Name;
         var height = texts.Concat(new[] { "Mg", title, presentation.NoData })
             .Max(text => builder.MeasureText(text, style).Height);
-        if (chart.Options.MapScaleLegendPosition == ChartMapScaleLegendPosition.Right) {
+        if (chart.Options.Map.ScaleLegendPosition == ChartMapScaleLegendPosition.Right) {
             var measured = texts.Concat(new[] { title, presentation.NoData }).Max(text => builder.MeasureText(text, style).Width);
             var width = Math.Min(plot.Width * .4, measured + height + gap * 3);
             return new MapLayout(new ChartRect(plot.Left, plot.Top, Math.Max(0, plot.Width - width - gap), plot.Height),
@@ -46,22 +46,22 @@ internal static partial class VisualMapCompiler {
     private static string[] ResolveScaleCaptions(Chart chart, double min, double max, ChartColorPresentation presentation) {
         var values = new[] { ChartHeatmapSurface.MapScaleValue(chart, min, max, 1), ChartHeatmapSurface.MapScaleMidpoint(chart, min, max), ChartHeatmapSurface.MapScaleValue(chart, min, max, 0) };
         var captions = presentation.ScaleValues(values);
-        return new[] { (chart.Options.MapColorScale?.HighLabel ?? presentation.Labels.More) + " · " + captions[0],
+        return new[] { (chart.Options.Map.ColorScale?.HighLabel ?? presentation.Labels.More) + " · " + captions[0],
             (ChartHeatmapSurface.MapMidpointLabel(chart) ?? "") + " " + captions[1],
-            (chart.Options.MapColorScale?.LowLabel ?? presentation.Labels.Less) + " · " + captions[2] };
+            (chart.Options.Map.ColorScale?.LowLabel ?? presentation.Labels.Less) + " · " + captions[2] };
     }
 
     private static void DrawScale(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, MapLayout layout, VisualThemeColors colors, double min, double max, ChartColorPresentation presentation) {
         if (!presentation.ShowLegend || !context.Frame.ShowLegend) return;
-        if (chart.Options.MapColorScale?.Captions.Count > 0) {
+        if (chart.Options.Map.ColorScale?.Captions.Count > 0) {
             DrawCaptionedScale(chart, context, builder, layout, colors, min, max, presentation);
             return;
         }
-        if (chart.Options.MapColorScale?.Mode == ChartColorScaleMode.Discrete) {
+        if (chart.Options.Map.ColorScale?.Mode == ChartColorScaleMode.Discrete) {
             DrawDiscreteScale(chart, context, builder, layout, colors, presentation);
             return;
         }
-        if (chart.Options.MapColorScale is ChartColorScale configured && !MapHasDomain(chart, configured, min, max)) {
+        if (chart.Options.Map.ColorScale is ChartColorScale configured && !MapHasDomain(chart, configured, min, max)) {
             DrawMissingScale(chart, context, builder, layout, colors, configured, presentation);
             return;
         }
@@ -71,10 +71,10 @@ internal static partial class VisualMapCompiler {
             .Max(text => builder.MeasureText(text, style).Height);
         var missing = HasMissingMapValues(chart);
         var steps = ChartHeatmapSurface.MapScaleSteps(chart, min, max);
-        var scale = chart.Options.MapColorScale; var positioned = scale?.HasPositionedStops == true;
+        var scale = chart.Options.Map.ColorScale; var positioned = scale?.HasPositionedStops == true;
         var gradient = presentation.LegendStyle == ChartColorLegendStyle.Gradient;
         var metadata = new Dictionary<string, string> {
-            ["data-cfx-scale-mode"] = chart.Options.MapColorScale?.Mode == ChartColorScaleMode.Diverging ? "diverging" : "sequential",
+            ["data-cfx-scale-mode"] = chart.Options.Map.ColorScale?.Mode == ChartColorScaleMode.Diverging ? "diverging" : "sequential",
             ["data-cfx-min-value"] = N(ChartHeatmapSurface.MapScaleValue(chart, min, max, 0)),
             ["data-cfx-max-value"] = N(ChartHeatmapSurface.MapScaleValue(chart, min, max, 1)),
             ["data-cfx-midpoint-value"] = N(ChartHeatmapSurface.MapScaleMidpoint(chart, min, max))

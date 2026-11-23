@@ -27,10 +27,10 @@ public sealed class NativeComponentTimeValueTests {
     [Theory] [InlineData("time-y")] [InlineData("time-bound")] [InlineData("callback")] [InlineData("changed-policy")]
     public void TimeValuedMembersAndForeignCapturedPolicyStayExplicitlyUnsupported(string condition) {
         var renderer = new HtmlInteractiveChartRenderer(); var from = NativeComponentTimeBeforeControls.Section(renderer, NativeComponentTimeBeforeControls.Model(condition == "time-bound" ? "error" : "candlestick", "elapsed", 40)); var chart = NativeComponentTimeBeforeControls.Model(condition == "time-bound" ? "error" : "candlestick", "elapsed", 60);
-        if (condition == "time-y") chart.ConfigureYAxis(axis => axis.Scale = ChartScaleKind.Time);
+        if (condition == "time-y") chart.YAxis(axis => axis.Scale = ChartScaleKind.Time);
         if (condition == "time-bound") { var item = chart.Series[0].ErrorBars[0]; chart.Series[0].UpdateErrorBar(0, new ChartErrorBar(item.X, item.Y, new ChartErrorBounds(item.X - 1, item.X + 1), item.YBounds)); }
-        if (condition == "callback") chart.ConfigureXAxis(axis => axis.TimeTickLabelFormatter = (_, _) => "custom time");
-        if (condition == "changed-policy") chart.ConfigureXAxis(axis => axis.TimeZone = TimeZoneInfo.CreateCustomTimeZone("Different captured zone", TimeSpan.FromHours(2), "Different", "Different"));
+        if (condition == "callback") chart.XAxis(axis => axis.TimeTickLabelFormatter = (_, _) => "custom time");
+        if (condition == "changed-policy") chart.XAxis(axis => axis.TimeZone = TimeZoneInfo.CreateCustomTimeZone("Different captured zone", TimeSpan.FromHours(2), "Different", "Different"));
         HtmlChartSection? to = null; var error = Record.Exception(() => { to = NativeComponentTimeBeforeControls.Section(renderer, chart); _ = renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(frameCount: 3)); });
         Capture(from, to ?? from, from, null, null, error, "time-reject-" + condition); Assert.IsType<NotSupportedException>(error);
     }
@@ -38,7 +38,7 @@ public sealed class NativeComponentTimeValueTests {
     public void OriginalTimePolicyAndReplayFontsRemainCapturedAcrossCallerAxisMutation() {
         var renderer = new HtmlInteractiveChartRenderer(); var chart = NativeComponentTimeBeforeControls.Model("candlestick", "calendar", 40); var from = NativeComponentTimeBeforeControls.Section(renderer, chart); var to = NativeComponentTimeBeforeControls.Section(renderer, NativeComponentTimeBeforeControls.Model("candlestick", "calendar", 60));
         var frames = VisualValueCapture.NativeFrames(from.PreparedVisual, to.PreparedVisual, 3, null); var payload = renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(frameCount: 3)); Capture(from, to, from, frames, payload, null, "time-detached");
-        chart.ConfigureXAxis(axis => { axis.TimeSpacing = null; axis.TimeZone = TimeZoneInfo.CreateCustomTimeZone("Mutated", TimeSpan.FromHours(-3), "Mutated", "Mutated"); axis.Reversed = true; }); chart.Series[0].ReplaceFinancialValues(Array.Empty<ChartCandlestick>());
+        chart.XAxis(axis => { axis.TimeSpacing = null; axis.TimeZone = TimeZoneInfo.CreateCustomTimeZone("Mutated", TimeSpan.FromHours(-3), "Mutated", "Mutated"); axis.Reversed = true; }); chart.Series[0].ReplaceFinancialValues(Array.Empty<ChartCandlestick>());
         try { FontRegistry.Clear(); var repeated = VisualValueCapture.NativeFrames(from.PreparedVisual, to.PreparedVisual, 3, null); Assert.Equal(payload, renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(frameCount: 3))); for (var index = 0; index < frames.Count; index++) { Assert.Equal(frames[index].ToSvg(), repeated[index].ToSvg()); Assert.Equal(frames[index].ToPng(), repeated[index].ToPng()); Assert.True(VisualSeriesVisibilityCapture.SameAxis(frames[index].XProjection, repeated[index].XProjection)); } } finally { _ = BrowserProofFonts.Family; }
     }
     internal static string[] Coordinates(PreparedVisual visual) => XDocument.Parse(visual.ToSvg()).Descendants().Where(node => (string?)node.Attribute("data-cfx-role") == "point").Select(node => string.Join("|", new[] { "data-cfx-series-key", "data-cfx-observation-id", "data-cfx-x", "data-cfx-x-scale", "data-cfx-x-instant" }.Select(name => (string?)node.Attribute(name)))).ToArray();

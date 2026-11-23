@@ -18,9 +18,9 @@ var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 #endregion
 
-var chart = Chart.Create().WithDataLabels();
-chart.WithTitle("Allocation by service")
-    .WithXLabels(Enumerable.Range(1, 16).Select(index => "Regional service " + index).ToArray())
+var chart = Chart.Create().DataLabels();
+chart.Title("Allocation by service")
+    .XLabels(Enumerable.Range(1, 16).Select(index => "Regional service " + index).ToArray())
     .AddPyramid("Allocation", Enumerable.Range(1, 16).Select(index => new ChartPoint(index, 17 - index)));
 
 #region Output

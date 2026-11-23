@@ -9,10 +9,10 @@ public static class HtmlTooltipPositionExamples {
     /// <param name="dark">Whether to use the dark Graphite palette.</param>
     /// <returns>A complete interactive HTML page.</returns>
     public static string CreatePage(HtmlChartTooltipAnchor anchor, bool dark = false) {
-        var chart = Chart.Create().WithSize(800, 440).WithTitle(anchor + " tooltip placement")
-            .WithSubtitle("Hover or focus a reading; click to retain it while resizing the chart")
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+        var chart = Chart.Create().Size(800, 440).Title(anchor + " tooltip placement")
+            .Subtitle("Hover or focus a reading; click to retain it while resizing the chart")
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
             .AddScatter("Processing time", new[] { new ChartPoint(1, 8), new ChartPoint(5, 5), new ChartPoint(9, 2) });
         return chart.ToInteractiveHtmlPage(options => {
             options.Tooltip.Mode = HtmlChartTooltipMode.Single;

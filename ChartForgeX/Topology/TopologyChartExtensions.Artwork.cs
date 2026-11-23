@@ -68,7 +68,7 @@ public static partial class TopologyChartExtensions {
     /// <param name="artwork">Trusted SVG or image artwork for SVG and HTML renderers.</param>
     /// <param name="displayMode">The display mode to apply with the artwork.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithNodeArtwork(this TopologyChart chart, string nodeId, TopologyIconArtwork artwork, TopologyNodeDisplayMode displayMode = TopologyNodeDisplayMode.Artwork) {
+    public static TopologyChart NodeArtwork(this TopologyChart chart, string nodeId, TopologyIconArtwork artwork, TopologyNodeDisplayMode displayMode = TopologyNodeDisplayMode.Artwork) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         nodeId = RequiredText(nodeId, nameof(nodeId), "Topology node ids");
         ValidateArtwork(artwork);
@@ -89,7 +89,7 @@ public static partial class TopologyChartExtensions {
     /// <param name="nodeId">The node id.</param>
     /// <param name="resetArtworkDisplayMode">Whether to clear an artwork-only display override so icon catalog display defaults can apply again.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithoutNodeArtwork(this TopologyChart chart, string nodeId, bool resetArtworkDisplayMode = true) {
+    public static TopologyChart ClearNodeArtwork(this TopologyChart chart, string nodeId, bool resetArtworkDisplayMode = true) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         nodeId = RequiredText(nodeId, nameof(nodeId), "Topology node ids");
         foreach (var node in chart.Nodes) {

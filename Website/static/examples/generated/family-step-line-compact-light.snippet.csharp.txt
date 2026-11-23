@@ -21,7 +21,7 @@ var theme = VisualTheme.Graphite();
 var points = Enumerable.Range(1, 6).Where(index => true)
     .Select(index => new ChartPoint(index, 20 + index * 7 % 29, false));
 var queued = new ChartSeries(new ChartSeriesId("queued"), "Queued", ChartSeriesKind.StepLine, points);
-var chart = Chart.Create().WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat").AddSeries(queued);
+var chart = Chart.Create().XLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat").AddSeries(queued);
 
 #region Output
 var context = new VisualRenderContext(

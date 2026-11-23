@@ -90,15 +90,15 @@ public sealed class OwnedChartAnnotationsTests {
 
     [Fact]
     public void FocusGuideOwnershipSurvivesReplacementRemovalAndClearWithoutRemovingManualGuides() {
-        var chart = Create().AddVerticalLine(4.5, "Manual guide").WithFocusedXAxisCategory(5);
+        var chart = Create().AddVerticalLine(4.5, "Manual guide").FocusXAxisCategory(5);
         var manual = chart.Annotations[0];
         var focus = chart.Annotations[1];
         chart.ReplaceAnnotation(focus, Guide(4.5, "Updated focus"));
         chart.RemoveAnnotation(chart.Annotations[2]);
         chart.ClearHighlightedXAxisLabels();
         Assert.Same(manual, Assert.Single(chart.Annotations));
-        chart.WithFocusedXAxisCategory(5).ClearAnnotations();
-        chart.WithFocusedXAxisCategory(6).ClearHighlightedXAxisLabels();
+        chart.FocusXAxisCategory(5).ClearAnnotations();
+        chart.FocusXAxisCategory(6).ClearHighlightedXAxisLabels();
         Assert.Empty(chart.Annotations);
     }
 
@@ -110,7 +110,7 @@ public sealed class OwnedChartAnnotationsTests {
         Assert.Throws<InvalidOperationException>(() => chart.Prepare(new VisualRenderContext()));
         chart.ReplaceAnnotation(ChartAnnotation.Note(new ChartPoint(4, 5), "After replacement", Ink, id, ChartAxisSide.Secondary));
         chart.AddLine("Secondary", new[] { new ChartPoint(0, 1), new ChartPoint(10, 8) });
-        chart.Series[1].UseSecondaryValueAxis();
+        chart.Series[1].SecondaryAxis();
         var prepared = chart.Prepare(new VisualRenderContext());
         Assert.Equal(id.Value, Assert.Single(prepared.Scene.Annotations).AnnotationId);
         Assert.Contains("After replacement", prepared.ToSvg());
@@ -122,6 +122,6 @@ public sealed class OwnedChartAnnotationsTests {
         ? new ChartAnnotation(id.Value, ChartAnnotationKind.VerticalLine, value, null, caption, Ink, 1)
         : new ChartAnnotation(ChartAnnotationKind.VerticalLine, value, null, caption, Ink, 1);
 
-    private static Chart Create() => Chart.Create().WithSize(480, 300).WithLegend(false)
+    private static Chart Create() => Chart.Create().Size(480, 300).Legend(false)
         .AddLine("Readings", new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) });
 }

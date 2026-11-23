@@ -30,11 +30,11 @@ public sealed class NativeOwnedValueFlashBeforeControls {
         else if(kind.Contains("pie",StringComparison.Ordinal)||kind.Contains("donut",StringComparison.Ordinal))chart=NativeRadialMotionBeforeControls.Model(kind.Contains("donut",StringComparison.Ordinal),kind.StartsWith("raw-",StringComparison.Ordinal),"inside",reading);
         else {
             chart=NativeCartesianValueTransitionTests.Styled(kind=="line"?"line-pattern-markers":kind,reading);
-            if(kind=="line")chart.WithLuminousLineStyle();
+            if(kind=="line")chart.Lines(l => l.LuminousStyle());
             var comparison=new ChartSeries(new ChartSeriesId("comparison"),"Comparison",kind=="line"?ChartSeriesKind.Line:ChartSeriesKind.Bar,new[]{new ChartPoint(0,10),new ChartPoint(1,15),new ChartPoint(2,20)})
-                .WithObservationIds(new[]{new ChartObservationId("earlier"),new ChartObservationId("current"),new ChartObservationId("later")});chart.AddSeries(comparison);
+                .ObservationIds(new[]{new ChartObservationId("earlier"),new ChartObservationId("current"),new ChartObservationId("later")});chart.AddSeries(comparison);
         }
-        return chart.WithSize(width,420).WithThemeMode(dark?ChartForgeX.ThemeMode.Dark:ChartForgeX.ThemeMode.Light);
+        return chart.Size(width,420).ThemeMode(dark?ChartForgeX.ThemeMode.Dark:ChartForgeX.ThemeMode.Light);
     }
     internal static HtmlChartSection Section(HtmlInteractiveChartRenderer renderer,string kind,double reading,int width=760,bool dark=false)=>renderer.PrepareSection(Model(kind,reading,width,dark),configure:options=>{options.CaptureNativeValueSource=kind.StartsWith("raw-",StringComparison.Ordinal);options.Interaction.ChartId="owned-flash";});
 }

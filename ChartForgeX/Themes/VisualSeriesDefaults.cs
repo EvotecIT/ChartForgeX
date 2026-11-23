@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ChartForgeX.Core;
 using ChartForgeX.Typography;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Themes;
 
@@ -14,6 +15,7 @@ namespace ChartForgeX.Themes;
 /// Chart-level data-label styling and an authored bar corner radius also take precedence over these defaults.
 /// A theme snapshots its defaults, so later edits to this instance do not change an existing theme.
 /// </remarks>
+[Fluent(Copy = nameof(Clone))]
 public sealed class VisualSeriesDefaults {
     private double? _strokeWidth, _cornerRadius;
     private ChartInterpolation? _interpolation;
@@ -63,24 +65,6 @@ public sealed class VisualSeriesDefaults {
 
     /// <summary>Gets the data-label text defaults for this kind.</summary>
     public TextStyleOverride DataLabelStyle { get; private set; } = new();
-
-    /// <summary>Configures marker defaults.</summary>
-    /// <param name="configure">The configuration callback.</param>
-    /// <returns>The current defaults.</returns>
-    public VisualSeriesDefaults ConfigureMarkers(Action<ChartMarkerOptions> configure) {
-        if (configure == null) throw new ArgumentNullException(nameof(configure));
-        Markers = ChartOptionConfiguration.Configure(Markers, configure, options => options.Clone());
-        return this;
-    }
-
-    /// <summary>Configures data-label text defaults.</summary>
-    /// <param name="configure">The configuration callback.</param>
-    /// <returns>The current defaults.</returns>
-    public VisualSeriesDefaults ConfigureDataLabelStyle(Action<TextStyleOverride> configure) {
-        if (configure == null) throw new ArgumentNullException(nameof(configure));
-        DataLabelStyle = ChartOptionConfiguration.Configure(DataLabelStyle, configure, style => style.Clone());
-        return this;
-    }
 
     internal bool IsEmpty => !_strokeWidth.HasValue && _dash == null && !_interpolation.HasValue && !_cornerRadius.HasValue
         && !Markers.IsConfigured && !DataLabelStyle.HasOverrides;

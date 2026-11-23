@@ -57,7 +57,7 @@ public sealed class TopologySwimlaneLayoutDepthCausalTests {
     }
 
     internal static TopologyChart Chart(TopologyLayoutDirection direction,bool nested) {
-        var chart=TopologyChart.Create().WithTitle("").WithViewport(1600,1200,24).WithLayout(TopologyLayoutMode.Swimlane,direction).AddAutoGroup("work","Work");
+        var chart=TopologyChart.Create().Title("").Viewport(new TopologyViewport(1600, 1200, 24)).LayoutMode(TopologyLayoutMode.Swimlane).LayoutDirection(direction).AddAutoGroup("work","Work");
         if(nested){chart.AddAutoGroup("parent","Delivery");chart.Groups[0].ParentGroupId="parent";}
         chart.AddAutoNode("a","Accept",groupId:"work",width:120,height:56).AddAutoNode("b","Browse",groupId:"work",width:120,height:56)
             .AddAutoNode("c","Complete",groupId:"work",width:120,height:56);

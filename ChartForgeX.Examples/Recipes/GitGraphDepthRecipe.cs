@@ -6,8 +6,8 @@ public static class GitGraphDepthRecipe {
             throw new ArgumentOutOfRangeException(nameof(variant));
         var direction = variant.EndsWith("-tb", StringComparison.Ordinal) ? GitGraphDirection.TopToBottom
             : variant.EndsWith("-bt", StringComparison.Ordinal) ? GitGraphDirection.BottomToTop : GitGraphDirection.LeftToRight;
-        return GitGraphBlock.Create().WithTitle("Release ancestry").WithSize(variant.StartsWith("compact", StringComparison.Ordinal) ? 390 : 1100, 620)
-            .WithTheme(VisualTheme.Graphite(), mode).WithDirection(direction).WithParallelCommits()
+        return GitGraphBlock.Create().Title("Release ancestry").Size(variant.StartsWith("compact", StringComparison.Ordinal) ? 390 : 1100, 620)
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Direction(direction).ParallelCommits()
             .AddBranch("trunk", 2).AddBranch("feature", 1).AddBranch("consumer", 0)
             .AddCommit("base", "trunk", tag: "v1")
             .AddCommit("feature-1", "feature", new[] { "base" }, GitGraphCommitType.Highlight)

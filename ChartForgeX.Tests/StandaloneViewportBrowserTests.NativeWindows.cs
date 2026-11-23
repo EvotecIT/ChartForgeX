@@ -21,11 +21,11 @@ public sealed partial class StandaloneViewportBrowserTests {
         var id = new ChartSeriesId("samples");
         var points = Enumerable.Range(0, 13).Select(index => new ChartPoint(index, 10 + index * 6)).ToArray();
         Chart Base(IReadOnlyDictionary<string, (double Minimum, double Maximum)>? bounds) {
-            var chart = Chart.Create().WithSize(800, 440).WithTitle("Saved " + name).WithLegend().WithDataLabels(false);
+            var chart = Chart.Create().Size(800, 440).Title("Saved " + name).Legend().DataLabels(false);
             if (bounds == null) return chart;
             foreach (var (axis, (minimum, maximum)) in bounds) _ = axis switch {
-                "x" => chart.WithXAxisBounds(minimum, maximum), "y" => chart.WithYAxisBounds(minimum, maximum),
-                "secondaryX" => chart.WithSecondaryXAxisBounds(minimum, maximum), _ => chart.WithSecondaryYAxisBounds(minimum, maximum)
+                "x" => chart.XAxis(x => x.Bounds(minimum, maximum)), "y" => chart.YAxis(y => y.Bounds(minimum, maximum)),
+                "secondaryX" => chart.SecondaryXAxis(s => s.Bounds(minimum, maximum)), _ => chart.SecondaryYAxis(s => s.Bounds(minimum, maximum))
             };
             return chart;
         }
@@ -43,15 +43,15 @@ public sealed partial class StandaloneViewportBrowserTests {
                     chart.Options.LollipopOrientation = ChartOrientation.Horizontal;
                     return chart;
                 }, Window(("x", 20, 80), ("y", 1.5, 7.5)), Point + "ellipse"),
-            "horizontal-secondary" => new(bounds => Base(bounds).WithSecondaryYAxis("Throughput")
+            "horizontal-secondary" => new(bounds => Base(bounds).SecondaryYAxis(s => s.Title("Throughput"))
                     .AddSeries(new ChartSeries(id, "Samples", ChartSeriesKind.HorizontalBar, points.Take(6)))
                     .AddSeries(new ChartSeries(new ChartSeriesId("throughput"), "Throughput", ChartSeriesKind.HorizontalBar,
-                        points.Take(6).Select(point => new ChartPoint(point.X, point.Y * 1000))).UseSecondaryValueAxis()),
+                        points.Take(6).Select(point => new ChartPoint(point.X, point.Y * 1000))).SecondaryAxis()),
                 // Grouped bars keep their drawn share of the band, while a native window re-fits the slots to within a quarter pixel.
                 Window(("x", 0, 30), ("secondaryX", 0, 30000), ("y", 0.5, 4.5)), "[data-cfx-series-key=throughput][data-cfx-point='2'] path", CategoryDigits: 2),
-            "symmetric-log" => new(bounds => Base(bounds).WithYAxisScale(ChartScaleKind.SymmetricLogarithmic)
+            "symmetric-log" => new(bounds => Base(bounds).YAxis(y => y.Scale(ChartScaleKind.SymmetricLogarithmic))
                     .AddSeries(ChartSeries.CreateLine(id, "Samples", points.Select(point => new ChartPoint(point.X, (point.X - 6) * Math.Abs(point.X - 6) * 40)))
-                        .ConfigureMarkers(markers => { markers.Enabled = true; markers.Radius = 4; })),
+                        .Markers(markers => { markers.Enabled = true; markers.Radius = 4; })),
                 Window(("x", 2, 10), ("y", -100, 1000)), "[data-cfx-series-key=samples][data-cfx-point='7'] :is(circle,ellipse,path)"),
             _ => throw new ArgumentOutOfRangeException(nameof(name))
         };

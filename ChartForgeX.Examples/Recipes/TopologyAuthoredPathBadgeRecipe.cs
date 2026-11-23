@@ -7,7 +7,7 @@ using ChartForgeX.VisualArtifacts;
 public static class TopologyAuthoredPathBadgeRecipe {
     /// <summary>Builds source-independent topology using the same geometry and detail owners as imported diagrams.</summary>
     public static TopologyChart Create() {
-        var chart = TopologyChart.Create().WithId("authored-handoff").WithTitle("Queue handoff").WithViewport(800, 440, 28);
+        var chart = TopologyChart.Create().Id("authored-handoff").Title("Queue handoff").Viewport(new TopologyViewport(800, 440, 28));
         chart.AddNode("gateway", "Gateway", 64, 100, width: 220, height: 180);
         chart.AddNode("worker", "Worker", 510, 100, width: 220, height: 180);
         chart.Nodes[0].FitLabelToContent = true; chart.Nodes[1].FitLabelToContent = true;

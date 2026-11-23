@@ -20,12 +20,4 @@ public sealed partial class Chart {
     /// <returns>The current chart.</returns>
     public Chart AddRadialColumn(string name, IEnumerable<ChartPoint> points, ChartColor? color = null) =>
         Add(name, ChartSeriesKind.RadialColumn, points, color);
-
-    /// <summary>Sets geometry for numeric radial bars and columns, including column/radar compositions. Numeric bounds and formatting belong to the value axis.</summary>
-    /// <param name="geometry">Immutable start/end angles, inner radius and spacing.</param>
-    /// <returns>The current chart.</returns>
-    public Chart WithRadialGeometry(ChartRadialGeometryOptions geometry) {
-        Options.RadialGeometry = geometry ?? throw new ArgumentNullException(nameof(geometry));
-        return this;
-    }
 }

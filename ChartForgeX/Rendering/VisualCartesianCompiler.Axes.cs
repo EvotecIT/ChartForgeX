@@ -124,9 +124,9 @@ internal static partial class VisualCartesianCompiler {
         if (chart.Options.XAxis.Visible) bottom += CategoryGroupBandSizes(builder, labels, style, spacing,
             range.MinX, range.MaxX, viewport.Width, Math.Max(0, viewport.Height * .45 - bottom)).Sum();
         var top = 0d;
-        if (chart.Options.YAxis.Visible && chart.YAxisTitle.Length > 0) top = builder.MeasureText(chart.YAxisTitle, titleStyle).Height + spacing;
-        if (secondaryRange != null && chart.Options.SecondaryYAxis.Visible && chart.SecondaryYAxisTitle.Length > 0)
-            top = Math.Max(top, builder.MeasureText(chart.SecondaryYAxisTitle, titleStyle).Height + spacing);
+        if (chart.Options.YAxis.Visible && chart.Options.YAxis.Title.Length > 0) top = builder.MeasureText(chart.Options.YAxis.Title, titleStyle).Height + spacing;
+        if (secondaryRange != null && chart.Options.SecondaryYAxis.Visible && chart.Options.SecondaryYAxis.Title.Length > 0)
+            top = Math.Max(top, builder.MeasureText(chart.Options.SecondaryYAxis.Title, titleStyle).Height + spacing);
         var additionalHalfHeight = 0d;
         if (labels.Additional.Count > 0) {
             var additional = MeasureAdditionalAxes(chart, builder, viewport, left, right, style, titleStyle, spacing, labels);
@@ -163,7 +163,7 @@ internal static partial class VisualCartesianCompiler {
     }
 
     private static string XAxisTitle(Chart chart) {
-        var title = chart.XAxisTitle;
+        var title = chart.Options.XAxis.Title;
         if (chart.Options.XAxis.Scale == ChartScaleKind.Time && chart.Options.XAxis.ShowTimeZone) {
             var zone = chart.Options.XAxis.TimeZoneLabel ?? chart.Options.XAxis.TimeZone?.Id ?? "UTC";
             title = title.Length == 0 ? zone : title + " (" + zone + ")";
@@ -235,8 +235,8 @@ internal static partial class VisualCartesianCompiler {
             if (chart.Options.YAxis.ShowLine) DrawValueAxisRule(chart, context, builder, plot, range, map, chart.Options.YAxis, plot.Left, colors, "axis-y", primaryAccent);
             var bounds = new ChartRect(viewport.Left, viewport.Top, Math.Max(0, plot.Left - viewport.Left - spacing), viewport.Height);
             DrawAxisLabels(builder, chart.Options, chart.Options.YAxis, yTicks, map.Y, false, false, bounds, AccentStyle(style, primaryAccent), spacing, chart.Options.ValueFormatter, labels, plot.Height);
-            var sharedTitleRow = secondaryMap != null && chart.Options.SecondaryYAxis.Visible && chart.SecondaryYAxisTitle.Length > 0 || HasAdditionalTitles(labels, end: true);
-            if (!string.IsNullOrEmpty(chart.YAxisTitle) && !HasAdditionalTitles(labels, end: false)) DrawAxisTitle(chart, context, builder, chart.YAxisTitle,
+            var sharedTitleRow = secondaryMap != null && chart.Options.SecondaryYAxis.Visible && chart.Options.SecondaryYAxis.Title.Length > 0 || HasAdditionalTitles(labels, end: true);
+            if (!string.IsNullOrEmpty(chart.Options.YAxis.Title) && !HasAdditionalTitles(labels, end: false)) DrawAxisTitle(chart, context, builder, chart.Options.YAxis.Title,
                 new ChartRect(plot.Left, viewport.Top, Math.Max(0, sharedTitleRow ? plot.Width / 2 - spacing / 2 : plot.Width), Math.Max(0, labelBounds.Top - viewport.Top - spacing)),
                 colors, TextAlignment.Left, "axis-y-title", color: primaryAccent);
         }
@@ -246,9 +246,9 @@ internal static partial class VisualCartesianCompiler {
             if (chart.Options.SecondaryYAxis.ShowLine) DrawValueAxisRule(chart, context, builder, plot, range, map, chart.Options.SecondaryYAxis, plot.Right, colors, "axis-secondary-y", secondaryAccent);
             var bounds = new ChartRect(plot.Right + spacing, viewport.Top, Math.Max(0, viewport.Right - plot.Right - spacing), viewport.Height);
             DrawAxisLabels(builder, chart.Options, chart.Options.SecondaryYAxis, ticks, secondaryMap.Y, false, true, bounds, AccentStyle(style, secondaryAccent), spacing, chart.Options.ValueFormatter, labels, plot.Height);
-            if (!string.IsNullOrEmpty(chart.SecondaryYAxisTitle) && !HasAdditionalTitles(labels, end: true)) {
-                var width = chart.YAxisTitle.Length > 0 && chart.Options.YAxis.Visible || HasAdditionalTitles(labels, end: false) ? plot.Width / 2 - spacing / 2 : plot.Width;
-                DrawAxisTitle(chart, context, builder, chart.SecondaryYAxisTitle,
+            if (!string.IsNullOrEmpty(chart.Options.SecondaryYAxis.Title) && !HasAdditionalTitles(labels, end: true)) {
+                var width = chart.Options.YAxis.Title.Length > 0 && chart.Options.YAxis.Visible || HasAdditionalTitles(labels, end: false) ? plot.Width / 2 - spacing / 2 : plot.Width;
+                DrawAxisTitle(chart, context, builder, chart.Options.SecondaryYAxis.Title,
                     new ChartRect(plot.Right - width, viewport.Top, Math.Max(0, width), Math.Max(0, labelBounds.Top - viewport.Top - spacing)),
                     colors, TextAlignment.Right, "axis-secondary-y-title", color: secondaryAccent);
             }

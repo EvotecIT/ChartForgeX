@@ -63,12 +63,12 @@ public sealed class PairedObservationClipBrowserTests {
     [BrowserFact]
     public async Task LogarithmicRangeMidlineKeepsItsNativeCapReadout() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(600, 380).WithTitle("Logarithmic paired midpoint")
-            .WithTheme(VisualTheme.Graphite()).WithLegend(false).WithDataLabels(false)
-            .WithXAxisBounds(0, 1).WithYAxisBounds(10, 1000).ConfigureYAxis(axis => axis.Scale = ChartScaleKind.Logarithmic)
-            .WithLineVisualStyle(ChartLineVisualStyle.Plain());
+        var chart = Chart.Create().Size(600, 380).Title("Logarithmic paired midpoint")
+            .Theme(VisualTheme.Graphite()).Legend(false).DataLabels(false)
+            .XAxis(x => x.Bounds(0, 1)).YAxis(y => y.Bounds(10, 1000)).YAxis(axis => axis.Scale = ChartScaleKind.Logarithmic)
+            .Lines(l => l.VisualStyle(ChartLineVisualStyle.Plain()));
         chart.AddSeries(ChartSeries.CreateRangeArea(new ChartSeriesId("paired"), "Pair", new[] { new ChartRangeBand(.5, 1, 1800) }));
-        chart.Series[0].WithStrokeWidth(6).ConfigureMarkers(markers => markers.Enabled = false);
+        chart.Series[0].StrokeWidth(6).Markers(markers => markers.Enabled = false);
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         var html = chart.ToInteractiveHtmlPage();
         if (!string.IsNullOrWhiteSpace(directory)) {
@@ -145,7 +145,7 @@ public sealed class PairedObservationClipBrowserTests {
         // Both Y values are inside the plot: only the source X excludes the guide anchor.
         var chart = Create(ChartSeriesKind.DifferenceArea, 8, 2, visibleSibling: true, firstX: -.001);
         // Keep enough endpoint ink inside the clip for a native DOM hit across browser pixel rounding.
-        chart.Series[0].WithStrokeWidth(6);
+        chart.Series[0].StrokeWidth(6);
         var html = chart.ToInteractiveHtmlPage(options => options.Interaction.Features =
             ChartInteractionFeatures.Tooltips | ChartInteractionFeatures.Selection |
             ChartInteractionFeatures.KeyboardNavigation | ChartInteractionFeatures.Crosshair);
@@ -237,7 +237,7 @@ public sealed class PairedObservationClipBrowserTests {
         if (!Enabled) return;
         var chart = unavailable == "y-clipped" ? Create(kind, 10.08, 10.07, visibleSibling: true)
             : Create(kind, 100, 1, visibleSibling: unavailable == "x-clipped", firstX: unavailable == "x-clipped" ? -.004 : .25);
-        if (unavailable == "transparent") chart.Series[0].WithColor(ChartColor.Transparent);
+        if (unavailable == "transparent") chart.Series[0].Color(ChartColor.Transparent);
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(directory)) {
             var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -278,9 +278,9 @@ public sealed class PairedObservationClipBrowserTests {
     }
 
     private static Chart Create(ChartSeriesKind kind, double first, double second, bool visibleSibling = false, double firstX = .25) {
-        var chart = Chart.Create().WithSize(600, 380).WithTitle("Clipped paired observations")
-            .WithTheme(VisualTheme.Graphite()).WithLegend(false).WithDataLabels(false)
-            .WithXAxisBounds(0, 1).WithYAxisBounds(0, 10).WithLineVisualStyle(ChartLineVisualStyle.Plain());
+        var chart = Chart.Create().Size(600, 380).Title("Clipped paired observations")
+            .Theme(VisualTheme.Graphite()).Legend(false).DataLabels(false)
+            .XAxis(x => x.Bounds(0, 1)).YAxis(y => y.Bounds(0, 10)).Lines(l => l.VisualStyle(ChartLineVisualStyle.Plain()));
         chart.Options.ClipMarksToPlot = true;
         var nextFirst = visibleSibling ? 8 : first; var nextSecond = visibleSibling ? 1 : second;
         if (kind == ChartSeriesKind.DifferenceArea) chart.AddSeries(ChartSeries.CreateDifferenceArea(new ChartSeriesId("paired"), "Pair", new[] {
@@ -292,7 +292,7 @@ public sealed class PairedObservationClipBrowserTests {
             if (kind == ChartSeriesKind.RangeArea) chart.AddSeries(ChartSeries.CreateRangeArea(new ChartSeriesId("paired"), "Pair", ranges));
             else chart.AddSeries(ChartSeries.CreateRangeBand(new ChartSeriesId("paired"), "Pair", ranges));
         }
-        chart.Series[0].ConfigureMarkers(markers => markers.Enabled = false);
+        chart.Series[0].Markers(markers => markers.Enabled = false);
         return chart;
     }
 

@@ -29,7 +29,7 @@ internal static partial class SmokeTests {
     }
 
     private static void GaugeSeriesRenderValueArcs() {
-        var chart = Chart.Create().WithSize(640, 420).WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + "%").AddGauge("Security score", 87);
+        var chart = Chart.Create().Size(640, 420).FormatValuesBy(value => value.ToString("0", CultureInfo.InvariantCulture) + "%").AddGauge("Security score", 87);
         var prepared = PreparedFamily(chart);
         var source = Verify.Single(FamilyGroups(prepared, "gauge"));
         Verify.Equal(87, FamilyNumber(source, "data-cfx-value"));
@@ -44,8 +44,8 @@ internal static partial class SmokeTests {
     }
 
     private static void ProgressRingSeriesRenderProgressRings() {
-        var chart = Chart.Create().WithSize(720, 460).WithXLabels("Mail auth", "DNSSEC", "TLS")
-            .WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + "%").AddProgressRing("Control coverage", Points(92, 74, 88));
+        var chart = Chart.Create().Size(720, 460).XLabels("Mail auth", "DNSSEC", "TLS")
+            .FormatValuesBy(value => value.ToString("0", CultureInfo.InvariantCulture) + "%").AddProgressRing("Control coverage", Points(92, 74, 88));
         var prepared = PreparedFamily(chart);
         Verify.Equal(3, FamilyGroups(prepared, "progress-ring-point").Length);
         var tracks = prepared.Scene.Nodes.OfType<VisualSceneSlice>().Where(node => node.Role == "progress-ring-track").ToArray();
@@ -60,7 +60,7 @@ internal static partial class SmokeTests {
     }
 
     private static void SankeyLinksRenderWeightedFlows() {
-        var chart = Chart.Create().WithSize(900, 520).WithDataLabels().AddSankey("Finding flow", new[] { new ChartNode("Discovered", "Discovered"), new ChartNode("Validated", "Validated"), new ChartNode("Accepted risk", "Accepted risk"), new ChartNode("Remediated", "Remediated"), new ChartNode("Monitoring", "Monitoring") }, new[] {
+        var chart = Chart.Create().Size(900, 520).DataLabels().AddSankey("Finding flow", new[] { new ChartNode("Discovered", "Discovered"), new ChartNode("Validated", "Validated"), new ChartNode("Accepted risk", "Accepted risk"), new ChartNode("Remediated", "Remediated"), new ChartNode("Monitoring", "Monitoring") }, new[] {
             new ChartFlowLink("flow-1", "Discovered", "Validated", 70), new("flow-2", "Discovered", "Accepted risk", 20),
             new("flow-3", "Validated", "Remediated", 44), new("flow-4", "Validated", "Monitoring", 26)
         });
@@ -75,7 +75,7 @@ internal static partial class SmokeTests {
     }
 
     private static void TreeLinksRenderHierarchy() {
-        var chart = Chart.Create().WithSize(900, 520).WithDataLabels().AddTree("Control hierarchy", new[] { new ChartNode("Security posture", "Security posture"), new ChartNode("Mail authentication", "Mail authentication"), new ChartNode("Certificate lifecycle", "Certificate lifecycle"), new ChartNode("SPF", "SPF"), new ChartNode("DKIM", "DKIM"), new ChartNode("Expiry monitoring", "Expiry monitoring") }, new[] {
+        var chart = Chart.Create().Size(900, 520).DataLabels().AddTree("Control hierarchy", new[] { new ChartNode("Security posture", "Security posture"), new ChartNode("Mail authentication", "Mail authentication"), new ChartNode("Certificate lifecycle", "Certificate lifecycle"), new ChartNode("SPF", "SPF"), new ChartNode("DKIM", "DKIM"), new ChartNode("Expiry monitoring", "Expiry monitoring") }, new[] {
             new ChartTreeLink("Security posture", "Mail authentication"), new("Security posture", "Certificate lifecycle"),
             new("Mail authentication", "SPF"), new("Mail authentication", "DKIM"), new("Certificate lifecycle", "Expiry monitoring")
         });
@@ -89,7 +89,7 @@ internal static partial class SmokeTests {
     }
 
     private static void BulletSeriesRenderTargetAndRangeBars() {
-        var chart = Chart.Create().WithSize(720, 420).WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + "%")
+        var chart = Chart.Create().Size(720, 420).FormatValuesBy(value => value.ToString("0", CultureInfo.InvariantCulture) + "%")
             .AddBullet("DMARC enforcement", 88, 95, 0, 100, new[] { 60d, 80d }, ChartColor.FromRgb(37, 99, 235))
             .AddBullet("DNSSEC coverage", 74, 90, 0, 100, new[] { 60d, 80d }, ChartColor.FromRgb(14, 165, 233));
         var prepared = PreparedFamily(chart);
@@ -104,8 +104,8 @@ internal static partial class SmokeTests {
     }
 
     private static void RadarSeriesRenderPolarPolygons() {
-        var chart = Chart.Create().WithSize(760, 460).WithDataLabels().WithXLabels("Mail auth", "DNSSEC", "TLS", "CT", "Policy")
-            .WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + "%")
+        var chart = Chart.Create().Size(760, 460).DataLabels().XLabels("Mail auth", "DNSSEC", "TLS", "CT", "Policy")
+            .FormatValuesBy(value => value.ToString("0", CultureInfo.InvariantCulture) + "%")
             .AddRadar("Current", Points(92, 74, 88, 96, 81)).AddRadar("Target", Points(96, 90, 92, 98, 90));
         var prepared = PreparedFamily(chart);
         Verify.Equal(2, FamilyGroups(prepared, "radar-series").Length);
@@ -118,8 +118,8 @@ internal static partial class SmokeTests {
     }
 
     private static void PolarAreaSeriesRenderRadialSegments() {
-        var chart = Chart.Create().WithSize(760, 460).WithDataLabels().WithXLabels("Mail auth", "DNSSEC", "TLS", "CT")
-            .WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + "%").AddPolarArea("Control share", Points(92, 74, 88, 96));
+        var chart = Chart.Create().Size(760, 460).DataLabels().XLabels("Mail auth", "DNSSEC", "TLS", "CT")
+            .FormatValuesBy(value => value.ToString("0", CultureInfo.InvariantCulture) + "%").AddPolarArea("Control share", Points(92, 74, 88, 96));
         var prepared = PreparedFamily(chart);
         var segments = prepared.Scene.Nodes.OfType<VisualSceneSlice>().Where(node => node.Role == "polar-area-segment").ToArray();
         Verify.Equal(4, segments.Length);
@@ -131,7 +131,7 @@ internal static partial class SmokeTests {
     }
 
     private static void CircleSeriesRenderSingleProgressRings() {
-        var chart = Chart.Create().WithSize(760, 460).WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + "%")
+        var chart = Chart.Create().Size(760, 460).FormatValuesBy(value => value.ToString("0", CultureInfo.InvariantCulture) + "%")
             .AddCircle("Readiness", 87, 0, 100, ChartColor.FromRgb(52, 211, 153));
         var prepared = PreparedFamily(chart);
         var source = Verify.Single(FamilyGroups(prepared, "circle-chart"));
@@ -144,7 +144,7 @@ internal static partial class SmokeTests {
     }
 
     private static void FunnelSeriesRenderStagedSegments() {
-        var chart = Chart.Create().WithSize(760, 460).WithDataLabels().WithXLabels("Discovered", "Verified", "Prioritized", "Remediated")
+        var chart = Chart.Create().Size(760, 460).DataLabels().XLabels("Discovered", "Verified", "Prioritized", "Remediated")
             .AddFunnel("Domain remediation funnel", Points(420, 318, 174, 96));
         var prepared = PreparedFamily(chart);
         var stages = FamilyGroups(prepared, "funnel-stage");
@@ -158,7 +158,7 @@ internal static partial class SmokeTests {
     }
 
     private static void HierarchyItemsRenderProportionalTiles() {
-        var chart = Chart.Create().WithSize(720, 420).WithDataLabels().AddTreemap("Findings", new[] {
+        var chart = Chart.Create().Size(720, 420).DataLabels().AddTreemap("Findings", new[] {
             new ChartHierarchyItem("Critical", "Critical", value: 50), new("High", "High", value: 28), new("Medium", "Medium", value: 14), new("Low", "Low", value: 8)
         });
         var prepared = PreparedFamily(chart);

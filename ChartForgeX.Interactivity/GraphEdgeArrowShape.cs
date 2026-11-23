@@ -1,4 +1,5 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Interactivity;
 
@@ -28,6 +29,7 @@ public enum GraphEdgeArrowShape {
 /// <summary>
 /// Maps <see cref="GraphEdgeStyle.Value"/> onto a stroke width range across a scene.
 /// </summary>
+[Fluent]
 public sealed class GraphEdgeWidthScale {
     /// <summary>Gets or sets the stroke width used for the smallest edge value.</summary>
     public double MinimumWidth { get; set; } = 1;

@@ -45,18 +45,18 @@ public static class BubbleColorScaleRecipe {
         };
         var recorded = ChartSeries.CreateBubble(new ChartSeriesId("recorded-batches"), "Recorded batches",
             samples.Select(sample => new ChartBubble(sample.Batch, sample.Minutes, sample.Requests).WithColorValue(sample.Temperature)));
-        recorded.WithColorScale(ChartColorScale.Discrete(new[] {
+        recorded.ColorScale(ChartColorScale.Discrete(new[] {
                 new ChartColorBand(0, colors.Palette[0], "Cold"),
                 new ChartColorBand(15, colors.Status.Medium.Fill, "Mild"),
                 new ChartColorBand(null, colors.Status.Critical.Fill, "Warm")
             }).WithNoDataColor(colors.Border));
         var target = ChartSeries.CreateLine(new ChartSeriesId("target-duration"), "Target duration", new[] { new ChartPoint(0, 30), new ChartPoint(100, 30) })
-            .ConfigureMarkers(markers => markers.Enabled = false);
-        return NumericAxes().ConfigureLabels(labels => { labels.Color = "Temperature (°C)"; labels.NoData = "Not sampled"; })
+            .Markers(markers => markers.Enabled = false);
+        return NumericAxes().Labels(labels => { labels.Color = "Temperature (°C)"; labels.NoData = "Not sampled"; })
             .AddSeries(recorded).AddSeries(target)
-            .ConfigureBubble(bubble => { bubble.WithSizeDomain(0, 100); bubble.MinimumRadius = 4; bubble.MaximumRadius = 20; });
+            .Bubble(bubble => { bubble.SizeDomain(0, 100); bubble.MinimumRadius = 4; bubble.MaximumRadius = 20; });
     }
 
-    private static Chart NumericAxes() => Chart.Create().WithXAxis("Batch size (items)").WithYAxis("Processing time (minutes)")
-        .WithXAxisBounds(0, 100).WithYAxisBounds(0, 60).WithDataLabels(false);
+    private static Chart NumericAxes() => Chart.Create().XAxis(x => x.Title("Batch size (items)")).YAxis(y => y.Title("Processing time (minutes)"))
+        .XAxis(x => x.Bounds(0, 100)).YAxis(y => y.Bounds(0, 60)).DataLabels(false);
 }

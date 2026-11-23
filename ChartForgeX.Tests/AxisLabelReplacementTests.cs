@@ -12,7 +12,7 @@ public sealed class AxisLabelReplacementTests {
         var labels = chart.Options.XAxis.Labels;
         var before = labels.ToArray();
 
-        Assert.Same(chart, chart.WithXLabels(deferred ? labels.Where(label => label.Value > 0) : labels));
+        Assert.Same(chart, chart.XLabels(deferred ? labels.Where(label => label.Value > 0) : labels));
 
         Assert.Same(labels, chart.Options.XAxis.Labels);
         Assert.Equal(before, labels);
@@ -23,7 +23,7 @@ public sealed class AxisLabelReplacementTests {
         var chart = Create();
         var before = chart.Options.XAxis.Labels.ToArray();
 
-        Assert.Throws<ArgumentNullException>(() => chart.WithXLabels("Replacement", null!));
+        Assert.Throws<ArgumentNullException>(() => chart.XLabels("Replacement", null!));
 
         Assert.Equal(before, chart.Options.XAxis.Labels);
     }
@@ -33,7 +33,7 @@ public sealed class AxisLabelReplacementTests {
         var chart = Create();
         var before = chart.Options.XAxis.Labels.ToArray();
 
-        Assert.Throws<ArgumentException>(() => chart.WithXLabels(new[] { new ChartAxisLabel(1, "Replacement"), default(ChartAxisLabel) }));
+        Assert.Throws<ArgumentException>(() => chart.XLabels(new[] { new ChartAxisLabel(1, "Replacement"), default(ChartAxisLabel) }));
 
         Assert.Equal(before, chart.Options.XAxis.Labels);
     }
@@ -45,8 +45,8 @@ public sealed class AxisLabelReplacementTests {
         var chart = Create();
         var before = chart.Options.XAxis.Labels.ToArray();
 
-        if (dates) Assert.Throws<InvalidOperationException>(() => chart.WithXDateLabels(FailAfter(new DateTime(2026, 1, 1))));
-        else Assert.Throws<InvalidOperationException>(() => chart.WithXLabels(FailAfter(new ChartAxisLabel(1, "Replacement"))));
+        if (dates) Assert.Throws<InvalidOperationException>(() => chart.XDateLabels(FailAfter(new DateTime(2026, 1, 1))));
+        else Assert.Throws<InvalidOperationException>(() => chart.XLabels(FailAfter(new ChartAxisLabel(1, "Replacement"))));
 
         Assert.Equal(before, chart.Options.XAxis.Labels);
     }
@@ -56,12 +56,12 @@ public sealed class AxisLabelReplacementTests {
         var chart = Create();
         var before = chart.Options.XAxis.Labels.ToArray();
 
-        Assert.Throws<FormatException>(() => chart.WithXDateLabels(new[] { new DateTime(2026, 1, 1) }, "%"));
+        Assert.Throws<FormatException>(() => chart.XDateLabels(new[] { new DateTime(2026, 1, 1) }, "%"));
 
         Assert.Equal(before, chart.Options.XAxis.Labels);
     }
 
-    private static Chart Create() => Chart.Create().WithXLabels("North", "South");
+    private static Chart Create() => Chart.Create().XLabels("North", "South");
 
     private static IEnumerable<T> FailAfter<T>(T first) {
         yield return first;

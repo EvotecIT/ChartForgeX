@@ -12,7 +12,7 @@ public sealed partial class ChartSeries {
     /// <param name="bounds">A finite positive rectangle contained in [0,1] on both axes, or null to clear the placement.</param>
     /// <returns>The current series.</returns>
     /// <remarks>Insets require at least one RegionMap or DottedMap peer. Standalone TileMaps retain their existing layout.</remarks>
-    public ChartSeries WithMapInset(ChartRect? bounds) {
+    internal ChartSeries SetMapInset(ChartRect? bounds) {
         if (Kind != ChartSeriesKind.TileMap) throw new InvalidOperationException("Only TileMap datasets accept a map inset.");
         if (bounds.HasValue) {
             var value = bounds.Value;

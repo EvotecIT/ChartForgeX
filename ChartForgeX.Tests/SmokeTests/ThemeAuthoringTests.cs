@@ -25,7 +25,7 @@ internal static partial class SmokeTests {
                 builder.CardRadius = 8; builder.PlotRadius = 6; builder.CardShadowOpacity = 0;
             });
 
-        var model = Chart.Create().WithTheme(theme).WithLegend().AddLine("Values", Points(1, 2, 3));
+        var model = Chart.Create().Theme(theme).Legend().AddLine("Values", Points(1, 2, 3));
         var prepared = PreparedFamily(model);
         var svg = prepared.ToSvg();
         Assert(svg.Contains("#123456", StringComparison.Ordinal) && svg.Contains(ChartFontStacks.Mono, StringComparison.Ordinal),
@@ -38,7 +38,7 @@ internal static partial class SmokeTests {
             && legendLabels.Length > 0 && legendLabels.All(label => label.Text.Style.Font.Family == ChartFontStacks.Mono),
             "The native scene should retain authored series ink and font.");
         var originalPng = prepared.ToPng();
-        model.ConfigureTheme(builder => builder.CardRadius = 0);
+        model.Theme(builder => builder.CardRadius = 0);
         var square = PreparedFamily(model);
         Assert(square.Scene.Nodes.OfType<VisualSceneRectangle>().Single(node => node.Role == "frame-card").Radius == 0,
             "Changing the model theme should change the newly prepared card geometry.");
@@ -46,7 +46,7 @@ internal static partial class SmokeTests {
         Assert(card.Radius == 8 && originalPng.SequenceEqual(prepared.ToPng()), "A prepared output should retain its captured geometry.");
         Assert(theme.CardRadius == 8, "Configuring a chart should preserve the reusable source theme.");
 
-        var grid = ChartGrid.Create().WithTitle("Themed grid").WithTheme(theme)
+        var grid = ChartGrid.Create().Title("Themed grid").Theme(theme)
             .Add(Chart.Create().AddLine("Values", Points(1, 2, 3)));
         Assert(grid.ToSvg().Contains(ChartFontStacks.Mono, StringComparison.Ordinal), "The grid theme should supply shared panel typography.");
         var graphite = VisualTheme.Graphite();
@@ -58,12 +58,12 @@ internal static partial class SmokeTests {
         var accessible = VisualTheme.Accessible().Resolve(ThemeMode.Light);
         Assert(accessible.Palette.SequenceEqual(ChartPalettes.Colorblind) && !accessible.Palette.SequenceEqual(graphite.Resolve(ThemeMode.Light).Palette),
             "The Accessible theme should differ from Graphite only by its colorblind-safe palette.");
-        var accessibleSvg = Chart.Create().WithTheme(VisualTheme.Accessible()).AddBar("Adoption", Points(42, 58, 71)).ToSvg();
+        var accessibleSvg = Chart.Create().Theme(VisualTheme.Accessible()).AddBar("Adoption", Points(42, 58, 71)).ToSvg();
         Assert(accessibleSvg.Contains(ChartPalettes.Colorblind[0].ToHex(), StringComparison.OrdinalIgnoreCase),
             "The Accessible theme should render its colorblind-safe palette.");
 
-        AssertThrows<ArgumentNullException>(() => Chart.Create().WithTheme(null!), "Charts should reject null themes.");
-        AssertThrows<ArgumentNullException>(() => ChartGrid.Create().WithTheme(null!), "Grids should reject null themes.");
+        AssertThrows<ArgumentNullException>(() => Chart.Create().Theme((VisualTheme)null!), "Charts should reject null themes.");
+        AssertThrows<ArgumentNullException>(() => ChartGrid.Create().Theme((VisualTheme)null!), "Grids should reject null themes.");
         AssertThrows<ArgumentNullException>(() => VisualTheme.Graphite().Configure(null!), "Themes should require a configuration callback.");
         AssertThrows<ArgumentException>(() => VisualTheme.Graphite().WithPalette(Array.Empty<ChartColor>()), "Themes should reject empty categorical palettes.");
         AssertThrows<ArgumentException>(() => VisualTheme.Graphite().WithFontFamily(" "), "Themes should reject empty font stacks.");

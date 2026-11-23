@@ -1,8 +1,10 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Interactivity;
 
 /// <summary>Controls reusable graph pointer and topology-change behavior.</summary>
+[Fluent]
 public sealed class GraphInteractionOptions {
     /// <summary>Gets or sets what happens to a node after it is dragged.</summary>
     public GraphNodeDragBehavior NodeDragBehavior { get; set; } = GraphNodeDragBehavior.ReleaseAndReheat;

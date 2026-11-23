@@ -47,7 +47,7 @@ public sealed class TopologySvgIdScopeTests {
     [Fact]
     public void ScopedRender_KeepsTheChartOptionsAndDoesNotChangeThem() {
         var carried = new TopologyRenderOptions { CssClassPrefix = "site-map" };
-        var chart = Chart().WithRenderOptions(carried);
+        var chart = Chart().DefaultRenderOptions(carried);
         var svg = chart.ToSvg("panel-a");
         Assert.Contains("class=\"site-map", svg, StringComparison.Ordinal);
         Assert.Null(carried.IdScope);
@@ -62,8 +62,8 @@ public sealed class TopologySvgIdScopeTests {
         // The SVG pack importer rewrites artwork ids to cfxi-<pack>-<icon>-<id>; this body has that shape.
         var artwork = TopologyIconArtwork.InlineSvg("<defs><linearGradient id=\"cfxi-vendor-service-fill\"><stop offset=\"0\" stop-color=\"#2a78d6\"/></linearGradient></defs><rect width=\"24\" height=\"24\" fill=\"url(#cfxi-vendor-service-fill)\"/>", "0 0 24 24");
         var catalog = new TopologyIconCatalog().AddPack(new TopologyIconPack("vendor", "Vendor")
-            .AddIcon(new TopologyIconDefinition("vendor", "service", "Service", TopologyNodeKind.Service).WithArtwork(artwork)));
-        var chart = TopologyChart.Create().WithId("icons").AddIconNode("a", "Service", "vendor:service", 100, 100, catalog: catalog);
+            .AddIcon(new TopologyIconDefinition("vendor", "service", "Service", TopologyNodeKind.Service).Artwork(artwork)));
+        var chart = TopologyChart.Create().Id("icons").AddIconNode("a", "Service", "vendor:service", 100, 100, catalog: catalog);
         var options = new TopologyRenderOptions { IconCatalog = catalog };
 
         var plain = chart.ToSvg(options);
@@ -83,14 +83,14 @@ public sealed class TopologySvgIdScopeTests {
         AssertScopedAndResolved(motion, "panel-a-");
 
         var map = TopologyChart.Create()
-            .WithId("map")
-            .WithLayout(TopologyLayoutMode.Geographic)
-            .WithMapViewport(ChartMapViewport.World())
+            .Id("map")
+            .LayoutMode(TopologyLayoutMode.Geographic)
+            .MapViewport(ChartMapViewport.World())
             .AddGroup("EMEA", "EMEA", 0, 0, 100, 80, TopologyHealthStatus.Warning, "56 sites")
-            .WithGroupCoordinates("EMEA", 10, 50)
+            .UpdateGroup("EMEA", g => g.Longitude(10).Latitude(50))
             .AddNode("emea-hub", "EMEA Hub", 0, 0, TopologyNodeKind.Hub, TopologyHealthStatus.Warning, "EMEA", width: 56, height: 44, symbol: "H")
-            .WithNodeCoordinates("emea-hub", 0.1276, 51.5072);
-        var callouts = map.ToSvg("panel-b", new TopologyRenderOptions { IncludeLegend = false, IncludeGroups = false, IncludeGeographicCallouts = true });
+            .UpdateNode("emea-hub", n => n.Longitude(0.1276).Latitude(51.5072));
+        var callouts = map.ToSvg("panel-b", new TopologyRenderOptions { IncludeLegend = false, IncludeGroups = false, Geography = { IncludeCallouts = true } });
         Assert.Contains("data-cfx-visual-role=\"topology-geographic-callout\"", callouts, StringComparison.Ordinal);
         Assert.Contains("data-group-id=\"EMEA\"", callouts, StringComparison.Ordinal);
         AssertScopedAndResolved(callouts, "panel-b-");
@@ -100,8 +100,8 @@ public sealed class TopologySvgIdScopeTests {
     public void IconScoping_TouchesOnlyArtworkIdsAndTheirReferences() {
         var artwork = TopologyIconArtwork.InlineSvg("<defs><linearGradient id=\"cfxi-vendor-service-fill\"><stop offset=\"0\" stop-color=\"#2a78d6\"/></linearGradient></defs><rect width=\"24\" height=\"24\" fill=\"url(#cfxi-vendor-service-fill)\"/>", "0 0 24 24");
         var catalog = new TopologyIconCatalog().AddPack(new TopologyIconPack("vendor", "Vendor")
-            .AddIcon(new TopologyIconDefinition("vendor", "service", "Service", TopologyNodeKind.Service).WithArtwork(artwork)));
-        var chart = TopologyChart.Create().WithId("icons")
+            .AddIcon(new TopologyIconDefinition("vendor", "service", "Service", TopologyNodeKind.Service).Artwork(artwork)));
+        var chart = TopologyChart.Create().Id("icons")
             .AddIconNode("cfxi-x", "Service", "vendor:service", 100, 100, catalog: catalog, tooltip: "See #cfxi-notes");
         var svg = chart.ToSvg("cfxi", new TopologyRenderOptions { IconCatalog = catalog });
 
@@ -119,7 +119,7 @@ public sealed class TopologySvgIdScopeTests {
 
     private static TopologyChart Chart() {
         var chart = TopologyChart.Create()
-            .WithId("sites")
+            .Id("sites")
             .AddAutoGroup("north", "North")
             .AddAutoGroup("south", "South")
             .AddAutoNode("dc1", "DC1", groupId: "north")

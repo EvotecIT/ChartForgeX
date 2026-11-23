@@ -20,12 +20,12 @@ foreach (var face in new[] { (Name: "Regular", Weight: 400), (Name: "Bold", Weig
     FontRegistry.Register(portableFontFamily, Path.Combine(AppContext.BaseDirectory, "Fonts", "Carlito-" + face.Name + ".ttf"), face.Weight);
 
 var chart = Chart.Create()
-    .WithTitle("AOT smoke")
-    .WithSubtitle("Static report output")
-    .WithSize(420, 240)
-    .WithTheme(VisualTheme.Graphite())
-    .WithXAxis("Run")
-    .WithYAxis("Value")
+    .Title("AOT smoke")
+    .Subtitle("Static report output")
+    .Size(420, 240)
+    .Theme(VisualTheme.Graphite())
+    .XAxis(x => x.Title("Run"))
+    .YAxis(y => y.Title("Value"))
     .AddSmoothLine("Values", new[] { new ChartPoint(1, 2), new ChartPoint(2, 5), new ChartPoint(3, 4) })
     .AddBar("Warnings", new[] { new ChartPoint(1, 1), new ChartPoint(2, 2), new ChartPoint(3, 1) }, ChartColor.FromRgb(249, 115, 22));
 
@@ -34,11 +34,11 @@ AssertContains(chart.ToHtmlPage(), "<html", "HTML page render failed.");
 AssertPng(chart.ToPng(), "PNG render failed.");
 
 var origin = new DateTime(2026, 1, 28).ToOADate();
-var sized = Chart.Create().WithSize(420, 280).WithXAxisScale(ChartScaleKind.Time)
+var sized = Chart.Create().Size(420, 280).XAxis(x => x.Scale(ChartScaleKind.Time))
     .AddSeries(ChartSeries.CreateBubble(new ChartSeriesId("requests"), "Requests", new[] {
         new ChartBubble(origin, 2, 4), new ChartBubble(origin + 5, 4, 9), new ChartBubble(origin + 10, 8, 16)
-    }).ConfigureMarkers(markers => markers.Shape = ChartMarkerShape.Star))
-    .ConfigureBubble(options => options.SizeEncoding = ChartBubbleSizeEncoding.Area);
+    }).Markers(markers => markers.Shape = ChartMarkerShape.Star))
+    .Bubble(options => options.SizeEncoding = ChartBubbleSizeEncoding.Area);
 var window = sized.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(420, 280))), new ChartCartesianViewport(x: new ChartAxisWindow(origin + 2, origin + 8)));
 if (window.XProjection?.Scale != ChartScaleKind.Time) throw new InvalidOperationException("AOT native time projection missing.");
 AssertContains(window.ToSvg(), "data-cfx-size=\"9\"", "AOT native window lost Bubble source facts.");
@@ -46,45 +46,45 @@ AssertPng(window.ToPng(), "AOT area-sized marker failed.");
 
 foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
     var theme = VisualTheme.Graphite();
-    var graphite = Chart.Create().WithSize(420, 300).WithTheme(theme, mode).WithTitle("Graphite AOT")
+    var graphite = Chart.Create().Size(420, 300).Theme(theme).ThemeMode(mode).Title("Graphite AOT")
         .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness",
             new ChartGaugeValue(87, targets: new[] { new ChartGaugeTarget(90) })))
-        .ConfigureGauge(options => { options.Form = ChartGaugeForm.Linear; options.Bands.Add(new ChartGaugeBand(60, 80, ChartSeriesState.Warning)); });
+        .Gauge(options => { options.Form = ChartGaugeForm.Linear; options.Bands.Add(new ChartGaugeBand(60, 80, ChartSeriesState.Warning)); });
     AssertContains(graphite.ToSvg(), "data-cfx-role=\"gauge-value-marker\"", "Graphite gauge SVG failed.");
     AssertContains(graphite.ToSvg(), "data-cfx-role=\"gauge-target\"", "Graphite gauge target failed.");
     AssertPng(graphite.ToPng(), "Graphite gauge PNG failed.");
-    var graphiteHeatmap = Chart.Create().WithTheme(theme, mode).WithXLabels("A", "B", "C")
-        .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always).AddHeatmapRow("Counts", new[] { 0d, 4, 8 });
-    AssertContains(graphiteHeatmap.WithSvgColorVariables((mode == ThemeMode.Light
+    var graphiteHeatmap = Chart.Create().Theme(theme).ThemeMode(mode).XLabels("A", "B", "C")
+        .Heatmap(h => h.ValueTextMode(ChartHeatmapValueTextMode.Always)).AddHeatmapRow("Counts", new[] { 0d, 4, 8 });
+    AssertContains(graphiteHeatmap.SvgColorVariables((mode == ThemeMode.Light
         ? VisualDesignTokens.GraphiteLight() : VisualDesignTokens.GraphiteDark()).ToSvgColorVariables()).ToSvg(), "ramps-sequential", "Graphite token mapping failed.");
     AssertPng(graphiteHeatmap.ToPng(), "Graphite heatmap PNG failed.");
 }
 
 var grid = ChartGrid.Create()
-    .WithTitle("AOT grid")
-    .WithPanelSize(260, 180)
+    .Title("AOT grid")
+    .PanelSize(260, 180)
     .Add(chart)
-    .Add(Chart.Create().WithSize(260, 180).WithXLabels("Ready", "Risk").AddDonut("Share", new[] { new ChartPoint(1, 72), new ChartPoint(2, 28) }));
+    .Add(Chart.Create().Size(260, 180).XLabels("Ready", "Risk").AddDonut("Share", new[] { new ChartPoint(1, 72), new ChartPoint(2, 28) }));
 var gridSvg = grid.ToSvg("aot-grid");
 AssertContains(gridSvg, "data-cfx-role=\"panel\"", "Grid SVG render failed.");
 AssertContains(gridSvg, "data-cfx-source-id=\"panel-1\"", "Grid SVG lost its second prepared panel.");
 AssertPng(grid.ToPng(), "Grid PNG render failed.");
 
 var metric = MetricCard.Create()
-    .WithMetric("Coverage", 0.982, "P1")
-    .WithIcon(Icons.Lightning)
-    .WithTrend("+2.4 pp")
-    .WithStatus(Tone.Success)
-    .WithTheme(VisualTheme.Graphite())
-    .WithSize(320, 170);
+    .Metric("Coverage", 0.982, "P1")
+    .Icon(Icons.Lightning)
+    .Trend("+2.4 pp")
+    .Status(Tone.Success)
+    .Theme(VisualTheme.Graphite())
+    .Size(320, 170);
 AssertContains(metric.ToSvg("aot-metric"), "data-cfx-role=\"metric-label\"", "Metric card SVG render failed.");
 AssertPng(metric.ToPng(), "Metric card PNG render failed.");
 
 var topology = TopologyChart.Create()
-    .WithId("aot-topology")
-    .WithTitle("AOT topology")
-    .WithViewport(460, 280, 24)
-    .WithLegend(TopologyLegend.Default().AddNodeKind("Service", TopologyNodeKind.Service, symbol: "S"))
+    .Id("aot-topology")
+    .Title("AOT topology")
+    .Viewport(new TopologyViewport(460, 280, 24))
+    .Legend(TopologyLegend.Default().AddNodeKind("Service", TopologyNodeKind.Service, symbol: "S"))
     .AddNode("api", "API", 80, 120, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, symbol: "API")
     .AddNode("db", "DB", 280, 120, TopologyNodeKind.Database, TopologyHealthStatus.Warning, symbol: "DB")
     .AddEdge("api-db", "api", "db", "12 ms", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning);

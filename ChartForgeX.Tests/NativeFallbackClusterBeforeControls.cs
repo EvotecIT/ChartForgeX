@@ -39,11 +39,11 @@ public sealed class NativeFallbackClusterBeforeControls : IDisposable {
     internal static Chart Model(bool donut, bool fallback, double value) {
         var series = new ChartSeries(new ChartSeriesId("parts"), "H", donut ? ChartSeriesKind.Donut : ChartSeriesKind.Pie,
             new[] { new ChartPoint(1, value), new ChartPoint(2, 25), new ChartPoint(3, 10) })
-            .WithObservationIds(new[] { new ChartObservationId("primary"), new ChartObservationId("second"), new ChartObservationId("third") });
-        var chart = Chart.Create().WithSize(760, 420).WithFontFamily(Primary + ", " + Fallback).WithLegend(false).WithDataLabels(true)
-            .WithDonutCenterLabel(false).WithPieSliceLabelContent(ChartPieSliceLabelContent.Label).WithDataLabelPlacement(ChartDataLabelPlacement.Inside)
-            .WithXLabels(fallback ? "H" + char.ConvertFromUtf32(OpenTypeTestFonts.PrivateUseCharacter) : "HH", "OH", "HO").AddSeries(series);
-        chart.Options.MaximumPieSlices = 8; return chart;
+            .ObservationIds(new[] { new ChartObservationId("primary"), new ChartObservationId("second"), new ChartObservationId("third") });
+        var chart = Chart.Create().Size(760, 420).FontFamily(Primary + ", " + Fallback).Legend(false).DataLabels(true)
+            .Pie(p => p.ShowCenterLabel(false).SliceLabelContent(ChartPieSliceLabelContent.Label)).DataLabels(d => d.Placement(ChartDataLabelPlacement.Inside))
+            .XLabels(fallback ? "H" + char.ConvertFromUtf32(OpenTypeTestFonts.PrivateUseCharacter) : "HH", "OH", "HO").AddSeries(series);
+        chart.Options.Pie.MaxSlices = 8; return chart;
     }
     public void Dispose() { FontRegistry.Clear(); _ = BrowserProofFonts.Family; }
 }

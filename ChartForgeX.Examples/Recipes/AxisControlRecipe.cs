@@ -12,34 +12,34 @@ public static class AxisControlRecipe {
         if (option == "axis-stacked") return Climate();
         // Twenty-four hourly p95 latency readings against an 80 ms objective.
         var hours = Enumerable.Range(0, 25).ToArray();
-        var chart = Chart.Create().WithXAxis("Hour").WithYAxis("p95 latency (ms)").WithXAxisBounds(0, 24)
+        var chart = Chart.Create().XAxis(x => x.Title("Hour")).YAxis(y => y.Title("p95 latency (ms)")).XAxis(x => x.Bounds(0, 24))
             .AddLine("API", hours.Select(hour => new ChartPoint(hour, Math.Round(44 + 22 * Math.Sin((hour - 6) / 24d * 2 * Math.PI) + hour % 5 * 2.5))).ToArray())
             .AddLine("Portal", hours.Select(hour => new ChartPoint(hour, Math.Round(31 + 15 * Math.Sin((hour - 9) / 24d * 2 * Math.PI) + hour % 3 * 3))).ToArray());
         switch (option) {
             case "axis-step":
                 // Every six hours across, and every 15 ms up: the automatic value domain ends on the next multiple of 15.
-                chart.ConfigureXAxis(axis => axis.WithTickStep(6)).ConfigureYAxis(axis => axis.WithTickStep(15));
+                chart.XAxis(axis => axis.TickStep(6)).YAxis(axis => axis.TickStep(15));
                 break;
             case "axis-values":
                 // Shift changes across, and the latency budget's own thresholds up. The automatic value range starts at the zero
                 // baseline and ends on the nearest authored value above the data, 80.
-                chart.ConfigureXAxis(axis => axis.WithTickValues(0, 7, 15, 23))
-                    .ConfigureYAxis(axis => axis.WithTickValues(20, 50, 80));
+                chart.XAxis(axis => axis.TickValues(0, 7, 15, 23))
+                    .YAxis(axis => axis.TickValues(20, 50, 80));
                 break;
             case "axis-spacing":
                 // Ticks at most 45 drawing units apart across, and at least 90 apart up.
-                chart.ConfigureXAxis(axis => axis.WithTickSpacing(null, 45)).ConfigureYAxis(axis => axis.WithTickSpacing(90, null));
+                chart.XAxis(axis => axis.TickSpacing(null, 45)).YAxis(axis => axis.TickSpacing(90, null));
                 break;
             case "axis-minor":
                 // Four minor lines per 20 ms interval up; one per three-hour interval across, with the vertical grid shown.
-                chart.ConfigureYAxis(axis => axis.WithTickStep(20).WithMinorTicks(4))
-                    .ConfigureXAxis(axis => axis.WithTickStep(3).WithMinorTicks(2).ConfigureGrid(grid => grid.WithLines(true)));
+                chart.YAxis(axis => axis.TickStep(20).MinorTickCount(4))
+                    .XAxis(axis => axis.TickStep(3).MinorTickCount(2).Grid(grid => grid.ShowLines(true)));
                 break;
             case "axis-grid":
                 // Dashed teal value lines over neutral alternating bands; solid, faint hour lines across.
                 var teal = ChartColor.FromHex("#2E8B8B");
-                chart.ConfigureYAxis(axis => axis.WithTickStep(20).ConfigureGrid(grid => grid.WithColor(teal).WithOpacity(.55).WithDash(5, 4).WithBands()))
-                    .ConfigureXAxis(axis => axis.WithTickStep(4).ConfigureGrid(grid => grid.WithLines(true).WithOpacity(.25).WithStrokeWidth(.75)));
+                chart.YAxis(axis => axis.TickStep(20).Grid(grid => grid.Color(teal).Opacity(.55).Dash(5, 4).ShowBands()))
+                    .XAxis(axis => axis.TickStep(4).Grid(grid => grid.ShowLines(true).Opacity(.25).StrokeWidth(.75)));
                 break;
         }
         return chart;
@@ -49,18 +49,18 @@ public static class AxisControlRecipe {
     private static Chart Weekly() {
         var start = new DateTime(2026, 8, 3, 0, 0, 0, DateTimeKind.Utc);
         var days = Enumerable.Range(0, 90).Select(day => new ChartPoint(start.AddDays(day).ToOADate(), 12 + day % 7 * 3 + Math.Round(8 * Math.Sin(day / 9d)))).ToArray();
-        return Chart.Create().WithYAxis("Deployments").AddLine("Deployments", days)
-            .ConfigureXAxis(axis => axis.WithTimeScale().WithTickStep(new ChartTimeTickInterval(ChartTimeTickUnit.Week, 2))
-                .WithMinorTicks(1).ConfigureGrid(grid => grid.WithLines(true).WithOpacity(.8)));
+        return Chart.Create().YAxis(y => y.Title("Deployments")).AddLine("Deployments", days)
+            .XAxis(axis => axis.TimeScale().TickStep(new ChartTimeTickInterval(ChartTimeTickUnit.Week, 2))
+                .MinorTickCount(1).Grid(grid => grid.ShowLines(true).Opacity(.8)));
     }
 
     // Payload sizes across five orders of magnitude on a logarithmic axis, marked on every second power of ten.
     // The automatic range ends on the stepped powers around the data: 0.01 and 1M.
     private static Chart Payloads() {
         var sizes = new[] { 0.8, 3.5, 12, 48, 260, 900, 4_100, 18_000, 72_000 };
-        return Chart.Create().WithXAxis("Request").WithYAxis("Payload (KB)")
+        return Chart.Create().XAxis(x => x.Title("Request")).YAxis(y => y.Title("Payload (KB)"))
             .AddLine("Payload", sizes.Select((size, index) => new ChartPoint(index + 1, size)).ToArray())
-            .ConfigureYAxis(axis => axis.WithLogarithmicScale().WithTickStep(2));
+            .YAxis(axis => axis.LogarithmicScale().TickStep(2));
     }
 
     // Two days of hourly data-hall readings. IT load reads on the left; supply-air temperature on the secondary axis and
@@ -68,14 +68,14 @@ public static class AxisControlRecipe {
     private static Chart Climate() {
         var hours = Enumerable.Range(0, 49).ToArray();
         double Daily(int hour, double phase) => Math.Sin((hour - phase) / 24d * 2 * Math.PI);
-        var chart = Chart.Create().WithXAxis("Hour").WithYAxis("IT load (kW)").WithSecondaryYAxis("Supply air (°C)").WithXAxisBounds(0, 48)
-            .ConfigureXAxis(axis => axis.WithTickStep(6))
+        var chart = Chart.Create().XAxis(x => x.Title("Hour")).YAxis(y => y.Title("IT load (kW)")).SecondaryYAxis(s => s.Title("Supply air (°C)")).XAxis(x => x.Bounds(0, 48))
+            .XAxis(axis => axis.TickStep(6))
             .AddArea("IT load", hours.Select(hour => new ChartPoint(hour, Math.Round(300 + 70 * Daily(hour, 8) + hour % 4 * 6))).ToArray())
             .AddLine("Supply air", hours.Select(hour => new ChartPoint(hour, Math.Round(21.5 + 2.5 * Daily(hour, 10) + hour % 3 * .4, 1))).ToArray());
-        chart.Series[1].UseSecondaryValueAxis();
-        var humidity = chart.AddValueAxis(ChartAxisPlacement.End, "Humidity (%)", axis => axis.WithBounds(30, 70).WithTickStep(10));
+        chart.Series[1].SecondaryAxis();
+        var humidity = chart.AddValueAxis(ChartAxisPlacement.End, "Humidity (%)", axis => axis.Bounds(30, 70).TickStep(10));
         chart.AddLine("Humidity", hours.Select(hour => new ChartPoint(hour, Math.Round(48 - 9 * Daily(hour, 12) + hour % 5, 1))).ToArray());
-        chart.Series[2].UseValueAxis(humidity);
+        chart.Series[2].ValueAxis(humidity);
         return chart;
     }
 }

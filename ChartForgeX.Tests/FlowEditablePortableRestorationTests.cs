@@ -64,27 +64,27 @@ public sealed class FlowEditablePortableRestorationTests : IDisposable {
     [Theory] [InlineData(false)] [InlineData(true)]
     public void ExistingWrapperAccessibilityFactsStayDetachedAndFollowTheCurrentTopologyEditSemantics(bool decorative) {
         var flow=Source();var ordinary=flow.ToVisualArtifact();var ordinaryFacts=ordinary.ToInterchangeEnvelope();Capture("flow-accessibility-ordinary",ordinary);
-        var artifact=flow.ToVisualArtifact();artifact.Accessibility.WithTextAlternative("Caller accessible name","Caller long description","pl-PL");artifact.Accessibility.IsDecorative=decorative;
+        var artifact=flow.ToVisualArtifact();artifact.Accessibility.TextAlternative("Caller accessible name","Caller long description","pl-PL");artifact.Accessibility.IsDecorative=decorative;
         var saved=artifact.ToInterchangeEnvelope();var json=saved.ToJson();Capture("flow-accessibility-wrapper-"+decorative,artifact);
         var restored=VisualArtifactInterchangeEnvelope.FromJson(json).ToFlowArtifact();var after=restored.ToVisualArtifact();Capture("flow-accessibility-restored-"+decorative,after);var facts=after.ToInterchangeEnvelope();
         Assert.Equal("Caller accessible name",facts.AccessibleName);Assert.Equal("Caller long description",facts.AccessibleDescription);Assert.Equal("pl-PL",facts.Language);Assert.Equal(decorative,facts.IsDecorative);
         Assert.Equal(artifact.ToPng(),after.ToPng());Assert.NotEqual(saved.AccessibleName,ordinaryFacts.AccessibleName);Assert.Null(ordinaryFacts.Language);Assert.False(ordinaryFacts.IsDecorative);
         saved.AccessibleName="Changed detached envelope";restored.Title="Edited source H";var edited=restored.ToVisualArtifact();Capture("flow-accessibility-edited-"+decorative,edited);var editedFacts=edited.ToInterchangeEnvelope();
         Assert.Equal("Edited source H",editedFacts.Title);Assert.Equal("Caller accessible name",editedFacts.AccessibleName);Assert.Equal("Caller long description",editedFacts.AccessibleDescription);Assert.Equal("pl-PL",editedFacts.Language);Assert.Equal(decorative,editedFacts.IsDecorative);
-        after.Accessibility.WithTextAlternative("Later wrapper name","Later wrapper description","en-GB");after.Accessibility.IsDecorative=!decorative;
+        after.Accessibility.TextAlternative("Later wrapper name","Later wrapper description","en-GB");after.Accessibility.IsDecorative=!decorative;
         Capture("flow-accessibility-later-wrapper-"+decorative,after);var wrapperFacts=after.ToInterchangeEnvelope();
         Assert.Equal("Later wrapper name",wrapperFacts.AccessibleName);Assert.Equal("Later wrapper description",wrapperFacts.AccessibleDescription);Assert.Equal("en-GB",wrapperFacts.Language);Assert.Equal(!decorative,wrapperFacts.IsDecorative);
         var independent=restored.ToVisualArtifact().ToInterchangeEnvelope();Assert.Equal("Caller accessible name",independent.AccessibleName);Assert.Equal(decorative,independent.IsDecorative);
         Assert.Equal(json,VisualArtifactInterchangeEnvelope.FromJson(json).ToJson());
     }
     private static FlowArtifact Source() {
-        var flow=FlowArtifact.Create("flow-restoration").WithTitle("Source H").WithSubtitle("Source O").WithSize(900,620)
+        var flow=FlowArtifact.Create("flow-restoration").Title("Source H").Subtitle("Source O").Width(900).Height(620).Padding(24)
             .AddLane("lane_a","H",Tone.Success,"#287A5F").AddLane("lane_b","O",Tone.Warning,"#B58422")
             .AddStep("start","H",FlowArtifactStepKind.Start,"lane_a").AddStep("process","O",FlowArtifactStepKind.Process,"lane_a").AddStep("end","H",FlowArtifactStepKind.End,"lane_b")
             .AddConnector("start","process","H",FlowArtifactConnectorKind.Data,VisualLinkDirection.Forward,Tone.Success,"#245C86")
             .AddConnector("process","end","O",FlowArtifactConnectorKind.Flow,VisualLinkDirection.Bidirectional);
-        flow.ConfigureStep("start",step=>{step.Width=160;step.Height=74;step.FitLabelToContent=false;step.Metadata["step-key"]="step-value";});
-        flow.ConfigureStep("process",step=>{step.Width=200;step.Height=100;step.Subtitle="H";});flow.ConfigureConnector(0,edge=>{edge.Id="source_edge";edge.Metadata["edge-key"]="edge-value";});
+        flow.UpdateStep("start",step=>{step.Width=160;step.Height=74;step.FitLabelToContent=false;step.Metadata["step-key"]="step-value";});
+        flow.UpdateStep("process",step=>{step.Width=200;step.Height=100;step.Subtitle="H";});flow.UpdateConnector(0,edge=>{edge.Id="source_edge";edge.Metadata["edge-key"]="edge-value";});
         flow.Metadata["flow-key"]="flow-value";flow.ExportFormats=VisualArtifactExportFormat.Svg|VisualArtifactExportFormat.Png|VisualArtifactExportFormat.Json;return flow;
     }
     private static void Capture(string name,VisualArtifact value){

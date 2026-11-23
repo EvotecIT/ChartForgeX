@@ -55,13 +55,13 @@ public sealed class TopologyLabelBackgroundPaintTests {
     }
 
     private static TopologyChart Source(bool dark) {
-        var chart = TopologyChart.Create().WithId("native-label-background").WithTitle("").WithViewport(760, 400, 24).WithLegend(null)
-            .WithLayout(TopologyLayoutMode.Manual).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light);
+        var chart = TopologyChart.Create().Id("native-label-background").Title("").Viewport(new TopologyViewport(760, 400, 24)).Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.Manual).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light);
         chart.AddNode("a", "Plan", 60, 100, width: 140, height: 80); chart.AddNode("b", "Deliver", 500, 100, width: 140, height: 80);
         foreach (var node in chart.Nodes) { node.Kind = TopologyNodeKind.Generic; node.Shape = TopologyNodeShape.Rectangle; node.ShowStatusBadge = false; }
         chart.AddEdge("handoff", "a", "b", "Transfer", direction: VisualLinkDirection.Forward, routing: TopologyEdgeRouting.Straight);
         var edge = chart.Edges[0]; edge.SourceLabel = "Ready"; edge.TargetLabel = "Saved"; edge.Color = "#E14726"; edge.LabelColor = "#23196B";
-        chart.WithRenderOptions(new TopologyRenderOptions { IncludeLegend = false }); return chart;
+        chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeLegend = false }); return chart;
     }
     private static XElement[] Surfaces(string svg) => XDocument.Parse(svg).Descendants().Where(item =>
         (string?)item.Attribute("data-cfx-role") is "topology-edge-label-surface" or "topology-endpoint-label-surface").ToArray();

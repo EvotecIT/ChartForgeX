@@ -3,12 +3,14 @@ using System;
 using System.Collections.Generic;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Topology;
 
 /// <summary>
 /// Represents a renderer-independent topology diagram.
 /// </summary>
+[Fluent]
 public sealed partial class TopologyChart {
     private TopologyLayoutMode _layoutMode = TopologyLayoutMode.Manual;
     private TopologyLayoutDirection _layoutDirection = TopologyLayoutDirection.TopToBottom;
@@ -20,8 +22,17 @@ public sealed partial class TopologyChart {
     /// <returns>A new topology chart.</returns>
     public static TopologyChart Create() => new();
 
-    /// <summary>Gets or sets a stable chart identifier.</summary>
-    public string? Id { get; set; }
+    /// <summary>Gets or sets a stable chart identifier. Ids are trimmed and must not be empty.</summary>
+    public string? Id {
+        get => _id;
+        set {
+            if (value == null) { _id = null; return; }
+            var trimmed = value.Trim();
+            if (trimmed.Length == 0) throw new ArgumentException("Topology chart ids must not be empty.", nameof(value));
+            _id = trimmed;
+        }
+    }
+    private string? _id;
 
     /// <summary>Gets or sets the chart title.</summary>
     public string? Title { get; set; }
@@ -95,6 +106,19 @@ public sealed class TopologyViewport {
     private double _height = 700;
     private double _padding = 24;
 
+    /// <summary>Creates a viewport with the default 1200 by 700 size and 24 pixel padding.</summary>
+    public TopologyViewport() { }
+
+    /// <summary>Creates a viewport with the given size and padding.</summary>
+    /// <param name="width">The viewport width; must be positive.</param>
+    /// <param name="height">The viewport height; must be positive.</param>
+    /// <param name="padding">The viewport padding; must be zero or greater.</param>
+    public TopologyViewport(double width, double height, double padding = 24) {
+        Width = width;
+        Height = height;
+        Padding = padding;
+    }
+
     /// <summary>Gets or sets the viewport width.</summary>
     public double Width {
         get => _width;
@@ -126,6 +150,7 @@ public sealed class TopologyViewport {
 /// <summary>
 /// Represents a logical topology region or cluster.
 /// </summary>
+[Fluent]
 public sealed partial class TopologyGroup {
     private string _id = string.Empty;
     private ChartForgeX.Typography.TextContent _labelContent = ChartForgeX.Typography.TextContent.Plain(string.Empty);
@@ -258,6 +283,7 @@ public sealed partial class TopologyGroup {
 /// <summary>
 /// Represents a topology node.
 /// </summary>
+[Fluent]
 public sealed partial class TopologyNode {
     private string _id = string.Empty;
     private ChartForgeX.Typography.TextContent _labelContent = ChartForgeX.Typography.TextContent.Plain(string.Empty);
@@ -435,6 +461,7 @@ public sealed partial class TopologyNode {
 /// <summary>
 /// Represents a topology edge between two nodes.
 /// </summary>
+[Fluent]
 public sealed partial class TopologyEdge {
     private string _id = string.Empty;
     private string _sourceNodeId = string.Empty;
@@ -541,16 +568,34 @@ public sealed partial class TopologyEdge {
     }
 
     /// <summary>Gets or sets an optional named port id on the source node.</summary>
-    public string? SourcePortId { get; set; }
+    /// <remarks>Blank ids are stored as null; others are trimmed.</remarks>
+    public string? SourcePortId { get => _sourcePortId; set => _sourcePortId = string.IsNullOrWhiteSpace(value) ? null : value!.Trim(); }
+    private string? _sourcePortId;
 
     /// <summary>Gets or sets an optional named port id on the target node.</summary>
-    public string? TargetPortId { get; set; }
+    /// <remarks>Blank ids are stored as null; others are trimmed.</remarks>
+    public string? TargetPortId { get => _targetPortId; set => _targetPortId = string.IsNullOrWhiteSpace(value) ? null : value!.Trim(); }
+    private string? _targetPortId;
 
     /// <summary>Gets or sets an optional source endpoint marker. Null derives the marker from <see cref="Direction"/>.</summary>
-    public TopologyMarkerKind? SourceMarker { get; set; }
+    public TopologyMarkerKind? SourceMarker {
+        get => _sourceMarker;
+        set {
+            if (value.HasValue) TopologyModelGuards.EnumDefined(value.Value, nameof(value));
+            _sourceMarker = value;
+        }
+    }
+    private TopologyMarkerKind? _sourceMarker;
 
     /// <summary>Gets or sets an optional target endpoint marker. Null derives the marker from <see cref="Direction"/>.</summary>
-    public TopologyMarkerKind? TargetMarker { get; set; }
+    public TopologyMarkerKind? TargetMarker {
+        get => _targetMarker;
+        set {
+            if (value.HasValue) TopologyModelGuards.EnumDefined(value.Value, nameof(value));
+            _targetMarker = value;
+        }
+    }
+    private TopologyMarkerKind? _targetMarker;
 
     /// <summary>Gets or sets an optional edge-specific stroke width in pixels.</summary>
     public double? StrokeWidth {
@@ -697,104 +742,4 @@ public sealed partial class TopologyEdge {
 
     /// <summary>Gets arbitrary edge metadata for host adapters.</summary>
     public Dictionary<string, string> Metadata { get; } = new();
-}
-
-/// <summary>Defines one named attachment point on a topology node boundary.</summary>
-public sealed class TopologyNodePort {
-    private string _id = string.Empty;
-    private TopologyEdgePort _side = TopologyEdgePort.Right;
-    private double _offset = 0.5;
-
-    /// <summary>Gets or sets the node-local stable port identifier.</summary>
-    public string Id { get => _id; set => _id = value ?? throw new ArgumentNullException(nameof(value)); }
-
-    /// <summary>Gets or sets the node boundary side. Auto is not valid for a named port.</summary>
-    public TopologyEdgePort Side {
-        get => _side;
-        set {
-            TopologyModelGuards.EnumDefined(value, nameof(value));
-            if (value == TopologyEdgePort.Auto) throw new ArgumentOutOfRangeException(nameof(value), value, "Named ports require an explicit node side.");
-            _side = value;
-        }
-    }
-
-    /// <summary>Gets or sets the normalized position along the selected side from zero to one.</summary>
-    public double Offset {
-        get => _offset;
-        set {
-            TopologyModelGuards.Finite(value, nameof(value));
-            if (value < 0 || value > 1) throw new ArgumentOutOfRangeException(nameof(value), value, "Port offset must be between zero and one.");
-            _offset = value;
-        }
-    }
-
-    /// <summary>Gets or sets an optional visible or host-facing label.</summary>
-    public string? Label { get; set; }
-
-    /// <summary>Gets arbitrary metadata for host adapters.</summary>
-    public Dictionary<string, string> Metadata { get; } = new();
-}
-
-/// <summary>Defines a compact typed detail row shown inside a card-like topology node.</summary>
-public sealed partial class TopologyNodeDetail {
-    private string _label = string.Empty;
-    private ChartForgeX.Typography.TextContent _valueContent = ChartForgeX.Typography.TextContent.Plain(string.Empty);
-    private ChartForgeX.Typography.TextContent? _content;
-
-    /// <summary>Gets or sets full-width text instead of the label/value columns.</summary>
-    public string? Text { get => _content?.PlainText; set => _content = value == null ? null : ChartForgeX.Typography.TextContent.Plain(value); }
-
-    /// <summary>Gets or sets the row label.</summary>
-    public string Label { get => _label; set => _label = value ?? throw new ArgumentNullException(nameof(value)); }
-
-    /// <summary>Gets or sets the row value.</summary>
-    public string Value { get => _valueContent.PlainText; set => _valueContent = ChartForgeX.Typography.TextContent.Plain(value ?? throw new ArgumentNullException(nameof(value))); }
-
-    /// <summary>Gets or sets an optional icon id retained for capable hosts and future icon-aware renderers.</summary>
-    public string? IconId { get; set; }
-
-    /// <summary>Gets or sets an optional semantic status.</summary>
-    public TopologyHealthStatus? Status { get; set; }
-
-    /// <summary>Gets or sets an optional row accent color.</summary>
-    public string? Color { get; set; }
-
-    /// <summary>Gets arbitrary metadata for host adapters.</summary>
-    public Dictionary<string, string> Metadata { get; } = new();
-}
-
-internal static class TopologyModelGuards {
-    public static void EnumDefined<TEnum>(TEnum value, string parameterName) where TEnum : struct, Enum {
-        if (typeof(TEnum) == typeof(TopologyEdgeLayoutInference)) {
-            var mask = TopologyEdgeLayoutInference.SourcePort | TopologyEdgeLayoutInference.TargetPort | TopologyEdgeLayoutInference.RouteLane;
-            var typed = (TopologyEdgeLayoutInference)(object)value;
-            if ((typed & ~mask) == 0) return;
-        }
-
-        if (!Enum.IsDefined(typeof(TEnum), value)) throw new ArgumentOutOfRangeException(parameterName, value, "Unknown " + typeof(TEnum).Name + " value.");
-    }
-
-    public static void Finite(double value, string parameterName) {
-        if (double.IsNaN(value) || double.IsInfinity(value)) throw new ArgumentOutOfRangeException(parameterName, value, "Value must be finite.");
-    }
-
-    public static void PositiveFinite(double value, string parameterName) {
-        Finite(value, parameterName);
-        if (value <= 0) throw new ArgumentOutOfRangeException(parameterName, value, "Value must be greater than zero.");
-    }
-
-    public static void NonNegativeFinite(double value, string parameterName) {
-        Finite(value, parameterName);
-        if (value < 0) throw new ArgumentOutOfRangeException(parameterName, value, "Value must be greater than or equal to zero.");
-    }
-
-    public static void Longitude(double value, string parameterName) {
-        Finite(value, parameterName);
-        if (value < -180 || value > 180) throw new ArgumentOutOfRangeException(parameterName, value, "Longitude must be between -180 and 180 degrees.");
-    }
-
-    public static void Latitude(double value, string parameterName) {
-        Finite(value, parameterName);
-        if (value < -90 || value > 90) throw new ArgumentOutOfRangeException(parameterName, value, "Latitude must be between -90 and 90 degrees.");
-    }
 }

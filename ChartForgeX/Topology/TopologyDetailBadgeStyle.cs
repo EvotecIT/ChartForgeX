@@ -1,11 +1,13 @@
 using System;
 using ChartForgeX.Primitives;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Topology;
 
 /// <summary>Optional native surface styling for an existing topology detail row.</summary>
 /// <remarks>The detail's text, identity, status and TextStyle remain the canonical facts.
 /// Null BadgeStyle retains ordinary detail layout and paint. Card, CompactCard and Pill bodies support these surfaces; other visible display roles reject them explicitly. All lengths use topology coordinates.</remarks>
+[Fluent(Copy = nameof(Clone))]
 public sealed class TopologyDetailBadgeStyle {
     private double _strokeWidth = 1, _cornerRadius = 4, _horizontalPadding = 10, _minimumHeight = 26, _gap = 4;
     /// <summary>Gets or sets the fill. Null paints no fill.</summary>

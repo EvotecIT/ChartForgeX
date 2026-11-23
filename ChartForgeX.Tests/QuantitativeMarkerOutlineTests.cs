@@ -50,7 +50,7 @@ public sealed class QuantitativeMarkerOutlineTests {
     [InlineData(ChartSeriesKind.Bubble, false)]
     [InlineData(ChartSeriesKind.Bubble, true)]
     public void SurfaceMidpointAndMissingBorderKeepTheirFillsAndGainVisibleNativeOutlines(ChartSeriesKind kind, bool dark) {
-        var chart = Create(kind, dark).WithLegend(false);
+        var chart = Create(kind, dark).Legend(false);
         var colors = chart.Options.Theme.Resolve(chart.Options.ThemeMode);
         var series = chart.Series[0];
         if (kind == ChartSeriesKind.Bubble) {
@@ -60,8 +60,8 @@ public sealed class QuantitativeMarkerOutlineTests {
             series.Points[0] = series.Points[0].WithColorValue(0);
             series.Points[1] = series.Points[1].WithColorValue(null);
         }
-        series.WithColorScale(ChartColorScale.Diverging(Low, colors.Surface, High, 0).WithValueRange(-1, 1).WithNoDataColor(colors.Border))
-            .WithObservationId(0, new ChartObservationId("surface-midpoint")).WithObservationId(1, new ChartObservationId("missing-reading"));
+        series.ColorScale(ChartColorScale.Diverging(Low, colors.Surface, High, 0).WithValueRange(-1, 1).WithNoDataColor(colors.Border))
+            .ObservationId(0, new ChartObservationId("surface-midpoint")).ObservationId(1, new ChartObservationId("missing-reading"));
         chart.Options.ShowPlotBackground = true;
         var prepared = Prepare(chart); var document = XDocument.Parse(prepared.ToSvg());
         var points = Role(document, "point"); var marks = Marks(prepared, kind);
@@ -86,14 +86,14 @@ public sealed class QuantitativeMarkerOutlineTests {
     public void MarkerOverridesKeepExactStrokeAlphaDisableAndWidthPrecedence(ChartSeriesKind kind) {
         var authored = ChartColor.FromRgba(221, 37, 91, 113);
         foreach (var mode in new[] { "authored", "disabled", "positive", "series-width" }) {
-            var chart = Create(kind, false).WithLegend(false);
+            var chart = Create(kind, false).Legend(false);
             var series = chart.Series[0];
-            series.WithPointColor(0, ChartColor.FromHex("#23A17C"));
+            series.PointColor(0, ChartColor.FromHex("#23A17C"));
             series.Markers.Fill = ChartColor.FromHex("#D5AA2B");
             if (mode == "authored") series.Markers.Stroke = authored;
             if (mode == "disabled") { series.Markers.Stroke = authored; series.Markers.StrokeWidth = 0; }
             if (mode == "positive") series.Markers.StrokeWidth = 4;
-            if (mode == "series-width") series.WithStrokeWidth(6);
+            if (mode == "series-width") series.StrokeWidth(6);
             var expectedStroke = mode == "authored" ? authored : chart.Options.Theme.Resolve(chart.Options.ThemeMode).Foreground;
             var expectedWidth = mode == "disabled" ? 0 : mode == "positive" ? 4
                 : kind == ChartSeriesKind.Bubble ? mode == "series-width" ? 6 : 2 : 1;
@@ -122,7 +122,7 @@ public sealed class QuantitativeMarkerOutlineTests {
     [InlineData(ChartSeriesKind.Bubble, true)]
     public void SourceAndPointLegendsUseTheSameNeutralOutlineAndMarkerWidth(ChartSeriesKind kind, bool points) {
         var chart = Create(kind, false);
-        if (points) chart.WithPointLegend();
+        if (points) chart.Legend(l => l.ShowPoints());
         chart.Series[0].Markers.StrokeWidth = 3;
         var prepared = Prepare(chart);
         var swatches = prepared.Scene.Nodes.OfType<VisualSceneEllipse>().Where(mark => mark.Role == "legend-swatch").ToArray();
@@ -142,9 +142,9 @@ public sealed class QuantitativeMarkerOutlineTests {
     [InlineData(ChartSeriesKind.Bubble, false)]
     [InlineData(ChartSeriesKind.Bubble, true)]
     public void AutomaticPaintBoundsAndPointRegionsIncludeTheResolvedOutline(ChartSeriesKind kind, bool authoredWidth) {
-        var chart = Create(kind, false).WithLegend(false).WithAxes();
-        chart.Options.XAxis.Minimum = chart.Options.XAxis.Maximum = null;
-        chart.Options.YAxis.Minimum = chart.Options.YAxis.Maximum = null;
+        var chart = Create(kind, false).Legend(false).Axes();
+        chart.Options.XAxis.Min = chart.Options.XAxis.Max = null;
+        chart.Options.YAxis.Min = chart.Options.YAxis.Max = null;
         if (authoredWidth) chart.Series[0].Markers.StrokeWidth = 6;
         var prepared = Prepare(chart);
         var horizontal = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), line => line.Role == "axis-x");
@@ -171,8 +171,8 @@ public sealed class QuantitativeMarkerOutlineTests {
             builder.Light.Foreground = shared; builder.Light.Surface = shared;
         });
         Chart Panel() {
-            var panel = Create(kind, false).WithTheme(theme).WithLegend(false);
-            panel.Series[0].WithColorScale(ChartColorScale.Sequential(shared, shared).WithValueRange(0, 20));
+            var panel = Create(kind, false).Theme(theme).Legend(false);
+            panel.Series[0].ColorScale(ChartColorScale.Sequential(shared, shared).WithValueRange(0, 20));
             return panel;
         }
         SvgColorVariables Variables(string prefix) => new SvgColorVariables()
@@ -186,9 +186,9 @@ public sealed class QuantitativeMarkerOutlineTests {
             Assert.Contains("var(--export-ramp,", (string?)mark.Attribute("fill"));
         });
         Assert.Equal(pixels, prepared.ToPng());
-        var grid = ChartGrid.Create().WithColumns(2).WithPanelThemes().WithPanelSize(360, 280)
-            .WithSvgColorVariables(Variables("--outer"))
-            .Add(Panel()).Add(Panel().WithSvgColorVariables(Variables("--panel")));
+        var grid = ChartGrid.Create().Columns(2).UsePanelThemes().PanelSize(360, 280)
+            .SvgColorVariables(Variables("--outer"))
+            .Add(Panel()).Add(Panel().SvgColorVariables(Variables("--panel")));
         var gridSvg = XDocument.Parse(grid.Prepare(VisualExportRequest.ForGrid(grid).Context)
             .ToSvg(new VisualSvgOptions(colorVariables: Variables("--export"))));
         var panels = Role(gridSvg, "panel");
@@ -219,20 +219,20 @@ public sealed class QuantitativeMarkerOutlineTests {
             builder.Light.Foreground = ChartColor.FromRgba(17, 31, 47, 173);
             builder.Dark.Foreground = ChartColor.FromRgba(223, 231, 241, 197);
         });
-        var chart = Chart.Create().WithSize(width, 400).WithTheme(theme, dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithHeader(false).WithLegend().WithDataLabels(false).WithAxes(false).WithGrid(false)
-            .WithXAxisBounds(0, 4).WithYAxisBounds(0, 4).ConfigureLabels(labels => labels.Color = "Temperature");
+        var chart = Chart.Create().Size(width, 400).Theme(theme).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .ShowHeader(false).Legend().DataLabels(false).Axes(false).ShowGrid(false)
+            .XAxis(x => x.Bounds(0, 4)).YAxis(y => y.Bounds(0, 4)).Labels(labels => labels.Color = "Temperature");
         chart.Options.TransparentBackground = true; chart.Options.ShowCard = false; chart.Options.ShowPlotBackground = false;
         if (kind == ChartSeriesKind.Bubble) {
             chart.AddSeries(ChartSeries.CreateBubble(new ChartSeriesId("measured"), "Samples", new[] {
                 new ChartBubble(1, 1, 4).WithColorValue(-10), new ChartBubble(3, 3, 9).WithColorValue(100) }));
-            chart.ConfigureBubble(bubble => { bubble.MinimumRadius = 18; bubble.MaximumRadius = 18; });
+            chart.Bubble(bubble => { bubble.MinimumRadius = 18; bubble.MaximumRadius = 18; });
         } else {
             chart.AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("measured"), "Samples", new[] {
                 new ChartPoint(1, 1).WithColorValue(-10), new ChartPoint(3, 3).WithColorValue(100) }));
             chart.Series[0].Markers.Radius = 18;
         }
-        chart.Series[0].WithColorScale(ChartColorScale.Sequential(Low, High).WithValueRange(0, 20));
+        chart.Series[0].ColorScale(ChartColorScale.Sequential(Low, High).WithValueRange(0, 20));
         return chart;
     }
 

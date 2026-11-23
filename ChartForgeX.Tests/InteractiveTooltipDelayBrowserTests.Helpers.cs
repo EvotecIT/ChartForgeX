@@ -10,8 +10,8 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipDelayBrowserTests {
-    private static Chart Observations(bool dark) => Chart.Create().WithSize(800, 540).WithLegend(true).WithTitle("Pointer readout pacing")
-        .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+    private static Chart Observations(bool dark) => Chart.Create().Size(800, 540).Legend(true).Title("Pointer readout pacing")
+        .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
         .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("readings"), "Reading", new[] { new ChartPoint(3, 5), new ChartPoint(7, 6) }))
         .AddScatter("Companion", new[] { new ChartPoint(3, 2), new ChartPoint(7, 4) });
 

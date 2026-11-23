@@ -20,7 +20,7 @@ public sealed partial class Chart {
     /// <summary>Adds a tile map with an optional chart-owned numeric color scale.</summary>
     public Chart AddTileHeatmap(string name, ChartTileMapDefinition definition, IEnumerable<ChartRegionMapItem> regions, ChartColorScale? scale = null, ChartSeriesId? id = null) {
         AddTileMap(name, definition, regions, id: id);
-        if (scale != null) Options.MapColorScale = scale;
+        if (scale != null) Options.Map.ColorScale = scale;
         return this;
     }
 }

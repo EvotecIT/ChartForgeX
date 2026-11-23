@@ -14,7 +14,7 @@ internal static partial class VisualMapCompiler {
         var keys = datasets.Where(data => data.ResolveKeyScale(colors) != null && data.Presentation.ShowLegend).ToArray();
         if (!context.Frame.ShowLegend || keys.Length == 0) return plot;
         var style = TickStyle(chart, context); var gap = context.Theme.Spacing / 2;
-        var right = chart.Options.MapScaleLegendPosition == ChartMapScaleLegendPosition.Right;
+        var right = chart.Options.Map.ScaleLegendPosition == ChartMapScaleLegendPosition.Right;
         var width = right ? Math.Min(plot.Width * .42, Math.Max(160, keys.Max(data => builder.MeasureText(data.Presentation.Name, style).Width) + gap * 4)) : plot.Width;
         var columns = !right && width >= 600 ? Math.Min(2, keys.Length) : 1;
         var columnGap = gap * 3;

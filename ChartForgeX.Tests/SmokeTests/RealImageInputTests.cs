@@ -20,7 +20,7 @@ internal static partial class SmokeTests {
             var width = Math.Min(360, image.Width);
             var height = Math.Max(1, (int)Math.Round(width * image.Height / (double)image.Width));
             var canvas = VisualCanvas.Create(width, height)
-                .WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+                .BackdropStyle(VisualCanvasBackdropStyle.Transparent)
                 .AddRasterImage(0, 0, width, height, image, VisualCanvasImageFit.Cover)
                 .AddKeyValueBlock(
                     VisualCanvasPlacement.At(VisualCanvasAnchor.BottomLeft, 10, 10),

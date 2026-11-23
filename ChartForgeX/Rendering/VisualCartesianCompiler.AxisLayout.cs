@@ -84,9 +84,9 @@ internal static partial class VisualCartesianCompiler {
             return null;
         }
         var labelBounds = plot;
-        var horizontalTotals = horizontal && chart.Options.ShowStackTotals && stacks.HasBarStacks
+        var horizontalTotals = horizontal && chart.Options.Bars.ShowTotals && stacks.HasBarStacks
             ? ResolveHorizontalTotals(chart, context, builder, colors, stacks) : Array.Empty<HorizontalStackTotal>();
-        var verticalTotals = !horizontal && chart.Options.ShowStackTotals && stacks.HasBarStacks
+        var verticalTotals = !horizontal && chart.Options.Bars.ShowTotals && stacks.HasBarStacks
             ? ResolveVerticalTotals(chart, context, builder, colors, stacks) : null;
         // A coarser step can introduce wider captions than the original tick set.
         // Keep the same callback cache and only enlarge measured gutters while the

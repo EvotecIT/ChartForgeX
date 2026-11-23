@@ -66,10 +66,10 @@ public sealed class CartesianViewportApiContractTests {
             .Where(node => (string?)node.Attribute("data-cfx-role") == "point").ToArray();
         Assert.Equal(new[] { "0", "5", "10" }, facts.Select(node => (string?)node.Attribute("data-cfx-x")));
         Assert.Equal(new[] { "0", "50", "100" }, facts.Select(node => (string?)node.Attribute("data-cfx-y")));
-        Assert.Equal(0, chart.Options.XAxis.Minimum);
-        Assert.Equal(10, chart.Options.XAxis.Maximum);
-        Assert.Equal(0, chart.Options.YAxis.Minimum);
-        Assert.Equal(100, chart.Options.YAxis.Maximum);
+        Assert.Equal(0, chart.Options.XAxis.Min);
+        Assert.Equal(10, chart.Options.XAxis.Max);
+        Assert.Equal(0, chart.Options.YAxis.Min);
+        Assert.Equal(100, chart.Options.YAxis.Max);
         Assert.Single(chart.Series);
         Assert.Equal(3, chart.Series[0].Points.Count);
     }
@@ -83,7 +83,7 @@ public sealed class CartesianViewportApiContractTests {
         var svg = native.ToSvg();
         var png = native.ToPng();
         var html = section.Html;
-        chart.WithXAxisBounds(-100, 100).WithYAxisBounds(-1000, 1000).WithTitle("Changed");
+        chart.XAxis(x => x.Bounds(-100, 100)).YAxis(y => y.Bounds(-1000, 1000)).Title("Changed");
         chart.Options.XAxis.Reversed = true;
         chart.Options.YAxis.Reversed = true;
         chart.AddLine("Later", new[] { new ChartPoint(-100, -1000), new ChartPoint(100, 1000) });
@@ -101,7 +101,7 @@ public sealed class CartesianViewportApiContractTests {
 
     [Fact]
     public void FullDomainNullDoesNotImposeCartesianEligibilityOnOtherChartFamilies() {
-        var chart = Chart.Create().WithHeader(false).WithLegend(false)
+        var chart = Chart.Create().ShowHeader(false).Legend(false)
             .AddPie("Categories", new[] { new ChartPoint(1, 2), new ChartPoint(3, 4) });
         var context = VisualExportRequest.ForChart(chart).Context;
         var renderer = new HtmlInteractiveChartRenderer();
@@ -116,7 +116,7 @@ public sealed class CartesianViewportApiContractTests {
     [Fact]
     public void SecondaryAxisChartsKeepIndependentPrimaryAndSecondaryPhysicalWindows() {
         var chart = Model().AddLine("Secondary", new[] { new ChartPoint(0, 1000), new ChartPoint(10, 2000) });
-        chart.Series[1].UseSecondaryValueAxis();
+        chart.Series[1].SecondaryAxis();
         var context = VisualExportRequest.ForChart(chart).Context;
         var renderer = new HtmlInteractiveChartRenderer();
         var x = new ChartCartesianViewport(x: new ChartAxisWindow(2, 8));
@@ -149,8 +149,8 @@ public sealed class CartesianViewportApiContractTests {
         var html = Assert.Throws<ArgumentOutOfRangeException>(() => new HtmlInteractiveChartRenderer().PrepareSection(chart, viewport));
         Assert.Equal(native.ParamName, html.ParamName);
         Assert.Equal(native.Message, html.Message);
-        Assert.Equal(0, chart.Options.XAxis.Minimum);
-        Assert.Equal(100, chart.Options.YAxis.Maximum);
+        Assert.Equal(0, chart.Options.XAxis.Min);
+        Assert.Equal(100, chart.Options.YAxis.Max);
     }
 
     [Fact]
@@ -160,7 +160,7 @@ public sealed class CartesianViewportApiContractTests {
         Assert.Equal("chart", Assert.Throws<ArgumentNullException>(() => new HtmlInteractiveChartRenderer().PrepareSection(null!, null)).ParamName);
     }
 
-    private static Chart Model() => Chart.Create().WithSize(640, 360).WithHeader(false).WithLegend(false)
-        .WithXAxisBounds(0, 10).WithYAxisBounds(0, 100)
+    private static Chart Model() => Chart.Create().Size(640, 360).ShowHeader(false).Legend(false)
+        .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 100))
         .AddLine("Observed", new[] { new ChartPoint(0, 0), new ChartPoint(5, 50), new ChartPoint(10, 100) });
 }

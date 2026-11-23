@@ -93,10 +93,10 @@ public sealed partial class TopologyDenseGridContainmentTests {
     }
 
     private static TopologyChart NativeGrid(TopologyLayoutDirection direction, int firstGroupCount, int width, int height) {
-        var chart = TopologyChart.Create().WithViewport(760, 570, 28).WithLayout(TopologyLayoutMode.DenseGrouped, direction);
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(760, 570, 28)).LayoutMode(TopologyLayoutMode.DenseGrouped).LayoutDirection(direction);
         for (var groupIndex = 0; groupIndex < 5; groupIndex++) {
             var id = "g" + groupIndex;
-            chart.AddAutoGroup(id, "Column " + groupIndex).WithGroupLayout(id, TopologyGroupLayoutPolicy.Grid);
+            chart.AddAutoGroup(id, "Column " + groupIndex).UpdateGroup(id, g => g.LayoutPolicy(TopologyGroupLayoutPolicy.Grid));
             chart.Groups[groupIndex].Width = width; chart.Groups[groupIndex].Height = height;
             for (var nodeIndex = 0; nodeIndex < (groupIndex == 0 ? firstGroupCount : 1); nodeIndex++)
                 chart.AddAutoNode(id + "-n" + nodeIndex, "Card " + nodeIndex, groupId: id, width: 132, height: 58);

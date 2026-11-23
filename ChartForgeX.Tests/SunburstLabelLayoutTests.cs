@@ -14,15 +14,15 @@ public sealed class SunburstLabelLayoutTests {
     [InlineData(ThemeMode.Light, 3)]
     [InlineData(ThemeMode.Dark, 3)]
     public void NarrowSectorKeepsCaptionWhenAngularEdgesRequireOuterRadialLane(ThemeMode mode, double cornerRadius) {
-        var chart = Chart.Create().WithDataLabels().AddSunburst("Teams", new[] {
+        var chart = Chart.Create().DataLabels().AddSunburst("Teams", new[] {
             new ChartHierarchyItem("root", "All"),
             new ChartHierarchyItem("before", "Before", "root", 21),
             new ChartHierarchyItem("team", "Team", "root"),
             new ChartHierarchyItem("services", "Services", "team"),
             new ChartHierarchyItem("online", "Online", "services", 8),
             new ChartHierarchyItem("after", "After", "root", 71)
-        }).ConfigureSunburst(options => options.CornerRadius = cornerRadius);
-        chart.Series[0].ConfigureDataLabelStyle(style => style.WithFontSize(12));
+        }).Sunburst(options => options.CornerRadius = cornerRadius);
+        chart.Series[0].DataLabelStyle(style => style.FontSize(12));
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(400, 400)),
             themeMode: mode, frame: new VisualFrame(showLegend: false),
             font: new FontSpec { Family = "Carlito", FilePath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf") }));
@@ -34,7 +34,7 @@ public sealed class SunburstLabelLayoutTests {
     [InlineData(ThemeMode.Light)]
     [InlineData(ThemeMode.Dark)]
     public void WideChartWithHeadingAndColorKeyKeepsCompleteInnerRingNames(ThemeMode mode) {
-        var chart = SunburstRecipe.Create("options", mode).ConfigureDataLabelStyle(style => style.WithFontSize(12));
+        var chart = SunburstRecipe.Create("options", mode).DataLabelStyle(style => style.FontSize(12));
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 440)), themeMode: mode,
             frame: new VisualFrame(V2GalleryModels.Title(ChartSeriesKind.Sunburst), "Leaf totals size sectors; measured color stays independent"),
             font: new FontSpec { Family = "Carlito", FilePath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf") });
@@ -53,8 +53,8 @@ public sealed class SunburstLabelLayoutTests {
     [InlineData(ThemeMode.Dark, 6)]
     public void BroadThreeLevelHierarchyKeepsEveryFullCaptionInsideItsOwnSegment(ThemeMode mode, double cornerRadius) {
         var chart = Teams();
-        chart.ConfigureSunburst(options => options.CornerRadius = cornerRadius);
-        chart.Series[0].ConfigureDataLabelStyle(style => style.WithFontSize(13));
+        chart.Sunburst(options => options.CornerRadius = cornerRadius);
+        chart.Series[0].DataLabelStyle(style => style.FontSize(13));
         var fontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(fontPath), "The existing Carlito validation fixture must be available.");
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 440)), themeMode: mode,
@@ -103,7 +103,7 @@ public sealed class SunburstLabelLayoutTests {
 
     [Fact]
     public void ExplicitlyHiddenCaptionsRetainHierarchySemantics() {
-        var chart = Teams(); chart.Series[0].WithDataLabels(false);
+        var chart = Teams(); chart.Series[0].ShowDataLabels(false);
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 440)),
             frame: new VisualFrame(showLegend: false)));
         Assert.DoesNotContain(prepared.Scene.Nodes, node => node.Role == "sunburst-label");
@@ -112,5 +112,5 @@ public sealed class SunburstLabelLayoutTests {
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "hierarchy.label-overflow");
     }
 
-    private static Chart Teams() => Chart.Create().WithDataLabels().AddSunburst("Teams", new[] { new ChartHierarchyItem("All teams", "All teams"), new ChartHierarchyItem("Engineering", "Engineering", "All teams", 60), new ChartHierarchyItem("Operations", "Operations", "All teams", 40), new ChartHierarchyItem("Platform", "Platform", "Engineering", 35), new ChartHierarchyItem("Services", "Services", "Engineering", 25), new ChartHierarchyItem("Support", "Support", "Operations", 40) });
+    private static Chart Teams() => Chart.Create().DataLabels().AddSunburst("Teams", new[] { new ChartHierarchyItem("All teams", "All teams"), new ChartHierarchyItem("Engineering", "Engineering", "All teams", 60), new ChartHierarchyItem("Operations", "Operations", "All teams", 40), new ChartHierarchyItem("Platform", "Platform", "Engineering", 35), new ChartHierarchyItem("Services", "Services", "Engineering", 25), new ChartHierarchyItem("Support", "Support", "Operations", 40) });
 }

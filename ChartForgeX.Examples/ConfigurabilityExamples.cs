@@ -32,11 +32,11 @@ internal static class ConfigurabilityExamples {
             new[] { 28d, 33, 39, 36, 44, 47, 53, 57 }.Select((value, index) => new ChartPoint(index + 1, value)));
         // An explicit series setting still wins over the theme's line defaults.
         var goal = ChartSeries.CreateLine(new ChartSeriesId("goal"), "Goal",
-            weeks.Select((_, index) => new ChartPoint(index + 1, 60))).WithColor(ChartColor.FromHex("#94A3B8"))
-            .WithStrokeStyle(new ChartStrokeStyle(width: 1.5, dash: new[] { 5d, 4d })).WithInterpolation(ChartInterpolation.Linear);
-        goal.ConfigureMarkers(markers => markers.Enabled = false);
-        return Chart.Create().WithTitle("Weekly sign-ups").WithSubtitle("Line width, curve and markers come from the theme file")
-            .WithTheme(theme, mode).WithSize(760, 420).WithXLabels(weeks).WithYAxis("Accounts").WithYAxisBounds(0, 100)
+            weeks.Select((_, index) => new ChartPoint(index + 1, 60))).Color(ChartColor.FromHex("#94A3B8"))
+            .StrokeStyle(new ChartStrokeStyle(width: 1.5, dash: new[] { 5d, 4d })).Interpolation(ChartInterpolation.Linear);
+        goal.Markers(markers => markers.Enabled = false);
+        return Chart.Create().Title("Weekly sign-ups").Subtitle("Line width, curve and markers come from the theme file")
+            .Theme(theme).ThemeMode(mode).Size(760, 420).XLabels(weeks).YAxis(y => y.Title("Accounts").Bounds(0, 100))
             .AddSeries(signups).AddSeries(trials).AddSeries(goal);
     }
 
@@ -44,9 +44,9 @@ internal static class ConfigurabilityExamples {
         var regions = new[] { "North", "South", "East", "West", "Central" };
         var revenue = ChartSeries.CreateBar(new ChartSeriesId("revenue"), "Revenue",
             new[] { 84d, 62, 97, 71, 55 }.Select((value, index) => new ChartPoint(index + 1, value)));
-        return Chart.Create().WithTitle("Revenue by region").WithSubtitle("Corner radius and label weight come from the theme file")
-            .WithTheme(theme, mode).WithSize(760, 420).WithXLabels(regions).WithYAxis("Revenue (k)").WithYAxisBounds(0, 125)
-            .WithDataLabels(true).AddSeries(revenue);
+        return Chart.Create().Title("Revenue by region").Subtitle("Corner radius and label weight come from the theme file")
+            .Theme(theme).ThemeMode(mode).Size(760, 420).XLabels(regions).YAxis(y => y.Title("Revenue (k)").Bounds(0, 125))
+            .DataLabels(true).AddSeries(revenue);
     }
 
     private static string ReadTheme(string name) {
@@ -88,12 +88,12 @@ internal static class ConfigurabilityExamples {
         var readings = new[] { 62d, 78, 71, 91, 84, 97 };
         var plan = new[] { 67d, 72, 77, 82, 87, 92 };
         var orders = ChartSeries.CreateBar(new ChartSeriesId("orders"), "Orders",
-            readings.Select((value, index) => new ChartPoint(index + 1, value))).WithFill(linear)
-            .WithDataLabelPlacement(ChartDataLabelPlacement.Above)
-            .WithDataLabelFormatter(context => context.Value > plan[context.Index]
+            readings.Select((value, index) => new ChartPoint(index + 1, value))).Fill(linear)
+            .DataLabelPlacement(ChartDataLabelPlacement.Above)
+            .DataLabelBy(context => context.Value > plan[context.Index]
                 ? context.Value?.ToString("0", CultureInfo.InvariantCulture) : string.Empty)
-            .WithTooltipFormatter(context => context.Category + ": " + context.Value?.ToString("0", CultureInfo.InvariantCulture) + " orders")
-            .WithItemStyler<ChartPoint>(context => context.Index switch {
+            .TooltipBy(context => context.Category + ": " + context.Value?.ToString("0", CultureInfo.InvariantCulture) + " orders")
+            .ItemStyleBy<ChartPoint>(context => context.Index switch {
                 2 => new ChartItemStyle(fill: pattern),
                 3 => new ChartItemStyle(fill: image),
                 5 => new ChartItemStyle(fill: radial, stroke: new ChartStrokeStyle(navy, 1.5)),
@@ -101,16 +101,16 @@ internal static class ConfigurabilityExamples {
             });
         var forecast = ChartSeries.CreateLine(new ChartSeriesId("plan"), "Plan",
             plan.Select((value, index) => new ChartPoint(index + 1, value)))
-            .WithColor(ChartColor.FromHex("#CC7850"))
-            .WithStrokeStyle(new ChartStrokeStyle(width: 2.5, dash: new[] { 7d, 4d }))
-            .WithItemStyler<ChartPoint>(context => context.Index == 5
+            .Color(ChartColor.FromHex("#CC7850"))
+            .StrokeStyle(new ChartStrokeStyle(width: 2.5, dash: new[] { 7d, 4d }))
+            .ItemStyleBy<ChartPoint>(context => context.Index == 5
                 ? new ChartItemStyle(markers: new ChartMarkerOptions { Shape = ChartMarkerShape.Diamond, Radius = 5, Enabled = true }) : null);
-        forecast.ConfigureMarkers(markers => markers.Enabled = false);
+        forecast.Markers(markers => markers.Enabled = false);
         forecast.ShowDataLabels = false;
-        var chart = Chart.Create().WithTitle("Monthly orders")
-            .WithSubtitle("Only months above plan are labeled; June led with 97")
-            .WithTheme(VisualTheme.Graphite(), mode).WithSize(compact ? 560 : 1040, compact ? 400 : 520)
-            .WithXLabels(months).WithYAxis("Orders").WithYAxisBounds(0, 120).WithDataLabels(true)
+        var chart = Chart.Create().Title("Monthly orders")
+            .Subtitle("Only months above plan are labeled; June led with 97")
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Size(compact ? 560 : 1040, compact ? 400 : 520)
+            .XLabels(months).YAxis(yAxis => yAxis.Title("Orders").Bounds(0, 120)).DataLabels(true)
             .AddSeries(orders).AddSeries(forecast);
         chart.Options.XAxis.IntegerTicks = true;
         chart.Options.YAxis.TickCount = 7;

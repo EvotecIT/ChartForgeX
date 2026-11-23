@@ -26,7 +26,7 @@ public sealed class GanttTickIntervalTests {
         var value = new DateTime(2026, 1, 1, 13, 5, 6, 7).ToOADate();
         Assert.Contains(">" + expected + "</text>", document.ToSvg());
         document.AxisFormat = "%Y/%m/%d";
-        Assert.Equal("2026/01/01", document.ToChart().Options.XAxisValueFormatter!(value));
+        Assert.Equal("2026/01/01", document.ToChart().Options.XAxis.LabelFormatter!(value));
     }
 
     private static string Fixture(string extension) => Path.Combine(TestRepository.Root, "tests", "mermaid-conformance", "fixtures", "gantt-tick-interval." + extension);
@@ -35,7 +35,7 @@ public sealed class GanttTickIntervalTests {
     [Fact]
     public async Task MermaidMillisecondTicksReachSvgPngAndStaticBrowserLabels() {
         var document = new MermaidParser().ParseGantt("gantt\ntickInterval 100millisecond\nTask :2026-01-01, 300ms").Document!;
-        var chart = document.ToChart(new MermaidGanttRenderOptions { Width = 1200, Height = 360 }).WithLegend(false);
+        var chart = document.ToChart(new MermaidGanttRenderOptions { Width = 1200, Height = 360 }).Legend(false);
         var expected = new[] { "2026-01-01 00:00:00.000", "2026-01-01 00:00:00.100", "2026-01-01 00:00:00.200", "2026-01-01 00:00:00.300" };
         var svg = chart.ToSvg();
         Assert.Equal(expected, XDocument.Parse(svg).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "schedule-tick-label").Select(element => element.Value));
@@ -73,9 +73,9 @@ public sealed class GanttTickIntervalTests {
         var document = parsed.Document!;
         Assert.Equal(DayOfWeek.Tuesday, document.Weekday);
         var chart = document.ToChart();
-        Assert.Equal(ChartTimeTickUnit.Week, chart.Options.GanttTickInterval!.Unit);
-        Assert.Equal(2, chart.Options.GanttTickInterval.Count);
-        Assert.Equal(DayOfWeek.Tuesday, chart.Options.GanttTickInterval.WeekStart);
+        Assert.Equal(ChartTimeTickUnit.Week, chart.Options.Gantt.TickInterval!.Unit);
+        Assert.Equal(2, chart.Options.Gantt.TickInterval.Count);
+        Assert.Equal(DayOfWeek.Tuesday, chart.Options.Gantt.TickInterval.WeekStart);
         var svg = chart.ToSvg();
         foreach (var label in new[] { "Tue 13 Jan", "Tue 27 Jan", "Tue 10 Feb", "Tue 24 Feb" }) Assert.Contains(label, svg);
         Assert.NotEmpty(chart.ToPng());
@@ -90,15 +90,15 @@ public sealed class GanttTickIntervalTests {
 
     [Fact]
     public void EmptyFixedWindowDoesNotInventAutomaticTicksAndExplicitLabelsTakePrecedence() {
-        var chart = Chart.Create().WithLegend(false).AddGanttTask("Window", new DateTime(2026, 1, 7), new DateTime(2026, 1, 8))
-            .WithGanttTickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Week, 2, DayOfWeek.Tuesday));
+        var chart = Chart.Create().Legend(false).AddGanttTask("Window", new DateTime(2026, 1, 7), new DateTime(2026, 1, 8))
+            .Gantt(g => g.TickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Week, 2, DayOfWeek.Tuesday)));
         Assert.DoesNotContain("schedule-tick-label", chart.ToSvg());
         Assert.NotEmpty(chart.ToPng());
-        chart.ConfigureXAxis(axis => axis.Labels.Add(new ChartAxisLabel(new DateTime(2026, 1, 7), "Authored")));
+        chart.XAxis(axis => axis.Labels.Add(new ChartAxisLabel(new DateTime(2026, 1, 7), "Authored")));
         Assert.Contains("Authored", chart.ToSvg());
-        chart.WithGanttTickInterval(null);
-        Assert.Null(chart.Options.GanttTickInterval);
-        var numeric = Chart.Create().AddGanttTask("Numeric", 1, 9).WithGanttTickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Month));
+        chart.Gantt(g => g.TickInterval((ChartTimeTickInterval?)null));
+        Assert.Null(chart.Options.Gantt.TickInterval);
+        var numeric = Chart.Create().AddGanttTask("Numeric", 1, 9).Gantt(g => g.TickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Month)));
         Assert.Contains("schedule-tick-label", numeric.ToSvg());
     }
 
@@ -111,7 +111,7 @@ public sealed class GanttTickIntervalTests {
         var result = new MermaidParser().ParseGantt("gantt\ntickInterval " + text + "\nTask :2026-01-01, 5d");
         Assert.Empty(result.Diagnostics);
         Assert.Equal(text, result.Document!.TickInterval);
-        Assert.Null(result.Document.ToChart().Options.GanttTickInterval);
+        Assert.Null(result.Document.ToChart().Options.Gantt.TickInterval);
         Assert.Contains("schedule-tick-label", result.Document.ToSvg());
     }
 
@@ -123,7 +123,7 @@ public sealed class GanttTickIntervalTests {
         Assert.Null(ChartTimeScale.GenerateFixed(new ChartAxis(), -1, 1, interval));
         Assert.Empty(ChartTimeScale.GenerateFixed(new ChartAxis(), start, start + 1, new ChartTimeTickInterval(ChartTimeTickUnit.Week, int.MaxValue))!);
         Assert.Contains("schedule-tick-label", Chart.Create().AddGanttTask("Window", new DateTime(2026, 1, 1), new DateTime(2026, 1, 2))
-            .WithGanttTickInterval(interval).ToSvg());
+            .Gantt(g => g.TickInterval(interval)).ToSvg());
     }
 
     [Fact]
@@ -147,8 +147,8 @@ public sealed class GanttTickIntervalTests {
     [Fact]
     public async Task NativeMillisecondLabelsPreservePrecisionAndExplicitFormattingWins() {
         var start = new DateTime(2026, 1, 1);
-        var chart = Chart.Create().WithLegend(false).AddGanttTask("Window", start, start.AddMilliseconds(300))
-            .WithGanttTickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Millisecond, 100));
+        var chart = Chart.Create().Legend(false).AddGanttTask("Window", start, start.AddMilliseconds(300))
+            .Gantt(g => g.TickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Millisecond, 100)));
         var svg = chart.ToSvg();
         foreach (var label in new[] { "00:00:00.000", "00:00:00.100", "00:00:00.200", "00:00:00.300" }) Assert.Contains(">2026-01-01 " + label + "</text>", svg);
         Assert.NotEmpty(chart.ToPng());
@@ -164,9 +164,9 @@ public sealed class GanttTickIntervalTests {
             InteractiveChartBrowser.AssertNoConsoleErrors(session);
             if (!string.IsNullOrWhiteSpace(captures)) await session.Page.ScreenshotAsync(new PageScreenshotOptions { Path = Path.Combine(captures, "gantt-ticks-milliseconds.png"), FullPage = true });
         }
-        chart.WithXAxisValueFormatter(value => "Custom " + DateTime.FromOADate(value).Millisecond.ToString(CultureInfo.InvariantCulture));
+        chart.XAxis(x => x.LabelBy(value => "Custom " + DateTime.FromOADate(value).Millisecond.ToString(CultureInfo.InvariantCulture)));
         Assert.Contains(">Custom 100</text>", chart.ToSvg());
-        chart.WithXAxisValueFormatter(null).ConfigureXAxis(axis => axis.Labels.Add(new ChartAxisLabel(start.AddMilliseconds(100), "Authored tick")));
+        chart.XAxis(x => x.LabelBy((Func<double, string>?)null)).XAxis(axis => axis.Labels.Add(new ChartAxisLabel(start.AddMilliseconds(100), "Authored tick")));
         Assert.Contains(">Authored tick</text>", chart.ToSvg());
     }
 
@@ -175,8 +175,8 @@ public sealed class GanttTickIntervalTests {
     [InlineData(86400000, true)]
     public void DenseFallbackAndLargeMillisecondIntervalsKeepDateIdentity(int count, bool fixedInterval) {
         var start = new DateTime(2026, 1, 1);
-        var chart = Chart.Create().WithLegend(false).WithSize(960, 360).AddGanttTask("Window", start, start.AddDays(7))
-            .WithGanttTickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Millisecond, count));
+        var chart = Chart.Create().Legend(false).Size(960, 360).AddGanttTask("Window", start, start.AddDays(7))
+            .Gantt(g => g.TickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Millisecond, count)));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         ScatterBubbleColorRenderingTests.Capture(prepared, $"gantt-date-identity-{count}-{fixedInterval}");
         var document = XDocument.Parse(prepared.ToSvg());
@@ -206,13 +206,13 @@ public sealed class GanttTickIntervalTests {
     public void DenseAutomaticFallbackPreservesAuthoredClockFormats(bool mermaid, int fontSize) {
         var start = new DateTime(2026, 1, 1);
         var chart = mermaid ? new MermaidParser().ParseGantt("gantt\ntickInterval 100millisecond\naxisFormat %H:%M\nTask :2026-01-01, 7d")
-            .Document!.ToChart(new MermaidGanttRenderOptions { Width = 960, Height = 360 }).WithLegend(false)
-            : Chart.Create().WithLegend(false).WithSize(960, 360).AddGanttTask("Window", start, start.AddDays(7))
-                .WithGanttTickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Millisecond, 100))
-                .WithXAxisValueFormatter(value => DateTime.FromOADate(value).ToString("HH:mm", CultureInfo.InvariantCulture));
-        chart.ConfigureGridStyle(style => style.ShowVerticalLines = true);
-        if (fontSize > 0) chart.WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"))
-            .ConfigureTickLabelStyle(style => style.WithFontSize(fontSize));
+            .Document!.ToChart(new MermaidGanttRenderOptions { Width = 960, Height = 360 }).Legend(false)
+            : Chart.Create().Legend(false).Size(960, 360).AddGanttTask("Window", start, start.AddDays(7))
+                .Gantt(g => g.TickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Millisecond, 100)))
+                .XAxis(x => x.LabelBy(value => DateTime.FromOADate(value).ToString("HH:mm", CultureInfo.InvariantCulture)));
+        chart.GridLineStyle(style => style.ShowVerticalLines = true);
+        if (fontSize > 0) chart.Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
+            .TickLabelStyle(style => style.FontSize(fontSize));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         ScatterBubbleColorRenderingTests.Capture(prepared, $"gantt-dense-authored-clock-{mermaid}-{fontSize}");
         var labels = XDocument.Parse(prepared.ToSvg()).Descendants()
@@ -259,7 +259,7 @@ public sealed class GanttTickIntervalTests {
         var document = new MermaidParser().ParseGantt(File.ReadAllText(Fixture("mmd"))).Document!;
         document.AxisFormat = "%m/%d";
         var chart = document.ToChart(new MermaidGanttRenderOptions { Width = width, Height = 360 })
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithLegend(false);
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Legend(false);
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + chart.ToHtmlFragment() + "</body></html>", width, 400);
         Assert.Equal(new[] { "01/13", "01/27", "02/10", "02/24" }, await session.Page.Locator("[data-cfx-role='schedule-tick-label']").AllTextContentsAsync());
         Assert.Equal(0, await session.Page.Locator("script").CountAsync());

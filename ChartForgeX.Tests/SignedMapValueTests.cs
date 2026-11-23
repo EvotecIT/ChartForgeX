@@ -18,9 +18,9 @@ public sealed class SignedMapValueTests {
             new ChartRegionMapItem("Alpha", -4), new ChartRegionMapItem("A", 4),
             new ChartRegionMapItem("B", -8), new ChartRegionMapItem("C", 12)
         };
-        var chart = Create(tile, values).WithMapColorScale(ChartColorScale.Sequential(ChartColor.Black, ChartColor.White));
-        chart.ConfigureMapColorDimension(options => options.ValueFormat = Units());
-        var series = chart.Series[0].WithObservationId(1, new ChartObservationId("measured-b")).WithPointColor(1, "#123456");
+        var chart = Create(tile, values).Map(m => m.ColorScale(ChartColorScale.Sequential(ChartColor.Black, ChartColor.White)));
+        chart.Map(map => map.ColorDimension(options => options.ValueFormat = Units()));
+        var series = chart.Series[0].ObservationId(1, new ChartObservationId("measured-b")).PointColor(1, "#123456");
         Assert.Equal(new[] { 0d, -8, 12 }, series.RegionValues.Select(value => value.Value));
         var prepared = Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng();
         var sources = Sources(svg, tile);
@@ -84,7 +84,7 @@ public sealed class SignedMapValueTests {
         };
         var chart = Create(tile, new[] {
             new ChartRegionMapItem("A", -10), new ChartRegionMapItem("B", 0), new ChartRegionMapItem("C", 10)
-        }).WithMapColorScale(scale.WithNoDataColor(ChartColor.FromHex("#123456")));
+        }).Map(m => m.ColorScale(scale.WithNoDataColor(ChartColor.FromHex("#123456"))));
         var prepared = Prepare(chart); var svg = prepared.ToSvg(); var sources = Sources(svg, tile);
         var expectedMiddle = mode == "automatic" ? "#808080" : mode == "partial" ? "#555555" : "#FF0000";
         var expected = new[] { "#000000", expectedMiddle, "#FFFFFF", "#123456" };
@@ -129,8 +129,8 @@ public sealed class SignedMapValueTests {
         foreach (var range in new[] { (-1e-9, 1e-9), (-double.MaxValue, double.MaxValue), (-7d, -7d) }) {
             var values = new[] { range.Item1, range.Item1 / 2 + range.Item2 / 2, range.Item2 };
             var chart = Create(tile, values.Select((value, index) => new ChartRegionMapItem(((char)('A' + index)).ToString(), value)));
-            chart.Options.HeatmapScale = ChartHeatmapScale.Sequential;
-            chart.Options.HeatmapRelativeScale = relative;
+            chart.Options.Heatmap.Scale = ChartHeatmapScale.Sequential;
+            chart.Options.Heatmap.RelativeScale = relative;
             var document = XDocument.Parse(chart.ToSvg()); var sources = Sources(document.ToString(), tile);
             var steps = document.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "map-scale-step").ToArray();
             var expectedSteps = new[] { 0, 2, 4 };
@@ -148,7 +148,7 @@ public sealed class SignedMapValueTests {
     }
 
     private static Chart Create(bool tile, IEnumerable<ChartRegionMapItem> values) {
-        var chart = Chart.Create().WithSize(760, 420).WithMapLabels(false);
+        var chart = Chart.Create().Size(760, 420).Map(m => m.ShowLabels(false));
         return tile ? chart.AddTileHeatmap("Temperature", new ChartTileMapDefinition("tiles", "Tiles", new[] {
             new ChartTileMapRegion("A", "Alpha", 0, 0), new ChartTileMapRegion("B", "Beta", 1, 0),
             new ChartTileMapRegion("C", "Gamma", 0, 1), new ChartTileMapRegion("D", "Delta", 1, 1)

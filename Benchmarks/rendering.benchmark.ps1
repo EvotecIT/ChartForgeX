@@ -14,10 +14,10 @@ function New-ChartForgeXBenchmarkChart {
     }
 
     $chart = [ChartForgeX.Core.Chart]::Create()
-    $chart.WithTitle('Rendering benchmark') | Out-Null
-    $chart.WithSubtitle('Three 72-point series at report size') | Out-Null
-    $chart.WithSize(1200, 675) | Out-Null
-    $chart.WithLegend() | Out-Null
+    $chart.Title = 'Rendering benchmark'
+    $chart.Subtitle = 'Three 72-point series at report size'
+    $chart.Options.Size = [ChartForgeX.Primitives.ChartSize]::new(1200, 675)
+    $chart.Options.Legend.Visible = $true
     $chart.AddLine('Observed', $observed) | Out-Null
     $chart.AddSmoothArea('Forecast', $forecast) | Out-Null
     $chart.AddBar('Capacity', $capacity) | Out-Null

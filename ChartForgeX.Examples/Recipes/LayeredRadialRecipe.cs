@@ -9,6 +9,6 @@ public static class LayeredRadialRecipe {
             new ChartRadialLayer("Verified", 58) { RadiusRatio = .7, StrokeRatio = .13, SweepAngleDegrees = 240, StartAngleDegrees = -30, SeparatorCount = 8 },
             new ChartRadialLayer("Complete", 42) { RadiusRatio = .4, StrokeRatio = .13, SweepAngleDegrees = 360 }
         });
-        return Chart.Create().WithXLabels("North", "South", "East", "West", "Central", "Online").AddSeries(completion);
+        return Chart.Create().XLabels("North", "South", "East", "West", "Central", "Online").AddSeries(completion);
     }
 }

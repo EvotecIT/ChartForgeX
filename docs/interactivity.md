@@ -39,7 +39,7 @@ Point-legend muting and isolation use the same identity rules across charts. Zer
 
 Raw trend-line and box-plot summaries omit both singular `sourcePoint` and contributor arrays. Their source data remains available through the series' immutable `TrendLineSourcePoints` and `BoxPlotSourceSamples` collections. Migration: derived target IDs now include their derivation kind; use event-provided IDs instead of constructing IDs from point ordinals.
 
-Radar's default `Zero` missing-category policy fills missing categories with zero geometry. Those categories are `region` targets identified by the stable series ID and category, for example `target:category:2`. They report `sourcePoints: []`, with no `point` or `sourcePoint`; their browser readout says "No observation" and carries no measured value. An authored zero remains an ordinary source point with a value of zero. Category identities synchronize correctly when peers order their observations differently or include another category. `Gap` and `Connect` are explicit alternatives that preserve missing data without fabricating zero geometry; configure them through `ConfigureRadar`.
+Radar's default `Zero` missing-category policy fills missing categories with zero geometry. Those categories are `region` targets identified by the stable series ID and category, for example `target:category:2`. They report `sourcePoints: []`, with no `point` or `sourcePoint`; their browser readout says "No observation" and carries no measured value. An authored zero remains an ordinary source point with a value of zero. Category identities synchronize correctly when peers order their observations differently or include another category. `Gap` and `Connect` are explicit alternatives that preserve missing data without fabricating zero geometry; configure them through `series.Radar(...)`.
 
 ## Product fonts in pages and fragments
 
@@ -487,7 +487,7 @@ Legend tooltips summarize the series for readers: the name with its colour swatc
 
 Muting a supported standalone Cartesian series removes its data ink and rescales the remaining value domain. Other retained render paths dim muted marks to 30%. The legend remains available with a hollow swatch and its label at 45% opacity. Keyboard targets use a 2 px focus outline in the host accent. Toggling a legend item clears the old tooltip, crosshair and hover dimming before presenting the new view.
 
-When a native legend exceeds its `WithLegendBudget`, open **More legend entries** to read the omitted captions in pages of six. Previous and next controls show the current range and total. Captions retain their full native descriptions, including values where the native legend supplies them. The disclosure uses normal HTML focus and follows the host's language, direction and control colours.
+When a native legend exceeds its budget (`chart.Legend(l => l.MaxHeightFraction(...).MaxRows(...))`), open **More legend entries** to read the omitted captions in pages of six. Previous and next controls show the current range and total. Captions retain their full native descriptions, including values where the native legend supplies them. The disclosure uses normal HTML focus and follows the host's language, direction and control colours.
 
 With `ChartInteractionFeatures.LegendToggles` enabled, each actionable entry offers mute and isolate buttons with pressed states. These use the same series, observation, distribution or named-node identity as the native legend; linked charts and later native preparations retain the existing identity rules. State-category keys and entries shown with legend actions disabled remain descriptive. A grouped pie **Other** entry remains one native aggregate with its contributors. Opening or paging the disclosure retains the chart's selection and plotting area. Native SVG/PNG downloads and print keep the bounded native legend; the disclosure stays in the browser.
 
@@ -600,15 +600,15 @@ var passRateId = new ChartSeriesId("quality.pass-rate");
 var currentSeries = ChartSeries.CreateLine(passRateId, "Current pass rate",
     ChartPoints.FromValues(96, 98, 99));
 var historySeries = ChartSeries.CreateArea(passRateId, "Pass rate history",
-    ChartPoints.FromValues(92, 96, 98)).WithInterpolation(ChartInterpolation.Smooth);
+    ChartPoints.FromValues(92, 96, 98)).Interpolation(ChartInterpolation.Smooth);
 
 var current = Chart.Create().AddSeries(currentSeries);
 var history = Chart.Create().AddSeries(historySeries);
 
-currentSeries.WithName("Pass rate today");
+currentSeries.Name("Pass rate today");
 ```
 
-`series.Id` is immutable. Renaming the display text with `WithName`, configuring the handle or moving it with `chart.MoveSeries` preserves its ID. Display names may repeat; IDs must be unique within a chart. `Chart.Series` is a read-only view of attached handles, with structural changes made through `AddSeries`, `RemoveSeries`, `MoveSeries` and `ClearSeries`.
+`series.Id` is immutable. Renaming the display text with `Name`, configuring the handle or moving it with `chart.MoveSeries` preserves its ID. Display names may repeat; IDs must be unique within a chart. `Chart.Series` is a read-only view of attached handles, with structural changes made through `AddSeries`, `RemoveSeries`, `MoveSeries` and `ClearSeries`.
 
 Fluent `chart.AddLine(...)`, `AddBar(...)` and other `Add*` helpers allocate deterministic chart-local IDs. These remain fixed through renaming and reordering, but do not synchronize series or observation interactions across charts. Equal display names do not connect charts. The `cfx:auto:` namespace is reserved for these automatic IDs; supply an explicit ID when connecting equivalent measures in a dashboard.
 
@@ -616,13 +616,13 @@ Synchronized legend, hover and selection state uses `data-cfx-series-key`, which
 
 ### Observation identity
 
-Use `WithObservationId` when equivalent charts can present their source observations in a different order:
+Use `ObservationId` when equivalent charts can present their source observations in a different order:
 
 ```csharp
 var latency = ChartSeries.CreateScatter(new ChartSeriesId("service.latency"), "Latency",
     new[] { new ChartPoint(1, 24), new ChartPoint(2, 31) })
-    .WithObservationId(0, new ChartObservationId("east"))
-    .WithObservationId(1, new ChartObservationId("west"));
+    .ObservationId(0, new ChartObservationId("east"))
+    .ObservationId(1, new ChartObservationId("west"));
 var latencyChart = Chart.Create().AddSeries(latency);
 ```
 
@@ -725,7 +725,7 @@ independent SVG definition IDs, even when two charts have identical content.
 
 Rectangular heatmaps use layout 3. At narrow widths the plot scrolls horizontally, keeping a minimum cell width and a sticky row-label gutter; the full row name remains in a tooltip. The first and last ordered column captions remain visible at the ends of the scroll range. Static fixed-width heatmaps use their configured column-window policy; the responsive host retains all columns.
 
-Responsive heatmaps initially show the latest columns. Set `WithHeatmapColumnWindow(ChartHeatmapColumnWindow.Squeeze)` to open at the left edge instead. A reader at the newest edge stays there through resize; scrolling back into the history preserves the same first visible column when the card changes width. Print sizing preserves the screen position for the return to the page.
+Responsive heatmaps initially show the latest columns. Set `chart.Heatmap(h => h.ColumnWindow(ChartHeatmapColumnWindow.Squeeze))` to open at the left edge instead. A reader at the newest edge stays there through resize; scrolling back into the history preserves the same first visible column when the card changes width. Print sizing preserves the screen position for the return to the page.
 
 The specification declares a plot band for Cartesian, matrix and state-timeline charts.
 Content before the band stays in place, the band stretches, and content after it
@@ -765,7 +765,7 @@ their existing behavior.
 Regular stacked bars share one rounded envelope per signed stack, in SVG and native
 PNG. Segment joins stay square, including horizontal and negative stacks; an authored
 zero corner radius keeps the whole stack square. Segmented caps appear only at the
-outer end. `WithMaximumBarWidth` continues to cap the shared stack width and centre
+outer end. `Bars(b => b.MaxWidth(...))` continues to cap the shared stack width and centre
 sparse category slots.
 
 `dispose()` releases chart listeners, observers, scheduled frames, pending readouts, exports and scenario playback immediately. It also clears the compare tray, brush rectangle, selection readouts and mute/isolation presentation while the section remains connected. It is safe to call more than once. Removing a chart also releases its work when the browser delivers the removal. Reinserted sections require a fresh `mount`; a disposed controller cannot update or resize them. Register shared assets once, and mount newly inserted sections explicitly instead of executing another copy of the runtime.
@@ -835,7 +835,7 @@ select the same observations as the bin. State-timeline runs also have an
 exclusive end: their inclusive numeric range stops immediately before it, and
 their ISO range ends one native DateTime tick (100 nanoseconds) before it.
 Adjacent runs therefore keep their boundary observations separate. A time-axis bar can declare its
-bucket interval through `ChartSeries.WithTimeBuckets(...)`. Each bucket includes its start and excludes
+bucket interval through `ChartSeries.TimeBuckets(...)`. Each bucket includes its start and excludes
 the next bucket's start; its public inclusive ISO range ends one DateTime tick before that boundary.
 Range matching preserves fractional seconds beyond milliseconds, including equivalent instants with different time zone offsets.
 Use `label` and `rangeLabel` for chips and captions. For example, a histogram's
@@ -847,13 +847,13 @@ On a legacy numeric time domain, the inclusive end is the representable number i
 Negative OLE date buckets must stay within one UTC day and cannot use the epoch-day aliases between -1 and 0.
 Preparation rejects buckets that cross these discontinuities because a single numeric range cannot represent their calendar interval.
 Assign matching row
-and observation IDs with `WithObservationIds(...)` when another view shares those
+and observation IDs with `ObservationIds(...)` when another view shares those
 identities. The bulk method validates the complete candidate before replacing
 the series' IDs.
 
 ```csharp
 var readings = ChartSeries.CreateLine(new ChartSeriesId("requests"), "Requests", points)
-    .WithObservationIds(ids.Select(id => new ChartObservationId(id)));
+    .ObservationIds(ids.Select(id => new ChartObservationId(id)));
 ```
 
 `ChartForgeXCharts.get(root)` returns an already mounted controller, or `null`.
@@ -1071,7 +1071,7 @@ topologyRoot.dispatchEvent(new CustomEvent('cfx-topology-clear-highlight'));
 
 `cfx-topology-select.selected` reports interactive selection;
 `authoredSelected` retains the authored state. Enable viewport controls and set
-`TopologyRenderOptions.HtmlNarrowMinimumHeight` to retain a readable viewport on
+`TopologyRenderOptions.Html.NarrowMinimumHeight` to retain a readable viewport on
 phones. Fit can zoom below the manual zoom floor when showing the whole diagram
 requires it.
 
@@ -1124,13 +1124,7 @@ using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Topology;
 
 var motion = TopologyMotionOptions.RoutePulseForScenario("delivery");
-var options = new TopologyRenderOptions {
-    EnableHtmlScenarioControls = true,
-    EnableHtmlViewportControls = true,
-    EnableHtmlSelectionPanel = true,
-    ActiveScenarioId = "delivery",
-    IdScope = "service-route"
-};
+var options = new TopologyRenderOptions { Html = { ScenarioControls = true, ViewportControls = true, SelectionPanel = true }, ActiveScenarioId = "delivery", IdScope = "service-route" };
 var html = new HtmlInteractiveTopologyRenderer().RenderPresentationPage(
     topology, prepared => prepared.WithMotion(motion).ToSvg(), options);
 ```
@@ -1164,11 +1158,11 @@ using ChartForgeX.Interactivity;
 using ChartForgeX.Interactivity.Html;
 
 interaction.AddScenario("recovery", "Recovery route", scenario => scenario
-    .WithDescription("Inspect pressure, then confirm the recovered signal.")
-    .WithPlayback(stepDurationMilliseconds: 1100, loop: false, autoPlay: false)
-    .WithFocusMode(ChartInteractionScenarioFocusMode.Highlight)
+    .Description("Inspect pressure, then confirm the recovered signal.")
+    .PlaybackDelayMilliseconds(1100).LoopPlayback(false).AutoPlay(false)
+    .FocusMode(ChartInteractionScenarioFocusMode.Highlight)
     .AddSeriesStep(pressure.Id, "Inspect pressure",
-        configure: step => step.WithDuration(1600))
+        configure: step => step.DurationMilliseconds(1600))
     .AddSeriesStep(success.Id, "Confirm recovery"));
 ```
 
@@ -1230,7 +1224,7 @@ In `Browser` mode, colour glyphs, embedded bitmap strikes, built-in tiny fallbac
 
 ## State Bookmarks
 
-Supported standalone Cartesian charts capture source-coordinate windows in bookmarks and restore them through the same projection path as the navigation controls. Declined families ignore saved zoom; other unsupported Cartesian families retain the legacy whole-SVG CSS zoom and pan. Connected hosts can use native X or primary-Y/XY windows as described below. Static legend display uses `WithLegend` and per-series `WithLegendEntry`; browser legend actions mute or isolate marks while retaining their source facts.
+Supported standalone Cartesian charts capture source-coordinate windows in bookmarks and restore them through the same projection path as the navigation controls. Declined families ignore saved zoom; other unsupported Cartesian families retain the legacy whole-SVG CSS zoom and pan. Connected hosts can use native X or primary-Y/XY windows as described below. Static legend display uses `chart.Legend(bool)` and per-series `ShowInLegend`; browser legend actions mute or isolate marks while retaining their source facts.
 
 ## Translated controls and text direction
 
@@ -1357,7 +1351,7 @@ Set `options.XNavigation.Enabled = true` to include a native overview, two range
 
 Range handles and the position scrollbar use a consistent keyboard step: arrows move 1% of the control's range, Page Up/Down move 10%, and Home/End select its minimum/maximum. Horizontal arrows follow the displayed axis direction; Up/Down always increase/decrease. A changed range commits through the connected native preparation callback and retains focus. Pointer movement remains continuous. For the position scrollbar, the percentage applies to the available travel while preserving the selected span.
 
-For an explicit trading schedule, assign `XAxis.TimeSessions` or call `axis.WithTimeSessions(new ChartTimeSessionDomain(sessions))`. Each immutable `ChartTimeSession` contains increasing DateTime/DateTimeOffset instants or nonnegative OLE Automation coordinates. Local DateTime inputs convert to UTC; unspecified inputs are treated as UTC. The domain copies intervals in authored order and rejects overlaps or reversed order. Included time remains proportional; declared closures take no horizontal space. No market calendar is inferred. Source observation dates, prices and authored window bounds remain unchanged.
+For an explicit trading schedule, assign `XAxis.TimeSessions` or call `axis.Scale(ChartScaleKind.Time).TimeSessions(new ChartTimeSessionDomain(sessions))`. Each immutable `ChartTimeSession` contains increasing DateTime/DateTimeOffset instants or nonnegative OLE Automation coordinates. Local DateTime inputs convert to UTC; unspecified inputs are treated as UTC. The domain copies intervals in authored order and rejects overlaps or reversed order. Included time remains proportional; declared closures take no horizontal space. No market calendar is inferred. Source observation dates, prices and authored window bounds remain unchanged.
 
 Observations and source drawing endpoints must belong to an included interval. A window may start or end inside a closure if its projected span is positive; that raw bound remains in the source request and native result. A window wholly inside a closure is invalid. At a collapsed join, inverse projection selects the next session's opening; the final endpoint remains the final close. Ticks and pointer inversion use the native session mapping. Hosts receiving `sourceWindow` or `sourceViewport` should constrain those source bounds directly instead of projecting them to pixels and back.
 
@@ -1460,7 +1454,7 @@ Funnel and Pyramid component labels and outlines are prepared natively. The HTML
 
 Pie/Donut external captions may originate in any ring. One native callout pass keeps each caption attached to its own series/observation. Inner leaders overlay enclosing rings with a background halo; measured captions and their actual bent/curved leaders cannot cover another accepted caption. A fixed frame can shorten or omit text with a diagnostic while retaining the full text and source association.
 
-Positive `WithPointSliceOffset` values translate the existing native sectors without changing source values or band ratios. All rings share one fitted frame. Shifted sectors may overlap another ring, using the existing source-series paint order; this option does not promise that the original annular gaps remain empty. Keyboard selection, readouts, responsive presentation and downloads continue to describe the source ring and observation. Caption/halo decorations are not independent selectable observations. Browser PNG output remains browser rasterization, distinct from native PNG pixels.
+Positive `PointSliceOffset` values translate the existing native sectors without changing source values or band ratios. All rings share one fitted frame. Shifted sectors may overlap another ring, using the existing source-series paint order; this option does not promise that the original annular gaps remain empty. Keyboard selection, readouts, responsive presentation and downloads continue to describe the source ring and observation. Caption/halo decorations are not independent selectable observations. Browser PNG output remains browser rasterization, distinct from native PNG pixels.
 
 ## Aligned DifferenceArea sources
 
@@ -1666,7 +1660,7 @@ The separate Values and LegendVisibility intents still reject accidental mixed u
 
 Set `HtmlChartInteractionOptions.CaptureNativeValueSource = true` when preparing both Bubble sections, then use `PrepareNativeTransitionJson` with `Values`, an explicit `InitialValues` baseline, or `ValueFlash`. Each reading is the real authored `(series ID, observation ID, component)` tuple. The finite Bubble components are `y` and `size`; sharing an observation ID across series does not merge readings. `PrepareValueTransitionJson` remains the scalar one-edit entry and rejects component plans.
 
-This cohort accepts one or more Bubble series with fixed ordered authored observations and X coordinates, fixed X and used numeric Y domains, and an explicit shared `Bubble.WithSizeDomain`. Raw Size stays strictly positive; values outside that visual size domain retain the native radius clamp. `SquareRootRadius` and `Area`, reversed scales, series marker shapes, fixed ColorValue, captions and readouts use the existing native compiler for every complete frame. A secondary value axis keeps its own domain. Every frame must retain the exact native axes and plot. Export uses the exact accepted endpoint.
+This cohort accepts one or more Bubble series with fixed ordered authored observations and X coordinates, fixed X and used numeric Y domains, and an explicit shared `Bubble.SizeDomain(...)`. Raw Size stays strictly positive; values outside that visual size domain retain the native radius clamp. `SquareRootRadius` and `Area`, reversed scales, series marker shapes, fixed ColorValue, captions and readouts use the existing native compiler for every complete frame. A secondary value axis keeps its own domain. Every frame must retain the exact native axes and plot. Export uses the exact accepted endpoint.
 
 The opt-in snapshot owns copied full typed tuples, IDs, paint, options and captured formatter/font requests. Hidden or unpainted facts participate in its source key even when SVG/PNG ink stays unchanged. Replay does not retain a caller chart or query the font registry. Custom or modified-provider formatting, uncaptured fallback decisions, automatic/changing axes or size domains, changing X/ColorValue/identity/presentation, point legends, point-specific marker/outline policies and mixed tuple families reject this finite capture. Ordinary native rendering and default metadata remain available without the opt-in. Size0/negative is already invalid in `ChartBubble`; animation does not create a synthetic observation for it.
 

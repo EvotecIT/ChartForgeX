@@ -15,9 +15,9 @@ internal static partial class VisualScheduleCompiler {
         var frame = context.Layout.Size.Height - plot.Height;
         var style = VisualStateSceneTools.TickStyle(chart, context);
         var axis = builder.MeasureText("Ag", style).LineHeight + context.Theme.Spacing;
-        if (!string.IsNullOrWhiteSpace(chart.XAxisTitle)) axis += context.Theme.Typography.AxisTitleSize * 1.4 + context.Theme.Spacing;
-        var top = chart.Options.GanttToday.HasValue || chart.YAxisTitle.Length > 0 ? axis : 0;
+        if (!string.IsNullOrWhiteSpace(chart.Options.XAxis.Title)) axis += context.Theme.Typography.AxisTitleSize * 1.4 + context.Theme.Spacing;
+        var top = chart.Options.Gantt.Today.HasValue || chart.Options.YAxis.Title.Length > 0 ? axis : 0;
         var height = frame + top + Math.Max(rows, ChartRowDensity.MinimumScheduleRows) * ChartRowDensity.MaximumRow + axis;
-        chart.WithSize(chart.Options.Size.Width, Math.Max(1, (int)Math.Ceiling(height)));
+        chart.Size(chart.Options.Size.Width, Math.Max(1, (int)Math.Ceiling(height)));
     }
 }

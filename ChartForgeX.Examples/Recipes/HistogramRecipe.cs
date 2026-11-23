@@ -4,7 +4,7 @@ public static class HistogramRecipe {
     public static Chart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         var aggregation = variant.StartsWith("compact-", StringComparison.Ordinal) ? variant.Substring(8) : variant;
         if (aggregation == "compact") aggregation = "wide";
-        var chart = Chart.Create().WithDataLabels();
+        var chart = Chart.Create().DataLabels();
         ChartSeries observations;
         if (aggregation is "wide" or "density" or "probability" or "probability-density") {
             var encoding = aggregation switch {
@@ -22,29 +22,29 @@ public static class HistogramRecipe {
             };
             observations = ChartSeries.CreateHistogram(new ChartSeriesId("resolution-time"), "Tickets", hours,
                 ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 2, 4, 8, 16, 24 }), encoding);
-            chart.WithXAxis("Resolution time (hours)").WithYAxis(aggregation switch {
+            chart.XAxis(x => x.Title("Resolution time (hours)")).YAxis(y => y.Title(aggregation switch {
                 "density" => "Tickets per hour", "probability" => "Share of tickets",
                 "probability-density" => "Share of tickets per hour", _ => "Tickets"
-            });
-            chart.Options.XAxis.WithBounds(0, 24);
-            foreach (var bin in observations.HistogramBins) observations.WithPointLabel(bin.Index, bin.Count.ToString(CultureInfo.InvariantCulture));
+            }));
+            chart.Options.XAxis.Bounds(0, 24);
+            foreach (var bin in observations.HistogramBins) observations.PointLabel(bin.Index, bin.Count.ToString(CultureInfo.InvariantCulture));
             return chart.AddSeries(observations);
         }
         var layout = ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 1, 3, 6, 10 });
-        chart.WithXAxis("Measurement").Options.XAxis.WithBounds(0, 10);
+        chart.XAxis(x => x.Title("Measurement")).Options.XAxis.Bounds(0, 10);
         if (aggregation == "weighted-mean") {
             observations = ChartSeries.CreateHistogram(new ChartSeriesId("weighted-quantity"), "Weighted quantity",
                 new[] { new ChartHistogramObservation(.2, 10, 1), new ChartHistogramObservation(.4, 20, 3),
                     new ChartHistogramObservation(1.2, -4, 2), new ChartHistogramObservation(2.5, 12, 1),
                     new ChartHistogramObservation(6.1, 9, 0), new ChartHistogramObservation(9, 5, 4) },
                 layout, ChartHistogramAggregation.WeightedMean);
-            chart.WithYAxis("Weighted mean quantity");
+            chart.YAxis(y => y.Title("Weighted mean quantity"));
         } else if (aggregation is "sum" or "mean") {
             observations = ChartSeries.CreateHistogram(new ChartSeriesId("quantity"), "Quantity",
                 new[] { new ChartPoint(.2, 10), new ChartPoint(.4, -4), new ChartPoint(1.2, 8),
                     new ChartPoint(2.5, 12), new ChartPoint(6.1, -4), new ChartPoint(9, -8) }, layout,
                 aggregation == "sum" ? ChartHistogramAggregation.Sum : ChartHistogramAggregation.Mean);
-            chart.WithYAxis(aggregation == "sum" ? "Total quantity" : "Mean quantity");
+            chart.YAxis(y => y.Title(aggregation == "sum" ? "Total quantity" : "Mean quantity"));
         } else throw new ArgumentOutOfRangeException(nameof(variant));
         return chart.AddSeries(observations);
     }

@@ -1,10 +1,12 @@
 using System;
 using ChartForgeX.Interactivity;
 using ChartForgeX.Primitives;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Interactivity.Html;
 
 /// <summary>Configures HTML crosshair presentation independently of tooltip acquisition and palette.</summary>
+[Fluent]
 public sealed class HtmlChartCrosshairOptions {
     private double? _strokeWidth;
     private HtmlChartCrosshairLineStyle? _lineStyle;

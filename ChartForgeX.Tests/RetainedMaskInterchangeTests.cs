@@ -18,7 +18,7 @@ public sealed class RetainedMaskInterchangeTests {
     [InlineData(390, false)] [InlineData(1100, false)]
     [InlineData(390, true)] [InlineData(1100, true)]
     public void PublicSequenceSaveLoadEditPrepareReplayKeepsPolicyAndActualSourceIdentities(int width, bool dark) {
-        var model = RetainedMaskFixture.Sequence(dark).WithSize(width, 620);
+        var model = RetainedMaskFixture.Sequence(dark).Width(width).Height(620);
         model.Metadata["raw-sequence"] = "001";
         model.Participants[0].Metadata["raw-participant"] = "review@01";
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, 620), 24), model.Theme, model.ThemeMode);

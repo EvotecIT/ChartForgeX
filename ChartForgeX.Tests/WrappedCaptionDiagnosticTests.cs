@@ -13,9 +13,9 @@ public sealed class WrappedCaptionDiagnosticTests {
     [InlineData(ThemeMode.Light)]
     [InlineData(ThemeMode.Dark)]
     public void CompletePyramidRailCaptionsDoNotReportTextLossWhenTheyWrap(ThemeMode mode) {
-        var chart = Chart.Create().WithDataLabels().WithXLabels("Regional platform services in North America", "Regional platform services in South America", "Regional platform services in Western Europe")
+        var chart = Chart.Create().DataLabels().XLabels("Regional platform services in North America", "Regional platform services in South America", "Regional platform services in Western Europe")
             .AddPyramid("Allocation", new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20) });
-        chart.Options.DataLabelPlacement = ChartDataLabelPlacement.Right;
+        chart.Options.DataLabels.Placement = ChartDataLabelPlacement.Right;
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(390, 420), 14),
             VisualTheme.Graphite(), mode, new VisualFrame("", "", showLegend: false), Font()));
         var captions = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "pyramid-label").ToArray();
@@ -58,7 +58,7 @@ public sealed class WrappedCaptionDiagnosticTests {
     [InlineData(12, ThemeMode.Dark)]
     public void MatrixRowsRetainCompleteMultilineNamesAndDiagnoseOmittedCaptions(int count, ThemeMode mode) {
         const string source = "North\nAmerica\nservices";
-        var chart = Chart.Create().WithLegend(false).ConfigureTickLabelStyle(style => style.WithFontSize(13.5));
+        var chart = Chart.Create().Legend(false).TickLabelStyle(style => style.FontSize(13.5));
         chart.Options.XAxis.Visible = false;
         for (var index = 0; index < count; index++) chart.AddHeatmapRow(source, new[] { new ChartPoint(1, index + 1) });
         var prepared = chart.Prepare(Context(mode));
@@ -86,7 +86,7 @@ public sealed class WrappedCaptionDiagnosticTests {
     [InlineData(ChartSeriesKind.StateTimeline, ThemeMode.Dark)]
     public void ScheduleRowsKeepFullSourceNamesWhenTheirVisibleCaptionsWrapOrShorten(ChartSeriesKind kind, ThemeMode mode) {
         const string source = "North America regional platform services and infrastructure ownership";
-        var chart = Chart.Create().WithLegend(false);
+        var chart = Chart.Create().Legend(false);
         if (kind == ChartSeriesKind.GanttLane) chart.AddGanttLane(source, new[] { new ChartGanttLaneItem(1, 3, "active") });
         else chart.AddStateTimelineLane(source, new[] { new ChartStateTimelineSegment(1, 3, "active") });
         var prepared = chart.Prepare(Context(mode));

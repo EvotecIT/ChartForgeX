@@ -56,8 +56,8 @@ public sealed class PreparedHierarchySankeyTests {
 
     [Fact]
     public void SunburstRetainsPositiveCollapsedValuesWithoutInventingSliceGeometry() {
-        var chart = Chart.Create().WithDataLabels(false).AddSeries(ChartSeries.CreateSunburst(new ChartSeriesId("allocation-source"), "Allocation", new[] { new ChartHierarchyItem("root", "All work"), new ChartHierarchyItem("tiny", "Small allocation", "root", 1e-20), new ChartHierarchyItem("visible", "Main allocation", "root", 1) }));
-        chart.Series[0].WithDataLabels(false);
+        var chart = Chart.Create().DataLabels(false).AddSeries(ChartSeries.CreateSunburst(new ChartSeriesId("allocation-source"), "Allocation", new[] { new ChartHierarchyItem("root", "All work"), new ChartHierarchyItem("tiny", "Small allocation", "root", 1e-20), new ChartHierarchyItem("visible", "Main allocation", "root", 1) }));
+        chart.Series[0].ShowDataLabels(false);
         var prepared = chart.Prepare(Context());
         var nodes = Role(XDocument.Parse(prepared.ToSvg()), "sunburst-segment").ToArray();
         var collapsed = Assert.Single(nodes, node => (string?)node.Attribute("data-cfx-target-id") == "tiny");
@@ -96,7 +96,7 @@ public sealed class PreparedHierarchySankeyTests {
     [InlineData(ThemeMode.Dark)]
     public void SankeyFractionalRibbonsAndNodesShareOneExactWeightScale(ThemeMode mode) {
         var chart = Chart.Create().AddSankey("Flows", new[] { new ChartNode("Source", "Source"), new ChartNode("Tiny", "Tiny"), new ChartNode("Large", "Large") }, new[] { new ChartFlowLink("flow-1", "Source", "Tiny", .001), new ChartFlowLink("flow-2", "Source", "Large", 1) });
-        chart.Series[0].WithNodeState(chart.Series[0].Nodes[0].Id, ChartSeriesState.Danger);
+        chart.Series[0].NodeState(chart.Series[0].Nodes[0].Id, ChartSeriesState.Danger);
         var prepared = chart.Prepare(Context(mode: mode)); var xml = XDocument.Parse(prepared.ToSvg());
         var links = Role(xml, "sankey-link").OrderBy(e => Number(e, "data-cfx-value")).ToArray();
         Assert.Equal(1000, Number(links[1], "data-cfx-width") / Number(links[0], "data-cfx-width"), 9);
@@ -117,7 +117,7 @@ public sealed class PreparedHierarchySankeyTests {
             chart.Series[0].FillPattern = ChartFillPattern.DiagonalForward;
             var prepared = chart.Prepare(Context()); string svg = prepared.ToSvg(); byte[] png = prepared.ToPng(new VisualRenderOptions(supersampling: 1));
             Assert.Throws<NotSupportedException>(() => chart.Series[0].Points.Clear());
-            chart.Series[0].Color = ChartColor.Black; if (chart.Series[0].Nodes.Count > 0) chart.Series[0].WithNodeState(chart.Series[0].Nodes[0].Id, ChartSeriesState.Danger);
+            chart.Series[0].Color = ChartColor.Black; if (chart.Series[0].Nodes.Count > 0) chart.Series[0].NodeState(chart.Series[0].Nodes[0].Id, ChartSeriesState.Danger);
             chart.Options.ValueFormatter = _ => "changed"; chart.Series[0].DataLabelStyle.FontSize = 30;
             Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
         }

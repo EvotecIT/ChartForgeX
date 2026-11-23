@@ -1,8 +1,10 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>Per-series source-ordered Polar form, curve and outline policy; angles and numeric radius axes stay chart-owned.</summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class ChartPolarOptions {
     private ChartLineAreaForm _form = ChartLineAreaForm.Line;
     private double? _fillOpacity;

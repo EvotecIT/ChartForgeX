@@ -122,7 +122,7 @@ public static class StateTimelineRecipe {
             new ChartStateTimelineSegment(start, start.AddHours(6), &quot;pass&quot;),
             new ChartStateTimelineSegment(start.AddHours(7), start.AddHours(10), &quot;critical&quot;, &quot;No response&quot;)
         }, group: &quot;Production&quot;);
-        return Chart.Create().WithStateCategories(new ChartStateCategory(&quot;pass&quot;, &quot;Available&quot;, colors.Status.Pass.Fill),
+        return Chart.Create().StateCategories(new ChartStateCategory(&quot;pass&quot;, &quot;Available&quot;, colors.Status.Pass.Fill),
             new ChartStateCategory(&quot;warning&quot;, &quot;Review&quot;, colors.Status.Medium.Fill, ChartStatePattern.Hatched),
             new ChartStateCategory(&quot;critical&quot;, &quot;Unavailable&quot;, colors.Status.Critical.Fill, ChartStatePattern.CrossHatched))
             .AddSeries(primary).AddSeries(secondary);
@@ -170,7 +170,7 @@ public static class StateTimelineRecipe {
             new ChartStateTimelineSegment(start, start.AddHours(6), &quot;pass&quot;),
             new ChartStateTimelineSegment(start.AddHours(7), start.AddHours(10), &quot;critical&quot;, &quot;No response&quot;)
         }, group: &quot;Production&quot;);
-        return Chart.Create().WithStateCategories(new ChartStateCategory(&quot;pass&quot;, &quot;Available&quot;, colors.Status.Pass.Fill),
+        return Chart.Create().StateCategories(new ChartStateCategory(&quot;pass&quot;, &quot;Available&quot;, colors.Status.Pass.Fill),
             new ChartStateCategory(&quot;warning&quot;, &quot;Review&quot;, colors.Status.Medium.Fill, ChartStatePattern.Hatched),
             new ChartStateCategory(&quot;critical&quot;, &quot;Unavailable&quot;, colors.Status.Critical.Fill, ChartStatePattern.CrossHatched))
             .AddSeries(primary).AddSeries(secondary);

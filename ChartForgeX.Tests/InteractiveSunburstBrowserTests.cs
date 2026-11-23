@@ -24,14 +24,14 @@ public sealed class InteractiveSunburstBrowserTests {
         var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var variant = inclusive ? "authored-total" : "options";
         var chart = V2GalleryModels.Create(ChartSeriesKind.Sunburst, variant, mode)
-            .WithSize(width, width < 500 ? 360 : 460).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithTitle("Przydział pracy").WithSubtitle(inclusive ? "Inclusive parent totals retain unallocated remainder" : "Leaf totals size sectors; measured color stays independent")
-            .ConfigureLabels(labels => { labels.Color = "Kolor"; labels.NoData = "Brak danych"; labels.AuthoredValue = "Dostarczono <&>"; labels.Remainder = "Pozostało <&>"; });
+            .Size(width, width < 500 ? 360 : 460).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Title("Przydział pracy").Subtitle(inclusive ? "Inclusive parent totals retain unallocated remainder" : "Leaf totals size sectors; measured color stays independent")
+            .Labels(labels => { labels.Color = "Kolor"; labels.NoData = "Brak danych"; labels.AuthoredValue = "Dostarczono <&>"; labels.Remainder = "Pozostało <&>"; });
         chart.Options.Sunburst.ColorDimension.Name = "Zmiana <&>";
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var html = chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
         chart.Options.Sunburst.ParentValuePolicy = inclusive ? ChartHierarchyValuePolicy.LeafAggregate : ChartHierarchyValuePolicy.AuthoredTotal;
-        chart.ConfigureLabels(labels => { labels.AuthoredValue = "Changed"; labels.Remainder = "Changed"; labels.NoData = "Changed"; });
+        chart.Labels(labels => { labels.AuthoredValue = "Changed"; labels.Remainder = "Changed"; labels.NoData = "Changed"; });
         await using var session = await OpenAsync(html, width + 24, width < 500 ? 510 : 610);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);
         var name = "sunburst-" + variant + "-" + width + "-" + (dark ? "dark" : "light");

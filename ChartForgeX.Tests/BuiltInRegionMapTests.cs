@@ -165,7 +165,7 @@ public sealed class BuiltInRegionMapTests {
     [InlineData("us-states-lambert", "united-states-lambert")]
     public void MarkersAndRoutesComposeOnBuiltInMaps(string id, string projection) {
         var definition = ChartMapCatalog.Get(id);
-        var chart = Chart.Create().WithSize(800, 500)
+        var chart = Chart.Create().Size(800, 500)
             .AddRegionMap("Coverage", definition, new[] { new ChartRegionMapItem(definition.Regions[0].Code, 40), new ChartRegionMapItem(definition.Regions[1].Code, 80) })
             .AddDottedMap("Offices", new[] {
                 new ChartMapPoint("Denver", -104.99, 39.74, 20),

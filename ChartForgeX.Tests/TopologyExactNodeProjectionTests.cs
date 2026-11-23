@@ -43,7 +43,7 @@ public sealed class TopologyExactNodeProjectionTests {
         if (edit == "size") chart.Nodes[0].Width += 10;
         else if (edit == "shape") chart.Nodes[0].Shape = TopologyNodeShape.Rectangle;
         else if (edit == "radius") chart.Nodes[0].CornerRadius = 4;
-        else chart.WithLayout(TopologyLayoutMode.Layered);
+        else chart.LayoutMode(TopologyLayoutMode.Layered);
         var ordinary = TopologyLayoutEngine.Clone(chart); ordinary.Nodes[0].PreparedNodeBasis = null;
         var actual = chart.Prepare(); var expected = ordinary.Prepare();
         Capture(edit + "-actual", actual.Visual); Capture(edit + "-ordinary", expected.Visual);
@@ -87,11 +87,11 @@ public sealed class TopologyExactNodeProjectionTests {
 
     [Fact]
     public void UntranslatedOrdinaryNativeOutputKeepsItsAbsentBasisAndLegacyWireAdmission() {
-        var chart = TopologyChart.Create().WithTitle("").WithLegend(null).WithViewport(480, 360, 24)
-            .WithLayout(TopologyLayoutMode.Manual).AddNode("node", "Node", 60, 100, width: 160, height: 64);
+        var chart = TopologyChart.Create().Title("").Legend((TopologyLegend?)null).Viewport(new TopologyViewport(480, 360, 24))
+            .LayoutMode(TopologyLayoutMode.Manual).AddNode("node", "Node", 60, 100, width: 160, height: 64);
         chart.Nodes[0].Shape = TopologyNodeShape.Rounded; chart.Nodes[0].PreserveDisplayModeSize = true;
         chart.Nodes[0].ShowLabel = false; chart.Nodes[0].ShowStatusBadge = false;
-        chart.WithRenderOptions(new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, FitContentToViewport = false });
+        chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, FitContentToViewport = false });
         var before = chart.Prepare(); Capture("ordinary-absent", before.Visual); var saved = before.ToInterchangeEnvelope();
         Assert.Null(saved.Nodes[0].Topology!.PreparedNodeBasis); Assert.Equal(1, saved.Version);
         var after = VisualArtifactInterchangeEnvelope.FromJson(saved.ToJson()).ToTopologyChart().Prepare(); Capture("ordinary-restored", after.Visual);

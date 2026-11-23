@@ -9,7 +9,7 @@ public sealed class TopologyAlignmentFootprintTests {
     [Theory]
     [InlineData(TopologyNodeDisplayMode.Icon)] [InlineData(TopologyNodeDisplayMode.Tile)]
     public void ExternalCaptionFootprintsAndMeasuredAncestorHeadersParticipateInTheSameSolve(TopologyNodeDisplayMode mode) {
-        var chart = TopologyChart.Create().WithTitle("").WithViewport(700, 500).WithLayout(TopologyLayoutMode.Layered)
+        var chart = TopologyChart.Create().Title("").Viewport(new TopologyViewport(700, 500)).LayoutMode(TopologyLayoutMode.Layered)
             .AddAutoGroup("scope", "First line\nSecond line", subtitle: "Measured context", iconId: "common:server")
             .AddAutoNode("first", "Receive all requests", groupId: "scope", subtitle: "Ready", width: 64, height: 46)
             .AddAutoNode("second", "Verify the complete request", groupId: "scope", subtitle: "Review", width: 64, height: 46);

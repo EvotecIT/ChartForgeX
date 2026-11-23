@@ -21,11 +21,12 @@ public static class MarkupTopologyCSharpEmitter {
         sb.AppendLine("using ChartForgeX.Topology;");
         sb.AppendLine();
         sb.AppendLine("var topology = TopologyChart.Create()");
-        sb.Append("    .WithViewport(").Append(Number(document.Width)).Append(", ").Append(Number(document.Height)).Append(", ").Append(Number(document.Padding)).AppendLine(")");
-        sb.Append("    .WithLayout(TopologyLayoutMode.").Append(document.LayoutMode).Append(", TopologyLayoutDirection.").Append(document.LayoutDirection).AppendLine(")");
-        if (!string.IsNullOrWhiteSpace(document.Id)) sb.Append("    .WithId(").Append(Literal(document.Id!)).AppendLine(")");
-        if (!string.IsNullOrWhiteSpace(document.Title)) sb.Append("    .WithTitle(").Append(Literal(document.Title!)).AppendLine(")");
-        if (!string.IsNullOrWhiteSpace(document.Subtitle)) sb.Append("    .WithSubtitle(").Append(Literal(document.Subtitle!)).AppendLine(")");
+        sb.Append("    .Viewport(new TopologyViewport(").Append(Number(document.Width)).Append(", ").Append(Number(document.Height)).Append(", ").Append(Number(document.Padding)).AppendLine("))");
+        sb.Append("    .LayoutMode(TopologyLayoutMode.").Append(document.LayoutMode).AppendLine(")");
+        sb.Append("    .LayoutDirection(TopologyLayoutDirection.").Append(document.LayoutDirection).AppendLine(")");
+        if (!string.IsNullOrWhiteSpace(document.Id)) sb.Append("    .Id(").Append(Literal(document.Id!)).AppendLine(")");
+        if (!string.IsNullOrWhiteSpace(document.Title)) sb.Append("    .Title(").Append(Literal(document.Title!)).AppendLine(")");
+        if (!string.IsNullOrWhiteSpace(document.Subtitle)) sb.Append("    .Subtitle(").Append(Literal(document.Subtitle!)).AppendLine(")");
 
         foreach (var group in document.Groups) {
             sb.Append("    .AddGroup(").Append(Literal(group.Id)).Append(", ").Append(Literal(group.Label)).Append(", 0, 0, ").Append(Number(group.Width)).Append(", ").Append(Number(group.Height)).Append(", TopologyHealthStatus.").Append(group.Status);
@@ -45,8 +46,12 @@ public static class MarkupTopologyCSharpEmitter {
             AppendNamed(sb, "color", node.Color);
             AppendNamed(sb, "iconId", node.Icon);
             sb.AppendLine(")");
-            if (!string.IsNullOrWhiteSpace(node.Badge)) sb.Append("    .WithNodeBadge(").Append(Literal(node.Id)).Append(", ").Append(Literal(node.Badge!)).AppendLine(")");
-            if (node.Display.HasValue) sb.Append("    .WithNodeDisplay(").Append(Literal(node.Id)).Append(", TopologyNodeDisplayMode.").Append(node.Display.Value).AppendLine(")");
+            if (!string.IsNullOrWhiteSpace(node.Badge) || node.Display.HasValue) {
+                sb.Append("    .UpdateNode(").Append(Literal(node.Id)).Append(", n => n");
+                if (!string.IsNullOrWhiteSpace(node.Badge)) sb.Append(".Badge(").Append(Literal(node.Badge!)).Append(')');
+                if (node.Display.HasValue) sb.Append(".DisplayMode(TopologyNodeDisplayMode.").Append(node.Display.Value).Append(')');
+                sb.AppendLine(")");
+            }
         }
 
         foreach (var edge in document.Edges) {

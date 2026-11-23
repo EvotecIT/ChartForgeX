@@ -36,7 +36,7 @@ public static class BubbleRecipe {
 
     // Batch size in items, median processing time in minutes and requests handled during the week.
     private static Chart RequestVolume() => Chart.Create()
-        .WithXAxis("Batch size (items)").WithYAxis("Processing time (minutes)")
+        .XAxis(x => x.Title("Batch size (items)")).YAxis(y => y.Title("Processing time (minutes)"))
         .AddSeries(ChartSeries.CreateBubble(new ChartSeriesId("standard"), "Standard", new[] {
             new ChartBubble(40, 18, 320), new ChartBubble(80, 26, 540), new ChartBubble(120, 31, 410),
             new ChartBubble(160, 39, 620), new ChartBubble(220, 47, 380), new ChartBubble(280, 58, 260) }))
@@ -50,7 +50,7 @@ public static class BubbleRecipe {
     private static Chart Sparse() {
         var requests = ChartSeries.CreateBubble(new ChartSeriesId("requests"), "Requests",
             Enumerable.Range(1, 2).Select(index => new ChartBubble(index, 20 + index * 5, index * index + 1)));
-        return Chart.Create().WithXLabels("1", "2", "3", "4", "5", "6")
-            .WithXAxis("Workload batches").WithYAxis("Time (minutes)").AddSeries(requests);
+        return Chart.Create().XLabels("1", "2", "3", "4", "5", "6")
+            .XAxis(x => x.Title("Workload batches")).YAxis(y => y.Title("Time (minutes)")).AddSeries(requests);
     }
 }

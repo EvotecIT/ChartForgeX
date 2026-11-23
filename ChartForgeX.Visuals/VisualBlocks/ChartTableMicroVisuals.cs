@@ -83,19 +83,19 @@ public sealed partial class ChartTableCell {
     public ChartColor? BadgeColor { get; set; }
 
     /// <summary>Sets compact mini bars for this table cell.</summary>
-    public ChartTableCell WithMiniBars(IEnumerable<double> values, double? minimum = null, double? maximum = null, ChartColor? color = null) {
+    public ChartTableCell MiniBars(IEnumerable<double> values, double? minimum = null, double? maximum = null, ChartColor? color = null) {
         SetMicroVisual(ChartTableCellMicroVisualKind.MiniBars, values, minimum, maximum, color);
         return this;
     }
 
     /// <summary>Sets a compact sparkline for this table cell.</summary>
-    public ChartTableCell WithSparkline(IEnumerable<double> values, double? minimum = null, double? maximum = null, ChartColor? color = null) {
+    public ChartTableCell Sparkline(IEnumerable<double> values, double? minimum = null, double? maximum = null, ChartColor? color = null) {
         SetMicroVisual(ChartTableCellMicroVisualKind.Sparkline, values, minimum, maximum, color);
         return this;
     }
 
     /// <summary>Sets shared sparkline sample slots without moving or replacing missing observations.</summary>
-    public ChartTableCell WithSparkline(SparklineData data, ChartColor? color = null) {
+    public ChartTableCell Sparkline(SparklineData data, ChartColor? color = null) {
         if (data == null) throw new ArgumentNullException(nameof(data));
         SparklineData = data; MicroVisualKind = ChartTableCellMicroVisualKind.Sparkline;
         _microVisualValues.Clear();
@@ -105,7 +105,7 @@ public sealed partial class ChartTableCell {
     }
 
     /// <summary>Sets a compact badge for this table cell.</summary>
-    public ChartTableCell WithBadge(string text, Tone? status = null, ChartColor? color = null, VisualBadgeStyle style = VisualBadgeStyle.Soft) {
+    public ChartTableCell Badge(string text, Tone? status = null, ChartColor? color = null, VisualBadgeStyle style = VisualBadgeStyle.Soft) {
         BadgeText = text ?? throw new ArgumentNullException(nameof(text));
         BadgeStatus = status ?? Tone.Neutral;
         BadgeColor = color;

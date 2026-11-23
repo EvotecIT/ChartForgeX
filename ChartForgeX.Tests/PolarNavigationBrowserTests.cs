@@ -301,7 +301,7 @@ public sealed class PolarNavigationBrowserTests {
         private readonly Chart _chart;
         private readonly Dictionary<string, HtmlChartSection> _snapshots = new();
         internal Host(bool dark, bool reversed = false, bool seam = false) {
-            _chart = PolarViewportRecipe.Create(900, dark ? ThemeMode.Dark : ThemeMode.Light).WithFontFamily(BrowserProofFonts.Family);
+            _chart = PolarViewportRecipe.Create(900, dark ? ThemeMode.Dark : ThemeMode.Light).FontFamily(BrowserProofFonts.Family);
             _chart.Options.XAxis.Reversed = reversed;
             var window = seam ? new ChartPolarViewport(new ChartAxisWindow(2.6, 3.7), new ChartAxisWindow(20, 80), new ChartAxisWindow(10, 100)) : PolarNavigationTests.Window();
             _snapshots.Add("initial", PolarNavigationRecipe.PrepareSection(_chart, window));

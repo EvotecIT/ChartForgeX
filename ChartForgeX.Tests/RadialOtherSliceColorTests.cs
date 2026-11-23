@@ -17,9 +17,9 @@ public sealed class RadialOtherSliceColorTests {
     [MemberData(nameof(Themes))]
     public void OtherSlice_EveryBuiltInTheme_ContrastsWithThePlot(string theme, ThemeMode mode) {
         var colors = ((VisualTheme)typeof(VisualTheme).GetMethod(theme)!.Invoke(null, null)!).Resolve(mode);
-        var chart = Chart.Create().WithSize(480, 320)
+        var chart = Chart.Create().Size(480, 320)
             .AddDonut("Licences", Enumerable.Range(0, 14).Select(index => new ChartPoint(index, index == 0 ? 8 : 6)));
-        chart.Options.MaximumPieSlices = 2;
+        chart.Options.Pie.MaxSlices = 2;
 
         var other = VisualRadialCompiler.LegendEntries(chart, colors).Last();
 

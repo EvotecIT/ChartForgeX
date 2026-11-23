@@ -115,10 +115,10 @@ public static class LollipopHorizontalRecipe {
         if (variant is not (&quot;horizontal&quot; or &quot;compact-horizontal&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var points = Enumerable.Range(1, 6).Select(index =&gt; new ChartPoint(index, 20 + index * 7 % 29));
         var orders = new ChartSeries(new ChartSeriesId(&quot;orders&quot;), &quot;Orders&quot;, ChartSeriesKind.Lollipop, points)
-            .WithObservationIds(new[] { &quot;received&quot;, &quot;packed&quot;, &quot;shipped&quot;, &quot;transit&quot;, &quot;delivered&quot;, &quot;reviewed&quot; }.Select(id =&gt; new ChartObservationId(id)));
-        var chart = Chart.Create().WithXLabels(&quot;Received&quot;, &quot;Packed&quot;, &quot;Shipped&quot;, &quot;In transit&quot;, &quot;Delivered&quot;, &quot;Reviewed&quot;)
-            .WithXAxis(&quot;Orders&quot;).WithYAxis(&quot;Delivery stage&quot;).WithLegend(false).AddSeries(orders)
-            .WithValueFormat(ChartValueFormat.Number(&quot;0&quot;, CultureInfo.InvariantCulture));
+            .ObservationIds(new[] { &quot;received&quot;, &quot;packed&quot;, &quot;shipped&quot;, &quot;transit&quot;, &quot;delivered&quot;, &quot;reviewed&quot; }.Select(id =&gt; new ChartObservationId(id)));
+        var chart = Chart.Create().XLabels(&quot;Received&quot;, &quot;Packed&quot;, &quot;Shipped&quot;, &quot;In transit&quot;, &quot;Delivered&quot;, &quot;Reviewed&quot;)
+            .XAxis(x =&gt; x.Title(&quot;Orders&quot;)).YAxis(y =&gt; y.Title(&quot;Delivery stage&quot;)).Legend(false).AddSeries(orders)
+            .ValueFormat(ChartValueFormat.Number(&quot;0&quot;, CultureInfo.InvariantCulture));
         chart.Options.LollipopOrientation = ChartOrientation.Horizontal;
         return chart;
     }
@@ -158,10 +158,10 @@ public static class LollipopHorizontalRecipe {
         if (variant is not (&quot;horizontal&quot; or &quot;compact-horizontal&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var points = Enumerable.Range(1, 6).Select(index =&gt; new ChartPoint(index, 20 + index * 7 % 29));
         var orders = new ChartSeries(new ChartSeriesId(&quot;orders&quot;), &quot;Orders&quot;, ChartSeriesKind.Lollipop, points)
-            .WithObservationIds(new[] { &quot;received&quot;, &quot;packed&quot;, &quot;shipped&quot;, &quot;transit&quot;, &quot;delivered&quot;, &quot;reviewed&quot; }.Select(id =&gt; new ChartObservationId(id)));
-        var chart = Chart.Create().WithXLabels(&quot;Received&quot;, &quot;Packed&quot;, &quot;Shipped&quot;, &quot;In transit&quot;, &quot;Delivered&quot;, &quot;Reviewed&quot;)
-            .WithXAxis(&quot;Orders&quot;).WithYAxis(&quot;Delivery stage&quot;).WithLegend(false).AddSeries(orders)
-            .WithValueFormat(ChartValueFormat.Number(&quot;0&quot;, CultureInfo.InvariantCulture));
+            .ObservationIds(new[] { &quot;received&quot;, &quot;packed&quot;, &quot;shipped&quot;, &quot;transit&quot;, &quot;delivered&quot;, &quot;reviewed&quot; }.Select(id =&gt; new ChartObservationId(id)));
+        var chart = Chart.Create().XLabels(&quot;Received&quot;, &quot;Packed&quot;, &quot;Shipped&quot;, &quot;In transit&quot;, &quot;Delivered&quot;, &quot;Reviewed&quot;)
+            .XAxis(x =&gt; x.Title(&quot;Orders&quot;)).YAxis(y =&gt; y.Title(&quot;Delivery stage&quot;)).Legend(false).AddSeries(orders)
+            .ValueFormat(ChartValueFormat.Number(&quot;0&quot;, CultureInfo.InvariantCulture));
         chart.Options.LollipopOrientation = ChartOrientation.Horizontal;
         return chart;
     }

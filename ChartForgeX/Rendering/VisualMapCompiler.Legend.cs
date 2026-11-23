@@ -9,7 +9,7 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualMapCompiler {
     /// <summary>Counts authored entries without evaluating point captions or numeric color formatters at the export boundary.</summary>
     internal static int LegendEntryCount(Chart chart) => chart.Series.Where(series => series.ShowInLegend)
-        .Sum(series => series.Kind == ChartSeriesKind.DottedMap && chart.Options.ShowPointLegend ? series.MapPoints.Count : 1) + chart.Options.Legend.Items.Count;
+        .Sum(series => series.Kind == ChartSeriesKind.DottedMap && chart.Options.Legend.ShowPoints ? series.MapPoints.Count : 1) + chart.Options.Legend.Items.Count;
 
     internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors, ChartColorPresentationSet? colorScales = null) {
         colorScales ??= new ChartColorPresentationSet(chart);
@@ -19,7 +19,7 @@ internal static partial class VisualMapCompiler {
     private static IReadOnlyList<VisualLegendEntry> DatasetLegendEntries(Chart chart, VisualThemeColors colors, ChartSeries series, int seriesIndex, ChartColorPresentationSet colorScales) {
         var prefix = "series-" + N(seriesIndex);
         if (!series.ShowInLegend) return Array.Empty<VisualLegendEntry>();
-        if (series.Kind == ChartSeriesKind.DottedMap && chart.Options.ShowPointLegend) {
+        if (series.Kind == ChartSeriesKind.DottedMap && chart.Options.Legend.ShowPoints) {
             var data = colorScales.MapDataset(seriesIndex);
             return series.MapPoints.Select((point, index) => {
                 var (color, paint) = data.PointPaint(index, colors);

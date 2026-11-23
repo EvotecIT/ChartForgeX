@@ -9,7 +9,7 @@ namespace ChartForgeX.Tests;
 public sealed class PacketFieldReadabilityTests {
     [Fact]
     public void WrappedCaptionShortensAtReadableSizeInsteadOfShrinkingBelowEightPixels() {
-        var packet = PacketLayoutBlock.Create().WithBitsPerRow(16).WithBitWidth(18).WithRowHeight(40).WithFieldGap(3)
+        var packet = PacketLayoutBlock.Create().BitsPerRow(16).BitWidth(18).RowHeight(40).FieldGap(3)
             .AddField(0, 3, "Flags").AddField(4, 17, "Payload").AddField(18, 23, "Tail");
         packet.Options.Theme = packet.Options.Theme.WithFontFamily("Consolas, DejaVu Sans Mono, monospace");
         packet.Options.Theme = packet.Options.Theme.Configure(builder => { builder.Typography = new VisualTypography(family: builder.Typography.Family, titleSize: builder.Typography.TitleSize, subtitleSize: builder.Typography.SubtitleSize, axisSize: builder.Typography.AxisSize, legendSize: builder.Typography.LegendSize, dataLabelSize: 32, axisTitleSize: builder.Typography.AxisTitleSize, scalarValueSize: builder.Typography.ScalarValueSize, centerValueSize: builder.Typography.CenterValueSize, monospaceFamily: builder.Typography.MonospaceFamily); });

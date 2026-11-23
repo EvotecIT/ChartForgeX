@@ -6,11 +6,11 @@ internal static partial class SmokeTests {
     private static void TopologyRenderOptionsCloneKeepsIconCatalogIndependent() {
         var catalog = new TopologyIconCatalog().AddPack(
             new TopologyIconPack("vendor", "Vendor", "Example")
-                .WithMetadata("source", "original")
+                .Metadata("source", "original")
                 .AddIcon(new TopologyIconDefinition("vendor", "service", "Service", TopologyNodeKind.Service)
-                    .WithArtwork(TopologyIconArtwork.InlineSvg("<path d='M0 0h24v24H0z'/>", "0 0 24 24"))
-                    .WithMetadata("tier", "one")
-                    .WithTags("service"))
+                    .Artwork(TopologyIconArtwork.InlineSvg("<path d='M0 0h24v24H0z'/>", "0 0 24 24"))
+                    .Metadata("tier", "one")
+                    .AddTags("service"))
                 .AddIcon(new TopologyIconDefinition("vendor", "worker", "Worker", TopologyNodeKind.Service)));
         catalog.Packs[0].Tags.Add("  raw pack tag  ");
         catalog.Packs[0].Tags.Add("RAW PACK TAG");

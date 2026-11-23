@@ -15,10 +15,10 @@ public sealed class RadarStrokeColorVariableTests {
     public async Task PlotAndLegendUseTheSameExplicitPaintUnderHostColorVariables(bool mixed) {
         var color = ChartColor.FromHex("#DC2626");
         var values = Enumerable.Range(1, 4).Select(index => new ChartPoint(index, 65)).ToArray();
-        var chart = Chart.Create().WithSize(520, 380).WithHeader(false).WithLegend(true).WithDataLabels(false).WithYAxisBounds(0, 100);
+        var chart = Chart.Create().Size(520, 380).ShowHeader(false).Legend(true).DataLabels(false).YAxis(y => y.Bounds(0, 100));
         if (mixed) chart.AddRadialColumn("Count", values);
         chart.AddRadarArea("Target", values, color);
-        chart.WithSvgColorVariables(new SvgColorVariables().Add("--radar-outline", color, SvgColorRole.Series));
+        chart.SvgColorVariables(new SvgColorVariables().Add("--radar-outline", color, SvgColorRole.Series));
         chart.Series.Last().Radar.OutlineStroke = new ChartStrokeStyle(width: 4);
         Assert.All(Strokes(chart.ToSvg()), stroke => Assert.Contains("var(--radar-outline,", stroke, StringComparison.Ordinal));
         chart.Series.Last().Radar.OutlineStroke = new ChartStrokeStyle(color, 4);

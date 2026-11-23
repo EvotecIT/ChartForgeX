@@ -53,7 +53,7 @@ public sealed partial class VisualDesignTokens {
     /// <summary>
     /// Gets or sets the severity, outcome, and operational-state colours. Use
     /// <see cref="VisualStatusTokens.OperationalStateCategories"/> and related methods with
-    /// <see cref="ChartForgeX.Core.Chart.WithStateCategories(ChartForgeX.Core.ChartStateCategory[])"/>.
+    /// <see cref="ChartForgeX.Core.Chart.StateCategories(ChartForgeX.Core.ChartStateCategory[])"/>.
     /// </summary>
     public VisualStatusTokens Status {
         get => _status;

@@ -18,7 +18,7 @@ public sealed class SequenceSelfRoutesBeforeTests {
     [Theory]
     [InlineData(false)] [InlineData(true)]
     public void NativeOmittedSelfRoutingKeepsItsOrdinaryPathAndInlineNumberControl(bool numbered) {
-        var model=SequenceArtifact.Create("self-default").WithSize(900,700).AddParticipant("A","Review").AddMessage("A","A","Check");if(numbered)model.Metadata["mermaid.autonumber"]="true";
+        var model=SequenceArtifact.Create("self-default").Width(900).Height(700).AddParticipant("A","Review").AddMessage("A","A","Check");if(numbered)model.Metadata["mermaid.autonumber"]="true";
         var output=Output();if(output!=null){Directory.CreateDirectory(output);var stem=Path.Combine(output,"sequence-self-native-default-"+numbered);File.WriteAllText(stem+".svg",model.ToSvg());File.WriteAllBytes(stem+".png",model.ToPng());File.WriteAllText(stem+".json",model.ToVisualArtifact().ToInterchangeJson());}
         var path=XDocument.Parse(model.ToSvg()).Descendants().Single(item=>(string?)item.Attribute("data-cfx-role")=="sequence-message-line");Assert.DoesNotContain("C",path.Attribute("d")!.Value);Assert.Contains(numbered?"1. Check":"Check",model.ToSvg());
     }

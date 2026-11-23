@@ -14,11 +14,11 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         if (!Enabled) return;
         const string cell = "[data-cfx-role='heatmap-cell'][data-cfx-point='0']";
         const string link = "a[href='#evidence']";
-        var chart = Chart.Create().WithSize(800, 440).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithXLabels("Evidence")
-            .WithStateCategories(new ChartStateCategory("pass", "Passed", ChartColor.FromHex("#1d8a52")))
+        var chart = Chart.Create().Size(800, 440).ShowHeader(false).Legend(false).DataLabels(false)
+            .XLabels("Evidence")
+            .StateCategories(new ChartStateCategory("pass", "Passed", ChartColor.FromHex("#1d8a52")))
             .AddHeatmapCategoryRow("Reading", new[] { new ChartHeatmapCell("pass", "1", href: "#evidence") });
-        chart.Series[0].WithObservationId(0, new ChartObservationId("reading"));
+        chart.Series[0].ObservationId(0, new ChartObservationId("reading"));
         var html = chart.ToInteractiveHtmlPage(options => {
             ConfigureDelay(options, "exact");
             options.Tooltip.Mode = HtmlChartTooltipMode.Single;

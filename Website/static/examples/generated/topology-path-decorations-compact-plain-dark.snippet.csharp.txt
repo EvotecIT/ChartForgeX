@@ -18,9 +18,9 @@ var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 #endregion
 
-var chart = TopologyChart.Create().WithId("maintenance-boundary").WithTitle("Maintenance boundary")
-    .WithViewport(390, 400, 28).WithTheme(VisualTheme.Graphite(), mode);
-chart.WithRenderOptions(new TopologyRenderOptions { FitContentToViewport = true });
+var chart = TopologyChart.Create().Id("maintenance-boundary").Title("Maintenance boundary")
+    .Viewport(new TopologyViewport(390, 400, 28)).Theme(VisualTheme.Graphite(), mode);
+chart.DefaultRenderOptions(new TopologyRenderOptions { FitContentToViewport = true });
 chart.AddNode("gateway", "Gateway", 80, 130, width: 180, height: 90);
 chart.AddNode("worker", "Worker", 460, 130, width: 180, height: 90);
 chart.AddEdge("dispatch", "gateway", "worker", "Dispatch");

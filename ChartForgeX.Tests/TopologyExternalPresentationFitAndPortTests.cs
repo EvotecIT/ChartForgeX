@@ -14,7 +14,7 @@ public sealed class TopologyExternalPresentationFitAndPortTests {
     [InlineData(TopologyNodeDisplayMode.Icon,false)] [InlineData(TopologyNodeDisplayMode.Icon,true)]
     [InlineData(TopologyNodeDisplayMode.Tile,false)] [InlineData(TopologyNodeDisplayMode.Tile,true)]
     public void FittedExternalGlyphCaptionRadiusAndStrokeReuseOneCapturedUnitBasis(TopologyNodeDisplayMode mode,bool enlarge) {
-        var chart=TopologyExternalCaptionPolicyTests.Source(mode);chart.WithLayout(TopologyLayoutMode.Layered);chart.WithViewport(enlarge?1000:180,enlarge?700:140,24);
+        var chart=TopologyExternalCaptionPolicyTests.Source(mode);chart.LayoutMode(TopologyLayoutMode.Layered);chart.Viewport(new TopologyViewport(enlarge?1000:180, enlarge?700:140, 24));
         var node=chart.Nodes[0];node.CaptionPlacement=TopologyCaptionPlacement.Top;node.CaptionGap=8;node.CaptionSurface=TopologyCaptionSurface.Plate;
         node.CaptionTextStyle=new TextStyleOverride{FontFamily=BrowserProofFonts.Family,FontSize=14,FontWeight="400"};node.GlyphScale=1.5;node.CornerRadius=12;node.StrokeWidth=3;node.BorderColor="#ef4444";
         var options=chart.ResolveRenderOptions(null);options.FitContentToViewport=true;var direct=chart.Prepare(options);var svg=direct.ToSvg();var png=direct.ToPng();var json=direct.ToInterchangeEnvelope().ToJson();Capture(mode+"-"+enlarge,direct);
@@ -39,11 +39,11 @@ public sealed class TopologyExternalPresentationFitAndPortTests {
 
     [Theory] [InlineData(10d,10d)] [InlineData(1000d,30d)]
     public void NamedPortsAndCaptionAllocationUseTheSameClampedRoundedBody(double authored,double resolved) {
-        var chart=TopologyChart.Create().WithId("rounded-external-port").WithTitle("").WithViewport(640,400,24).WithLayout(TopologyLayoutMode.Manual)
+        var chart=TopologyChart.Create().Id("rounded-external-port").Title("").Viewport(new TopologyViewport(640, 400, 24)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("source","Review",150,170,width:100,height:60).AddNode("target","Publish",400,40,width:100,height:60)
             .AddNodePort("source","exit",TopologyEdgePort.Top,0).AddEdge("request","source","target",routing:TopologyEdgeRouting.Orthogonal);
         foreach(var node in chart.Nodes){node.ShowStatusBadge=false;node.Shape=TopologyNodeShape.Rectangle;node.PreserveDisplayModeSize=true;}chart.Nodes[0].CornerRadius=authored;chart.Edges[0].SourcePortId="exit";
-        chart.WithRenderOptions(new TopologyRenderOptions{IncludeLegend=false,FitContentToViewport=false});var prepared=chart.Prepare();Capture("radius-port-"+authored,prepared);
+        chart.DefaultRenderOptions(new TopologyRenderOptions{IncludeLegend=false,FitContentToViewport=false});var prepared=chart.Prepare();Capture("radius-port-"+authored,prepared);
         var envelope=prepared.ToInterchangeEnvelope();var route=envelope.Edges[0].ResolvedRoute;var source=envelope.Nodes[0];
         Assert.NotEmpty(route);Assert.Equal(source.X!.Value,route[0].X,6);Assert.Equal(source.Y!.Value+resolved,route[0].Y,6);Assert.Equal("exit",envelope.Edges[0].SourcePortId);
         Assert.Equal(prepared.ToPng(),VisualArtifactInterchangeEnvelope.FromJson(envelope.ToJson()).ToTopologyChart().ToPng());

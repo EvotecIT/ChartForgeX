@@ -120,10 +120,7 @@ internal static partial class Program {
     }
 
     private static string RenderInteractivePage(TopologyChart chart, TopologyResolvedScenario? scenario) {
-        var options = new TopologyRenderOptions {
-            EnableHtmlScenarioUrlState = true,
-            ActiveScenarioId = scenario?.Id ?? chart.Scenarios[0].Id
-        }.WithHtmlScenarioPanel().WithHtmlScenarioSequence();
+        var options = new TopologyRenderOptions { Html = { ScenarioUrlState = true }, ActiveScenarioId = scenario?.Id ?? chart.Scenarios[0].Id }.HtmlScenarioPanel().HtmlScenarioSequence();
         return chart.ToInteractiveHtmlPage(options);
     }
 

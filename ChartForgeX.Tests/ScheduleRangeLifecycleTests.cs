@@ -19,11 +19,11 @@ public sealed class ScheduleRangeLifecycleTests {
     [InlineData(1, ThemeMode.Dark)]
     [InlineData(2, ThemeMode.Dark)]
     public void EmptyTimelinePeersKeepSourceIdentitiesAndPackOnlyObservedRows(int emptyIndex, ThemeMode mode) {
-        var chart = Chart.Create().WithSize(520, 320).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithBarStyle(ChartBarStyle.Flat);
+        var chart = Chart.Create().Size(520, 320).ShowHeader(false).Legend(false).DataLabels(false)
+            .Bars(b => b.Style(ChartBarStyle.Flat));
         for (var index = 0; index < 3; index++) {
             chart.AddTimelineRange("Task " + index, index + 1, index + 4, Paint);
-            chart.Series[index].WithObservationId(0, new ChartObservationId("task-" + index));
+            chart.Series[index].ObservationId(0, new ChartObservationId("task-" + index));
         }
         var series = chart.Series.ToArray();
         var before = chart.Prepare(Context(mode)); var svg = before.ToSvg(); var png = before.ToPng(Raster());

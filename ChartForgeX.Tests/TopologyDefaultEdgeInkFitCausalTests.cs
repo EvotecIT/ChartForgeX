@@ -11,7 +11,7 @@ public sealed class TopologyDefaultEdgeInkFitCausalTests {
     [Theory]
     [InlineData(false)] [InlineData(true)]
     public void ExistingDefaultLineLayersKeepTheirFittedNativeInkThroughPortableRestore(bool fit) {
-        var chart = TopologyChart.Create().WithId("default-edge-ink-before").WithViewport(760, 440, 24).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
+        var chart = TopologyChart.Create().Id("default-edge-ink-before").Viewport(new TopologyViewport(760, 440, 24)).LayoutMode(TopologyLayoutMode.Manual).Legend((TopologyLegend?)null)
             .AddNode("a", "A", 50, 160, width: 150, height: 70).AddNode("b", "B", 540, 160, width: 150, height: 70)
             .AddEdge("handoff", "a", "b", direction: VisualLinkDirection.None);
         foreach (var node in chart.Nodes) { node.DisplayMode = TopologyNodeDisplayMode.Hidden; node.ShowStatusBadge = false; }

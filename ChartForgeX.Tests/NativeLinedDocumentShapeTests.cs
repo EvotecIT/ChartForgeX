@@ -23,7 +23,7 @@ public sealed class NativeLinedDocumentShapeTests {
         var caption = TopologyNodeShapeGeometry.CaptionBounds(node, 30);
         Assert.True(caption.Left > node.X + 12);
         Assert.True(caption.Bottom < node.Y + node.Height - 10);
-        var chart = TopologyChart.Create().WithViewport(380, 230, 12).WithLegend(null);
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(380, 230, 12)).Legend((TopologyLegend?)null);
         chart.Nodes.Add(node);
         var prepared = chart.Prepare(new TopologyRenderOptions { IncludeLegend = false });
         Assert.Equal(2, prepared.Visual.Scene.Nodes.OfType<VisualScenePath>().Count(path => path.Role == "topology-node-surface"));

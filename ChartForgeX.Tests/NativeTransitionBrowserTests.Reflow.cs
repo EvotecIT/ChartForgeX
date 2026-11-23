@@ -17,8 +17,8 @@ public sealed partial class NativeTransitionBrowserTests {
     public async Task RealNativeReflowDisplaysCapturedSourceThenDestinationWithoutChangingAcceptedExport(string kind, int width, bool dark) {
         if (!Enabled) return;
         var renderer = new HtmlInteractiveChartRenderer(); var chart = NativeReflowVisibilityTests.Model(kind, labels: true)
-            .WithSize(width, 420).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light);
-        if (kind == "line") chart.WithLineMarkers(ChartLineMarkerMode.All);
+            .Size(width, 420).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
+        if (kind == "line") chart.Lines(l => l.MarkerMode(ChartLineMarkerMode.All));
         HtmlChartSection Section(bool hidden) => renderer.PrepareVisibilitySection(chart, NativeReflowVisibilityTests.View(kind, hidden), configure: value => {
             value.Interaction.ChartId = "native-reflow"; value.Interaction.Enable(ChartInteractionFeatures.Export | ChartInteractionFeatures.LegendToggles);
             value.ResponsiveLayout = HtmlChartResponsiveLayout.Adaptive; value.Adaptive.NarrowWidth = 350; value.Adaptive.NarrowHeight = 420;
@@ -56,8 +56,8 @@ public sealed partial class NativeTransitionBrowserTests {
     [Trait("BrowserSuite", "Compatibility")]
     public async Task ActualRetainedNativePointAndGroupLegendUsesTypedAbsoluteIntentAndExistingReset(string kind, int width, bool dark) {
         if (!Enabled) return;
-        var renderer = new HtmlInteractiveChartRenderer(); var chart = NativeReflowVisibilityTests.Model(kind).WithSize(width, 420)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light);
+        var renderer = new HtmlInteractiveChartRenderer(); var chart = NativeReflowVisibilityTests.Model(kind).Size(width, 420)
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         HtmlChartSection Section(bool hidden) => renderer.PrepareVisibilitySection(chart, NativeReflowVisibilityTests.View(kind, hidden), configure: value => { value.Interaction.ChartId = "native-reflow-legend"; value.Interaction.Enable(ChartInteractionFeatures.LegendToggles | ChartInteractionFeatures.Export); });
         var from = Section(false); var to = Section(true); var options = new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.LegendVisibility, 5);
         var forward = renderer.PrepareNativeTransitionJson(from, to, options); var reverse = renderer.PrepareNativeTransitionJson(to, from, options);

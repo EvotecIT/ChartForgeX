@@ -117,7 +117,7 @@ public static class SequenceRecipe {
         if (variant is not (&quot;wide&quot; or &quot;expanded&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant), variant, &quot;Use wide or expanded.&quot;);
 
-        var model = SequenceArtifact.Create(&quot;request-sequence&quot;).WithSize(800, 633)
+        var model = SequenceArtifact.Create(&quot;request-sequence&quot;).Width(800).Height(633)
             .AddParticipant(&quot;client&quot;, &quot;Client&quot;, SequenceArtifactParticipantKind.Actor)
             .AddParticipant(&quot;service&quot;, &quot;Service&quot;, SequenceArtifactParticipantKind.Control)
             .AddParticipant(&quot;store&quot;, &quot;Store&quot;, SequenceArtifactParticipantKind.Database)
@@ -173,7 +173,7 @@ public static class SequenceRecipe {
         if (variant is not (&quot;wide&quot; or &quot;expanded&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant), variant, &quot;Use wide or expanded.&quot;);
 
-        var model = SequenceArtifact.Create(&quot;request-sequence&quot;).WithSize(800, 633)
+        var model = SequenceArtifact.Create(&quot;request-sequence&quot;).Width(800).Height(633)
             .AddParticipant(&quot;client&quot;, &quot;Client&quot;, SequenceArtifactParticipantKind.Actor)
             .AddParticipant(&quot;service&quot;, &quot;Service&quot;, SequenceArtifactParticipantKind.Control)
             .AddParticipant(&quot;store&quot;, &quot;Store&quot;, SequenceArtifactParticipantKind.Database)

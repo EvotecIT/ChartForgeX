@@ -17,7 +17,7 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
     public async Task PinnedLabelKeepsReadableThemeContrastAndTranslatedContent(bool dark) {
         if (!Enabled) return;
         const string caption = "Przypięte";
-        var chart = Frame(dark).WithTitle("Pinned observations")
+        var chart = Frame(dark).Title("Pinned observations")
             .AddLine("Reading", new[] { new ChartPoint(0, 5), new ChartPoint(1, 8) });
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;

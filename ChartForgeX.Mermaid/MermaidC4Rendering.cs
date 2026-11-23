@@ -17,11 +17,11 @@ public static partial class MermaidC4Rendering {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidTopologyRenderOptions();
         var chart = TopologyChart.Create()
-            .WithId(string.IsNullOrWhiteSpace(options.Id) ? "mermaid-c4" : options.Id!.Trim())
-            .WithTitle(MermaidHeading.Title(document, options.Title, document.Title, "Mermaid C4 diagram"))
-            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
-            .WithViewport(options.Width, options.Height, options.Padding)
-            .WithLayout(TopologyLayoutMode.Layered, MermaidTopologyRendering.DiagramDirection(document.Direction, MermaidTopologyRendering.PreferredDirection(options)));
+            .Id(string.IsNullOrWhiteSpace(options.Id) ? "mermaid-c4" : options.Id!.Trim())
+            .Title(MermaidHeading.Title(document, options.Title, document.Title, "Mermaid C4 diagram"))
+            .Subtitle(MermaidHeading.Subtitle(options.Subtitle))
+            .Viewport(new TopologyViewport(options.Width, options.Height, options.Padding))
+            .LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(MermaidTopologyRendering.DiagramDirection(document.Direction, MermaidTopologyRendering.PreferredDirection(options)));
 
         if (document.MaximumShapesPerRow.HasValue || document.MaximumBoundariesPerRow.HasValue) {
             chart.LayoutMode = TopologyLayoutMode.GroupGrid;

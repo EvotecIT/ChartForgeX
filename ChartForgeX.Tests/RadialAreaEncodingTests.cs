@@ -16,7 +16,7 @@ public sealed class RadialAreaEncodingTests {
     [InlineData(false, .35)]
     [InlineData(true, .35)]
     public void VisibleSectorAreasKeepValueRatiosAcrossAnnularHolesAndRadiusReversal(bool reversed, double hole) {
-        var chart = Create().WithRadialGeometry(Geometry(hole)).AddRadialColumn("Observed", new[] { new ChartPoint(1, 25), new ChartPoint(2, 100) });
+        var chart = Create().RadialGeometry(Geometry(hole)).AddRadialColumn("Observed", new[] { new ChartPoint(1, 25), new ChartPoint(2, 100) });
         chart.Options.YAxis.Reversed = reversed;
         var scene = NumericRadialSeriesTests.Compile(chart); var marks = NumericRadialSeriesTests.Marks(scene);
         Assert.Equal(2, marks.Length); Assert.Equal(.25, Area(marks[0]) / Area(marks[1]), 9);
@@ -29,10 +29,10 @@ public sealed class RadialAreaEncodingTests {
 
     [Fact]
     public void NamedNormalizedStacksAndSecondaryNonzeroDomainsUseTheSameEndpointLaw() {
-        var chart = Create().WithRadialGeometry(Geometry(.2)).AddRadialColumn("First", new[] { new ChartPoint(1, 20) })
+        var chart = Create().RadialGeometry(Geometry(.2)).AddRadialColumn("First", new[] { new ChartPoint(1, 20) })
             .AddRadialColumn("Second", new[] { new ChartPoint(1, 30) }).AddRadialColumn("Temperature", new[] { new ChartPoint(1, 75) });
-        chart.Series[0].WithStackGroup("work").WithNormalization(100); chart.Series[1].WithStackGroup("work").WithNormalization(100);
-        chart.Series[2].UseSecondaryValueAxis(); chart.Options.SecondaryYAxis.WithBounds(50, 150).WithReversal();
+        chart.Series[0].StackGroup("work").NormalizedTo(100); chart.Series[1].StackGroup("work").NormalizedTo(100);
+        chart.Series[2].SecondaryAxis(); chart.Options.SecondaryYAxis.Bounds(50, 150).Reversed();
         var scene = NumericRadialSeriesTests.Compile(chart); var marks = NumericRadialSeriesTests.Marks(scene);
         Assert.Equal(2d / 3, Area(marks[0]) / Area(marks[1]), 9);
         Assert.Equal(marks[0].Outer, marks[1].Inner, 9); Assert.Equal(marks[0].Start, marks[1].Start, 12);
@@ -48,7 +48,7 @@ public sealed class RadialAreaEncodingTests {
 
     [Fact]
     public void ExplicitValueTickAndMarkEndpointCoincideUnderAreaEncoding() {
-        var chart = Create().WithAxes().WithGrid().WithRadialGeometry(Geometry(.2))
+        var chart = Create().Axes().ShowGrid().RadialGeometry(Geometry(.2))
             .AddRadialColumn("Observed", new[] { new ChartPoint(1, 25), new ChartPoint(2, 100) });
         chart.Options.YAxis.Labels.Add(new ChartAxisLabel(25, "Quarter"));
         var scene = NumericRadialSeriesTests.Compile(chart); var mark = NumericRadialSeriesTests.Marks(scene)[0];
@@ -64,8 +64,8 @@ public sealed class RadialAreaEncodingTests {
     public void NativePaintAndPreparedFactsStayDetachedFromLaterSourceAndEncodingEdits() {
         var ink = ChartColor.FromHex("#2468AC");
         var series = new ChartSeries(new ChartSeriesId("measured"), "Measured", ChartSeriesKind.RadialColumn,
-            new[] { new ChartPoint(1, 25), new ChartPoint(2, 100) }).WithObservationId(0, new ChartObservationId("north")).WithPointColor(0, ink);
-        var chart = Create().WithRadialGeometry(Geometry(.1)).AddSeries(series);
+            new[] { new ChartPoint(1, 25), new ChartPoint(2, 100) }).ObservationId(0, new ChartObservationId("north")).PointColor(0, ink);
+        var chart = Create().RadialGeometry(Geometry(.1)).AddSeries(series);
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(600, 440))));
         var svg = prepared.ToSvg(); var png = prepared.ToPng(); var mark = NumericRadialSeriesTests.Marks(prepared.Scene)[0];
         var image = VisualSceneRasterRenderer.Render(prepared.Scene); var angle = mark.Start + mark.Sweep / 2; var radius = (mark.Inner + mark.Outer) / 2;
@@ -76,12 +76,12 @@ public sealed class RadialAreaEncodingTests {
             && (string?)node.Attribute("data-cfx-series-key") == "measured" && (string?)node.Attribute("data-cfx-point") == "0");
         Assert.Equal("north", (string?)source.Attribute("data-cfx-observation-id")); Assert.Equal("25", (string?)source.Attribute("data-cfx-y"));
         Assert.DoesNotContain("<script", svg, StringComparison.OrdinalIgnoreCase);
-        series.Points[0] = new ChartPoint(1, 80); chart.WithRadialGeometry(new()); chart.Options.YAxis.Reversed = true;
+        series.Points[0] = new ChartPoint(1, 80); chart.RadialGeometry(new()); chart.Options.YAxis.Reversed = true;
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
     }
 
-    internal static Chart Create() => Chart.Create().WithSize(600, 440).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false)
-        .WithDataLabels(false).WithYAxisBounds(0, 100).WithXLabels("North", "South");
+    internal static Chart Create() => Chart.Create().Size(600, 440).ShowHeader(false).Legend(false).Axes(false).ShowGrid(false)
+        .DataLabels(false).YAxis(y => y.Bounds(0, 100)).XLabels("North", "South");
     internal static ChartRadialGeometryOptions Geometry(double hole = 0) => new(-90, 270, hole, 0, 0, valueEncoding: ChartRadialValueEncoding.Area);
     internal static double Area(VisualSceneSlice mark) => (mark.Outer * mark.Outer - mark.Inner * mark.Inner) * mark.Sweep / 2;
     internal static IReadOnlyDictionary<string, string> Facts(VisualScene scene, int series, int point) => scene.Nodes.OfType<VisualSceneGroup>()

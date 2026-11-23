@@ -65,7 +65,7 @@ public sealed partial class MarkupArchitectureParser {
         public ParseState(MarkupParseResult<TopologyChart> result, VisualMarkupBlock block) {
             _result = result;
             FenceLine = block.FenceLine;
-            Chart = TopologyChart.Create().WithLayout(TopologyLayoutMode.Layered, TopologyLayoutDirection.LeftToRight);
+            Chart = TopologyChart.Create().LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(TopologyLayoutDirection.LeftToRight);
         }
 
         public TopologyChart Chart { get; }
@@ -130,7 +130,7 @@ public sealed partial class MarkupArchitectureParser {
             }
             if (InferLegend) Chart.Legend = TopologyLegend.Infer(Chart);
             var (width, height) = MarkupArchitectureViewport.Estimate(Chart);
-            Chart.WithViewport(Width ?? width, Height ?? height, 28);
+            Chart.Viewport(new TopologyViewport(Width ?? width, Height ?? height, 28));
         }
 
         private void CompleteUseCase(PendingUseCase useCase, HashSet<string> edgeIds) {
@@ -187,7 +187,7 @@ public sealed partial class MarkupArchitectureParser {
 
         private static void Configure(TopologyScenarioStep configured, PendingStep step) {
             if (step.Duration.HasValue) configured.DurationMilliseconds = step.Duration.Value;
-            if (step.Payload != null) configured.WithPayload(step.Payload, step.PayloadFormat);
+            if (step.Payload != null) configured.Payload(step.Payload).PayloadFormat(step.PayloadFormat);
         }
 
         private void EnsureNode(string id, int line, int column) {

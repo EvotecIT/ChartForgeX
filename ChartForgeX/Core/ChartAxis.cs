@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ChartForgeX.Rendering;
 using ChartForgeX.Primitives;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
@@ -26,7 +27,16 @@ public enum ChartScaleKind {
 /// <summary>
 /// Defines renderer-neutral bounds, scale, ticks, labels, and visibility for one chart axis.
 /// </summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed partial class ChartAxis {
+    private string _title = string.Empty;
+
+    /// <summary>Gets or sets the axis title. An empty title draws none.</summary>
+    public string Title {
+        get => _title;
+        set => _title = value ?? throw new ArgumentNullException(nameof(value));
+    }
+
     private double? _minimum;
     private double? _maximum;
     private ChartScaleKind _scale;
@@ -44,7 +54,7 @@ public sealed partial class ChartAxis {
     private ChartAxisLabelOrientation _labelOrientation;
 
     /// <summary>Gets or sets an explicit minimum. Null enables automatic bounds.</summary>
-    public double? Minimum {
+    public double? Min {
         get => _minimum;
         set {
             ValidateFinite(value, nameof(value));
@@ -56,7 +66,7 @@ public sealed partial class ChartAxis {
     }
 
     /// <summary>Gets or sets an explicit maximum. Null enables automatic bounds.</summary>
-    public double? Maximum {
+    public double? Max {
         get => _maximum;
         set {
             ValidateFinite(value, nameof(value));
@@ -131,14 +141,9 @@ public sealed partial class ChartAxis {
     /// <summary>Gets or sets whether generated linear ticks use whole-number positions and steps of at least one. Explicit labels and other scales retain their own tick policy.</summary>
     public bool IntegerTicks { get; set; }
 
-    /// <summary>Uses whole-number positions for generated linear ticks without rounding data values or explicit bounds.</summary>
-    /// <param name="enabled">Whether to restrict generated linear ticks to integers.</param>
-    /// <returns>The current axis.</returns>
-    public ChartAxis WithIntegerTicks(bool enabled = true) { IntegerTicks = enabled; return this; }
-
     /// <summary>Restores automatic tick density, including measured horizontal numeric and time-axis spacing.</summary>
     /// <returns>The current axis.</returns>
-    public ChartAxis WithAutomaticTickCount() { _tickCount = 6; _hasExplicitTickCount = false; return this; }
+    public ChartAxis AutomaticTickCount() { _tickCount = 6; _hasExplicitTickCount = false; return this; }
 
     /// <summary>Gets or sets label density.</summary>
     public ChartLabelDensity LabelDensity {
@@ -164,7 +169,7 @@ public sealed partial class ChartAxis {
 
     /// <summary>Restores automatic label rotation for crowded matrices and the default zero angle for other axes.</summary>
     /// <returns>The current axis.</returns>
-    public ChartAxis WithAutomaticLabelAngle() { _labelAngle = 0; _hasExplicitLabelAngle = false; return this; }
+    public ChartAxis AutomaticLabelAngle() { _labelAngle = 0; _hasExplicitLabelAngle = false; return this; }
 
     /// <summary>Gets or sets how labels follow the axis. The default is a fixed screen orientation.</summary>
     /// <remarks>Relative orientations are supported by numeric radial bars and columns, Radar and Polar charts. Parallel follows the tangent of an angular axis or the spoke of a radius axis; perpendicular uses the other direction. The label angle is added before keeping the text upright. Other chart families reject a nonfixed orientation during preparation.</remarks>
@@ -202,11 +207,6 @@ public sealed partial class ChartAxis {
         }
     }
 
-    /// <summary>Moves only the axis rule to an opposite primary physical-axis coordinate, or restores its frame edge with null.</summary>
-    /// <param name="value">A finite source coordinate, or null.</param>
-    /// <returns>The current axis.</returns>
-    public ChartAxis WithRuleCrossAt(double? value) { RuleCrossAt = value; return this; }
-
     private double? _crossAt;
     /// <summary>Gets or sets the opposite primary physical coordinate for the complete Cartesian axis, or null for the frame edge.</summary>
     /// <remarks>Moves the rule, tick captions, category parent bands and title together. Primary X captions follow below the rule, secondary X above;
@@ -223,15 +223,11 @@ public sealed partial class ChartAxis {
         }
     }
 
-    /// <summary>Moves the complete Cartesian axis to an opposite primary physical coordinate, or restores its frame edge with null.</summary>
-    /// <param name="value">A finite source coordinate, or null. Clear any rule-only crossing first.</param>
-    /// <returns>The current axis.</returns>
-    public ChartAxis WithCrossAt(double? value) { CrossAt = value; return this; }
-
     internal double? CrossingCoordinate => CrossAt ?? RuleCrossAt;
 
     /// <summary>Gets or sets a formatter for generated labels.</summary>
-    public Func<double, string>? LabelFormatter {
+    [PowerForge.Fluent.Fluent("LabelBy")]
+public Func<double, string>? LabelFormatter {
         get => ValueFormat?.Callback;
         set => ValueFormat = value == null ? null : ChartValueFormat.Custom(value);
     }
@@ -264,6 +260,7 @@ public sealed partial class ChartAxis {
     /// <remarks>Supported vertical Cartesian series share this immutable domain. Closed gaps have no width;
     /// observations and source annotation anchors must belong to included sessions. Raw viewport bounds may lie
     /// in closures when the window still contains included time. Y/XY compression and market-calendar inference are not provided.</remarks>
+    [NoFluent]
     public ChartTimeSessionDomain? TimeSessions {
         get => _timeSessions;
         set {
@@ -276,12 +273,13 @@ public sealed partial class ChartAxis {
     /// <summary>Gets or sets ordinal or calendar-band spacing, or null for continuous elapsed time.</summary>
     /// <remarks>Requires a time scale and cannot be combined with TimeSessions. Captured domains contain at most 100,000 entries.
     /// Unit spacing preserves missing bands and rejects multiple observations from one series in the same band.</remarks>
+    [NoFluent]
     public ChartTimeSpacing? TimeSpacing {
         get => _timeSpacing;
         set {
             if (value != null && _timeSessions != null) throw new InvalidOperationException("Discrete time spacing and time sessions cannot be combined.");
             if (value != null && _hasExplicitScale && Scale != ChartScaleKind.Time) throw new InvalidOperationException("Discrete time spacing requires a time scale.");
-            if (value != null) { ValidateOrderedTimeBound(_minimum, nameof(Minimum)); ValidateOrderedTimeBound(_maximum, nameof(Maximum)); }
+            if (value != null) { ValidateOrderedTimeBound(_minimum, nameof(Min)); ValidateOrderedTimeBound(_maximum, nameof(Max)); }
             _timeSpacing = value;
         }
     }
@@ -321,7 +319,7 @@ public sealed partial class ChartAxis {
     }
 
     /// <summary>Sets explicit bounds.</summary>
-    public ChartAxis WithBounds(double minimum, double maximum) {
+    public ChartAxis Bounds(double minimum, double maximum) {
         if (!IsFinite(minimum)) throw new ArgumentOutOfRangeException(nameof(minimum), minimum, "Axis minimum must be finite.");
         if (!IsFinite(maximum)) throw new ArgumentOutOfRangeException(nameof(maximum), maximum, "Axis maximum must be finite.");
         if (maximum <= minimum) throw new ArgumentOutOfRangeException(nameof(maximum), maximum, "Axis maximum must be greater than minimum.");
@@ -333,17 +331,11 @@ public sealed partial class ChartAxis {
         return this;
     }
 
-    /// <summary>Clears explicit bounds.</summary>
-    public ChartAxis WithAutomaticBounds() { _minimum = null; _maximum = null; return this; }
-
-    /// <summary>Sets the mathematical scale.</summary>
-    public ChartAxis WithScale(ChartScaleKind scale) { Scale = scale; return this; }
-
     /// <summary>Selects a logarithmic scale, base and sign domain as one validated configuration.</summary>
     /// <param name="logarithmBase">A finite base greater than one.</param>
     /// <param name="domain">The positive or negative source domain.</param>
     /// <returns>The current axis. Existing bounds must belong to the selected domain; clear them before changing their sign.</returns>
-    public ChartAxis WithLogarithmicScale(double logarithmBase = 10, ChartLogarithmicDomain domain = ChartLogarithmicDomain.Positive) {
+    public ChartAxis LogarithmicScale(double logarithmBase = 10, ChartLogarithmicDomain domain = ChartLogarithmicDomain.Positive) {
         ValidateLogarithmBase(logarithmBase); ValidateLogarithmicDomain(domain);
         if (TimeSpacing != null) throw new InvalidOperationException("Remove discrete time spacing before selecting a logarithmic scale.");
         if ((_minimum.HasValue && !InLogarithmicDomain(_minimum.Value, domain)) || (_maximum.HasValue && !InLogarithmicDomain(_maximum.Value, domain)))
@@ -352,12 +344,6 @@ public sealed partial class ChartAxis {
         return this;
     }
 
-    /// <summary>Sets axis visibility.</summary>
-    public ChartAxis WithVisibility(bool visible = true) { Visible = visible; return this; }
-
-    /// <summary>Reverses the visual direction while retaining bounds and source values.</summary>
-    public ChartAxis WithReversal(bool reversed = true) { Reversed = reversed; return this; }
-
     /// <summary>
     /// Uses a UTC time scale displayed in <paramref name="timeZone"/> (UTC when null) and optionally shows the zone designator.
     /// </summary>
@@ -365,7 +351,7 @@ public sealed partial class ChartAxis {
     /// <param name="showTimeZone">Whether the axis title shows the zone designator.</param>
     /// <param name="label">An optional designator such as <c>CET</c> or <c>Europe/Warsaw</c>.</param>
     /// <returns>The current axis.</returns>
-    public ChartAxis WithTimeScale(TimeZoneInfo? timeZone = null, bool showTimeZone = false, string? label = null) {
+    public ChartAxis TimeScale(TimeZoneInfo? timeZone = null, bool showTimeZone = false, string? label = null) {
         Scale = ChartScaleKind.Time;
         TimeZone = timeZone;
         ShowTimeZone = showTimeZone;
@@ -376,24 +362,18 @@ public sealed partial class ChartAxis {
     /// <summary>Selects a time scale with an explicit shared session domain; null restores continuous elapsed time.</summary>
     /// <param name="domain">The immutable included intervals, or null to remove compression.</param>
     /// <returns>The current axis. Existing display zone and formatting policies are retained.</returns>
-    public ChartAxis WithTimeSessions(ChartTimeSessionDomain? domain) {
+    internal ChartAxis SetTimeSessions(ChartTimeSessionDomain? domain) {
         if (domain != null && TimeSpacing != null) throw new InvalidOperationException("Time sessions and discrete time spacing cannot be combined.");
         Scale = ChartScaleKind.Time; TimeSessions = domain; return this;
     }
 
     /// <summary>Selects a time scale and an explicit spacing policy; null restores elapsed-time spacing.</summary>
     /// <remarks>Existing formatting and display-zone settings are retained. Remove sessions before selecting discrete spacing.</remarks>
-    public ChartAxis WithTimeSpacing(ChartTimeSpacing? spacing) {
+    internal ChartAxis SetTimeSpacing(ChartTimeSpacing? spacing) {
         if (spacing != null && TimeSessions != null) throw new InvalidOperationException("Discrete time spacing and time sessions cannot be combined.");
-        if (spacing != null) { ValidateOrderedTimeBound(_minimum, nameof(Minimum)); ValidateOrderedTimeBound(_maximum, nameof(Maximum)); }
+        if (spacing != null) { ValidateOrderedTimeBound(_minimum, nameof(Min)); ValidateOrderedTimeBound(_maximum, nameof(Max)); }
         Scale = ChartScaleKind.Time; TimeSpacing = spacing; return this;
     }
-
-    /// <summary>Sets the label formatter.</summary>
-    public ChartAxis WithLabelFormatter(Func<double, string>? formatter) { LabelFormatter = formatter; return this; }
-
-    /// <summary>Sets the numeric display policy; null restores scale-aware automatic formatting.</summary>
-    public ChartAxis WithValueFormat(ChartValueFormat? format) { ValueFormat = format; return this; }
 
     private void ValidateTimeSpacingBound(double? value, string parameterName) { if (_timeSpacing != null) ValidateOrderedTimeBound(value, parameterName); }
     private static void ValidateOrderedTimeBound(double? value, string parameterName) {

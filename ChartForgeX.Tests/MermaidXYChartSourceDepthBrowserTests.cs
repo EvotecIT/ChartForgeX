@@ -19,7 +19,7 @@ public sealed class MermaidXYChartSourceDepthBrowserTests {
         if (!Enabled) return;
         var parsed = new ChartForgeX.Mermaid.MermaidParser().ParseXYChart(MermaidXYChartSourceDepthTests.Source(horizontal)); Assert.Empty(parsed.Diagnostics);
         var chart = ChartForgeX.Mermaid.MermaidXYChartRendering.ToChart(parsed.Document!, MermaidXYChartSourceDepthTests.Options(width, dark).XYChart);
-        chart.WithLineMarkers(ChartLineMarkerMode.All);
+        chart.Lines(l => l.MarkerMode(ChartLineMarkerMode.All));
         var html = chart.ToInteractiveHtmlPage(options => options.Interaction.Enable(ChartInteractionFeatures.ReportReview | ChartInteractionFeatures.Export));
         await using var session = await BrowserProofFonts.OpenAsync(html, width + 24, 800); var page = session.Page;
         var errors = new List<string>(); page.PageError += (_, message) => errors.Add(message);

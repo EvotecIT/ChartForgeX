@@ -36,13 +36,13 @@ public sealed class NativeRangeComponentBeforeControls {
         Assert.Equal("bubble-components", NativeRawValueSourceMotionTests.Metadata(from).GetProperty("nativeValueSource").GetProperty("kind").GetString());
     }
     internal static Chart Model(double lower, double upper, bool area, bool labels, int width = 760, bool dark = false) {
-        var chart = Chart.Create().WithTitle("Native interval components").WithSize(width, 420).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light).WithLegend(true).WithDataLabels(labels);
+        var chart = Chart.Create().Title("Native interval components").Size(width, 420).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Legend(true).DataLabels(labels);
         foreach (var key in new[] { "delivery", "comparison" }) {
             var values = new[] { new ChartRangeBand(.5, key == "delivery" ? lower : 35, key == "delivery" ? upper : 70), new ChartRangeBand(1.5, 25, 55), new ChartRangeBand(3, 30, 65, true) };
             var series = area ? ChartSeries.CreateRangeArea(new ChartSeriesId(key), key, values) : ChartSeries.CreateRangeBand(new ChartSeriesId(key), key, values);
-            series.WithObservationIds(new[] { new ChartObservationId("current"), new ChartObservationId("later"), new ChartObservationId("disconnected") }); chart.AddSeries(series);
+            series.ObservationIds(new[] { new ChartObservationId("current"), new ChartObservationId("later"), new ChartObservationId("disconnected") }); chart.AddSeries(series);
         }
-        chart.ConfigureXAxis(axis => { axis.Minimum = 0; axis.Maximum = 4; }); chart.ConfigureYAxis(axis => { axis.Minimum = 0; axis.Maximum = 100; }); return chart;
+        chart.XAxis(axis => { axis.Min = 0; axis.Max = 4; }); chart.YAxis(axis => { axis.Min = 0; axis.Max = 100; }); return chart;
     }
     internal static HtmlChartSection Section(HtmlInteractiveChartRenderer renderer, Chart chart) => renderer.PrepareSection(chart, configure: options => { options.CaptureNativeValueSource = true; options.Interaction.ChartId = "native-range-components"; });
 }

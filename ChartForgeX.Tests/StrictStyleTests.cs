@@ -28,7 +28,7 @@ public sealed class StrictStyleTests {
 
     [Fact]
     public void RendererNonceKeepsSvgStyleElementsInTheirSvg() {
-        var html = new HtmlChartRenderer { StyleNonce = Nonce }.RenderFragment(Chart.Create().WithSize(320, 200).AddLine("A", new[] { new ChartPoint(1, 1), new ChartPoint(2, 2) }), "a");
+        var html = new HtmlChartRenderer { StyleNonce = Nonce }.RenderFragment(Chart.Create().Size(320, 200).AddLine("A", new[] { new ChartPoint(1, 1), new ChartPoint(2, 2) }), "a");
         var svg = html.Substring(html.IndexOf("<svg", StringComparison.Ordinal));
         Assert.Matches("<style nonce=\"n0nce\">[^<]*@font-face", svg);
         Assert.DoesNotContain("@font-face", HtmlStrictStyles.Extract(html).Markup, StringComparison.Ordinal);
@@ -126,10 +126,10 @@ public sealed class StrictStyleTests {
     public async Task UpdateAcceptsAStrictSectionElementWhoseRulesThePageHolds() {
         if (!InteractiveChartBrowser.Enabled) return;
         var policy = "default-src 'none'; img-src data:; font-src data:; style-src 'nonce-" + Nonce + "'; script-src 'nonce-" + Nonce + "'";
-        var next = Chart.Create().WithTitle("Checks").WithSize(520, 300).WithXLabels("Mon", "Tue")
+        var next = Chart.Create().Title("Checks").Size(520, 300).XLabels("Mon", "Tue")
             .AddLine("Passed", new[] { new ChartPoint(1, 2), new ChartPoint(2, 9) });
         var expected = HtmlStrictStyles.Extract(next.ToInteractiveHtmlFragmentWithoutAssets());
-        var wider = HtmlStrictStyles.Extract(next.WithSize(700, 300).ToInteractiveHtmlFragmentWithoutAssets());
+        var wider = HtmlStrictStyles.Extract(next.Size(700, 300).ToInteractiveHtmlFragmentWithoutAssets());
         var page = Render("interactive-page", Nonce).Replace("</body>", "<style nonce=\"" + Nonce + "\">" + expected.StyleSheet + wider.StyleSheet + "</style><template id=\"next\">" + expected.Markup
             + "</template><template id=\"wider\">" + wider.Markup + "</template></body>", StringComparison.Ordinal);
         await using var session = await OpenAsync(page, policy);
@@ -182,15 +182,15 @@ public sealed class StrictStyleTests {
     }
 
     private static string Render(string output, string? nonce) {
-        var chart = Chart.Create().WithTitle("Checks").WithSize(640, 360).WithXLabels("Mon", "Tue", "Wed")
+        var chart = Chart.Create().Title("Checks").Size(640, 360).XLabels("Mon", "Tue", "Wed")
             .AddLine("Passed", new[] { new ChartPoint(1, 4), new ChartPoint(2, 6), new ChartPoint(3, 5) });
-        var topology = TopologyChart.Create().WithId("notes").WithTitle("Save a note")
-            .WithLayout(TopologyLayoutMode.Layered, TopologyLayoutDirection.LeftToRight)
+        var topology = TopologyChart.Create().Id("notes").Title("Save a note")
+            .LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddNode("app", "Notes app", 0, 0, TopologyNodeKind.Person)
             .AddNode("api", "Notes API", 0, 0, TopologyNodeKind.Server)
             .AddEdge("http", "app", "api", "HTTPS")
             .AddScenario("save", "Save a note", scenario => scenario.AddEdgeStep("http"));
-        var topologyOptions = new TopologyRenderOptions { HtmlNonce = nonce };
+        var topologyOptions = new TopologyRenderOptions { Html = { Nonce = nonce } };
         void Interactive(HtmlChartInteractionOptions options) { options.StyleNonce = nonce; options.ScriptNonce = nonce; }
         return output switch {
             "static-fragment" => new HtmlChartRenderer { StyleNonce = nonce }.RenderFragment(chart, "checks"),

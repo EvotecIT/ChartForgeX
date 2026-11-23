@@ -39,9 +39,9 @@ public sealed class VisualArtifactDetailStyleInterchangeTests {
     [InlineData((byte)128)]
     [InlineData((byte)255)]
     public void NativeDetailTypographyRetainsVariationPaletteColorAndDecorationFacts(byte alpha) {
-        var style = new TextStyleOverride().WithItalic().WithUnderline(TextDecorationStyle.Double)
-            .WithWeight("600").WithFontSize(15).WithColor(ChartColor.FromRgba(20, 40, 60, alpha))
-            .WithVariation("wght", 630).WithColorPalette(0).WithSuperscript().WithTextCase(TextCaseTransform.Uppercase);
+        var style = new TextStyleOverride().Italic().UnderlineStyle(TextDecorationStyle.Double)
+            .FontWeight("600").FontSize(15).Color(ChartColor.FromRgba(20, 40, 60, alpha))
+            .Variation("wght", 630).ColorPaletteIndex(0).Baseline(TextBaseline.Superscript).TextCase(TextCaseTransform.Uppercase);
         style.OpenTypeLanguageTag = "normal";
         var envelope = Diagram(style).ToVisualArtifact().ToInterchangeEnvelope();
         var restored = VisualArtifactInterchangeEnvelope.FromUtf8Json(envelope.ToUtf8Json());
@@ -59,14 +59,14 @@ public sealed class VisualArtifactDetailStyleInterchangeTests {
     [InlineData("\"colorPaletteIndex\":0", "\"colorPaletteIndex\":0.5")]
     [InlineData("\"wght\":630", "\"bad\":630")]
     public void InterchangeRejectsInvalidNativeTypographyAtItsExistingOwners(string before, string after) {
-        var style = new TextStyleOverride().WithFontSize(15).WithItalic().WithVariation("wght", 630).WithColorPalette(0);
+        var style = new TextStyleOverride().FontSize(15).Italic().Variation("wght", 630).ColorPaletteIndex(0);
         var json = Diagram(style).ToVisualArtifact().ToInterchangeJson();
         Assert.Contains(before, json, StringComparison.Ordinal);
         Assert.ThrowsAny<ArgumentException>(() => VisualArtifactInterchangeEnvelope.FromJson(json.Replace(before, after, StringComparison.Ordinal)));
     }
 
     private static TopologyChart Diagram(TextStyleOverride style) {
-        var chart = TopologyChart.Create().WithTheme(ChartForgeX.Themes.VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).WithViewport(500, 260).WithLegend(null).AddNode("item", "Contract", 40, 60, width: 240, height: 130);
+        var chart = TopologyChart.Create().Theme(ChartForgeX.Themes.VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).Viewport(new TopologyViewport(500, 260)).Legend((TopologyLegend?)null).AddNode("item", "Contract", 40, 60, width: 240, height: 130);
         chart.Nodes[0].Details.Add(new TopologyNodeDetail { Text = "Native text", TextStyle = style });
         return chart;
     }

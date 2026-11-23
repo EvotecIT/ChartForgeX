@@ -77,7 +77,7 @@ public sealed class MapCompositionDepthBrowserTests {
 
     private static Chart Fixture(int width, ThemeMode mode) {
         var chart = MapCompositionDepthRecipe.Create(width == 390 ? "compact" : "wide", mode);
-        chart.Series[2].WithObservationIds(new[] { new ChartObservationId("central"), new ChartObservationId("north"), new ChartObservationId("west") });
+        chart.Series[2].ObservationIds(new[] { new ChartObservationId("central"), new ChartObservationId("north"), new ChartObservationId("west") });
         return chart;
     }
     private static void Options(HtmlChartInteractionOptions options) {

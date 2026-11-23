@@ -38,7 +38,7 @@ public sealed class WallpaperOwnerTests {
     [InlineData(VisualCanvasInfoTileMiniChartKind.Bars)]
     public void TileMiniChartsHandleZeroSamplesAndRespectAnExplicitMaximum(VisualCanvasInfoTileMiniChartKind kind) {
         foreach (var samples in new[] { new[] { 0d, 0d, 0d }, new[] { 0d, 10d, 20d } }) {
-            var canvas = VisualCanvas.Create(480, 180).WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+            var canvas = VisualCanvas.Create(480, 180).BackdropStyle(VisualCanvasBackdropStyle.Transparent)
                 .AddInfoTile(20, 20, 440, 140, "CPU", "PROCESSOR", "20%", miniChartKind: kind,
                     miniChartValues: samples, miniChartMaximum: 100);
             var svg = XDocument.Parse(canvas.ToSvg());

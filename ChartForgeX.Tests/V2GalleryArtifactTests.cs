@@ -49,15 +49,34 @@ public sealed class V2GalleryArtifactTests {
             var source = File.ReadAllText(Path.Combine(output, sourceFile));
             Assert.Contains($"var mode = ThemeMode.{mode};", source, StringComparison.Ordinal);
             Assert.Contains($".Create(\"{variant}\", mode)", source, StringComparison.Ordinal);
-            Assert.Matches(@"\.ConfigureBubble\s*\(", source);
+            Assert.Matches(@"\.Bubble\s*\(", source);
             var options = model.Options.Bubble;
-            Assert.Matches($@"\.WithSizeDomain\s*\(\s*{NumberPattern(options.MinimumValue!.Value)}\s*,\s*{NumberPattern(options.MaximumValue!.Value)}\s*\)", source);
+            Assert.Matches($@"\.SizeDomain\s*\(\s*{NumberPattern(options.MinimumValue!.Value)}\s*,\s*{NumberPattern(options.MaximumValue!.Value)}\s*\)", source);
             Assert.Matches($@"\.MinimumRadius\s*=\s*{NumberPattern(options.MinimumRadius)}\s*;", source);
             Assert.Matches($@"\.MaximumRadius\s*=\s*{NumberPattern(options.MaximumRadius!.Value)}\s*;", source);
             var html = File.ReadAllText(Path.Combine(output, artifact.GetProperty("html").GetString()!));
             var inline = Assert.Single(Regex.Matches(html, "<pre data-visual-theme=\"" + theme + "\"><code data-example-source>(.*?)</code></pre>", RegexOptions.Singleline));
             Assert.Equal(source, WebUtility.HtmlDecode(inline.Groups[1].Value));
             Assert.Matches("<a\\b[^>]*\\shref=\"" + Regex.Escape(sourceFile) + "\"[^>]*\\sdownload[ >]", html);
+        }
+    }
+
+    [Fact]
+    public void PublishedFamilyReferencesNameTheFluentMethodsThatConfigureThem() {
+        using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(FindRepository(), "Website", "static", "examples", "generated", "manifest.json")));
+        var fluent = typeof(Chart).Assembly.GetExportedTypes().Where(type => type.IsAbstract && type.IsSealed)
+            .SelectMany(type => type.GetMethods(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static))
+            .Where(method => method.GetParameters() is { Length: 2 } parameters && parameters[0].ParameterType == typeof(Chart)).ToArray();
+        foreach (var family in manifest.RootElement.GetProperty("families").EnumerateObject()) {
+            var reference = family.Value;
+            Assert.NotEmpty(reference.GetProperty("options").EnumerateArray());
+            var type = reference.GetProperty("type").GetString()!;
+            // Chart inlines ChartOptions, so each settings object it owns is configured by a chart method; series-level options are not.
+            if (!typeof(ChartOptions).GetProperties().Any(property => property.PropertyType.Name == type)) continue;
+            var configure = reference.GetProperty("configure").GetString();
+            Assert.False(string.IsNullOrEmpty(configure), family.Name + " should name the method that configures " + type);
+            Assert.Contains(fluent, method => method.Name == configure && method.GetParameters()[1].ParameterType.IsGenericType
+                && method.GetParameters()[1].ParameterType.GetGenericArguments()[0].Name == type);
         }
     }
 

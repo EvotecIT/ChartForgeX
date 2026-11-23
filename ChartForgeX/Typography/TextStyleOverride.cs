@@ -1,11 +1,13 @@
 using System;
 using ChartForgeX.Primitives;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Typography;
 
 /// <summary>
 /// Defines optional overrides that can be resolved over a complete <see cref="TextStyle"/>.
 /// </summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class TextStyleOverride {
     private string? _fontFamily;
     private string? _fontWeight;
@@ -24,12 +26,10 @@ public sealed class TextStyleOverride {
         get => _colorPaletteIndex;
         set { if (value.HasValue) FontSpec.ValidateColorPaletteIndex(value.Value); _colorPaletteIndex = value; }
     }
-    /// <summary>Selects a colour-font palette for this text role.</summary>
-    public TextStyleOverride WithColorPalette(int index) { ColorPaletteIndex = index; return this; }
     /// <summary>Gets or sets explicit OpenType axes. Null inherits; Default restores the font's default instance.</summary>
     public FontVariationSettings? Variations { get; set; }
     /// <summary>Sets one OpenType variation axis in design units.</summary>
-    public TextStyleOverride WithVariation(string tag, double value) { Variations = (Variations ?? FontVariationSettings.Default).WithAxis(tag, value); return this; }
+    public TextStyleOverride Variation(string tag, double value) { Variations = (Variations ?? FontVariationSettings.Default).WithAxis(tag, value); return this; }
 
     /// <summary>Gets or sets the optional text color override.</summary>
     public ChartColor? Color { get; set; }
@@ -65,22 +65,30 @@ public sealed class TextStyleOverride {
     /// <summary>Gets or sets a value indicating whether text is italic.</summary>
     public bool Italic { get => _italic; set { _italic = value; _hasItalic = true; } }
 
-    /// <summary>Gets or sets a value indicating whether text is underlined.</summary>
-    public bool Underline { get => _underline; set { _underline = value; _hasUnderline = true; } }
+    /// <summary>Gets or sets a value indicating whether text is underlined. Turning it on selects a single underline unless a style is already set; turning it off selects none.</summary>
+    public bool Underline { get => _underline; set { _underline = value; _hasUnderline = true; if (!value) _underlineStyle = TextDecorationStyle.None; else if (_underlineStyle is null or TextDecorationStyle.None) _underlineStyle = TextDecorationStyle.Single; } }
 
-    /// <summary>Gets or sets an optional underline pattern. None explicitly disables a fallback underline.</summary>
+    /// <summary>Gets or sets an optional underline pattern. None explicitly disables a fallback underline; null clears the underline override so the fallback applies.</summary>
     public TextDecorationStyle? UnderlineStyle {
         get => _underlineStyle;
-        set { ValidateOptionalEnum(value, nameof(value)); _underlineStyle = value; }
+        set {
+            ValidateOptionalEnum(value, nameof(value));
+            _underlineStyle = value;
+            if (value.HasValue) { _underline = value.Value != TextDecorationStyle.None; _hasUnderline = true; } else { _underline = false; _hasUnderline = false; }
+        }
     }
 
-    /// <summary>Gets or sets a compatibility value that enables a single solid strikethrough.</summary>
-    public bool Strikethrough { get => _strikethrough; set { _strikethrough = value; _hasStrikethrough = true; } }
+    /// <summary>Gets or sets whether text is struck through. Turning it on selects a single strikethrough unless a style is already set; turning it off selects none.</summary>
+    public bool Strikethrough { get => _strikethrough; set { _strikethrough = value; _hasStrikethrough = true; if (!value) _strikethroughStyle = TextDecorationStyle.None; else if (_strikethroughStyle is null or TextDecorationStyle.None) _strikethroughStyle = TextDecorationStyle.Single; } }
 
-    /// <summary>Gets or sets an optional strikethrough pattern. None explicitly disables a fallback strike.</summary>
+    /// <summary>Gets or sets an optional strikethrough pattern. None explicitly disables a fallback strike; null clears the strikethrough override so the fallback applies.</summary>
     public TextDecorationStyle? StrikethroughStyle {
         get => _strikethroughStyle;
-        set { ValidateOptionalEnum(value, nameof(value)); _strikethroughStyle = value; }
+        set {
+            ValidateOptionalEnum(value, nameof(value));
+            _strikethroughStyle = value;
+            if (value.HasValue) { _strikethrough = value.Value != TextDecorationStyle.None; _hasStrikethrough = true; } else { _strikethrough = false; _hasStrikethrough = false; }
+        }
     }
 
     /// <summary>Gets or sets optional subscript or superscript placement.</summary>
@@ -119,51 +127,6 @@ public sealed class TextStyleOverride {
         if (ColorPaletteIndex.HasValue) resolved.Font.ColorPaletteIndex = ColorPaletteIndex.Value;
         return resolved;
     }
-
-    /// <summary>Sets the text color.</summary>
-    public TextStyleOverride WithColor(ChartColor color) { Color = color; return this; }
-
-    /// <summary>Sets the text color from hexadecimal notation.</summary>
-    public TextStyleOverride WithColor(string hex) { Color = ChartColor.FromHex(hex); return this; }
-
-    /// <summary>Sets the CSS font-family.</summary>
-    public TextStyleOverride WithFontFamily(string fontFamily) { FontFamily = fontFamily ?? throw new ArgumentNullException(nameof(fontFamily)); return this; }
-
-    /// <summary>Sets the font size.</summary>
-    public TextStyleOverride WithFontSize(double fontSize) { FontSize = fontSize; return this; }
-
-    /// <summary>Sets the CSS font-weight.</summary>
-    public TextStyleOverride WithWeight(string fontWeight) { FontWeight = fontWeight ?? throw new ArgumentNullException(nameof(fontWeight)); return this; }
-
-    /// <summary>Sets italic text.</summary>
-    public TextStyleOverride WithItalic(bool enabled = true) { Italic = enabled; return this; }
-
-    /// <summary>Sets underlined text.</summary>
-    public TextStyleOverride WithUnderline(bool enabled = true) { Underline = enabled; UnderlineStyle = enabled ? TextDecorationStyle.Single : TextDecorationStyle.None; return this; }
-
-    /// <summary>Sets the underline pattern.</summary>
-    public TextStyleOverride WithUnderline(TextDecorationStyle style) { UnderlineStyle = style; Underline = style != TextDecorationStyle.None; return this; }
-
-    /// <summary>Sets a single solid strikethrough.</summary>
-    public TextStyleOverride WithStrikethrough(bool enabled = true) { Strikethrough = enabled; StrikethroughStyle = enabled ? TextDecorationStyle.Single : TextDecorationStyle.None; return this; }
-
-    /// <summary>Sets the strikethrough pattern.</summary>
-    public TextStyleOverride WithStrikethrough(TextDecorationStyle style) { StrikethroughStyle = style; Strikethrough = style != TextDecorationStyle.None; return this; }
-
-    /// <summary>Sets subscript or superscript placement.</summary>
-    public TextStyleOverride WithBaseline(TextBaseline baseline) { Baseline = baseline; return this; }
-
-    /// <summary>Sets superscript placement.</summary>
-    public TextStyleOverride WithSuperscript() => WithBaseline(TextBaseline.Superscript);
-
-    /// <summary>Sets subscript placement.</summary>
-    public TextStyleOverride WithSubscript() => WithBaseline(TextBaseline.Subscript);
-
-    /// <summary>Sets a display-time casing transform.</summary>
-    public TextStyleOverride WithTextCase(TextCaseTransform textCase) { TextCase = textCase; return this; }
-
-    /// <summary>Sets the font's language system; normal restores its default language system.</summary>
-    public TextStyleOverride WithOpenTypeLanguage(string languageTag) { OpenTypeLanguageTag = languageTag ?? throw new ArgumentNullException(nameof(languageTag)); return this; }
 
     /// <summary>Transforms text according to this override.</summary>
     public string TransformText(string text, System.Globalization.CultureInfo? culture = null) => TextCaseTransformer.Apply(text, TextCase ?? TextCaseTransform.None, culture);

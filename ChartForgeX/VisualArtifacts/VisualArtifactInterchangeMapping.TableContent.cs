@@ -34,7 +34,7 @@ public static partial class VisualArtifactInterchangeMapping {
     internal static TableArtifact? RestoreTableContent(VisualArtifactInterchangeTableContent? source) {
         if (source == null) return null;
         VisualArtifactInterchangeValidation.TableContent(source);
-        var target = TableArtifact.Create(source.Id).WithTitle(source.Title).WithSubtitle(source.Subtitle);
+        var target = TableArtifact.Create(source.Id).Title(source.Title).Subtitle(source.Subtitle);
         target.CapturedPresentationScale = source.PresentationScale;
         target.ShowGridLines = source.ShowGridLines;
         target.Capabilities = source.Capabilities; target.ExportFormats = source.ExportFormats; target.TotalRowCount = source.TotalRowCount;

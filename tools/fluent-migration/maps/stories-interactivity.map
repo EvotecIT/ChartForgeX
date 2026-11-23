@@ -1,0 +1,33 @@
+# ChartForgeX Stories, Terminal, Motion and Interactivity.
+# Plain With* setters whose guards moved into property setters are derived automatically ("auto").
+
+# --- VisualStory ----------------------------------------------------------------------------------
+keep VisualStory.WithSize -> Size  # two numbers read better than two calls; matches Chart.Size; validates both
+keep VisualStory.WithFormat -> Format  # preset: derives width and height from an aspect ratio and enables panel reflow
+call VisualStory.WithTheme -> Theme({theme}) ; [ThemeMode({mode:value})]
+
+# --- StorySourceText ------------------------------------------------------------------------------
+call StorySourceText.WithLanguage -> Language({language})
+
+# --- VisualMotionCue ------------------------------------------------------------------------------
+keep VisualMotionCue.WithTiming -> Timing  # checks delay and duration before changing either
+
+# --- TerminalStory --------------------------------------------------------------------------------
+call TerminalStory.WithTiming -> InitialDelaySeconds({initialDelaySeconds}) ; CharactersPerSecond({charactersPerSecond}) ; LineDelaySeconds({lineDelaySeconds})
+call TerminalStory.WithTheme -> Theme({theme}) ; [ThemeMode({mode:value})]
+keep TerminalStory.WithTypography -> Typography  # cross-parameter check: line height must be at least 0.8 x font size
+keep TerminalStory.WithPlaybackSpeed -> PlaybackSpeed  # preset: sets four timing properties together
+keep TerminalStory.WithDialect -> Dialect  # cross-parameter check: the Custom dialect requires a prompt
+keep TerminalStory.WithInitialTab -> InitialTab  # replaces the first tab and the tab index; validates several inputs
+keep TerminalTable.WithColumns -> Columns  # replaces columns with validation and resets alignments and rows
+
+# --- Interactivity --------------------------------------------------------------------------------
+stay ChartInteractionOptions.Enable  # toggles flags in the Features set
+stay ChartInteractionOptions.Disable  # toggles flags in the Features set
+stay GraphSceneOptions.Enable  # toggles flags in the Features set
+stay GraphSceneOptions.Disable  # toggles flags in the Features set
+stay GraphManipulationOptions.EnableEditing  # preset: turns on eight capability flags together
+keep ChartInteractionScenarioExtensions.WithActiveScenario -> ActiveScenario  # sets the id and enables the Scenarios feature
+keep ChartInteractionScenarioExtensions.WithDeepLinkState -> DeepLinkState  # sets the flag and toggles the DeepLinks feature
+keep ChartInteractionScenarioExtensions.WithMetadata -> Metadata  # keyed dictionary edit with key validation
+keep GraphSceneSuperTopologyExtensions.UseSuperTopologyDefaults -> SuperTopologyDefaults  # preset across physics, LOD, cluster and performance groups

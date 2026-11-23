@@ -33,14 +33,14 @@ public sealed class MarkupTimelineDateIntentTests {
         var source = fenced ? Table : Commands;
         var (chart, artifact) = Parse(source, fenced);
         var expected = NativeLaunch();
-        foreach (var model in new[] { chart, expected }) model.WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+        foreach (var model in new[] { chart, expected }) model.Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         Assert.Equal(ChartScaleKind.Time, chart.Options.XAxis.Scale);
         Assert.Equal(new[] { "Design", "Build engine", "Playground UI", "Launch" }, chart.Series.Select(series => series.Name));
         Assert.Equal(new[] { 0, 5, 13, 26 }.Select(day => Start.AddDays(day).ToOADate()), chart.Series.Select(series => series.GanttItems.Single().Start));
         Assert.Equal(new[] { 7, 19, 23, 26 }.Select(day => Start.AddDays(day).ToOADate()), chart.Series.Select(series => series.GanttItems.Single().End));
         Assert.Equal(new[] { 1, .6, .2, 1 }, chart.Series.Select(series => series.GanttItems.Single().Progress));
         Assert.True(chart.Series[3].GanttItems.Single().IsMilestone);
-        Assert.Equal(Start.AddDays(11).ToOADate(), chart.Options.GanttToday);
+        Assert.Equal(Start.AddDays(11).ToOADate(), chart.Options.Gantt.Today);
         Assert.Equal(3, chart.GanttDependencies.Count);
         for (var index = 0; index < 3; index++) {
             Assert.Equal(chart.Series[index].Id, chart.GanttDependencies[index].PredecessorId);
@@ -89,8 +89,8 @@ public sealed class MarkupTimelineDateIntentTests {
     public void NumericSchedulesRetainTheirNativeAxisAndPixels(bool gantt) {
         var source = "title Numeric\ntype " + (gantt ? "gantt\ntoday 3\ntask Work 1 5 progress=0.5\nmilestone Ship 7 dependsOn=0" : "timeline\nitem Work 1 5\nmilestone Ship 7");
         var (chart, _) = Parse(source, false);
-        var native = Chart.Create().WithTitle("Numeric").WithSize(900, 460);
-        if (gantt) native.WithGanttToday(3.0).AddGanttTask("Work", 1, 5, .5).AddGanttMilestone("Ship", 7, native.Series[0]);
+        var native = Chart.Create().Title("Numeric").Size(900, 460);
+        if (gantt) native.Gantt(g => g.Today(3.0)).AddGanttTask("Work", 1, 5, .5).AddGanttMilestone("Ship", 7, native.Series[0]);
         else native.AddTimelineRange("Work", 1, 5).AddTimelineRange("Ship", 7, 7);
         Assert.Equal(ChartScaleKind.Linear, chart.Options.XAxis.Scale);
         Assert.Equal(TickLabels(XDocument.Parse(native.ToSvg())), TickLabels(XDocument.Parse(chart.ToSvg())));
@@ -109,8 +109,8 @@ public sealed class MarkupTimelineDateIntentTests {
         Assert.Equal(Start.AddDays(7).ToOADate(), chart.Series[0].GanttItems.Single().End);
         Assert.Equal(Start.AddDays(13).ToOADate(), chart.Series[1].GanttItems.Single().End);
         Assert.Single(chart.GanttDependencies);
-        chart.Options.XAxis.WithBounds(Start.AddDays(2).ToOADate(), Start.AddDays(10).ToOADate())
-            .WithLabelFormatter(value => DateTime.FromOADate(value).ToString("dd MMM yyyy", CultureInfo.InvariantCulture));
+        chart.Options.XAxis.Bounds(Start.AddDays(2).ToOADate(), Start.AddDays(10).ToOADate())
+            .LabelBy(value => DateTime.FromOADate(value).ToString("dd MMM yyyy", CultureInfo.InvariantCulture));
         var document = XDocument.Parse(chart.ToSvg());
         var window = document.Descendants().Single(node => (string?)node.Attribute("data-cfx-role") == "gantt-chart");
         Assert.Equal(Start.AddDays(2).ToOADate(), Number(window, "data-cfx-min"));
@@ -150,7 +150,7 @@ public sealed class MarkupTimelineDateIntentTests {
     }
 
     private static Chart NativeLaunch() {
-        var chart = Chart.Create().WithTitle("Launch plan").WithSize(900, 460).WithGanttToday(Start.AddDays(11));
+        var chart = Chart.Create().Title("Launch plan").Size(900, 460).GanttToday(Start.AddDays(11));
         chart.AddGanttTask("Design", Start, Start.AddDays(7), 1);
         chart.AddGanttTask("Build engine", Start.AddDays(5), Start.AddDays(19), .6, chart.Series[0]);
         chart.AddGanttTask("Playground UI", Start.AddDays(13), Start.AddDays(23), .2, chart.Series[1]);

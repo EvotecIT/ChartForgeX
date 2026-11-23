@@ -53,7 +53,7 @@ public sealed class RadarCurveTests {
     public void CurvesRetainObservationsAndChangeNativeInkForEitherForm(ChartLineAreaForm form) {
         var chart = Native(420, 360, form);
         var straight = Prepare(chart);
-        chart.Series[0].ConfigureRadar(radar => radar.CurveTension = 0);
+        chart.Series[0].Radar(radar => radar.CurveTension = 0);
         Assert.Equal(straight.ToPng(), Prepare(chart).ToPng());
         chart.Series[0].Radar.CurveTension = .17;
         var curved = Prepare(chart);
@@ -168,7 +168,7 @@ public sealed class RadarCurveTests {
     }
 
     private static Chart Native(int width, int height, ChartLineAreaForm form) {
-        var chart = Chart.Create().WithSize(width, height).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false).WithDataLabels(false).WithYAxisBounds(0, 100)
+        var chart = Chart.Create().Size(width, height).ShowHeader(false).Legend(false).Axes(false).ShowGrid(false).DataLabels(false).YAxis(y => y.Bounds(0, 100))
             .AddRadar("Current", new[] { new ChartPoint(1, 90), new ChartPoint(2, 45), new ChartPoint(3, 80), new ChartPoint(4, 60) });
         chart.Series[0].Radar.Form = form; chart.Series[0].Markers.Enabled = false;
         return chart;

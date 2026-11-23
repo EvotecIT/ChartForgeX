@@ -26,8 +26,8 @@ public sealed class ColorScaleLocalizationTests {
                 new ChartHierarchyItem("zero", "Zero", "root", 4, 0),
                 new ChartHierarchyItem("missing", "Missing", "root", 2)
             }) : ColorDimensionPresentationFixtures.Create(kind);
-        chart.WithSize(800, 460).WithPngSupersampling(1)
-            .ConfigureLabels(labels => { labels.Value = "wartość"; labels.Color = "Barwa"; });
+        chart.Size(800, 460).Png(p => p.SupersamplingScale(1))
+            .Labels(labels => { labels.Value = "wartość"; labels.Color = "Barwa"; });
         var scale = ChartColorScale.Discrete(new[] {
             new ChartColorBand(10.5, ChartColor.FromHex("#DAE8F8"), "Niski"),
             new ChartColorBand(20.5, ChartColor.FromHex("#6F9ECE"), "Średni"),
@@ -38,14 +38,14 @@ public sealed class ColorScaleLocalizationTests {
             options.ValueFormat = ChartValueFormat.Number("0.0 '°C'", CultureInfo.GetCultureInfo("pl-PL"));
         }
         if (kind is ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap)
-            chart.WithMapColorScale(scale).ConfigureMapColorDimension(Present);
+            chart.Map(m => m.ColorScale(scale)).Map(map => map.ColorDimension(Present));
         else if (kind == ChartSeriesKind.Treemap)
-            chart.ConfigureTreemap(options => { options.ColorScale = scale; Present(options.ColorDimension); });
+            chart.Treemap(options => { options.ColorScale = scale; Present(options.ColorDimension); });
         else if (kind == ChartSeriesKind.Sunburst)
-            chart.ConfigureSunburst(options => { options.ColorScale = scale; Present(options.ColorDimension); });
+            chart.Sunburst(options => { options.ColorScale = scale; Present(options.ColorDimension); });
         else if (kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble)
-            chart.Series[0].WithColorScale(scale).ConfigureColorDimension(Present);
-        else chart.WithHeatmapColorScale(scale).ConfigureHeatmapColorDimension(Present);
+            chart.Series[0].ColorScale(scale).ColorDimension(Present);
+        else chart.Heatmap(h => h.ColorScale(scale)).Heatmap(heatmap => heatmap.ColorDimension(Present));
         var prefix = kind switch {
             ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap => "map-scale",
             ChartSeriesKind.Treemap => "treemap-color-scale",
@@ -71,7 +71,7 @@ public sealed class ColorScaleLocalizationTests {
         if (kind is ChartSeriesKind.Scatter or ChartSeriesKind.Bubble or ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst)
             Assert.Contains(prepared.Regions, region => region.Label?.Contains("Temperature: 7,1 °C", StringComparison.Ordinal) == true);
         var options = kind == ChartSeriesKind.Sunburst ? chart.Options.Sunburst.ColorDimension : ColorDimensionPresentationFixtures.Options(chart, kind);
-        chart.ConfigureLabels(labels => labels.Value = "pomiar");
+        chart.Labels(labels => labels.Value = "pomiar");
         options.Name = "Changed"; options.ValueFormat = ChartValueFormat.InvariantCompact;
         Assert.Equal(svg, prepared.ToSvg());
         Assert.Equal(png, prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
@@ -93,27 +93,27 @@ public sealed class ColorScaleLocalizationTests {
             ? new[] { new ChartColorBand(null, ChartColor.FromHex("#6F9ECE"), "Zakres") }
             : new[] { new ChartColorBand(10, ChartColor.FromHex("#DAE8F8"), "Niski"),
                 new ChartColorBand(20, ChartColor.FromHex("#6F9ECE"), "Średni"), new ChartColorBand(null, ChartColor.FromHex("#1C5CAB"), "Wysoki") });
-        var chart = Chart.Create().WithSize(800, 460).WithPngSupersampling(1);
+        var chart = Chart.Create().Size(800, 460).Png(p => p.SupersamplingScale(1));
         if (family == "sunburst") chart.AddSunburst("Podział", new[] {
             new ChartHierarchyItem("root", "Wszystko"),
             new ChartHierarchyItem("low", "Niski", "root", 4, 0),
             new ChartHierarchyItem("middle", "Średni", "root", 2, 10),
             new ChartHierarchyItem("high", "Wysoki", "root", 1, 20)
-        }).ConfigureSunburst(options => options.ColorScale = scale);
+        }).Sunburst(options => options.ColorScale = scale);
         else if (family == "treemap") chart.AddTreemap("Podział", new[] {
             new ChartHierarchyItem("low", "Niski", value: 4, colorValue: 0),
             new ChartHierarchyItem("middle", "Średni", value: 2, colorValue: 10),
             new ChartHierarchyItem("high", "Wysoki", value: 1, colorValue: 20)
-        }).ConfigureTreemap(options => options.ColorScale = scale);
+        }).Treemap(options => options.ColorScale = scale);
         else {
-            chart.WithMapLabels(false).WithMapColorScale(scale).WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right);
+            chart.Map(m => m.ShowLabels(false).ColorScale(scale).ScaleLegendPosition(ChartMapScaleLegendPosition.Right));
             var items = new[] { new ChartRegionMapItem("CA", 0), new ChartRegionMapItem("NY", 10), new ChartRegionMapItem("TX", 20) };
             if (family == "region-map") chart.AddRegionMap("Pomiar", ChartMapCatalog.Get("us-states"), items);
             else chart.AddTileMap("Pomiar", ChartTileMapCatalog.Get("us-states"), items);
         }
         var suffix = family + (oneBand ? "-single" : "-interior");
         Capture(chart.Prepare(VisualExportRequest.ForChart(chart).Context), suffix + "-english");
-        chart.ConfigureLabels(labels => { labels.AllValues = "Wszystkie wartości"; labels.Value = "wartość"; });
+        chart.Labels(labels => { labels.AllValues = "Wszystkie wartości"; labels.Value = "wartość"; });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var svg = prepared.ToSvg(); var png = prepared.ToPng(new VisualRenderOptions(supersampling: 1));
         Capture(prepared, suffix + "-localized");
@@ -125,7 +125,7 @@ public sealed class ColorScaleLocalizationTests {
             : new[] { "Niski < 10", "Średni 10–20", "Wysoki 20" }, captions);
         Assert.Equal(oneBand ? new[] { "" } : new[] { "", "10", "20" }, bands.Select(node => (string?)node.Attribute("data-cfx-lower-bound")));
         Assert.Equal(oneBand ? new[] { "" } : new[] { "10", "20", "" }, bands.Select(node => (string?)node.Attribute("data-cfx-upper-bound")));
-        chart.ConfigureLabels(labels => { labels.AllValues = "Changed"; labels.Value = "changed"; });
+        chart.Labels(labels => { labels.AllValues = "Changed"; labels.Value = "changed"; });
         Assert.Equal(svg, prepared.ToSvg());
         Assert.Equal(png, prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
         // Only the single-band key uses a label word ("All values"); interval captions are numbers and symbols.

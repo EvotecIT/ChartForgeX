@@ -32,13 +32,13 @@ public sealed class PolarDisconnectedCurveTests {
         Assert.Equal(width, decoded.Width); Assert.Equal(380, decoded.Height); Assert.DoesNotContain("<script", svg);
         Assert.Equal(6, XDocument.Parse(svg).Descendants().Count(node => (string?)node.Attribute("data-cfx-role") == "polar-point-source"));
         Capture("polar-filled-runs-" + width + "-" + (dark ? "dark" : "light"), svg, png);
-        series.Points.Clear(); series.Polar.Form = ChartLineAreaForm.Line; chart.Options.PolarRotationDegrees = 140;
+        series.Points.Clear(); series.Polar.Form = ChartLineAreaForm.Line; chart.Options.Polar.RotationDegrees = 140;
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
     }
 
     [Fact]
     public void OpenCurvesDoNotBorrowTangentsAcrossTheAuthoredBreak() {
-        var chart = Create(800, false); chart.Series[0].ConfigurePolar(options => { options.Form = ChartLineAreaForm.Line; options.FillOpacity = null; options.CurveTension = .6; });
+        var chart = Create(800, false); chart.Series[0].Polar(options => { options.Form = ChartLineAreaForm.Line; options.FillOpacity = null; options.CurveTension = .6; });
         var actual = PolarDepthContractTests.Prepare(chart);
         var paths = actual.Scene.Nodes.OfType<VisualScenePath>().Where(path => path.Role == "polar-line").ToArray();
         Assert.Equal(2, paths.Length); Assert.All(paths, path => Assert.False(path.Close));
@@ -53,16 +53,16 @@ public sealed class PolarDisconnectedCurveTests {
 
     [Fact]
     public void SelectedSecondaryScaleAndReversalRetainAuthoredRadiiAndBreakIdentity() {
-        var chart = Create(600, false).WithSecondaryYAxisBounds(0, 1000);
+        var chart = Create(600, false).SecondaryYAxis(s => s.Bounds(0, 1000));
         var primary = PolarDepthContractTests.Prepare(chart);
-        var series = chart.Series[0]; series.UseSecondaryValueAxis();
+        var series = chart.Series[0]; series.SecondaryAxis();
         for (var index = 0; index < series.Points.Count; index++) {
             var point = series.Points[index]; series.Points[index] = new ChartPoint(point.X, point.Y * 10, point.BreakBefore);
         }
         var secondary = PolarDepthContractTests.Prepare(chart);
         Assert.Equal(primary.Regions.Where(region => region.Role == "polar-point").Select(region => region.Bounds),
             secondary.Regions.Where(region => region.Role == "polar-point").Select(region => region.Bounds));
-        chart.Options.SecondaryYAxis.WithReversal(); var reversed = PolarDepthContractTests.Prepare(chart);
+        chart.Options.SecondaryYAxis.Reversed(); var reversed = PolarDepthContractTests.Prepare(chart);
         Assert.NotEqual(secondary.ToPng(), reversed.ToPng());
         Assert.Equal(6, reversed.Scene.Nodes.OfType<VisualSceneGroup>().Count(group => group.Role == "polar-point-source" && group.Metadata["data-cfx-axis"] == "secondary"));
         Assert.True(series.Points[3].BreakBefore); Assert.Equal(600, series.Points[3].Y);
@@ -71,10 +71,10 @@ public sealed class PolarDisconnectedCurveTests {
     [Fact]
     public void ExplicitAreaPaintReachesNativePixelsWithSourceAlphaAndOpacityAppliedOnce() {
         var points = Enumerable.Range(0, 3).Select(index => new ChartPoint(index * Math.PI * 2 / 3, 80)).ToArray();
-        var chart = Chart.Create().WithSize(400, 320).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false)
-            .WithDataLabels(false).WithYAxisBounds(0, 100).AddPolar("Signal", points, ChartColor.FromRgba(36, 104, 172, 128));
+        var chart = Chart.Create().Size(400, 320).ShowHeader(false).Legend(false).Axes(false).ShowGrid(false)
+            .DataLabels(false).YAxis(y => y.Bounds(0, 100)).AddPolar("Signal", points, ChartColor.FromRgba(36, 104, 172, 128));
         chart.Options.TransparentBackground = true; chart.Options.ShowPlotBackground = false; chart.Options.ShowCard = false;
-        chart.Series[0].ConfigurePolar(options => { options.Form = ChartLineAreaForm.Area; options.FillOpacity = .5; options.OutlineStroke = new ChartStrokeStyle(width: 0); });
+        chart.Series[0].Polar(options => { options.Form = ChartLineAreaForm.Area; options.FillOpacity = .5; options.OutlineStroke = new ChartStrokeStyle(width: 0); });
         chart.Series[0].Markers.Enabled = false;
         var prepared = PolarDepthContractTests.Prepare(chart);
         var fill = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "polar-area").Fill!.Value;
@@ -90,8 +90,8 @@ public sealed class PolarDisconnectedCurveTests {
     [Fact]
     public void RepeatedAndMultiTurnAnglesRemainDistinctAcrossDisconnectedSourceRuns() {
         var points = new[] { new ChartPoint(0, 30), new ChartPoint(Math.PI * 2, 40), new ChartPoint(-Math.PI / 2, 50, true), new ChartPoint(Math.PI * 4, 60) };
-        var chart = Chart.Create().WithHeader(false).WithLegend(false).WithDataLabels(false).WithYAxisBounds(0, 100).AddPolar("Signal", points);
-        chart.Series[0].ConfigurePolar(options => options.CurveTension = .4);
+        var chart = Chart.Create().ShowHeader(false).Legend(false).DataLabels(false).YAxis(y => y.Bounds(0, 100)).AddPolar("Signal", points);
+        chart.Series[0].Polar(options => options.CurveTension = .4);
         var prepared = PolarDepthContractTests.Prepare(chart);
         Assert.Equal(2, prepared.Scene.Nodes.Count(node => node.Role == "polar-line"));
         var sources = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "polar-point-source").ToArray();
@@ -104,9 +104,9 @@ public sealed class PolarDisconnectedCurveTests {
     [InlineData(ChartLineAreaForm.Line)] [InlineData(ChartLineAreaForm.Area)]
     public void MaximumTensionFitsActualCurveExtremaInsideTheNativeViewport(ChartLineAreaForm form) {
         var points = new[] { new ChartPoint(0, 100), new ChartPoint(.1, 20), new ChartPoint(2.4, 100), new ChartPoint(5, 70) };
-        var chart = Chart.Create().WithSize(360, 320).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false)
-            .WithDataLabels(false).WithYAxisBounds(0, 100).AddPolar("Signal", points);
-        chart.Series[0].ConfigurePolar(options => { options.Form = form; options.ClosePath = true; options.CurveTension = 1; });
+        var chart = Chart.Create().Size(360, 320).ShowHeader(false).Legend(false).Axes(false).ShowGrid(false)
+            .DataLabels(false).YAxis(y => y.Bounds(0, 100)).AddPolar("Signal", points);
+        chart.Series[0].Polar(options => { options.Form = form; options.ClosePath = true; options.CurveTension = 1; });
         var prepared = PolarDepthContractTests.Prepare(chart);
         var outline = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "polar-line");
         var bounds = new ChartPath(outline.Commands).Bounds();
@@ -122,12 +122,12 @@ public sealed class PolarDisconnectedCurveTests {
         var points = new[] { new ChartPoint(0, 30), new ChartPoint(.8, 80), new ChartPoint(1.7, 55),
             new ChartPoint(3.1, 60, true), new ChartPoint(3.9, 40), new ChartPoint(4.8, 90) };
         var series = new ChartSeries(new ChartSeriesId("signal"), "Signal", ChartSeriesKind.Polar, points)
-            .ConfigurePolar(options => { options.Form = ChartLineAreaForm.Area; options.CurveTension = .2; options.FillOpacity = .25;
+            .Polar(options => { options.Form = ChartLineAreaForm.Area; options.CurveTension = .2; options.FillOpacity = .25;
                 options.OutlineStroke = new ChartStrokeStyle(width: 2, dash: new[] { 5d, 3d }); });
-        for (var index = 0; index < points.Length; index++) series.WithObservationId(index, new ChartObservationId("observation-" + index));
-        var chart = Chart.Create().WithSize(width, 380).WithHeader(false).WithLegend().WithDataLabels(false).WithYAxisBounds(0, 100)
-            .WithAxes(false).WithGrid(false).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).AddSeries(series);
-        chart.Options.PolarRotationDegrees = 25; return chart;
+        for (var index = 0; index < points.Length; index++) series.ObservationId(index, new ChartObservationId("observation-" + index));
+        var chart = Chart.Create().Size(width, 380).ShowHeader(false).Legend().DataLabels(false).YAxis(y => y.Bounds(0, 100))
+            .Axes(false).ShowGrid(false).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).AddSeries(series);
+        chart.Options.Polar.RotationDegrees = 25; return chart;
     }
 
     private static void Capture(string name, string svg, byte[] png) {

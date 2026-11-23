@@ -18,7 +18,7 @@ var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 #endregion
 
-var chart = Chart.Create().WithTitle("Estimated uncertainty").WithXAxis("Observation").WithYAxis("Expected level")
+var chart = Chart.Create().Title("Estimated uncertainty").XAxis(x => x.Title("Observation")).YAxis(y => y.Title("Expected level"))
             .AddSeries(ChartSeries.CreateRangeBand(new ChartSeriesId("expected-range"), "Expected range",
                 Enumerable.Range(0, 32).Select(index => new ChartRangeBand(index,
                     index % 7 == 0 ? 0 : Math.Sin(index * .5) * 9,

@@ -192,11 +192,11 @@ public static partial class TopologyIconSvgPackImporter {
                     DisplayMode = TopologyNodeDisplayMode.Tile,
                     Symbol = SymbolFromLabel(Path.GetFileNameWithoutExtension(path)),
                     Artwork = TopologyIconArtwork.InlineSvg(PrefixSvgIds(imported.SvgBody, pack.Id, id), imported.ViewBox)
-                }.WithTags(TagsFor(relativePath, category).ToArray())
-                    .WithMetadata("source.path", relativePath)
-                    .WithMetadata("source.fileName", Path.GetFileName(path))
-                    .WithMetadata("source.viewBox", imported.ViewBox);
-                if (!string.IsNullOrWhiteSpace(options.SourceRevision)) icon.WithMetadata("source.revision", options.SourceRevision!);
+                }.AddTags(TagsFor(relativePath, category).ToArray())
+                    .Metadata("source.path", relativePath)
+                    .Metadata("source.fileName", Path.GetFileName(path))
+                    .Metadata("source.viewBox", imported.ViewBox);
+                if (!string.IsNullOrWhiteSpace(options.SourceRevision)) icon.Metadata("source.revision", options.SourceRevision!);
                 pack.AddIcon(icon);
                 files.Add(new TopologyIconSvgPackImportFile(path, relativePath, id, category, imported: true, null));
             } catch (Exception exception) when (exception is XmlException || exception is InvalidOperationException || exception is ArgumentException) {
@@ -204,9 +204,9 @@ public static partial class TopologyIconSvgPackImporter {
             }
         }
 
-        pack.WithMetadata("import.svg.files", files.Count.ToString(CultureInfo.InvariantCulture));
-        pack.WithMetadata("import.svg.imported", files.Count(file => file.Imported).ToString(CultureInfo.InvariantCulture));
-        pack.WithMetadata("import.svg.skipped", files.Count(file => !file.Imported).ToString(CultureInfo.InvariantCulture));
+        pack.Metadata("import.svg.files", files.Count.ToString(CultureInfo.InvariantCulture));
+        pack.Metadata("import.svg.imported", files.Count(file => file.Imported).ToString(CultureInfo.InvariantCulture));
+        pack.Metadata("import.svg.skipped", files.Count(file => !file.Imported).ToString(CultureInfo.InvariantCulture));
         return new TopologyIconSvgPackImportResult(pack, files);
     }
 
@@ -215,9 +215,9 @@ public static partial class TopologyIconSvgPackImporter {
         var id = string.IsNullOrWhiteSpace(options.PackId) ? StableToken(sourceName) : StableToken(options.PackId!);
         var label = string.IsNullOrWhiteSpace(options.PackLabel) ? Humanize(sourceName) : options.PackLabel!.Trim();
         var pack = new TopologyIconPack(id, label, options.Vendor, options.Version)
-            .WithTags("svg", "imported", "stencil")
-            .WithMetadata("import.kind", "svg-folder")
-            .WithMetadata("import.sourceDirectory", root);
+            .AddTags("svg", "imported", "stencil")
+            .Metadata("import.kind", "svg-folder")
+            .Metadata("import.sourceDirectory", root);
         AddOptional(pack, "source.url", options.SourceUrl);
         AddOptional(pack, "source.revision", options.SourceRevision);
         AddOptional(pack, "source.license", options.SourceLicense);
@@ -436,7 +436,7 @@ public static partial class TopologyIconSvgPackImporter {
     }
 
     private static void AddOptional(TopologyIconPack pack, string key, string? value) {
-        if (!string.IsNullOrWhiteSpace(value)) pack.WithMetadata(key, value!.Trim());
+        if (!string.IsNullOrWhiteSpace(value)) pack.Metadata(key, value!.Trim());
     }
 
     private readonly struct ImportedSvg {

@@ -53,7 +53,7 @@ public sealed class TopologyC4SharedPolicyReviewCausalTests {
     [Fact]
     public void IconFamilyOverrideUsesThePaintedNativeFaceForItsPlateAndFootprint() {
         var family = BrowserProofFonts.Family;
-        var chart = IconChart("Wide WWW").WithTheme(VisualTheme.Graphite().WithFontFamily("monospace"));
+        var chart = IconChart("Wide WWW").Theme(VisualTheme.Graphite().WithFontFamily("monospace"));
         chart.Nodes[0].TextStyle = new TextStyleOverride { FontFamily = family };
         var prepared = chart.Prepare(IconOptions());
         Capture(prepared, "c4-review-icon-family");
@@ -87,8 +87,8 @@ public sealed class TopologyC4SharedPolicyReviewCausalTests {
     }
 
     private static TopologyChart IconChart(string label) {
-        var chart = TopologyChart.Create().WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family))
-            .WithViewport(600, 300, 28).WithLayout(TopologyLayoutMode.GroupGrid)
+        var chart = TopologyChart.Create().Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family))
+            .Viewport(new TopologyViewport(600, 300, 28)).LayoutMode(TopologyLayoutMode.GroupGrid)
             .AddAutoNode("icon", label, width: 80, height: 70);
         chart.Nodes[0].DisplayMode = TopologyNodeDisplayMode.Icon;
         chart.Nodes[0].PreserveDisplayModeSize = true;

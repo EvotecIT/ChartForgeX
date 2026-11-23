@@ -13,9 +13,9 @@ public sealed class ConeBoundaryCaptionTests {
     [InlineData(800, ThemeMode.Light)]
     [InlineData(800, ThemeMode.Dark)]
     public void CombinedConeValuesAndRatiosStayBesideVisibleStageBoundaries(int width, ThemeMode mode) {
-        var chart = Chart.Create().WithSize(width, 440).WithThemeMode(mode).WithLegend(false).WithDataLabels()
-            .WithXLabels("Visits", "Qualified", "Reviewed", "Won", "Renewed")
-            .ConfigureFunnel(options => options.Form = ChartFunnelForm.Cone)
+        var chart = Chart.Create().Size(width, 440).ThemeMode(mode).Legend(false).DataLabels()
+            .XLabels("Visits", "Qualified", "Reviewed", "Won", "Renewed")
+            .Funnel(options => options.Form = ChartFunnelForm.Cone)
             .AddFunnel("Stages", new[] { 1000d, 410, 162.36, 14, 2 }.Select((value, index) => new ChartPoint(index + 1, value)));
         RoundedRadialSeriesTests.UseFixtureFont(chart);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -38,12 +38,12 @@ public sealed class ConeBoundaryCaptionTests {
         Assert.All(leaders, line => Assert.InRange(Math.Abs(line.Commands.Last().X - line.Commands.First().X), 0, 12));
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "funnel.label-hidden");
         Assert.NotEmpty(prepared.ToPng());
-        chart.WithValueFormat(ChartValueFormat.Number("0.00"));
+        chart.ValueFormat(ChartValueFormat.Number("0.00"));
         Assert.Contains(chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes.OfType<VisualSceneText>(),
             node => node.Role == "funnel-label" && node.Text.Lines.Single().Text == "Reviewed: 162.36");
-        var large = Chart.Create().WithSize(width, 440).WithThemeMode(mode).WithLegend(false).WithDataLabels()
-            .WithXLabels("Visits", "Qualified", "Reviewed", "Won", "Renewed")
-            .ConfigureFunnel(options => options.Form = ChartFunnelForm.Cone)
+        var large = Chart.Create().Size(width, 440).ThemeMode(mode).Legend(false).DataLabels()
+            .XLabels("Visits", "Qualified", "Reviewed", "Won", "Renewed")
+            .Funnel(options => options.Form = ChartFunnelForm.Cone)
             .AddFunnel("Stages", new[] { 12400d, 5270, 2130, 860, 610 }.Select((value, index) => new ChartPoint(index + 1, value)));
         RoundedRadialSeriesTests.UseFixtureFont(large);
         var grouped = large.Prepare(VisualExportRequest.ForChart(large).Context);

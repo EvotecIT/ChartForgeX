@@ -114,15 +114,15 @@ public static class RangeBandRecipe {
     public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot; or &quot;singleton&quot; or &quot;compact-singleton&quot; or &quot;dense&quot; or &quot;compact-dense&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
-        if (variant is &quot;singleton&quot; or &quot;compact-singleton&quot;) return Chart.Create().WithTitle(&quot;One observed range&quot;)
+        if (variant is &quot;singleton&quot; or &quot;compact-singleton&quot;) return Chart.Create().Title(&quot;One observed range&quot;)
             .AddSeries(ChartSeries.CreateRangeBand(new ChartSeriesId(&quot;expected-range&quot;), &quot;Expected range&quot;, new[] { new ChartRangeBand(0, 0, 7) })
-                .WithObservationId(0, new ChartObservationId(&quot;only-range&quot;)));
-        if (variant is &quot;dense&quot; or &quot;compact-dense&quot;) return Chart.Create().WithTitle(&quot;Estimated uncertainty&quot;).WithXAxis(&quot;Observation&quot;).WithYAxis(&quot;Expected level&quot;)
+                .ObservationId(0, new ChartObservationId(&quot;only-range&quot;)));
+        if (variant is &quot;dense&quot; or &quot;compact-dense&quot;) return Chart.Create().Title(&quot;Estimated uncertainty&quot;).XAxis(x =&gt; x.Title(&quot;Observation&quot;)).YAxis(y =&gt; y.Title(&quot;Expected level&quot;))
             .AddSeries(ChartSeries.CreateRangeBand(new ChartSeriesId(&quot;expected-range&quot;), &quot;Expected range&quot;,
                 Enumerable.Range(0, 32).Select(index =&gt; new ChartRangeBand(index,
                     index % 7 == 0 ? 0 : Math.Sin(index * .5) * 9,
                     index % 7 == 0 ? 0 : Math.Sin(index * .5) * 9 + 4, index == 16))));
-        if (variant == &quot;sparse&quot;) return Chart.Create().WithXLabels(&quot;08:00&quot;, &quot;10:00&quot;)
+        if (variant == &quot;sparse&quot;) return Chart.Create().XLabels(&quot;08:00&quot;, &quot;10:00&quot;)
             .AddSeries(ChartSeries.CreateRangeBand(new ChartSeriesId(&quot;expected-range&quot;), &quot;Expected range&quot;,
                 Enumerable.Range(1, 2).Select(index =&gt; new ChartRangeBand(index, 20 + index * 2, 40 + index * 4))));
         // Hourly server-room temperature: the expected band follows the daily cycle and the reading leaves it once.
@@ -134,8 +134,8 @@ public static class RangeBandRecipe {
         var observed = ChartSeries.CreateLine(new ChartSeriesId(&quot;observed&quot;), &quot;Observed&quot;,
             middle.Select((value, index) =&gt; new ChartPoint(index + 1,
                 Math.Round(value + Math.Sin(index * 2.3) * .8 + (index * step is &gt;= 14 and &lt;= 16 ? 2.6 : 0), 1))));
-        return Chart.Create().WithXLabels(Enumerable.Range(0, hours).Select(index =&gt; (index * step).ToString(&quot;00&quot;, CultureInfo.InvariantCulture) + &quot;:00&quot;).ToArray())
-            .WithYAxis(&quot;Temperature (&#176;C)&quot;).AddSeries(expected).AddSeries(observed);
+        return Chart.Create().XLabels(Enumerable.Range(0, hours).Select(index =&gt; (index * step).ToString(&quot;00&quot;, CultureInfo.InvariantCulture) + &quot;:00&quot;).ToArray())
+            .YAxis(y =&gt; y.Title(&quot;Temperature (&#176;C)&quot;)).AddSeries(expected).AddSeries(observed);
     }
 }
 </code></pre><pre data-visual-theme="dark"><code data-example-source>#region Setup
@@ -172,15 +172,15 @@ public static class RangeBandRecipe {
     public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot; or &quot;singleton&quot; or &quot;compact-singleton&quot; or &quot;dense&quot; or &quot;compact-dense&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
-        if (variant is &quot;singleton&quot; or &quot;compact-singleton&quot;) return Chart.Create().WithTitle(&quot;One observed range&quot;)
+        if (variant is &quot;singleton&quot; or &quot;compact-singleton&quot;) return Chart.Create().Title(&quot;One observed range&quot;)
             .AddSeries(ChartSeries.CreateRangeBand(new ChartSeriesId(&quot;expected-range&quot;), &quot;Expected range&quot;, new[] { new ChartRangeBand(0, 0, 7) })
-                .WithObservationId(0, new ChartObservationId(&quot;only-range&quot;)));
-        if (variant is &quot;dense&quot; or &quot;compact-dense&quot;) return Chart.Create().WithTitle(&quot;Estimated uncertainty&quot;).WithXAxis(&quot;Observation&quot;).WithYAxis(&quot;Expected level&quot;)
+                .ObservationId(0, new ChartObservationId(&quot;only-range&quot;)));
+        if (variant is &quot;dense&quot; or &quot;compact-dense&quot;) return Chart.Create().Title(&quot;Estimated uncertainty&quot;).XAxis(x =&gt; x.Title(&quot;Observation&quot;)).YAxis(y =&gt; y.Title(&quot;Expected level&quot;))
             .AddSeries(ChartSeries.CreateRangeBand(new ChartSeriesId(&quot;expected-range&quot;), &quot;Expected range&quot;,
                 Enumerable.Range(0, 32).Select(index =&gt; new ChartRangeBand(index,
                     index % 7 == 0 ? 0 : Math.Sin(index * .5) * 9,
                     index % 7 == 0 ? 0 : Math.Sin(index * .5) * 9 + 4, index == 16))));
-        if (variant == &quot;sparse&quot;) return Chart.Create().WithXLabels(&quot;08:00&quot;, &quot;10:00&quot;)
+        if (variant == &quot;sparse&quot;) return Chart.Create().XLabels(&quot;08:00&quot;, &quot;10:00&quot;)
             .AddSeries(ChartSeries.CreateRangeBand(new ChartSeriesId(&quot;expected-range&quot;), &quot;Expected range&quot;,
                 Enumerable.Range(1, 2).Select(index =&gt; new ChartRangeBand(index, 20 + index * 2, 40 + index * 4))));
         // Hourly server-room temperature: the expected band follows the daily cycle and the reading leaves it once.
@@ -192,8 +192,8 @@ public static class RangeBandRecipe {
         var observed = ChartSeries.CreateLine(new ChartSeriesId(&quot;observed&quot;), &quot;Observed&quot;,
             middle.Select((value, index) =&gt; new ChartPoint(index + 1,
                 Math.Round(value + Math.Sin(index * 2.3) * .8 + (index * step is &gt;= 14 and &lt;= 16 ? 2.6 : 0), 1))));
-        return Chart.Create().WithXLabels(Enumerable.Range(0, hours).Select(index =&gt; (index * step).ToString(&quot;00&quot;, CultureInfo.InvariantCulture) + &quot;:00&quot;).ToArray())
-            .WithYAxis(&quot;Temperature (&#176;C)&quot;).AddSeries(expected).AddSeries(observed);
+        return Chart.Create().XLabels(Enumerable.Range(0, hours).Select(index =&gt; (index * step).ToString(&quot;00&quot;, CultureInfo.InvariantCulture) + &quot;:00&quot;).ToArray())
+            .YAxis(y =&gt; y.Title(&quot;Temperature (&#176;C)&quot;)).AddSeries(expected).AddSeries(observed);
     }
 }
 </code></pre></section></main><footer><a href="catalog.html">Explore more examples</a><a href="fonts/OFL.txt">Font license</a></footer><script data-gallery-script>(() => {

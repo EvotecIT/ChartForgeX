@@ -33,7 +33,7 @@ public static class OrgPortraitsRecipe {
     /// <summary>Creates a complete portrait-bearing organization diagram without external assets.</summary>
     public static TopologyChart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact" or "meet" or "slice" or "collapsed" or "horizontal" or "reordered")) throw new ArgumentOutOfRangeException(nameof(variant));
-        var chart = TopologyChart.Create().WithViewport(variant == "compact" ? 390 : 900, 480).WithLegend(null);
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(variant == "compact" ? 390 : 900, 480)).Legend((TopologyLegend?)null);
         chart.Theme = VisualTheme.Graphite(); chart.ThemeMode = mode;
         chart.DefaultRenderOptions = new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true };
         var fit = variant == "meet" ? TopologyPortraitFit.Meet : TopologyPortraitFit.Slice;

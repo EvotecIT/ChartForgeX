@@ -79,7 +79,7 @@ public sealed class ChartMarkStyleParityTests {
     [Fact]
     public void ExplicitSliceColorRemainsSolidAndPreservesAuthoredAlpha() {
         var chart = ChartMarkParityFixture.Create("pie-full", 128);
-        chart.Series[0].WithPointColor(0, ChartColor.FromRgba(30, 80, 170, 128));
+        chart.Series[0].PointColor(0, ChartColor.FromRgba(30, 80, 170, 128));
         var svg = XDocument.Parse(chart.ToSvg());
         var slice = svg.Descendants().Single(e => (string?)e.Attribute("data-cfx-role") == "pie-slice");
         var coordinates = ((string)slice.Attribute("d")!).Split(' ');
@@ -161,7 +161,7 @@ public sealed class ChartMarkStyleParityTests {
     [InlineData(ChartFillPattern.Crosshatch)]
     public void HatchCoverageKeepsSvgTileSpacingAndOpacity(ChartFillPattern pattern) {
         var chart = ChartMarkParityFixture.Create("hatch", 128, 2);
-        chart.Series[0].WithFillPattern(pattern);
+        chart.Series[0].FillPattern(pattern);
         var actual = chart.ToRgbaImage();
         var expected = SvgRasterizer.Rasterize(chart.ToSvg(), actual.Width, actual.Height);
         Assert.Empty(expected.Diagnostics);

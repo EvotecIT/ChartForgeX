@@ -9,7 +9,7 @@ public sealed class TopologyTeamDefaultLayoutTests {
     [InlineData(TopologyCaptionPlacement.Top)]
     [InlineData(TopologyCaptionPlacement.Bottom)]
     public void HorizontalTeamReservesUnequalExternalCaptionFootprints(TopologyCaptionPlacement placement) {
-        var chart = TopologyChart.Create().WithViewport(960, 800).WithLegend(null).AddTeam("team", "Team", new[] {
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(960, 800)).Legend((TopologyLegend?)null).AddTeam("team", "Team", new[] {
             new TopologyTeamMember("manager", "Manager"),
             new TopologyTeamMember("first", placement == TopologyCaptionPlacement.Top ? "Local" : "Regional\nsupport\nreporting") { ParentId = "manager" },
             new TopologyTeamMember("second", placement == TopologyCaptionPlacement.Top ? "Regional\nsupport\nreporting" : "Local") { ParentId = "manager" }
@@ -32,7 +32,7 @@ public sealed class TopologyTeamDefaultLayoutTests {
 
     [Fact]
     public void DefaultOrganizationKeepsManagersInOneBandAndReportsUnderTheirManager() {
-        var chart = TopologyChart.Create().WithViewport(960, 520).WithLegend(null).AddTeam("team", "Team", new[] {
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(960, 520)).Legend((TopologyLegend?)null).AddTeam("team", "Team", new[] {
             new TopologyTeamMember("director", "Director"),
             new TopologyTeamMember("a", "Engineering") { ParentId = "director" },
             new TopologyTeamMember("b", "Operations") { ParentId = "director" },

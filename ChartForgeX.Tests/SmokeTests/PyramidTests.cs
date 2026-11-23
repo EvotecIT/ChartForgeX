@@ -7,7 +7,7 @@ namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
     private static void PyramidSeriesRenderProportionalPartitions() {
-        var chart = Chart.Create().WithSize(720, 440).WithDataLabels().WithXLabels("Services", "Platform", "Support")
+        var chart = Chart.Create().Size(720, 440).DataLabels().XLabels("Services", "Platform", "Support")
             .AddPyramid("Allocation", new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20) });
         var prepared = PreparedFamily(chart); var stages = FamilyGroups(prepared, "pyramid-stage");
         Verify.Equal(3, stages.Length); Verify.Equal(.5, FamilyNumber(stages[0], "data-cfx-length-fraction"), 12);

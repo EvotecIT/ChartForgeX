@@ -32,7 +32,7 @@ public sealed class ConcurrentRenderDeterminismTests {
 
     private static Rendered Render() {
         var artifact = MermaidRenderer.Render(MermaidClassErCaptionTests.Source("er"), MermaidClassErCaptionTests.Options(true, 390)).Artifact!;
-        var story = VisualStory.Create("One GIF clock").WithSize(480, 320);
+        var story = VisualStory.Create("One GIF clock").Size(480, 320);
         story.Scene("result", "Result", 9).Panel("result", new VisualStoryTextSurface("Ready"));
         story.Outcome("ready", "Ready", "result");
         var gif = story.Prepare(new VisualStoryPlaybackOptions(TimeSpan.FromSeconds(1), TimeSpan.Zero, 1)).ToGif(new VisualStoryFrameOptions(6));

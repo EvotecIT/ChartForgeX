@@ -9,7 +9,7 @@ namespace ChartForgeX.Tests;
 public sealed class TopologyCompartmentTests {
     [Fact]
     public void NativeCompartmentsPreserveIdentityAndSnapshotPresentationWithoutDuplicateSurfaces() {
-        var chart = TopologyChart.Create().WithViewport(800, 500).WithLayout(TopologyLayoutMode.Layered)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(800, 500)).LayoutMode(TopologyLayoutMode.Layered)
             .AddAutoGroup("work", "Work")
             .AddAutoGroup("first", "First")
             .AddAutoGroup("second", "Second")
@@ -40,7 +40,7 @@ public sealed class TopologyCompartmentTests {
 
     [Fact]
     public void CompartmentParentsAndMembershipHaveExplicitNativeValidation() {
-        var chart = TopologyChart.Create().WithViewport(600, 400)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(600, 400))
             .AddGroup("outside", "Outside", 0, 0, 300, 200)
             .AddGroup("part", "Part", 20, 30, 200, 140);
         chart.Groups[1].Presentation = TopologyGroupPresentation.Compartment;

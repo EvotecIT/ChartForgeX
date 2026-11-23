@@ -107,7 +107,7 @@ public sealed class SequenceMessagePresentationTests {
         var model=SequenceMessageFixture.Badged("1");model.Messages[0].Text="";model.AddMessage("B","A","");model.Messages[1].Metadata["mermaid.autonumber.visible"]="false";
         var prepared=model.Prepare(SequenceMessageFixture.Context());var before=prepared.ToSvg();SequenceMessageFixture.Capture("sequence-number-empty-label-paused",prepared);
         Assert.Single(prepared.Regions,item=>item.Role=="sequence-number-badge");Assert.Equal(new[]{"",""},prepared.ToArtifact(model.Id,VisualArtifactKind.Sequence).ToInterchangeEnvelope().Edges.Select(item=>item.Label));
-        var emptyModel=SequenceArtifact.Create("sequence-number").WithSize(1200,900).AddParticipant("A","Review").AddParticipant("B","Archive");emptyModel.Layout=model.Layout;var empty=emptyModel.Prepare(SequenceMessageFixture.Context());SequenceMessageFixture.Capture("sequence-number-empty-messages",empty);Assert.DoesNotContain(empty.Regions,item=>item.Role=="sequence-number-badge");Assert.Equal(before,prepared.ToSvg());
+        var emptyModel=SequenceArtifact.Create("sequence-number").Width(1200).Height(900).AddParticipant("A","Review").AddParticipant("B","Archive");emptyModel.Layout=model.Layout;var empty=emptyModel.Prepare(SequenceMessageFixture.Context());SequenceMessageFixture.Capture("sequence-number-empty-messages",empty);Assert.DoesNotContain(empty.Regions,item=>item.Role=="sequence-number-badge");Assert.Equal(before,prepared.ToSvg());
     }
     [Fact]
     public void MaximumFiniteNativeStartKeepsEveryDigitAndRejectsOnlyActualOverflow() {
@@ -134,8 +134,8 @@ public sealed class SequenceMessagePresentationTests {
 }
 
 internal static class SequenceMessageFixture {
-    internal static SequenceArtifact Basic()=>SequenceArtifact.Create("sequence-message").WithSize(1200,900).AddParticipant("A","Review").AddParticipant("B","Archive").AddMessage("A","B","Long request\nNext").AddMessage("B","A","Long request\nNext");
-    internal static SequenceArtifact Badged(string start) {var model=SequenceArtifact.Create("sequence-number").WithSize(1200,900).AddParticipant("A","Review").AddParticipant("B","Archive").AddMessage("A","B","Long request\nNext");model.Metadata["mermaid.autonumber"]="true";model.Metadata["mermaid.autonumber.start"]=start;model.Layout=new SequenceLayoutPolicy(numberPresentation:SequenceNumberPresentation.Badge);return model;}
+    internal static SequenceArtifact Basic()=>SequenceArtifact.Create("sequence-message").Width(1200).Height(900).AddParticipant("A","Review").AddParticipant("B","Archive").AddMessage("A","B","Long request\nNext").AddMessage("B","A","Long request\nNext");
+    internal static SequenceArtifact Badged(string start) {var model=SequenceArtifact.Create("sequence-number").Width(1200).Height(900).AddParticipant("A","Review").AddParticipant("B","Archive").AddMessage("A","B","Long request\nNext");model.Metadata["mermaid.autonumber"]="true";model.Metadata["mermaid.autonumber.start"]=start;model.Layout=new SequenceLayoutPolicy(numberPresentation:SequenceNumberPresentation.Badge);return model;}
     internal static VisualRenderContext Context(double width=1500)=>new(new VisualLayoutOptions(new VisualSize(width,1100),24));
     internal static TextStyle Style(VisualRenderContext context)=>new(){Font=context.Font,FontSize=context.Theme.Typography.DataLabelSize,LineHeight=1};
     internal static string F(double value)=>value.ToString("0.###",CultureInfo.InvariantCulture);

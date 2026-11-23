@@ -39,7 +39,7 @@ internal sealed class ChartPolarPreparation {
         var validation = new ChartViewportAxisProjection(full.Minimum, full.Maximum, full.Minimum, full.Maximum, 0, 1, axis, false);
         if (validation.ConstrainSource(window) == null) return;
         _views.Add(side, new ChartPolarRadiusView(full, window));
-        axis.Minimum = window.Minimum; axis.Maximum = window.Maximum; axis.PreparedViewportWindow = window;
+        axis.Min = window.Minimum; axis.Max = window.Maximum; axis.PreparedViewportWindow = window;
     }
     internal void Capture(Chart chart, ChartPoint center, double outerRadius, double rotation,
         Dictionary<ChartAxisSide, RadialValueScale> current) {

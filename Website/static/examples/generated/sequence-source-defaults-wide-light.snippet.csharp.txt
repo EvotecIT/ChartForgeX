@@ -18,7 +18,7 @@ var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 #endregion
 
-var model=SequenceArtifact.Create("sequence-source-defaults").WithSize(1000,820).AddParticipant("A","Review").AddParticipant("B","Archive").AddMessage("A","A","Check").AddMessage("A","B","Save");
+var model=SequenceArtifact.Create("sequence-source-defaults").Width(1000).Height(820).AddParticipant("A","Review").AddParticipant("B","Archive").AddMessage("A","A","Check").AddMessage("A","B","Save");
 model.AddBlock(SequenceArtifactBlockKind.Loop,"Review work",0,1);
 model.AddNote(SequenceArtifactNotePlacement.Over,new[]{"A","B"},"Complete note");
 model.Notes[0].StepIndex=1;

@@ -18,14 +18,14 @@ public sealed class InteractivePolarCrosshairBrowserTests {
     [InlineData("full", false, true)]
     public async Task PolarReaderShowsAngleAndRadiusForTheHoveredAndFocusedObservation(string runtime, bool radar, bool dark) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(600, 420).WithLegend(false).WithDataLabels(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+        var chart = Chart.Create().Size(600, 420).Legend(false).DataLabels(false)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         if (radar) {
-            chart.WithXLabels("Speed", "Reliability", "Comfort", "Safety", "Efficiency")
+            chart.XLabels("Speed", "Reliability", "Comfort", "Safety", "Efficiency")
                 .AddRadar("Model A", new[] { new ChartPoint(1, 80), new ChartPoint(2, 65), new ChartPoint(3, 90), new ChartPoint(4, 70), new ChartPoint(5, 55) })
                 .AddRadar("Model B", new[] { new ChartPoint(1, 50), new ChartPoint(2, 85), new ChartPoint(3, 60), new ChartPoint(4, 95), new ChartPoint(5, 75) });
         } else {
-            chart.WithYAxisBounds(0, 100).WithXLabels("North", "East", "South", "West")
+            chart.YAxis(yAxis => yAxis.Bounds(0, 100)).XLabels("North", "East", "South", "West")
                 .AddPolar("Signal", new[] { new ChartPoint(1, 40), new ChartPoint(2, 85), new ChartPoint(3, 55), new ChartPoint(4, 70) });
         }
         var html = chart.ToInteractiveHtmlPage(options => {

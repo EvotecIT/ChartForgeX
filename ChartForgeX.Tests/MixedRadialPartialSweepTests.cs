@@ -45,9 +45,9 @@ public sealed class MixedRadialPartialSweepTests {
     public void GapRunsDoNotJoinAcrossPartialPhysicalEndsWhileFullTurnKeepsItsCyclicSeam() {
         var chart = Create(360, 600, false); var radar = chart.Series[1];
         radar.Points.Clear(); foreach (var category in new[] { 1d, 2d, 5d, 6d }) radar.Points.Add(new ChartPoint(category, 100));
-        radar.ConfigureRadar(options => options.MissingCategoryPolicy = ChartRadarMissingCategoryPolicy.Gap);
+        radar.Radar(options => options.MissingCategoryPolicy = ChartRadarMissingCategoryPolicy.Gap);
         var full = Prepare(chart); Assert.Single(full.Scene.Nodes, node => node.Role == "radar-outline");
-        chart.WithRadialGeometry(new ChartRadialGeometryOptions(-90, 180, innerRadiusRatio: .2));
+        chart.RadialGeometry(new ChartRadialGeometryOptions(-90, 180, innerRadiusRatio: .2));
         var partial = Prepare(chart); var outlines = partial.Scene.Nodes.OfType<VisualScenePath>().Where(node => node.Role == "radar-outline").ToArray();
         Assert.Equal(2, outlines.Length); Assert.All(outlines, outline => Assert.False(outline.Close));
         Assert.DoesNotContain(partial.Scene.Nodes, node => node.Role == "radar-area");
@@ -70,12 +70,12 @@ public sealed class MixedRadialPartialSweepTests {
     internal static Chart Create(int sweep, int width, bool dark) {
         var categories = Enumerable.Range(1, 6).Select(index => new ChartPoint(index, 1000)).ToArray();
         var reference = new ChartSeries(new ChartSeriesId("reference"), "Reference", ChartSeriesKind.Radar,
-            categories.Select(point => new ChartPoint(point.X, 100))).UseSecondaryValueAxis()
-            .ConfigureRadar(options => { options.Form = ChartLineAreaForm.Area; options.CurveTension = .2; options.FillOpacity = .4; });
-        for (var index = 0; index < categories.Length; index++) reference.WithObservationId(index, new ChartObservationId("reference-" + index));
-        var chart = Chart.Create().WithSize(width, 420).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false).WithDataLabels(false)
-            .WithYAxisBounds(0, 1000).WithSecondaryYAxisBounds(0, 100).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithRadialGeometry(new ChartRadialGeometryOptions(-90, -90 + sweep, innerRadiusRatio: .2))
+            categories.Select(point => new ChartPoint(point.X, 100))).SecondaryAxis()
+            .Radar(options => { options.Form = ChartLineAreaForm.Area; options.CurveTension = .2; options.FillOpacity = .4; });
+        for (var index = 0; index < categories.Length; index++) reference.ObservationId(index, new ChartObservationId("reference-" + index));
+        var chart = Chart.Create().Size(width, 420).ShowHeader(false).Legend(false).Axes(false).ShowGrid(false).DataLabels(false)
+            .YAxis(y => y.Bounds(0, 1000)).SecondaryYAxis(s => s.Bounds(0, 100)).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .RadialGeometry(new ChartRadialGeometryOptions(-90, -90 + sweep, innerRadiusRatio: .2))
             .AddRadialColumn("Observed", categories).AddSeries(reference);
         chart.Options.TransparentBackground = true; chart.Options.ShowPlotBackground = false; chart.Options.ShowCard = false; return chart;
     }

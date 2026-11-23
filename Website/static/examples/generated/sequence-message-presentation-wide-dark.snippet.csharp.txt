@@ -18,8 +18,8 @@ var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 #endregion
 
-var model=SequenceArtifact.Create("sequence-message-presentation").WithSize(1000,820)
-    .WithTitle("Message presentation").WithSubtitle("Measured number badges and independent message/note alignment")
+var model=SequenceArtifact.Create("sequence-message-presentation").Width(1000).Height(820)
+    .Title("Message presentation").Subtitle("Measured number badges and independent message/note alignment")
     .AddParticipant("A","Review").AddParticipant("B","Archive").AddMessage("A","B","Save\nFact")
     .AddMessage("B","A","Ready\nNext",SequenceArtifactMessageLineStyle.Dashed,SequenceArtifactMessageKind.Return).AddMessage("B","B","Check\nSelf")
     .AddNote(SequenceArtifactNotePlacement.Over,new[]{"A","B"},"Review\nNote");

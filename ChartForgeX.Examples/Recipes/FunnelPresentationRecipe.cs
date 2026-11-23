@@ -6,17 +6,17 @@ public static class FunnelPresentationRecipe {
         var compact = variant.StartsWith("compact", StringComparison.Ordinal);
         var cone = variant is "cone" or "compact-cone" or "cone-horizontal" or "compact-cone-horizontal";
         var horizontal = variant.EndsWith("horizontal", StringComparison.Ordinal);
-        var chart = Chart.Create().WithSize(compact ? 390 : 800, compact ? 560 : 620)
-            .WithTheme(VisualTheme.Graphite(), mode).WithTitle("Requests through the intake stages")
-            .WithSubtitle("Native paint and captions retain every source value, including the zero completion stage")
-            .WithLegend(false).WithDataLabels().WithXLabels("Received", "Reviewed", "Qualified", "Completed");
+        var chart = Chart.Create().Size(compact ? 390 : 800, compact ? 560 : 620)
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Title("Requests through the intake stages")
+            .Subtitle("Native paint and captions retain every source value, including the zero completion stage")
+            .Legend(false).DataLabels().XLabels("Received", "Reviewed", "Qualified", "Completed");
         var series = new ChartSeries(new ChartSeriesId("requests"), "Requests", ChartSeriesKind.Funnel,
             new[] { new ChartPoint(1, 120), new ChartPoint(2, 80), new ChartPoint(3, 40), new ChartPoint(4, 0) })
-            .WithObservationIds(new[] { new ChartObservationId("received"), new ChartObservationId("reviewed"), new ChartObservationId("qualified"), new ChartObservationId("completed") })
-            .WithPointColor(0, "#2978A5").WithPointColor(1, "#3C8D70").WithPointColor(2, "#BA7834")
-            .WithPointFillPattern(1, ChartFillPattern.DiagonalForward)
-            .WithPointStrokeColor(1, ChartColor.FromHex("#93455E"));
-        chart.AddSeries(series).ConfigureFunnel(options => {
+            .ObservationIds(new[] { new ChartObservationId("received"), new ChartObservationId("reviewed"), new ChartObservationId("qualified"), new ChartObservationId("completed") })
+            .PointColor(0, "#2978A5").PointColor(1, "#3C8D70").PointColor(2, "#BA7834")
+            .PointFillPattern(1, ChartFillPattern.DiagonalForward)
+            .PointStrokeColor(1, ChartColor.FromHex("#93455E"));
+        chart.AddSeries(series).Funnel(options => {
             options.Form = cone ? ChartFunnelForm.Cone : ChartFunnelForm.StageBars;
             options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
             options.LabelContent = ChartStageLabelContent.Separate;
@@ -28,9 +28,9 @@ public static class FunnelPresentationRecipe {
             options.StageOutlineDashOffset = 1;
             options.ConnectorStyle = new ChartFunnelConnectorStyle(fillOpacity: .16);
         });
-        series.WithFunnelConnectorStyle(1, new ChartFunnelConnectorStyle(fill: ChartColor.FromHex("#8763A1"), fillOpacity: .45,
+        series.FunnelConnectorStyle(1, new ChartFunnelConnectorStyle(fill: ChartColor.FromHex("#8763A1"), fillOpacity: .45,
             fillPattern: ChartFillPattern.DiagonalBackward, outlineStroke: new ChartStrokeStyle(width: 1.5, dash: new[] { 4d, 2d }), strokeDashOffset: 2));
         // Crowded captions can be omitted at the requested size; the complete source, ratio and connection facts remain descriptive.
-        return chart.WithValueFormat(ChartValueFormat.Number("0", CultureInfo.InvariantCulture));
+        return chart.ValueFormat(ChartValueFormat.Number("0", CultureInfo.InvariantCulture));
     }
 }

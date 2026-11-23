@@ -16,20 +16,20 @@ public sealed class IntervalPointLegendBrowserTests {
     [InlineData(true, true)]
     public async Task PointLegendAndMarkReadoutsRetainLocalizedTupleAndActualSeriesName(bool boxPlot, bool horizontal) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(360, 440).WithTitle("Delivery observations")
-            .WithTheme(VisualTheme.Graphite(), horizontal ? ThemeMode.Dark : ThemeMode.Light)
-            .WithXLabels("Express", "Standard").WithPointLegend().WithLegend();
+        var chart = Chart.Create().Size(360, 440).Title("Delivery observations")
+            .Theme(VisualTheme.Graphite()).ThemeMode(horizontal ? ThemeMode.Dark : ThemeMode.Light)
+            .XLabels("Express", "Standard").Legend(l => l.ShowPoints()).Legend();
         var seriesName = boxPlot ? "Distribution" : "Delivery window";
         if (boxPlot) chart.AddSeries(ChartSeries.CreateBoxPlot(new ChartSeriesId("delivery"), seriesName, new[] {
             new ChartBoxPlot(1, 0, 10, 15, 25, 35), new ChartBoxPlot(2, 2, 6, 9, 11, 15)
         }));
         else chart.AddSeries(ChartSeries.CreateRangeBar(new ChartSeriesId("delivery"), seriesName, new[] { new ChartInterval(1, 30, 0), new ChartInterval(2, 10, 35) }));
-        chart.Series[0].WithPointLabel(1, "Promised observation");
+        chart.Series[0].PointLabel(1, "Promised observation");
         if (horizontal) {
-            if (boxPlot) chart.ConfigureBoxPlot(options => options.Orientation = ChartOrientation.Horizontal);
-            else chart.ConfigureRangeBar(options => options.Orientation = ChartOrientation.Horizontal);
+            if (boxPlot) chart.BoxPlot(options => options.Orientation = ChartOrientation.Horizontal);
+            else chart.RangeBar(options => options.Orientation = ChartOrientation.Horizontal);
         }
-        chart.ConfigureLabels(labels => {
+        chart.Labels(labels => {
             labels.Category = "Kategoria"; labels.Start = "Początek"; labels.End = "Koniec";
             labels.Minimum = "Minimum"; labels.Q1 = "Dolny kwartyl"; labels.Median = "Mediana";
             labels.Q3 = "Górny kwartyl"; labels.Maximum = "Maksimum";
@@ -83,7 +83,7 @@ public sealed class IntervalPointLegendBrowserTests {
     [InlineData(true)]
     public async Task ComparisonPointLegendsRetainBothEndpointsOrUncertaintyBounds(bool errorBar) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(400, 360).WithXLabels("Express", "Standard").WithPointLegend().WithLegend();
+        var chart = Chart.Create().Size(400, 360).XLabels("Express", "Standard").Legend(l => l.ShowPoints()).Legend();
         if (errorBar) chart.AddErrorBar("Uncertainty", new[] { new ChartErrorBar(1, 15, yBounds: new ChartErrorBounds(0, 35.04)), new ChartErrorBar(2, 20, yBounds: new ChartErrorBounds(10, 25.04)) });
         else chart.AddDumbbell("Change", new[] { new ChartDumbbell(1, 30, 0), new ChartDumbbell(2, 10, 35) });
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), 450, 460);
@@ -112,7 +112,7 @@ public sealed class IntervalPointLegendBrowserTests {
     [InlineData(true)]
     public async Task CapturedEmptyUncertaintyBoundsRemainBlankInMarkAndLegendReadouts(bool legend) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(400, 360).WithXLabels("Express").WithPointLegend().WithLegend()
+        var chart = Chart.Create().Size(400, 360).XLabels("Express").Legend(l => l.ShowPoints()).Legend()
             .AddErrorBar("Uncertainty", new[] { new ChartErrorBar(1, 15, yBounds: new ChartErrorBounds(10.02, 20.04)) });
         chart.Options.YAxis.LabelFormatter = value => value == 10.02 || value == 20.04 ? string.Empty : "Observed " + value;
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = HtmlChartTooltipMode.Single), 450, 460);

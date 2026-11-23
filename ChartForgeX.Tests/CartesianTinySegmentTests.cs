@@ -20,7 +20,7 @@ public sealed class CartesianTinySegmentTests {
     [InlineData(true, -1, true)]
     public void NonzeroCapsulesRetainColoredInkWithoutInventingZeroMarks(bool horizontal, int sign, bool stacked) {
         var chart = Tiny(horizontal, sign);
-        if (stacked) chart.WithStackedBars();
+        if (stacked) chart.Bars(b => b.Stacked());
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var role = horizontal ? "horizontal-bar" : "bar";
         var mark = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneRectangle>(), node => node.Role == role);
@@ -42,12 +42,12 @@ public sealed class CartesianTinySegmentTests {
     }
 
     private static Chart Tiny(bool horizontal, int value) {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(220, 140).WithPadding(12, 12, 12, 12)
-            .WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false).WithCard(false)
-            .WithBarStyle(ChartBarStyle.SegmentedCapsule);
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).Size(220, 140).Padding(12, 12, 12, 12)
+            .ShowHeader(false).Legend(false).Axes(false).ShowGrid(false).ShowCard(false)
+            .Bars(b => b.Style(ChartBarStyle.SegmentedCapsule));
         chart.Options.ShowPlotBackground = false;
-        if (horizontal) chart.WithXAxisBounds(-100000, 100000).AddHorizontalBar("Tiny", new[] { new ChartPoint(1, value) }, ChartColor.FromHex("#2563EB"));
-        else chart.WithYAxisBounds(-100000, 100000).AddBar("Tiny", new[] { new ChartPoint(1, value) }, ChartColor.FromHex("#2563EB"));
+        if (horizontal) chart.XAxis(x => x.Bounds(-100000, 100000)).AddHorizontalBar("Tiny", new[] { new ChartPoint(1, value) }, ChartColor.FromHex("#2563EB"));
+        else chart.YAxis(y => y.Bounds(-100000, 100000)).AddBar("Tiny", new[] { new ChartPoint(1, value) }, ChartColor.FromHex("#2563EB"));
         return chart;
     }
 

@@ -64,7 +64,7 @@ public sealed class RelationshipIdentityTests {
     public void ParallelSankeyFlowsRetainSeparateIdsAndConserveTheirWidths() {
         var chart = Chart.Create().AddSankey("Traffic", new[] { new ChartNode("a", "Support"), new ChartNode("b", "Support") }, new[] {
             new ChartFlowLink("standard", "a", "b", 5), new ChartFlowLink("priority", "a", "b", 8)
-        }).ConfigureSankey(options => { options.Alignment = ChartSankeyAlignment.Center; options.NodeWidth = 18; options.NodeGap = 24; });
+        }).Sankey(options => { options.Alignment = ChartSankeyAlignment.Center; options.NodeWidth = 18; options.NodeGap = 24; });
         var targets = Targets(chart); var links = targets.Where(e => (string?)e.Attribute("data-cfx-target-kind") == "link").ToArray();
         Assert.Equal(new[] { "standard", "priority" }, links.Select(e => (string?)e.Attribute("data-cfx-target-id")));
         Assert.Equal(new[] { "0", "1" }, links.Select(e => (string?)e.Attribute("data-cfx-source-link-index")));
@@ -84,9 +84,9 @@ public sealed class RelationshipIdentityTests {
         var nodes = SupportNodes().AsEnumerable().Reverse().Select(node => new ChartNode(node.Id, node.Id == "north-support" ? "Customer care" : node.Label)).ToArray();
         var second = Add(Chart.Create(), kind, nodes, SupportBranches().AsEnumerable().Reverse());
         if (kind == ChartSeriesKind.Sankey) {
-            first.Series[0].WithNodeState("north-support", ChartSeriesState.Warning);
-            second.Series[0].WithNodeState("north-support", ChartSeriesState.Warning);
-            Assert.Throws<ArgumentException>(() => second.Series[0].WithNodeState("Support", ChartSeriesState.Danger));
+            first.Series[0].NodeState("north-support", ChartSeriesState.Warning);
+            second.Series[0].NodeState("north-support", ChartSeriesState.Warning);
+            Assert.Throws<ArgumentException>(() => second.Series[0].NodeState("Support", ChartSeriesState.Danger));
         }
         var old = Targets(first).ToDictionary(e => (string)e.Attribute("data-cfx-source-id")!, StringComparer.Ordinal);
         var reordered = Targets(second);
@@ -154,7 +154,7 @@ public sealed class RelationshipIdentityTests {
         var links = kind == ChartSeriesKind.Sankey ? (IList)chart.Series[0].FlowLinks : kind == ChartSeriesKind.Sunburst ? (IList)chart.Series[0].HierarchyItems : (IList)chart.Series[0].TreeLinks;
         Assert.Throws<NotSupportedException>(() => links.Clear());
         chart.Series[0].PointLabels.Add("Changed"); chart.Series[0].DataLabelStyle.FontSize = 30;
-        chart.Series[0].Color = ChartColor.Black; chart.Series[0].WithNodeState("root", ChartSeriesState.Danger);
+        chart.Series[0].Color = ChartColor.Black; chart.Series[0].NodeState("root", ChartSeriesState.Danger);
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
     }
 

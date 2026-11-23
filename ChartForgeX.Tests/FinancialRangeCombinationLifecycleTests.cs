@@ -21,14 +21,14 @@ public sealed class FinancialRangeCombinationLifecycleTests {
             : ChartSeries.CreateOhlc(new ChartSeriesId("prices"), "Prices", prices);
         var range = ChartSeries.CreateRangeBand(new ChartSeriesId("forecast"), "Forecast", new[] {
             new ChartRangeBand(1, -200, -100), new ChartRangeBand(4, 100, 300)
-        }).UseSecondaryValueAxis();
-        financial.WithObservationIds(new[] { new ChartObservationId("opening"), new ChartObservationId("closing") });
-        range.WithObservationIds(new[] { new ChartObservationId("low"), new ChartObservationId("high") });
-        financial.ConfigureFinancialValues((value, _, style) => {
+        }).SecondaryAxis();
+        financial.ObservationIds(new[] { new ChartObservationId("opening"), new ChartObservationId("closing") });
+        range.ObservationIds(new[] { new ChartObservationId("low"), new ChartObservationId("high") });
+        financial.FinancialValues((value, _, style) => {
             if (value.High >= 90) { style.Stroke = ChartColor.FromHex("#CC7733"); style.StrokeWidth = 4; }
         });
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithSize(width, 420)
-            .WithTitle("Price and forecast").WithLegend(true).AddSeries(range).AddSeries(financial);
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).ThemeMode(mode).Size(width, 420)
+            .Title("Price and forecast").Legend(true).AddSeries(range).AddSeries(financial);
         AssertDomains(chart, 10, 90, -200, 300);
         var prepared = Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng();
         AssertSource(prepared, "prices", "opening", "high", 90);
@@ -36,7 +36,7 @@ public sealed class FinancialRangeCombinationLifecycleTests {
         financial.UpdateFinancialValue(0, new ChartCandlestick(1, 30, 120, 5, 80));
         range.ReplaceRanges(new[] { new ChartRangeBand(1, -500, -250), new ChartRangeBand(4, 200, 400) });
         Assert.Empty(range.ObservationIds);
-        range.WithObservationIds(new[] { new ChartObservationId("low"), new ChartObservationId("high") });
+        range.ObservationIds(new[] { new ChartObservationId("low"), new ChartObservationId("high") });
         chart.MoveSeries(financial, 0);
         AssertDomains(chart, 5, 120, -500, 400);
         var updated = Prepare(chart);

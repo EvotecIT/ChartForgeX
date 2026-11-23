@@ -32,10 +32,10 @@ public sealed class NumericRadialLabelTests {
     [InlineData(false)]
     public void BroadInsideCaptionsKeepTheirFullValueAndResolveTranslucentMarkInk(bool bars) {
         var chart = NumericRadialSeriesTests.Add(Chart.Create(), bars, "Observed", new ChartPoint(1, 500))
-            .WithYAxisBounds(0, 1000).WithRadialGeometry(new(-90, 90, .25, 0, 0))
-            .WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
+            .YAxis(y => y.Bounds(0, 1000)).RadialGeometry(new(-90, 90, .25, 0, 0))
+            .DataLabels().DataLabels(d => d.Placement(ChartDataLabelPlacement.Inside));
         var fill = ChartColor.FromHex("#2468AC").WithAlpha(60);
-        chart.Series[0].WithPointColor(0, fill);
+        chart.Series[0].PointColor(0, fill);
         chart.Options.ShowAxes = false; chart.Options.ShowGrid = false;
         var scene = Prepare(chart, 600, 440);
         var label = Assert.Single(Captions(scene));
@@ -46,7 +46,7 @@ public sealed class NumericRadialLabelTests {
         Assert.True(ChartColorMath.ContrastRatio(composed, label.Color) >= 4.5);
 
         var authored = ChartColor.FromHex("#D040E0");
-        chart.Series[0].ConfigureDataLabelStyle(style => style.WithColor(authored));
+        chart.Series[0].DataLabelStyle(style => style.Color(authored));
         Assert.Equal(authored, Assert.Single(Captions(Prepare(chart, 600, 440))).Color);
     }
 
@@ -55,8 +55,8 @@ public sealed class NumericRadialLabelTests {
     [InlineData(false)]
     public void ThinMarksOmitUnfittingInsideInkButKeepOutsideCaptionsAndSourceFacts(bool bars) {
         var chart = NumericRadialSeriesTests.Add(Chart.Create(), bars, "Observed", new ChartPoint(1, 500))
-            .WithYAxisBounds(0, 1000).WithRadialGeometry(new(-90, 90, .95, 0, 0))
-            .WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
+            .YAxis(y => y.Bounds(0, 1000)).RadialGeometry(new(-90, 90, .95, 0, 0))
+            .DataLabels().DataLabels(d => d.Placement(ChartDataLabelPlacement.Inside));
         chart.Options.ShowAxes = false; chart.Options.ShowGrid = false;
         var inside = Prepare(chart, 600, 440);
         Assert.Empty(Captions(inside));
@@ -64,7 +64,7 @@ public sealed class NumericRadialLabelTests {
         Assert.Equal("500", Point(inside, "series-0-point-0").Metadata["data-cfx-y"]);
         Assert.Contains(inside.Diagnostics, diagnostic => diagnostic.Code == "numeric-radial.label-overflow");
 
-        chart.WithDataLabelPlacement(ChartDataLabelPlacement.Right);
+        chart.DataLabels(d => d.Placement(ChartDataLabelPlacement.Right));
         var outside = Prepare(chart, 600, 440);
         var label = Assert.Single(Captions(outside));
         Assert.Equal("500", string.Join(" ", label.Text.Lines.Select(line => line.Text)));
@@ -78,7 +78,7 @@ public sealed class NumericRadialLabelTests {
     [InlineData(false)]
     public void ZeroInsideCaptionsRetainTheirDescriptionWithoutInventingPaintedArea(bool bars) {
         var chart = NumericRadialSeriesTests.Add(Chart.Create(), bars, "Observed", new ChartPoint(1, 0))
-            .WithYAxisBounds(0, 1000).WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
+            .YAxis(y => y.Bounds(0, 1000)).DataLabels().DataLabels(d => d.Placement(ChartDataLabelPlacement.Inside));
         chart.Options.ShowAxes = false; chart.Options.ShowGrid = false;
         var scene = Prepare(chart, 600, 440);
         Assert.Empty(Captions(scene));
@@ -91,7 +91,7 @@ public sealed class NumericRadialLabelTests {
     [InlineData(ChartDataLabelPlacement.Auto)]
     [InlineData(ChartDataLabelPlacement.Outside)]
     public void OutsideCaptionsKeepTheCompleteValueWhenTheMarkEdgeHasRoom(ChartDataLabelPlacement placement) {
-        var chart = V2GalleryModels.Create(ChartSeriesKind.RadialColumn, "wide").WithDataLabelPlacement(placement);
+        var chart = V2GalleryModels.Create(ChartSeriesKind.RadialColumn, "wide").DataLabels(d => d.Placement(placement));
         var font = new FontSpec { Family = "Carlito", FilePath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf") };
         var scene = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 440)),
             VisualTheme.Graphite(), ThemeMode.Dark,
@@ -111,15 +111,15 @@ public sealed class NumericRadialLabelTests {
     [Fact]
     public void StackTotalsUseTheSameCompleteOutsideCaptionWithoutChangingTheirContributors() {
         var first = new ChartSeries(new ChartSeriesId("requests"), "Requests", ChartSeriesKind.RadialColumn,
-            new[] { new ChartPoint(1, 500) }).WithStackGroup("work");
+            new[] { new ChartPoint(1, 500) }).StackGroup("work");
         var second = new ChartSeries(new ChartSeriesId("follow-ups"), "Follow-ups", ChartSeriesKind.RadialColumn,
-            new[] { new ChartPoint(1, 450) }).WithStackGroup("work");
-        var chart = Chart.Create().WithSize(800, 440).WithHeader(false).WithLegend(false)
-            .WithAxes(false).WithGrid(false).WithDataLabels(false).WithXLabels("North")
-            .WithRadialGeometry(new(-90, 90, .25, 0, 0)).WithYAxisBounds(0, 1500)
-            .WithValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture))
+            new[] { new ChartPoint(1, 450) }).StackGroup("work");
+        var chart = Chart.Create().Size(800, 440).ShowHeader(false).Legend(false)
+            .Axes(false).ShowGrid(false).DataLabels(false).XLabels("North")
+            .RadialGeometry(new(-90, 90, .25, 0, 0)).YAxis(y => y.Bounds(0, 1500))
+            .ValueFormat(ChartValueFormat.Number("0.##", System.Globalization.CultureInfo.InvariantCulture))
             .AddSeries(first).AddSeries(second);
-        chart.Options.ShowStackTotals = true;
+        chart.Options.Bars.ShowTotals = true;
         var scene = Prepare(chart, 800, 440);
         var label = Assert.Single(scene.Nodes.OfType<VisualSceneText>(), text => text.Role == "stack-total");
         Assert.Equal("950", string.Join(" ", label.Text.Lines.Select(line => line.Text)));

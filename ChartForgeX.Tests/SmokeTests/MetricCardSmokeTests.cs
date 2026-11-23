@@ -13,18 +13,18 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void VisualMetricCardsRenderWithUnitsBadgesAndHistory() {
 
-        var metric = MetricCard.Create().WithTheme(VisualTheme.Graphite())
-            .WithMetric("Coverage", 0.982, "P1")
-            .WithIcon(Icons.Lightning)
-            .WithBadgePlacement(MetricCardBadgePlacement.TopLeft)
-            .WithTrend("+2.4 pp")
-            .WithCaption("since previous run")
-            .WithStatus(Tone.Success)
+        var metric = MetricCard.Create().Theme(VisualTheme.Graphite())
+            .Metric("Coverage", 0.982, "P1")
+            .Icon(Icons.Lightning)
+            .BadgePlacement(MetricCardBadgePlacement.TopLeft)
+            .Trend("+2.4 pp")
+            .Caption("since previous run")
+            .Status(Tone.Success)
             .AddDetail("Ready", "84%", Tone.Success)
             .AddDetail("Risk", "6%", Tone.Warning)
-            .WithMiniBars(new[] { 72d, 78d, 83d, 80d, 98d }, maximum: 100)
-            .WithTheme(VisualTheme.Graphite())
-            .WithSize(360, 190);
+            .MiniBars(new[] { 72d, 78d, 83d, 80d, 98d }, maximum: 100)
+            .Theme(VisualTheme.Graphite())
+            .Size(360, 190);
         var metricSvg = metric.ToSvg("visual-block-metric");
         Assert(metricSvg.Contains("data-cfx-role=\"metric-status-bar\"", StringComparison.Ordinal), "MetricCard should render status styling.");
         Assert(metricSvg.Contains("data-cfx-role=\"metric-detail\"", StringComparison.Ordinal), "MetricCard should render reusable supporting details.");
@@ -36,33 +36,33 @@ internal static partial class SmokeTests {
         Assert(metric.ToHtmlFragment().Contains("chartforgex-visual-block", StringComparison.Ordinal), "MetricCard should render an embeddable HTML fragment.");
         Assert(metric.ToPng().Length > 64, "MetricCard should render PNG output.");
 
-        var symbolMetric = MetricCard.Create().WithTheme(VisualTheme.Graphite())
-            .WithMetric("Patch Rate", "94%", "OK")
-            .WithSymbol("WRN")
-            .WithBadgePlacement(MetricCardBadgePlacement.TopLeft)
-            .WithStatus(Tone.Warning)
-            .WithTheme(VisualTheme.TransparentOverlay(), ThemeMode.Dark)
-            .WithSize(300, 170);
+        var symbolMetric = MetricCard.Create().Theme(VisualTheme.Graphite())
+            .Metric("Patch Rate", "94%", "OK")
+            .Symbol("WRN")
+            .BadgePlacement(MetricCardBadgePlacement.TopLeft)
+            .Status(Tone.Warning)
+            .Theme(VisualTheme.TransparentOverlay()).ThemeMode(ThemeMode.Dark)
+            .Size(300, 170);
         var symbolMetricSvg = symbolMetric.ToSvg("visual-block-metric-symbol");
         Assert(symbolMetricSvg.Contains("data-cfx-role=\"metric-symbol\"", StringComparison.Ordinal), "MetricCard should render text symbols when no icon is configured.");
         Assert(symbolMetricSvg.Contains("dominant-baseline=\"central\"", StringComparison.Ordinal), "MetricCard symbols should be vertically centered inside their badge.");
         Assert(symbolMetric.ToPng().Length > 64, "MetricCard symbol badges should render in PNG output.");
 
-        var valueSurfaceMetric = MetricCard.Create().WithTheme(VisualTheme.Graphite())
-            .WithMetric("Litres of water", "4.5", unit: "Litres")
-            .WithIcon(Icons.Droplet)
-            .WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset)
-            .WithSize(300, 140);
+        var valueSurfaceMetric = MetricCard.Create().Theme(VisualTheme.Graphite())
+            .Metric("Litres of water", "4.5", unit: "Litres")
+            .Icon(Icons.Droplet)
+            .MicroVisualSurface(MetricCardMicroVisualSurface.Inset)
+            .Size(300, 140);
         var valueSurfaceSvg = valueSurfaceMetric.ToSvg("visual-block-metric-value-surface");
         Assert(valueSurfaceSvg.Contains("data-cfx-role=\"metric-value-surface\"", StringComparison.Ordinal), "MetricCard should render compact metric value surfaces.");
         Assert(valueSurfaceSvg.Contains("data-cfx-role=\"metric-value-surface-badge\"", StringComparison.Ordinal), "MetricCard value surfaces should keep icons inside the value tray.");
         Assert(valueSurfaceSvg.Contains("data-cfx-role=\"metric-unit\"", StringComparison.Ordinal), "MetricCard should render optional metric units separately from emphasized values.");
         Assert(valueSurfaceMetric.ToPng().Length > 64, "MetricCard compact value surfaces should render PNG output.");
 
-        var narrowValueSurfaceMetric = MetricCard.Create().WithTheme(VisualTheme.Graphite())
-            .WithMetric("Energy", "123456789", unit: "kilocalories-per-day")
-            .WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset)
-            .WithSize(210, 140);
+        var narrowValueSurfaceMetric = MetricCard.Create().Theme(VisualTheme.Graphite())
+            .Metric("Energy", "123456789", unit: "kilocalories-per-day")
+            .MicroVisualSurface(MetricCardMicroVisualSurface.Inset)
+            .Size(210, 140);
         var narrowValueSurfaceSvg = narrowValueSurfaceMetric.ToSvg("visual-block-metric-narrow-value-surface");
         Assert(narrowValueSurfaceSvg.Contains("data-cfx-role=\"metric-unit\"", StringComparison.Ordinal), "MetricCard narrow value surfaces should still render unit text.");
         var narrowElements = XDocument.Parse(narrowValueSurfaceSvg).Descendants().ToArray();
@@ -97,10 +97,10 @@ internal static partial class SmokeTests {
             Assert(narrowUnit.Value.EndsWith("...", StringComparison.Ordinal), "A unit should show truncation when its full text cannot fit.");
         Assert(narrowValueSurfaceMetric.ToPng().Length > 64, "MetricCard narrow value surfaces should render PNG output.");
 
-        var compactValueSurfaceMetric = MetricCard.Create().WithTheme(VisualTheme.Graphite())
-            .WithMetric("Compact", "123", unit: "kilocalories-per-day")
-            .WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset)
-            .WithSize(210, 90);
+        var compactValueSurfaceMetric = MetricCard.Create().Theme(VisualTheme.Graphite())
+            .Metric("Compact", "123", unit: "kilocalories-per-day")
+            .MicroVisualSurface(MetricCardMicroVisualSurface.Inset)
+            .Size(210, 90);
         var compactValueSurfaceSvg = compactValueSurfaceMetric.ToSvg("visual-block-metric-compact-value-surface");
         var compactValueSurface = System.Text.RegularExpressions.Regex.Match(compactValueSurfaceSvg, "data-cfx-role=\"metric-value-surface\"[^>]*y=\"([^\"]+)\"[^>]*height=\"([^\"]+)\"");
         Assert(compactValueSurface.Success, "MetricCard compact inset values should render a measurable value surface.");
@@ -109,33 +109,33 @@ internal static partial class SmokeTests {
         Assert(compactValueSurfaceY + compactValueSurfaceHeight <= 90, "MetricCard compact inset value surfaces should stay within the card bounds.");
         Assert(compactValueSurfaceMetric.ToPng().Length > 64, "MetricCard compact inset values should render PNG output.");
 
-        var sparkMetric = MetricCard.Create().WithTheme(VisualTheme.Graphite())
-            .WithMetric("Network", "842 Mbps")
-            .WithStatus(Tone.Info)
-            .WithMiniSparkline(new[] { 42d, 36d, 31d, 28d, 24d, 18d });
+        var sparkMetric = MetricCard.Create().Theme(VisualTheme.Graphite())
+            .Metric("Network", "842 Mbps")
+            .Status(Tone.Info)
+            .MiniSparkline(new[] { 42d, 36d, 31d, 28d, 24d, 18d });
         var sparkSvg = sparkMetric.ToSvg("visual-block-metric-sparkline");
         Assert(sparkSvg.Contains("data-cfx-role=\"metric-mini-sparkline\"", StringComparison.Ordinal), "MetricCard should render compact sparkline groups.");
         Assert(sparkSvg.Contains("data-cfx-role=\"metric-mini-sparkline-current\"", StringComparison.Ordinal), "MetricCard sparklines should mark the current value.");
         Assert(sparkSvg.Contains("842 Mbps", StringComparison.Ordinal), "MetricCard should shrink long values enough to fit beside micro visuals.");
         Assert(sparkMetric.ToPng().Length > 64, "MetricCard sparkline should render PNG output.");
 
-        var areaSparkMetric = MetricCard.Create().WithTheme(VisualTheme.Graphite())
-            .WithMetric("Hydration", "4.5 L")
-            .WithMiniSparkline(new[] { 1d, 2d, 3d })
-            .WithSecondaryMiniSparkline(new[] { 100d, 120d, 140d });
+        var areaSparkMetric = MetricCard.Create().Theme(VisualTheme.Graphite())
+            .Metric("Hydration", "4.5 L")
+            .MiniSparkline(new[] { 1d, 2d, 3d })
+            .SecondaryMiniSparkline(new[] { 100d, 120d, 140d });
         var areaSparkSvg = areaSparkMetric.ToSvg("visual-block-metric-area-sparkline");
         Assert(areaSparkSvg.Contains("data-cfx-style=\"area\"", StringComparison.Ordinal), "MetricCard should keep the default filled area sparkline style.");
         Assert(areaSparkSvg.Contains("data-cfx-max=\"3\"", StringComparison.Ordinal), "Area-style MetricCard sparklines should derive bounds from the visible primary series only.");
         Assert(!areaSparkSvg.Contains("data-cfx-role=\"metric-mini-sparkline-secondary\"", StringComparison.Ordinal), "Area-style MetricCard sparklines should not render hidden secondary series.");
 
-        var heroSparkMetric = MetricCard.Create().WithTheme(VisualTheme.Graphite())
-            .WithMetric("Running", "30 mins")
-            .WithMiniSparkline(new[] { 18d, 30d, 34d, 25d, 28d, 43d, 45d, 44d, 48d })
-            .WithSecondaryMiniSparkline(new[] { 15d, 27d, 31d, 23d, 25d, 40d, 42d, 41d, 45d })
-            .WithMiniSparklineStyle(ChartLineAreaForm.Line)
-            .WithMicroVisualPlacement(MetricCardMicroVisualPlacement.Hero)
-            .WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset)
-            .WithSize(360, 300);
+        var heroSparkMetric = MetricCard.Create().Theme(VisualTheme.Graphite())
+            .Metric("Running", "30 mins")
+            .MiniSparkline(new[] { 18d, 30d, 34d, 25d, 28d, 43d, 45d, 44d, 48d })
+            .SecondaryMiniSparkline(new[] { 15d, 27d, 31d, 23d, 25d, 40d, 42d, 41d, 45d })
+            .MiniSparklineStyle(ChartLineAreaForm.Line)
+            .MicroVisualPlacement(MetricCardMicroVisualPlacement.Hero)
+            .MicroVisualSurface(MetricCardMicroVisualSurface.Inset)
+            .Size(360, 300);
         var heroSparkSvg = heroSparkMetric.ToSvg("visual-block-metric-hero-sparkline");
         Assert(heroSparkSvg.Contains("data-cfx-role=\"metric-micro-surface\"", StringComparison.Ordinal), "MetricCard hero mini visuals should support an inset surface.");
         Assert(heroSparkSvg.Contains("data-cfx-style=\"line\"", StringComparison.Ordinal), "MetricCard should render line-style sparklines without area fill.");
@@ -143,13 +143,13 @@ internal static partial class SmokeTests {
         Assert(heroSparkSvg.Contains("data-cfx-role=\"metric-mini-sparkline-start\"", StringComparison.Ordinal), "MetricCard line-style sparklines should mark the starting value.");
         Assert(heroSparkMetric.ToPng().Length > 64, "MetricCard hero line sparkline should render PNG output.");
 
-        var compactHeroSparkMetric = MetricCard.Create().WithTheme(VisualTheme.Graphite())
-            .WithMetric("Compact", "10")
-            .WithMiniSparkline(new[] { 2d, 5d, 3d, 8d })
-            .WithMicroVisualPlacement(MetricCardMicroVisualPlacement.Hero)
-            .WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset)
+        var compactHeroSparkMetric = MetricCard.Create().Theme(VisualTheme.Graphite())
+            .Metric("Compact", "10")
+            .MiniSparkline(new[] { 2d, 5d, 3d, 8d })
+            .MicroVisualPlacement(MetricCardMicroVisualPlacement.Hero)
+            .MicroVisualSurface(MetricCardMicroVisualSurface.Inset)
             .AddDetail("Ready", "84%")
-            .WithSize(260, 140);
+            .Size(260, 140);
         var compactHeroSparkSvg = compactHeroSparkMetric.ToSvg("visual-block-metric-compact-hero-sparkline");
         var compactSurface = System.Text.RegularExpressions.Regex.Match(compactHeroSparkSvg, "data-cfx-role=\"metric-micro-surface\"[^>]*y=\"([^\"]+)\"[^>]*height=\"([^\"]+)\"");
         Assert(compactSurface.Success, "MetricCard compact hero inset sparklines should render a measurable inset surface.");
@@ -159,12 +159,12 @@ internal static partial class SmokeTests {
         Assert(!compactHeroSparkSvg.Contains("data-cfx-role=\"metric-detail\"", StringComparison.Ordinal), "MetricCard compact hero sparklines should skip detail pills when there is no non-overlapping space.");
         Assert(compactHeroSparkMetric.ToPng().Length > 64, "MetricCard compact hero sparkline should render PNG output.");
 
-        var retainedSparklineStyleMetric = MetricCard.Create().WithTheme(VisualTheme.Graphite())
-            .WithMetric("Style", "1")
-            .WithMiniSparkline(new[] { 1d, 2d })
-            .WithMiniSparklineStyle(ChartLineAreaForm.Line)
-            .WithoutMiniSparkline()
-            .WithMiniSparkline(new[] { 2d, 4d });
+        var retainedSparklineStyleMetric = MetricCard.Create().Theme(VisualTheme.Graphite())
+            .Metric("Style", "1")
+            .MiniSparkline(new[] { 1d, 2d })
+            .MiniSparklineStyle(ChartLineAreaForm.Line)
+            .ClearMiniSparkline()
+            .MiniSparkline(new[] { 2d, 4d });
         Assert(retainedSparklineStyleMetric.ToSvg("visual-block-metric-retained-sparkline-style").Contains("data-cfx-style=\"line\"", StringComparison.Ordinal), "MetricCard should preserve configured sparkline style after clearing and replacing sparkline data.");
     }
 }

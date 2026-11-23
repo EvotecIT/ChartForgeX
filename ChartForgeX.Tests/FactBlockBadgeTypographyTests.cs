@@ -24,17 +24,17 @@ public sealed class FactBlockBadgeTypographyTests {
         IVisualBlock block;
         string role;
         if (family == "table") {
-            var table = ChartTable.Create().WithTheme(theme, mode).WithSize(480, 180).WithColumns("Name", "Status", "History")
-                .WithDenseMode(dense).AddRow("Configured", "Status", "History");
-            table.ConfigureRow(0, row => row.Cells[1].WithBadge(caption, Tone.Success));
+            var table = ChartTable.Create().Theme(theme).ThemeMode(mode).Size(480, 180).Columns("Name", "Status", "History")
+                .Dense(dense).AddRow("Configured", "Status", "History");
+            table.UpdateRow(0, row => row.Cells[1].Badge(caption, Tone.Success));
             block = table;
             role = "visual-badge";
         } else if (family == "activity") {
-            block = ActivityTimelineBlock.Create().WithTheme(theme, mode).WithSize(480, 180).AddEvent("Configured", badge: caption);
+            block = ActivityTimelineBlock.Create().Theme(theme).ThemeMode(mode).Size(480, 180).AddEvent("Configured", badge: caption);
             role = "activity-badge";
         } else {
-            block = ScheduleTimelineBlock.Create().WithTheme(theme, mode).WithSize(480, 180)
-                .WithTimeRange(8, 17).AddEvent("Configured", 9, 16, badge: caption);
+            block = ScheduleTimelineBlock.Create().Theme(theme).ThemeMode(mode).Size(480, 180)
+                .Start(8).End(17).TickInterval(1).AddEvent("Configured", 9, 16, badge: caption);
             role = "schedule-event-badge";
         }
         var badge = Assert.Single(XDocument.Parse(block.ToSvg()).Descendants(), element =>
@@ -55,8 +55,8 @@ public sealed class FactBlockBadgeTypographyTests {
 
     [Fact]
     public void ConstrainedTableBadgesFitInsideTheCellAtTheirReadableFontSize() {
-        var table = ChartTable.Create().WithSize(180, 120).AddColumn("Status", width: 76).AddRow("Status");
-        table.ConfigureRow(0, row => row.Cells[0].WithBadge("WWWWWW", Tone.Success));
+        var table = ChartTable.Create().Size(180, 120).AddColumn("Status", width: 76).AddRow("Status");
+        table.UpdateRow(0, row => row.Cells[0].Badge("WWWWWW", Tone.Success));
         var badge = Assert.Single(XDocument.Parse(table.ToSvg()).Descendants(), element =>
             (string?)element.Attribute("data-cfx-role") == "visual-badge");
         var text = badge.ElementsAfterSelf().First(element => element.Name.LocalName == "text");

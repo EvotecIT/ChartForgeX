@@ -14,7 +14,7 @@ namespace ChartForgeX.Tests;
 public sealed class SharedVocabularyTests {
     [Fact]
     public void AutoModeRendersAsLightInStaticOutput() {
-        Chart Line(ThemeMode mode) => Chart.Create().WithSize(480, 300).WithThemeMode(mode)
+        Chart Line(ThemeMode mode) => Chart.Create().Size(480, 300).ThemeMode(mode)
             .AddLine("Orders", new[] { new ChartPoint(1, 3), new ChartPoint(2, 5), new ChartPoint(3, 4) });
 
         Assert.Equal(ThemeMode.Auto, Chart.Create().Options.ThemeMode);
@@ -64,7 +64,7 @@ public sealed class SharedVocabularyTests {
     [Fact]
     public void UnknownIconKeyDrawsTheDefaultMarkAndNoneDrawsNothing() {
         string IconOf(Icon icon) {
-            var svg = MetricCard.Create().WithMetric("Load", "42%").WithIcon(icon).WithSize(360, 190).ToSvg("icon");
+            var svg = MetricCard.Create().Metric("Load", "42%").Icon(icon).Size(360, 190).ToSvg("icon");
             var marks = XDocument.Parse(svg).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "visual-icon").ToList();
             return marks.Count == 0 ? "" : (string)marks.Single().Attribute("data-cfx-icon")!;
         }

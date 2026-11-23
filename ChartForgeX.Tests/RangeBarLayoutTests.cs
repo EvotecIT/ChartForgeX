@@ -12,14 +12,14 @@ public sealed class RangeBarLayoutTests {
     public void OrientationDefaultsToVerticalAndPreparedOutputRetainsItsGeometryAndLabels() {
         var chart = Fixture();
         Assert.Equal(ChartOrientation.Vertical, chart.Options.RangeBar.Orientation);
-        Assert.Same(chart, chart.ConfigureRangeBar(options => options.Orientation = ChartOrientation.Horizontal));
-        Assert.Throws<ArgumentNullException>(() => chart.ConfigureRangeBar(null!));
+        Assert.Same(chart, chart.RangeBar(options => options.Orientation = ChartOrientation.Horizontal));
+        Assert.Throws<ArgumentNullException>(() => chart.RangeBar((Action<ChartRangeBarOptions>)null!));
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.RangeBar.Orientation = (ChartOrientation)99);
-        chart.ConfigureLabels(labels => { labels.Category = "Kategoria"; labels.Start = "Początek"; labels.End = "Koniec"; });
+        chart.Labels(labels => { labels.Category = "Kategoria"; labels.Start = "Początek"; labels.End = "Koniec"; });
         var prepared = chart.Prepare(new VisualRenderContext());
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
         chart.Options.RangeBar.Orientation = ChartOrientation.Vertical;
-        chart.ConfigureLabels(labels => { labels.Category = "Changed category"; labels.Start = "Changed start"; labels.End = "Changed end"; });
+        chart.Labels(labels => { labels.Category = "Changed category"; labels.Start = "Changed start"; labels.End = "Changed end"; });
         chart.ClearSeries();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
         Assert.All(prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "point"), group => {
@@ -38,12 +38,12 @@ public sealed class RangeBarLayoutTests {
     [InlineData(true, true, false)]
     public void GroupedIntervalsUsePhysicalAxesAndStableSlotsWithoutChangingSourcePairs(bool horizontal, bool reverseValue, bool reverseCategory) {
         var chart = Fixture();
-        chart.ConfigureRangeBar(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
+        chart.RangeBar(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
         var valueAxis = horizontal ? chart.Options.XAxis : chart.Options.YAxis;
         var categoryAxis = horizontal ? chart.Options.YAxis : chart.Options.XAxis;
-        valueAxis.WithBounds(-20, 20).WithReversal(reverseValue);
-        categoryAxis.WithBounds(0, 4).WithReversal(reverseCategory);
-        chart.WithStackedBars(); // Scalar bar mode must never stack interval endpoints.
+        valueAxis.Bounds(-20, 20).Reversed(reverseValue);
+        categoryAxis.Bounds(0, 4).Reversed(reverseCategory);
+        chart.Bars(b => b.Stacked()); // Scalar bar mode must never stack interval endpoints.
         var scene = Scene(chart);
         var marks = scene.Nodes.OfType<VisualSceneRectangle>().Where(mark => mark.Role == "range-bar").ToArray();
         var groups = scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "point").ToArray();
@@ -79,12 +79,12 @@ public sealed class RangeBarLayoutTests {
 
     [Fact]
     public void HorizontalDomainsIncludeBothEndpointsAndRespectLogarithmicValuesWithoutAnInventedBaseline() {
-        var chart = Chart.Create().ConfigureRangeBar(options => options.Orientation = ChartOrientation.Horizontal)
+        var chart = Chart.Create().RangeBar(options => options.Orientation = ChartOrientation.Horizontal)
             .AddRangeBar("Range", new[] { new ChartInterval(2, 100, 10), new ChartInterval(5, 20, 40) });
         var range = ChartRange.FromChart(chart);
         Assert.Equal(10, range.MinX); Assert.Equal(100, range.MaxX);
         Assert.Equal(.5, range.MinY); Assert.Equal(6.5, range.MaxY);
-        chart.Options.XAxis.WithScale(ChartScaleKind.Logarithmic);
+        chart.Options.XAxis.Scale(ChartScaleKind.Logarithmic);
         range = ChartRange.FromChart(chart);
         Assert.Equal(10, range.MinX); Assert.Equal(100, range.MaxX);
         Assert.NotEmpty(chart.Prepare(new VisualRenderContext()).Regions);
@@ -96,25 +96,25 @@ public sealed class RangeBarLayoutTests {
     public void HorizontalRangeBarsSupportSecondaryValueAndScalarMixtures() {
         var chart = Fixture(); chart.Series[1].ValueAxis = ChartAxisSide.Secondary;
         Assert.NotEmpty(chart.Prepare(new VisualRenderContext()).Regions);
-        chart.ConfigureRangeBar(options => options.Orientation = ChartOrientation.Horizontal);
+        chart.RangeBar(options => options.Orientation = ChartOrientation.Horizontal);
         var secondary = chart.Prepare(new VisualRenderContext());
         Assert.NotNull(secondary.SecondaryXProjection); Assert.NotEmpty(secondary.ToPng());
         chart.Series[1].ValueAxis = ChartAxisSide.Primary;
         chart.AddHorizontalBar("Scalar", new[] { new ChartPoint(1, 3) });
         Assert.Contains(chart.Prepare(new VisualRenderContext()).Scene.Nodes.OfType<VisualSceneRectangle>(), node => node.Role == "horizontal-bar");
         chart.RemoveSeries(chart.Series[2]);
-        chart.ConfigureRangeBar(options => options.Orientation = ChartOrientation.Vertical);
+        chart.RangeBar(options => options.Orientation = ChartOrientation.Vertical);
         chart.AddLine("Target", new[] { new ChartPoint(1, 5), new ChartPoint(3, 6) });
         Assert.NotEmpty(chart.Prepare(new VisualRenderContext()).Regions);
     }
 
     [Fact]
     public void VerticalGroupedIntervalsKeepIndependentPrimaryAndSecondaryValueProjection() {
-        var chart = Chart.Create().WithAxes(false).WithLegend(false).WithBarStyle(ChartBarStyle.Flat)
+        var chart = Chart.Create().Axes(false).Legend(false).Bars(b => b.Style(ChartBarStyle.Flat))
             .AddRangeBar("Primary", new[] { new ChartInterval(1, 2, 8) })
             .AddRangeBar("Secondary", new[] { new ChartInterval(1, 300, 150) });
-        chart.Series[1].UseSecondaryValueAxis();
-        chart.Options.YAxis.WithBounds(0, 10); chart.Options.SecondaryYAxis.WithBounds(100, 500);
+        chart.Series[1].SecondaryAxis();
+        chart.Options.YAxis.Bounds(0, 10); chart.Options.SecondaryYAxis.Bounds(100, 500);
         var bodies = Scene(chart).Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "range-bar").ToArray();
         Assert.Equal(80, bodies[0].Bounds.Top, 8); Assert.Equal(240, bodies[0].Bounds.Height, 8);
         Assert.Equal(200, bodies[1].Bounds.Top, 8); Assert.Equal(150, bodies[1].Bounds.Height, 8);
@@ -123,13 +123,13 @@ public sealed class RangeBarLayoutTests {
 
     [Fact]
     public void HorizontalCategoryCaptionsAndLocalizedReadoutNamesAgreeAcrossAxesMarksAndPointLegends() {
-        var chart = Chart.Create().WithPointLegend().WithXLabels("Fallback", "Other")
-            .ConfigureRangeBar(options => options.Orientation = ChartOrientation.Horizontal)
+        var chart = Chart.Create().Legend(l => l.ShowPoints()).XLabels("Fallback", "Other")
+            .RangeBar(options => options.Orientation = ChartOrientation.Horizontal)
             .AddRangeBar("Range", new[] { new ChartInterval(1, 2, 8), new ChartInterval(2, 10, 4) });
         chart.Options.YAxis.Labels.Add(new ChartAxisLabel(1, "First"));
         var calls = 0;
-        chart.Options.YAxis.WithLabelFormatter(value => { calls++; return "Category " + value; });
-        chart.ConfigureLabels(labels => { labels.Category = "Kategoria"; labels.Start = "Początek"; labels.End = "Koniec"; });
+        chart.Options.YAxis.LabelBy(value => { calls++; return "Category " + value; });
+        chart.Labels(labels => { labels.Category = "Kategoria"; labels.Start = "Początek"; labels.End = "Koniec"; });
         var request = VisualExportRequest.ForChart(chart);
         Assert.Equal(0, calls);
         var prepared = chart.Prepare(request.Context);
@@ -144,12 +144,12 @@ public sealed class RangeBarLayoutTests {
         Assert.Equal(new[] { "First", "Category 2" }, prepared.Scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "legend-label")
             .Select(text => string.Concat(text.Text.Lines.Select(line => line.Text))));
         Assert.Contains(prepared.Regions, region => region.Role == "axis-y-label" && region.Label!.StartsWith("Category 2", StringComparison.Ordinal));
-        chart.Options.YAxis.Labels.Clear(); chart.Options.YAxis.WithLabelFormatter(null);
+        chart.Options.YAxis.Labels.Clear(); chart.Options.YAxis.LabelBy((Func<double, string>?)null);
         var fallback = chart.Prepare(new VisualRenderContext()).ToSvg();
         Assert.Contains("data-cfx-category-label=\"Fallback\"", fallback);
     }
 
-    private static Chart Fixture() => Chart.Create().WithAxes(false).WithLegend(false).WithBarStyle(ChartBarStyle.Flat)
+    private static Chart Fixture() => Chart.Create().Axes(false).Legend(false).Bars(b => b.Style(ChartBarStyle.Flat))
         .AddRangeBar("Expected", new[] { new ChartInterval(3, 8, -5), new ChartInterval(1, -12, 6), new ChartInterval(2, -3, 9) })
         .AddRangeBar("Observed", new[] { new ChartInterval(3, 4, 12), new ChartInterval(1, 10, -8) });
 

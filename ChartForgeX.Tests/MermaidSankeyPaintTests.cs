@@ -48,7 +48,7 @@ public sealed class MermaidSankeyPaintTests {
         Assert.Equal(ChartSankeyFlowColorMode.Target, chart.Options.Sankey.FlowColorMode); Assert.Equal(ChartSankeyLabelStyle.Outlined, chart.Options.Sankey.LabelStyle);
         Assert.Equal(new ChartColor?[] { Orange, Green }, chart.Series[0].PointColors);
         Assert.Equal(new[] { "#2864B4", "#BB6428" }, document.Configuration.Settings.Where(setting => setting.Path == "sankey.nodeColors.[A].[B]").Select(setting => setting.Value));
-        chart.ConfigureSankey(options => { options.FlowColorMode = ChartSankeyFlowColorMode.Source; options.LabelStyle = ChartSankeyLabelStyle.Backdrop; });
+        chart.Sankey(options => { options.FlowColorMode = ChartSankeyFlowColorMode.Source; options.LabelStyle = ChartSankeyLabelStyle.Backdrop; });
         Assert.Equal(ChartSankeyFlowColorMode.Source, chart.Options.Sankey.FlowColorMode); Assert.Equal(ChartSankeyLabelStyle.Backdrop, chart.Options.Sankey.LabelStyle);
     }
 
@@ -78,11 +78,11 @@ public sealed class MermaidSankeyPaintTests {
     [Fact]
     public void NativeGradientCapturesEndpointPaintOutlineAndRawGeometryWithoutAColorMeasurement() {
         var chart = SankeyFlowColorTests.Model(null, null, null); var series = chart.Series[0];
-        series.WithPointColor(0, Blue).WithPointColor(1, Orange).WithPointColor(2, Green).WithPointColor(3, Blue);
+        series.PointColor(0, Blue).PointColor(1, Orange).PointColor(2, Green).PointColor(3, Blue);
         var ordinary = SankeyFlowColorTests.Prepare(chart); var paths = SankeyFlowColorTests.Ribbons(ordinary);
-        chart.ConfigureSankey(options => { options.FlowColorMode = ChartSankeyFlowColorMode.Gradient; options.RibbonOpacity = .6; });
-        series.WithFlowStyle("p0", new ChartFlowStyle(fillOpacity: .4, outlineStroke: new ChartStrokeStyle(ChartColor.Black, 2, dash: new[] { 4d, 2d }), strokeDashOffset: 1));
-        series.WithFlowStyle("p1", new ChartFlowStyle(fill: Orange));
+        chart.Sankey(options => { options.FlowColorMode = ChartSankeyFlowColorMode.Gradient; options.RibbonOpacity = .6; });
+        series.FlowStyle("p0", new ChartFlowStyle(fillOpacity: .4, outlineStroke: new ChartStrokeStyle(ChartColor.Black, 2, dash: new[] { 4d, 2d }), strokeDashOffset: 1));
+        series.FlowStyle("p1", new ChartFlowStyle(fill: Orange));
         var prepared = SankeyFlowColorTests.Prepare(chart); var gradients = prepared.Scene.Nodes.OfType<VisualSceneGradient>().Where(node => node.Role == "sankey-ribbon").ToArray();
         Assert.Equal(2, gradients.Length); var first = gradients[0]; var path = Assert.IsType<VisualScenePath>(first.Shape);
         Assert.Equal(paths[0].Commands, path.Commands); Assert.Equal(2, path.StrokeWidth); Assert.Equal(new[] { 4d, 2d }, path.Dash); Assert.Equal(1, path.DashOffset);
@@ -90,7 +90,7 @@ public sealed class MermaidSankeyPaintTests {
         Assert.All(series.FlowLinks, link => Assert.Null(link.ColorValue)); Assert.Equal(ChartSankeyFlowColorMode.Gradient, chart.Options.Sankey.FlowColorMode);
         Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "sankey-ribbon" && node.Fill is { } fill && fill.Equals(ChartColorMath.WithOpacity(Orange, .6)));
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
-        series.WithPointColor(0, Green).WithFlowStyle("p0", new ChartFlowStyle(fill: ChartColor.Black)); chart.ConfigureSankey(options => options.FlowColorMode = ChartSankeyFlowColorMode.Target);
+        series.PointColor(0, Green).FlowStyle("p0", new ChartFlowStyle(fill: ChartColor.Black)); chart.Sankey(options => options.FlowColorMode = ChartSankeyFlowColorMode.Target);
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng()); Assert.NotEqual(svg, SankeyFlowColorTests.Prepare(chart).ToSvg());
     }
 
@@ -113,7 +113,7 @@ public sealed class MermaidSankeyPaintTests {
     [Fact]
     public void NewLabelPolicyRejectsInvalidValuesWithoutReplacingTheInstalledSnapshot() {
         var chart = SankeyFlowColorTests.Model(null, null, null); var original = chart.Options.Sankey;
-        Assert.Throws<ArgumentOutOfRangeException>(() => chart.ConfigureSankey(options => options.LabelStyle = (ChartSankeyLabelStyle)99));
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Sankey(options => options.LabelStyle = (ChartSankeyLabelStyle)99));
         Assert.Same(original, chart.Options.Sankey); Assert.Equal(ChartSankeyLabelStyle.Outlined, original.LabelStyle);
         Assert.Equal(0, (int)ChartSankeyFlowColorMode.Source); Assert.Equal(1, (int)ChartSankeyFlowColorMode.Target);
         Assert.Equal(2, (int)ChartSankeyFlowColorMode.Quantitative); Assert.Equal(3, (int)ChartSankeyFlowColorMode.Gradient);

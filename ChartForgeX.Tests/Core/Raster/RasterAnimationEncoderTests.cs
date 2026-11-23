@@ -8,7 +8,7 @@ namespace ChartForgeX.Tests;
 public sealed partial class RasterAnimationEncoderTests {
     [Fact]
     public void GifReadabilityUsesContainerDurationsAcrossPreparedExportRoutes() {
-        var story = VisualStory.Create("Rounded display clock").WithSize(480, 320);
+        var story = VisualStory.Create("Rounded display clock").Size(480, 320);
         story.Scene("first", "First", .25).Panel("first", new VisualStoryTextSurface("First"));
         story.Scene("last", "Last", .645).Panel("last", new VisualStoryTextSurface("Last"));
         story.Outcome("last", "Last", "last");
@@ -65,7 +65,7 @@ public sealed partial class RasterAnimationEncoderTests {
 
     [Fact]
     public void PreparedGifClockMatchesRawAndContainerSpecificFrameEncoderRoutes() {
-        var story = VisualStory.Create("One GIF clock").WithSize(480, 320);
+        var story = VisualStory.Create("One GIF clock").Size(480, 320);
         story.Scene("result", "Result", 9).Panel("result", new VisualStoryTextSurface("Ready"));
         story.Outcome("ready", "Ready", "result");
         var prepared = story.Prepare(new VisualStoryPlaybackOptions(TimeSpan.FromSeconds(1), TimeSpan.Zero, 1));

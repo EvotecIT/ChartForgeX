@@ -37,9 +37,9 @@ public sealed class TopologyEdgePresentationTests {
     [Fact]
     public void AssumedLinkPaintsDashedWithEvidenceInTooltipMetadataAndLegend() {
         var chart = Sites();
-        chart.WithEdgeEvidence("link", TopologyEdgeEvidence.Assumed, "Inferred from KCC connection objects");
+        chart.UpdateEdge("link", e => e.Evidence(TopologyEdgeEvidence.Assumed).EvidenceText("Inferred from KCC connection objects"));
         chart.Edges.Single(edge => edge.Id == "link").Tooltip = "London to Paris";
-        chart.WithLegend(TopologyLegend.Create("Legend").AddEdgeKind("Replication", TopologyEdgeKind.Replication));
+        chart.Legend(TopologyLegend.Create("Legend").AddEdgeKind("Replication", TopologyEdgeKind.Replication));
         var document = XDocument.Parse(chart.Prepare(Options()).ToSvg());
         var edge = Edge(document, "link");
         Assert.Equal("assumed", (string?)edge.Attribute("data-edge-evidence"));
@@ -59,7 +59,7 @@ public sealed class TopologyEdgePresentationTests {
     public void StripesTileTheRouteInEveryColourWithLegendEntries() {
         var chart = Sites();
         chart.AddEdgeStripe("link", "#2563EB", "IP").AddEdgeStripe("link", "#F97316", "SMTP").AddEdgeStripe("link", "#16A34A");
-        chart.WithLegend(TopologyLegend.Create("Legend"));
+        chart.Legend(TopologyLegend.Create("Legend"));
         var prepared = chart.Prepare(Options());
         var document = XDocument.Parse(prepared.ToSvg());
         var edge = Edge(document, "link");
@@ -82,7 +82,7 @@ public sealed class TopologyEdgePresentationTests {
     [Fact]
     public void AssumedStripesKeepAGapAfterEveryBand() {
         var chart = Sites();
-        chart.AddEdgeStripe("link", "#2563EB").AddEdgeStripe("link", "#F97316").WithEdgeEvidence("link", TopologyEdgeEvidence.Assumed);
+        chart.AddEdgeStripe("link", "#2563EB").AddEdgeStripe("link", "#F97316").UpdateEdge("link", e => e.Evidence(TopologyEdgeEvidence.Assumed).EvidenceText(null));
         var document = XDocument.Parse(chart.Prepare(Options()).ToSvg());
         Assert.All(Edge(document, "link").Descendants().Where(element => Role(element) == "topology-edge-stripe"),
             stripe => Assert.Equal("8 16", (string?)stripe.Attribute("stroke-dasharray")));
@@ -94,7 +94,7 @@ public sealed class TopologyEdgePresentationTests {
     [Fact]
     public void ChipsSitOnTheRouteClearOfNodesLabelsAndEachOther() {
         var chart = Sites();
-        chart.WithEdgeEndpointLabels("link", "London uplink", "Paris edge");
+        chart.UpdateEdge("link", e => e.SourceLabel("London uplink").TargetLabel("Paris edge"));
         chart.AddEdgeChip("link", "cost 100").AddEdgeChip("link", "lag 4m", Tone.Warning).AddEdgeChip("link", "15.4W", Tone.Success);
         var options = Options(); options.IncludeEdgeLabelBackplates = true;
         var prepared = chart.Prepare(options);
@@ -125,7 +125,7 @@ public sealed class TopologyEdgePresentationTests {
 
     [Fact]
     public void ChipsWithoutAFreePlaceAreOmittedWithADiagnostic() {
-        var chart = TopologyChart.Create().WithId("tight").WithViewport(330, 100, 0).WithLayout(TopologyLayoutMode.Manual).WithLegend(null)
+        var chart = TopologyChart.Create().Id("tight").Viewport(new TopologyViewport(330, 100, 0)).LayoutMode(TopologyLayoutMode.Manual).Legend((TopologyLegend?)null)
             .AddNode("a", "A", 10, 10).AddNode("b", "B", 150, 10)
             .AddEdge("a-b", "a", "b").AddEdgeChip("a-b", "a long replication value").AddEdgeChip("a-b", "another long value");
         var prepared = chart.Prepare(Options());
@@ -138,7 +138,7 @@ public sealed class TopologyEdgePresentationTests {
     [Fact]
     public void UplinkMarkerPrefixesTheChildEndpointLabelOnce() {
         var chart = Sites();
-        chart.WithEdgeEndpointLabels("link", "hub", "par").WithEdgeUplink("link", TopologyEdgeEnd.Target);
+        chart.UpdateEdge("link", e => e.SourceLabel("hub").TargetLabel("par")).UpdateEdge("link", e => e.UplinkEnd(TopologyEdgeEnd.Target));
         var prepared = chart.Prepare(Options());
         var edge = Edge(XDocument.Parse(prepared.ToSvg()), "link");
         Assert.Equal("hub", (string?)edge.Attribute("data-source-label"));
@@ -146,15 +146,15 @@ public sealed class TopologyEdgePresentationTests {
         Assert.Equal("target", (string?)edge.Attribute("data-edge-uplink"));
         Assert.Equal("par", chart.Edges.Single(item => item.Id == "link").TargetLabel);
 
-        var bare = Sites().WithEdgeUplink("link", TopologyEdgeEnd.Source);
+        var bare = Sites().UpdateEdge("link", e => e.UplinkEnd(TopologyEdgeEnd.Source));
         Assert.Equal("↑", (string?)Edge(XDocument.Parse(bare.Prepare(Options()).ToSvg()), "link").Attribute("data-source-label"));
     }
 
     [Fact]
     public void EdgePresentationSurvivesAnInterchangeRoundTrip() {
         var chart = Sites().AddEdgeStripe("link", "#2563EB", "IP, primary").AddEdgeStripe("link", "rgb(249, 115, 22)")
-            .AddEdgeChip("link", "cost 100|a", Tone.Warning, "server").WithEdgeEvidence("link", TopologyEdgeEvidence.Assumed, "KCC, inferred")
-            .WithEdgeUplink("link", TopologyEdgeEnd.Target);
+            .AddEdgeChip("link", "cost 100|a", Tone.Warning, "server").UpdateEdge("link", e => e.Evidence(TopologyEdgeEvidence.Assumed).EvidenceText("KCC, inferred"))
+            .UpdateEdge("link", e => e.UplinkEnd(TopologyEdgeEnd.Target));
         chart.Edges[0].Metadata["owner"] = "ops";
         var restored = VisualArtifactInterchangeEnvelope.FromJson(chart.Prepare(Options()).ToInterchangeEnvelope().ToJson()).ToTopologyChart();
         var edge = restored.Edges.Single(item => item.Id == "link");
@@ -167,8 +167,8 @@ public sealed class TopologyEdgePresentationTests {
         Assert.Equal(new[] { "owner" }, edge.Metadata.Keys.Where(key => !key.StartsWith("layout.", StringComparison.Ordinal)));
     }
 
-    internal static TopologyChart Sites() => TopologyChart.Create().WithId("sites").WithViewport(900, 420, 30)
-        .WithLayout(TopologyLayoutMode.Layered, TopologyLayoutDirection.LeftToRight).WithLegend(null)
+    internal static TopologyChart Sites() => TopologyChart.Create().Id("sites").Viewport(new TopologyViewport(900, 420, 30))
+        .LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(TopologyLayoutDirection.LeftToRight).Legend((TopologyLegend?)null)
         .AddAutoNode("lon", "London", TopologyNodeKind.Location, TopologyHealthStatus.Healthy)
         .AddAutoNode("par", "Paris", TopologyNodeKind.Location, TopologyHealthStatus.Healthy)
         .AddEdge("link", "lon", "par", kind: TopologyEdgeKind.Replication, status: TopologyHealthStatus.Healthy);

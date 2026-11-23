@@ -11,8 +11,8 @@ public static class WallpaperOwnerExamples {
     public static VisualCanvas Create(string layout, int width, int height) {
         var theme = VisualTheme.Graphite();
         var colors = theme.Resolve(ThemeMode.Dark);
-        var canvas = VisualCanvas.Create(width, height).WithTitle("System overview").WithTheme(theme, ThemeMode.Dark)
-            .WithBackdrop(VisualCanvasBackdropStyle.Plain).WithBackground(colors.Background);
+        var canvas = VisualCanvas.Create(width, height).Title("System overview").Theme(theme).ThemeMode(ThemeMode.Dark)
+            .BackdropStyle(VisualCanvasBackdropStyle.Plain).BackgroundTop(colors.Background).BackgroundBottom(colors.Background);
         var accent = colors.Accent;
         if (layout == "CenterRight") {
             canvas.AddInfoTile(VisualCanvasPlacement.At(VisualCanvasAnchor.MiddleRight, 34, -140), 560, 132,
@@ -43,8 +43,8 @@ public static class WallpaperOwnerExamples {
     }
 
     /// <summary>Creates a transparent fixed-viewport topology suitable for a wallpaper overlay.</summary>
-    public static TopologyChart CreateTopology() => TopologyChart.Create().WithId("wallpaper-topology").WithViewport(560, 310, 20)
-        .WithLegend(null).WithTheme(OverlayTheme(), ThemeMode.Dark)
+    public static TopologyChart CreateTopology() => TopologyChart.Create().Id("wallpaper-topology").Viewport(new TopologyViewport(560, 310, 20))
+        .Legend((TopologyLegend?)null).Theme(OverlayTheme(), ThemeMode.Dark)
         .AddNode("workstation", "Workstation", 34, 110, width: 140, height: 70)
         .AddNode("gateway", "Gateway", 330, 110, TopologyNodeKind.Gateway, width: 140, height: 70)
         .AddEdge("network", "workstation", "gateway", "Network", routing: TopologyEdgeRouting.Straight);

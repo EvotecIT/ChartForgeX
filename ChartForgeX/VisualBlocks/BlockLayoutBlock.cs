@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.VisualBlocks;
 
 /// <summary>
 /// A deterministic grid-based block layout with optional directed edges.
 /// </summary>
+[Fluent]
 public sealed partial class BlockLayoutBlock : VisualBlock<BlockLayoutBlock> {
     private readonly List<BlockLayoutItem> _items = new();
     private readonly List<BlockLayoutEdge> _edges = new();
@@ -52,12 +54,6 @@ public sealed partial class BlockLayoutBlock : VisualBlock<BlockLayoutBlock> {
         _edges.Add(new BlockLayoutEdge(sourceId, targetId, label, directed));
         return this;
     }
-
-    /// <summary>Sets the number of layout columns.</summary>
-    public BlockLayoutBlock WithColumns(int columns) { Columns = columns; return this; }
-
-    /// <summary>Sets whether edges are rendered when present.</summary>
-    public BlockLayoutBlock WithEdges(bool visible = true) { ShowEdges = visible; return this; }
 }
 
 /// <summary>

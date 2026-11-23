@@ -1,8 +1,10 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>Controls one dotted-map dataset's independent weight domain and logical marker radius range.</summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class ChartMapPointSizeOptions {
     private double? _minimumRadius, _maximumRadius;
     internal bool IsConfigured { get; private set; }
@@ -25,7 +27,7 @@ public sealed class ChartMapPointSizeOptions {
     /// <param name="minimumValue">The inclusive minimum weight.</param>
     /// <param name="maximumValue">The inclusive maximum weight, greater than the minimum.</param>
     /// <returns>The current options.</returns>
-    public ChartMapPointSizeOptions WithSizeDomain(double minimumValue, double maximumValue) {
+    public ChartMapPointSizeOptions SizeDomain(double minimumValue, double maximumValue) {
         NonNegative(minimumValue, nameof(minimumValue)); NonNegative(maximumValue, nameof(maximumValue));
         if (maximumValue <= minimumValue) throw new ArgumentOutOfRangeException(nameof(maximumValue), "Map weight-domain bounds must be increasing.");
         MinimumValue = minimumValue; MaximumValue = maximumValue; IsConfigured = true;
@@ -34,7 +36,7 @@ public sealed class ChartMapPointSizeOptions {
 
     /// <summary>Infers the weight domain from every point in this dataset, including points outside the viewport.</summary>
     /// <returns>The current options.</returns>
-    public ChartMapPointSizeOptions UseAutomaticSizeDomain() { MinimumValue = MaximumValue = null; return this; }
+    public ChartMapPointSizeOptions AutomaticSizeDomain() { MinimumValue = MaximumValue = null; return this; }
 
     internal ChartMapPointSizeOptions Clone() {
         var copy = (ChartMapPointSizeOptions)MemberwiseClone(); copy.SizeDimension = SizeDimension.Clone(); return copy;

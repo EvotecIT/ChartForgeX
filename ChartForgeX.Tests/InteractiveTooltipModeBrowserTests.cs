@@ -42,7 +42,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
     [InlineData(true, 340)]
     public async Task MarkerFreeSharedTooltipUsesActualLinePaintInLightDarkAndCompactViews(bool dark, int width) {
         if (!Enabled) return;
-        var chart = Lines(VisualTheme.Graphite()).WithThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).WithLineMarkers(ChartLineMarkerMode.None).WithLuminousLineStyle();
+        var chart = Lines(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Lines(l => l.MarkerMode(ChartLineMarkerMode.None).LuminousStyle());
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), width, 560);
         var page = session.Page;
         await page.AddStyleTagAsync(new PageAddStyleTagOptions { Content = "[data-cfx-role='series'][data-cfx-series='1'] [data-cfx-role='line'] { stroke:#7b61e8; }" });
@@ -64,9 +64,9 @@ public sealed class InteractiveTooltipModeBrowserTests {
     [InlineData(HtmlChartTooltipMode.SharedX)]
     public async Task TooltipSwatchRetainsPointOverrideInsteadOfGroupOrSeriesFill(HtmlChartTooltipMode mode) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(596, 338).WithTheme(VisualTheme.Graphite().WithPalette(ChartPalettes.FromHex("#176eaf", "#df4263")))
+        var chart = Chart.Create().Size(596, 338).Theme(VisualTheme.Graphite().WithPalette(ChartPalettes.FromHex("#176eaf", "#df4263")))
             .AddBar("Requests", ChartPoints.FromValues(3, 7, 5)).AddBar("Previous", ChartPoints.FromValues(1, 2, 1));
-        chart.Series[0].WithPointColor(1, "#7b61e8");
+        chart.Series[0].PointColor(1, "#7b61e8");
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = mode));
         var page = session.Page;
         await page.Locator(Point(0, 1)).FocusAsync();
@@ -84,7 +84,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
     [InlineData(true)]
     public async Task SingleRangeTooltipUsesPaintedEnvelopeWithoutRequiringALegend(bool area) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(596, 338).WithLegend(false).WithTheme(VisualTheme.Graphite());
+        var chart = Chart.Create().Size(596, 338).Legend(false).Theme(VisualTheme.Graphite());
         var ranges = new[] { new ChartRangeBand(1, 2, 8), new ChartRangeBand(2, 3, 9) };
         if (area) chart.AddRangeArea("Expected", ranges, ChartColor.FromHex("#176eaf"));
         else chart.AddRangeBand("Expected", ranges, ChartColor.FromHex("#176eaf"));
@@ -103,7 +103,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
     public async Task SharedRowsRetainRawValuesSourceIdentityAndStatePriorityWithSafeText() {
         if (!Enabled) return;
         const string dangerName = "<img src=x onerror=alert(1)>";
-        var chart = Chart.Create().WithSize(596, 338).WithLineMarkers(ChartLineMarkerMode.None)
+        var chart = Chart.Create().Size(596, 338).Lines(l => l.MarkerMode(ChartLineMarkerMode.None))
             .AddSeries(ChartSeries.CreateDecimated(new ChartSeriesId("latency-source"), "Latency", ChartSeriesKind.Line, Enumerable.Range(0, 100).Select(index => new ChartPoint(index, 100 + Math.Sin(index / 4d))), 12));
         var observed = chart.Series[0].Points[3];
         const double precise = 0.12345678901234566;
@@ -169,7 +169,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
     [BrowserFact]
     public async Task SharedModeFallsBackForPieTargetsAndBothModesRespectFeatureGate() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(596, 338).WithXLabels("North", "South").AddPie("Requests", ChartPoints.FromValues(7, 3));
+        var chart = Chart.Create().Size(596, 338).XLabels("North", "South").AddPie("Requests", ChartPoints.FromValues(7, 3));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage());
         var page = session.Page;
         var target = page.Locator("[data-cfx-keyboard-component='data']").First;
@@ -193,7 +193,7 @@ public sealed class InteractiveTooltipModeBrowserTests {
     [BrowserFact]
     public async Task SharedModeKeepsHeatmapCellQuantityAndMetadataInASingleReadout() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(596, 338).WithXLabels("North", "South")
+        var chart = Chart.Create().Size(596, 338).XLabels("North", "South")
             .AddHeatmapRow("Requests", new[] { 37d, 48d }).AddHeatmapRow("Previous", new[] { 61d, 54d });
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage());
         var page = session.Page;
@@ -225,8 +225,8 @@ public sealed class InteractiveTooltipModeBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    private static Chart Lines(VisualTheme theme) => Chart.Create().WithSize(596, 338).WithTitle("Observations over time")
-        .WithTheme(theme.WithPalette(ChartPalettes.FromHex("#176eaf", "#df4263"))).WithXLabels("Mon", "Tue", "Wed")
+    private static Chart Lines(VisualTheme theme) => Chart.Create().Size(596, 338).Title("Observations over time")
+        .Theme(theme.WithPalette(ChartPalettes.FromHex("#176eaf", "#df4263"))).XLabels("Mon", "Tue", "Wed")
         .AddLine("Current", ChartPoints.FromValues(12, 19, 16)).AddLine("Baseline", ChartPoints.FromValues(7, 11, 8));
 
     private static async Task CaptureAsync(IPage page, string name) {

@@ -13,8 +13,8 @@ public sealed class TopologyExternalCaptionRoleControlsTests {
     [InlineData(TopologyNodeDisplayMode.Icon, 12d)] [InlineData(TopologyNodeDisplayMode.Icon, 14d)]
     [InlineData(TopologyNodeDisplayMode.Tile, 12d)] [InlineData(TopologyNodeDisplayMode.Tile, 14d)]
     public void NullNewRolePreservesActualBaseStyleRatiosAndLegacyFittingCells(TopologyNodeDisplayMode mode, double baseSize) {
-        var chart = TopologyChart.Create().WithId("external-caption-role-control").WithViewport(640, 400, 24).WithLayout(TopologyLayoutMode.Manual)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).AddNode("node", "Literal caption", 200, 100, width: 180, height: 90);
+        var chart = TopologyChart.Create().Id("external-caption-role-control").Viewport(new TopologyViewport(640, 400, 24)).LayoutMode(TopologyLayoutMode.Manual)
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).AddNode("node", "Literal caption", 200, 100, width: 180, height: 90);
         var node = chart.Nodes[0]; node.DisplayMode = mode; node.Shape = TopologyNodeShape.Rectangle; node.PreserveDisplayModeSize = true;
         node.IconShape = TopologyIconShape.Router; node.ShowStatusBadge = false; node.TextStyle = new TextStyleOverride { FontFamily = BrowserProofFonts.Family, FontSize = baseSize };
         var prepared = chart.Prepare(new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = false, IncludeIconLabels = true });

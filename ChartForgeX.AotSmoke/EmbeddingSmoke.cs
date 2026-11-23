@@ -13,10 +13,10 @@ internal static class EmbeddingSmoke {
         series.ReplaceGanttItems(new[] { ChartGanttItem.OpenEnded(2).WithMarkOptions(new ChartMarkOptions(
             href: "/versions/4", linkTarget: VisualSvgLinkTarget.NewContext,
             tooltip: "Supported version", accessibleLabel: "View version 4", current: true)) });
-        var chart = Chart.Create().AddSeries(series).WithSize(400, 160).WithXAxisBounds(0, 10)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(fontFamily))
-            .WithGanttOpenEndStyle(ChartGanttOpenEndStyle.Fade);
-        var scale = new ChartStripScale(new ChartAxis { Minimum = 0, Maximum = 10 });
+        var chart = Chart.Create().AddSeries(series).Size(400, 160).XAxis(x => x.Bounds(0, 10))
+            .Theme(VisualTheme.Graphite().WithFontFamily(fontFamily))
+            .Gantt(g => g.OpenEndStyle(ChartGanttOpenEndStyle.Fade));
+        var scale = new ChartStripScale(new ChartAxis { Min = 0, Max = 10 });
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(400, 40), 0),
             font: FontSpec.FromFamily(fontFamily));
         var prepared = chart.PrepareStrip(context, scale);

@@ -6,12 +6,12 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void HexbinHeatmapRowsRenderHoneycombCells() {
         var chart = Chart.Create()
-            .WithSize(560, 360)
-            .WithXAxis("Day")
-            .WithYAxis("Time")
-            .WithXLabels("Mon", "Tue", "Wed")
-            .WithHeatmapScale(ChartHeatmapScale.Semantic)
-            .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
+            .Size(560, 360)
+            .XAxis(x => x.Title("Day"))
+            .YAxis(y => y.Title("Time"))
+            .XLabels("Mon", "Tue", "Wed")
+            .Heatmap(h => h.Scale(ChartHeatmapScale.Semantic))
+            .FormatValuesBy(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
             .AddHexbinHeatmapRow("09:00", Points(68, 82, 91))
             .AddHexbinHeatmapRow("11:00", Points(74, 88, 96));
 
@@ -30,8 +30,8 @@ internal static partial class SmokeTests {
 
     private static void HexbinHeatmapRowsAcceptOneBasedValues() {
         var chart = Chart.Create()
-            .WithSize(360, 240)
-            .WithXLabels("Mon", "Tue", "Wed")
+            .Size(360, 240)
+            .XLabels("Mon", "Tue", "Wed")
             .AddHexbinHeatmapRow("09:00", new[] { 68d, 82, 91 })
             .AddHexbinHeatmapRow("11:00", new[] { 74d, 88, 96 });
 
@@ -40,10 +40,10 @@ internal static partial class SmokeTests {
         Assert(svg.Contains("<title>09:00, Tue: 82</title>", System.StringComparison.Ordinal), "Value overloads should preserve x-axis label lookup.");
         Assert(chart.ToPng().Length > 64, "Value overloads should render PNG output.");
         var labeled = Chart.Create()
-            .WithSize(560, 360)
-            .WithDataLabels()
+            .Size(560, 360)
+            .DataLabels()
             .AddHexbinHeatmapRow("09:00", new[] { 68d, 82, 91 });
-        labeled.Series[0].WithPointLabel(1, "Peak");
+        labeled.Series[0].PointLabel(1, "Peak");
         Assert(labeled.ToSvg().Contains(">Peak</text>", System.StringComparison.Ordinal), "Hexbin SVG data labels should honor point-level overrides.");
         Assert(labeled.ToPng().Length > 64, "Hexbin PNG data labels should honor point-level overrides without failing render.");
         AssertThrows<System.ArgumentOutOfRangeException>(() => Chart.Create().AddHexbinHeatmapRow("Bad", new[] { 1d, double.NaN }), "Hexbin value overloads should reject non-finite values.");
@@ -51,8 +51,8 @@ internal static partial class SmokeTests {
 
     private static void HexbinHeatmapRowsAcceptMatrixValues() {
         var chart = Chart.Create()
-            .WithSize(360, 240)
-            .WithXLabels("Mon", "Tue", "Wed")
+            .Size(360, 240)
+            .XLabels("Mon", "Tue", "Wed")
             .AddHexbinHeatmapRows(new[] {
                 ChartHeatmapRow.Create("09:00", 68, 82, 91),
                 ChartHeatmapRow.Create("11:00", 74, 88, 96)
@@ -69,8 +69,8 @@ internal static partial class SmokeTests {
 
     private static void HexbinHeatmapRowsCanMaskHoneycombCells() {
         var chart = Chart.Create()
-            .WithSize(360, 260)
-            .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri")
+            .Size(360, 260)
+            .XLabels("Mon", "Tue", "Wed", "Thu", "Fri")
             .AddHexbinHeatmapRows(new[] {
                 ChartHeatmapRow.CreateMasked("Morning", null, 62, 74, 68, null),
                 ChartHeatmapRow.CreateMasked("Noon", null, 83, 96, 88, null),

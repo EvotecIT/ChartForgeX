@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ChartForgeX.Primitives;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.VisualBlocks;
 
@@ -8,6 +9,7 @@ namespace ChartForgeX.VisualBlocks;
 /// <remarks>Rows use contiguous preorder and parent-before-child IDs. Native limits are 10000 rows,
 /// 128 levels and an 8192-pixel frame per axis. Call WithNaturalSize after changing data, width,
 /// typography or padding. An undersized explicit frame rejects rather than reducing text to unreadable sizes.</remarks>
+[Fluent]
 public sealed class TreeViewBlock : VisualBlock<TreeViewBlock> {
     private readonly List<TreeViewItem> _items = new();
     private readonly IReadOnlyList<TreeViewItem> _view;
@@ -45,7 +47,7 @@ public sealed class TreeViewBlock : VisualBlock<TreeViewBlock> {
     /// <summary>Measures a complete fixed-width frame with bounded natural height.</summary>
     public ChartSize MeasureNaturalSize(int width = 520, int minimumHeight = 0) => VisualBlockRendering.TreeViewNaturalSize(this, width, minimumHeight);
     /// <summary>Captures the measured fixed-width natural frame without silently dropping rows.</summary>
-    public TreeViewBlock WithNaturalSize(int width = 520, int minimumHeight = 0) {
+    public TreeViewBlock NaturalSize(int width = 520, int minimumHeight = 0) {
         Options.Size = MeasureNaturalSize(width, minimumHeight); return this;
     }
     private static void Bounded(double value, double minimum, double maximum, string parameter) {

@@ -20,7 +20,7 @@ public sealed class NativeRicherNumberBeforeControls {
     public void ExistingNumberOwnerFormatsActualCustomGrammarAndOrdinaryNativeCaptions(string format,double reading,string cultureName,string expected) {
         var culture=cultureName.Length==0?CultureInfo.InvariantCulture:CultureInfo.GetCultureInfo(cultureName);var policy=ChartValueFormat.Number(format,culture);var text=policy.Format(reading);
         // Pie source remains nonnegative; the negative-section formatter observation is an actual formatter contract, not negative Pie admission.
-        var chart=NativeRadialMotionBeforeControls.Model(false,false).WithValueFormat(policy);var renderer=new HtmlInteractiveChartRenderer();var section=renderer.PrepareSection(chart);var repeat=renderer.PrepareSection(chart);
+        var chart=NativeRadialMotionBeforeControls.Model(false,false).ValueFormat(policy);var renderer=new HtmlInteractiveChartRenderer();var section=renderer.PrepareSection(chart);var repeat=renderer.PrepareSection(chart);
         var formatKey=string.Concat(format.Select(character=>((int)character).ToString("x4",CultureInfo.InvariantCulture)));var name="number-custom-before-"+formatKey+"-"+cultureName;
         NativeRadialMotionBeforeControls.Capture(section,name);NativeRadialMotionBeforeControls.Save(name+".facts.json",JsonSerializer.Serialize(new{format,reading,cultureName,text,expected}));
         Assert.Equal(expected,text);Assert.Equal(section.Html,repeat.Html);Assert.Equal(section.PreparedVisual.ToSvg(),repeat.PreparedVisual.ToSvg());Assert.Equal(section.PreparedVisual.ToPng(),repeat.PreparedVisual.ToPng());

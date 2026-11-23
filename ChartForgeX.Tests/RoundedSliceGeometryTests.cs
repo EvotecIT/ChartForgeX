@@ -30,11 +30,11 @@ public sealed class RoundedSliceGeometryTests {
     public void NumericRoundingCannotSilentlyApplyToAnotherRadialFamily(ChartSeriesKind kind) {
         var chart = V2GalleryModels.Create(kind);
         _ = chart.ToSvg();
-        chart.WithRadialGeometry(new(cornerRadius: 6));
+        chart.RadialGeometry(new(cornerRadius: 6));
         Assert.Throws<InvalidOperationException>(() => chart.ToSvg());
-        chart.WithRadialGeometry(new());
+        chart.RadialGeometry(new());
         if (kind == ChartSeriesKind.Sunburst) chart.ClearSeries();
-        chart.ConfigureSunburst(options => options.CornerRadius = 6);
+        chart.Sunburst(options => options.CornerRadius = 6);
         if (chart.Series.Count == 0) _ = chart.ToSvg();
         else Assert.Throws<InvalidOperationException>(() => chart.ToSvg());
     }

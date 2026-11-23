@@ -19,16 +19,16 @@ public sealed class StageOutlinePaintTests {
     [InlineData(true, ChartFunnelForm.StageBars, 800, ThemeMode.Dark)]
     public void OutlinesUseExistingPointPaintAndPreserveExactStageGeometry(bool pyramid, ChartFunnelForm form, int width, ThemeMode mode) {
         var chart = StagePresentationOptionsTests.Create(pyramid, form, ChartOrientation.Vertical, width);
-        chart.WithTheme(VisualTheme.Graphite(), mode).WithDataLabels(false);
+        chart.Theme(VisualTheme.Graphite()).ThemeMode(mode).DataLabels(false);
         var original = StagePresentationOptionsTests.Prepare(chart);
         var role = pyramid ? "pyramid-segment" : form == ChartFunnelForm.Cone ? "funnel-stage-line" : "funnel-segment";
         var originalPaths = original.Scene.Nodes.OfType<VisualScenePath>().Where(path => path.Role == role).ToArray();
         var sourceColor = ChartColor.FromHex("#2476A8"); var border = ChartColor.FromHex("#DC4263");
         var dash = new[] { 6d, 3d };
         var outline = new ChartStrokeStyle(ChartColor.Black, 3, .75, dash); dash[0] = 100;
-        chart.Series[0].WithPointColor(1, sourceColor).WithPointStrokeColor(1, border).WithPointFillPattern(1, ChartFillPattern.DiagonalForward);
-        chart.ConfigureFunnel(options => { options.StageOutline = outline; options.StageOutlineDashOffset = 2; });
-        chart.ConfigurePyramid(options => { options.PartitionOutline = outline; options.PartitionOutlineDashOffset = 2; });
+        chart.Series[0].PointColor(1, sourceColor).PointStrokeColor(1, border).PointFillPattern(1, ChartFillPattern.DiagonalForward);
+        chart.Funnel(options => { options.StageOutline = outline; options.StageOutlineDashOffset = 2; });
+        chart.Pyramid(options => { options.PartitionOutline = outline; options.PartitionOutlineDashOffset = 2; });
         var prepared = StagePresentationOptionsTests.Prepare(chart);
         var paths = prepared.Scene.Nodes.OfType<VisualScenePath>().Where(path => path.Role == role).ToArray();
         Assert.Equal(originalPaths.Length, paths.Length);
@@ -54,11 +54,11 @@ public sealed class StageOutlinePaintTests {
     [InlineData(false, ChartFunnelForm.Cone)]
     [InlineData(true, ChartFunnelForm.StageBars)]
     public void WidthZeroDisablesOnlyTheAuthoredOutlineWithoutChangingSourceOrPartitionPaths(bool pyramid, ChartFunnelForm form) {
-        var chart = StagePresentationOptionsTests.Create(pyramid, form, ChartOrientation.Vertical).WithDataLabels(false);
+        var chart = StagePresentationOptionsTests.Create(pyramid, form, ChartOrientation.Vertical).DataLabels(false);
         var role = pyramid ? "pyramid-segment" : form == ChartFunnelForm.Cone ? "funnel-stage-line" : "funnel-segment";
         var before = StagePresentationOptionsTests.Prepare(chart);
-        chart.ConfigureFunnel(options => options.StageOutline = new ChartStrokeStyle(ChartColor.Black, 0));
-        chart.ConfigurePyramid(options => options.PartitionOutline = new ChartStrokeStyle(ChartColor.Black, 0));
+        chart.Funnel(options => options.StageOutline = new ChartStrokeStyle(ChartColor.Black, 0));
+        chart.Pyramid(options => options.PartitionOutline = new ChartStrokeStyle(ChartColor.Black, 0));
         var prepared = StagePresentationOptionsTests.Prepare(chart);
         var paths = prepared.Scene.Nodes.OfType<VisualScenePath>().Where(path => path.Role == role).ToArray();
         Assert.Equal(3, paths.Length); Assert.All(paths, path => Assert.Equal(0, path.StrokeWidth));
@@ -72,12 +72,12 @@ public sealed class StageOutlinePaintTests {
     [InlineData(ChartFunnelForm.StageBars)]
     [InlineData(ChartFunnelForm.Cone)]
     public void ConnectionOverridesPreserveWeightsSlotsAndExplicitPatternStrokePhase(ChartFunnelForm form) {
-        var chart = StagePresentationOptionsTests.Create(false, form, ChartOrientation.Horizontal).WithDataLabels(false);
+        var chart = StagePresentationOptionsTests.Create(false, form, ChartOrientation.Horizontal).DataLabels(false);
         var before = StagePresentationOptionsTests.Prepare(chart);
         var paths = before.Scene.Nodes.OfType<VisualScenePath>().Where(path => path.Role is "funnel-dropoff" or "funnel-connection-area").ToArray();
         var fill = ChartColor.FromHex("#4281B6"); var stroke = ChartColor.FromHex("#A83268");
-        chart.ConfigureFunnel(options => options.ConnectorStyle = new ChartFunnelConnectorStyle(fillOpacity: .4));
-        chart.Series[0].WithFunnelConnectorStyle(1, new ChartFunnelConnectorStyle(fill: fill, fillOpacity: .8,
+        chart.Funnel(options => options.ConnectorStyle = new ChartFunnelConnectorStyle(fillOpacity: .4));
+        chart.Series[0].FunnelConnectorStyle(1, new ChartFunnelConnectorStyle(fill: fill, fillOpacity: .8,
             fillPattern: ChartFillPattern.Crosshatch, outlineStroke: new ChartStrokeStyle(stroke, 2, 1, new[] { 4d, 2d }), strokeDashOffset: -3));
         var prepared = StagePresentationOptionsTests.Prepare(chart);
         var styled = prepared.Scene.Nodes.OfType<VisualScenePath>().Where(path => path.Role is "funnel-dropoff" or "funnel-connection-area").ToArray();

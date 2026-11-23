@@ -33,8 +33,8 @@ internal static class StoryAppearanceExamples {
         var editor = StorySourceTimeline.Create(StorySourceText.Create("", "powershell")).Type(source, TimeSpan.FromSeconds(3));
         var replay = StoryReplay.Create(TimeSpan.FromSeconds(3), title: "PowerShell · captured output")
             .Command(TimeSpan.FromSeconds(.3), "./hello.ps1").Output(TimeSpan.FromSeconds(1), "Hello, Stories!");
-        var story = VisualStory.Create("Make your code a story").WithTheme(theme, mode).WithStyle(style).WithFormat(VisualStoryFormat.Square, 720)
-            .WithDescription("Resolved source and authored example output. Displayed commands are not executed.");
+        var story = VisualStory.Create("Make your code a story").Theme(theme).ThemeMode(mode).Style(style).Format(VisualStoryFormat.Square, 720)
+            .Description("Resolved source and authored example output. Displayed commands are not executed.");
         story.Scene("write", "01  Write with syntax colors", 3)
             .Panel("code", new VisualStorySourceSurface(editor, options: new VisualStorySourceOptions("hello.ps1", 22)));
         story.Scene("read", "02  Read the completed script", 1)

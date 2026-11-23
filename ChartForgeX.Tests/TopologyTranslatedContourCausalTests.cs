@@ -28,13 +28,13 @@ public sealed class TopologyTranslatedContourCausalTests {
     }
 
     internal static TopologyChart Source(TopologyNodeShape shape = TopologyNodeShape.Rounded, bool heading = true) {
-        var chart = TopologyChart.Create().WithId("translated-native-contour").WithTitle(heading ? "Projection heading" : "")
-            .WithLegend(null).WithViewport(692, 440, 28).WithLayout(TopologyLayoutMode.Manual)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family))
+        var chart = TopologyChart.Create().Id("translated-native-contour").Title(heading ? "Projection heading" : "")
+            .Legend((TopologyLegend?)null).Viewport(new TopologyViewport(692, 440, 28)).LayoutMode(TopologyLayoutMode.Manual)
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family))
             .AddNode("node", "Node", 56, 199.95, width: 160, height: 64);
         var node = chart.Nodes[0]; node.Shape = shape; node.PreserveDisplayModeSize = true;
         node.ShowLabel = false; node.ShowStatusBadge = false; node.BackgroundColor = "#ececff"; node.BorderColor = "#9370db";
-        chart.WithRenderOptions(new TopologyRenderOptions { IncludeTitle = heading, IncludeLegend = false, FitContentToViewport = false });
+        chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeTitle = heading, IncludeLegend = false, FitContentToViewport = false });
         return chart;
     }
 

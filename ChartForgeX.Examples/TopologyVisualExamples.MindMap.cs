@@ -17,15 +17,15 @@ internal static partial class TopologyVisualExamples {
         const string purpleSoft = "#EAD8FF";
 
         return TopologyChart.Create()
-            .WithId("visual-identity-mind-map")
-            .WithTitle("Identity Mind Map")
-            .WithViewport(1600, 900, 38)
-            .WithTheme(VisualTheme.Graphite())
+            .Id("visual-identity-mind-map")
+            .Title("Identity Mind Map")
+            .Viewport(new TopologyViewport(1600, 900, 38))
+            .Theme(VisualTheme.Graphite())
             .AddMindMap(new[] {
                 Item("identity", "Cloud Identity", null, TopologyNodeKind.Cloud, "cloud:cloud", navy, navySoft, "central service"),
-                Item("users", "Users", "identity", TopologyNodeKind.Person, "people:person", yellow, yellowSoft, "accounts").WithMetadata("mindmap.side", "right").WithMetadata("mindmap.order", "10"),
-                Item("groups", "Groups", "identity", TopologyNodeKind.Team, "people:team", blue, blueSoft, "membership").WithMetadata("mindmap.side", "right").WithMetadata("mindmap.order", "20"),
-                Item("applications", "Applications", "identity", TopologyNodeKind.Application, "common:application", yellow, yellowSoft, "app access").WithMetadata("mindmap.side", "right").WithMetadata("mindmap.order", "30"),
+                Item("users", "Users", "identity", TopologyNodeKind.Person, "people:person", yellow, yellowSoft, "accounts").Metadata("mindmap.side", "right").Metadata("mindmap.order", "10"),
+                Item("groups", "Groups", "identity", TopologyNodeKind.Team, "people:team", blue, blueSoft, "membership").Metadata("mindmap.side", "right").Metadata("mindmap.order", "20"),
+                Item("applications", "Applications", "identity", TopologyNodeKind.Application, "common:application", yellow, yellowSoft, "app access").Metadata("mindmap.side", "right").Metadata("mindmap.order", "30"),
                 Item("licenses", "Licenses", "users", TopologyNodeKind.Service, "common:service", yellow, yellowSoft),
                 Item("assigned-roles", "Assigned roles", "users", TopologyNodeKind.Team, "people:team", yellow, yellowSoft),
                 Item("authentication", "Authentication methods", "users", TopologyNodeKind.Certificate, "common:certificate", yellow, yellowSoft),
@@ -33,10 +33,10 @@ internal static partial class TopologyVisualExamples {
                 Item("app-roles", "App roles", "applications", TopologyNodeKind.Team, "people:team", yellow, yellowSoft),
                 Item("certificates", "App certificates and secrets", "applications", TopologyNodeKind.Certificate, "common:certificate", yellow, yellowSoft),
                 Item("app-permissions", "Scopes and permissions", "applications", TopologyNodeKind.Service, "common:service", yellow, yellowSoft),
-                Item("devices", "Devices", "identity", TopologyNodeKind.Endpoint, "common:desktop", orange, orangeSoft, "endpoints").WithMetadata("mindmap.side", "left").WithMetadata("mindmap.order", "10"),
-                Item("security", "Protect and secure", "identity", TopologyNodeKind.Certificate, "common:certificate", blue, blueSoft, "controls").WithMetadata("mindmap.side", "left").WithMetadata("mindmap.order", "20"),
-                Item("monitoring", "Monitoring and health", "identity", TopologyNodeKind.Service, "common:service", teal, tealSoft, "signals").WithMetadata("mindmap.side", "left").WithMetadata("mindmap.order", "30"),
-                Item("governance", "Identity Governance", "identity", TopologyNodeKind.Team, "people:team", purple, purpleSoft, "lifecycle").WithMetadata("mindmap.side", "left").WithMetadata("mindmap.order", "40"),
+                Item("devices", "Devices", "identity", TopologyNodeKind.Endpoint, "common:desktop", orange, orangeSoft, "endpoints").Metadata("mindmap.side", "left").Metadata("mindmap.order", "10"),
+                Item("security", "Protect and secure", "identity", TopologyNodeKind.Certificate, "common:certificate", blue, blueSoft, "controls").Metadata("mindmap.side", "left").Metadata("mindmap.order", "20"),
+                Item("monitoring", "Monitoring and health", "identity", TopologyNodeKind.Service, "common:service", teal, tealSoft, "signals").Metadata("mindmap.side", "left").Metadata("mindmap.order", "30"),
+                Item("governance", "Identity Governance", "identity", TopologyNodeKind.Team, "people:team", purple, purpleSoft, "lifecycle").Metadata("mindmap.side", "left").Metadata("mindmap.order", "40"),
                 Item("hybrid", "Hybrid management", "devices", TopologyNodeKind.Network, "network:wan-link", orange, orangeSoft),
                 Item("joined-devices", "Joined devices", "devices", TopologyNodeKind.Endpoint, "common:desktop", orange, orangeSoft),
                 Item("linux-login", "Linux login", "devices", TopologyNodeKind.Endpoint, "common:laptop", orange, orangeSoft),

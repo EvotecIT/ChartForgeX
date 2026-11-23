@@ -17,8 +17,8 @@ internal sealed class ChartColorPresentationSet {
     internal ChartColorPresentationSet(Chart chart) {
         _chart = chart;
         var labels = chart.Options.Labels;
-        Map = new ChartColorPresentation(chart.Options.MapColorDimension, labels, labels.Value, chart.Options.ValueFormat, preparation: this);
-        Heatmap = new ChartColorPresentation(chart.Options.HeatmapColorDimension, labels, HeatmapName(chart), chart.Options.ValueFormat, preparation: this);
+        Map = new ChartColorPresentation(chart.Options.Map.ColorDimension, labels, labels.Value, chart.Options.ValueFormat, preparation: this);
+        Heatmap = new ChartColorPresentation(chart.Options.Heatmap.ColorDimension, labels, HeatmapName(chart), chart.Options.ValueFormat, preparation: this);
         var hierarchy = chart.Series.FirstOrDefault()?.Kind == ChartSeriesKind.Sunburst ? chart.Options.Sunburst.ColorDimension : chart.Options.Treemap.ColorDimension;
         Hierarchy = new ChartColorPresentation(hierarchy, labels, labels.Color, chart.Options.ValueFormat, preparation: this);
         Chord = new ChartColorPresentation(chart.Options.Chord.ColorDimension, labels, labels.Color,
@@ -34,7 +34,7 @@ internal sealed class ChartColorPresentationSet {
         : chart.Series.Count == 1 && !string.IsNullOrWhiteSpace(chart.Series[0].Name) ? chart.Series[0].Name : "Value";
     /// <summary>Shares the same captured map observations and formatting cache across legends, keys and marks.</summary>
     internal VisualMapCompiler.MapDataset MapDataset(int index) => _maps[index] ??= new VisualMapCompiler.MapDataset(_chart, index,
-        new ChartColorPresentation(_chart.Series[index].ColorDimension.HasOverrides ? _chart.Series[index].ColorDimension : _chart.Options.MapColorDimension,
+        new ChartColorPresentation(_chart.Series[index].ColorDimension.HasOverrides ? _chart.Series[index].ColorDimension : _chart.Options.Map.ColorDimension,
             _chart.Options.Labels, _chart.Options.Labels.Value, _chart.Options.ValueFormat, preparation: this));
     internal ChartColorPresentation Map { get; }
     internal ChartColorPresentation Heatmap { get; }

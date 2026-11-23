@@ -6,6 +6,7 @@ using ChartForgeX.Themes;
 using Microsoft.Playwright;
 using Xunit;
 using static ChartForgeX.Tests.InteractiveChartBrowser;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.Tests;
 
@@ -56,7 +57,7 @@ public sealed partial class StaticExportNativeFontBrowserTests {
         if (!Enabled) return;
         const string delayed="window.pendingOwnedLoads=[];const Actual=FontFace;window.FontFace=function(...args){const face=new Actual(...args),load=face.load.bind(face);face.load=()=>new Promise((resolve,reject)=>pendingOwnedLoads.push(()=>load().then(resolve,reject)));return face;};";
         var first=Model(760,ThemeMode.Light).ToInteractiveHtmlFragment(OwnedOptions);
-        var next=Model(760,ThemeMode.Light).WithTitle("A replacement drawing").ToInteractiveHtmlFragmentWithoutAssets(OwnedOptions);
+        var next=Model(760,ThemeMode.Light).Title("A replacement drawing").ToInteractiveHtmlFragmentWithoutAssets(OwnedOptions);
         await using var session=await OpenAsync(OwnedPage(first,delayed),784,760,waitForOwnedFonts:false);var page=session.Page;
         await page.WaitForFunctionAsync("()=>pendingOwnedLoads.length>0");
         await page.EvaluateAsync("html=>{window.oldOwnedSvg=document.querySelector('.cfx-stage svg');window.oldOwnedCount=pendingOwnedLoads.length;ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart')).update(html);}",next);

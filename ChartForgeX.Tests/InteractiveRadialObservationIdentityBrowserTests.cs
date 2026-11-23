@@ -66,9 +66,9 @@ public sealed class InteractiveRadialObservationIdentityBrowserTests {
         var series = new ChartSeries(new ChartSeriesId("parts"), reversed ? "Localized parts" : "Parts", kind, ordered);
         var ids = new[] { "north", "south", "east", "west" };
         for (var index = 0; index < ordered.Length; index++)
-            series.WithObservationId(index, new ChartObservationId(ids[(int)ordered[index].X - 1]));
-        return Chart.Create().WithSize(480, 360).WithTitle(reversed ? "Reordered peer" : "Source")
-            .WithXLabels("North", "South", "East", "West").WithLegend().AddSeries(series);
+            series.ObservationId(index, new ChartObservationId(ids[(int)ordered[index].X - 1]));
+        return Chart.Create().Size(480, 360).Title(reversed ? "Reordered peer" : "Source")
+            .XLabels("North", "South", "East", "West").Legend().AddSeries(series);
     }
 
     private static string Slice(int point) => "[data-cfx-role='radial-point'][data-cfx-point='" + point + "']";

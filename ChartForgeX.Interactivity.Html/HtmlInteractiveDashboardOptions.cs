@@ -1,11 +1,13 @@
 using System;
 using ChartForgeX.Interactivity;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Interactivity.Html;
 
 /// <summary>
 /// Holds settings used by the self-contained HTML dashboard interaction adapter.
 /// </summary>
+[Fluent]
 public sealed class HtmlInteractiveDashboardOptions {
     private string? _pageTitle;
     private string? _idScope;

@@ -13,9 +13,9 @@ namespace ChartForgeX.Tests;
 public sealed class V2RadialTests {
     [Fact]
     public void Donut_WeightsZeroValuesAndOffsets_PreserveGeometryAndIdentity() {
-        var chart = Donut(0, 75, 25).WithXLabels("Zero", "Pass", "Fail");
+        var chart = Donut(0, 75, 25).XLabels("Zero", "Pass", "Fail");
         var red = ChartColor.FromHex("#BB3311");
-        chart.Series[0].WithPointColor(1, red).WithPointSliceOffset(1, 0.2);
+        chart.Series[0].PointColor(1, red).PointSliceOffset(1, 0.2);
         var scene = Compile(chart);
         var slices = scene.Nodes.OfType<VisualSceneSlice>().ToArray();
         Assert.Equal(2, slices.Length);
@@ -23,7 +23,7 @@ public sealed class V2RadialTests {
         Assert.Equal(Math.PI * 1.5, slices[0].Sweep, 10);
         Assert.Equal(Math.PI * 0.5, slices[1].Sweep, 10);
         Assert.Equal(red, slices[0].Fill);
-        Assert.Equal(slices[0].Outer * chart.Options.DonutInnerRadiusRatio, slices[0].Inner, 10);
+        Assert.Equal(slices[0].Outer * chart.Options.Pie.InnerRadiusRatio, slices[0].Inner, 10);
         Assert.NotEqual(slices[1].Cx, slices[0].Cx);
         Assert.NotEqual(slices[1].Cy, slices[0].Cy);
         var metadata = scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "radial-point").ToArray();
@@ -37,12 +37,12 @@ public sealed class V2RadialTests {
     [InlineData(true)]
     public void SinglePositiveValue_ProducesAFullCircleOrRing(bool donut) {
         var chart = donut ? Donut(12) : Chart.Create().AddPie("Total", Points(12));
-        chart.WithDonutCenterLabel(false);
+        chart.Pie(p => p.ShowCenterLabel(false));
         var scene = Compile(chart);
         var slice = Assert.Single(scene.Nodes.OfType<VisualSceneSlice>());
         Assert.Equal(Math.PI * 2, slice.Sweep, 10);
         Assert.Equal(-Math.PI / 2, slice.Start, 10);
-        Assert.Equal(donut ? slice.Outer * chart.Options.DonutInnerRadiusRatio : 0, slice.Inner, 10);
+        Assert.Equal(donut ? slice.Outer * chart.Options.Pie.InnerRadiusRatio : 0, slice.Inner, 10);
         var svg = XDocument.Parse(VisualSceneSvgRenderer.Render(scene));
         var path = Assert.Single(svg.Descendants(), element => (string?)element.Attribute("data-cfx-role") == (donut ? "donut-slice" : "pie-slice"));
         Assert.Equal("evenodd", (string?)path.Attribute("fill-rule"));
@@ -69,10 +69,10 @@ public sealed class V2RadialTests {
 
     [Fact]
     public void Aggregation_IsIndependentOfLegacyThemeAndRetainsEveryContributingSource() {
-        var chart = Donut(1, 9, 2, 8, 3).WithXLabels("A", "B", "C", "D", "E");
-        chart.Options.MaximumPieSlices = 3;
+        var chart = Donut(1, 9, 2, 8, 3).XLabels("A", "B", "C", "D", "E");
+        chart.Options.Pie.MaxSlices = 3;
         var light = Compile(chart);
-        chart.WithTheme(VisualTheme.Graphite());
+        chart.Theme(VisualTheme.Graphite());
         var graphite = Compile(chart);
         var expected = new[] { "series-0-point-1", "series-0-point-3", "series-0-point-other" };
         Assert.Equal(expected, light.Nodes.OfType<VisualSceneSlice>().Select(slice => slice.Id));
@@ -88,14 +88,13 @@ public sealed class V2RadialTests {
     [InlineData(true)]
     public void AggregatedSliceOffset_LeavesSurvivingGeometryAndVerticalLabelsUnchanged(bool donut) {
         var chart = (donut ? Donut(9, 3, 1) : Chart.Create().AddPie("Total", Points(9, 3, 1)))
-            .WithXLabels("A", "B", "C").WithDataLabels().WithPieSliceLabelContent(ChartPieSliceLabelContent.Label)
-            .WithDonutCenterLabel(false);
-        chart.Options.MaximumPieSlices = 2;
-        chart.Options.DataLabelPlacement = ChartDataLabelPlacement.Above;
+            .XLabels("A", "B", "C").DataLabels().Pie(p => p.SliceLabelContent(ChartPieSliceLabelContent.Label).ShowCenterLabel(false));
+        chart.Options.Pie.MaxSlices = 2;
+        chart.Options.DataLabels.Placement = ChartDataLabelPlacement.Above;
         // Retain a real exploded slice; only the smaller slices become Other.
-        chart.Series[0].WithPointSliceOffset(0, .1);
+        chart.Series[0].PointSliceOffset(0, .1);
         var baseline = Compile(chart);
-        chart.Series[0].WithPointSliceOffset(2, .35); // The largest supported source offset is discarded into Other.
+        chart.Series[0].PointSliceOffset(2, .35); // The largest supported source offset is discarded into Other.
         var aggregatedOffset = Compile(chart);
 
         Assert.Contains(aggregatedOffset.Diagnostics, diagnostic => diagnostic.Code == "radial.aggregate-offsets");
@@ -115,10 +114,10 @@ public sealed class V2RadialTests {
 
     [Fact]
     public void ZeroValueSliceOffset_DoesNotShrinkPositiveSlices() {
-        var chart = Donut(9, 0, 3).WithDonutCenterLabel(false);
-        chart.Series[0].WithPointSliceOffset(0, .1);
+        var chart = Donut(9, 0, 3).Pie(p => p.ShowCenterLabel(false));
+        chart.Series[0].PointSliceOffset(0, .1);
         var baseline = Compile(chart);
-        chart.Series[0].WithPointSliceOffset(1, .35);
+        chart.Series[0].PointSliceOffset(1, .35);
         var zeroOffset = Compile(chart);
         Assert.Equal(VisualSceneSvgRenderer.Render(baseline, idPrefix: "zero-offset-proof"),
             VisualSceneSvgRenderer.Render(zeroOffset, idPrefix: "zero-offset-proof"));
@@ -129,10 +128,10 @@ public sealed class V2RadialTests {
     [Fact]
     public void Formatter_ReceivesRealAggregateValuesAndSourceSentinel() {
         var contexts = new List<ChartPieSliceLabelContext>();
-        var chart = Donut(6, 3, 1).WithDataLabels();
-        chart.Options.MaximumPieSlices = 2;
+        var chart = Donut(6, 3, 1).DataLabels();
+        chart.Options.Pie.MaxSlices = 2;
         chart.Options.ValueFormatter = value => value.ToString("0.0", CultureInfo.InvariantCulture) + " units";
-        chart.WithPieSliceLabelFormatter(value => { contexts.Add(value); return value.FormattedValue; });
+        chart.Pie(p => p.SliceLabelBy(value => { contexts.Add(value); return value.FormattedValue; }));
         Compile(chart);
         Assert.Equal(2, contexts.Count);
         var other = contexts.Single(value => value.PointIndex == -1);
@@ -144,7 +143,7 @@ public sealed class V2RadialTests {
 
     [Fact]
     public void LongCenterText_IsMeasuredWithinTheDonutHole() {
-        var chart = Donut(40, 60).WithDonutCenterText("A very long headline total with units", "A long descriptive caption");
+        var chart = Donut(40, 60).Pie(p => p.CenterValue("A very long headline total with units").CenterLabel("A long descriptive caption"));
         var scene = Compile(chart);
         var inner = scene.Nodes.OfType<VisualSceneSlice>().First().Inner;
         var lines = scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role is "donut-total-label" or "donut-title").ToArray();
@@ -161,9 +160,8 @@ public sealed class V2RadialTests {
         const string centerValue = "Complete total with all formatted units and additional contextual information";
         const string centerCaption = "Complete center caption explaining the total and its reporting period";
         var calls = 0;
-        var chart = Donut(40, 60).WithXLabels("A", "B").WithDataLabels().WithDonutCenterText(centerValue, centerCaption)
-            .WithPieSliceLabelFormatter(slice => { calls++; return prefix + slice.Label; });
-        chart.Options.DataLabelPlacement = ChartDataLabelPlacement.Inside;
+        var chart = Donut(40, 60).XLabels("A", "B").DataLabels().Pie(p => p.CenterValue(centerValue).CenterLabel(centerCaption).SliceLabelBy(slice => { calls++; return prefix + slice.Label; }));
+        chart.Options.DataLabels.Placement = ChartDataLabelPlacement.Inside;
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(240, 200), padding: 8),
             frame: new VisualFrame(showLegend: false)));
         Assert.Equal(2, calls);
@@ -189,8 +187,7 @@ public sealed class V2RadialTests {
         Assert.Equal(centerValue, Assert.Single(artifactSvg.Descendants().Attributes("data-cfx-center-value")).Value);
         Assert.Equal(centerCaption, Assert.Single(artifactSvg.Descendants().Attributes("data-cfx-center-caption")).Value);
         string snapshot = prepared.ToSvg();
-        chart.WithDonutCenterText("Changed after preparation", "Changed caption")
-            .WithPieSliceLabelFormatter(_ => throw new InvalidOperationException("Prepared export must not format again."));
+        chart.Pie(p => p.CenterValue("Changed after preparation").CenterLabel("Changed caption").SliceLabelBy(_ => throw new InvalidOperationException("Prepared export must not format again.")));
         Assert.Equal(snapshot, prepared.ToSvg());
         Assert.NotEmpty(artifact.ToPng());
         Assert.Equal(2, calls);
@@ -207,9 +204,9 @@ public sealed class V2RadialTests {
 
     [Fact]
     public void OutsideLabelOverflow_IsReportedAndKeptWithinAvailableHeight() {
-        var chart = Donut(1, 1, 1, 1, 1, 1, 1, 1).WithDataLabels().WithPieSliceLabelContent(ChartPieSliceLabelContent.Label);
-        chart.Options.MaximumPieSlices = 10;
-        chart.Options.DataLabelPlacement = ChartDataLabelPlacement.Right;
+        var chart = Donut(1, 1, 1, 1, 1, 1, 1, 1).DataLabels().Pie(p => p.SliceLabelContent(ChartPieSliceLabelContent.Label));
+        chart.Options.Pie.MaxSlices = 10;
+        chart.Options.DataLabels.Placement = ChartDataLabelPlacement.Right;
         var scene = Compile(chart, new ChartRect(0, 0, 500, 80));
         Assert.Contains(scene.Diagnostics, diagnostic => diagnostic.Code == "radial.label-overflow");
         var labels = scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "data-label").OrderBy(text => text.Baseline).ToArray();
@@ -227,9 +224,9 @@ public sealed class V2RadialTests {
     [InlineData(true, ChartDataLabelPlacement.Below)]
     public void VerticalLabels_EqualSlicesHaveDistinctMeasuredSvgAndNativePositions(bool donut, ChartDataLabelPlacement placement) {
         var chart = (donut ? Donut(1, 1, 1, 1) : Chart.Create().AddPie("Total", Points(1, 1, 1, 1)))
-            .WithXLabels("A", "B", "C", "D").WithDataLabels()
-            .WithPieSliceLabelContent(ChartPieSliceLabelContent.Label).WithDonutCenterLabel(false);
-        chart.Options.DataLabelPlacement = placement;
+            .XLabels("A", "B", "C", "D").DataLabels()
+            .Pie(p => p.SliceLabelContent(ChartPieSliceLabelContent.Label).ShowCenterLabel(false));
+        chart.Options.DataLabels.Placement = placement;
         var scene = Compile(chart);
         var labels = scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "data-label").ToArray();
         Assert.Equal(new[] { "A", "B", "C", "D" }, labels.Select(label => Assert.Single(label.Text.Lines).Text));
@@ -271,9 +268,9 @@ public sealed class V2RadialTests {
     public void VerticalLabelBand_InsufficientHeightReportsOmission(ChartDataLabelPlacement placement) {
         const string prefix = "Complete formatter result omitted from the bounded label band: ";
         var calls = 0;
-        var chart = Donut(1, 1, 1, 1).WithXLabels("A", "B", "C", "D").WithDataLabels()
-            .WithPieSliceLabelFormatter(slice => { calls++; return prefix + slice.Label; }).WithDonutCenterLabel(false);
-        chart.Options.DataLabelPlacement = placement;
+        var chart = Donut(1, 1, 1, 1).XLabels("A", "B", "C", "D").DataLabels()
+            .Pie(p => p.SliceLabelBy(slice => { calls++; return prefix + slice.Label; }).ShowCenterLabel(false));
+        chart.Options.DataLabels.Placement = placement;
         // Ordinary typography retains omission when its line cannot fit the band.
         chart.Options.DataLabelStyle.FontSize = 18;
         var scene = Compile(chart, new ChartRect(0, 0, 200, 100));
@@ -299,11 +296,9 @@ public sealed class V2RadialTests {
     public void VerticalLeaders_BypassUnrelatedSlicesAndEndAtLabelEdges(ChartDataLabelPlacement placement, ChartDataLabelConnectorStyle style) {
         foreach (var donut in new[] { false, true }) {
             var chart = (donut ? Donut(1, 1, 1, 1) : Chart.Create().AddPie("Total", Points(1, 1, 1, 1)))
-                .WithXLabels("A", "B", "C", "D").WithDataLabels().WithPieSliceLabelContent(ChartPieSliceLabelContent.Label)
-                .WithDonutCenterLabel(false).WithDataLabelConnectorStyle(style).WithDataLabelConnectorOpacity(1)
-                .WithDataLabelConnectorStrokeWidth(2);
-            chart.Options.DataLabelPlacement = placement;
-            chart.Series[0].WithPointSliceOffset(0, .25).WithPointSliceOffset(2, .15);
+                .XLabels("A", "B", "C", "D").DataLabels().Pie(p => p.SliceLabelContent(ChartPieSliceLabelContent.Label).ShowCenterLabel(false)).DataLabels(d => d.ConnectorStyle(style).ConnectorOpacity(1).ConnectorStrokeWidth(2));
+            chart.Options.DataLabels.Placement = placement;
+            chart.Series[0].PointSliceOffset(0, .25).PointSliceOffset(2, .15);
             var scene = Compile(chart);
             var slices = scene.Nodes.OfType<VisualSceneSlice>().ToArray();
             var leaders = scene.Nodes.OfType<VisualScenePath>().Where(path => path.Role == "data-label-connector").ToArray();
@@ -335,9 +330,8 @@ public sealed class V2RadialTests {
 
     [Fact]
     public void VerticalLeader_InsufficientClearanceOmitsLabelAndReportsOverflow() {
-        var chart = Donut(1).WithXLabels("A").WithDataLabels().WithPieSliceLabelContent(ChartPieSliceLabelContent.Label)
-            .WithDonutCenterLabel(false).WithDataLabelConnectorStrokeWidth(8);
-        chart.Options.DataLabelPlacement = ChartDataLabelPlacement.Above;
+        var chart = Donut(1).XLabels("A").DataLabels().Pie(p => p.SliceLabelContent(ChartPieSliceLabelContent.Label).ShowCenterLabel(false)).DataLabels(d => d.ConnectorStrokeWidth(8));
+        chart.Options.DataLabels.Placement = ChartDataLabelPlacement.Above;
         var theme = VisualTheme.Graphite();
         var compactTheme = new VisualTheme(theme.Resolve(ThemeMode.Light).ToTokens(), theme.Resolve(ThemeMode.Dark).ToTokens(), spacing: 6);
         var scene = Compile(chart, context: new VisualRenderContext(theme: compactTheme));

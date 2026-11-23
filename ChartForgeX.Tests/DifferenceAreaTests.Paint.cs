@@ -9,9 +9,9 @@ namespace ChartForgeX.Tests;
 public sealed partial class DifferenceAreaTests {
     [Fact]
     public void DirectionPaintMultipliesAlphaOnceAndKeepsOnePatternedLegendTarget() {
-        var chart = Model(new(0, 8, 2), new(1, 2, 5)).WithLegend();
+        var chart = Model(new(0, 8, 2), new(1, 2, 5)).Legend();
         var series = chart.Series[0];
-        series.WithStrokeWidth(1).ConfigureMarkers(markers => markers.Enabled = false);
+        series.StrokeWidth(1).Markers(markers => markers.Enabled = false);
         series.DifferenceArea.PositiveFill = Red.WithAlpha(128);
         series.DifferenceArea.NegativeFillOpacity = 0;
         var plain = Prepare(chart);
@@ -48,9 +48,9 @@ public sealed partial class DifferenceAreaTests {
     [InlineData(ThemeMode.Light)]
     [InlineData(ThemeMode.Dark)]
     public void BoundariesKeepDistinctColoursAndTheLegendNamesBothObservations(ThemeMode mode) {
-        var chart = Chart.Create().WithSize(600, 360).WithHeader(false).WithTheme(VisualTheme.Graphite(), mode)
+        var chart = Chart.Create().Size(600, 360).ShowHeader(false).Theme(VisualTheme.Graphite()).ThemeMode(mode)
             .AddDifferenceArea("Requests", new[] { new ChartDifferencePoint(0, 8, 2), new ChartDifferencePoint(1, 2, 5), new ChartDifferencePoint(2, 6, 4) });
-        chart.Series[0].ConfigureDifferenceArea(options => { options.FirstName = "Actual"; options.SecondName = "Forecast"; });
+        chart.Series[0].DifferenceArea(options => { options.FirstName = "Actual"; options.SecondName = "Forecast"; });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var first = Boundary(prepared, "difference-first").Stroke!.Value; var second = Boundary(prepared, "difference-second").Stroke!.Value;
         Assert.NotEqual((first.R, first.G, first.B), (second.R, second.G, second.B));
@@ -66,7 +66,7 @@ public sealed partial class DifferenceAreaTests {
     [Fact]
     public void AutomaticSecondBoundaryUsesAnUnoccupiedPaletteWithoutRecoloringOrdinarySeries() {
         var green = ChartColor.FromHex("#189060");
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite().WithPalette(Red, Blue, green))
+        var chart = Chart.Create().Theme(VisualTheme.Graphite().WithPalette(Red, Blue, green))
             .AddDifferenceArea("Comparison", new[] { new ChartDifferencePoint(0, 8, 2), new ChartDifferencePoint(1, 2, 5) })
             .AddLine("Other", new[] { new ChartPoint(0, 3), new ChartPoint(1, 4) });
         var prepared = Prepare(chart);
@@ -81,7 +81,7 @@ public sealed partial class DifferenceAreaTests {
     [InlineData(false)]
     [InlineData(true)]
     public void ExhaustedPalettesDistinguishTheSecondBoundaryAndItsLegendWithDashes(bool twoColors) {
-        var chart = Chart.Create().WithLegend().WithTheme(VisualTheme.Graphite().WithPalette(twoColors ? new[] { Red, Blue } : new[] { Red }))
+        var chart = Chart.Create().Legend().Theme(VisualTheme.Graphite().WithPalette(twoColors ? new[] { Red, Blue } : new[] { Red }))
             .AddDifferenceArea("Comparison", new[] { new ChartDifferencePoint(0, 8, 2), new ChartDifferencePoint(1, 2, 5) })
             .AddLine("Other", new[] { new ChartPoint(0, 3), new ChartPoint(1, 4) });
         var document = System.Xml.Linq.XDocument.Parse(Prepare(chart).ToSvg());
@@ -97,10 +97,10 @@ public sealed partial class DifferenceAreaTests {
     [InlineData(true)]
     public void DuplicateRgbPaletteSlotsRetainTheSelectedSecondBoundaryToken(bool explicitFirst) {
         var palette = new[] { Red, Blue, Red };
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite().WithPalette(palette))
+        var chart = Chart.Create().Theme(VisualTheme.Graphite().WithPalette(palette))
             .AddLine("Other", new[] { new ChartPoint(0, 3), new ChartPoint(1, 4) }, ChartColor.FromHex("#606060"))
             .AddDifferenceArea("Comparison", new[] { new ChartDifferencePoint(0, 8, 2), new ChartDifferencePoint(1, 2, 5) });
-        if (explicitFirst) chart.Series[1].WithColor(Blue);
+        if (explicitFirst) chart.Series[1].Color(Blue);
         var variables = new VisualDesignTokens { Palette = palette }.ToSvgColorVariables();
         var svg = Prepare(chart).ToSvg(new VisualSvgOptions(colorVariables: variables));
         var second = System.Xml.Linq.XDocument.Parse(svg).Descendants().Single(node => (string?)node.Attribute("data-cfx-role") == "difference-second");
@@ -113,7 +113,7 @@ public sealed partial class DifferenceAreaTests {
     public void AutomaticSecondBoundariesReserveOtherPairsColors(bool authoredSecond) {
         var green = ChartColor.FromHex("#189060"); var purple = ChartColor.FromHex("#8450C0");
         var pairs = new[] { new ChartDifferencePoint(0, 8, 2), new ChartDifferencePoint(1, 2, 5) };
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite().WithPalette(Red, Blue, green, purple))
+        var chart = Chart.Create().Theme(VisualTheme.Graphite().WithPalette(Red, Blue, green, purple))
             .AddDifferenceArea("North", pairs).AddDifferenceArea("South", pairs);
         if (authoredSecond) chart.Series[0].DifferenceArea.NegativeFill = green;
         var prepared = Prepare(chart);
@@ -126,7 +126,7 @@ public sealed partial class DifferenceAreaTests {
     [Fact]
     public void MultipleDifferenceLegendsIncludeTheirOwningSeriesNames() {
         var pairs = new[] { new ChartDifferencePoint(0, 8, 2), new ChartDifferencePoint(1, 2, 5) };
-        var chart = Chart.Create().WithLegend().AddDifferenceArea("North", pairs).AddDifferenceArea("South", pairs);
+        var chart = Chart.Create().Legend().AddDifferenceArea("North", pairs).AddDifferenceArea("South", pairs);
         var svg = Prepare(chart).ToSvg();
         foreach (var series in new[] { "North", "South" }) foreach (var boundary in new[] { "First", "Second" })
             Assert.Contains(">" + series + ": " + boundary + "<", svg);

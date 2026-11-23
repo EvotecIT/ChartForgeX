@@ -36,8 +36,8 @@ public sealed class TopologyMixedCaptionLineMetricsTests : IDisposable {
             new TextContentRun("H", tallestFirst ? emphasis : TextInlineEmphasis.Normal),
             new TextContentRun("H", tallestFirst ? TextInlineEmphasis.Normal : emphasis)
         });
-        var chart = TopologyChart.Create().WithViewport(420, 250)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(Family));
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(420, 250))
+            .Theme(VisualTheme.Graphite().WithFontFamily(Family));
         chart.Nodes.Add(new TopologyNode { Id = "caption", LabelContent = content, Shape = shape,
             X = 40, Y = 50, Width = 320, Height = 140, ShowStatusBadge = false,
             PreserveDisplayModeSize = true });
@@ -65,9 +65,9 @@ public sealed class TopologyMixedCaptionLineMetricsTests : IDisposable {
         TopologyNodeDisplayMode mode, bool structured) {
         FontRegistry.Register(Family, OpenTypeTestFonts.NameKeyed());
         FontRegistry.Register(Family, WithAscent(OpenTypeTestFonts.NameKeyed(italic: true), 1100), italic: true);
-        var chart = TopologyChart.Create().WithViewport(420, 300)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(Family))
-            .WithRenderOptions(new TopologyRenderOptions {
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(420, 300))
+            .Theme(VisualTheme.Graphite().WithFontFamily(Family))
+            .DefaultRenderOptions(new TopologyRenderOptions {
                 MaxNodeLabelLines = 1, IncludeIconLabels = true,
                 TextMeasurementMode = mode == TopologyNodeDisplayMode.Icon
                     ? TextMeasurementMode.InstalledFonts : TextMeasurementMode.PortableEstimate

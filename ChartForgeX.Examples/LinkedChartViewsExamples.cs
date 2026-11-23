@@ -112,12 +112,12 @@ public static class LinkedChartViewsExamples {
             var series = ChartSeries.CreateLine(new ChartSeriesId(id), name,
                 values.Select((value, index) => new ChartPoint(FirstDay.AddDays(index), value)));
             for (var index = 0; index < values.Length; index++)
-                series.WithObservationId(index, new ChartObservationId(id + "-" + index));
+                series.ObservationId(index, new ChartObservationId(id + "-" + index));
             return series;
         }
-        return Frame(dark).WithTitle("Requests over time")
-            .WithSubtitle("Choose Brush, then drag across the dates to update the totals")
-            .WithXAxisTimeScale(TimeZoneInfo.Utc, showTimeZone: true, label: "UTC")
+        return Frame(dark).Title("Requests over time")
+            .Subtitle("Choose Brush, then drag across the dates to update the totals")
+            .XAxis(x => x.TimeScale(timeZone: TimeZoneInfo.Utc, showTimeZone: true, label: "UTC"))
             .AddSeries(Series("api", "API", Api)).AddSeries(Series("worker", "Worker", Worker));
     }
 
@@ -126,15 +126,15 @@ public static class LinkedChartViewsExamples {
         var worker = Worker.Skip(first).Take(last - first + 1).Sum();
         var series = ChartSeries.CreateBar(new ChartSeriesId("totals"), "Requests",
             new[] { new ChartPoint(1, api), new ChartPoint(2, worker) })
-            .WithObservationId(0, new ChartObservationId("api-total"))
-            .WithObservationId(1, new ChartObservationId("worker-total"));
-        return Frame(dark).WithTitle("Requests by service")
-            .WithSubtitle("Select a service to highlight its readings above; Escape clears the selection")
-            .WithXLabels("API", "Worker").AddSeries(series);
+            .ObservationId(0, new ChartObservationId("api-total"))
+            .ObservationId(1, new ChartObservationId("worker-total"));
+        return Frame(dark).Title("Requests by service")
+            .Subtitle("Select a service to highlight its readings above; Escape clears the selection")
+            .XLabels("API", "Worker").AddSeries(series);
     }
 
-    private static Chart Frame(bool dark) => Chart.Create().WithSize(800, 360)
-        .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-        .WithFontFamily(ExampleTypography.FontFamily)
-        .WithYAxis("Requests").WithDataLabels(false);
+    private static Chart Frame(bool dark) => Chart.Create().Size(800, 360)
+        .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+        .FontFamily(ExampleTypography.FontFamily)
+        .YAxis(y => y.Title("Requests")).DataLabels(false);
 }

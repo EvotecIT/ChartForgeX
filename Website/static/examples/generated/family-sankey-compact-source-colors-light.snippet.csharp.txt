@@ -29,11 +29,11 @@ var requests = ChartSeries.CreateSankey(new ChartSeriesId("request-flows"), "Req
     new ChartFlowLink("north-completed", "north-support", "completed", 72), new ChartFlowLink("south-completed", "south-support", "completed", 28),
     new ChartFlowLink("received-review", "received", "review", 5), new ChartFlowLink("imported-completed", "imported", "completed", 10)
 });
-requests.WithNodeState("north-support", ChartSeriesState.Warning).WithPointColor(0, ChartColor.FromHex("#7356BD"))
-    .WithFlowStyle("north-priority", new ChartFlowStyle(fill: ChartColor.FromHex("#AF6B24"), fillOpacity: .7,
+requests.NodeState("north-support", ChartSeriesState.Warning).PointColor(0, ChartColor.FromHex("#7356BD"))
+    .FlowStyle("north-priority", new ChartFlowStyle(fill: ChartColor.FromHex("#AF6B24"), fillOpacity: .7,
         fillPattern: ChartFillPattern.DiagonalForward, stroke: ChartColor.FromHex("#764415"), strokeWidth: 1))
-    .WithFlowState("north-priority", ChartSeriesState.Warning);
-var chart = Chart.Create().AddSeries(requests).ConfigureSankey(options => {
+    .FlowState("north-priority", ChartSeriesState.Warning);
+var chart = Chart.Create().AddSeries(requests).Sankey(options => {
     options.Alignment = ChartSankeyAlignment.Center;
     options.VerticalAlignment = ChartSankeyVerticalAlignment.Top;
     options.NodeOrder = ChartSankeyNodeOrder.LabelAscending;
@@ -42,7 +42,7 @@ var chart = Chart.Create().AddSeries(requests).ConfigureSankey(options => {
     options.NodeWidth = 16; options.NodeGap = 12; options.NodeCornerRadius = 1;
     options.RibbonFill = ChartColor.FromHex("#607DAA"); options.RibbonOpacity = .45;
 });
-chart.ConfigureSankey(options => {
+chart.Sankey(options => {
     options.RibbonFill = null; // Let the selected endpoint or measurement policy supply ribbon paint.
     options.FlowColorMode = ChartSankeyFlowColorMode.Source;
 });

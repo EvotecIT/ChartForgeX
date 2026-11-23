@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ChartForgeX.VisualBlocks;
 using ChartForgeX.Core;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.VisualArtifacts;
 
@@ -86,6 +87,7 @@ public enum FlowArtifactConnectorKind {
 /// <summary>
 /// Represents a product-neutral workflow or process flow artifact.
 /// </summary>
+[Fluent]
 public sealed partial class FlowArtifact {
     private string _id = string.Empty;
     private string _title = string.Empty;
@@ -147,23 +149,6 @@ public sealed partial class FlowArtifact {
     /// <summary>Creates a new flow artifact.</summary>
     public static FlowArtifact Create(string id) => new() { Id = id };
 
-    /// <summary>Sets the flow title.</summary>
-    public FlowArtifact WithTitle(string title) { Title = title ?? throw new ArgumentNullException(nameof(title)); return this; }
-
-    /// <summary>Sets the flow subtitle.</summary>
-    public FlowArtifact WithSubtitle(string subtitle) { Subtitle = subtitle ?? throw new ArgumentNullException(nameof(subtitle)); return this; }
-
-    /// <summary>Sets the static preview size.</summary>
-    public FlowArtifact WithSize(double width, double height, double padding = 24) {
-        ValidatePositive(width, nameof(width));
-        ValidatePositive(height, nameof(height));
-        ValidateNonNegative(padding, nameof(padding));
-        Width = width;
-        Height = height;
-        Padding = padding;
-        return this;
-    }
-
     /// <summary>Adds a flow lane.</summary>
     public FlowArtifact AddLane(string id, string label, Tone status = default, string? color = null) {
         if (ContainsLane(id)) throw new ArgumentException("Flow lane ids must be unique.", nameof(id));
@@ -180,7 +165,7 @@ public sealed partial class FlowArtifact {
 
     /// <summary>Replaces an existing step with an independently configured copy.</summary>
     /// <remarks>Callback exceptions preserve the owner. Previous values and retained callback values remain independent of the installed result.</remarks>
-    public FlowArtifact ConfigureStep(string id, Action<FlowArtifactStep> configure) {
+    public FlowArtifact UpdateStep(string id, Action<FlowArtifactStep> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         var source = FindStep(id);
         var index = _steps.IndexOf(source);
@@ -199,7 +184,7 @@ public sealed partial class FlowArtifact {
 
     /// <summary>Replaces an existing connector with an independently configured copy.</summary>
     /// <remarks>Callback exceptions preserve the owner. Previous values and retained callback values remain independent of the installed result.</remarks>
-    public FlowArtifact ConfigureConnector(int connectorIndex, Action<FlowArtifactConnector> configure) {
+    public FlowArtifact UpdateConnector(int connectorIndex, Action<FlowArtifactConnector> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         if (connectorIndex < 0 || connectorIndex >= _connectors.Count) throw new ArgumentOutOfRangeException(nameof(connectorIndex), connectorIndex, "Connector index must reference an existing flow connector.");
         _connectors[connectorIndex] = ChartOptionConfiguration.Configure(_connectors[connectorIndex], configure, connector => connector.Clone());

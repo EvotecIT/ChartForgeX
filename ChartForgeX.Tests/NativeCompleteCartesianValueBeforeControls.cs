@@ -28,11 +28,11 @@ public sealed class NativeCompleteCartesianValueBeforeControls {
     private static Chart Model(string variant, double value) {
         var kind = variant == "bar-labels" ? ChartSeriesKind.Bar : variant == "area" ? ChartSeriesKind.Area : variant == "stacked-area" ? ChartSeriesKind.StackedArea : ChartSeriesKind.Line;
         var series = new ChartSeries(new ChartSeriesId("delivery"), "Delivery", kind, new[] { new ChartPoint(0, 20), new ChartPoint(1, value), new ChartPoint(2, 40) })
-            .WithObservationIds(new[] { new ChartObservationId("earlier"), new ChartObservationId("current"), new ChartObservationId("later") });
-        var chart = Chart.Create().WithSize(760, 420).WithFontFamily(BrowserProofFonts.Family).WithDataLabels(true).WithLegend(false).AddSeries(series);
-        chart.ConfigureXAxis(axis => { axis.Minimum = -.5; axis.Maximum = 2.5; }); chart.ConfigureYAxis(axis => { axis.Minimum = 0; axis.Maximum = 160; });
+            .ObservationIds(new[] { new ChartObservationId("earlier"), new ChartObservationId("current"), new ChartObservationId("later") });
+        var chart = Chart.Create().Size(760, 420).FontFamily(BrowserProofFonts.Family).DataLabels(true).Legend(false).AddSeries(series);
+        chart.XAxis(axis => { axis.Min = -.5; axis.Max = 2.5; }); chart.YAxis(axis => { axis.Min = 0; axis.Max = 160; });
         if (kind == ChartSeriesKind.StackedArea) chart.AddSeries(new ChartSeries(new ChartSeriesId("comparison"), "Comparison", kind, new[] { new ChartPoint(0, 10), new ChartPoint(1, 15), new ChartPoint(2, 20) })
-            .WithObservationIds(new[] { new ChartObservationId("comparison-a"), new ChartObservationId("comparison-b"), new ChartObservationId("comparison-c") }));
+            .ObservationIds(new[] { new ChartObservationId("comparison-a"), new ChartObservationId("comparison-b"), new ChartObservationId("comparison-c") }));
         return chart;
     }
 }

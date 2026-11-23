@@ -8,7 +8,7 @@ using ChartForgeX.VisualArtifacts;
 internal static partial class Program {
     private static void RetainedAppearanceContracts() {
         PackageAssertions.Owner(typeof(VisualArtifactInterchangeCapturedEffect), "ChartForgeX");
-        var model = SequenceArtifact.Create("package-retained-appearance").WithSize(320, 320)
+        var model = SequenceArtifact.Create("package-retained-appearance").Width(320).Height(320)
             .AddParticipant("review", "Review").AddParticipant("archive", "Archive")
             .AddMessage("review", "archive", "Save");
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(320, 320), 20));

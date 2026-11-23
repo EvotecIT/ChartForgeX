@@ -26,7 +26,7 @@ string Name(int index) => Categories[index].Name;
 var points = Enumerable.Range(0, count).Where(index => true)
     .Select(index => new ChartPoint(index + 1, Count(index)));
 var findings = new ChartSeries(new ChartSeriesId("findings"), "Findings", ChartSeriesKind.Donut, points);
-var chart = Chart.Create().WithXLabels(Enumerable.Range(0, count).Select(Name).ToArray()).AddSeries(findings);
+var chart = Chart.Create().XLabels(Enumerable.Range(0, count).Select(Name).ToArray()).AddSeries(findings);
 
 #region Output
 var context = new VisualRenderContext(

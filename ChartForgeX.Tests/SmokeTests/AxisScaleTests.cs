@@ -12,24 +12,24 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void AxisObjectsCentralizeBoundsTicksAndScales() {
         var chart = Chart.Create()
-            .ConfigureXAxis(axis => {
-                axis.WithBounds(1, 1000).WithScale(ChartScaleKind.Logarithmic);
+            .XAxis(axis => {
+                axis.Bounds(1, 1000).Scale(ChartScaleKind.Logarithmic);
                 axis.TickCount = 5;
             })
-            .ConfigureYAxis(axis => axis.WithBounds(-10, 10).WithScale(ChartScaleKind.SymmetricLogarithmic))
+            .YAxis(axis => axis.Bounds(-10, 10).Scale(ChartScaleKind.SymmetricLogarithmic))
             .AddLine("Values", new[] { new ChartPoint(1, -10), new ChartPoint(10, 0), new ChartPoint(1000, 10) });
 
-        Assert(chart.Options.XAxisMinimum == 1 && chart.Options.XAxisMaximum == 1000, "Legacy bounds should delegate to the shared x-axis object during migration.");
+        Assert(chart.Options.XAxis.Min == 1 && chart.Options.XAxis.Max == 1000, "Legacy bounds should delegate to the shared x-axis object during migration.");
         Assert(chart.Options.XAxis.Scale == ChartScaleKind.Logarithmic, "The x-axis should own its mathematical scale.");
         Assert(chart.Options.YAxis.Scale == ChartScaleKind.SymmetricLogarithmic, "The y-axis should own its mathematical scale.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithXAxisScale((ChartScaleKind)4), "Unimplemented category scale values should be rejected instead of silently rendering as linear.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithXAxisScale((ChartScaleKind)5), "Unimplemented band scale values should be rejected instead of silently rendering as linear.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().XAxis(x => x.Scale((ChartScaleKind)4)), "Unimplemented category scale values should be rejected instead of silently rendering as linear.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().XAxis(x => x.Scale((ChartScaleKind)5)), "Unimplemented band scale values should be rejected instead of silently rendering as linear.");
     }
 
     private static void LogarithmicAxesRenderWithSvgPngParity() {
         var chart = Chart.Create()
-            .WithSize(560, 340)
-            .WithYAxisScale(ChartScaleKind.Logarithmic)
+            .Size(560, 340)
+            .YAxis(y => y.Scale(ChartScaleKind.Logarithmic))
             .AddLine("Orders", new[] { new ChartPoint(1, 1), new ChartPoint(2, 10), new ChartPoint(3, 100), new ChartPoint(4, 1000) });
 
         var svg = chart.ToSvg();
@@ -37,25 +37,25 @@ internal static partial class SmokeTests {
         Assert(svg.Contains(">10</text>", StringComparison.Ordinal) && svg.Contains(">100</text>", StringComparison.Ordinal), "Logarithmic SVG axes should render power-of-ten ticks.");
         Assert(png.Length > 200 && png[0] == 137 && png[1] == 80, "Logarithmic axes should render through the PNG path.");
 
-        var pie = Chart.Create().WithYAxisScale(ChartScaleKind.Logarithmic).AddPie("Share", new[] { new ChartPoint(0, 70), new ChartPoint(1, 30) });
+        var pie = Chart.Create().YAxis(y => y.Scale(ChartScaleKind.Logarithmic)).AddPie("Share", new[] { new ChartPoint(0, 70), new ChartPoint(1, 30) });
         Assert(pie.ToSvg().Contains("data-cfx-role=\"pie-slice\"", StringComparison.Ordinal), "Standalone SVG charts should bypass cartesian logarithmic-axis setup.");
         Assert(pie.ToPng().Length > 200, "Standalone logarithmic-axis options should remain renderer-neutral.");
 
-        var gauge = Chart.Create().WithYAxisScale(ChartScaleKind.Logarithmic).AddGauge("Score", 87);
+        var gauge = Chart.Create().YAxis(y => y.Scale(ChartScaleKind.Logarithmic)).AddGauge("Score", 87);
         Assert(gauge.ToSvg().Contains("data-cfx-role=\"gauge\"", StringComparison.Ordinal), "Gauge SVG rendering should bypass unused cartesian logarithmic-axis setup.");
         Assert(gauge.ToPng().Length > 200, "Gauge logarithmic-axis options should remain renderer-neutral.");
 
         var secondaryOnly = Chart.Create()
-            .WithYAxisScale(ChartScaleKind.Logarithmic)
-            .WithSecondaryYAxis("Rate")
+            .YAxis(y => y.Scale(ChartScaleKind.Logarithmic))
+            .SecondaryYAxis(s => s.Title("Rate"))
             .AddLine("Rate", new[] { new ChartPoint(1, 20), new ChartPoint(2, 40) });
-        secondaryOnly.Series[0].UseSecondaryValueAxis();
+        secondaryOnly.Series[0].SecondaryAxis();
         Assert(secondaryOnly.ToSvg().Contains(">Rate</text>", StringComparison.Ordinal), "Secondary-only charts should seed an empty logarithmic primary domain with valid positive bounds.");
         Assert(secondaryOnly.ToPng().Length > 200, "Empty primary logarithmic domains should preserve SVG and PNG rendering parity.");
 
         var radar = Chart.Create()
-            .WithSize(560, 340)
-            .WithYAxisScale(ChartScaleKind.Logarithmic)
+            .Size(560, 340)
+            .YAxis(y => y.Scale(ChartScaleKind.Logarithmic))
             .AddRadar("Magnitude", new[] { new ChartPoint(0, 1), new ChartPoint(1, 10), new ChartPoint(2, 1000) });
         var radarPrepared = PreparedFamily(radar);
         var spoke = radarPrepared.Scene.Nodes.OfType<VisualSceneLine>().First(line => line.Role == "radar-spoke");
@@ -69,24 +69,24 @@ internal static partial class SmokeTests {
 
     private static void LogarithmicAxesRejectNonPositiveData() {
         var chart = Chart.Create()
-            .WithYAxisScale(ChartScaleKind.Logarithmic)
+            .YAxis(y => y.Scale(ChartScaleKind.Logarithmic))
             .AddLine("Invalid", new[] { new ChartPoint(1, 0), new ChartPoint(2, 10) });
 
         AssertThrows<InvalidOperationException>(() => chart.ToSvg(), "Logarithmic axes should reject zero and negative values instead of producing invalid geometry.");
         AssertThrows<InvalidOperationException>(() => chart.ToPng(), "SVG and PNG should enforce the same logarithmic data contract.");
 
         var radar = Chart.Create()
-            .WithYAxisScale(ChartScaleKind.Logarithmic)
+            .YAxis(y => y.Scale(ChartScaleKind.Logarithmic))
             .AddRadar("Invalid", new[] { new ChartPoint(0, 0), new ChartPoint(1, 10), new ChartPoint(2, 100) });
         AssertThrows<InvalidOperationException>(() => radar.ToSvg(), "Logarithmic radar axes should reject non-positive values in SVG output.");
         AssertThrows<InvalidOperationException>(() => radar.ToPng(), "Logarithmic radar axes should reject non-positive values in PNG output.");
     }
 
     private static void LogarithmicBarsKeepPositiveBaselinesAndPadding() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite())
-            .WithSize(420, 260)
-            .WithXAxisScale(ChartScaleKind.Logarithmic)
-            .WithYAxisScale(ChartScaleKind.Logarithmic)
+        var chart = Chart.Create().Theme(VisualTheme.Graphite())
+            .Size(420, 260)
+            .XAxis(x => x.Scale(ChartScaleKind.Logarithmic))
+            .YAxis(y => y.Scale(ChartScaleKind.Logarithmic))
             .AddBar("Orders", new[] { new ChartPoint(0.1, 10) });
 
         var svg = chart.ToSvg();
@@ -96,10 +96,10 @@ internal static partial class SmokeTests {
         var bar = System.Xml.Linq.XDocument.Parse(svg).Descendants().First(element => (string?)element.Attribute("data-cfx-role") == "bar");
         Assert(SvgMarkGeometry.Bounds(bar).Height > 1, "The smallest logarithmic bar should retain visible height above a positive baseline.");
 
-        var horizontal = Chart.Create().WithTheme(VisualTheme.Graphite())
-            .WithSize(420, 260)
-            .WithXAxisScale(ChartScaleKind.Logarithmic)
-            .WithYAxisScale(ChartScaleKind.Logarithmic)
+        var horizontal = Chart.Create().Theme(VisualTheme.Graphite())
+            .Size(420, 260)
+            .XAxis(x => x.Scale(ChartScaleKind.Logarithmic))
+            .YAxis(y => y.Scale(ChartScaleKind.Logarithmic))
             .AddHorizontalBar("Orders", new[] {
                 new ChartPoint(0, 10),
                 new ChartPoint(1, 100)
@@ -111,18 +111,18 @@ internal static partial class SmokeTests {
         var horizontalBar = System.Xml.Linq.XDocument.Parse(horizontalSvg).Descendants().First(element => (string?)element.Attribute("data-cfx-role") == "horizontal-bar");
         Assert(SvgMarkGeometry.Bounds(horizontalBar).Width > 1, "The smallest horizontal logarithmic bar should retain visible width above a positive baseline.");
 
-        var stackedBars = Chart.Create().WithTheme(VisualTheme.Graphite())
-            .WithSize(420, 260)
-            .WithYAxisScale(ChartScaleKind.Logarithmic)
-            .WithStackedBars()
+        var stackedBars = Chart.Create().Theme(VisualTheme.Graphite())
+            .Size(420, 260)
+            .YAxis(y => y.Scale(ChartScaleKind.Logarithmic))
+            .Bars(b => b.Stacked())
             .AddBar("Base", new[] { new ChartPoint(1, 10), new ChartPoint(2, 20) })
             .AddBar("Top", new[] { new ChartPoint(1, 30), new ChartPoint(2, 40) });
         Assert(CountOccurrences(stackedBars.ToSvg(), "data-cfx-role=\"bar\"") == 4, "Stacked logarithmic bars should map their first zero base to the shared positive baseline.");
         Assert(stackedBars.ToPng().Length > 200, "Stacked logarithmic bars should preserve SVG and PNG rendering parity.");
 
-        var stackedAreas = Chart.Create().WithTheme(VisualTheme.Graphite())
-            .WithSize(420, 260)
-            .WithYAxisScale(ChartScaleKind.Logarithmic)
+        var stackedAreas = Chart.Create().Theme(VisualTheme.Graphite())
+            .Size(420, 260)
+            .YAxis(y => y.Scale(ChartScaleKind.Logarithmic))
             .AddStackedArea("Base", new[] { new ChartPoint(1, 10), new ChartPoint(2, 20) })
             .AddStackedArea("Top", new[] { new ChartPoint(1, 30), new ChartPoint(2, 40) });
         var stackedAreaMarks = PreparedFamily(stackedAreas).Scene.Nodes.OfType<VisualScenePath>().Where(mark => mark.Role == "area").ToArray();
@@ -130,8 +130,8 @@ internal static partial class SmokeTests {
             "Stacked logarithmic areas should produce two finite bands above the shared positive baseline.");
         Assert(stackedAreas.ToPng().Length > 200, "Stacked logarithmic areas should preserve SVG and PNG rendering parity.");
 
-        var mixedMarks = Chart.Create().WithTheme(VisualTheme.Graphite())
-            .WithXAxisScale(ChartScaleKind.Logarithmic)
+        var mixedMarks = Chart.Create().Theme(VisualTheme.Graphite())
+            .XAxis(x => x.Scale(ChartScaleKind.Logarithmic))
             .AddLine("Earlier", new[] { new ChartPoint(0.1, 10) })
             .AddBar("Later", new[] { new ChartPoint(10, 20) });
         var mixedRange = ChartRange.FromChart(mixedMarks);
@@ -142,13 +142,12 @@ internal static partial class SmokeTests {
 
     private static void AxisObjectsOwnExplicitLabelsAndFormatterFallbacks() {
         var chart = Chart.Create()
-            .WithSize(520, 300)
-            .WithYAxisBounds(0, 10)
-            .WithSecondaryYAxis("Rate", null)
-            .WithSecondaryYAxisBounds(0, 100)
+            .Size(520, 300)
+            .YAxis(y => y.Bounds(0, 10))
+            .SecondaryYAxis(s => s.Title("Rate").LabelBy((Func<double, string>?)null).Bounds(0, 100))
             .AddLine("Primary", new[] { new ChartPoint(0, 0), new ChartPoint(1, 10) })
             .AddLine("Secondary", new[] { new ChartPoint(0, 0), new ChartPoint(1, 100) });
-        chart.Series[1].UseSecondaryValueAxis();
+        chart.Series[1].SecondaryAxis();
         chart.Options.YAxis.Labels.Add(new ChartAxisLabel(0, "Primary low"));
         chart.Options.YAxis.Labels.Add(new ChartAxisLabel(10, "Primary high"));
         chart.Options.SecondaryYAxis.Labels.Add(new ChartAxisLabel(0, "Secondary low"));
@@ -183,8 +182,8 @@ internal static partial class SmokeTests {
             Assert(prepared.ToSvg() == subject.ToSvg(), "Automatic date captions should be deterministic across preparations.");
         }
         var chart = Chart.Create()
-            .WithSize(620, 320)
-            .WithXAxisScale(ChartScaleKind.Time)
+            .Size(620, 320)
+            .XAxis(x => x.Scale(ChartScaleKind.Time))
             .AddLine("Daily", new[] {
                 new ChartPoint(new DateTime(2026, 7, 1), 10),
                 new ChartPoint(new DateTime(2026, 7, 15), 18)
@@ -193,8 +192,8 @@ internal static partial class SmokeTests {
         AssertInvariantDateCaptions(chart, "axis-x-label", 7);
 
         var vertical = Chart.Create()
-            .WithSize(620, 320)
-            .ConfigureYAxis(axis => axis.Scale = ChartScaleKind.Time)
+            .Size(620, 320)
+            .YAxis(axis => axis.Scale = ChartScaleKind.Time)
             .AddLine("Primary dates", new[] {
                 new ChartPoint(0, new DateTime(2026, 7, 1).ToOADate()),
                 new ChartPoint(1, new DateTime(2026, 7, 15).ToOADate())
@@ -205,14 +204,14 @@ internal static partial class SmokeTests {
         Assert(verticalPng.SequenceEqual(vertical.ToPng()), "Primary vertical time axes should use the deterministic date fallback in PNG output.");
 
         var secondary = Chart.Create()
-            .WithSize(620, 320)
-            .WithSecondaryYAxis("Date")
+            .Size(620, 320)
+            .SecondaryYAxis(s => s.Title("Date"))
             .AddLine("Primary", new[] { new ChartPoint(0, 1), new ChartPoint(1, 2) })
             .AddLine("Secondary dates", new[] {
                 new ChartPoint(0, new DateTime(2026, 8, 1).ToOADate()),
                 new ChartPoint(1, new DateTime(2026, 8, 15).ToOADate())
             });
-        secondary.Series[1].UseSecondaryValueAxis();
+        secondary.Series[1].SecondaryAxis();
         secondary.Options.SecondaryYAxis.Scale = ChartScaleKind.Time;
         AssertInvariantDateCaptions(secondary, "axis-secondary-y-label", 8);
         var secondaryPng = secondary.ToPng();
@@ -220,8 +219,8 @@ internal static partial class SmokeTests {
         Assert(secondaryPng.SequenceEqual(secondary.ToPng()), "Secondary vertical time axes should use the deterministic date fallback in PNG output.");
 
         var horizontal = Chart.Create()
-            .WithSize(620, 320)
-            .WithXAxisScale(ChartScaleKind.Time)
+            .Size(620, 320)
+            .XAxis(x => x.Scale(ChartScaleKind.Time))
             .AddHorizontalBar("Deadlines", new[] {
                 new ChartPoint(0, new DateTime(2026, 9, 1).ToOADate()),
                 new ChartPoint(1, new DateTime(2026, 9, 15).ToOADate())
@@ -232,8 +231,8 @@ internal static partial class SmokeTests {
         Assert(horizontal.ToPng().Length > 200, "Horizontal time bars should preserve SVG and PNG rendering parity.");
 
         var waterfall = Chart.Create()
-            .WithSize(620, 320)
-            .WithYAxisScale(ChartScaleKind.SymmetricLogarithmic)
+            .Size(620, 320)
+            .YAxis(y => y.Scale(ChartScaleKind.SymmetricLogarithmic))
             .AddWaterfall("Delta", new[] { new ChartPoint(0, 1), new ChartPoint(1, 999), new ChartPoint(2, -500) });
         var waterfallSvg = waterfall.ToSvg();
         var firstWaterfallBar = SvgDocument.Parse(waterfallSvg).Root.FindMarks().First(element => element.GetAttribute("data-cfx-role") == "waterfall-bar");

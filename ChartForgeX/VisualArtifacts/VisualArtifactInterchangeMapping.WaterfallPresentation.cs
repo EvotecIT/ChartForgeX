@@ -9,9 +9,9 @@ public static partial class VisualArtifactInterchangeMapping {
         var source = chart.Options;
         target.Orientation = source.Waterfall.Orientation; target.Theme = source.Theme; target.ThemeMode = source.ThemeMode;
         target.Padding = source.ConfiguredPadding; target.ExplicitPadding = source.HasExplicitPadding;
-        target.ShowLegend = source.HasExplicitLegend ? source.ShowLegend : null;
-        target.LegendPosition = source.HasExplicitLegendPosition ? source.LegendPosition : null;
-        target.BarStyle = source.BarVisualStyle.Clone(); target.ExplicitBarCornerRadius = source.HasPreparedBarCornerRadius;
+        target.ShowLegend = source.Legend.HasExplicitVisibility ? source.Legend.Visible : null;
+        target.LegendPosition = source.Legend.HasExplicitPosition ? source.Legend.Position : null;
+        target.BarStyle = source.Bars.VisualStyle.Clone(); target.ExplicitBarCornerRadius = source.Bars.HasPreparedCornerRadius;
         target.GridStyle = source.GridLineStyle.Clone(); target.ExplicitGridStrokeWidth = source.HasPreparedGridStrokeWidth;
         target.Labels = source.Labels.Capture();
         target.HostOwnsFrame = source.HostOwnsFrame;
@@ -19,34 +19,34 @@ public static partial class VisualArtifactInterchangeMapping {
         target.ShowCard = source.ShowCard;
         target.ShowPlotBackground = source.ShowPlotBackground;
         target.TransparentBackground = source.TransparentBackground;
-        target.PinStateColorsInForcedColors = source.PinStateColorsInForcedColors;
-        target.ShowPointLegend = source.ShowPointLegend;
-        target.LegendMaximumRows = source.LegendMaximumRows;
-        target.LegendMaximumHeightFraction = source.LegendMaximumHeightFraction;
+        target.PinStateColorsInForcedColors = source.StateTimeline.PinColorsInForcedColors;
+        target.ShowPointLegend = source.Legend.ShowPoints;
+        target.LegendMaximumRows = source.Legend.MaxRows;
+        target.LegendMaximumHeightFraction = source.Legend.MaxHeightFraction;
         target.ShowAxes = source.ShowAxes;
         target.ShowGrid = source.ShowGrid;
         target.ClipMarksToPlot = source.ClipMarksToPlot;
-        target.ShowDataLabels = source.ShowDataLabels;
-        target.DataLabelPlacement = source.DataLabelPlacement;
-        target.DataLabelConnectorStyle = source.DataLabelConnectorStyle;
-        target.DataLabelConnectorOpacity = source.DataLabelConnectorOpacity;
-        target.DataLabelConnectorStrokeWidth = source.DataLabelConnectorStrokeWidth;
-        target.DataLabelConnectorColor = source.DataLabelConnectorColor;
+        target.ShowDataLabels = source.DataLabels.Visible;
+        target.DataLabelPlacement = source.DataLabels.Placement;
+        target.DataLabelConnectorStyle = source.DataLabels.ConnectorStyle;
+        target.DataLabelConnectorOpacity = source.DataLabels.ConnectorOpacity;
+        target.DataLabelConnectorStrokeWidth = source.DataLabels.ConnectorStrokeWidth;
+        target.DataLabelConnectorColor = source.DataLabels.ConnectorColor;
         target.ValueFormat = source.ValueFormat;
         // Native views (legend reflow, value replays) keep the authored unit and colour assignment.
         target.ValueUnit = source.ValueUnit;
         target.SeriesColorAssignment = source.SeriesColorAssignment;
-        target.PngOutputScale = source.PngOutputScale;
-        target.PngSupersamplingScale = source.PngSupersamplingScale;
-        target.PngTextHinting = source.PngTextHinting;
+        target.PngOutputScale = source.Png.OutputScale;
+        target.PngSupersamplingScale = source.Png.SupersamplingScale;
+        target.PngTextHinting = source.Png.TextHinting;
         target.XAxis = source.XAxis.Clone();
         target.YAxis = source.YAxis.Clone();
         target.SecondaryXAxis = source.SecondaryXAxis.Clone();
         target.SecondaryYAxis = source.SecondaryYAxis.Clone();
-        target.XAxisTitle = chart.XAxisTitle;
-        target.YAxisTitle = chart.YAxisTitle;
-        target.SecondaryXAxisTitle = chart.SecondaryXAxisTitle;
-        target.SecondaryYAxisTitle = chart.SecondaryYAxisTitle;
+        target.XAxisTitle = chart.Options.XAxis.Title;
+        target.YAxisTitle = chart.Options.YAxis.Title;
+        target.SecondaryXAxisTitle = chart.Options.SecondaryXAxis.Title;
+        target.SecondaryYAxisTitle = chart.Options.SecondaryYAxis.Title;
         foreach (var role in new[] { ChartTextRole.Title, ChartTextRole.Subtitle, ChartTextRole.AxisTitle,
             ChartTextRole.TickLabel, ChartTextRole.Legend, ChartTextRole.DataLabel }) target.TextStyles.Add(role, source.GetTextStyle(role).Clone());
     }
@@ -55,9 +55,9 @@ public static partial class VisualArtifactInterchangeMapping {
         var target = chart.Options;
         target.Waterfall.Orientation = source.Orientation; target.Theme = source.Theme; target.ThemeMode = source.ThemeMode;
         if (source.ExplicitPadding) target.Padding = source.Padding;
-        if (source.ShowLegend.HasValue) target.ShowLegend = source.ShowLegend.Value;
-        if (source.LegendPosition.HasValue) target.LegendPosition = source.LegendPosition.Value;
-        CopyWaterfallBars(source.BarStyle, target.BarVisualStyle, source.ExplicitBarCornerRadius);
+        if (source.ShowLegend.HasValue) target.Legend.Visible = source.ShowLegend.Value;
+        if (source.LegendPosition.HasValue) target.Legend.Position = source.LegendPosition.Value;
+        CopyWaterfallBars(source.BarStyle, target.Bars.VisualStyle, source.ExplicitBarCornerRadius);
         CopyWaterfallGrid(source.GridStyle, target.GridLineStyle, source.ExplicitGridStrokeWidth);
         target.Labels = source.Labels.Capture();
         target.HostOwnsFrame = source.HostOwnsFrame;
@@ -65,34 +65,34 @@ public static partial class VisualArtifactInterchangeMapping {
         target.ShowCard = source.ShowCard;
         target.ShowPlotBackground = source.ShowPlotBackground;
         target.TransparentBackground = source.TransparentBackground;
-        target.PinStateColorsInForcedColors = source.PinStateColorsInForcedColors;
-        target.ShowPointLegend = source.ShowPointLegend;
-        target.LegendMaximumRows = source.LegendMaximumRows;
-        target.LegendMaximumHeightFraction = source.LegendMaximumHeightFraction;
+        target.StateTimeline.PinColorsInForcedColors = source.PinStateColorsInForcedColors;
+        target.Legend.ShowPoints = source.ShowPointLegend;
+        target.Legend.MaxRows = source.LegendMaximumRows;
+        target.Legend.MaxHeightFraction = source.LegendMaximumHeightFraction;
         target.ShowAxes = source.ShowAxes;
         target.ShowGrid = source.ShowGrid;
         target.ClipMarksToPlot = source.ClipMarksToPlot;
-        target.ShowDataLabels = source.ShowDataLabels;
-        target.DataLabelPlacement = source.DataLabelPlacement;
-        target.DataLabelConnectorStyle = source.DataLabelConnectorStyle;
-        target.DataLabelConnectorOpacity = source.DataLabelConnectorOpacity;
-        target.DataLabelConnectorStrokeWidth = source.DataLabelConnectorStrokeWidth;
-        target.DataLabelConnectorColor = source.DataLabelConnectorColor;
+        target.DataLabels.Visible = source.ShowDataLabels;
+        target.DataLabels.Placement = source.DataLabelPlacement;
+        target.DataLabels.ConnectorStyle = source.DataLabelConnectorStyle;
+        target.DataLabels.ConnectorOpacity = source.DataLabelConnectorOpacity;
+        target.DataLabels.ConnectorStrokeWidth = source.DataLabelConnectorStrokeWidth;
+        target.DataLabels.ConnectorColor = source.DataLabelConnectorColor;
         target.ValueFormat = source.ValueFormat;
         // Native views (legend reflow, value replays) keep the authored unit and colour assignment.
         target.ValueUnit = source.ValueUnit;
         target.SeriesColorAssignment = source.SeriesColorAssignment;
-        target.PngOutputScale = source.PngOutputScale;
-        target.PngSupersamplingScale = source.PngSupersamplingScale;
-        target.PngTextHinting = source.PngTextHinting;
+        target.Png.OutputScale = source.PngOutputScale;
+        target.Png.SupersamplingScale = source.PngSupersamplingScale;
+        target.Png.TextHinting = source.PngTextHinting;
         target.XAxis = source.XAxis.Clone();
         target.YAxis = source.YAxis.Clone();
         target.SecondaryXAxis = source.SecondaryXAxis.Clone();
         target.SecondaryYAxis = source.SecondaryYAxis.Clone();
-        chart.XAxisTitle = source.XAxisTitle;
-        chart.YAxisTitle = source.YAxisTitle;
-        chart.SecondaryXAxisTitle = source.SecondaryXAxisTitle;
-        chart.SecondaryYAxisTitle = source.SecondaryYAxisTitle;
+        chart.Options.XAxis.Title = source.XAxisTitle;
+        chart.Options.YAxis.Title = source.YAxisTitle;
+        chart.Options.SecondaryXAxis.Title = source.SecondaryXAxisTitle;
+        chart.Options.SecondaryYAxis.Title = source.SecondaryYAxisTitle;
         foreach (var pair in source.TextStyles) target.SetTextStyle(pair.Key, pair.Value.Clone());
     }
 
@@ -116,9 +116,9 @@ public static partial class VisualArtifactInterchangeMapping {
         var options = chart.Options;
         if (chart.Annotations.Count != 0 || chart.PlotRegions.Count != 0)
             throw new NotSupportedException("Waterfall interchange does not serialize annotations or plot regions; deliver them through a separately supported semantic family.");
-        if (options.XAxisLabelHighlights.Count != 0 || options.IsSparkline || options.IsPanel || options.PngFontPath != null || options.PngFontFaceName != null || options.PngFontCollectionIndex != null || options.SvgColorVariables != null)
+        if (options.XAxisLabelHighlights.Count != 0 || options.IsSparkline || options.IsPanel || options.Png.FontPath != null || options.Png.FontFaceName != null || options.Png.FontCollectionIndex != null || options.SvgColorVariables != null)
             throw new NotSupportedException("Waterfall interchange does not serialize compact host state, local font resources or SVG variable resolvers.");
-        if (options.Labels.AccessibleTextFormatter != null || options.Labels.DateFormatter != null || options.PieSliceLabelFormatter != null
+        if (options.Labels.AccessibleTextFormatter != null || options.Labels.DateFormatter != null || options.Pie.SliceLabelFormatter != null
             || options.RangeBar.EndpointLabelFormatter != null || options.BoxPlot.StatisticLabelFormatter != null || options.Sunburst.SecondaryLabelFormatter != null)
             throw new NotSupportedException("Waterfall interchange requires static localized words, without callbacks.");
         if (chart.Series[0].DecimationMode.HasValue || chart.Series[0].PointSliceOffsets.Any(value => value != 0))

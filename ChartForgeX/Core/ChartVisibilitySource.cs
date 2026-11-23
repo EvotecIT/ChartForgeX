@@ -34,12 +34,12 @@ internal sealed partial class ChartVisibilitySource {
         _presentation = VisualArtifactInterchangeMapping.CaptureVisibilityPresentation(chart);
         // Recompute the fixed category map from copied authored policy; never mutate the prepared source or retain a late mutable chart.
         if (componentValues && _presentation.XAxis.Scale == ChartScaleKind.Time) _presentation.XAxis.PreparedTimeDomain = null;
-        _line = chart.Options.LineVisualStyle.Clone(); _boxes = chart.Options.BoxPlot.Clone(); _accessibility = chart.Accessibility.Clone();
+        _line = chart.Options.Lines.VisualStyle.Clone(); _boxes = chart.Options.BoxPlot.Clone(); _accessibility = chart.Accessibility.Clone();
         _legend = chart.Options.Legend.Clone();
         _series = Array.AsReadOnly(chart.Series.Select(series => series.CaptureVisibilitySource()).ToArray());
         _categoryLabels = Array.AsReadOnly(ChartCartesianOrientation.CategoryLabels(chart).ToArray());
-        BarMode = chart.Options.BarMode; ShowStackTotals = chart.Options.ShowStackTotals; MaximumBarWidth = chart.Options.MaximumBarWidth;
-        LineOrientation = chart.Options.LineOrientation; LineMarkers = chart.Options.LineMarkerMode;
+        BarMode = chart.Options.Bars.Mode; ShowStackTotals = chart.Options.Bars.ShowTotals; MaximumBarWidth = chart.Options.Bars.MaxWidth;
+        LineOrientation = chart.Options.Lines.Orientation; LineMarkers = chart.Options.Lines.MarkerMode;
         Width = chart.Options.Size.Width; Height = chart.Options.Size.Height;
         _hierarchy = chart.Series.Any(series => series.Kind is ChartSeriesKind.Treemap or ChartSeriesKind.Sunburst) ? new HierarchyPolicy(chart) : null;
         _pie = chart.Series.Any(series => ChartSeriesKindTraits.IsPieLikeKind(series.Kind)) ? new PiePolicy(chart.Options) : null;
@@ -72,14 +72,14 @@ internal sealed partial class ChartVisibilitySource {
         return CreateNativeView(null, values);
     }
     private Chart CreateNativeView(ChartVisibilityView? view, double[]? values) {
-        var chart = Chart.Create().WithTitle(Title).WithSubtitle(Subtitle).WithSize(Width, Height);
+        var chart = Chart.Create().Title(Title).Subtitle(Subtitle).Size(Width, Height);
         VisualArtifactInterchangeMapping.RestoreVisibilityPresentation(chart, _presentation);
-        chart.Options.LineVisualStyle = _line.Clone(); chart.Options.BoxPlot = _boxes.Clone(); chart.Options.BarMode = BarMode;
+        chart.Options.Lines.VisualStyle = _line.Clone(); chart.Options.BoxPlot = _boxes.Clone(); chart.Options.Bars.Mode = BarMode;
         chart.Options.Legend = _legend.Clone();
-        chart.Options.ShowStackTotals = ShowStackTotals; chart.Options.MaximumBarWidth = MaximumBarWidth;
-        chart.Options.LineOrientation = LineOrientation; chart.Options.LineMarkerMode = LineMarkers;
+        chart.Options.Bars.ShowTotals = ShowStackTotals; chart.Options.Bars.MaxWidth = MaximumBarWidth;
+        chart.Options.Lines.Orientation = LineOrientation; chart.Options.Lines.MarkerMode = LineMarkers;
         var accessibility = _accessibility;
-        chart.ConfigureAccessibility(target => { target.Name = accessibility.Name; target.Description = accessibility.Description; target.Language = accessibility.Language; target.IsDecorative = accessibility.IsDecorative; });
+        chart.Accessibility(target => { target.Name = accessibility.Name; target.Description = accessibility.Description; target.Language = accessibility.Language; target.IsDecorative = accessibility.IsDecorative; });
         _pie?.Apply(chart.Options); _hierarchy?.Apply(chart.Options);
         if (_bubble != null) chart.Options.Bubble = _bubble.Clone();
         if (_hierarchy != null) chart.NativeHierarchyVisibility = view ?? (_hierarchy.Root == null ? null
@@ -116,7 +116,7 @@ internal sealed partial class ChartVisibilitySource {
             throw new NotSupportedException("Native Reflow does not yet capture annotations, plot regions, compact-panel state, category highlights or chart SVG variable resolvers.");
         if (chart.Series.Any(series => series.DecimationMode.HasValue || series.HistogramBinLayout != null || series.ColorScale != null || series.ColorDimension.HasOverrides || series.HasOrdinalMarkerOverrides))
             throw new NotSupportedException("Native Reflow does not yet capture derived decimation/histograms, numeric color dimensions or per-point marker policies.");
-        if (options.Labels.AccessibleTextFormatter != null || options.Labels.DateFormatter != null || options.BoxPlot.StatisticLabelFormatter != null || options.PieSliceLabelFormatter != null || options.Legend.ItemFormatter != null)
+        if (options.Labels.AccessibleTextFormatter != null || options.Labels.DateFormatter != null || options.BoxPlot.StatisticLabelFormatter != null || options.Pie.SliceLabelFormatter != null || options.Legend.ItemFormatter != null)
             throw new NotSupportedException("Native Reflow requires static label words and captured built-in formats; custom callbacks remain available for ordinary rendering.");
         try { _ = options.ValueFormat.PortablePolicy();
         foreach (var axis in new[] { options.XAxis, options.YAxis, options.SecondaryXAxis, options.SecondaryYAxis }) {

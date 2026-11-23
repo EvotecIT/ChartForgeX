@@ -1,0 +1,46 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+using static AxisControlRecipe;
+
+var mode = ThemeMode.Light;
+var theme = VisualTheme.Graphite();
+#endregion
+
+if (!Options.Contains("axis-log-step")) throw new ArgumentOutOfRangeException("variant");
+var chart = Payloads();
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(360, 360)), theme, mode,
+    new VisualFrame("Payload sizes on a logarithmic step", "A tick on every second power of ten", showLegend: false, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion
+
+static class AxisControlRecipe {
+    public static readonly string[] Options = { "axis-step", "axis-values", "axis-spacing", "axis-minor", "axis-grid", "axis-time-step", "axis-log-step", "axis-stacked" };
+
+    // Payload sizes across five orders of magnitude on a logarithmic axis, marked on every second power of ten.
+    // The automatic range ends on the stepped powers around the data: 0.01 and 1M.
+    internal static Chart Payloads() {
+        var sizes = new[] { 0.8, 3.5, 12, 48, 260, 900, 4_100, 18_000, 72_000 };
+        return Chart.Create().XAxis(x => x.Title("Request")).YAxis(y => y.Title("Payload (KB)"))
+            .AddLine("Payload", sizes.Select((size, index) => new ChartPoint(index + 1, size)).ToArray())
+            .YAxis(axis => axis.LogarithmicScale().TickStep(2));
+    }
+}

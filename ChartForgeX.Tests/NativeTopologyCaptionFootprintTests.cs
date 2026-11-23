@@ -31,7 +31,7 @@ public sealed class NativeTopologyCaptionFootprintTests {
     [InlineData(false, true)]
     [InlineData(true, false)]
     public void DetailedCardFitsItsHeaderAndOnlyPaintsADividerWithACompleteDetailLine(bool preserveSize, bool detailFits) {
-        var chart = TopologyChart.Create().WithViewport(360, 260, 20).WithLegend(null)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(360, 260, 20)).Legend((TopologyLegend?)null)
             .AddNode("small", "A", 40, 40, width: 160, height: 40)
             .AddNodeDetail("small", "Status", "Ready");
         Assert.Single(chart.Nodes).PreserveDisplayModeSize = preserveSize;
@@ -52,11 +52,11 @@ public sealed class NativeTopologyCaptionFootprintTests {
     [InlineData(TextMeasurementMode.PortableEstimate)]
     [InlineData(TextMeasurementMode.InstalledFonts)]
     public void LargeThemeIconCaptionReservesItsPaintedPlateForLayoutAndRelationshipLabels(TextMeasurementMode measurement) {
-        var chart = TopologyChart.Create().WithId("large-icon-caption").WithViewport(700, 380, 20).WithLegend(null)
+        var chart = TopologyChart.Create().Id("large-icon-caption").Viewport(new TopologyViewport(700, 380, 20)).Legend((TopologyLegend?)null)
             .AddNode("left", "Left", 40, 130, width: 120, height: 70)
             .AddNode("right", "Right", 530, 130, width: 120, height: 70)
             .AddNode("owner", "Payments Platform Owner", 290, 88, width: 48, height: 42)
-            .WithNodeDisplay("owner", TopologyNodeDisplayMode.Icon)
+            .UpdateNode("owner", n => n.DisplayMode(TopologyNodeDisplayMode.Icon).Badge(null))
             .AddEdge("link", "left", "right", "64 ms", routing: TopologyEdgeRouting.Straight);
         var baseTheme = VisualTheme.Graphite();
         var theme = new VisualTheme(baseTheme.Resolve(ThemeMode.Light).ToTokens(), baseTheme.Resolve(ThemeMode.Dark).ToTokens(),

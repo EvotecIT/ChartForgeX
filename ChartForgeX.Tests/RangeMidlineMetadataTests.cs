@@ -12,10 +12,10 @@ namespace ChartForgeX.Tests;
 public sealed class RangeMidlineMetadataTests {
     [Fact]
     public void CapturedMidlineUsesNativeMappedGeometryWithoutBecomingAReadoutFact() {
-        var chart = Chart.Create().WithSize(600, 380).WithXAxisBounds(0, 1).WithYAxisBounds(10, 1000)
-            .ConfigureYAxis(axis => axis.Scale = ChartScaleKind.Logarithmic);
+        var chart = Chart.Create().Size(600, 380).XAxis(xAxis => xAxis.Bounds(0, 1)).YAxis(yAxis => yAxis.Bounds(10, 1000))
+            .YAxis(axis => axis.Scale = ChartScaleKind.Logarithmic);
         chart.AddRangeArea("Pair", new[] { new ChartRangeBand(.5, 1, 1800) });
-        chart.Series[0].ConfigureMarkers(markers => markers.Enabled = false);
+        chart.Series[0].Markers(markers => markers.Enabled = false);
         var svg = XDocument.Parse(chart.ToSvg());
         var point = svg.Descendants().Single(node => (string?)node.Attribute("data-cfx-role") == "point");
         var midline = svg.Descendants().Single(node => (string?)node.Attribute("data-cfx-role") == "range-midline");

@@ -20,8 +20,8 @@ public sealed class PieDonutRadiusBrowserTests {
     public async Task VariableRadiusAndAutomaticRingsRetainNativeGeometrySourceLinksAndCompleteBrowserOutput(bool automatic, bool dark, int width) {
         if (!InteractiveChartBrowser.Enabled) return;
         var chart = automatic ? PieDonutAutomaticBandTests.Fixture(dark, width) : PieDonutRadiusDepthTests.Fixture(ChartSeriesKind.Pie, dark, width, true);
-        chart.Series[chart.Series.Count - 1].WithDataLabels(); chart.Series[chart.Series.Count - 1].DataLabelPlacement = ChartDataLabelPlacement.Outside;
-        chart.WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent);
+        chart.Series[chart.Series.Count - 1].ShowDataLabels(true); chart.Series[chart.Series.Count - 1].DataLabelPlacement = ChartDataLabelPlacement.Outside;
+        chart.Pie(p => p.SliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent));
         var prepared = PieDonutRadiusDepthTests.Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng();
         var rows = prepared.Scene.Nodes.OfType<VisualSceneSlice>().Select(mark => new {
             id = mark.Id, cx = mark.Cx, cy = mark.Cy, radius = mark.Outer, inner = mark.Inner, angle = mark.Start

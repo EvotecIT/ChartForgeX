@@ -84,10 +84,10 @@ public sealed class NativeNumberCultureCaseMotionTests : IDisposable {
         if (kind == "treemap") {
             chart = NativeHierarchyMotionBeforeControls.Model(false, false, reading);
             chart.Series[0].ReplaceHierarchyItems(new[] { new ChartHierarchyItem("root", "HH"), new ChartHierarchyItem("first", "HH", "root", reading), new ChartHierarchyItem("second", "HH", "root", .1), new ChartHierarchyItem("third", "HH", "root", .2) });
-        } else { chart = NativeValueRepertoireBeforeControls.Model(kind == "donut", "compact", reading).WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndValue);
-            chart.Series[0].Points[1] = new ChartForgeX.Primitives.ChartPoint(2, .1); chart.Series[0].Points[2] = new ChartForgeX.Primitives.ChartPoint(3, .2); chart.WithXLabels("HH", "HH", "HH"); }
-        chart.WithFontFamily(NativeFallbackClusterBeforeControls.Primary + ", " + NativeFallbackClusterBeforeControls.Fallback).WithSize(width, 420).WithThemeMode(dark ? ChartForgeX.ThemeMode.Dark : ChartForgeX.ThemeMode.Light);
-        var (format, textCase) = Policy(policy); return chart.WithValueFormat(format).ConfigureDataLabelStyle(style => style.TextCase = textCase);
+        } else { chart = NativeValueRepertoireBeforeControls.Model(kind == "donut", "compact", reading).Pie(p => p.SliceLabelContent(ChartPieSliceLabelContent.LabelAndValue));
+            chart.Series[0].Points[1] = new ChartForgeX.Primitives.ChartPoint(2, .1); chart.Series[0].Points[2] = new ChartForgeX.Primitives.ChartPoint(3, .2); chart.XLabels("HH", "HH", "HH"); }
+        chart.FontFamily(NativeFallbackClusterBeforeControls.Primary + ", " + NativeFallbackClusterBeforeControls.Fallback).Size(width, 420).ThemeMode(dark ? ChartForgeX.ThemeMode.Dark : ChartForgeX.ThemeMode.Light);
+        var (format, textCase) = Policy(policy); return chart.ValueFormat(format).DataLabelStyle(style => style.TextCase = textCase);
     }
     internal static (ChartValueFormat Format, TextCaseTransform Case) Policy(string policy) => policy switch {
         "fr-number" => (ChartValueFormat.Number("N2", CultureInfo.GetCultureInfo("fr-FR")), TextCaseTransform.None),

@@ -34,13 +34,13 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 static class RadarRecipe {
     internal static Chart Markers() {
         var observed = new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.Radar, Points(58, 76, 69, 84, 62, 73))
-            .ConfigureRadar(options => options.FillOpacity = .2)
-            .ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Diamond; markers.Enabled = true; });
+            .Radar(options => options.FillOpacity = .2)
+            .Markers(markers => { markers.Shape = ChartMarkerShape.Diamond; markers.Enabled = true; });
         var target = new ChartSeries(new ChartSeriesId("target"), "Target", ChartSeriesKind.Radar, Points(75, 85, 80, 90, 75, 85))
-            .ConfigureRadar(options => options.Form = ChartLineAreaForm.Line)
-            .ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Square; markers.Enabled = true; });
-        return Chart.Create().WithXLabels("Speed", "Coverage", "Capacity", "Quality", "Recovery", "Support")
-            .WithYAxisBounds(0, 100).AddSeries(observed).AddSeries(target);
+            .Radar(options => options.Form = ChartLineAreaForm.Line)
+            .Markers(markers => { markers.Shape = ChartMarkerShape.Square; markers.Enabled = true; });
+        return Chart.Create().XLabels("Speed", "Coverage", "Capacity", "Quality", "Recovery", "Support")
+            .YAxis(y => y.Bounds(0, 100)).AddSeries(observed).AddSeries(target);
     }
 
     internal static ChartPoint[] Points(params double[] values) => values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();

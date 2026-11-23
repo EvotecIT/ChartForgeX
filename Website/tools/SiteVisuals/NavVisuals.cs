@@ -60,18 +60,18 @@ internal static class NavVisuals {
 
     private static ChartPoint[] Points(params double[] values) => values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();
 
-    private static Chart Mini(ThemeMode mode) => Chart.Create().WithThemeMode(mode).WithSparkline().WithTransparentBackground();
+    private static Chart Mini(ThemeMode mode) => Chart.Create().ThemeMode(mode).Sparkline().TransparentBackground();
 
     private static ChartGrid GalleryGrid(ThemeMode mode) {
-        var bars = Mini(mode).WithXLabels("A", "B", "C", "D", "E").AddBar("Orders", Points(42, 61, 54, 78, 70));
+        var bars = Mini(mode).XLabels("A", "B", "C", "D", "E").AddBar("Orders", Points(42, 61, 54, 78, 70));
         var line = Mini(mode).AddSmoothLine("Latency", Points(182, 176, 190, 168, 150, 142, 139))
             .AddSmoothLine("Target", Points(160, 160, 160, 160, 160, 160, 160));
-        var donut = Mini(mode).WithXLabels("Passed", "Warnings", "Failed").WithDonutCenterLabel(false).AddDonut("Checks", Points(70, 20, 10));
+        var donut = Mini(mode).XLabels("Passed", "Warnings", "Failed").Pie(p => p.ShowCenterLabel(false)).AddDonut("Checks", Points(70, 20, 10));
         var area = Mini(mode).AddStackedArea("Passkey", Points(8, 17, 30, 47, 64, 81))
             .AddStackedArea("App", Points(72, 75, 75, 73, 69, 64))
             .AddStackedArea("SMS", Points(42, 38, 32, 26, 20, 15));
-        foreach (var chart in new[] { bars, line, donut, area }) chart.WithSize(Width / 2, Height / 2);
-        return ChartGrid.Create().WithThemeMode(mode).WithColumns(2).WithGap(6).WithPadding(0).WithPanelSize(Width / 2 - 3, Height / 2 - 3)
+        foreach (var chart in new[] { bars, line, donut, area }) chart.Size(Width / 2, Height / 2);
+        return ChartGrid.Create().ThemeMode(mode).Columns(2).Gap(6).Padding(0).PanelSize(Width / 2 - 3, Height / 2 - 3)
             .Add(bars).Add(line).Add(donut).Add(area);
     }
 
@@ -82,9 +82,9 @@ internal static class NavVisuals {
             ("Berlin", new double[] { 22, 28, 31, 30, 36, 41 }),
             ("Madrid", new double[] { 51, 47, 44, 49, 42, 39 })
         };
-        var grid = ChartGrid.Create().WithThemeMode(mode).WithColumns(2).WithGap(6).WithPadding(0).WithPanelSize(Width / 2 - 3, Height / 2 - 3);
+        var grid = ChartGrid.Create().ThemeMode(mode).Columns(2).Gap(6).Padding(0).PanelSize(Width / 2 - 3, Height / 2 - 3);
         foreach (var (site, values) in sites) {
-            grid.Add(Mini(mode).WithSize(Width / 2, Height / 2).AddArea(site, Points(values)));
+            grid.Add(Mini(mode).Size(Width / 2, Height / 2).AddArea(site, Points(values)));
         }
 
         return grid;
@@ -98,12 +98,12 @@ internal static class NavVisuals {
             .Take(2)
             .ToArray();
         var story = TerminalStory.Create()
-            .WithDialect(TerminalDialect.PowerShell)
-            .WithThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithWorkingDirectory(@"C:\Reports")
-            .WithWidth(Width * 3)
-            .WithPngOutputScale(1)
-            .WithFinalPrompt(false);
+            .Dialect(TerminalDialect.PowerShell)
+            .ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .WorkingDirectory(@"C:\Reports")
+            .Width(Width * 3)
+            .PngOutputScale(1)
+            .ShowFinalPrompt(false);
         foreach (var line in lines) story.Command(line);
         return story;
     }

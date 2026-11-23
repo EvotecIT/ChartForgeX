@@ -17,10 +17,10 @@ public static partial class MermaidTreemapRendering {
         if (document == null) throw new ArgumentNullException(nameof(document));
         options ??= new MermaidTreemapRenderOptions();
         var chart = Chart.Create()
-            .WithTitle(MermaidHeading.Title(document, options.Title, null, "Mermaid treemap"))
-            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
-            .WithSize(options.Width, options.Height)
-            .WithDataLabels()
+            .Title(MermaidHeading.Title(document, options.Title, null, "Mermaid treemap"))
+            .Subtitle(MermaidHeading.Subtitle(options.Subtitle))
+            .Size(options.Width, options.Height)
+            .DataLabels()
             .AddTreemap(string.IsNullOrWhiteSpace(options.SeriesName) ? "Treemap" : options.SeriesName!, ToItems(document));
         MermaidPresentation.Apply(chart, document, options.Presentation);
         document.Configuration.Treemap?.Apply(chart);

@@ -22,7 +22,7 @@ public sealed class BoxPlotHorizontalPaintBoundsTests {
     public void AutomaticValueDomainContainsCompleteBodiesWhiskersCapsAndMedians(int width, bool reverseValue,
         ChartScaleKind scale, bool equalQuartilesAtMaximum, double strokeWidth) {
         var chart = Create(width, equalQuartilesAtMaximum, strokeWidth);
-        chart.Options.XAxis.WithScale(scale).WithReversal(reverseValue);
+        chart.Options.XAxis.Scale(scale).Reversed(reverseValue);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var svg = prepared.ToSvg();
         var document = XDocument.Parse(svg);
@@ -51,7 +51,7 @@ public sealed class BoxPlotHorizontalPaintBoundsTests {
     [Fact]
     public void ExplicitValueBoundsKeepAuthoredExtremaAtTheClipAndIntentionallyClipPaint() {
         var chart = Create(360, true, 6);
-        chart.Options.XAxis.WithBounds(10, 100);
+        chart.Options.XAxis.Bounds(10, 100);
         var document = XDocument.Parse(chart.Prepare(VisualExportRequest.ForChart(chart).Context).ToSvg());
         AssertRawStatistics(document, true);
         var caps = document.Descendants().Where(element => Role(element) == "boxplot-cap").ToArray();
@@ -67,11 +67,11 @@ public sealed class BoxPlotHorizontalPaintBoundsTests {
     private static Chart Create(int width, bool equalQuartilesAtMaximum, double strokeWidth) {
         var summaries = new[] { new ChartBoxPlot(1, 10, 20, 30, 50, 100), equalQuartilesAtMaximum
             ? new ChartBoxPlot(2, 100, 100, 100, 100, 100) : new ChartBoxPlot(2, 20, 25, 40, 60, 80) };
-        var chart = Chart.Create().WithSize(width, 440).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithTheme(VisualTheme.Graphite(), width == 360 ? ThemeMode.Dark : ThemeMode.Light)
-            .WithFontFamily("Carlito").WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"))
-            .ConfigureBoxPlot(options => options.Orientation = ChartOrientation.Horizontal).AddBoxPlot("Summary", summaries);
-        if (strokeWidth >= 0) chart.Series[0].WithStrokeWidth(strokeWidth);
+        var chart = Chart.Create().Size(width, 440).ShowHeader(false).Legend(false).DataLabels(false)
+            .Theme(VisualTheme.Graphite()).ThemeMode(width == 360 ? ThemeMode.Dark : ThemeMode.Light)
+            .FontFamily("Carlito").Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
+            .BoxPlot(options => options.Orientation = ChartOrientation.Horizontal).AddBoxPlot("Summary", summaries);
+        if (strokeWidth >= 0) chart.Series[0].StrokeWidth(strokeWidth);
         return chart;
     }
 

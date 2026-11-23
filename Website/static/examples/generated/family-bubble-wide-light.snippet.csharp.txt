@@ -34,7 +34,7 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 static class BubbleRecipe {
     // Batch size in items, median processing time in minutes and requests handled during the week.
     internal static Chart RequestVolume() => Chart.Create()
-        .WithXAxis("Batch size (items)").WithYAxis("Processing time (minutes)")
+        .XAxis(x => x.Title("Batch size (items)")).YAxis(y => y.Title("Processing time (minutes)"))
         .AddSeries(ChartSeries.CreateBubble(new ChartSeriesId("standard"), "Standard", new[] {
             new ChartBubble(40, 18, 320), new ChartBubble(80, 26, 540), new ChartBubble(120, 31, 410),
             new ChartBubble(160, 39, 620), new ChartBubble(220, 47, 380), new ChartBubble(280, 58, 260) }))

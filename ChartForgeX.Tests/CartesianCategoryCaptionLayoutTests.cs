@@ -89,8 +89,8 @@ public sealed class CartesianCategoryCaptionLayoutTests {
     [InlineData(false, 10, ChartLabelDensity.Auto)]
     [InlineData(false, 12, ChartLabelDensity.Dense)]
     public void ReversalAndExplicitOrdinaryFontKeepTheirCategoryAnchors(bool reversed, double fontSize, ChartLabelDensity density) {
-        var chart = Create(ChartSeriesKind.Bar, 390).WithXAxisLabelDensity(density).ConfigureXAxis(axis => axis.Reversed = reversed)
-            .ConfigureTickLabelStyle(style => style.FontSize = fontSize);
+        var chart = Create(ChartSeriesKind.Bar, 390).XAxis(x => x.LabelDensity(density)).XAxis(axis => axis.Reversed = reversed)
+            .TickLabelStyle(style => style.FontSize = fontSize);
         var prepared = Prepare(chart); var captions = Captions(prepared);
         Assert.Equal(4, captions.Length);
         Assert.All(captions, caption => Assert.Equal(fontSize, caption.Text.Size));
@@ -107,7 +107,7 @@ public sealed class CartesianCategoryCaptionLayoutTests {
     public void NumericXUnitSuffixKeepsCompleteSingleLineScaleCaptions() {
         var chart = Create(ChartSeriesKind.Bar, 390);
         chart.Options.XAxis.Labels.Clear();
-        chart.ConfigureXAxis(axis => axis.WithBounds(0, 24).WithValueFormat(ChartValueFormat.Number("0 'hours'")));
+        chart.XAxis(axis => axis.Bounds(0, 24).ValueFormat(ChartValueFormat.Number("0 'hours'")));
         var prepared = Prepare(chart); var captions = Captions(prepared);
         Assert.NotEmpty(captions);
         Assert.All(captions, caption => {
@@ -124,7 +124,7 @@ public sealed class CartesianCategoryCaptionLayoutTests {
     [InlineData(ChartLabelDensity.All)]
     [InlineData(ChartLabelDensity.Relaxed)]
     public void ExplicitCompleteCaptionDensityKeepsItsExistingPolicy(ChartLabelDensity density) {
-        var chart = Create(ChartSeriesKind.Bar, 390).WithXAxisLabelDensity(density);
+        var chart = Create(ChartSeriesKind.Bar, 390).XAxis(x => x.LabelDensity(density));
         var captions = Captions(Prepare(chart));
         Assert.NotEmpty(captions);
         Assert.All(captions, caption => {
@@ -139,11 +139,11 @@ public sealed class CartesianCategoryCaptionLayoutTests {
     [Fact]
     public void AuthoredLineBreaksAndRotationRemainAuthoritative() {
         var authored = Names.Select(name => name.Replace("processing ", "processing\n", StringComparison.Ordinal)).ToArray();
-        var chart = Create(ChartSeriesKind.Bar, 390).WithXLabels(authored).WithXAxisLabelDensity(ChartLabelDensity.All);
+        var chart = Create(ChartSeriesKind.Bar, 390).XLabels(authored).XAxis(x => x.LabelDensity(ChartLabelDensity.All));
         var captions = Captions(Prepare(chart));
         Assert.Equal(4, captions.Length);
         Assert.All(captions, caption => Assert.Contains(Text(caption), authored));
-        var rotated = Create(ChartSeriesKind.Bar, 390).WithXAxisLabelAngle(45);
+        var rotated = Create(ChartSeriesKind.Bar, 390).XAxis(x => x.LabelAngle(45));
         var rotatedCaptions = Captions(Prepare(rotated));
         Assert.NotEmpty(rotatedCaptions);
         Assert.All(rotatedCaptions, caption => {
@@ -157,7 +157,7 @@ public sealed class CartesianCategoryCaptionLayoutTests {
     [Fact]
     public void DistinctNamesDoNotCollapseIntoTheSameShortenedCaption() {
         var names = Enumerable.Range(1, 4).Select(index => "International processing identicalprefix000000" + index.ToString(CultureInfo.InvariantCulture)).ToArray();
-        var chart = Create(ChartSeriesKind.Bar, 390).WithXLabels(names);
+        var chart = Create(ChartSeriesKind.Bar, 390).XLabels(names);
         var prepared = Prepare(chart); var captions = Captions(prepared);
         Assert.NotEmpty(captions);
         Assert.Equal(captions.Length, captions.Select(Text).Distinct(StringComparer.Ordinal).Count());
@@ -186,9 +186,9 @@ public sealed class CartesianCategoryCaptionLayoutTests {
     }
 
     private static Chart Create(ChartSeriesKind kind, int width, bool legacyWaterfall = false) {
-        var chart = Chart.Create().WithSize(width, 480).WithTheme(VisualTheme.Graphite(), width == 390 ? ThemeMode.Light : ThemeMode.Dark)
-            .WithTitle("Timing deviation by region").WithLegend(false).WithDataLabels(false).WithXLabels(Names)
-            .WithValueFormat(ChartValueFormat.Number("0.## 'ms'")).ConfigureTickLabelStyle(style => style.FontSize = 12);
+        var chart = Chart.Create().Size(width, 480).Theme(VisualTheme.Graphite()).ThemeMode(width == 390 ? ThemeMode.Light : ThemeMode.Dark)
+            .Title("Timing deviation by region").Legend(false).DataLabels(false).XLabels(Names)
+            .ValueFormat(ChartValueFormat.Number("0.## 'ms'")).TickLabelStyle(style => style.FontSize = 12);
         switch (kind) {
             case ChartSeriesKind.Bar:
                 chart.AddBar("Change", new[] { new ChartPoint(1, 12), new ChartPoint(2, 20), new ChartPoint(3, 0), new ChartPoint(4, -3) });
@@ -204,13 +204,13 @@ public sealed class CartesianCategoryCaptionLayoutTests {
                     new ChartBoxPlotSampleGroup(4, new[] { 1d, 4, 7, 10 })
                 };
                 chart.AddSeries(ChartSeries.CreateBoxPlot(new ChartSeriesId("observed-regions"), "Observed", groups)
-                    .ConfigureBoxPlotStatistics(options => options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr)
-                    .WithBoxPlotGroupIds(Identifiers.Select(value => new ChartObservationId("region-" + value)))
-                    .WithObservationIds(Enumerable.Range(0, 27).Select(index => new ChartObservationId("sample-" + index.ToString(CultureInfo.InvariantCulture)))))
+                    .BoxPlotStatistics(options => options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr)
+                    .BoxPlotGroupIds(Identifiers.Select(value => new ChartObservationId("region-" + value)))
+                    .ObservationIds(Enumerable.Range(0, 27).Select(index => new ChartObservationId("sample-" + index.ToString(CultureInfo.InvariantCulture)))))
                     .AddSeries(ChartSeries.CreateBoxPlot(new ChartSeriesId("reference-regions"), "Reference", new[] {
                         new ChartBoxPlot(1, 9, 11, 13, 15, 17), new ChartBoxPlot(2, 18, 19, 20, 21, 22),
                         new ChartBoxPlot(3, -4, -2, 0, 2, 4), new ChartBoxPlot(4, 2, 4, 6, 8, 10)
-                    }).WithObservationIds(Identifiers.Select(value => new ChartObservationId("reference-" + value))));
+                    }).ObservationIds(Identifiers.Select(value => new ChartObservationId("reference-" + value))));
                 return chart;
             case ChartSeriesKind.Waterfall:
                 if (legacyWaterfall) chart.AddWaterfall("Change", new[] { new ChartPoint(1, 12), new ChartPoint(2, -4), new ChartPoint(3, 7), new ChartPoint(4, -3) });
@@ -220,13 +220,13 @@ public sealed class CartesianCategoryCaptionLayoutTests {
                 break;
             default: throw new ArgumentOutOfRangeException(nameof(kind));
         }
-        chart.Series[0].WithObservationIds(Identifiers.Select(value => new ChartObservationId("region-" + value)));
+        chart.Series[0].ObservationIds(Identifiers.Select(value => new ChartObservationId("region-" + value)));
         return chart;
     }
 
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(new VisualRenderContext(
         new VisualLayoutOptions(new VisualSize(chart.Options.Size.Width, chart.Options.Size.Height), chart.Options.Padding),
-        chart.Options.Theme, chart.Options.ThemeMode, new VisualFrame(chart.Title, chart.Subtitle, chart.Options.ShowLegend),
+        chart.Options.Theme, chart.Options.ThemeMode, new VisualFrame(chart.Title, chart.Subtitle, chart.Options.Legend.Visible),
         new FontSpec { Family = "Carlito", FilePath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf") }));
 
     private static VisualSceneText[] Captions(PreparedVisual prepared) => prepared.Scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "axis-x-label").ToArray();

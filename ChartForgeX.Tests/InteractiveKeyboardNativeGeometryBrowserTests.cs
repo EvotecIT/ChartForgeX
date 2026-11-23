@@ -76,10 +76,10 @@ public sealed class InteractiveKeyboardNativeGeometryBrowserTests {
     private static Task<string> ActiveTargetIdAsync(IPage page) => page.EvaluateAsync<string>("() => document.activeElement.dataset.cfxTargetId || ''");
 
     private static string NativeFixture(bool dark) {
-        var chart = Chart.Create().WithSize(596, 338).WithTitle("Retained authored facts")
-            .WithSubtitle("Zero and precision-collapse facts remain available by keyboard")
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithLegend(false)
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).AddHorizontalLine(6, "Reference guide");
+        var chart = Chart.Create().Size(596, 338).Title("Retained authored facts")
+            .Subtitle("Zero and precision-collapse facts remain available by keyboard")
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Legend(false)
+            .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10)).AddHorizontalLine(6, "Reference guide");
         var html = chart.ToInteractiveHtmlPage(options => options.IncludeResetButton = false);
         // This branch has no zero-geometry producer. Exercise the exported native SVG metadata
         // contract in the actual prepared chart host; empty groups never invent pointer hit areas.

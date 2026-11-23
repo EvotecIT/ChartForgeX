@@ -15,9 +15,9 @@ public sealed class MapRouteClearanceTests {
     public void OptInClearanceUsesActualPeerEndpointMarksAndKeepsTheOriginalSourceRoute(int width, ThemeMode mode) {
         var route = new ChartMapConnector("Peer-owned endpoints", -5, 45, 25, 55).WithEndpointClearance(4)
             .WithFeature(new ChartMapFeature("peer-route", "{\"active\":true}"));
-        var chart = Chart.Create().WithSize(width, 400).WithTheme(VisualTheme.Graphite(), mode).WithMapViewport(ChartMapViewport.Europe())
+        var chart = Chart.Create().Size(width, 400).Theme(VisualTheme.Graphite()).ThemeMode(mode).Map(m => m.Viewport(ChartMapViewport.Europe()))
             .AddSeries(ChartSeries.CreateDottedMap(new ChartSeriesId("route-owner"), "Routes", Array.Empty<ChartMapPoint>()).ReplaceMapConnectors(new[] { route }))
-            .AddSeries(ChartSeries.CreateDottedMap(new ChartSeriesId("marks"), "Endpoints", new[] { new ChartMapPoint("Start", -5, 45), new ChartMapPoint("End", 25, 55) }).WithMarkerRadius(18));
+            .AddSeries(ChartSeries.CreateDottedMap(new ChartSeriesId("marks"), "Endpoints", new[] { new ChartMapPoint("Start", -5, 45), new ChartMapPoint("End", 25, 55) }).MarkerRadius(18));
         var prepared = MapLabelClusterDepthTests.Prepare(chart); MapLabelClusterDepthTests.Capture(prepared, "map-peer-clearance-" + width + "-" + mode);
         var path = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "dotted-map-connector");
         var points = prepared.Scene.Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role == "dotted-map-point").ToArray(); Assert.Equal(2, points.Length);
@@ -67,7 +67,7 @@ public sealed class MapRouteClearanceTests {
     public void FullyCoveredPublicRouteHasTruthfulCollapsedSourceAndClearanceValidationIsAtomic() {
         var route = new ChartMapConnector("Short source route", 0, 50, .1, 50).WithEndpointClearance(500);
         Assert.Throws<ArgumentOutOfRangeException>(() => route.WithEndpointClearance(-1)); Assert.Throws<ArgumentOutOfRangeException>(() => route.WithEndpointClearance(double.PositiveInfinity));
-        var chart = Chart.Create().WithSize(390, 320).WithMapViewport(ChartMapViewport.Europe())
+        var chart = Chart.Create().Size(390, 320).Map(m => m.Viewport(ChartMapViewport.Europe()))
             .AddDottedMap("Sites", new[] { new ChartMapPoint("Start", 0, 50), new ChartMapPoint("End", .1, 50) });
         chart.Series[0].ReplaceMapConnectors(new[] { route });
         var prepared = MapLabelClusterDepthTests.Prepare(chart);

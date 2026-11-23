@@ -81,8 +81,8 @@ public sealed class DesignTokenJsonTests {
     public void WithDesignTokens_AppliesThemeSeriesAndStateColoursToRenderedCharts() {
         var tokens = VisualDesignTokens.FromJson(GraphiteJson);
         var day = new DateTime(2026, 9, 25, 0, 0, 0, DateTimeKind.Utc);
-        var timeline = Chart.Create().WithSize(640, 240).WithDesignTokens(tokens)
-            .WithStateCategories(tokens.Status.OperationalStateCategories())
+        var timeline = Chart.Create().Size(640, 240).DesignTokens(tokens)
+            .StateCategories(tokens.Status.OperationalStateCategories())
             .AddStateTimelineLane("DC01", new[] { new ChartStateTimelineSegment(day, day.AddHours(2), "up"), new ChartStateTimelineSegment(day.AddHours(2), day.AddHours(3), "down") });
         var svg = XDocument.Parse(timeline.ToSvg());
         var fills = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "state-timeline-segment")
@@ -90,7 +90,7 @@ public sealed class DesignTokenJsonTests {
         Assert.Equal(new[] { tokens.Status.Pass.Fill.ToCss(), tokens.Status.Critical.Fill.ToCss() }, fills);
         Assert.Equal(tokens.Muted ?? tokens.MutedForeground, timeline.Options.Theme.Resolve(timeline.Options.ThemeMode).Muted);
 
-        var line = Chart.Create().WithDesignTokens(tokens).AddLine("A", new[] { new ChartPoint(0, 1), new ChartPoint(1, 2) }).AddLine("B", new[] { new ChartPoint(0, 2), new ChartPoint(1, 1) });
+        var line = Chart.Create().DesignTokens(tokens).AddLine("A", new[] { new ChartPoint(0, 1), new ChartPoint(1, 2) }).AddLine("B", new[] { new ChartPoint(0, 2), new ChartPoint(1, 1) });
         var lineSvg = line.ToSvg();
         Assert.Contains(tokens.Palette[0].ToCss(), lineSvg, StringComparison.OrdinalIgnoreCase);
         Assert.Contains(tokens.Palette[1].ToCss(), lineSvg, StringComparison.OrdinalIgnoreCase);
@@ -182,8 +182,8 @@ public sealed class DesignTokenJsonTests {
         Assert.Null(tokens.SequentialRamp);
         Assert.Null(tokens.DivergingRamp);
         Assert.Null(tokens.ToSequentialColorScale());
-        Assert.Empty(Chart.Create().WithDesignTokens(tokens).Options.Theme.Resolve(ThemeMode.Light).SequentialRamp);
-        var replaced = Chart.Create().WithDesignTokens(VisualDesignTokens.FromJson(GraphiteJson)).WithDesignTokens(tokens);
+        Assert.Empty(Chart.Create().DesignTokens(tokens).Options.Theme.Resolve(ThemeMode.Light).SequentialRamp);
+        var replaced = Chart.Create().DesignTokens(VisualDesignTokens.FromJson(GraphiteJson)).DesignTokens(tokens);
         Assert.Empty(replaced.Options.Theme.Resolve(replaced.Options.ThemeMode).SequentialRamp);
     }
 
@@ -200,20 +200,20 @@ public sealed class DesignTokenJsonTests {
     [Fact]
     public void WithDesignTokens_SequentialRampColoursCountHeatmapsInSvgAndPng() {
         var tokens = VisualDesignTokens.FromJson(GraphiteJson);
-        var chart = Chart.Create().WithSize(640, 280).WithDesignTokens(tokens).AddHeatmapRow("Logons", new[] { 0d, 200d, 400d });
-        chart.Options.HeatmapRelativeScale = true;
+        var chart = Chart.Create().Size(640, 280).DesignTokens(tokens).AddHeatmapRow("Logons", new[] { 0d, 200d, 400d });
+        chart.Options.Heatmap.RelativeScale = true;
         var fills = XDocument.Parse(chart.ToSvg()).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "heatmap-cell")
             .Select(element => element.RenderedColor("fill").ToCss()).ToArray();
         // A zero count takes the neutral surface; the ramp colours the counts above it.
         Assert.Equal(new[] { tokens.SequentialRamp![2].ToCss(), tokens.SequentialRamp[4].ToCss() }, fills.Skip(1).ToArray());
         Assert.DoesNotContain(fills[0], tokens.SequentialRamp.Select(colour => colour.ToCss()));
-        var explicitColour = Chart.Create().WithSize(640, 280).WithDesignTokens(tokens).AddHeatmapRow("Logons", new[] { 0d, 400d }, ChartColor.FromHex("#0f9f8c"));
+        var explicitColour = Chart.Create().Size(640, 280).DesignTokens(tokens).AddHeatmapRow("Logons", new[] { 0d, 400d }, ChartColor.FromHex("#0f9f8c"));
         Assert.DoesNotContain(tokens.SequentialRamp[4].ToCss(), explicitColour.ToSvg(), StringComparison.OrdinalIgnoreCase);
         var withRamp = chart.ToPng();
-        chart.ConfigureTheme(builder => builder.Colors(chart.Options.ThemeMode).SequentialRamp = null);
+        chart.Theme(builder => builder.Colors(chart.Options.ThemeMode).SequentialRamp = null);
         Assert.NotEqual(withRamp, chart.ToPng());
-        chart.WithDesignTokens(tokens);
-        Assert.Throws<ArgumentException>(() => chart.ConfigureTheme(builder => builder.Colors(chart.Options.ThemeMode).SequentialRamp = new[] { ChartColor.White }));
+        chart.DesignTokens(tokens);
+        Assert.Throws<ArgumentException>(() => chart.Theme(builder => builder.Colors(chart.Options.ThemeMode).SequentialRamp = new[] { ChartColor.White }));
     }
 
     [Fact]

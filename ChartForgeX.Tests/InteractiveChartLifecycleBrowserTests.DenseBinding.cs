@@ -43,7 +43,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     }
 
     private static async Task BindDenseLineAsync(Microsoft.Playwright.IPage page) {
-        var chart = Chart.Create().WithSize(1200, 600).WithLegend(false)
+        var chart = Chart.Create().Size(1200, 600).Legend(false)
             .AddLine("Signal", Enumerable.Range(0, 10000).Select(index => new ChartPoint(index, Math.Sin(index / 300.0) * 40 + 100)));
         var html = chart.ToInteractiveHtmlPage(options =>
             options.Interaction.Enable(ChartInteractionFeatures.Tooltips | ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan));

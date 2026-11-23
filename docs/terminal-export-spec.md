@@ -241,12 +241,12 @@ Output and table rows start at successive line-delay intervals. Each row reveals
 for 0.22 s with a cubic ease-out and a 3 px upward settling motion. Before a tab
 switch, playback waits until the current reveal has ended and at least the tab
 hold has elapsed after the latest content completion. Explicit `Pause` steps and
-tab transition durations remain additive. `WithTiming` and `WithTabHold` override
-individual values. Stories remain bounded to a 60 s logical timeline.
+tab transition durations remain additive. `InitialDelaySeconds`, `CharactersPerSecond`, `LineDelaySeconds` and
+`TabHoldSeconds` override individual values. Stories remain bounded to a 60 s logical timeline.
 
 The final prompt starts 0.08 s after the authored steps. GIF/APNG sampling uses
 whole-centisecond intervals rounded up from the requested frame rate. The final
 hold starts at the first completed sample and defaults to 1.2 s; configure it with
-`TerminalStoryAnimationOptions.WithEndHold`. Core encoders instead take each
+`TerminalStoryAnimationOptions.EndHoldSeconds`. Core encoders instead take each
 `RasterAnimationFrame.Duration` directly, including the final hold, and use
 `RasterAnimationOptions.PlayCount` (0 = infinite, 1 = once, N = total plays).

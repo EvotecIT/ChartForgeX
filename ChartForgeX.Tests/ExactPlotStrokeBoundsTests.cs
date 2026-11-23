@@ -14,12 +14,12 @@ public sealed class ExactPlotStrokeBoundsTests {
     [InlineData(true, false)]
     [InlineData(true, true)]
     public async Task AuthoredAxisEndStillAllowsFullWidthGuidesToFitTheAutomaticEnd(bool gantt, bool maximum) {
-        var chart = Chart.Create().WithSize(640, 320).WithPadding(0, 0, 0, 0)
-            .WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false).WithDataLabels(false);
+        var chart = Chart.Create().Size(640, 320).Padding(0, 0, 0, 0)
+            .ShowHeader(false).Legend(false).Axes(false).ShowGrid(false).DataLabels(false);
         if (gantt) chart.AddGanttTask("Task", 0, 1);
         else chart.AddLine("Values", new[] { new ChartPoint(0, 0), new ChartPoint(1, 1) });
-        if (maximum) chart.Options.XAxis.Maximum = 1;
-        else chart.Options.XAxis.Minimum = 0;
+        if (maximum) chart.Options.XAxis.Max = 1;
+        else chart.Options.XAxis.Min = 0;
         chart.AddVerticalLine(0).AddVerticalLine(1);
         foreach (var annotation in chart.Annotations)
             annotation.StrokeStyle = new ChartStrokeStyle(ChartColor.FromHex("#FF00FF"), 640, .15);
@@ -44,8 +44,8 @@ public sealed class ExactPlotStrokeBoundsTests {
     [InlineData(false)]
     [InlineData(true)]
     public async Task ConflictingPlotWidthReferencesPreserveDataAndSmallerGuideGeometry(bool gantt) {
-        var chart = Chart.Create().WithSize(640, 320).WithPadding(0, 0, 0, 0)
-            .WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false).WithDataLabels(false);
+        var chart = Chart.Create().Size(640, 320).Padding(0, 0, 0, 0)
+            .ShowHeader(false).Legend(false).Axes(false).ShowGrid(false).DataLabels(false);
         if (gantt) chart.AddGanttTask("Task", 0, 1);
         else chart.AddLine("Values", new[] { new ChartPoint(0, 0), new ChartPoint(1, 1) });
         chart.AddVerticalLine(0).AddVerticalLine(1).AddVerticalLine(.5);
@@ -74,8 +74,8 @@ public sealed class ExactPlotStrokeBoundsTests {
     [InlineData(false, true)]
     [InlineData(true, true)]
     public async Task AReferenceAsWideAsThePlotCanStillFitAtItsCenter(bool gantt, bool coincident) {
-        var chart = Chart.Create().WithSize(640, 320).WithPadding(0, 0, 0, 0)
-            .WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false).WithDataLabels(false);
+        var chart = Chart.Create().Size(640, 320).Padding(0, 0, 0, 0)
+            .ShowHeader(false).Legend(false).Axes(false).ShowGrid(false).DataLabels(false);
         if (gantt) chart.AddGanttTask("Task", 0, 1);
         else chart.AddLine("Values", new[] { new ChartPoint(0, 0), new ChartPoint(1, 1) });
         chart.AddVerticalLine(0, color: ChartColor.FromHex("#FF00FF"));

@@ -15,10 +15,10 @@ public sealed class V2LinearGaugeLayoutTests {
     [InlineData(false, true)]
     [InlineData(true, true)]
     public void FramedLinearGaugeMeasuresItsSummaryAboveThePointerAndKeepsScaleRowsSeparate(bool dark, bool carlito) {
-        var chart = Chart.Create().WithSize(596, 230).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithTitle("Linear readiness").WithSubtitle("Explicit target and bands")
+        var chart = Chart.Create().Size(596, 230).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Title("Linear readiness").Subtitle("Explicit target and bands")
             .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness", new ChartGaugeValue(87, targets: new[] { new ChartGaugeTarget(90) })))
-            .ConfigureGauge(options => {
+            .Gauge(options => {
                 options.Form = ChartGaugeForm.Linear;
                 options.Bands.Add(new ChartGaugeBand(0, 60, ChartSeriesState.Danger));
                 options.Bands.Add(new ChartGaugeBand(60, 80, ChartSeriesState.Warning));
@@ -27,7 +27,7 @@ public sealed class V2LinearGaugeLayoutTests {
         if (carlito) {
             var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
             Assert.True(File.Exists(font), "The gallery's resolved Carlito face must be available.");
-            chart.WithPngFont(font);
+            chart.Png(p => p.FontPath(font));
         }
         var context = VisualExportRequest.ForChart(chart).Context;
         var prepared = chart.Prepare(context);
@@ -59,7 +59,7 @@ public sealed class V2LinearGaugeLayoutTests {
     [InlineData(58, false)]
     public void HeightConstrainedLinearGaugeRetainsItsMeasurementInsteadOfPaintingAMicroscopicDefault(double height, bool trackFits) {
         var chart = Chart.Create().AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness",
-            new ChartGaugeValue(87, targets: new[] { new ChartGaugeTarget(90) }))).ConfigureGauge(options => options.Form = ChartGaugeForm.Linear);
+            new ChartGaugeValue(87, targets: new[] { new ChartGaugeTarget(90) }))).Gauge(options => options.Form = ChartGaugeForm.Linear);
         var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(font), "A controlled face distinguishes a missing summary row from an entirely insufficient viewport.");
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(180, height), 0),
@@ -91,9 +91,9 @@ public sealed class V2LinearGaugeLayoutTests {
 
     [Fact]
     public void LinearSummaryKeepsAuthoredLabelsAndExplicitFontSizesAuthoritative() {
-        var chart = Chart.Create().WithSize(596, 230).AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness",
-            new ChartGaugeValue(87, targets: new[] { new ChartGaugeTarget(90) }))).ConfigureGauge(options => options.Form = ChartGaugeForm.Linear);
-        chart.Series[0].WithPointLabel(0, "Observed 87");
+        var chart = Chart.Create().Size(596, 230).AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness",
+            new ChartGaugeValue(87, targets: new[] { new ChartGaugeTarget(90) }))).Gauge(options => options.Form = ChartGaugeForm.Linear);
+        chart.Series[0].PointLabel(0, "Observed 87");
         chart.Series[0].DataLabelStyle.FontSize = 10;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var value = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), text => text.Role == "gauge-label");

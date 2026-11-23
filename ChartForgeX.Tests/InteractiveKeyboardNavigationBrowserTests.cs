@@ -72,7 +72,7 @@ public sealed class InteractiveKeyboardNavigationBrowserTests {
     [InlineData(ChartInteractionFeatures.Tooltips | ChartInteractionFeatures.Selection)]
     public async Task DisabledKeyboardNavigationRetainsNativeLinkAndHostKeyBehavior(ChartInteractionFeatures features) {
         if (!Enabled) return;
-        var html = LinkedHeatmap().WithLegend(false).ToInteractiveHtmlPage(options => options.Interaction.Features = features);
+        var html = LinkedHeatmap().Legend(false).ToInteractiveHtmlPage(options => options.Interaction.Features = features);
         await using var session = await OpenAsync(WithHostControls(html));
         var page = session.Page;
         Assert.Equal(0, await page.Locator("[data-cfx-keyboard-component]").CountAsync());
@@ -120,7 +120,7 @@ public sealed class InteractiveKeyboardNavigationBrowserTests {
     [InlineData(true)]
     public async Task CompactNavigationRevealsTheFocusedPointInsideTheLocalStage(bool dark) {
         if (!Enabled) return;
-        await using var session = await OpenAsync(StatusLines(dark).WithSize(900, 420).ToInteractiveHtmlPage(), 340, 560);
+        await using var session = await OpenAsync(StatusLines(dark).Size(900, 420).ToInteractiveHtmlPage(), 340, 560);
         var page = session.Page;
         await page.Locator(DataStop).FocusAsync();
         var pageScroll = await page.EvaluateAsync<double>("() => window.scrollY");
@@ -152,7 +152,7 @@ public sealed class InteractiveKeyboardNavigationBrowserTests {
     [BrowserFact]
     public async Task SeriesNavigationMatchesSharedXAndClampsShorterSeries() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(596, 338).WithTheme(VisualTheme.Graphite())
+        var chart = Chart.Create().Size(596, 338).Theme(VisualTheme.Graphite())
             .AddLine("Sparse", new[] { new ChartPoint(1, 10), new ChartPoint(3, 30), new ChartPoint(7, 40) })
             .AddLine("Dense", new[] { new ChartPoint(1, 20), new ChartPoint(2, 22), new ChartPoint(3, 25), new ChartPoint(7, 50) })
             .AddLine("Short", new[] { new ChartPoint(9, 40), new ChartPoint(10, 50) });
@@ -174,7 +174,7 @@ public sealed class InteractiveKeyboardNavigationBrowserTests {
     [InlineData("sankey")]
     public async Task NonCartesianTargetsHaveOneDataComponentAndDeterministicTraversal(string family) {
         if (!Enabled) return;
-        var chart = NonCartesian(family).WithSize(596, 338).WithTheme(VisualTheme.Graphite());
+        var chart = NonCartesian(family).Size(596, 338).Theme(VisualTheme.Graphite());
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage());
         var page = session.Page;
         var ids = await page.EvaluateAsync<string[]>("() => Array.from(document.querySelectorAll('[data-cfx-keyboard-component=\"data\"]')).map(node => node.dataset.cfxTargetId)");
@@ -196,7 +196,7 @@ public sealed class InteractiveKeyboardNavigationBrowserTests {
     [BrowserFact]
     public async Task DecimatedNavigationKeepsSourceIdentityAndSynchronizesSelectionWithoutMovingPeerFocus() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(596, 338).WithLineMarkers(ChartLineMarkerMode.None)
+        var chart = Chart.Create().Size(596, 338).Lines(l => l.MarkerMode(ChartLineMarkerMode.None))
             .AddSeries(ChartSeries.CreateDecimated(new ChartSeriesId("latency-source"), "Latency", ChartSeriesKind.Line, Enumerable.Range(0, 100).Select(index => new ChartPoint(index, Math.Sin(index / 4d))), 12));
         var html = new[] { chart, chart }.ToInteractiveHtmlDashboardPage(options => {
             options.Columns = 1;
@@ -231,16 +231,16 @@ public sealed class InteractiveKeyboardNavigationBrowserTests {
     private static string WithHostControls(string html) => html.Replace("<main ", "<button id=\"before-chart\">Before chart</button><main ", StringComparison.Ordinal)
         .Replace("</main>", "</main><button id=\"after-chart\">After chart</button>", StringComparison.Ordinal);
 
-    private static Chart LinkedHeatmap() => Chart.Create().WithSize(596, 338).WithTheme(VisualTheme.Graphite())
-        .WithXLabels("Directory", "API", "Mail")
-        .WithStateCategories(new ChartStateCategory("pass", "Passed", ChartColor.FromHex("#1d8a52")))
+    private static Chart LinkedHeatmap() => Chart.Create().Size(596, 338).Theme(VisualTheme.Graphite())
+        .XLabels("Directory", "API", "Mail")
+        .StateCategories(new ChartStateCategory("pass", "Passed", ChartColor.FromHex("#1d8a52")))
         .AddHeatmapCategoryRow("First", new[] { new ChartHeatmapCell("pass", "1"), new ChartHeatmapCell("pass", "2", href: "#evidence"), new ChartHeatmapCell("pass", "3") })
         .AddHeatmapCategoryRow("Second", new[] { new ChartHeatmapCell("pass", "4"), new ChartHeatmapCell("pass", "5"), new ChartHeatmapCell("pass", "6") });
 
     private static Chart NonCartesian(string family) => family switch {
-        "pie" => Chart.Create().WithXLabels("First", "Second", "Third").AddPie("Share", ChartPoints.FromValues(5, 3, 2)),
+        "pie" => Chart.Create().XLabels("First", "Second", "Third").AddPie("Share", ChartPoints.FromValues(5, 3, 2)),
         "sankey" => Chart.Create().AddSankey("Flow", new[] { new ChartNode("Input", "Input"), new ChartNode("API", "API"), new ChartNode("Mail", "Mail") }, new[] { new ChartFlowLink("input-api", "Input", "API", 4), new ChartFlowLink("input-mail", "Input", "Mail", 2) }),
-        "map" => Chart.Create().WithMapLabels(false).ConfigureMapColorDimension(options => options.ShowLegend = false).AddRegionMap("Coverage", new ChartMapDefinition("two", "Two regions", 100, 100, new[] {
+        "map" => Chart.Create().Map(m => m.ShowLabels(false)).Map(map => map.ColorDimension(options => options.ShowLegend = false)).AddRegionMap("Coverage", new ChartMapDefinition("two", "Two regions", 100, 100, new[] {
             new ChartMapRegion("A", "First", "M0 0H50V100H0Z"), new ChartMapRegion("B", "Second", "M50 0H100V100H50Z")
         }), new[] { new ChartRegionMapItem("A", 10) }),
         _ => throw new ArgumentOutOfRangeException(nameof(family))

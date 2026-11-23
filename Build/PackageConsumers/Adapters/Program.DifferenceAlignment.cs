@@ -9,7 +9,7 @@ internal static partial class Program {
         var first = ChartSeries.CreateLine(new ChartSeriesId("first"), "Actual", new[] { new ChartPoint(1, 1), new ChartPoint(2, 100) });
         var second = ChartSeries.CreateLine(new ChartSeriesId("second"), "Forecast", new[] { new ChartPoint(1, 10), new ChartPoint(2, 2) });
         var chart = Chart.Create().AddAlignedDifferenceArea("Comparison", ChartDifferencePoints.Align(first, second));
-        chart.Options.YAxis.WithLogarithmicScale();
+        chart.Options.YAxis.LogarithmicScale();
         var html = chart.ToInteractiveHtmlFragment(options => options.Interaction.Enable(ChartInteractionFeatures.Export));
         PackageAssertions.Require(PackageAssertions.Contains(html, "data-cfx-first-source-series-id=\"first\"")
             && PackageAssertions.Contains(html, "data-cfx-second-source-series-id=\"second\"")

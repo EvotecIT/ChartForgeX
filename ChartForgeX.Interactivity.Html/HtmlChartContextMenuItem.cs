@@ -1,10 +1,12 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Interactivity.Html;
 
 /// <summary>A host-defined chart context-menu item. Choosing it dispatches a <c>cfxcontextaction</c> event from the chart section.</summary>
 /// <remarks>The event detail carries the item's <c>id</c>, the <c>chartId</c>, the current <c>selection</c> and the exported
 /// <c>data</c> rows. The generated page runs no host code; the host listens for the event.</remarks>
+[Fluent]
 public sealed class HtmlChartContextMenuItem {
     /// <summary>Initializes a new context-menu item.</summary>
     /// <param name="id">A stable identifier, unique within the chart's menu.</param>

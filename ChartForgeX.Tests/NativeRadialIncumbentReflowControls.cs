@@ -9,7 +9,7 @@ namespace ChartForgeX.Tests;
 public sealed class NativeRadialIncumbentReflowControls {
     [Theory] [InlineData("line")] [InlineData("bar")] [InlineData("boxes")] [InlineData("raw")]
     public void IncumbentFiniteReflowSourcePayloadAndFramesRemainExact(string kind) {
-        var chart = NativeReflowVisibilityTests.Model(kind, labels: true).WithFontFamily(BrowserProofFonts.Family);
+        var chart = NativeReflowVisibilityTests.Model(kind, labels: true).FontFamily(BrowserProofFonts.Family);
         var renderer = new HtmlInteractiveChartRenderer(); var from = renderer.PrepareVisibilitySection(chart, NativeReflowVisibilityTests.View(kind, false));
         var to = renderer.PrepareVisibilitySection(chart, NativeReflowVisibilityTests.View(kind, true)); var frames = VisualSeriesVisibilityCapture.ReflowFrames(from.PreparedVisual, to.PreparedVisual, 3);
         var payload = renderer.PrepareNativeTransitionJson(from, to, new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.LegendVisibility, 3));

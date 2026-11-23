@@ -10,7 +10,7 @@ public static class MapNavigationDepthRecipe {
         }).WithGeographicProjection(ChartMapGeoJsonProjection.Equirectangular);
         var coverage = ChartSeries.CreateRegionMap(new ChartSeriesId("zones"), "Coverage", definition, new[] {
             new ChartRegionMapItem("W", 92), new ChartRegionMapItem("N", 88)
-        }).WithColorScale(ChartColorScale.Sequential(ChartColor.FromHex("#DBEAFE"), ChartColor.FromHex("#2563EB")).WithValueRange(0, 100));
+        }).ColorScale(ChartColorScale.Sequential(ChartColor.FromHex("#DBEAFE"), ChartColor.FromHex("#2563EB")).WithValueRange(0, 100));
         var points = new[] {
             new ChartMapPoint("West gateway", -3.7, 40.4, 10).WithColorValue(-5),
             new ChartMapPoint("North intake", 21, 52.2, 20).WithColorValue(0).WithFeature(new ChartMapFeature("intake", "{\"kind\":\"intake\"}")),
@@ -19,15 +19,15 @@ public static class MapNavigationDepthRecipe {
             new ChartMapPoint("Outside this viewport", 120, 0, 80).WithColorValue(80)
         };
         var sites = ChartSeries.CreateDottedMap(new ChartSeriesId("sites"), "Source sites", points)
-            .WithObservationIds(new[] { new ChartObservationId("west"), new ChartObservationId("intake"), new ChartObservationId("processing"), new ChartObservationId("dispatch"), new ChartObservationId("outside") })
-            .WithMapClustering(new ChartMapClustering(48, 2, 14))
-            .WithColorScale(ChartColorScale.Sequential(ChartColor.FromHex("#CCFBF1"), ChartColor.FromHex("#0D9488")).WithValueRange(-10, 80))
+            .ObservationIds(new[] { new ChartObservationId("west"), new ChartObservationId("intake"), new ChartObservationId("processing"), new ChartObservationId("dispatch"), new ChartObservationId("outside") })
+            .MapClustering(new ChartMapClustering(48, 2, 14))
+            .ColorScale(ChartColorScale.Sequential(ChartColor.FromHex("#CCFBF1"), ChartColor.FromHex("#0D9488")).WithValueRange(-10, 80))
             .ReplaceMapConnectors(new[] { new ChartMapConnector("Gateway to northern services", -3.7, 40.4, 21, 52.2).WithEndpointClearance(4) });
-        sites.ConfigureMapPointSize(options => { options.MinimumRadius = 3; options.MaximumRadius = 9; });
-        var chart = Chart.Create().WithSize(width, 600).WithTheme(VisualTheme.Graphite(), mode).WithLegend().WithMapLabels().WithDataLabels()
-            .WithTitle("Source sites, shared geography").WithSubtitle("Grid badges count sites; source weights, colors and identities remain available")
-            .WithMapViewport(new ChartMapViewport("Service window", -10, 30, 35, 65)).AddSeries(coverage).AddSeries(sites);
-        chart.Options.MapCallouts = new ChartMapCallouts(48, ChartMapRegionLabel.Name);
+        sites.MapPointSize(options => { options.MinimumRadius = 3; options.MaximumRadius = 9; });
+        var chart = Chart.Create().Size(width, 600).Theme(VisualTheme.Graphite()).ThemeMode(mode).Legend().Map(m => m.ShowLabels()).DataLabels()
+            .Title("Source sites, shared geography").Subtitle("Grid badges count sites; source weights, colors and identities remain available")
+            .Map(m => m.Viewport(new ChartMapViewport("Service window", -10, 30, 35, 65))).AddSeries(coverage).AddSeries(sites);
+        chart.Options.Map.Callouts = new ChartMapCallouts(48, ChartMapRegionLabel.Name);
         return chart;
     }
 }

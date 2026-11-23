@@ -5,11 +5,11 @@ public static class DonutRecipe {
         if (variant is not ("wide" or "compact" or "sparse" or "options" or "compact-options"))
             throw new ArgumentOutOfRangeException(nameof(variant));
         var revenue = new ChartSeries(new ChartSeriesId("revenue"), "Revenue", ChartSeriesKind.Donut, Observations(variant));
-        var chart = Chart.Create().WithXLabels("Subscriptions", "Consulting", "Support", "Licenses", "Training", "Other")
+        var chart = Chart.Create().XLabels("Subscriptions", "Consulting", "Support", "Licenses", "Training", "Other")
             .AddSeries(revenue);
         if (variant == "options") {
-            chart.WithDataLabels().WithPieSliceLabelContent(ChartPieSliceLabelContent.Label).WithDonutCenterText("1,000", "Revenue (k)");
-            revenue.WithPointSliceOffset(0, .12).WithPointFillPattern(1, ChartFillPattern.Crosshatch);
+            chart.DataLabels().Pie(p => p.SliceLabelContent(ChartPieSliceLabelContent.Label).CenterValue("1,000").CenterLabel("Revenue (k)"));
+            revenue.PointSliceOffset(0, .12).PointFillPattern(1, ChartFillPattern.Crosshatch);
         }
         return chart;
     }

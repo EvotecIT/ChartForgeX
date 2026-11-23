@@ -25,15 +25,8 @@ public sealed partial class VisualCanvas {
         }
     }
 
-    /// <summary>Sets output dimensions without changing layer coordinates.</summary>
-    public VisualCanvas WithOutputSize(int width, int height) {
-        Width = width;
-        Height = height;
-        return this;
-    }
-
     /// <summary>Preserves a design coordinate space while adapting SVG and PNG output to other dimensions.</summary>
-    public VisualCanvas WithResponsiveLayout(int designWidth, int designHeight, VisualCanvasImageFit fit = VisualCanvasImageFit.Contain) {
+    public VisualCanvas ResponsiveLayout(int designWidth, int designHeight, VisualCanvasImageFit fit = VisualCanvasImageFit.Contain) {
         if (designWidth <= 0) throw new ArgumentOutOfRangeException(nameof(designWidth), designWidth, "Design width must be positive.");
         if (designHeight <= 0) throw new ArgumentOutOfRangeException(nameof(designHeight), designHeight, "Design height must be positive.");
         ValidateResponsiveFit(fit, nameof(fit));
@@ -44,7 +37,7 @@ public sealed partial class VisualCanvas {
     }
 
     /// <summary>Uses output dimensions as the layer coordinate space again.</summary>
-    public VisualCanvas WithFixedLayout() {
+    public VisualCanvas FixedLayout() {
         _designWidth = null;
         _designHeight = null;
         _responsiveFit = VisualCanvasImageFit.Contain;

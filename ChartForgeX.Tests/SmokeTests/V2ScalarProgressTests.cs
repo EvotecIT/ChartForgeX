@@ -31,13 +31,13 @@ public sealed class V2ScalarProgressTests {
         var chart = Chart.Create().AddCircle("Load", 75);
         chart.Series[0].StateRole = ChartSeriesState.Info;
         var first = Assert.Single(Compile(chart).Nodes.OfType<VisualSceneSlice>(), slice => slice.Role == "circle-value");
-        chart.Options.CircleRadiusScale = 1.35; chart.Options.CircleStrokeScale = 1.8;
+        chart.Options.Circle.RadiusScale = 1.35; chart.Options.Circle.StrokeScale = 1.8;
         var scene = Compile(chart, new ChartRect(0, 0, 180, 140));
         var second = Assert.Single(scene.Nodes.OfType<VisualSceneSlice>(), slice => slice.Role == "circle-value");
         Assert.Equal(new VisualRenderContext().Theme.Resolve(ThemeMode.Light).Status.Info.Fill, second.Fill);
         Assert.NotEqual(first.Outer - first.Inner, second.Outer - second.Inner);
         Assert.True(second.Cx - second.Outer >= 0 && second.Cx + second.Outer <= 180 && second.Cy - second.Outer >= 0 && second.Cy + second.Outer <= 140);
-        chart.Options.ShowCircleStatusLabel = false;
+        chart.Options.Circle.ShowStatusLabel = false;
         Assert.DoesNotContain(Compile(chart).Nodes, node => node.Role is "circle-status-label" or "circle-status-marker");
         chart.Series[0].ShowDataLabels = false;
         Assert.DoesNotContain(Compile(chart).Nodes, node => node.Role is "circle-label" or "circle-title");
@@ -47,7 +47,7 @@ public sealed class V2ScalarProgressTests {
     public void BulletRowsUseOneTruthfulScaleAndPreserveRawTargetsRangesAndExplicitPaint() {
         var chart = Chart.Create().AddBullet("Small", 50, 120, 0, 100, new[] { 30d, 60d })
             .AddBullet("Large", 500, -100, 0, 1000, new[] { 200d, 700d });
-        var paint = ChartColor.FromHex("#2468AC"); chart.Series[0].WithPointColor(0, paint);
+        var paint = ChartColor.FromHex("#2468AC"); chart.Series[0].PointColor(0, paint);
         var scene = Compile(chart);
         var groups = scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "bullet-row").ToArray();
         Assert.Equal(2, groups.Length); Assert.All(groups, group => Assert.Equal("1000", group.Metadata["data-cfx-scale-max"]));
@@ -69,7 +69,7 @@ public sealed class V2ScalarProgressTests {
     public void ProgressRowsPreserveOverMaximumValuesAndFitHandlesAtBothTrackEnds(int width, int height) {
         const string full = "Complete progress category with retained additional context";
         var chart = Chart.Create().AddProgressBars("Work", new[] { new ChartProgressItem(full, 0), new ChartProgressItem("Done", 175) });
-        chart.Options.ProgressBarThicknessRatio = .72;
+        chart.Options.Progress.BarThicknessRatio = .72;
         chart.Options.ValueFormatter = number => number.ToString("0.0", CultureInfo.GetCultureInfo("pl-PL")) + " units";
         var scene = Compile(chart, new ChartRect(0, 0, width, height));
         var groups = scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "progress-row").ToArray();
@@ -84,7 +84,7 @@ public sealed class V2ScalarProgressTests {
         var artifact = new PreparedVisual(scene).ToArtifact("progress", VisualArtifactKind.Chart);
         Assert.Contains(artifact.Regions, region => region.Label!.Contains(full));
         Assert.Contains("175,0 units", artifact.ToSvg());
-        chart.Options.ShowProgressHandles = false; chart.Options.ShowProgressValues = false;
+        chart.Options.Progress.ShowHandles = false; chart.Options.Progress.ShowValues = false;
         Assert.DoesNotContain(Compile(chart).Nodes, node => node.Role is "progress-handle" or "progress-value");
         Assert.NotEmpty(VisualSceneRasterRenderer.Render(scene).Pixels);
     }
@@ -92,7 +92,7 @@ public sealed class V2ScalarProgressTests {
     [Fact]
     public void InvalidTypedRangesLeaveCustomLabelsAndCompactArtifactHandoffIntact() {
         const string full = "An operator-provided measurement label which will be shortened on this compact circle";
-        var chart = Chart.Create().AddCircle("Small", 70); chart.Series[0].WithPointLabel(0, full);
+        var chart = Chart.Create().AddCircle("Small", 70); chart.Series[0].PointLabel(0, full);
         var scene = Compile(chart, new ChartRect(0, 0, 100, 90));
         Assert.Contains(scene.Regions, region => region.Label == full);
         var artifact = new PreparedVisual(scene).ToArtifact("circle", VisualArtifactKind.Chart);

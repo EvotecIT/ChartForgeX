@@ -14,10 +14,10 @@ public sealed class ChartDiscontinuityTests {
     [InlineData(ChartSeriesKind.Area, true)]
     [InlineData(ChartSeriesKind.StepArea, false)]
     public void IsolatedSegmentsRemainVisibleWithoutMarkers(ChartSeriesKind kind, bool smooth) {
-        var chart = Chart.Create().WithSize(600, 300).WithPadding(20, 20, 20, 20)
-            .WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false).WithDataLabels(false);
+        var chart = Chart.Create().Size(600, 300).Padding(20, 20, 20, 20)
+            .ShowHeader(false).Legend(false).Axes(false).ShowGrid(false).DataLabels(false);
         chart.AddSeries(new ChartSeries(new ChartSeriesId("fixture-series"), "Observed", kind, new[] { new ChartPoint(0, 5), new ChartPoint(5, 5, true), new ChartPoint(10, 5, true) }) { Color = ChartColor.FromRgb(255, 0, 0) });
-        chart.Series[0].WithSmooth(smooth).ConfigureMarkers(markers => markers.Radius = 0);
+        chart.Series[0].Smooth(smooth).Markers(markers => markers.Radius = 0);
         var svg = XDocument.Parse(chart.ToSvg());
         var role = "line";
         var paths = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == role).ToArray();
@@ -46,9 +46,9 @@ public sealed class ChartDiscontinuityTests {
     [InlineData(ChartSeriesKind.StepArea, false)]
     public void SvgAndPngLeaveDisconnectedIntervalsEmpty(ChartSeriesKind kind, bool smooth) {
         Chart Create(bool disconnected) {
-            var chart = Chart.Create().WithSize(600, 300).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false).WithDataLabels(false);
+            var chart = Chart.Create().Size(600, 300).ShowHeader(false).Legend(false).Axes(false).ShowGrid(false).DataLabels(false);
             chart.AddSeries(new ChartSeries(new ChartSeriesId("fixture-series"), "Observed", kind, new[] { new ChartPoint(0, 5), new ChartPoint(1, 7), new ChartPoint(2, 5), new ChartPoint(8, 5, disconnected), new ChartPoint(9, 7), new ChartPoint(10, 5) }) { Color = ChartColor.FromRgb(255, 0, 0) });
-            chart.Series[0].WithSmooth(smooth).ConfigureMarkers(markers => markers.Radius = 0);
+            chart.Series[0].Smooth(smooth).Markers(markers => markers.Radius = 0);
             return chart;
         }
         var chart = Create(true);

@@ -40,14 +40,14 @@ public sealed partial class ColorScalePositionedNativeTests {
     [InlineData("treemap")]
     public void EveryAuthoredRgbaAnchorSurvivesElevenSampleKeysAndDetachedExports(string family) {
         var stops = Enumerable.Range(0, 16).Select(index => new ChartColorStop(index * index - 20, (index % 2 == 0 ? Cold : Hot).WithAlpha((byte)(37 + index * 11)))).ToArray();
-        var scale = ChartColorScale.Sequential(stops); var chart = Create(family, scale).WithValueFormatter(value => value.ToString("R", CultureInfo.InvariantCulture) + " kWh");
+        var scale = ChartColorScale.Sequential(stops); var chart = Create(family, scale).FormatValuesBy(value => value.ToString("R", CultureInfo.InvariantCulture) + " kWh");
         var prepared = Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng(); var document = XDocument.Parse(svg);
         AssertMetadata(prepared, document, family, scale); AssertKeyPaint(prepared, document, family, scale);
         Assert.Equal(11, Swatches(prepared, family).Length);
         var description = prepared.Regions.Single(region => region.Role == Prefix(family) + "-stops").Label;
         if (family == "scatter") Assert.DoesNotContain("kWh", description); else Assert.Contains("kWh", description);
         SetScale(chart, family, scale.WithValueRange(-40, 300).WithLabels("Changed", null, "Changed"));
-        chart.WithValueFormatter(value => "Changed").ConfigureLabels(labels => labels.Color = "Changed");
+        chart.FormatValuesBy(value => "Changed").Labels(labels => labels.Color = "Changed");
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
         Assert.NotEqual(svg, Prepare(chart).ToSvg());
         ScatterBubbleColorRenderingTests.Capture(prepared, "positioned-rgba-" + family);
@@ -57,7 +57,7 @@ public sealed partial class ColorScalePositionedNativeTests {
     [InlineData("tile-map", 360, true)]
     [InlineData("region-map", 800, false)]
     public void RightMapKeysReverseCanonicalSamplesAndAnchorTheMidpointToItsNumericPosition(string family, int width, bool dark) {
-        var scale = Scale(); var chart = Create(family, scale, width, dark).WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right);
+        var scale = Scale(); var chart = Create(family, scale, width, dark).Map(m => m.ScaleLegendPosition(ChartMapScaleLegendPosition.Right));
         var prepared = Prepare(chart); var document = XDocument.Parse(prepared.ToSvg());
         AssertMetadata(prepared, document, family, scale); AssertKeyPaint(prepared, document, family, scale, right: true);
         var swatches = Swatches(prepared, family); Assert.Equal(5, swatches.Length);

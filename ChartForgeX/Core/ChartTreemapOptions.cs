@@ -1,9 +1,11 @@
 using System;
 using ChartForgeX.Typography;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>Controls hierarchical treemap interiors and their independent numeric color legend.</summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class ChartTreemapOptions {
     private double _groupPadding = 6;
     private double _gap = 3;

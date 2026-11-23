@@ -14,7 +14,7 @@ public sealed class SharedDefaultNumberFormattingTests {
         try {
             string Render(string culture) {
                 CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(culture);
-                return Chart.Create().WithXAxisBounds(1000, 2000)
+                return Chart.Create().XAxis(x => x.Bounds(1000, 2000))
                     .AddScatter("Samples", new[] { new ChartPoint(1234, 12500.125) })
                     .Prepare(new VisualRenderContext()).ToSvg();
             }
@@ -76,7 +76,7 @@ public sealed class SharedDefaultNumberFormattingTests {
         var expected = new[] { "10,000", "10,250", "10,500", "10,750", "11,000" };
         var schedule = ChartAxisValueFormatter.Create(chart.Options.XAxis, ticks, valueDefaults: chart.Options);
         Assert.Equal(expected, ticks.Select(schedule));
-        var color = new ChartColorPresentation(chart.Options.HeatmapColorDimension, chart.Options.Labels, chart.Options.Labels.Value, chart.Options.ValueFormat);
+        var color = new ChartColorPresentation(chart.Options.Heatmap.ColorDimension, chart.Options.Labels, chart.Options.Labels.Value, chart.Options.ValueFormat);
         Assert.Equal(expected, color.ScaleValues(ticks));
     }
 
@@ -84,9 +84,9 @@ public sealed class SharedDefaultNumberFormattingTests {
     public void MapClusterDisplayPoliciesCannotReplaceTheRawCount() {
         var sites = ChartSeries.CreateDottedMap(new ChartSeriesId("sites"), "Sites", new[] {
             new ChartMapPoint("A", 10, 50), new ChartMapPoint("B", 10, 50), new ChartMapPoint("C", 10, 50)
-        }).WithMapClustering(new ChartMapClustering(48, 3));
-        var chart = Chart.Create().WithSize(800, 440).WithMapViewport(ChartMapViewport.Europe()).AddSeries(sites)
-            .WithValueFormat(ChartValueFormat.Number("0 'items'"));
+        }).MapClustering(new ChartMapClustering(48, 3));
+        var chart = Chart.Create().Size(800, 440).Map(m => m.Viewport(ChartMapViewport.Europe())).AddSeries(sites)
+            .ValueFormat(ChartValueFormat.Number("0 'items'"));
         var cluster = Assert.Single(XDocument.Parse(chart.ToSvg()).Descendants(), node =>
             (string?)node.Attribute("data-cfx-derived") == "map-grid-cluster");
         Assert.Equal("3", cluster.Attribute("data-cfx-value")!.Value);
@@ -96,7 +96,7 @@ public sealed class SharedDefaultNumberFormattingTests {
 
     [Fact]
     public void AnAuthoredCultureAndFixedPrecisionRemainAuthoritative() {
-        var chart = Chart.Create().WithValueFormat(ChartValueFormat.Number("#,0.0000 '°C'", CultureInfo.GetCultureInfo("pl-PL")));
+        var chart = Chart.Create().ValueFormat(ChartValueFormat.Number("#,0.0000 '°C'", CultureInfo.GetCultureInfo("pl-PL")));
         var expected = 2611.111.ToString("#,0.0000 '°C'", CultureInfo.GetCultureInfo("pl-PL"));
         Assert.Equal(expected, ChartNumericFormatter.FormatValue(chart.Options, 2611.111));
         Assert.Equal(new[] { expected }, ChartNumericFormatter.FormatScaleValues(chart.Options, new[] { 2611.111 }));
@@ -112,14 +112,14 @@ public sealed class SharedDefaultNumberFormattingTests {
     [Fact]
     public void DefaultProgressRingAverageNamesItsPercentUnitAndKeepsTheSourceValues() {
         var values = new[] { 27d, 34, 41, 48, 26, 33 };
-        var chart = Chart.Create().WithSize(600, 440).WithDataLabels().WithProgressRingCenterLabel()
+        var chart = Chart.Create().Size(600, 440).DataLabels().Progress(p => p.ShowRingCenterLabel())
             .AddSeries(new ChartSeries(new ChartSeriesId("completion"), "Completion", ChartSeriesKind.ProgressRing,
                 values.Select((value, index) => new ChartPoint(index + 1, value))));
         var document = XDocument.Parse(chart.ToSvg());
         var center = Assert.Single(document.Descendants(), node => (string?)node.Attribute("data-cfx-role") == "progress-ring-value");
         Assert.Equal("34.8%", center.Value);
         Assert.Equal(values, chart.Series[0].Points.Select(point => point.Y));
-        chart.WithValueFormat(ChartValueFormat.Number("0.000 'points'"));
+        chart.ValueFormat(ChartValueFormat.Number("0.000 'points'"));
         document = XDocument.Parse(chart.ToSvg());
         center = Assert.Single(document.Descendants(), node => (string?)node.Attribute("data-cfx-role") == "progress-ring-value");
         Assert.Equal("34.833 points", center.Value);

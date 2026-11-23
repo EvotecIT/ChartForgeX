@@ -92,11 +92,11 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     }
 
     private static Chart LinkedSchedule(ChartSeriesKind kind, DateTime start, DateTime end) {
-        var chart = Chart.Create().WithSize(640, 360).WithXAxisTimeScale().WithXAxisBounds(start.ToOADate(), end.ToOADate());
+        var chart = Chart.Create().Size(640, 360).XAxis(x => x.TimeScale().Bounds(start.ToOADate(), end.ToOADate()));
         if (kind == ChartSeriesKind.Timeline) chart.AddTimelineItem("Task", start, end);
         else if (kind == ChartSeriesKind.Gantt) chart.AddGanttTask("Task", start, end, .5);
         else {
-            chart.WithStateCategories(new ChartStateCategory("up", "Up", ChartColor.FromRgb(13, 148, 136)));
+            chart.StateCategories(new ChartStateCategory("up", "Up", ChartColor.FromRgb(13, 148, 136)));
             if (kind == ChartSeriesKind.StateTimeline) chart.AddStateTimelineLane("Task", new[] { new ChartStateTimelineSegment(start, end, "up") });
             else chart.AddGanttLane("Task", new[] { new ChartGanttLaneItem(start, end, "up") });
         }

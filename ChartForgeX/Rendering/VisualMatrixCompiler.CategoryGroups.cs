@@ -70,7 +70,7 @@ internal static partial class VisualMatrixCompiler {
 
         double[] ColumnSizes(double track) => groups.Columns == null ? Array.Empty<double>()
             : VisualCategoryGroupScene.Measure(builder, groups.Columns, groups.ColumnSpans, style, spacing,
-                0, columns.Length, track, chart.Options.ShowAxes && chart.Options.XAxis.Visible && chart.Options.ShowHeatmapColumnLabels ? viewport.Height * .2 : 0);
+                0, columns.Length, track, chart.Options.ShowAxes && chart.Options.XAxis.Visible && chart.Options.Heatmap.ShowColumnLabels ? viewport.Height * .2 : 0);
         MatrixLayout Measure(double height) => MeasureFlatMatrix(chart, context, builder,
             new ChartRect(viewport.Left + rowWidth, viewport.Top, Math.Max(0, viewport.Width - rowWidth), Math.Max(0, viewport.Height - height)),
             rows, columns, categorical, formatColumn, presentation, hasDomain, min, max, missing, rowLabels);
@@ -82,7 +82,7 @@ internal static partial class VisualMatrixCompiler {
         if (groups == null) return;
         if (groups.Columns != null) VisualCategoryGroupScene.Draw(chart, context, builder, groups.Columns, groups.ColumnSpans,
             ColumnBoundary, 0, columnCount, layout.ColumnGroupBand, colors, layout.ColumnGroupSizes,
-            diagnosticCode: "matrix.category-group-overflow", coordinateSpace: "source-slot", includeLabels: chart.Options.ShowHeatmapColumnLabels);
+            diagnosticCode: "matrix.category-group-overflow", coordinateSpace: "source-slot", includeLabels: chart.Options.Heatmap.ShowColumnLabels);
         if (groups.Rows != null) VisualCategoryGroupScene.Draw(chart, context, builder, groups.Rows, groups.RowSpans,
             RowBoundary, 0, rowCount, layout.RowGroupBand, colors, layout.RowGroupSizes,
             diagnosticCode: "matrix.category-group-overflow", coordinateSpace: "source-slot");

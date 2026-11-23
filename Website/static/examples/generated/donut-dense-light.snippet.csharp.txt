@@ -1,0 +1,47 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+using static FindingsRecipe;
+
+var mode = ThemeMode.Light;
+var theme = VisualTheme.Graphite();
+#endregion
+
+var count = DenseCategories.Length;
+// Dense findings fall off steeply, as they do in a real assessment: a few categories carry most of the work.
+double Count(int index) => Math.Round(60 * Math.Pow(.84, index)) + 1;
+string Name(int index) => DenseCategories[index];
+var points = Enumerable.Range(0, count).Where(index => true)
+    .Select(index => new ChartPoint(index + 1, Count(index)));
+var findings = new ChartSeries(new ChartSeriesId("findings"), "Findings", ChartSeriesKind.Donut, points);
+var chart = Chart.Create().XLabels(Enumerable.Range(0, count).Select(Name).ToArray()).AddSeries(findings);
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Findings by category", "Twenty-four categories at a fixed size", showLegend: null, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion
+
+static class FindingsRecipe {
+    internal static readonly string[] DenseCategories = {
+        "Patching", "Identity", "Certificates", "Network", "Backups", "Logging", "Encryption", "DNS", "Firewall", "Endpoints",
+        "Mail flow", "Licensing", "Monitoring", "Replication", "Group Policy", "Service accounts", "Shares", "Printers",
+        "Remote access", "Web servers", "Databases", "Hypervisors", "Storage", "Wireless"
+    };
+}

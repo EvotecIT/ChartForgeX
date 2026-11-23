@@ -6,6 +6,7 @@ using ChartForgeX.Rendering;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualArtifacts;
 using Xunit;
+using ChartForgeX.Accessibility;
 
 namespace ChartForgeX.Tests;
 
@@ -91,7 +92,7 @@ public sealed class PreparedVisualArtifactTests {
         Assert.Equal(png, artifact.ToPng());
         Assert.NotEqual("Host region label", prepared.Regions[0].Label);
 
-        artifact.Accessibility.AsDecorative();
+        artifact.Accessibility.Decorative();
         Assert.Contains("aria-hidden=\"true\"", artifact.ToSvg());
         Assert.Null(XDocument.Parse(artifact.ToSvg()).Root!.Attribute("aria-label"));
         Assert.Equal(svg, prepared.ToSvg());
@@ -115,7 +116,7 @@ public sealed class PreparedVisualArtifactTests {
 
     [Fact]
     public void SemanticHandoffRejectsAnotherArtifactOrAnotherViewport() {
-        var chart = CreateChart().WithSize(320, 200);
+        var chart = CreateChart().Size(320, 200);
         var prepared = chart.Prepare(Context());
         var semantics = chart.ToVisualArtifact("cpu-load").ToInterchangeEnvelope();
 
@@ -175,20 +176,20 @@ public sealed class PreparedVisualArtifactTests {
 
     private static (PreparedVisual Prepared, VisualArtifactInterchangeEnvelope Semantics) CreateDiagram(bool topology) {
         if (topology) {
-            var chart = TopologyChart.Create().WithViewport(640, 400);
+            var chart = TopologyChart.Create().Viewport(new TopologyViewport(640, 400));
             chart.Id = "native-topology";
             chart.Title = "Service dependency";
             chart.LayoutMode = TopologyLayoutMode.Manual;
-            chart.Accessibility.WithTextAlternative("Service dependency", "API depends on worker.");
+            chart.Accessibility.TextAlternative("Service dependency", "API depends on worker.");
             chart.Nodes.Add(new TopologyNode { Id = "api", Label = "API", X = 24, Y = 60, Width = 120, Height = 64 });
             chart.Nodes.Add(new TopologyNode { Id = "worker", Label = "Worker", X = 240, Y = 60, Width = 120, Height = 64 });
             chart.Edges.Add(new TopologyEdge { Id = "request", SourceNodeId = "api", TargetNodeId = "worker", Label = "request", Routing = TopologyEdgeRouting.Straight });
             var semantics = chart.ToVisualArtifact().ToInterchangeEnvelope();
             return (chart.Prepare(DiagramContext(semantics)), semantics);
         }
-        var sequence = SequenceArtifact.Create("native-sequence").WithTitle("Service request").WithSize(640, 400)
+        var sequence = SequenceArtifact.Create("native-sequence").Title("Service request").Width(640).Height(400)
             .AddParticipant("api", "API").AddParticipant("worker", "Worker").AddMessage("api", "worker", "request");
-        sequence.Accessibility.WithTextAlternative("Service request", "API calls worker.");
+        sequence.Accessibility.TextAlternative("Service request", "API calls worker.");
         var envelope = sequence.ToVisualArtifact().ToInterchangeEnvelope();
         return (sequence.Prepare(DiagramContext(envelope)), envelope);
     }
@@ -197,8 +198,8 @@ public sealed class PreparedVisualArtifactTests {
         layout: new VisualLayoutOptions(new VisualSize(semantics.Width!.Value, semantics.Height!.Value)),
         frame: new VisualFrame(showLegend: false));
 
-    private static Chart CreateChart() => Chart.Create().WithTitle("CPU load")
-        .ConfigureAccessibility(accessibility => accessibility.WithTextAlternative("CPU load", "Synthetic CPU utilization.", "pl-PL"))
+    private static Chart CreateChart() => Chart.Create().Title("CPU load")
+        .Accessibility(accessibility => accessibility.TextAlternative("CPU load", "Synthetic CPU utilization.", "pl-PL"))
         .AddLine("CPU", new[] { new ChartPoint(0, 20), new ChartPoint(1, 35), new ChartPoint(2, 28) });
 
     private static VisualRenderContext Context() => new(

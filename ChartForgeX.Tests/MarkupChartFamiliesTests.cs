@@ -40,10 +40,10 @@ public sealed partial class MarkupChartFamiliesTests {
                 Assert.Equal(new[] { 1d, 2, 3 }, chart.Series[0].Points.Select(point => point.X));
                 Assert.Equal(new[] { 20d, 0, 10 }, chart.Series[0].Points.Select(point => point.Y));
                 Assert.Equal(new[] { 5d, 0, 30 }, chart.Series[1].Points.Select(point => point.Y));
-                Assert.Equal(new[] { "North East", "Zero", "South" }, chart.Options.XAxisLabels.Select(label => label.Text));
-                Assert.Equal(new[] { 1d, 2, 3 }, chart.Options.XAxisLabels.Select(label => label.Value));
+                Assert.Equal(new[] { "North East", "Zero", "South" }, chart.Options.XAxis.Labels.Select(label => label.Text));
+                Assert.Equal(new[] { 1d, 2, 3 }, chart.Options.XAxis.Labels.Select(label => label.Value));
                 if (kind is ChartSeriesKind.Bar or ChartSeriesKind.HorizontalBar)
-                    Assert.Equal(ChartBarMode.Stacked, chart.Options.BarMode);
+                    Assert.Equal(ChartBarMode.Stacked, chart.Options.Bars.Mode);
             }
         }
     }
@@ -60,7 +60,7 @@ public sealed partial class MarkupChartFamiliesTests {
             var parsed = new VisualMarkupParser().Parse(Fence(source));
             Assert.Empty(parsed.Diagnostics);
             var chart = Assert.IsType<Chart>(Assert.Single(parsed.Artifacts).Model);
-            AssertNativeArtifacts(NativeNumeric(family).WithSize(width, 420), chart, width, mode, family);
+            AssertNativeArtifacts(NativeNumeric(family).Size(width, 420), chart, width, mode, family);
             // Preparation must not replace authored observations with normalized display values.
             if (family.Contains("percent", StringComparison.Ordinal)) {
                 Assert.Equal(new[] { 20d, 0, 10 }, chart.Series[0].Points.Select(point => point.Y));
@@ -117,20 +117,20 @@ public sealed partial class MarkupChartFamiliesTests {
             if (family == "lineargauge") return chart.AddLinearGauge("Actual", 125, -20, 200);
             return chart.AddGauge("Actual", 125, -20, 200);
         }
-        chart.WithXLabels("North East", "Zero", "South");
+        chart.XLabels("North East", "Zero", "South");
         var actual = new[] { new ChartPoint(1, 20), new ChartPoint(2, 0), new ChartPoint(3, 10) };
         var budget = new[] { new ChartPoint(1, 5), new ChartPoint(2, 0), new ChartPoint(3, 30) };
         switch (family) {
             case "stackedbar":
-            case "percentstackedbar": chart.WithStackedBars().AddBar("Actual", actual).AddBar("Budget", budget); break;
+            case "percentstackedbar": chart.Bars(b => b.Stacked()).AddBar("Actual", actual).AddBar("Budget", budget); break;
             case "stackedhorizontalbar":
-            case "percentstackedhorizontalbar": chart.WithStackedHorizontalBars().AddHorizontalBar("Actual", actual).AddHorizontalBar("Budget", budget); break;
+            case "percentstackedhorizontalbar": chart.Bars(b => b.Stacked()).AddHorizontalBar("Actual", actual).AddHorizontalBar("Budget", budget); break;
             case "percentstackedarea": chart.AddStackedArea("Actual", actual).AddStackedArea("Budget", budget); break;
             case "smoothpercentstackedarea": chart.AddSmoothStackedArea("Actual", actual).AddSmoothStackedArea("Budget", budget); break;
             case "heatmap": chart.AddHeatmapRow("Actual", actual).AddHeatmapRow("Budget", budget); break;
             default: throw new ArgumentOutOfRangeException(nameof(family));
         }
-        if (family.Contains("percent", StringComparison.Ordinal)) foreach (var series in chart.Series) series.WithNormalization(100);
+        if (family.Contains("percent", StringComparison.Ordinal)) foreach (var series in chart.Series) series.NormalizedTo(100);
         return chart;
     }
 

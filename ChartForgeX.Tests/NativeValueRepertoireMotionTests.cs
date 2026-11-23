@@ -14,7 +14,7 @@ public sealed class NativeValueRepertoireMotionTests : IDisposable {
     [InlineData(false, TextCaseTransform.Uppercase, true)] [InlineData(true, TextCaseTransform.Lowercase, false)]
     public void NativeSuffixCrossingsReplayOwnedObservedFacesAfterRegistryClearAndEqualTheIndependentMidpoint(bool donut, TextCaseTransform textCase, bool initial) {
         Register(); var renderer = new HtmlInteractiveChartRenderer();
-        Chart Model(double value) => NativeValueRepertoireBeforeControls.Model(donut, "compact", value).ConfigureDataLabelStyle(style => style.TextCase = textCase);
+        Chart Model(double value) => NativeValueRepertoireBeforeControls.Model(donut, "compact", value).DataLabelStyle(style => style.TextCase = textCase);
         var from = renderer.PrepareSection(Model(900)); var to = renderer.PrepareSection(Model(1100)); var middle = renderer.PrepareSection(Model(1000));
         NativeRadialMotionBeforeControls.Capture(from, "value-repertoire-post-" + donut + "-" + textCase + "-from");
         NativeRadialMotionBeforeControls.Capture(to, "value-repertoire-post-" + donut + "-" + textCase + "-to");

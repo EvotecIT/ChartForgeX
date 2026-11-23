@@ -51,7 +51,7 @@ public sealed partial class ChartSeries {
     public IReadOnlyDictionary<string, ChartSeriesState> NodeStates => _nodeStatesView ??= new ReadOnlyDictionary<string, ChartSeriesState>(_nodeStates);
 
     /// <summary>Assigns a semantic state to an existing authored node without relying on display labels or input ordinals.</summary>
-    public ChartSeries WithNodeState(string id, ChartSeriesState state) {
+    public ChartSeries NodeState(string id, ChartSeriesState state) {
         if (string.IsNullOrWhiteSpace(id)) throw new ArgumentException("Node ID must not be empty.", nameof(id));
         if (!Enum.IsDefined(typeof(ChartSeriesState), state)) throw new ArgumentOutOfRangeException(nameof(state));
         if (Relationships?.ContainsNode(id) != true) throw new ArgumentException("The series has no authored node with this ID.", nameof(id));

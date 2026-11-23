@@ -19,10 +19,10 @@ public sealed class CalendarScaleLayoutTests {
             .Select(day => new ChartCalendarHeatmapItem(first.AddDays(day), day % 13)).ToArray();
         var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(font), "The existing Carlito example fixture must be available.");
-        var chart = Chart.Create().WithSize(width, height).WithPngFont(font)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithTitle("Daily activity").WithSubtitle("Observations across four months")
-            .ConfigureCalendar(options => options.FirstDayOfWeek = DayOfWeek.Monday)
+        var chart = Chart.Create().Size(width, height).Png(p => p.FontPath(font))
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Title("Daily activity").Subtitle("Observations across four months")
+            .Calendar(options => options.FirstDayOfWeek = DayOfWeek.Monday)
             .AddCalendarHeatmap("Observations", items);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var document = XDocument.Parse(prepared.ToSvg());
@@ -56,7 +56,7 @@ public sealed class CalendarScaleLayoutTests {
         Assert.Equal("12", scaleMarks[^1].Attribute("data-cfx-value")?.Value);
         Assert.DoesNotContain(prepared.Diagnostics, diagnostic => diagnostic.Code == "calendar.scale-overflow");
 
-        chart.ConfigureHeatmapColorDimension(options => options.ShowLegend = false);
+        chart.Heatmap(heatmap => heatmap.ColorDimension(options => options.ShowLegend = false));
         var hidden = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.DoesNotContain(hidden.Regions, region => region.Role is "calendar-scale" or "calendar-scale-step");
         Assert.Equal(days.Select(day => day.Id), hidden.Regions.Where(region => region.Role == "calendar-cell").Select(day => day.Id));

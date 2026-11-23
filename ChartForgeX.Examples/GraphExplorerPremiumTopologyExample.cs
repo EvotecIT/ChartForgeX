@@ -13,7 +13,7 @@ internal static class GraphExplorerPremiumTopologyExample {
     private static GraphScene Build() {
         var graph = GraphScene.Create("global-estate-premium-topology", "Global Estate Topology");
         graph.Subtitle = "Drill from the global estate into regions, platforms, and workloads. Double-click a node to enter it; use the breadcrumb or Up control to return.";
-        graph.Options.UseSuperTopologyDefaults();
+        graph.Options.SuperTopologyDefaults();
         graph.Options.Physics.Solver = GraphPhysicsSolver.StaticPrepared;
         graph.Options.Layout.Mode = GraphLayoutMode.Hierarchical;
         graph.Options.Layout.Direction = GraphLayoutDirection.LeftToRight;

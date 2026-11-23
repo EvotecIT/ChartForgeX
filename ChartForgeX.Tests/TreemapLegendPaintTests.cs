@@ -13,15 +13,15 @@ public sealed class TreemapLegendPaintTests {
         var red = ChartColor.FromRgb(255, 0, 0);
         var blue = ChartColor.FromRgb(0, 0, 255);
         var missing = ChartColor.FromRgb(13, 47, 81);
-        var chart = Chart.Create().WithPointLegend().AddTreemap("Colors", new[] {
+        var chart = Chart.Create().Legend(l => l.ShowPoints()).AddTreemap("Colors", new[] {
             new ChartHierarchyItem("low", "Low", value: 4, colorValue: 0),
             new ChartHierarchyItem("explicit", "Explicit", value: 3, colorValue: 100),
             new ChartHierarchyItem("missing", "Missing", value: 2)
-        }).ConfigureTreemap(options => {
+        }).Treemap(options => {
             options.ColorScale = ChartColorScale.Sequential(red, blue).WithValueRange(0, 100).WithNoDataColor(missing);
             options.ColorDimension.ShowLegend = false;
         });
-        chart.Series[0].WithPointColor(1, blue);
+        chart.Series[0].PointColor(1, blue);
         var variables = new SvgColorVariables().Add("--host-low", red, SvgColorRole.Ramp)
             .Add("--host-explicit", blue, SvgColorRole.Series).Add("--host-missing", missing, SvgColorRole.Ramp);
         var xml = XDocument.Parse(chart.Prepare(VisualExportRequest.ForChart(chart).Context)
@@ -30,10 +30,10 @@ public sealed class TreemapLegendPaintTests {
         MatchingPaint(xml, "explicit", "--host-explicit");
         MatchingPaint(xml, "missing", "--host-missing");
 
-        var status = Chart.Create().WithPointLegend().WithLegend().AddTreemap("States", new[] {
+        var status = Chart.Create().Legend(l => l.ShowPoints()).Legend().AddTreemap("States", new[] {
             new ChartHierarchyItem("warning", "Warning", value: 1)
         });
-        status.Series[0].WithNodeState("warning", ChartSeriesState.Warning);
+        status.Series[0].NodeState("warning", ChartSeriesState.Warning);
         var context = VisualExportRequest.ForChart(status).Context;
         var warning = context.Theme.Resolve(context.ThemeMode).Status.Medium.Fill;
         xml = XDocument.Parse(status.Prepare(context).ToSvg(new VisualSvgOptions("status",
@@ -44,7 +44,7 @@ public sealed class TreemapLegendPaintTests {
 
     [Fact]
     public void HierarchySeriesKeyRetainsItsCanonicalStatusPaint() {
-        var chart = Chart.Create().WithLegend().AddTreemap("Allocation", new[] {
+        var chart = Chart.Create().Legend().AddTreemap("Allocation", new[] {
             new ChartHierarchyItem("one", "One", value: 1)
         });
         chart.Series[0].StateRole = ChartSeriesState.Warning;

@@ -135,7 +135,7 @@ internal sealed class ChartCalendarHeatmapModel {
     public ChartColor Color(double value, ChartColor? pointColor) => Blend(value, pointColor).Color;
 
     /// <summary>Returns the colour of a day as a blend, for SVG colour variables (see <see cref="Color"/>).</summary>
-    public ChartColorBlend Blend(double value, ChartColor? pointColor) => Chart.Options.HeatmapColorScale != null
+    public ChartColorBlend Blend(double value, ChartColor? pointColor) => Chart.Options.Heatmap.ColorScale != null
         ? ChartHeatmapSurface.CalendarBlend(Chart, Series, pointColor, value, Min, Max)
         : IsZero(value) && !pointColor.HasValue ? ChartHeatmapSurface.ZeroBlend(Chart) : ChartHeatmapSurface.CalendarBlend(Chart, Series, pointColor, value, RampMin, Max);
 

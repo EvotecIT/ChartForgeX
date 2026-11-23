@@ -17,7 +17,7 @@ public sealed class RailroadDiagramBlockTests {
         Assert.Throws<NotSupportedException>(() => ((IList<RailroadExpression>)expression.Children).Add(RailroadExpression.Empty()));
         var repeat = RailroadExpression.Repeat(expression, int.MaxValue, int.MaxValue);
         Assert.Same(expression, Assert.Single(repeat.Children)); Assert.Equal(int.MaxValue, repeat.MinimumOccurrences);
-        var block = RailroadDiagramBlock.Create().AddRule("value", repeat).WithNaturalSize();
+        var block = RailroadDiagramBlock.Create().AddRule("value", repeat).NaturalSize();
         Assert.InRange(block.Options.Size.Width, 1, 2000); Assert.InRange(block.Options.Size.Height, 1, 1000);
         var xml = XDocument.Parse(block.ToSvg());
         Assert.Single(Roles(xml, "railroad-repeat-loop"));
@@ -34,7 +34,7 @@ public sealed class RailroadDiagramBlockTests {
         Assert.Throws<ArgumentException>(() => RailroadExpression.Choice(Array.Empty<RailroadExpression>()));
         Assert.Throws<ArgumentException>(() => RailroadExpression.Reference(" "));
         Assert.Throws<ArgumentException>(() => RailroadExpression.Sequence(new RailroadExpression[] { null! }));
-        Assert.Throws<InvalidOperationException>(() => RailroadDiagramBlock.Create().WithNaturalSize());
+        Assert.Throws<InvalidOperationException>(() => RailroadDiagramBlock.Create().NaturalSize());
         Assert.Throws<InvalidOperationException>(() => RailroadDiagramBlock.Create().AddRule("value", RailroadExpression.Empty()).AddRule("value", RailroadExpression.Empty()).ToSvg());
         var abnf = RailroadDiagramBlock.Create(); abnf.RuleComparison = RailroadRuleComparison.OrdinalIgnoreCase;
         Assert.Throws<InvalidOperationException>(() => abnf.AddRule("Packet", RailroadExpression.Empty()).AddRule("packet", RailroadExpression.Empty()).ToPng());
@@ -45,7 +45,7 @@ public sealed class RailroadDiagramBlockTests {
     public void RuleViewsStayStableAndReferenceLinksResolveOnlyExistingGrammarRules() {
         var block = RailroadDiagramBlock.Create(); var view = block.Rules;
         block.AddRule("entry", RailroadExpression.Sequence(RailroadExpression.Reference("value"), RailroadExpression.Reference("external"), RailroadExpression.Terminal("value")));
-        block.AddRule("value", RailroadExpression.Terminal("x")); block.WithNaturalSize();
+        block.AddRule("value", RailroadExpression.Terminal("x")); block.NaturalSize();
         Assert.Same(view, block.Rules); Assert.Equal(2, view.Count);
         Assert.Throws<NotSupportedException>(() => ((IList<RailroadRule>)view).Clear());
         var xml = XDocument.Parse(block.ToSvg()); var references = Roles(xml, "railroad-reference");
@@ -63,7 +63,7 @@ public sealed class RailroadDiagramBlockTests {
             RailroadExpression.Lookahead(RailroadExpression.Terminal("required next")),
             RailroadExpression.Lookahead(RailroadExpression.Terminal("forbidden next"), false),
             RailroadExpression.Except(RailroadExpression.Reference("name"), RailroadExpression.Reference("keyword")));
-        var xml = XDocument.Parse(RailroadDiagramBlock.Create().AddRule("entry", expression).WithNaturalSize().ToSvg());
+        var xml = XDocument.Parse(RailroadDiagramBlock.Create().AddRule("entry", expression).NaturalSize().ToSvg());
         Assert.DoesNotContain("never consumed", xml.ToString(), StringComparison.Ordinal);
         Assert.Equal("0 occurrences", Assert.Single(Roles(xml, "railroad-repeat-constraint")).Value);
         Assert.Equal(2, Roles(xml, "railroad-predicate-frame").Length);
@@ -74,9 +74,9 @@ public sealed class RailroadDiagramBlockTests {
 
     [Fact]
     public void MeasuredNativeSceneIsDeterministicAndControlTextCannotCreateInvalidSvg() {
-        var block = RailroadDiagramBlock.Create().WithTitle("Native grammar").WithSubtitle("No reference expansion")
+        var block = RailroadDiagramBlock.Create().Title("Native grammar").Subtitle("No reference expansion")
             .AddRule("entry\u0001", RailroadExpression.Sequence(RailroadExpression.Terminal("line\nnext\t\u0000"), RailroadExpression.Reference("entry\u0001")))
-            .AddRule("scalar", RailroadExpression.CharacterRange(0x1f600, 0x1f64f)).WithNaturalSize();
+            .AddRule("scalar", RailroadExpression.CharacterRange(0x1f600, 0x1f64f)).NaturalSize();
         var size = block.MeasureNaturalSize(); Assert.Equal(size, block.MeasureNaturalSize());
         var svg = block.ToSvg(); var png = block.ToPng(); Assert.Equal(svg, block.ToSvg()); Assert.Equal(png, block.ToPng());
         var xml = XDocument.Parse(svg); var raster = RasterImageDecoder.Decode(png);
@@ -91,16 +91,16 @@ public sealed class RailroadDiagramBlockTests {
     public void PublicNativeNestingAndFanOutHaveHardBoundsBeforeRecursiveLayout() {
         var nested = RailroadExpression.Terminal("x");
         for (var index = 0; index < 128; index++) nested = RailroadExpression.Optional(nested);
-        Assert.Throws<InvalidOperationException>(() => RailroadDiagramBlock.Create().AddRule("entry", nested).WithNaturalSize());
+        Assert.Throws<InvalidOperationException>(() => RailroadDiagramBlock.Create().AddRule("entry", nested).NaturalSize());
         var wide = RailroadExpression.Sequence(Enumerable.Repeat(RailroadExpression.Empty(), 32768));
-        Assert.Throws<InvalidOperationException>(() => RailroadDiagramBlock.Create().AddRule("entry", wide).WithNaturalSize());
+        Assert.Throws<InvalidOperationException>(() => RailroadDiagramBlock.Create().AddRule("entry", wide).NaturalSize());
     }
 
     [Fact]
     public void OrderedChoicePrioritiesSitAboveStraightBranchEntriesClearOfEveryCurve() {
         var empty = RailroadExpression.Empty();
         var choice = RailroadExpression.Choice(new[] { empty, RailroadExpression.Sequence(empty, empty, empty), empty, RailroadExpression.Terminal("any character") }, ordered: true);
-        var xml = XDocument.Parse(RailroadDiagramBlock.Create().AddRule("letter", choice).WithNaturalSize().ToSvg());
+        var xml = XDocument.Parse(RailroadDiagramBlock.Create().AddRule("letter", choice).NaturalSize().ToSvg());
         var rails = Roles(xml, "railroad-rail").Select(path => path.Attribute("d")!.Value.Split(' ')).ToArray();
         var entries = rails.Where(parts => parts.Length == 13 && parts[3] == "C" && parts[10] == "L")
             .Select(parts => (Start: Number(parts[8]), End: Number(parts[11]), Y: Number(parts[12]))).ToArray();

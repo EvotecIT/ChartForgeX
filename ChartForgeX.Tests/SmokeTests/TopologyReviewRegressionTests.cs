@@ -10,11 +10,11 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void TopologyIconLabelFittingUsesRenderedPlateWidth() {
         var chart = TopologyChart.Create()
-            .WithId("icon-label-fit")
-            .WithViewport(160, 110, 12)
-            .WithLegend(null)
+            .Id("icon-label-fit")
+            .Viewport(new TopologyViewport(160, 110, 12))
+            .Legend((TopologyLegend?)null)
             .AddNode("edge", "OK", 0, 28, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 24, height: 24, symbol: "S")
-            .WithNodeDisplay("edge", TopologyNodeDisplayMode.Icon);
+            .UpdateNode("edge", n => n.DisplayMode(TopologyNodeDisplayMode.Icon).Badge(null));
 
         var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false, IncludeIconLabels = true });
         var plateX = GetAttribute(svg, "data-cfx-role=\"topology-node-icon-label\"", "x");
@@ -24,12 +24,12 @@ internal static partial class SmokeTests {
 
     private static void TopologyIconLabelsStackBelowIconBadges() {
         var chart = TopologyChart.Create()
-            .WithId("icon-label-badge")
-            .WithViewport(220, 150, 12)
-            .WithLegend(null)
+            .Id("icon-label-badge")
+            .Viewport(new TopologyViewport(220, 150, 12))
+            .Legend((TopologyLegend?)null)
             .AddNode("edge", "Payments Team", 72, 36, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 48, height: 42, symbol: "TM")
-            .WithNodeDisplay("edge", TopologyNodeDisplayMode.Icon)
-            .WithNodeBadge("edge", "OK");
+            .UpdateNode("edge", n => n.DisplayMode(TopologyNodeDisplayMode.Icon).Badge(null))
+            .UpdateNode("edge", n => n.Badge("OK"));
 
         var options = new TopologyRenderOptions { IncludeLegend = false, IncludeIconLabels = true };
         var svg = chart.ToSvg(options);
@@ -43,9 +43,9 @@ internal static partial class SmokeTests {
 
     private static void TopologyWrappedTileLabelsHonorNodeCharacterLimits() {
         var chart = TopologyChart.Create()
-            .WithId("wrapped-tile-limit")
-            .WithViewport(260, 150, 20)
-            .WithLegend(null)
+            .Id("wrapped-tile-limit")
+            .Viewport(new TopologyViewport(260, 150, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("service", "Authentication Relationship Service", 60, 50, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 140, height: 58, symbol: "S");
         chart.Nodes.Single().MaximumLabelCharacters = 12;
         var options = new TopologyRenderOptions {
@@ -64,9 +64,9 @@ internal static partial class SmokeTests {
 
     private static void TopologyIconLabelsHonorNodeCharacterLimits() {
         var chart = TopologyChart.Create()
-            .WithId("icon-label-limit")
-            .WithViewport(180, 120, 16)
-            .WithLegend(null)
+            .Id("icon-label-limit")
+            .Viewport(new TopologyViewport(180, 120, 16))
+            .Legend((TopologyLegend?)null)
             .AddNode("dc", "NYC-DC1", 56, 36, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, width: 46, height: 42, symbol: "DC");
         chart.Nodes.Single().MaximumLabelCharacters = 6;
         var options = new TopologyRenderOptions {
@@ -84,15 +84,15 @@ internal static partial class SmokeTests {
 
     private static void TopologyRoundedRoutesTolerateDuplicateWaypoints() {
         var chart = TopologyChart.Create()
-            .WithId("duplicate-waypoint-routes")
-            .WithViewport(560, 300, 20)
-            .WithLegend(null)
+            .Id("duplicate-waypoint-routes")
+            .Viewport(new TopologyViewport(560, 300, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("left", "Left", 40, 40, TopologyNodeKind.Service, TopologyHealthStatus.Healthy)
             .AddNode("right", "Right", 360, 40, TopologyNodeKind.Database, TopologyHealthStatus.Warning)
             .AddEdge("left-right", "left", "right", "via route", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
-            .WithEdgeWaypoints("left-right", new ChartPoint(200, 180), new ChartPoint(200, 180), new ChartPoint(300, 180));
+            .EdgeWaypoints("left-right", new ChartPoint(200, 180), new ChartPoint(200, 180), new ChartPoint(300, 180));
 
-        var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false }.WithMonitoringDashboardStyle());
+        var svg = chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false }.MonitoringDashboardStyle());
 
         var numericMarkup = NumericMarkup(svg);
         Assert(!numericMarkup.Contains("NaN", StringComparison.Ordinal) && !numericMarkup.Contains("Infinity", StringComparison.Ordinal), "Rounded topology routes should tolerate duplicate consecutive waypoints.");
@@ -100,9 +100,9 @@ internal static partial class SmokeTests {
 
     private static void TopologyEdgeLabelsTolerateDuplicateEdgeIds() {
         var chart = TopologyChart.Create()
-            .WithId("duplicate-edge-labels")
-            .WithViewport(360, 180, 20)
-            .WithLegend(null)
+            .Id("duplicate-edge-labels")
+            .Viewport(new TopologyViewport(360, 180, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("left", "Left", 40, 72, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 48, height: 42)
             .AddNode("right", "Right", 260, 72, TopologyNodeKind.Database, TopologyHealthStatus.Warning, width: 48, height: 42)
             .AddEdge("dup", "left", "right", "primary", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight)
@@ -117,9 +117,9 @@ internal static partial class SmokeTests {
 
     private static void TopologyDuplicatePortPeersUseEdgeInstanceIdentity() {
         var chart = TopologyChart.Create()
-            .WithId("duplicate-port-peers")
-            .WithViewport(340, 220, 20)
-            .WithLegend(null)
+            .Id("duplicate-port-peers")
+            .Viewport(new TopologyViewport(340, 220, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("hub", "Hub", 70, 82, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 52, height: 52)
             .AddNode("a", "A", 230, 48, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, width: 42, height: 38)
             .AddNode("b", "B", 230, 122, TopologyNodeKind.Server, TopologyHealthStatus.Warning, width: 42, height: 38)
@@ -139,9 +139,9 @@ internal static partial class SmokeTests {
 
     private static void TopologyOrthogonalDuplicateEdgesUseInferredRouteLanes() {
         var chart = TopologyChart.Create()
-            .WithId("orthogonal-duplicates")
-            .WithViewport(420, 260, 20)
-            .WithLegend(null)
+            .Id("orthogonal-duplicates")
+            .Viewport(new TopologyViewport(420, 260, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("left", "Left", 70, 64, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 52, height: 42)
             .AddNode("right", "Right", 286, 160, TopologyNodeKind.Database, TopologyHealthStatus.Warning, width: 52, height: 42)
             .AddEdge("primary", "left", "right", "primary", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
@@ -154,17 +154,17 @@ internal static partial class SmokeTests {
         Assert(Math.Abs(primary[1].X - backup[1].X) > 0.01, "Default duplicate orthogonal edges should infer distinct route lanes instead of collapsing.");
 
         var named = TopologyChart.Create()
-            .WithId("named-port-parallel-routes")
-            .WithViewport(420, 220, 20)
-            .WithLegend(null)
+            .Id("named-port-parallel-routes")
+            .Viewport(new TopologyViewport(420, 220, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("source", "Source", 60, 80, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 60, height: 44)
             .AddNode("target", "Target", 300, 80, TopologyNodeKind.Database, TopologyHealthStatus.Healthy, width: 60, height: 44)
             .AddNodePort("source", "out", TopologyEdgePort.Right, 0.35)
             .AddNodePort("target", "in", TopologyEdgePort.Left, 0.65)
             .AddEdge("named-primary", "source", "target", "primary", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight)
             .AddEdge("named-backup", "source", "target", "backup", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight)
-            .WithEdgeNamedPorts("named-primary", "out", "in")
-            .WithEdgeNamedPorts("named-backup", "out", "in");
+            .UpdateEdge("named-primary", e => e.SourcePortId("out").TargetPortId("in"))
+            .UpdateEdge("named-backup", e => e.SourcePortId("out").TargetPortId("in"));
         var namedReport = TopologyLayoutDiagnostics.Analyze(named, new TopologyRenderOptions { IncludeLegend = false });
         var firstNamed = namedReport.Edges[0].Points;
         var secondNamed = namedReport.Edges[1].Points;
@@ -181,14 +181,14 @@ internal static partial class SmokeTests {
 
     private static void TopologyExplicitZeroRouteLaneStaysCentered() {
         var chart = TopologyChart.Create()
-            .WithId("explicit-zero-route-lane")
-            .WithViewport(420, 260, 20)
-            .WithLegend(null)
+            .Id("explicit-zero-route-lane")
+            .Viewport(new TopologyViewport(420, 260, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("left", "Left", 70, 64, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 52, height: 42)
             .AddNode("right", "Right", 286, 160, TopologyNodeKind.Database, TopologyHealthStatus.Warning, width: 52, height: 42)
             .AddEdge("center", "left", "right", "center", TopologyEdgeKind.Dependency, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
             .AddEdge("backup", "left", "right", "backup", TopologyEdgeKind.Dependency, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
-            .WithEdgeRouteLane("center", 0);
+            .EdgeRouteLane("center", 0);
 
         Assert(Math.Abs(TopologyRenderPrimitives.EdgeRouteLane(chart, chart.Edges[0])) < 0.0001, "Explicit zero route lanes should stay centered instead of being replaced by inferred parallel offsets.");
         Assert(Math.Abs(TopologyRenderPrimitives.EdgeRouteLane(chart, chart.Edges[1])) > 0.0001, "Unset duplicate route lanes should still infer a parallel offset.");
@@ -196,9 +196,9 @@ internal static partial class SmokeTests {
 
     private static void TopologyEdgeLabelObstaclesFollowRenderedGroupOptions() {
         var headerChart = TopologyChart.Create()
-            .WithId("headerless-label")
-            .WithViewport(420, 260, 20)
-            .WithLegend(null)
+            .Id("headerless-label")
+            .Viewport(new TopologyViewport(420, 260, 20))
+            .Legend((TopologyLegend?)null)
             .AddGroup("middle", "Hidden Header", 150, 118, 100, 80, TopologyHealthStatus.Warning)
             .AddNode("left", "Left", 40, 130, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 40, height: 40)
             .AddNode("right", "Right", 320, 130, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 40, height: 40)
@@ -210,9 +210,9 @@ internal static partial class SmokeTests {
         Assert(Math.Abs(hiddenGroups.CenterY - 150) < 0.01, "Hidden group cards should not reserve phantom group-header obstacles.");
 
         var groupChart = TopologyChart.Create()
-            .WithId("groupless-label")
-            .WithViewport(420, 260, 20)
-            .WithLegend(null)
+            .Id("groupless-label")
+            .Viewport(new TopologyViewport(420, 260, 20))
+            .Legend((TopologyLegend?)null)
             .AddGroup("left-group", "Left Group", 95, 110, 90, 90, TopologyHealthStatus.Healthy)
             .AddGroup("right-group", "Right Group", 205, 110, 90, 90, TopologyHealthStatus.Warning)
             .AddNode("left", "Left", 40, 130, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, "left-group", width: 40, height: 40)
@@ -225,14 +225,14 @@ internal static partial class SmokeTests {
 
     private static void TopologyEdgeLabelObstaclesReserveIconLabelPlates() {
         var chart = TopologyChart.Create()
-            .WithId("icon-label-obstacle")
-            .WithViewport(420, 260, 20)
-            .WithLegend(null)
+            .Id("icon-label-obstacle")
+            .Viewport(new TopologyViewport(420, 260, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("left", "Left", 40, 130, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 40, height: 40)
             .AddNode("right", "Right", 320, 130, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 40, height: 40)
             .AddNode("owner", "Payments Platform Owner", 176, 88, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 48, height: 42)
             .AddEdge("link", "left", "right", "64 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight)
-            .WithNodeDisplay("owner", TopologyNodeDisplayMode.Icon);
+            .UpdateNode("owner", n => n.DisplayMode(TopologyNodeDisplayMode.Icon).Badge(null));
 
         var hiddenIconLabel = TopologyRenderPrimitives.EdgeLabelLayouts(chart, new TopologyRenderOptions { IncludeLegend = false, IncludeNodeLabels = false, IncludeIconLabels = true }).Single();
         var visibleIconLabel = TopologyRenderPrimitives.EdgeLabelLayouts(chart, new TopologyRenderOptions { IncludeLegend = false, IncludeNodeLabels = true, IncludeIconLabels = true }).Single();
@@ -250,25 +250,25 @@ internal static partial class SmokeTests {
 
     private static void TopologyHiddenNodesDoNotAffectViewportFitOrEdgeLabels() {
         var viewportChart = TopologyChart.Create()
-            .WithId("hidden-fit")
-            .WithViewport(220, 160, 18)
-            .WithLegend(null)
+            .Id("hidden-fit")
+            .Viewport(new TopologyViewport(220, 160, 18))
+            .Legend((TopologyLegend?)null)
             .AddNode("visible", "Visible", 34, 58, TopologyNodeKind.Service, TopologyHealthStatus.Healthy, width: 52, height: 40)
             .AddNode("anchor", "Anchor", 1200, 740, TopologyNodeKind.Location, TopologyHealthStatus.Critical, width: 60, height: 44)
-            .WithNodeDisplay("anchor", TopologyNodeDisplayMode.Hidden);
+            .UpdateNode("anchor", n => n.DisplayMode(TopologyNodeDisplayMode.Hidden).Badge(null));
 
         var fitSvg = viewportChart.ToSvg(new TopologyRenderOptions { IncludeLegend = false });
         Assert(GetAttribute(fitSvg, string.Empty, "width") < 400, "Hidden anchor nodes should not expand normalized viewport bounds.");
 
         var labelChart = TopologyChart.Create()
-            .WithId("hidden-label-obstacle")
-            .WithViewport(420, 260, 20)
-            .WithLegend(null)
+            .Id("hidden-label-obstacle")
+            .Viewport(new TopologyViewport(420, 260, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("left", "Left", 40, 130, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 40, height: 40)
             .AddNode("right", "Right", 320, 130, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 40, height: 40)
             .AddNode("anchor", "Anchor", 176, 139, TopologyNodeKind.Location, TopologyHealthStatus.Critical, width: 48, height: 22)
             .AddEdge("link", "left", "right", "64 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Straight)
-            .WithNodeDisplay("anchor", TopologyNodeDisplayMode.Hidden);
+            .UpdateNode("anchor", n => n.DisplayMode(TopologyNodeDisplayMode.Hidden).Badge(null));
 
         var label = TopologyRenderPrimitives.EdgeLabelLayouts(labelChart, new TopologyRenderOptions { IncludeLegend = false }).Single();
         Assert(Math.Abs(label.CenterY - 150) < 0.01, "Hidden anchor nodes should not reserve phantom edge-label obstacles.");
@@ -276,7 +276,7 @@ internal static partial class SmokeTests {
 
     private static void TopologyEdgeLabelClearanceTintsAnyGroupColourAndUsesBackgroundWhenGroupsAreHidden() {
         (ChartColor Fill, string? SvgFill, byte[] Png) Clearance(string color, bool includeGroups) {
-            var chart = TopologyChart.Create().WithTheme(VisualTheme.Graphite().Configure(builder => builder.Light.Background = ChartColor.White)).WithViewport(600, 360, 20).WithLegend(null)
+            var chart = TopologyChart.Create().Theme(VisualTheme.Graphite().Configure(builder => builder.Light.Background = ChartColor.White)).Viewport(new TopologyViewport(600, 360, 20)).Legend((TopologyLegend?)null)
                 .AddGroup("services", "Services", 10, 10, 560, 320, color: color)
                 .AddNode("source", "Source", 70, 150, groupId: "services")
                 .AddNode("target", "Target", 350, 150, groupId: "services")
@@ -311,54 +311,44 @@ internal static partial class SmokeTests {
 
     private static void TopologyExplicitCalloutPlacementAddsMapEdgeCandidates() {
         var chart = TopologyChart.Create()
-            .WithId("explicit-callout-placement")
-            .WithViewport(640, 340, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.Geographic)
-            .WithMapViewport(ChartMapViewport.World())
+            .Id("explicit-callout-placement")
+            .Viewport(new TopologyViewport(640, 340, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.Geographic)
+            .MapViewport(ChartMapViewport.World())
             .AddGroup("apac", "APAC", 0, 0, 0, 0, TopologyHealthStatus.Warning, "1 site", symbol: "region")
             .AddNode("sin", "Singapore", 0, 0, TopologyNodeKind.Location, TopologyHealthStatus.Warning, "apac", width: 48, height: 36)
-            .WithGroupCoordinates("apac", 103.8198, 1.3521)
-            .WithNodeCoordinates("sin", 103.8198, 1.3521);
+            .UpdateGroup("apac", g => g.Longitude(103.8198).Latitude(1.3521))
+            .UpdateNode("sin", n => n.Longitude(103.8198).Latitude(1.3521));
         chart.Groups[0].Metadata["calloutPlacement"] = "left-corner";
 
-        var callout = TopologyGeographicCallouts.Build(chart, new TopologyRenderOptions {
-            IncludeLegend = false,
-            IncludeGroups = false,
-            IncludeGeographicCallouts = true,
-            PreferGeographicCalloutMapEdges = false
-        }.WithMonitoringDashboardStyle(), chart.ResolvedTheme).Single();
+        var callout = TopologyGeographicCallouts.Build(chart, new TopologyRenderOptions { IncludeLegend = false, IncludeGroups = false, Geography = { IncludeCallouts = true, PreferCalloutMapEdges = false } }.MonitoringDashboardStyle(), chart.ResolvedTheme).Single();
 
         Assert(string.Equals(callout.Placement, "left-corner", StringComparison.Ordinal), "Explicit calloutPlacement metadata should be honored even when global map-edge preference is disabled.");
     }
 
     private static void TopologySingleGeographicCalloutUsesNearestMapCorner() {
         var chart = TopologyChart.Create()
-            .WithId("single-callout-corner")
-            .WithViewport(640, 340, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.Geographic)
-            .WithMapViewport(ChartMapViewport.World())
+            .Id("single-callout-corner")
+            .Viewport(new TopologyViewport(640, 340, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.Geographic)
+            .MapViewport(ChartMapViewport.World())
             .AddGroup("apac", "APAC", 0, 0, 0, 0, TopologyHealthStatus.Warning, "1 site", symbol: "region")
             .AddNode("sin", "Singapore", 0, 0, TopologyNodeKind.Location, TopologyHealthStatus.Warning, "apac", width: 48, height: 36)
-            .WithGroupCoordinates("apac", 103.8198, 1.3521)
-            .WithNodeCoordinates("sin", 103.8198, 1.3521);
+            .UpdateGroup("apac", g => g.Longitude(103.8198).Latitude(1.3521))
+            .UpdateNode("sin", n => n.Longitude(103.8198).Latitude(1.3521));
 
-        var callout = TopologyGeographicCallouts.Build(chart, new TopologyRenderOptions {
-            IncludeLegend = false,
-            IncludeGroups = false,
-            IncludeGeographicCallouts = true,
-            PreferGeographicCalloutMapEdges = true
-        }.WithMonitoringDashboardStyle(), chart.ResolvedTheme).Single();
+        var callout = TopologyGeographicCallouts.Build(chart, new TopologyRenderOptions { IncludeLegend = false, IncludeGroups = false, Geography = { IncludeCallouts = true, PreferCalloutMapEdges = true } }.MonitoringDashboardStyle(), chart.ResolvedTheme).Single();
 
         Assert(string.Equals(callout.Placement, "right-corner", StringComparison.Ordinal), "A single eastern callout should prefer the right map corner instead of defaulting to the left.");
     }
 
     private static void TopologyPngHalosUseHighlightAlpha() {
         var chart = TopologyChart.Create()
-            .WithId("highlight-alpha")
-            .WithViewport(300, 180, 20)
-            .WithLegend(null)
+            .Id("highlight-alpha")
+            .Viewport(new TopologyViewport(300, 180, 20))
+            .Legend((TopologyLegend?)null)
             .AddGroup("g", "Group", 40, 40, 160, 100, TopologyHealthStatus.Healthy)
             .AddNode("a", "A", 60, 70, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, "g", width: 42, height: 36)
             .AddNode("b", "B", 200, 70, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, "g", width: 42, height: 36)
@@ -409,15 +399,15 @@ internal static partial class SmokeTests {
 
     private static void TopologyReciprocalBundleMarksAssignedLanesExplicit() {
         var chart = TopologyChart.Create()
-            .WithId("reciprocal-center-lane")
-            .WithViewport(340, 220, 20)
-            .WithLegend(null)
+            .Id("reciprocal-center-lane")
+            .Viewport(new TopologyViewport(340, 220, 20))
+            .Legend((TopologyLegend?)null)
             .AddNode("a", "A", 82, 86, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, width: 44, height: 44, symbol: "DC")
             .AddNode("b", "B", 228, 86, TopologyNodeKind.Server, TopologyHealthStatus.Warning, width: 44, height: 44, symbol: "DC")
             .AddEdge("z-center", "a", "b", "center", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
             .AddEdge("a-left", "a", "b", "left", TopologyEdgeKind.Replication, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
             .AddEdge("m-right", "b", "a", "right", TopologyEdgeKind.Replication, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
-            .WithReciprocalEdgeRouteBundles(20);
+            .ReciprocalEdgeRouteBundles(20);
 
         var center = chart.Edges.Single(edge => edge.Id == "z-center");
 
@@ -427,24 +417,24 @@ internal static partial class SmokeTests {
 
     private static void TopologyGeographicRegionHullsIgnoreHiddenNodes() {
         var chart = TopologyChart.Create()
-            .WithId("hidden-hull")
-            .WithViewport(640, 340, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.Geographic)
-            .WithMapViewport(ChartMapViewport.World())
+            .Id("hidden-hull")
+            .Viewport(new TopologyViewport(640, 340, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.Geographic)
+            .MapViewport(ChartMapViewport.World())
             .AddGroup("amer", "AMER", 0, 0, 0, 0, TopologyHealthStatus.Healthy, "1 site", symbol: "region")
             .AddNode("visible", "Visible", 0, 0, TopologyNodeKind.Location, TopologyHealthStatus.Healthy, "amer", width: 48, height: 36)
             .AddNode("anchor", "Anchor", 0, 0, TopologyNodeKind.Location, TopologyHealthStatus.Critical, "amer", width: 24, height: 24)
-            .WithGroupCoordinates("amer", -98.5795, 39.8283)
-            .WithNodeCoordinates("visible", -98.5795, 39.8283)
-            .WithNodeCoordinates("anchor", -10, 52)
-            .WithNodeDisplay("anchor", TopologyNodeDisplayMode.Hidden);
+            .UpdateGroup("amer", g => g.Longitude(-98.5795).Latitude(39.8283))
+            .UpdateNode("visible", n => n.Longitude(-98.5795).Latitude(39.8283))
+            .UpdateNode("anchor", n => n.Longitude(-10).Latitude(52))
+            .UpdateNode("anchor", n => n.DisplayMode(TopologyNodeDisplayMode.Hidden).Badge(null));
 
-        var options = new TopologyRenderOptions { IncludeLegend = false, IncludeGroups = false, IncludeGeographicRegionHulls = true };
+        var options = new TopologyRenderOptions { IncludeLegend = false, IncludeGroups = false, Geography = { IncludeRegionHulls = true } };
         var svg = chart.ToSvg(options);
         var radius = GetAttribute(svg, "data-cfx-role=\"topology-geographic-hull\"", "rx");
 
-        Assert(Math.Abs(radius - options.GeographicRegionHullMinRadius) < 0.01, "Hidden geographic anchor nodes should not enlarge rendered region hulls.");
+        Assert(Math.Abs(radius - options.Geography.RegionHullMinRadius) < 0.01, "Hidden geographic anchor nodes should not enlarge rendered region hulls.");
         Assert(chart.ToPng(options).Length > 64, "Hidden geographic anchor nodes should not break PNG region hull rendering.");
     }
 }

@@ -1,8 +1,10 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>Per-series radar form and area paint; categorical and radial axes remain shared by the chart.</summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class ChartRadarOptions {
     private ChartLineAreaForm _form;
     private double? _fillOpacity;

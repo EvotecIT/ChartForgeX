@@ -44,7 +44,7 @@ public sealed class ArtifactHostHandoffTests {
         var image = VisualWatermark.FromImage(PngWriter.WriteRgba(new RgbaImage(1, 1, new byte[] { 30, 80, 140, 255 })), "image/png");
         image.Repeat = true;
         var chart = ChartFixture();
-        var artifact = chart.ToVisualArtifact().WithWatermarks(image, image).WithWatermarks(image);
+        var artifact = chart.ToVisualArtifact().AddWatermarks(image, image).AddWatermarks(image);
         var first = XDocument.Parse(artifact.ToSvg(null, "image-first"));
         var second = XDocument.Parse(artifact.ToSvg(null, "image-second"));
         AssertLocalReferences(first);
@@ -80,13 +80,10 @@ public sealed class ArtifactHostHandoffTests {
 
     [Fact]
     public void InteractiveMotionPreservesLabelsAndGroupsNeededByInitiallyDisabledControls() {
-        var chart = TopologyFixture().WithLayout(TopologyLayoutMode.RelationshipRadial)
+        var chart = TopologyFixture().LayoutMode(TopologyLayoutMode.RelationshipRadial)
             .AddGroup("cluster", "Cluster", 0, 0, 400, 240);
         chart.Edges[0].Label = "Traffic label";
-        var options = new TopologyRenderOptions {
-            IncludeEdgeLabels = false, IncludeGroups = false, EnableHtmlForceGraphControls = true,
-            ActiveScenarioId = "delivery"
-        };
+        var options = new TopologyRenderOptions { IncludeEdgeLabels = false, IncludeGroups = false, Html = { ForceGraphControls = true }, ActiveScenarioId = "delivery" };
         var motion = new TopologyMotionOptions { ScenarioId = "delivery" };
         string? svg = null;
         var html = chart.ToInteractiveHtmlPage(options, prepared => {
@@ -118,7 +115,7 @@ public sealed class ArtifactHostHandoffTests {
         copy.Regions[0].Label = "Copy region";
         copy.Regions[0].Metadata["detail"] = "copy region";
         copy.Legend[0].Label = "Copy legend";
-        copy.WithWatermarks(VisualWatermark.FromText("COPY"));
+        copy.AddWatermarks(VisualWatermark.FromText("COPY"));
         Assert.Equal("source", source.Metadata["owner"]);
         Assert.Equal("source region", source.Regions[0].Metadata["detail"]);
         Assert.NotEqual("Copy region", source.Regions[0].Label);
@@ -139,9 +136,9 @@ public sealed class ArtifactHostHandoffTests {
         var topology = TopologyFixture();
         var artifact = prepared ? topology.Prepare().Visual.ToArtifact() : topology.ToVisualArtifact();
         var before = artifact.ToInterchangeEnvelope();
-        artifact.WithWatermarks(VisualWatermark.FromText("FIRST"), VisualWatermark.FromText("SECOND"));
+        artifact.AddWatermarks(VisualWatermark.FromText("FIRST"), VisualWatermark.FromText("SECOND"));
         artifact.Metadata["presentation.watermarks"] = "99";
-        artifact.WithWatermarks(VisualWatermark.FromText("THIRD"));
+        artifact.AddWatermarks(VisualWatermark.FromText("THIRD"));
         Assert.Equal("3", artifact.Metadata["presentation.watermarks"]);
         var portable = VisualArtifactInterchangeEnvelope.FromUtf8Json(artifact.ToInterchangeUtf8Json());
         Assert.Equal("3", portable.Extensions["presentation.watermarks"]);
@@ -154,7 +151,7 @@ public sealed class ArtifactHostHandoffTests {
         Assert.True(rendered.IndexOf("FIRST", StringComparison.Ordinal) < rendered.IndexOf("SECOND", StringComparison.Ordinal));
         Assert.True(rendered.IndexOf("SECOND", StringComparison.Ordinal) < rendered.IndexOf("THIRD", StringComparison.Ordinal));
         var source = artifact.RenderSource;
-        Assert.Throws<ArgumentException>(() => artifact.WithWatermarks(VisualWatermark.FromText("VALID"), null!));
+        Assert.Throws<ArgumentException>(() => artifact.AddWatermarks(VisualWatermark.FromText("VALID"), null!));
         Assert.Same(source, artifact.RenderSource);
         Assert.Equal(rendered, artifact.ToSvg());
     }
@@ -183,7 +180,7 @@ public sealed class ArtifactHostHandoffTests {
     public void ScopedArtifactEmbedsKeepEveryReferenceLocal(bool prepared) {
         var chart = ChartFixture();
         var artifact = prepared ? chart.Prepare(VisualExportRequest.ForChart(chart).Context).ToArtifact() : chart.ToVisualArtifact();
-        artifact.WithWatermarks(VisualWatermark.FromText("INTERNAL"));
+        artifact.AddWatermarks(VisualWatermark.FromText("INTERNAL"));
         var first = XDocument.Parse(artifact.ToSvg(null, "first"));
         var second = XDocument.Parse(artifact.ToSvg(null, "second"));
         AssertLocalReferences(first);
@@ -195,7 +192,7 @@ public sealed class ArtifactHostHandoffTests {
     [Fact]
     public void OptionalSvgDecorationAndInteractiveHostPreserveDetachedMotion() {
         var chart = TopologyFixture();
-        var options = new TopologyRenderOptions { FitContentToViewport = true, EnableHtmlViewportControls = true };
+        var options = new TopologyRenderOptions { FitContentToViewport = true, Html = { ViewportControls = true } };
         var motion = chart.WithMotion(new TopologyMotionOptions { ScenarioId = "delivery" }, options);
         var svg = motion.ToSvg();
         var decorated = VisualWatermarkDecoration.ApplyToSvg(svg, VisualWatermark.FromText("INTERNAL"));
@@ -217,18 +214,18 @@ public sealed class ArtifactHostHandoffTests {
         Assert.Contains(interactiveSvg!, interactive);
         Assert.Contains("data-cfx-topology-zoom", interactive);
         Assert.Contains("<script", interactive);
-        Assert.False(options.EnableHtmlInteractions);
+        Assert.False(options.Html.Interactions);
         Assert.Equal(svg, motion.ToSvg());
         Assert.Throws<InvalidOperationException>(() => motion.ToHtmlPage(_ => " "));
         Assert.Throws<InvalidOperationException>(() => chart.ToInteractiveHtmlPage(options, _ => " "));
         Assert.Throws<InvalidOperationException>(() => VisualWatermarkDecoration.ApplyToSvg("<svg/>", VisualWatermark.FromText("BAD")));
     }
 
-    private static Chart ChartFixture() => Chart.Create().WithTitle("CPU")
+    private static Chart ChartFixture() => Chart.Create().Title("CPU")
         .AddLine("CPU", new[] { new ChartPoint(0, 20), new ChartPoint(1, 45) });
 
-    private static TopologyChart TopologyFixture() => TopologyChart.Create().WithId("host-route")
-        .WithViewport(420, 260).WithLayout(TopologyLayoutMode.Manual)
+    private static TopologyChart TopologyFixture() => TopologyChart.Create().Id("host-route")
+        .Viewport(new TopologyViewport(420, 260)).LayoutMode(TopologyLayoutMode.Manual)
         .AddNode("source", "Source", 30, 80, width: 100, height: 60)
         .AddNode("target", "Target", 260, 80, width: 100, height: 60)
         .AddEdge("route", "source", "target", routing: TopologyEdgeRouting.Straight)

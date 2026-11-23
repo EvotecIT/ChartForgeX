@@ -15,7 +15,7 @@ public sealed class SameValueColorPresentationTests {
     [InlineData(ChartSeriesKind.HexbinHeatmap)]
     [InlineData(ChartSeriesKind.CalendarHeatmap)]
     public void PositiveLegacyKeysFormatOnlyObservedValuesAndEmittedSamples(ChartSeriesKind kind) {
-        var chart = Chart.Create().WithSize(800, 440).WithDataLabels(false);
+        var chart = Chart.Create().Size(800, 440).DataLabels(false);
         if (kind == ChartSeriesKind.CalendarHeatmap) chart.AddCalendarHeatmap("Positive", new[] {
             new ChartCalendarHeatmapItem(new DateTime(2026, 1, 5), 10),
             new ChartCalendarHeatmapItem(new DateTime(2026, 1, 6), 20)
@@ -23,11 +23,11 @@ public sealed class SameValueColorPresentationTests {
         else if (kind == ChartSeriesKind.HexbinHeatmap) chart.AddHexbinHeatmapRow("Positive", new double?[] { 10, 20 });
         else chart.AddHeatmapRow("Positive", new double?[] { 10, 20 });
         var calls = new Dictionary<double, int>();
-        chart.ConfigureHeatmapColorDimension(options => options.ValueFormat = ChartValueFormat.Custom(value => {
+        chart.Heatmap(heatmap => heatmap.ColorDimension(options => options.ValueFormat = ChartValueFormat.Custom(value => {
             if (value < 10 || value > 20) throw new InvalidOperationException("Only the positive measurement domain can be formatted.");
             calls[value] = calls.GetValueOrDefault(value) + 1;
             return value.ToString("0.0", CultureInfo.InvariantCulture);
-        }));
+        })));
         var prepared = Prepare(chart);
         Assert.Contains(10d, calls.Keys); Assert.Contains(20d, calls.Keys); Assert.DoesNotContain(0d, calls.Keys);
         var capturedCalls = calls.ToArray();
@@ -50,7 +50,7 @@ public sealed class SameValueColorPresentationTests {
     [InlineData(ChartSeriesKind.RegionMap, "positioned", true)]
     public void CultureAndMeasuredHeadingChangeDisplayWithoutChangingPaintOrRawValues(ChartSeriesKind kind, string scaleKind, bool right) {
         var chart = ColorDimensionPresentationFixtures.Create(kind, scaleKind, 360);
-        if (right) chart.WithMapScaleLegendPosition(ChartMapScaleLegendPosition.Right);
+        if (right) chart.Map(m => m.ScaleLegendPosition(ChartMapScaleLegendPosition.Right));
         var baseline = Prepare(chart);
         var options = ColorDimensionPresentationFixtures.Options(chart, kind);
         options.Name = "Temperature (°C)";
@@ -175,9 +175,9 @@ public sealed class SameValueColorPresentationTests {
     [InlineData(ChartSeriesKind.Heatmap)]
     [InlineData(ChartSeriesKind.HexbinHeatmap)]
     public void ExplicitPointLabelsRetainVisiblePrecedenceOverNumericFormat(ChartSeriesKind kind) {
-        var chart = ColorDimensionPresentationFixtures.Create(kind).WithDataLabels().WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always);
-        chart.Series[0].WithPointLabel(0, "Caller caption");
-        chart.ConfigureHeatmapColorDimension(options => { options.Name = "Temperature"; options.ValueFormat = ChartValueFormat.Custom(value => "T=" + value.ToString(CultureInfo.InvariantCulture)); });
+        var chart = ColorDimensionPresentationFixtures.Create(kind).DataLabels().Heatmap(h => h.ValueTextMode(ChartHeatmapValueTextMode.Always));
+        chart.Series[0].PointLabel(0, "Caller caption");
+        chart.Heatmap(heatmap => heatmap.ColorDimension(options => { options.Name = "Temperature"; options.ValueFormat = ChartValueFormat.Custom(value => "T=" + value.ToString(CultureInfo.InvariantCulture)); }));
         var prepared = Prepare(chart); var document = XDocument.Parse(prepared.ToSvg());
         Assert.Contains(prepared.Regions, region => region.Role == "data-label" && region.Label == "Caller caption");
         var mark = Marks(document, kind).Single(element => (string?)element.Attribute("data-cfx-point") == "0");

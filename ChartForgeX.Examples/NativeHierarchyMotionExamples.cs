@@ -13,8 +13,8 @@ internal static class NativeHierarchyMotionExamples {
         foreach (var width in new[] { 390, 760 }) foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             Chart Model(double reading) {
                 var chart = NativeHierarchyMotionRecipe.Create(family, reading, width, mode, "Example Native");
-                if (intent == "ellipsis") { chart.Series[0].WithPointLabel(0, string.Concat(Enumerable.Repeat("Regional reconciliation ", 12)));
-                    chart.ConfigureTreemap(captionOptions => { captionOptions.LabelTrimming = TextTrimming.Ellipsis; captionOptions.MinimumLabelFontSize = 10; }); }
+                if (intent == "ellipsis") { chart.Series[0].PointLabel(0, string.Concat(Enumerable.Repeat("Regional reconciliation ", 12)));
+                    chart.Treemap(captionOptions => { captionOptions.LabelTrimming = TextTrimming.Ellipsis; captionOptions.MinimumLabelFontSize = 10; }); }
                 return chart;
             }
             var membership = intent is "subtree" or "root"; var initial = intent == "initial";

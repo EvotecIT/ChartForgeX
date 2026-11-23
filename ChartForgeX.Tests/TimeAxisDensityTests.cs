@@ -18,7 +18,7 @@ public sealed class TimeAxisDensityTests {
     [InlineData(800, 19, true, 5, ThemeMode.Dark)]
     public void MeasuredTimeScaleKeepsDailyOrIntermediateDayTicksWhenTheyFit(int width, int days, bool authoredCount, int minimumLabels, ThemeMode mode) {
         var first = authoredCount ? new DateTime(2026, 9, 1, 0, 0, 0, DateTimeKind.Utc) : Start;
-        var chart = Create(width).WithThemeMode(mode).AddLine("Readings", Enumerable.Range(0, days).Select(day => new ChartPoint(first.AddDays(day), 40 + day % 5)));
+        var chart = Create(width).ThemeMode(mode).AddLine("Readings", Enumerable.Range(0, days).Select(day => new ChartPoint(first.AddDays(day), 40 + day % 5)));
         if (authoredCount) chart.Options.XAxis.TickCount = 6;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         ScatterBubbleColorRenderingTests.Capture(prepared, $"time-density-{width}-{days}-{mode}");
@@ -34,7 +34,7 @@ public sealed class TimeAxisDensityTests {
     [InlineData(true, ThemeMode.Light)]
     [InlineData(true, ThemeMode.Dark)]
     public void NarrowDateScaleKeepsCalendarBoundariesInsteadOfPaddedEndpointTimes(bool bars, ThemeMode mode) {
-        var chart = Create(360).WithThemeMode(mode).WithPadding(64, 14, 20, 46);
+        var chart = Create(360).ThemeMode(mode).Padding(64, 14, 20, 46);
         var points = Enumerable.Range(0, bars ? 15 : 30).Select(day => new ChartPoint(Start.AddDays(day * (bars ? 2 : 1)), 40 + day % 5));
         if (bars) chart.AddBar("Readings", points); else chart.AddLine("Readings", points);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -77,25 +77,25 @@ public sealed class TimeAxisDensityTests {
         var chart = Create(640)
             .AddLine("Readings", Enumerable.Range(0, 7).Select(day => new ChartPoint(Start.AddDays(day), 40 + day % 5)));
         var automaticLabels = Captions(chart.Prepare(VisualExportRequest.ForChart(chart).Context)).Select(node => node.Text.Lines.Single().Text).ToArray();
-        chart.ConfigureXAxis(axis => axis.TickCount = 2);
+        chart.XAxis(axis => axis.TickCount = 2);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Equal(2, Captions(prepared).Length);
         AssertDateLabels(prepared);
         var svg = prepared.ToSvg();
-        chart.ConfigureXAxis(axis => axis.WithAutomaticTickCount());
+        chart.XAxis(axis => axis.AutomaticTickCount());
         Assert.Equal(automaticLabels, Captions(chart.Prepare(VisualExportRequest.ForChart(chart).Context)).Select(node => node.Text.Lines.Single().Text));
         Assert.Equal(svg, prepared.ToSvg());
     }
 
     [Fact]
     public void TwoWeekIntervalKeepsWholeCalendarDatesAcrossMonthBoundaries() {
-        var axis = new ChartAxis().WithTimeScale(); axis.TickCount = 3;
+        var axis = new ChartAxis().TimeScale(); axis.TickCount = 3;
         var ticks = ChartTicks.GenerateInside(axis, Start.AddHours(-8).ToOADate(), Start.AddDays(29).AddHours(8).ToOADate());
         Assert.Equal(new[] { Start, Start.AddDays(14), Start.AddDays(28) }, ticks.Select(DateTime.FromOADate));
     }
 
-    private static Chart Create(int width) => Chart.Create().WithSize(width, 320).WithHeader(false).WithLegend(false).WithXAxisTimeScale()
-        .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
+    private static Chart Create(int width) => Chart.Create().Size(width, 320).ShowHeader(false).Legend(false).XAxis(x => x.TimeScale())
+        .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
 
     private static VisualSceneText[] Captions(PreparedVisual prepared) => prepared.Scene.Nodes.OfType<VisualSceneText>()
         .Where(node => node.Role == "axis-x-label").ToArray();

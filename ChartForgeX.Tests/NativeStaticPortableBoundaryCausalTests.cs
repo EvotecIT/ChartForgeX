@@ -92,7 +92,7 @@ public sealed class NativeStaticPortableBoundaryCausalTests {
     }
 
     private static TopologyChart Native(TopologyIconArtwork artwork, int count) {
-        var chart = TopologyChart.Create().WithTitle("").WithViewport(320, 240, 12).WithLegend(null);
+        var chart = TopologyChart.Create().Title("").Viewport(new TopologyViewport(320, 240, 12)).Legend((TopologyLegend?)null);
         chart.LayoutMode = TopologyLayoutMode.Manual;
         for (var index = 0; index < count; index++) chart.Nodes.Add(new TopologyNode {
             Id = "image-" + index, Label = "Image", X = 72, Y = 48, Width = 100, Height = 100,

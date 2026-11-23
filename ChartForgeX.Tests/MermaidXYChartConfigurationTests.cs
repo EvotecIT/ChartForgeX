@@ -16,16 +16,16 @@ public sealed class MermaidXYChartConfigurationTests {
     public void SourceSettingsUseLogicalAxesAndHostOverridesWithoutChangingRawDeclarations() {
         var source = With("\"width\":800,\"height\":460,\"chartOrientation\":\"horizontal\",\"showLegend\":false,\"showTitle\":false,\"showDataLabel\":true,\"xAxis\":{\"showTitle\":false,\"showAxisLine\":false,\"labelRotation\":25},\"yAxis\":{\"showAxisLine\":false}");
         var parsed = new MermaidParser().ParseXYChart(source); Assert.Empty(parsed.Diagnostics); var document = parsed.Document!; var chart = document.ToChart();
-        Assert.Equal(800, chart.Options.Size.Width); Assert.Equal(460, chart.Options.Size.Height); Assert.False(chart.Options.ShowLegend); Assert.Empty(chart.Title);
-        Assert.Equal(ChartOrientation.Horizontal, chart.Options.LineOrientation); Assert.Empty(chart.YAxisTitle); Assert.Equal("Requests", chart.XAxisTitle);
+        Assert.Equal(800, chart.Options.Size.Width); Assert.Equal(460, chart.Options.Size.Height); Assert.False(chart.Options.Legend.Visible); Assert.Empty(chart.Title);
+        Assert.Equal(ChartOrientation.Horizontal, chart.Options.Lines.Orientation); Assert.Empty(chart.Options.YAxis.Title); Assert.Equal("Requests", chart.Options.XAxis.Title);
         Assert.False(chart.Options.YAxis.ShowLine); Assert.False(chart.Options.XAxis.ShowLine); Assert.Equal(25, chart.Options.YAxis.LabelAngle);
         Assert.True(chart.Series[0].ShowDataLabels); Assert.True(chart.Series[1].ShowDataLabels);
         var host = document.ToChart(new MermaidXYChartRenderOptions { Width = 720, ShowLegend = true, ShowDataLabels = false, Title = "Host" });
-        Assert.Equal(720, host.Options.Size.Width); Assert.Equal(460, host.Options.Size.Height); Assert.True(host.Options.ShowLegend); Assert.Equal("Host", host.Title); Assert.False(host.Options.ShowDataLabels);
+        Assert.Equal(720, host.Options.Size.Width); Assert.Equal(460, host.Options.Size.Height); Assert.True(host.Options.Legend.Visible); Assert.Equal("Host", host.Title); Assert.False(host.Options.DataLabels.Visible);
         Assert.Equal(source, document.SourceText); Assert.Contains(document.Configuration.Settings, setting => setting.Path == "xyChart.width" && setting.Value == "800");
-        document.Orientation = ChartOrientation.Vertical; Assert.Equal(ChartOrientation.Vertical, document.ToChart().Options.LineOrientation);
+        document.Orientation = ChartOrientation.Vertical; Assert.Equal(ChartOrientation.Vertical, document.ToChart().Options.Lines.Orientation);
         var header = new MermaidParser().ParseXYChart(source.Replace("xychart-beta\n", "xychart-beta vertical\n", StringComparison.Ordinal)).Document!;
-        Assert.Equal(ChartOrientation.Vertical, header.ToChart().Options.LineOrientation);
+        Assert.Equal(ChartOrientation.Vertical, header.ToChart().Options.Lines.Orientation);
     }
 
     [Fact]
@@ -34,7 +34,7 @@ public sealed class MermaidXYChartConfigurationTests {
         var direct = MermaidRenderer.Render(source); Assert.Empty(direct.Diagnostics); Assert.Equal(VisualArtifactHtmlSizing.PreserveSize, direct.Artifact!.HtmlSizing);
         var fence = new MermaidVisualMarkupParser().Parse("```mermaid {width=\"390\" legend=\"true\" dataLabels=\"false\"}\n" + source + "\n```");
         Assert.Empty(fence.Diagnostics); var artifact = Assert.Single(fence.Artifacts); var chart = Assert.IsType<Chart>(artifact.Model);
-        Assert.Equal(390, chart.Options.Size.Width); Assert.Equal(460, chart.Options.Size.Height); Assert.True(chart.Options.ShowLegend); Assert.False(chart.Options.ShowDataLabels);
+        Assert.Equal(390, chart.Options.Size.Width); Assert.Equal(460, chart.Options.Size.Height); Assert.True(chart.Options.Legend.Visible); Assert.False(chart.Options.DataLabels.Visible);
     }
 
     [Fact]
@@ -81,7 +81,7 @@ public sealed class MermaidXYChartConfigurationTests {
     [Fact]
     public void DirectivePrecedenceKeepsFrontmatterAndLastDirectiveDeclarationsAvailable() {
         var source = "---\nconfig:\n  xyChart:\n    showLegend: false\n    width: 800\n---\n%%{init: {\"xyChart\":{\"showLegend\":true}}}%%\n" + Body;
-        var parsed = new MermaidParser().ParseXYChart(source); Assert.Empty(parsed.Diagnostics); var document = Assert.IsType<MermaidXYChartDocument>(parsed.Document); Assert.True(document.ToChart().Options.ShowLegend);
+        var parsed = new MermaidParser().ParseXYChart(source); Assert.Empty(parsed.Diagnostics); var document = Assert.IsType<MermaidXYChartDocument>(parsed.Document); Assert.True(document.ToChart().Options.Legend.Visible);
         Assert.Equal(new[] { "false", "true" }, document.Configuration.Settings.Where(setting => setting.Path == "xyChart.showLegend").Select(setting => setting.Value));
     }
 }

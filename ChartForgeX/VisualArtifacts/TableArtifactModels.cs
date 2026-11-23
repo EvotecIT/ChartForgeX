@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using ChartForgeX.VisualBlocks;
 using ChartForgeX.Core;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.VisualArtifacts;
 
@@ -58,6 +59,7 @@ public enum TableArtifactColumnType {
 /// <summary>
 /// Describes one reusable table artifact for static rendering and native-host interaction.
 /// </summary>
+[Fluent]
 public sealed class TableArtifact {
     /// <summary>Gets or sets whether native table output separates rows and columns with grid lines.</summary>
     public bool ShowGridLines { get; set; }
@@ -113,19 +115,6 @@ public sealed class TableArtifact {
     /// <summary>Creates a new table artifact.</summary>
     public static TableArtifact Create(string id) => new() { Id = id };
 
-    /// <summary>Sets the table title.</summary>
-    public TableArtifact WithTitle(string title) { Title = title ?? throw new ArgumentNullException(nameof(title)); return this; }
-
-    /// <summary>Sets the table subtitle.</summary>
-    public TableArtifact WithSubtitle(string subtitle) { Subtitle = subtitle ?? throw new ArgumentNullException(nameof(subtitle)); return this; }
-
-    /// <summary>Sets declared host-level table capabilities.</summary>
-    public TableArtifact WithCapabilities(TableArtifactCapabilities capabilities) {
-        TableArtifactGuards.TableCapabilitiesDefined(capabilities, nameof(capabilities));
-        Capabilities = capabilities;
-        return this;
-    }
-
     /// <summary>Adds a table column.</summary>
     public TableArtifact AddColumn(string id, string label, TableArtifactColumnType type = TableArtifactColumnType.Text, TextAlignment alignment = TextAlignment.Left, double? width = null) {
         if (_rows.Count > 0) throw new InvalidOperationException("Table artifact columns cannot be added after rows have been populated.");
@@ -147,7 +136,7 @@ public sealed class TableArtifact {
 
     /// <summary>Replaces an existing row with an independently configured copy, including its cells and metadata.</summary>
     /// <remarks>Callback exceptions preserve the owner. Previous values and retained callback values remain independent of the installed result.</remarks>
-    public TableArtifact ConfigureRow(int rowIndex, Action<TableArtifactRow> configure) {
+    public TableArtifact UpdateRow(int rowIndex, Action<TableArtifactRow> configure) {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         if (rowIndex < 0 || rowIndex >= _rows.Count) throw new ArgumentOutOfRangeException(nameof(rowIndex), rowIndex, "Row index must reference an existing table artifact row.");
         _rows[rowIndex] = ChartOptionConfiguration.Configure(_rows[rowIndex], configure, row => row.Clone());

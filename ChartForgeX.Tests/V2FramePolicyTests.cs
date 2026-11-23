@@ -40,7 +40,7 @@ public sealed class V2FramePolicyTests {
     [InlineData(1, true)]
     [InlineData(2, false)]
     public void OmittedFramePolicyHonorsExplicitModelLegendVisibility(int seriesCount, bool showLegend) {
-        var chart = Bars(seriesCount).WithLegend(showLegend);
+        var chart = Bars(seriesCount).Legend(showLegend);
         var convenience = XDocument.Parse(chart.ToSvg());
         var prepared = XDocument.Parse(chart.Prepare(Context()).ToSvg());
 
@@ -52,7 +52,7 @@ public sealed class V2FramePolicyTests {
     public void DottedMapUsesCategoricalEntryPolicyWithoutAnAutomaticNumericKey() {
         var chart = Chart.Create().AddDottedMap("Locations", new[] { new ChartMapPoint("Warsaw", 21, 52) });
         Assert.False(HasLegend(XDocument.Parse(chart.ToSvg())));
-        Assert.True(HasLegend(XDocument.Parse(chart.WithLegend().ToSvg())));
+        Assert.True(HasLegend(XDocument.Parse(chart.Legend().ToSvg())));
         chart.Series[0].ShowInLegend = false;
         var hidden = XDocument.Parse(chart.ToSvg());
         Assert.False(HasLegend(hidden));
@@ -63,7 +63,7 @@ public sealed class V2FramePolicyTests {
     [InlineData(false, true)]
     [InlineData(true, false)]
     public void ExplicitFrameVisibilityOverridesTheModel(bool modelVisibility, bool frameVisibility) {
-        var chart = Bars(2).WithLegend(modelVisibility);
+        var chart = Bars(2).Legend(modelVisibility);
         var prepared = XDocument.Parse(chart.Prepare(Context(new VisualFrame(showLegend: frameVisibility))).ToSvg());
         Assert.Equal(frameVisibility, HasLegend(prepared));
     }
@@ -71,7 +71,7 @@ public sealed class V2FramePolicyTests {
     [Theory]
     [MemberData(nameof(FamilyFrameVisibilityCases))]
     public void ResolvedFrameVisibilityControlsEveryFamilyKey(string family, bool modelVisibility, bool frameVisibility) {
-        var chart = KeyChart(family).WithLegend(modelVisibility);
+        var chart = KeyChart(family).Legend(modelVisibility);
         var prepared = chart.Prepare(Context(new VisualFrame(showLegend: frameVisibility)));
         var document = XDocument.Parse(prepared.ToSvg());
         Assert.Equal(frameVisibility, HasKey(document, family));
@@ -87,7 +87,7 @@ public sealed class V2FramePolicyTests {
         Assert.Equal(automatic, HasKey(XDocument.Parse(chart.ToSvg()), family));
         Assert.Equal(automatic, HasKey(XDocument.Parse(chart.Prepare(Context()).ToSvg()), family));
         foreach (var visible in new[] { false, true }) {
-            chart.WithLegend(visible);
+            chart.Legend(visible);
             Assert.Equal(visible, HasKey(XDocument.Parse(chart.ToSvg()), family));
             Assert.Equal(visible, HasKey(XDocument.Parse(chart.Prepare(Context()).ToSvg()), family));
         }
@@ -99,10 +99,10 @@ public sealed class V2FramePolicyTests {
     [InlineData("calendar")]
     [InlineData("map")]
     public void ExplicitFrameVisibilityRetainsFamilyScaleSuppression(string family) {
-        var chart = KeyChart(family).WithLegend(false);
-        if (family == "map") chart.ConfigureMapColorDimension(options => options.ShowLegend = false);
-        else if (family == "categorical") chart.WithHeatmapCategoryLegend(false);
-        else chart.ConfigureHeatmapColorDimension(options => options.ShowLegend = false);
+        var chart = KeyChart(family).Legend(false);
+        if (family == "map") chart.Map(map => map.ColorDimension(options => options.ShowLegend = false));
+        else if (family == "categorical") chart.Heatmap(h => h.ShowCategoryLegend(false));
+        else chart.Heatmap(heatmap => heatmap.ColorDimension(options => options.ShowLegend = false));
         var prepared = chart.Prepare(Context(new VisualFrame(showLegend: true)));
         Assert.False(HasKey(XDocument.Parse(prepared.ToSvg()), family));
         Assert.Contains(prepared.Regions, region => region.Role == DataRole(family) && region.Bounds.Width > 0);
@@ -110,15 +110,15 @@ public sealed class V2FramePolicyTests {
 
     [Fact]
     public void ExplicitScheduleFrameDoesNotRestoreSuppressedSeriesEntries() {
-        var chart = KeyChart("schedule").WithLegend(false);
-        chart.Series[0].WithLegendEntry(false);
+        var chart = KeyChart("schedule").Legend(false);
+        chart.Series[0].ShowInLegend(false);
         var context = Context(new VisualFrame(showLegend: true));
         var prepared = chart.Prepare(context);
         var entries = XDocument.Parse(prepared.ToSvg()).Descendants()
             .Where(element => (string?)element.Attribute("data-cfx-role") == "legend-entry").ToArray();
         var entry = Assert.Single(entries);
         Assert.Equal("Build", Assert.Single(entry.Descendants(), element => element.Name.LocalName == "text").Value);
-        chart.Series[1].WithLegendEntry(false);
+        chart.Series[1].ShowInLegend(false);
         var hidden = chart.Prepare(context);
         Assert.False(HasLegend(XDocument.Parse(hidden.ToSvg())));
         Assert.Equal(2, hidden.Regions.Count(region => region.Role == "timeline-item"));
@@ -126,13 +126,13 @@ public sealed class V2FramePolicyTests {
 
     [Fact]
     public void OmittedPositionUsesModelPlacementAndExplicitFramePositionOverridesIt() {
-        var chart = Bars(2).WithLegendPosition(ChartLegendPosition.Right);
+        var chart = Bars(2).Legend(l => l.Position(ChartLegendPosition.Right));
         var modelPlacement = XDocument.Parse(chart.ToSvg());
         var automatic = XDocument.Parse(chart.Prepare(Context()).ToSvg());
         Assert.Equal(TextPlacement(modelPlacement), TextPlacement(automatic));
 
         var overridePlacement = XDocument.Parse(chart.Prepare(Context(new VisualFrame(legendPosition: ChartLegendPosition.Bottom))).ToSvg());
-        var requestedBottom = XDocument.Parse(chart.WithLegendPosition(ChartLegendPosition.Bottom).ToSvg());
+        var requestedBottom = XDocument.Parse(chart.Legend(l => l.Position(ChartLegendPosition.Bottom)).ToSvg());
         Assert.Equal(TextPlacement(requestedBottom), TextPlacement(overridePlacement));
         Assert.False(TextPlacement(automatic).SequenceEqual(TextPlacement(overridePlacement)));
     }
@@ -155,8 +155,8 @@ public sealed class V2FramePolicyTests {
     }
 
     private static Chart Bars(int seriesCount) {
-        var chart = Chart.Create().WithSize(640, 400).WithTitle("Assessment results").WithSubtitle("Current reporting period")
-            .WithXLabels("First", "Second", "Third");
+        var chart = Chart.Create().Size(640, 400).Title("Assessment results").Subtitle("Current reporting period")
+            .XLabels("First", "Second", "Third");
         for (var index = 0; index < seriesCount; index++) chart.AddBar(index == 0 ? "Reviewed" : "Verified", new[] {
             new ChartPoint(1, 30 + index * 4), new ChartPoint(2, 45 + index * 4), new ChartPoint(3, 38 + index * 4)
         });
@@ -164,23 +164,23 @@ public sealed class V2FramePolicyTests {
     }
 
     private static Chart KeyChart(string family) {
-        var chart = Chart.Create().WithSize(640, 400);
+        var chart = Chart.Create().Size(640, 400);
         var states = new[] {
             new ChartStateCategory("pass", "Passed", ChartColor.FromHex("#1D8A52")),
             new ChartStateCategory("fail", "Failed", ChartColor.FromHex("#D4302F"))
         };
         return family switch {
-            "categorical" => chart.WithStateCategories(states).WithXLabels("First", "Second")
+            "categorical" => chart.StateCategories(states).XLabels("First", "Second")
                 .AddHeatmapCategoryRow("Checks", new ChartHeatmapCell("pass"), new ChartHeatmapCell("fail")),
-            "numeric" => chart.WithXLabels("First", "Second", "Third").AddHeatmapRow("Count", new[] { 0d, 20, 100 }),
-            "calendar" => chart.ConfigureCalendar(options => options.FirstDayOfWeek = DayOfWeek.Monday).AddCalendarHeatmap("Activity", new[] {
+            "numeric" => chart.XLabels("First", "Second", "Third").AddHeatmapRow("Count", new[] { 0d, 20, 100 }),
+            "calendar" => chart.Calendar(options => options.FirstDayOfWeek = DayOfWeek.Monday).AddCalendarHeatmap("Activity", new[] {
                 new ChartCalendarHeatmapItem(new DateTime(2026, 1, 5), 0), new ChartCalendarHeatmapItem(new DateTime(2026, 1, 7), 5)
             }),
             "map" => chart.AddTileMap("Count", new ChartTileMapDefinition("frame-policy", "Regions", new[] {
                 new ChartTileMapRegion("A", "First", 0, 0), new ChartTileMapRegion("B", "Second", 1, 0)
             }), new[] { new ChartRegionMapItem("A", 30), new ChartRegionMapItem("B", 80) }),
             "schedule" => chart.AddTimelineRange("Plan", 1, 3).AddTimelineRange("Build", 2, 4),
-            "state-schedule" => chart.WithStateCategories(states).AddStateTimelineLane("Service", new[] {
+            "state-schedule" => chart.StateCategories(states).AddStateTimelineLane("Service", new[] {
                 new ChartStateTimelineSegment(1, 2, "pass"), new ChartStateTimelineSegment(2, 3, "fail")
             }),
             _ => throw new ArgumentOutOfRangeException(nameof(family))

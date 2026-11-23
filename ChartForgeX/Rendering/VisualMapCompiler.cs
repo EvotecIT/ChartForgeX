@@ -16,8 +16,8 @@ internal static partial class VisualMapCompiler {
         if (UsesDatasetComposition(chart)) { Composed(chart, context, builder, plot, colorScales); return; }
         if (chart.Series.Count != 1) throw new InvalidOperationException("Prepared map charts require one map series.");
         var series = chart.Series[0];
-        presentation ??= new ChartColorPresentation(chart.Options.MapColorDimension, chart.Options.Labels, chart.Options.Labels.Value, chart.Options.ValueFormat);
-        if (!Finite(chart.Options.MapRegionStrokeWidth) || chart.Options.MapRegionStrokeWidth < 0)
+        presentation ??= new ChartColorPresentation(chart.Options.Map.ColorDimension, chart.Options.Labels, chart.Options.Labels.Value, chart.Options.ValueFormat);
+        if (!Finite(chart.Options.Map.RegionStrokeWidth) || chart.Options.Map.RegionStrokeWidth < 0)
             throw new InvalidOperationException("Map region stroke width must be non-negative and finite.");
         var colors = context.Theme.Resolve(context.ThemeMode);
         if (series.Kind == ChartSeriesKind.DottedMap) { Dotted(chart, context, builder, plot, colors); return; }
@@ -70,7 +70,7 @@ internal static partial class VisualMapCompiler {
     });
     private static string Formatted(Chart chart, int? source, ChartColorPresentation presentation) => source.HasValue ? presentation.Value(chart.Series[0].RenderPoints[source.Value].Y) : presentation.NoData;
     private static void Surface(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect bounds, VisualThemeColors colors, string role) {
-        if (!chart.Options.ShowMapSurface) return;
+        if (!chart.Options.Map.ShowSurface) return;
         builder.Rect(bounds, ChartColorMath.WithOpacity(ChartColorMath.Blend(colors.Surface, colors.Border, .12), .16),
             ChartColorMath.WithOpacity(colors.Border, .16), context.Theme.GridStrokeWidth, Math.Min(context.Theme.Spacing, Math.Min(bounds.Width, bounds.Height) / 8), role,
             paint: new VisualScenePaintBinding(SvgPaint.Mix(ChartColorMath.Blend(colors.Surface, colors.Border, .12), colors.Surface, SvgColorRole.Surface, colors.Border, SvgColorRole.Surface, .12)
@@ -88,13 +88,13 @@ internal static partial class VisualMapCompiler {
         else {
             var ratio = ChartHeatmapSurface.MapRatio(chart, value.Value, min, max);
             metadata["data-cfx-level"] = N(ChartHeatmapSurface.Level(ratio));
-            if (chart.Options.MapColorScale?.Mode == ChartColorScaleMode.Discrete) {
-                var scale = chart.Options.MapColorScale;
+            if (chart.Options.Map.ColorScale?.Mode == ChartColorScaleMode.Discrete) {
+                var scale = chart.Options.Map.ColorScale;
                 var band = scale.BandIndex(value.Value);
                 metadata["data-cfx-band"] = N(band);
                 if (scale.Bands[band].Label != null) metadata["data-cfx-band-label"] = scale.Bands[band].Label!;
             }
-            var status = chart.Options.MapColorScale == null ? ChartHeatmapSurface.CellStatus(chart, ratio) : null;
+            var status = chart.Options.Map.ColorScale == null ? ChartHeatmapSurface.CellStatus(chart, ratio) : null;
             if (status != null) metadata["data-cfx-status"] = status;
         }
         return metadata;

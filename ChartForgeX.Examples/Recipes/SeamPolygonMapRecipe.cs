@@ -19,16 +19,16 @@ public static class SeamPolygonMapRecipe {
             new ChartMapGeoJsonOptions { Projection = projection, PolygonViewport = viewport });
         var regions = ChartSeries.CreateRegionMap(new ChartSeriesId("regions"), "Service coverage", definition, new[] {
             new ChartRegionMapItem("I", 80), new ChartRegionMapItem("M", 55), new ChartRegionMapItem("O", 20)
-        }).WithObservationIds(new[] { new ChartObservationId("island-observation"), new ChartObservationId("peers-observation"), new ChartObservationId("outside-observation") })
-            .WithColorScale(ChartColorScale.Sequential(ChartColor.FromHex("#DBEAFE"), ChartColor.FromHex("#2563EB")).WithValueRange(0, 100));
+        }).ObservationIds(new[] { new ChartObservationId("island-observation"), new ChartObservationId("peers-observation"), new ChartObservationId("outside-observation") })
+            .ColorScale(ChartColorScale.Sequential(ChartColor.FromHex("#DBEAFE"), ChartColor.FromHex("#2563EB")).WithValueRange(0, 100));
         var ports = ChartSeries.CreateDottedMap(new ChartSeriesId("ports"), "Ports", new[] {
             new ChartMapPoint("Western port", 176, -23), new ChartMapPoint("Eastern port", -176, -7)
-        }).WithObservationIds(new[] { new ChartObservationId("west-port"), new ChartObservationId("east-port") })
-            .WithMarkerRadius(4).ReplaceMapConnectors(new[] { new ChartMapConnector("Service route", 176, -23, -176, -7).WithEndpointClearance(2) });
-        var chart = Chart.Create().WithSize(width, 540).WithTheme(VisualTheme.Graphite(), mode).WithLegend().WithMapLabels().WithDataLabels()
-            .WithTitle("Dateline polygons retain their source").WithSubtitle("Complete rings and holes; the view clips paint without filtering features")
-            .WithMapViewport(viewport).AddSeries(regions).AddSeries(ports);
-        chart.Options.MapCallouts = new ChartMapCallouts(36, ChartMapRegionLabel.Name);
+        }).ObservationIds(new[] { new ChartObservationId("west-port"), new ChartObservationId("east-port") })
+            .MarkerRadius(4).ReplaceMapConnectors(new[] { new ChartMapConnector("Service route", 176, -23, -176, -7).WithEndpointClearance(2) });
+        var chart = Chart.Create().Size(width, 540).Theme(VisualTheme.Graphite()).ThemeMode(mode).Legend().Map(m => m.ShowLabels()).DataLabels()
+            .Title("Dateline polygons retain their source").Subtitle("Complete rings and holes; the view clips paint without filtering features")
+            .Map(m => m.Viewport(viewport)).AddSeries(regions).AddSeries(ports);
+        chart.Options.Map.Callouts = new ChartMapCallouts(36, ChartMapRegionLabel.Name);
         return chart;
     }
 }

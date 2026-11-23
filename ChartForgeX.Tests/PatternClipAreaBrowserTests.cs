@@ -26,10 +26,10 @@ public sealed class PatternClipAreaBrowserTests {
         var png = prepared.ToPng();
         var pixels = RasterImageDecoder.Decode(png).Pixels;
         var nativeVisiblePixels = Enumerable.Range(0, pixels.Length / 4).Count(pixel => pixels[pixel * 4 + 3] != 0);
-        chart.Series[0].WithFillPattern(ChartFillPattern.None);
+        chart.Series[0].FillPattern(ChartFillPattern.None);
         Assert.Equal(chart.ToPng(), png);
         if (Enabled) {
-            chart.Series[0].WithFillPattern(ChartFillPattern.Crosshatch);
+            chart.Series[0].FillPattern(ChartFillPattern.Crosshatch);
             await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), 700, 520);
             var page = session.Page;
             var source = kind == ChartSeriesKind.Radar ? 1 : 0;
@@ -93,10 +93,10 @@ public sealed class PatternClipAreaBrowserTests {
         NumericRadialEncodedGeometryTests.Capture(chart, name);
         Assert.Contains(prepared.Scene.Nodes.OfType<VisualSceneLine>(), line => line.Role?.EndsWith("-pattern", StringComparison.Ordinal) == true);
         var png = prepared.ToPng();
-        chart.Series[0].WithFillPattern(ChartFillPattern.None);
+        chart.Series[0].FillPattern(ChartFillPattern.None);
         Assert.NotEqual(chart.ToPng(), png);
         if (!Enabled) return;
-        chart.Series[0].WithFillPattern(ChartFillPattern.Crosshatch);
+        chart.Series[0].FillPattern(ChartFillPattern.Crosshatch);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), 700, 520);
         var page = session.Page;
         var target = page.Locator("[data-cfx-target-kind='point'][data-cfx-point='1']");
@@ -122,7 +122,7 @@ public sealed class PatternClipAreaBrowserTests {
     [Trait("Category", "Browser")]
     public async Task VisibleRadarMarkerStrokeRetainsAnOtherwiseInvisibleObservation() {
         var chart = Create(ChartSeriesKind.Radar, collapsed: true);
-        chart.Series[0].WithFillPattern(ChartFillPattern.None).ConfigureMarkers(markers => markers.Radius = 6);
+        chart.Series[0].FillPattern(ChartFillPattern.None).Markers(markers => markers.Radius = 6);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Contains(prepared.Scene.Nodes.OfType<VisualSceneEllipse>(), ellipse => ellipse.Rx == 6 && ellipse.Stroke?.A > 0);
         var rgba = prepared.ToRgba();
@@ -140,15 +140,15 @@ public sealed class PatternClipAreaBrowserTests {
     }
 
     internal static Chart Create(ChartSeriesKind kind, bool collapsed, bool smooth = false) {
-        var chart = Chart.Create().WithSize(600, 440).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false)
-            .WithDataLabels(false).WithTransparentBackground().WithCard(false).WithPlotBackground(false).WithYAxisBounds(0, 100);
+        var chart = Chart.Create().Size(600, 440).ShowHeader(false).Legend(false).Axes(false).ShowGrid(false)
+            .DataLabels(false).TransparentBackground().ShowCard(false).ShowPlotBackground(false).YAxis(y => y.Bounds(0, 100));
         var ranges = new[] { new ChartRangeBand(1, collapsed ? 30 : 20, collapsed ? 30 : 40),
             new ChartRangeBand(2, collapsed ? 70 : 60, collapsed ? 70 : 80), new ChartRangeBand(3, collapsed ? 50 : 40, collapsed ? 50 : 60) };
         if (kind == ChartSeriesKind.RangeBand) chart.AddRangeBand("Observed", ranges);
         else if (kind == ChartSeriesKind.RangeArea) chart.AddRangeArea("Observed", ranges, smooth: smooth);
         else chart.AddRadar("Observed", collapsed ? new[] { new ChartPoint(1, 0), new ChartPoint(2, 70), new ChartPoint(3, 0) }
             : new[] { new ChartPoint(1, 30), new ChartPoint(2, 70), new ChartPoint(3, 50) });
-        chart.Series[0].WithColor(ChartColor.White.WithAlpha(0)).ConfigureMarkers(markers => markers.Radius = 0).WithFillPattern(ChartFillPattern.Crosshatch);
+        chart.Series[0].Color(ChartColor.White.WithAlpha(0)).Markers(markers => markers.Radius = 0).FillPattern(ChartFillPattern.Crosshatch);
         return chart;
     }
 }

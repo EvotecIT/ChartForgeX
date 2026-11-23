@@ -30,7 +30,7 @@ public sealed class DenseLineRasterBudgetTests {
     [Fact]
     public void DenseRawLineRendersToPng() => Assert.True(Prepare().ToPng().Length > 1_000);
 
-    private static PreparedVisual Prepare() => Chart.Create().WithSize(1200, 600).WithTitle("Dense raw line").WithLegend(false)
+    private static PreparedVisual Prepare() => Chart.Create().Size(1200, 600).Title("Dense raw line").Legend(false)
         .AddLine("Signal", Signal(80_000))
         .Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(1200, 600))));
 

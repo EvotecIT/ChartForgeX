@@ -47,13 +47,13 @@ internal static partial class VisualMapCompiler {
                 builder.Ellipse(point.X, point.Y, halo, halo, ChartColorMath.WithOpacity(color, .18), role: "dotted-map-point-halo", paint: VisualChartPaint.Fill(paint.WithOpacity(ChartColorMath.WithOpacity(color, .18), .18)));
                 builder.Ellipse(point.X, point.Y, radius, radius, color, colors.Surface, Math.Max(1, dot * .55), "dotted-map-point", paint: new VisualScenePaintBinding(paint, SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
                 obstacles.Add(new LabelObstacle(id, new ChartRect(point.X - halo, point.Y - halo, halo * 2, halo * 2)));
-                if (series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false)) {
+                if (series.ShowDataLabels ?? (chart.Options.DataLabels.Visible ?? false)) {
                     var text = index < series.PreparedLabels.Count && series.PreparedLabels[index] != null ? series.PreparedLabels[index]!
                         : category + (formatted.Length > 0 ? " " + formatted : "");
                     var labelClearance = Math.Max(radius + context.Theme.Spacing, halo + context.Theme.Spacing / 3);
                     AddMapLabel(builder, labels, text, text, point, MapDataStyle(chart, context, index, series: series), id + "-label", "dotted-map-data-label", plot, labelClearance, 50,
-                        series.DataLabelPlacement ?? chart.Options.DataLabelPlacement, leaderColor: color, leaderPaint: paint,
-                        leaderRadius: radius + Math.Max(1, dot * .55) / 2, callouts: chart.Options.MapCallouts);
+                        series.DataLabelPlacement ?? chart.Options.DataLabels.Placement, leaderColor: color, leaderPaint: paint,
+                        leaderRadius: radius + Math.Max(1, dot * .55) / 2, callouts: chart.Options.Map.Callouts);
                 }
             }
         }

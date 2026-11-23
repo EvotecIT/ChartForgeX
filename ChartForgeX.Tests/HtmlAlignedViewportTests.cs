@@ -17,13 +17,13 @@ public sealed class HtmlAlignedViewportTests {
     [InlineData(false, true)]
     [InlineData(true, true)]
     public void AdaptiveYWindowKeepsTheDirectNativeTickScene(bool includeNavigator, bool secondary) {
-        var chart = Chart.Create().WithSize(800, 480).WithTitle("Native exploration")
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 100).WithLegend(false)
+        var chart = Chart.Create().Size(800, 480).Title("Native exploration")
+            .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 100)).Legend(false)
             .AddLine("Measurements", new[] { new ChartPoint(0, 10), new ChartPoint(5, 40), new ChartPoint(10, 90) });
         if (secondary) {
             chart.AddLine("Secondary", new[] { new ChartPoint(0, 100), new ChartPoint(5, 400), new ChartPoint(10, 900) });
-            chart.Series[1].UseSecondaryValueAxis();
-            chart.Options.SecondaryYAxis.Minimum = 0; chart.Options.SecondaryYAxis.Maximum = 1000;
+            chart.Series[1].SecondaryAxis();
+            chart.Options.SecondaryYAxis.Min = 0; chart.Options.SecondaryYAxis.Max = 1000;
         }
         var viewport = new ChartCartesianViewport(y: new ChartAxisWindow(20, 80));
         var section = new HtmlInteractiveChartRenderer().PrepareSection(chart, viewport, options => {
@@ -33,7 +33,7 @@ public sealed class HtmlAlignedViewportTests {
         foreach (var drawing in new[] { section.PreparedVisual, section.NarrowPreparedVisual! }) {
             var context = new VisualRenderContext(new VisualLayoutOptions(drawing.Size, chart.Options.Padding),
                 chart.Options.Theme, chart.Options.ThemeMode,
-                new VisualFrame(chart.Title, chart.Subtitle, showLegend: false, legendPosition: chart.Options.LegendPosition,
+                new VisualFrame(chart.Title, chart.Subtitle, showLegend: false, legendPosition: chart.Options.Legend.Position,
                     showSurface: chart.Options.ShowPlotBackground, transparentBackground: chart.Options.TransparentBackground,
                     showCard: chart.Options.ShowCard));
             Assert.Equal(chart.Prepare(context, viewport).ToSvg(), drawing.ToSvg());
@@ -43,7 +43,7 @@ public sealed class HtmlAlignedViewportTests {
                 Assert.Equal(0, drawing.SecondaryYProjection!.Minimum); Assert.Equal(1000, drawing.SecondaryYProjection.Maximum);
             }
         }
-        Assert.Equal(0, chart.Options.YAxis.Minimum); Assert.Equal(100, chart.Options.YAxis.Maximum);
+        Assert.Equal(0, chart.Options.YAxis.Min); Assert.Equal(100, chart.Options.YAxis.Max);
         Assert.Null(chart.Options.YAxis.PreparedValueTickStep);
         Assert.Null(chart.Options.SecondaryYAxis.PreparedValueTickStep);
     }
@@ -52,7 +52,7 @@ public sealed class HtmlAlignedViewportTests {
     [InlineData(false)]
     [InlineData(true)]
     public void AdaptiveAutomaticMarkerDomainsStayAlignedAcrossWindowResetAndExports(bool reversed) {
-        var chart = Chart.Create().WithSize(800, 440).AddScatter("Samples", new[] { new ChartPoint(0, 10), new ChartPoint(12, 30) });
+        var chart = Chart.Create().Size(800, 440).AddScatter("Samples", new[] { new ChartPoint(0, 10), new ChartPoint(12, 30) });
         chart.Series[0].Markers.Radius = 18; chart.Options.XAxis.Reversed = reversed;
         var renderer = new HtmlInteractiveChartRenderer();
         var initial = renderer.PrepareSection(chart, configure: Configure);
@@ -72,15 +72,15 @@ public sealed class HtmlAlignedViewportTests {
         var reset = renderer.PrepareSection(chart, configure: Configure);
         SameFullDomain(reset.PreparedVisual, reset.NarrowPreparedVisual!);
         Assert.Equal(initial.PreparedVisual.XProjection!.FullMinimum, reset.PreparedVisual.XProjection!.Minimum);
-        Assert.Null(chart.Options.XAxis.Minimum); Assert.Null(chart.Options.XAxis.Maximum);
-        Assert.Null(chart.Options.YAxis.Minimum); Assert.Null(chart.Options.YAxis.Maximum);
+        Assert.Null(chart.Options.XAxis.Min); Assert.Null(chart.Options.XAxis.Max);
+        Assert.Null(chart.Options.YAxis.Min); Assert.Null(chart.Options.YAxis.Max);
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void AlignedAuthoredEdgesAndExplicitXYWindowsRetainRawDomainPolicy(bool includeNavigator) {
-        var chart = Chart.Create().WithSize(800, 440).WithXAxisBounds(0, 12).WithYAxisBounds(0, 40)
+        var chart = Chart.Create().Size(800, 440).XAxis(x => x.Bounds(0, 12)).YAxis(y => y.Bounds(0, 40))
             .AddScatter("Samples", new[] { new ChartPoint(0, 10), new ChartPoint(12, 30) });
         chart.Series[0].Markers.Radius = 18;
         var section = new HtmlInteractiveChartRenderer().PrepareSection(chart,
@@ -91,7 +91,7 @@ public sealed class HtmlAlignedViewportTests {
         Assert.Equal(0, section.PreparedVisual.XProjection!.FullMinimum); Assert.Equal(12, section.PreparedVisual.XProjection.FullMaximum);
         Assert.Equal(0, section.PreparedVisual.YProjection!.FullMinimum); Assert.Equal(40, section.PreparedVisual.YProjection.FullMaximum);
         Assert.Equal(12, section.NarrowPreparedVisual!.YProjection!.Minimum); Assert.Equal(24, section.NarrowPreparedVisual.YProjection.Maximum);
-        Assert.Equal(0, chart.Options.YAxis.Minimum); Assert.Equal(40, chart.Options.YAxis.Maximum);
+        Assert.Equal(0, chart.Options.YAxis.Min); Assert.Equal(40, chart.Options.YAxis.Max);
         Assert.Equal(includeNavigator ? 2 : 0, NavigatorImages(section.Html).Length);
     }
 
@@ -127,15 +127,15 @@ public sealed class HtmlAlignedViewportTests {
                 Assert.Equal(chart.Series[0].Points[index].Y, double.Parse(points[index].Attribute("data-cfx-y")!.Value, CultureInfo.InvariantCulture));
             }
         }
-        Assert.Null(chart.Options.XAxis.Minimum); Assert.Null(chart.Options.XAxis.Maximum);
-        Assert.Null(chart.Options.YAxis.Minimum); Assert.Null(chart.Options.YAxis.Maximum);
+        Assert.Null(chart.Options.XAxis.Min); Assert.Null(chart.Options.XAxis.Max);
+        Assert.Null(chart.Options.YAxis.Min); Assert.Null(chart.Options.YAxis.Max);
     }
 
     [Fact]
     public void AdaptiveSecondaryYFittingKeepsItsFullLabelsAndExactSharedXBounds() {
         var chart = MetricSamples(3).AddStepLine("Secondary", new[] { new ChartPoint(0, 1), new ChartPoint(6, 10), new ChartPoint(12, 1000) });
-        chart.Series[1].UseSecondaryValueAxis(); chart.Options.SecondaryYAxis.Scale = ChartScaleKind.Logarithmic;
-        foreach (var series in chart.Series) series.ConfigureMarkers(markers => { markers.Enabled = true; markers.Radius = 9; });
+        chart.Series[1].SecondaryAxis(); chart.Options.SecondaryYAxis.Scale = ChartScaleKind.Logarithmic;
+        foreach (var series in chart.Series) series.Markers(markers => { markers.Enabled = true; markers.Radius = 9; });
         var renderer = new HtmlInteractiveChartRenderer();
         var initial = renderer.PrepareSection(chart, configure: ConfigureMetricDrawing);
         var window = renderer.PrepareSection(chart, new ChartCartesianViewport(x: new ChartAxisWindow(2, 10)), ConfigureMetricDrawing);
@@ -151,8 +151,8 @@ public sealed class HtmlAlignedViewportTests {
                 Assert.Equal(pair.Full.Regions.Where(region => region.Role == role).Select(region => region.Label),
                     pair.Window.Regions.Where(region => region.Role == role).Select(region => region.Label));
         }
-        Assert.Null(chart.Options.YAxis.Minimum); Assert.Null(chart.Options.YAxis.Maximum);
-        Assert.Null(chart.Options.SecondaryYAxis.Minimum); Assert.Null(chart.Options.SecondaryYAxis.Maximum);
+        Assert.Null(chart.Options.YAxis.Min); Assert.Null(chart.Options.YAxis.Max);
+        Assert.Null(chart.Options.SecondaryYAxis.Min); Assert.Null(chart.Options.SecondaryYAxis.Max);
     }
 
     [Fact]
@@ -183,10 +183,10 @@ public sealed class HtmlAlignedViewportTests {
         var theme = VisualTheme.Graphite().WithTypography(new VisualTypography(family, 22, 13, 11, 12, 11));
         var series = ChartSeries.CreateScatter(new ChartSeriesId("samples"), "Samples", Enumerable.Range(0, count)
             .Select(index => new ChartPoint(12d * index / (count - 1), 10 + 20d * index / (count - 1))))
-            .WithObservationIds(Enumerable.Range(0, count).Select(index => new ChartObservationId("row-" + index.ToString(CultureInfo.InvariantCulture))));
-        series.ConfigureMarkers(markers => { markers.Enabled = true; markers.Radius = 4; });
-        return Chart.Create().WithSize(800, 440).WithPadding(24, 24, 24, 24).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithTheme(theme, ThemeMode.Light).WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"))
+            .ObservationIds(Enumerable.Range(0, count).Select(index => new ChartObservationId("row-" + index.ToString(CultureInfo.InvariantCulture))));
+        series.Markers(markers => { markers.Enabled = true; markers.Radius = 4; });
+        return Chart.Create().Size(800, 440).Padding(24, 24, 24, 24).ShowHeader(false).Legend(false).DataLabels(false)
+            .Theme(theme).ThemeMode(ThemeMode.Light).Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")))
             .AddSeries(series);
     }
     private static void ConfigureMetricDrawing(HtmlChartInteractionOptions options) {

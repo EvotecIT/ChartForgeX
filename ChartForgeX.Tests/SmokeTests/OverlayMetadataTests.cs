@@ -9,8 +9,8 @@ namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
     private static void OverlaySvgElementsExposeDataMetadata() {
-        var annotations = Chart.Create().WithTheme(VisualTheme.Graphite())
-            .WithSize(640, 360)
+        var annotations = Chart.Create().Theme(VisualTheme.Graphite())
+            .Size(640, 360)
             .AddLine("Values", Points(42, 84, 126))
             .AddHorizontalLine(100, "target")
             .AddVerticalBand(1.5, 2.5, "window", opacity: 0.1)
@@ -23,18 +23,17 @@ internal static partial class SmokeTests {
         Assert((string?)(band.Attribute("data-cfx-end-value") ?? band.Attribute("data-cfx-end")) == "2.5", "The annotation group should retain its full end coordinate.");
         Assert(overlays.All(element => element.Descendants().Any(child => (string?)child.Attribute("data-cfx-role") == "annotation-label")), "Visible annotation labels should remain associated with their source annotation group.");
 
-        var secondary = Chart.Create().WithTheme(VisualTheme.Graphite())
-            .WithSize(640, 360)
-            .WithSecondaryYAxis("Rate", value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
-            .WithSecondaryYAxisBounds(0, 100)
+        var secondary = Chart.Create().Theme(VisualTheme.Graphite())
+            .Size(640, 360)
+            .SecondaryYAxis(s => s.Title("Rate").LabelBy(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%").Bounds(0, 100))
             .AddLine("Rate", Points(88, 93, 91));
-        secondary.Series[0].UseSecondaryValueAxis();
+        secondary.Series[0].SecondaryAxis();
         var secondarySvg = secondary.ToSvg();
         var secondaryPrepared = secondary.Prepare(VisualExportRequest.ForChart(secondary).Context);
         Assert(secondaryPrepared.Regions.Any(region => region.Role == "axis-secondary-y-label" && region.Label == "100% (100)"), "Secondary axis ticks should retain displayed text and raw values.");
         Assert(secondaryPrepared.Regions.Any(region => region.Role == "axis-secondary-y-title" && region.Label == "Rate"), "Secondary axis titles should retain the full configured label.");
 
-        var legend = Chart.Create().WithTheme(VisualTheme.Graphite())
+        var legend = Chart.Create().Theme(VisualTheme.Graphite())
             .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("logged"), "Logged", Points(12, 18)))
             .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("trend"), "Trend", Points(10, 20)))
             .ToSvg();

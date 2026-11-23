@@ -40,15 +40,15 @@ public static class CategoricalRadialAreaRecipe {
         var radius = variant.EndsWith("radius", StringComparison.Ordinal);
         var completed = Values("completed", "Completed", new[] { 25d, 80, 0, 45 });
         var followup = Values("follow-up", "Follow-up", new[] { 15d, 25, 20, 30 });
-        if (stacked) { completed.WithStackGroup("requests"); followup.WithStackGroup("requests"); }
+        if (stacked) { completed.StackGroup("requests"); followup.StackGroup("requests"); }
         // Zero baseline makes nominal sector area proportional to the source value. A nonzero
         // visible minimum encodes only the displayed interval; gaps/corners are separate paint.
-        return Chart.Create().WithSize(compact ? 390 : 900, compact ? 520 : 600)
-            .WithTheme(VisualTheme.Graphite(), mode).WithTitle("Requests by region and intake channel")
-            .WithXAxis("Region").WithYAxis("Requests").WithXLabels("North", "South", "East", "West")
-            .WithYAxisBounds(0, 120).WithLegend().WithDataLabels(false)
-            .WithValueFormat(ChartValueFormat.Number("0' requests'"))
-            .WithRadialGeometry(new ChartRadialGeometryOptions(-90, 270, .12, .12, .08,
+        return Chart.Create().Size(compact ? 390 : 900, compact ? 520 : 600)
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Title("Requests by region and intake channel")
+            .XAxis(x => x.Title("Region")).YAxis(y => y.Title("Requests")).XLabels("North", "South", "East", "West")
+            .YAxis(y => y.Bounds(0, 120)).Legend().DataLabels(false)
+            .ValueFormat(ChartValueFormat.Number("0' requests'"))
+            .RadialGeometry(new ChartRadialGeometryOptions(-90, 270, .12, .12, .08,
                 valueEncoding: radius ? ChartRadialValueEncoding.Radius : ChartRadialValueEncoding.Area))
             .AddSeries(completed).AddSeries(followup);
     }
@@ -57,7 +57,7 @@ public static class CategoricalRadialAreaRecipe {
         var points = values.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();
         var series = new ChartSeries(new ChartSeriesId(key), name, ChartSeriesKind.RadialColumn, points);
         var ids = new[] { "north", "south", "east", "west" };
-        for (var index = 0; index < ids.Length; index++) series.WithObservationId(index, new ChartObservationId(ids[index]));
+        for (var index = 0; index < ids.Length; index++) series.ObservationId(index, new ChartObservationId(ids[index]));
         return series;
     }
 }

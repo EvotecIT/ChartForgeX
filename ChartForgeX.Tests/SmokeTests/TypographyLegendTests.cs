@@ -10,21 +10,21 @@ internal static partial class SmokeTests {
     private static void LegendCasingDrivesAllocationBeforeSerialization() {
         var font = System.IO.Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert(System.IO.File.Exists(font), "The existing Carlito fixture must be available.");
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithPngFont(font).WithSize(800, 280)
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).Png(p => p.FontPath(font)).Size(800, 280)
             .AddLine("wwwwwwww", Points(1, 2, 3))
             .AddLine("wwwwwwww", Points(2, 3, 4))
             .AddLine("wwwwwwww", Points(3, 4, 5));
         var preservedSpan = LegendSpan(PreparedFamily(chart));
-        chart.ConfigureLegendStyle(style => style.WithTextCase(TextCaseTransform.Uppercase));
+        chart.LegendStyle(style => style.TextCase(TextCaseTransform.Uppercase));
         var expandedSpan = LegendSpan(PreparedFamily(chart));
         Assert(expandedSpan > preservedSpan + 2, "The fixture must expose measurable case expansion.");
         var padding = VisualExportRequest.ForChart(chart).Context.Layout.PaddingEdges;
-        chart.WithSize((int)Math.Ceiling((preservedSpan + expandedSpan) / 2 + padding.Left + padding.Right), 280)
-            .ConfigureLegendStyle(style => style.WithTextCase(TextCaseTransform.None));
+        chart.Size((int)Math.Ceiling((preservedSpan + expandedSpan) / 2 + padding.Left + padding.Right), 280)
+            .LegendStyle(style => style.TextCase(TextCaseTransform.None));
         var preservedRows = PreparedFamily(chart).Scene.Nodes.OfType<VisualSceneText>().Where(text => text.Role == "legend-label")
             .Select(text => text.Baseline).Distinct().Count();
 
-        chart.ConfigureLegendStyle(style => style.WithTextCase(TextCaseTransform.Uppercase));
+        chart.LegendStyle(style => style.TextCase(TextCaseTransform.Uppercase));
         var expandedSvg = chart.ToSvg();
 
         Assert(expandedSvg.Contains(">WWWWWWWW</text>", StringComparison.Ordinal), "SVG legends should materialize casing before serialization.");

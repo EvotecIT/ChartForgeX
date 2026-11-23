@@ -124,7 +124,7 @@ public sealed partial class MarkupChartParser {
     private static void BuildChord(Chart chart, ChartState state) {
         // The Core intake owns finite totals, directed endpoints, parallel/self/zero facts and immutable snapshots.
         chart.AddChord(state.SeriesName, state.ChordNodes.Select(row => row.Value), state.ChordFlows.Select(row => row.Value));
-        chart.ConfigureChord(options => {
+        chart.Chord(options => {
             if (state.ChordNodeOrder != null || state.ChordOutgoingOrder != null || state.ChordIncomingOrder != null)
                 options.Ordering = new ChartChordOrdering(state.ChordNodeOrder, state.ChordOutgoingOrder, state.ChordIncomingOrder);
             if (state.ChordTension.HasValue) options.RibbonTension = state.ChordTension.Value;

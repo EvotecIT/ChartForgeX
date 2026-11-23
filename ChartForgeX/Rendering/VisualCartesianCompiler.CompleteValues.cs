@@ -29,7 +29,7 @@ internal static partial class VisualCartesianCompiler {
         // are not disguised as a fixed-basis morph; the actual native projection is checked on every frame too.
         foreach (var side in chart.Series.Select(series => series.ValueAxis).Distinct()) {
             var axis = side == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
-            if (!axis.Minimum.HasValue || !axis.Maximum.HasValue || axis.Scale == ChartScaleKind.Time) return null;
+            if (!axis.Min.HasValue || !axis.Max.HasValue || axis.Scale == ChartScaleKind.Time) return null;
         }
         try {
             var source = ChartVisibilitySource.CaptureNativeCartesianValues(chart, context);
@@ -59,7 +59,7 @@ internal static partial class VisualCartesianCompiler {
                 builder.MeasureText(label.Text, label.Style); builder.MeasureText("Mg", label.Style); builder.TextAscent(label.Style);
             }
         }
-        if (chart.Options.ShowStackTotals) {
+        if (chart.Options.Bars.ShowTotals) {
             var style = chart.Options.DataLabelStyle.Resolve(new TextStyle {
                 Font = context.FontWithWeight(context.Theme.Typography.DataLabelWeight), FontSize = context.Theme.Typography.DataLabelSize, Color = colors.Foreground
             });

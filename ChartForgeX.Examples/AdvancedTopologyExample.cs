@@ -6,12 +6,12 @@ using ChartForgeX.VisualArtifacts;
 internal static class AdvancedTopologyExample {
     public static void Write(string target) {
         var chart = TopologyChart.Create()
-            .WithId("advanced-topology")
-            .WithTitle("Application Delivery Path")
-            .WithSubtitle("Named ports, endpoint labels, typed details, custom edge styling, and layout hints.")
-            .WithViewport(920, 520, 30)
-            .WithLayout(TopologyLayoutMode.Layered)
-            .WithLegend(null)
+            .Id("advanced-topology")
+            .Title("Application Delivery Path")
+            .Subtitle("Named ports, endpoint labels, typed details, custom edge styling, and layout hints.")
+            .Viewport(new TopologyViewport(920, 520, 30))
+            .LayoutMode(TopologyLayoutMode.Layered)
+            .Legend((TopologyLegend?)null)
             .AddAutoNode("gateway", "API Gateway", TopologyNodeKind.Gateway, TopologyHealthStatus.Healthy, subtitle: "Public ingress")
             .AddAutoNode("service", "Order Service", TopologyNodeKind.Service, TopologyHealthStatus.Warning, subtitle: "Application tier")
             .AddAutoNode("database", "Orders DB", TopologyNodeKind.Database, TopologyHealthStatus.Healthy, subtitle: "Primary writer")
@@ -23,18 +23,18 @@ internal static class AdvancedTopologyExample {
             .AddNodeDetail("service", "P95", "84 ms", TopologyHealthStatus.Warning)
             .AddNodeDetail("database", "Role", "Primary", TopologyHealthStatus.Healthy)
             .AddEdge("gateway-service", "gateway", "service", "Requests", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Healthy, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
-            .WithEdgeNamedPorts("gateway-service", "https", "grpc-in")
-            .WithEdgeStroke("gateway-service", width: 3.4, opacity: 0.82, dashPattern: new[] { 10.0, 3.0 })
-            .WithEdgeMarkers("gateway-service", TopologyMarkerKind.Circle, TopologyMarkerKind.Arrow)
-            .WithEdgeEndpointLabels("gateway-service", "443", "gRPC")
-            .WithEdgeLayoutHints("gateway-service", preferredLength: 190, minimumRankSpan: 1, routingPriority: 20)
+            .UpdateEdge("gateway-service", e => e.SourcePortId("https").TargetPortId("grpc-in"))
+            .EdgeStroke("gateway-service", width: 3.4, opacity: 0.82, dashPattern: new[] { 10.0, 3.0 })
+            .UpdateEdge("gateway-service", e => e.SourceMarker(TopologyMarkerKind.Circle).TargetMarker(TopologyMarkerKind.Arrow))
+            .UpdateEdge("gateway-service", e => e.SourceLabel("443").TargetLabel("gRPC"))
+            .UpdateEdge("gateway-service", e => e.PreferredLength(190).MinimumRankSpan(1).RoutingPriority(20))
             .AddEdge("service-database", "service", "database", "Queries", TopologyEdgeKind.DataFlow, TopologyHealthStatus.Warning, VisualLinkDirection.Forward, TopologyEdgeRouting.Orthogonal)
-            .WithEdgeNamedPorts("service-database", "sql-out", "writer")
-            .WithEdgeStroke("service-database", width: 3.8, opacity: 0.74, dashPattern: new[] { 7.0, 3.0, 2.0, 3.0 })
-            .WithEdgeMarkers("service-database", TopologyMarkerKind.Diamond, TopologyMarkerKind.Arrow)
-            .WithEdgeEndpointLabels("service-database", "SQL", "5432")
-            .WithEdgeLayoutHints("service-database", preferredLength: 220, minimumRankSpan: 2, routingPriority: 30)
-            .ConfigureAccessibility(accessibility => accessibility.WithTextAlternative("Application delivery topology", "Gateway, service, and database request path with health and endpoint details.", "en"));
+            .UpdateEdge("service-database", e => e.SourcePortId("sql-out").TargetPortId("writer"))
+            .EdgeStroke("service-database", width: 3.8, opacity: 0.74, dashPattern: new[] { 7.0, 3.0, 2.0, 3.0 })
+            .UpdateEdge("service-database", e => e.SourceMarker(TopologyMarkerKind.Diamond).TargetMarker(TopologyMarkerKind.Arrow))
+            .UpdateEdge("service-database", e => e.SourceLabel("SQL").TargetLabel("5432"))
+            .UpdateEdge("service-database", e => e.PreferredLength(220).MinimumRankSpan(2).RoutingPriority(30))
+            .Accessibility(accessibility => accessibility.TextAlternative("Application delivery topology", "Gateway, service, and database request path with health and endpoint details.", "en"));
 
         var artifact = chart.ToVisualArtifact();
         var render = new VisualArtifactRenderOptions {
@@ -47,7 +47,7 @@ internal static class AdvancedTopologyExample {
         watermark.Opacity = 0.075;
         watermark.FontSize = 34;
         watermark.Scale = 1.2;
-        artifact.WithWatermarks(render, watermark);
+        artifact.AddWatermarks(render, watermark);
 
         artifact.SaveSvg(Path.Combine(target, "advanced-topology.svg"), render);
         artifact.SaveHtml(Path.Combine(target, "advanced-topology.html"), render);
@@ -57,7 +57,7 @@ internal static class AdvancedTopologyExample {
             Topology = render.Topology!.Clone()
         };
         diagnostic.Topology.IncludeLayoutDiagnosticOverlay = true;
-        chart.ToVisualArtifact().WithWatermarks(diagnostic, watermark)
+        chart.ToVisualArtifact().AddWatermarks(diagnostic, watermark)
             .SaveSvg(Path.Combine(target, "advanced-topology-diagnostics.svg"), diagnostic);
     }
 }

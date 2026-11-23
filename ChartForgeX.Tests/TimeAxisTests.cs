@@ -16,11 +16,11 @@ public sealed class TimeAxisTests {
     public void ValueAxis_OutOfRangeCaptionPreservesSubsecondFormatting(bool horizontal) {
         var start = Day.AddHours(12).ToOADate();
         var end = start + 200.0 / 86400000;
-        var chart = Chart.Create().WithSize(900, 450).WithHeader(false).WithLegend(false)
+        var chart = Chart.Create().Size(900, 450).ShowHeader(false).Legend(false)
             .AddLine("Readings", new[] { new ChartPoint(1, start), new ChartPoint(2, end) });
-        if (horizontal) chart.Options.LineOrientation = ChartOrientation.Horizontal;
+        if (horizontal) chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
         var axis = horizontal ? chart.Options.XAxis : chart.Options.YAxis;
-        axis.WithTimeScale().WithBounds(start, end);
+        axis.TimeScale().Bounds(start, end);
         var role = horizontal ? "axis-x-label" : "axis-y-label";
         string[] Labels() => XDocument.Parse(chart.ToSvg()).Descendants()
             .Where(element => (string?)element.Attribute("data-cfx-role") == role)
@@ -41,7 +41,7 @@ public sealed class TimeAxisTests {
         var start = Day.AddHours(12).ToOADate();
         var end = start + 200.0 / 86400000;
         var chart = Chart.Create().AddRadar("Fast", new[] { new ChartPoint(0, start), new ChartPoint(1, end), new ChartPoint(2, start) });
-        var axis = chart.Options.YAxis.WithTimeScale().WithBounds(start, end);
+        var axis = chart.Options.YAxis.TimeScale().Bounds(start, end);
         var scale = RadialValueScale.Create(axis, chart.Series, "Radar");
         Assert.True(ChartTicks.IsNumericTimeFallback(scale.Ticks));
         Assert.False(scale.IsMaximum(scale.Ticks[scale.Ticks.Count - 2]));
@@ -58,12 +58,12 @@ public sealed class TimeAxisTests {
         var start = Day.AddHours(12).ToOADate();
         var end = start + 200.0 / 86400000;
         var values = new[] { new ChartPoint(0, start), new ChartPoint(1, end), new ChartPoint(2, start) };
-        var chart = Chart.Create().WithSize(900, 700).WithHeader(false).WithLegend(false).WithDataLabels(false);
+        var chart = Chart.Create().Size(900, 700).ShowHeader(false).Legend(false).DataLabels(false);
         if (radar) chart.AddRadar("Fast", values);
         else chart.AddPolar("Fast", values);
-        var axis = chart.Options.YAxis.WithTimeScale().WithBounds(start, end);
+        var axis = chart.Options.YAxis.TimeScale().Bounds(start, end);
         axis.Reversed = reversed;
-        chart.Options.PolarGridRingCount = 3;
+        chart.Options.Polar.GridRingCount = 3;
         var ticks = RadialValueScale.Create(axis, chart.Series, "Polar").EqualIntervalTicks(3);
         Assert.True(ChartTicks.IsNumericTimeFallback(ticks));
         var labels = XDocument.Parse(chart.ToSvg()).Descendants()
@@ -83,11 +83,11 @@ public sealed class TimeAxisTests {
     public void Render_VerticalSubSecondRange_PreservesNumericFallback(bool secondary) {
         var start = Day.AddHours(12).ToOADate();
         var end = start + 200.0 / 86400000;
-        var chart = Chart.Create().WithSize(900, 450).WithLegend(false)
+        var chart = Chart.Create().Size(900, 450).Legend(false)
             .AddLine("Fast", new[] { new ChartPoint(1, start), new ChartPoint(2, end) });
-        if (secondary) chart.Series[0].UseSecondaryValueAxis();
+        if (secondary) chart.Series[0].SecondaryAxis();
         var axis = secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
-        axis.WithTimeScale().WithBounds(start, end);
+        axis.TimeScale().Bounds(start, end);
         var role = secondary ? "axis-secondary-y-label" : "axis-y-label";
         var labels = XDocument.Parse(chart.ToSvg()).Descendants()
             .Where(element => (string?)element.Attribute("data-cfx-role") == role)
@@ -105,9 +105,9 @@ public sealed class TimeAxisTests {
     public void Render_SubSecondRange_UsesDistinctNumericFallbackLabels(double milliseconds) {
         var start = Day.AddHours(12).ToOADate();
         var end = start + milliseconds / 86400000;
-        var chart = Chart.Create().WithSize(900, 300).WithLegend(false).WithXAxisTimeScale()
+        var chart = Chart.Create().Size(900, 300).Legend(false).XAxis(x => x.TimeScale())
             .AddLine("Fast", new[] { new ChartPoint(start, 1), new ChartPoint(end, 2) });
-        chart.Options.XAxis.WithBounds(start, end);
+        chart.Options.XAxis.Bounds(start, end);
         var svg = XDocument.Parse(chart.ToSvg());
         var labels = svg.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "axis-x-label")
             .Select(element => element.Value).ToArray();
@@ -125,7 +125,7 @@ public sealed class TimeAxisTests {
     public void Render_ClassicDateSchedules_ApplyRequestedTimeZoneAndTitleLabel(bool gantt) {
         var zone = TimeZoneInfo.CreateCustomTimeZone("Test/Plus5", TimeSpan.FromHours(5), "Test +05", "Test +05");
         Chart Create(bool show) {
-            var chart = Chart.Create().WithSize(640, 300).WithXAxis("Window").WithXAxisTimeScale(zone, show, "UTC+05");
+            var chart = Chart.Create().Size(640, 300).XAxis(x => x.Title("Window").TimeScale(timeZone: zone, showTimeZone: show, label: "UTC+05"));
             return gantt ? chart.AddGanttTask("Maintenance", Day, Day.AddDays(2)) : chart.AddTimelineItem("Maintenance", Day, Day.AddDays(2));
         }
         var chart = Create(true);
@@ -140,9 +140,9 @@ public sealed class TimeAxisTests {
     public void Render_ExplicitSubsecondLabels_PreserveBothMappings() {
         var start = Day.AddHours(12).ToOADate();
         var end = start + 20.0 / 86400000;
-        var chart = Chart.Create().WithSize(900, 300).WithLegend(false).WithXAxisTimeScale()
+        var chart = Chart.Create().Size(900, 300).Legend(false).XAxis(x => x.TimeScale())
             .AddLine("Fast", new[] { new ChartPoint(start, 1), new ChartPoint(end, 2) });
-        chart.Options.XAxis.WithBounds(start, end);
+        chart.Options.XAxis.Bounds(start, end);
         chart.Options.XAxis.Labels.Add(new ChartAxisLabel(start, "Start"));
         chart.Options.XAxis.Labels.Add(new ChartAxisLabel(end, "End"));
         var labels = XDocument.Parse(chart.ToSvg()).Descendants()
@@ -159,7 +159,7 @@ public sealed class TimeAxisTests {
     [InlineData(false)]
     [InlineData(true)]
     public void Render_ClassicSchedules_KeepTickPositionsDistinct(bool gantt) {
-        var chart = Chart.Create().WithSize(1000, 340).WithTickCount(3);
+        var chart = Chart.Create().Size(1000, 340).TickCount(3);
         chart = gantt ? chart.AddGanttTask("Work", Day, Day.AddDays(2))
             : chart.AddTimelineItem("Work", Day, Day.AddDays(2));
         var svg = XDocument.Parse(chart.ToSvg());
@@ -181,11 +181,11 @@ public sealed class TimeAxisTests {
         Assert.Equal(ChartScaleKind.Linear, numeric.Options.XAxis.Scale);
 
         var authored = Chart.Create();
-        authored.Options.XAxis.WithScale(ChartScaleKind.Linear).WithBounds(Day.ToOADate(), Day.AddDays(2).ToOADate());
+        authored.Options.XAxis.Scale(ChartScaleKind.Linear).Bounds(Day.ToOADate(), Day.AddDays(2).ToOADate());
         authored.Options.XAxis.LabelFormatter = _ => "Authored numeric tick";
         if (gantt) authored.AddGanttTask("Date", Day, Day.AddDays(2)); else authored.AddTimelineItem("Date", Day, Day.AddDays(2));
         Assert.Equal(ChartScaleKind.Linear, authored.Options.XAxis.Scale);
-        Assert.Equal(Day.ToOADate(), authored.Options.XAxis.Minimum);
+        Assert.Equal(Day.ToOADate(), authored.Options.XAxis.Min);
         Assert.Contains("Authored numeric tick", authored.ToSvg(), StringComparison.Ordinal);
 
         var milestone = Chart.Create().AddGanttMilestone("Date milestone", Day);
@@ -194,14 +194,14 @@ public sealed class TimeAxisTests {
 
     [Fact]
     public void GenerateInside_UtcDay_UsesSixHourTicksWithDateAtMidnight() {
-        var axis = new ChartAxis().WithTimeScale();
+        var axis = new ChartAxis().TimeScale();
         var labels = Labels(axis, ChartTicks.GenerateInside(axis, Day.ToOADate(), Day.AddDays(1).ToOADate()));
         Assert.Equal(new[] { "2026-03-01", "06:00", "12:00", "18:00", "2026-03-02" }, labels);
     }
 
     [Fact]
     public void GenerateInside_OneHour_UsesMinuteTicks() {
-        var axis = new ChartAxis().WithTimeScale();
+        var axis = new ChartAxis().TimeScale();
         var start = Day.AddHours(9);
         var labels = Labels(axis, ChartTicks.GenerateInside(axis, start.AddMinutes(3).ToOADate(), start.AddHours(1).ToOADate()));
         Assert.Equal(new[] { "09:15", "09:30", "09:45", "10:00" }, labels);
@@ -209,7 +209,7 @@ public sealed class TimeAxisTests {
 
     [Fact]
     public void GenerateInside_TwoWeeks_UsesAnIntermediateDayInterval() {
-        var axis = new ChartAxis().WithTimeScale();
+        var axis = new ChartAxis().TimeScale();
         var ticks = ChartTicks.GenerateInside(axis, new DateTime(2026, 7, 25).ToOADate(), new DateTime(2026, 8, 6).ToOADate());
         Assert.InRange(ticks.Count, 4, axis.TickCount);
         Assert.All(ticks, tick => Assert.Equal(TimeSpan.Zero, DateTime.FromOADate(tick).TimeOfDay));
@@ -218,14 +218,14 @@ public sealed class TimeAxisTests {
 
     [Fact]
     public void GenerateInside_ThreeYears_UsesAnAdequateYearInterval() {
-        var axis = new ChartAxis().WithTimeScale();
+        var axis = new ChartAxis().TimeScale();
         var labels = Labels(axis, ChartTicks.GenerateInside(axis, new DateTime(2025, 11, 20).ToOADate(), new DateTime(2028, 11, 20).ToOADate()));
         Assert.Equal(new[] { "2026-01-01", "2027-01-01", "2028-01-01" }, labels);
     }
 
     [Fact]
     public void Generate_PartialHours_ExpandsToAlignedBounds() {
-        var axis = new ChartAxis().WithTimeScale();
+        var axis = new ChartAxis().TimeScale();
         var min = Day.AddHours(1).AddMinutes(20).ToOADate();
         var max = Day.AddHours(23).AddMinutes(40).ToOADate();
         var ticks = ChartTicks.Generate(axis, min, max);
@@ -236,7 +236,7 @@ public sealed class TimeAxisTests {
     [Fact]
     public void GenerateInside_FixedOffsetZone_AlignsTicksToLocalWallClock() {
         var zone = TimeZoneInfo.CreateCustomTimeZone("Test/Plus0530", TimeSpan.FromMinutes(330), "Test +05:30", "Test +05:30");
-        var axis = new ChartAxis().WithTimeScale(zone);
+        var axis = new ChartAxis().TimeScale(zone);
         var ticks = ChartTicks.GenerateInside(axis, Day.ToOADate(), Day.AddDays(1).ToOADate());
         Assert.Equal(new[] { "06:00", "12:00", "18:00", "2026-03-02" }, Labels(axis, ticks));
         Assert.Equal(Day.AddMinutes(30).ToOADate(), ticks[0], 9);
@@ -244,7 +244,7 @@ public sealed class TimeAxisTests {
 
     [Fact]
     public void GenerateInside_DaylightSavingStart_SkipsMissingHourAndKeepsLocalAlignment() {
-        var axis = new ChartAxis().WithTimeScale(CentralTestZone());
+        var axis = new ChartAxis().TimeScale(CentralTestZone());
         var start = new DateTime(2026, 3, 28, 18, 0, 0);
         var ticks = ChartTicks.GenerateInside(axis, start.ToOADate(), start.AddDays(1).ToOADate());
         Assert.Equal(new[] { "2026-03-29", "06:00", "12:00", "18:00" }, Labels(axis, ticks));
@@ -260,7 +260,7 @@ public sealed class TimeAxisTests {
 
     [Fact]
     public void GenerateInside_DaylightSavingEnd_TicksRepeatedHourAtEvenSpacing() {
-        var axis = new ChartAxis().WithTimeScale(CentralTestZone());
+        var axis = new ChartAxis().TimeScale(CentralTestZone());
         axis.TickCount = 13;
         var start = new DateTime(2026, 10, 24, 22, 0, 0);
         var ticks = ChartTicks.GenerateInside(axis, start.ToOADate(), start.AddHours(6).ToOADate());
@@ -271,7 +271,7 @@ public sealed class TimeAxisTests {
 
     [Fact]
     public void Generate_BoundInsideRepeatedHour_KeepsEvenQuarterHourSpacing() {
-        var axis = new ChartAxis().WithTimeScale(CentralTestZone());
+        var axis = new ChartAxis().TimeScale(CentralTestZone());
         axis.TickCount = 11;
         var inside = ChartTicks.GenerateInside(axis, new DateTime(2026, 10, 25, 0, 35, 0).ToOADate(), new DateTime(2026, 10, 25, 3, 0, 0).ToOADate());
         Assert.Equal(new DateTime(2026, 10, 25, 0, 45, 0).ToOADate(), inside[0], 9);
@@ -286,7 +286,7 @@ public sealed class TimeAxisTests {
 
     [Fact]
     public void Generate_FloorInSkippedHour_StillCoversMinimum() {
-        var axis = new ChartAxis().WithTimeScale(CentralTestZone());
+        var axis = new ChartAxis().TimeScale(CentralTestZone());
         var min = new DateTime(2026, 3, 29, 1, 10, 0).ToOADate();
         var max = new DateTime(2026, 3, 29, 11, 10, 0).ToOADate();
         var ticks = ChartTicks.Generate(axis, min, max);
@@ -299,7 +299,7 @@ public sealed class TimeAxisTests {
     [InlineData(-500000, 500000, 3)]
     [InlineData(2958000, 2958465, 6)]
     public void Generate_NearDateLimits_DoesNotThrowAndStaysOrdered(double min, double max, int tickCount) {
-        var axis = new ChartAxis().WithTimeScale(TimeZoneInfo.CreateCustomTimeZone("Test/Minus5", TimeSpan.FromHours(-5), "Test -05", "Test -05"));
+        var axis = new ChartAxis().TimeScale(TimeZoneInfo.CreateCustomTimeZone("Test/Minus5", TimeSpan.FromHours(-5), "Test -05", "Test -05"));
         axis.TickCount = tickCount;
         foreach (var ticks in new[] { ChartTicks.Generate(axis, min, max), ChartTicks.GenerateInside(axis, min, max) }) {
             Assert.True(ticks.Count >= 2);
@@ -314,15 +314,14 @@ public sealed class TimeAxisTests {
     public void Format_UsesConfiguredTimeZoneAndSeconds() {
         var zone = TimeZoneInfo.CreateCustomTimeZone("Test/Minus3", TimeSpan.FromHours(-3), "Test -03", "Test -03");
         var value = Day.AddHours(14).AddSeconds(30).ToOADate();
-        Assert.Equal("14:00:30", ChartTimeScale.Format(new ChartAxis().WithTimeScale(), value));
-        Assert.Equal("11:00:30", ChartTimeScale.Format(new ChartAxis().WithTimeScale(zone), value));
+        Assert.Equal("14:00:30", ChartTimeScale.Format(new ChartAxis().TimeScale(), value));
+        Assert.Equal("11:00:30", ChartTimeScale.Format(new ChartAxis().TimeScale(zone), value));
     }
 
     [Fact]
     public void Render_ShowTimeZone_DecoratesAxisTitleInSvgAndPng() {
-        Chart Create(bool show, string? label = null) => Chart.Create().WithSize(640, 300).WithLegend(false)
-            .WithXAxis("Observed")
-            .WithXAxisTimeScale(null, show, label)
+        Chart Create(bool show, string? label = null) => Chart.Create().Size(640, 300).Legend(false)
+            .XAxis(x => x.Title("Observed").TimeScale(timeZone: (TimeZoneInfo?)null, showTimeZone: show, label: label))
             .AddLine("Latency", HourlyPoints(24));
 
         Assert.Contains(">Observed (UTC)</text>", Create(true).ToSvg(), StringComparison.Ordinal);
@@ -330,10 +329,10 @@ public sealed class TimeAxisTests {
         Assert.DoesNotContain("(UTC)", Create(false).ToSvg(), StringComparison.Ordinal);
         Assert.False(Create(true).ToPng().SequenceEqual(Create(false).ToPng()), "The PNG axis title should include the zone designator.");
 
-        var untitled = Chart.Create().WithSize(640, 300).WithLegend(false).WithXAxisTimeScale(showTimeZone: true).AddLine("Latency", HourlyPoints(24));
+        var untitled = Chart.Create().Size(640, 300).Legend(false).XAxis(x => x.TimeScale(showTimeZone: true)).AddLine("Latency", HourlyPoints(24));
         Assert.Contains(">UTC</text>", untitled.ToSvg(), StringComparison.Ordinal);
 
-        var timeline = Chart.Create().WithSize(640, 300).WithXAxis("Window").WithXAxisTimeScale(showTimeZone: true)
+        var timeline = Chart.Create().Size(640, 300).XAxis(x => x.Title("Window").TimeScale(showTimeZone: true))
             .AddTimelineItem("Maintenance", Day.AddHours(2), Day.AddHours(5));
         Assert.Contains(">Window (UTC)</text>", timeline.ToSvg(), StringComparison.Ordinal);
     }
@@ -341,7 +340,7 @@ public sealed class TimeAxisTests {
     [Fact]
     public void Render_TimeAxisWithBreakBefore_KeepsGapAndHourLabelsDeterministic() {
         var points = HourlyPoints(24).Select((point, index) => index == 12 ? new ChartPoint(point.X, point.Y, true) : point).ToArray();
-        Chart Create() => Chart.Create().WithSize(720, 320).WithLegend(false).WithXAxisTimeScale().AddLine("Availability", points);
+        Chart Create() => Chart.Create().Size(720, 320).Legend(false).XAxis(x => x.TimeScale()).AddLine("Availability", points);
 
         var svgText = Create().ToSvg();
         var svg = XDocument.Parse(svgText);
@@ -359,7 +358,7 @@ public sealed class TimeAxisTests {
 
     [Fact]
     public void Render_UnrepresentableTimeRange_FallsBackToNumericTicks() {
-        var chart = Chart.Create().WithSize(480, 240).WithXAxisTimeScale()
+        var chart = Chart.Create().Size(480, 240).XAxis(x => x.TimeScale())
             .AddLine("Out of range", new[] { new ChartPoint(3_000_000, 1), new ChartPoint(3_000_100, 2) });
         Assert.Contains("data-cfx-role=\"axis-x-label\"", chart.ToSvg(), StringComparison.Ordinal);
         Assert.True(chart.ToPng().Length > 200);
@@ -367,7 +366,7 @@ public sealed class TimeAxisTests {
 
     [Fact]
     public void Render_LabelFormatter_OverridesTimeDefaults() {
-        var chart = Chart.Create().WithSize(640, 300).WithXAxisTimeScale()
+        var chart = Chart.Create().Size(640, 300).XAxis(x => x.TimeScale())
             .AddLine("Latency", HourlyPoints(24));
         chart.Options.XAxis.LabelFormatter = value => "T" + DateTime.FromOADate(value).Hour.ToString(CultureInfo.InvariantCulture);
         var svg = chart.ToSvg();
@@ -398,8 +397,8 @@ public sealed class TimeAxisTests {
         Assert.Equal(secondPoint.X, new ChartAxisLabel(second, "second").Value);
         Assert.True(firstPoint.X < secondPoint.X);
 
-        var chart = Chart.Create().WithSize(640, 300).WithXAxisTimeScale()
-            .WithXDateLabels(new[] { first, second }, "HH:mm:ss.ffff")
+        var chart = Chart.Create().Size(640, 300).XAxis(x => x.TimeScale())
+            .XDateLabels(new[] { first, second }, "HH:mm:ss.ffff")
             .AddLine("Submillisecond", new[] { firstPoint, secondPoint });
         string svg = chart.ToSvg();
         Assert.Contains("00:00:00.0001", svg, StringComparison.Ordinal);
@@ -414,7 +413,7 @@ public sealed class TimeAxisTests {
         var calendar = Chart.Create().AddCalendarHeatmap("Days", new[] { new ChartCalendarHeatmapItem(localDay, 3) });
         Assert.Equal(DateTime.SpecifyKind(localDay, DateTimeKind.Unspecified), calendar.Series[0].CalendarItems[0].Date);
         Assert.Equal(DateTimeKind.Unspecified, new ChartCalendarHeatmapItem(localDay, 1).Date.Kind);
-        Assert.Equal(wallClock, Chart.Create().WithGanttToday(localDay).Options.GanttToday!.Value, 9);
+        Assert.Equal(wallClock, Chart.Create().GanttToday(localDay).Options.Gantt.Today!.Value, 9);
         Assert.Equal(wallClock, Chart.Create().AddGanttTask("Task", localDay, localDay.AddDays(1)).Series[0].GanttItems[0].Start, 9);
     }
 
@@ -424,7 +423,7 @@ public sealed class TimeAxisTests {
         var utcPoints = HourlyPoints(6);
         var localPoints = Enumerable.Range(0, 7).Select(hour => new ChartPoint(Day.AddHours(hour).ToLocalTime(), 10 + hour)).ToArray();
         Assert.Equal(utcPoints.Select(point => point.X), localPoints.Select(point => point.X));
-        var chart = Chart.Create().WithSize(640, 300).WithXAxisTimeScale(zone).AddLine("UTC", utcPoints).AddLine("Local", localPoints);
+        var chart = Chart.Create().Size(640, 300).XAxis(x => x.TimeScale(timeZone: zone)).AddLine("UTC", utcPoints).AddLine("Local", localPoints);
         var labels = XDocument.Parse(chart.ToSvg()).Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "axis-x-label").Select(element => element.Value).ToArray();
         Assert.Contains("06:00", labels);
         Assert.All(labels, label => Assert.Matches(@"^\d{2}:(00|30)$", label));

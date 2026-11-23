@@ -5,11 +5,11 @@ public static class DonutSliceRadiusRecipe {
         if (variant is not ("variable-radius" or "compact-variable-radius")) throw new ArgumentOutOfRangeException(nameof(variant));
         var services = new ChartSeries(new ChartSeriesId("services"), "Services", ChartSeriesKind.Donut,
             new[] { new ChartPoint(1, 80), new ChartPoint(2, 60), new ChartPoint(3, 20) })
-            .WithObservationIds(new[] { new ChartObservationId("subscriptions"), new ChartObservationId("consulting"), new ChartObservationId("support") })
-            .WithPointSliceRadiusRatio(0, .35).WithPointSliceRadiusRatio(1, .7).WithPointSliceRadiusRatio(2, 1);
+            .ObservationIds(new[] { new ChartObservationId("subscriptions"), new ChartObservationId("consulting"), new ChartObservationId("support") })
+            .PointSliceRadiusRatio(0, .35).PointSliceRadiusRatio(1, .7).PointSliceRadiusRatio(2, 1);
         services.DataLabelPlacement = ChartDataLabelPlacement.Outside;
-        return Chart.Create().WithXLabels("Subscriptions", "Consulting", "Support").WithDataLabels()
-            .WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent).WithDonutCenterLabel(false)
+        return Chart.Create().XLabels("Subscriptions", "Consulting", "Support").DataLabels()
+            .Pie(p => p.SliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent).ShowCenterLabel(false))
             .AddSeries(services);
     }
 }

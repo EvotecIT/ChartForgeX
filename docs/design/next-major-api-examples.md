@@ -24,11 +24,11 @@ Before, from [README](../../README.md#your-first-chart):
 
 ```csharp
 var chart = Chart.Create()
-    .WithTitle("Weekly orders")
-    .WithSubtitle("Completed orders across the working week")
-    .WithSize(800, 440)
-    .WithXAxis("Day").WithYAxis("Orders")
-    .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri")
+    .Title("Weekly orders")
+    .Subtitle("Completed orders across the working week")
+    .Size(800, 440)
+    .XAxis(x => x.Title("Day")).YAxis(y => y.Title("Orders"))
+    .XLabels("Mon", "Tue", "Wed", "Thu", "Fri")
     .AddLine("Completed", ChartPoints.FromValues(28, 34, 41, 48, 32))
     .AddLine("Target", ChartPoints.FromValues(30, 35, 40, 45, 50));
 ```
@@ -65,9 +65,9 @@ var readings = new[] {
 Before:
 
 ```csharp
-var chart = Chart.Create().WithTitle("CPU usage")
-    .WithXAxis("Minutes").WithYAxis("CPU (%)")
-    .ConfigureYAxis(axis => axis.WithBounds(0, 100))
+var chart = Chart.Create().Title("CPU usage")
+    .XAxis(x => x.Title("Minutes")).YAxis(y => y.Title("CPU (%)"))
+    .YAxis(axis => axis.Bounds(0, 100))
     .AddLine("CPU", readings, row => row.Minute, row => row.Cpu);
 ```
 
@@ -89,10 +89,10 @@ Before:
 ```csharp
 var orders = ChartSeries.CreateLine(new ChartSeriesId("completed-orders"), "Completed",
     ChartPoints.FromValues(28, 34, 41, 48, 32));
-orders.ConfigureMarkers(markers => markers.Radius = 4);
-var chart = Chart.Create().WithTitle("Weekly orders")
-    .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark).AddSeries(orders);
-orders.WithName("Completed orders");
+orders.Markers(markers => markers.Radius = 4);
+var chart = Chart.Create().Title("Weekly orders")
+    .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark).AddSeries(orders);
+orders.Name("Completed orders");
 ```
 
 After:
@@ -114,7 +114,7 @@ The handle is the typed child model, with the same identity after renaming. Furt
 Before:
 
 ```csharp
-var chart = Chart.Create().WithXLabels("North", "South", "East", "West")
+var chart = Chart.Create().XLabels("North", "South", "East", "West")
     .AddBar("Orders", ChartPoints.FromValues(28, 34, 41, 48));
 var context = new VisualRenderContext(
     new VisualLayoutOptions(new VisualSize(800, 440)),
@@ -146,13 +146,13 @@ The frame title moves into the model here; an explicit `VisualFrame` remains ava
 Before:
 
 ```csharp
-var trend = Chart.Create().WithTitle("Orders over time")
+var trend = Chart.Create().Title("Orders over time")
     .AddLine("Orders", ChartPoints.FromValues(28, 34, 41, 48, 32));
-var regions = Chart.Create().WithTitle("Orders by region")
-    .WithXLabels("North", "South", "East")
+var regions = Chart.Create().Title("Orders by region")
+    .XLabels("North", "South", "East")
     .AddBar("Orders", ChartPoints.FromValues(52, 38, 46));
-var report = ChartGrid.Create().WithTitle("Order summary")
-    .WithColumns(2).WithPanelSize(520, 320).Add(trend).Add(regions);
+var report = ChartGrid.Create().Title("Order summary")
+    .Columns(2).PanelSize(520, 320).Add(trend).Add(regions);
 ```
 
 After:
@@ -212,8 +212,8 @@ if (result.Artifact != null) {
 Before:
 
 ```csharp
-var chart = Chart.Create().WithTitle("Weekly orders")
-    .WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri")
+var chart = Chart.Create().Title("Weekly orders")
+    .XLabels("Mon", "Tue", "Wed", "Thu", "Fri")
     .AddLine("Orders", ChartPoints.FromValues(28, 34, 41, 48, 32));
 chart.SaveInteractiveHtml("explore.html", options => {
     options.Interaction.Enable(
@@ -260,13 +260,13 @@ The code below shows focused authoring excerpts. Each migration keeps the source
 Before:
 
 ```csharp
-return Chart.Create().WithTitle("Control Coverage Matrix")
-    .WithSubtitle("Heatmap rows for comparing domain groups across security controls")
-    .WithXAxis("Control").WithYAxis("Domain group")
-    .WithTheme(VisualTheme.Report(), mode).WithSize(980, 560)
-    .WithLegend(false).WithDataLabels().WithHeatmapScale(ChartHeatmapScale.Semantic)
-    .WithValueFormatter(value => value.ToString("0", CultureInfo.InvariantCulture) + "%")
-    .WithXLabels("SPF", "DMARC", "DNSSEC", "MTA-STS", "TLS-RPT", "CT")
+return Chart.Create().Title("Control Coverage Matrix")
+    .Subtitle("Heatmap rows for comparing domain groups across security controls")
+    .XAxis(x => x.Title("Control")).YAxis(y => y.Title("Domain group"))
+    .Theme(VisualTheme.Report()).ThemeMode(mode).Size(980, 560)
+    .Legend(l => l.Visible(false)).DataLabels(d => d.Visible(true)).Heatmap(h => h.Scale(ChartHeatmapScale.Semantic))
+    .FormatValuesBy(value => value.ToString("0", CultureInfo.InvariantCulture) + "%")
+    .XLabels("SPF", "DMARC", "DNSSEC", "MTA-STS", "TLS-RPT", "CT")
     .AddHeatmapRow("Primary domains", Points(96, 88, 74, 63, 58, 92))
     .AddHeatmapRow("Parked domains", Points(74, 62, 51, 42, 38, 66))
     .AddHeatmapRow("Regional domains", Points(82, 77, 68, 54, 49, 80))
@@ -298,7 +298,7 @@ Keep `areas`, `sites`, `baselines`, `siteOffsets` and the source's deterministic
 Before:
 
 ```csharp
-var chart = Chart.Create().WithXLabels(areas);
+var chart = Chart.Create().XLabels(areas);
 for (var row = 0; row < sites.Length; row++) {
     var site = Array.IndexOf(new[] { "London", "Frankfurt", "Warsaw", "New York", "Singapore", "Sydney" }, sites[row]);
     var values = areas.Select((_, column) => (double?)Math.Min(99, Math.Round(
@@ -306,10 +306,9 @@ for (var row = 0; row < sites.Length; row++) {
     chart.AddHeatmapRow(sites[row], values,
         id: new ChartSeriesId(sites[row].Replace(" ", "-").ToLowerInvariant() + "-coverage"));
 }
-return chart.ConfigureHeatmapColorDimension(d => d.Name = "Coverage")
-    .WithHeatmapScale(ChartHeatmapScale.Sequential).WithHeatmapCellGap(3)
-    .WithHeatmapCellRadius(3).WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Auto)
-    .WithValueFormat(ChartValueFormat.Number("0'%'", CultureInfo.InvariantCulture));
+return chart.Heatmap(heatmap => heatmap.ColorDimension(d => d.Name = "Coverage"))
+    .Heatmap(h => h.Scale(ChartHeatmapScale.Sequential).CellGap(3).CellRadius(3).ValueTextMode(ChartHeatmapValueTextMode.Auto))
+    .ValueFormat(ChartValueFormat.Number("0'%'", CultureInfo.InvariantCulture));
 ```
 
 After:
@@ -336,7 +335,7 @@ The sparse variant uses the same `Row` operation with null cells, retains the ex
 Before, focused on the repeated-child and positional-span operations:
 
 ```csharp
-var model = SequenceArtifact.Create("request-sequence").WithSize(960, 760)
+var model = SequenceArtifact.Create("request-sequence").Width(960).Height(760)
     .AddParticipant("client", "Client", SequenceArtifactParticipantKind.Actor)
     .AddParticipant("service", "Service", SequenceArtifactParticipantKind.Control)
     .AddParticipant("store", "Store", SequenceArtifactParticipantKind.Database)
@@ -449,14 +448,14 @@ Keep `observations`, the six weekday labels and six region labels from `ChartGri
 Before:
 
 ```csharp
-var requests = Chart.Create().WithTitle("Observed requests").WithXLabels(days)
+var requests = Chart.Create().Title("Observed requests").XLabels(days)
     .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("requests"), "Requests", observations));
-var reviewed = Chart.Create().WithTitle("Reviewed requests").WithXLabels(regions)
+var reviewed = Chart.Create().Title("Reviewed requests").XLabels(regions)
     .AddSeries(ChartSeries.CreateBar(new ChartSeriesId("orders"), "Orders", observations));
-var capacity = Chart.Create().WithTitle("Capacity used").WithXLabels(days)
+var capacity = Chart.Create().Title("Capacity used").XLabels(days)
     .AddSeries(ChartSeries.CreateArea(new ChartSeriesId("used-capacity"), "Used capacity", observations));
-return ChartGrid.Create().WithColumns(2).WithGap(16).WithPanelSize(640, 400)
-    .Add(requests).Add(reviewed).Add(capacity, 2).WithSharedAxes();
+return ChartGrid.Create().Columns(2).Gap(16).PanelSize(640, 400)
+    .Add(requests).Add(reviewed).Add(capacity, 2).ShareAxes();
 ```
 
 After:
@@ -485,8 +484,8 @@ Keep the source's 12 month labels and issuer tuples: `("lets-encrypt", "Let's En
 Before:
 
 ```csharp
-var chart = Chart.Create().WithXLabels(months).WithStackedBars().WithYAxis("Certificates")
-    .WithValueFormat(ChartValueFormat.Number("0", CultureInfo.InvariantCulture));
+var chart = Chart.Create().XLabels(months).Bars(b => b.Stacked()).YAxis(y => y.Title("Certificates"))
+    .ValueFormat(ChartValueFormat.Number("0", CultureInfo.InvariantCulture));
 foreach (var (id, name, typical) in issuers) {
     var values = Enumerable.Range(0, 12).Select(month => new ChartPoint(month + 1,
         typical + (month % 3 == 0 ? typical / 3 : 0) - month % 4));
@@ -518,8 +517,8 @@ Before:
 var revenue = new ChartSeries(new ChartSeriesId("revenue"), "Revenue",
     ChartSeriesKind.Donut, Observations(variant));
 var chart = Chart.Create()
-    .WithXLabels("Subscriptions", "Consulting", "Support", "Licenses", "Training", "Other")
-    .AddSeries(revenue).WithValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
+    .XLabels("Subscriptions", "Consulting", "Support", "Licenses", "Training", "Other")
+    .AddSeries(revenue).ValueFormat(ChartValueFormat.Number("0.##", CultureInfo.InvariantCulture));
 ```
 
 After, preserving the wide recipe's values totaling 1,000:
@@ -550,9 +549,9 @@ Keep all 168 UTC hours per controller and the source recipe's baseline/load/ripp
 Before:
 
 ```csharp
-var chart = Chart.Create().WithXAxisTimeScale(TimeZoneInfo.Utc)
-    .WithYAxis("Round-trip time (ms)").WithValueUnit("ms")
-    .WithValueFormat(ChartValueFormat.Number("0.#", CultureInfo.InvariantCulture));
+var chart = Chart.Create().XAxis(x => x.TimeScale(timeZone: TimeZoneInfo.Utc))
+    .YAxis(y => y.Title("Round-trip time (ms)")).ValueUnit("ms")
+    .ValueFormat(ChartValueFormat.Number("0.#", CultureInfo.InvariantCulture));
 // The source loop builds each controller's points.
 chart.AddSeries(ChartSeries.CreateLine(new ChartSeriesId(name), name, points));
 ```
@@ -589,7 +588,7 @@ Before, the source's wide branch:
 
 ```csharp
 var weeks = Enumerable.Range(1, 12).ToArray();
-chart.WithXLabels(weeks.Select(week => "W" + week).ToArray()).WithYAxis("Requests");
+chart.XLabels(weeks.Select(week => "W" + week).ToArray()).YAxis(y => y.Title("Requests"));
 chart.AddSeries(ChartSeries.CreateLine(new ChartSeriesId("requests"), "Portal",
     weeks.Select(week => new ChartPoint(week, Math.Round(820 + week * 64 + Math.Sin(week * 1.1) * 60)))));
 chart.AddSeries(ChartSeries.CreateLine(new ChartSeriesId("api"), "API",
@@ -622,7 +621,7 @@ Before:
 ```csharp
 var drift = ChartSeries.CreateTrendLine(new ChartSeriesId("least-squares-drift"), "Least-squares drift",
     Enumerable.Range(0, 4096).Select(index => new ChartPoint(index % 10 + .5, index % 7 - 3)));
-return Chart.Create().WithXAxis("Measurement").WithYAxis("Fitted drift").AddSeries(drift);
+return Chart.Create().XAxis(x => x.Title("Measurement")).YAxis(y => y.Title("Fitted drift")).AddSeries(drift);
 ```
 
 After:

@@ -54,9 +54,9 @@ public sealed class ChordOrderingTests {
         var ordering = new ChartChordOrdering(nodes, flows, flows); nodes[0] = "changed"; flows[0] = "changed";
         Assert.Equal("data", ordering.NodeIds![0]); Assert.Equal("zero", ordering.OutgoingFlowIds![0]);
         Assert.Throws<NotSupportedException>(() => ((IList<string>)ordering.NodeIds!)[0] = "changed");
-        var chart = ChordDepthRecipe.Create().ConfigureChord(options => options.Ordering = ordering);
+        var chart = ChordDepthRecipe.Create().Chord(options => options.Ordering = ordering);
         var visual = chart.Prepare(Context()); var svg = visual.ToSvg("detached"); var png = visual.ToPng(new VisualRenderOptions(supersampling: 1));
-        chart.ConfigureChord(options => { options.Ordering = null; options.RibbonTension = 1; });
+        chart.Chord(options => { options.Ordering = null; options.RibbonTension = 1; });
         chart.Series[0].ReplaceFlowData(Array.Empty<ChartNode>(), Array.Empty<ChartFlowLink>());
         Assert.Equal(svg, visual.ToSvg("detached")); Assert.Equal(png, visual.ToPng(new VisualRenderOptions(supersampling: 1)));
     }
@@ -91,11 +91,11 @@ public sealed class ChordOrderingTests {
         raw.Options.Chord.Ordering = null;
         Assert.Contains(raw.Prepare(Context()).Diagnostics, item => item.Code == "chord.no-positive-flow");
         var chart = Chart.Create().AddChord("Empty", Array.Empty<ChartNode>(), Array.Empty<ChartFlowLink>())
-            .ConfigureChord(options => options.Ordering = new ChartChordOrdering(Array.Empty<string>(), Array.Empty<string>(), Array.Empty<string>()));
+            .Chord(options => options.Ordering = new ChartChordOrdering(Array.Empty<string>(), Array.Empty<string>(), Array.Empty<string>()));
         Assert.Contains(chart.Prepare(Context()).Diagnostics, item => item.Code == "chord.no-positive-flow");
         var source = chart.Series[0]; source.ReplaceFlowData(new[] { new ChartNode("a", "A"), new ChartNode("b", "B") }, new[] { new ChartFlowLink("zero", "a", "b", 0) });
         Assert.Throws<InvalidOperationException>(() => chart.Prepare(Context()));
-        chart.ConfigureChord(options => options.Ordering = new ChartChordOrdering(new[] { "b", "a" }, new[] { "zero" }, new[] { "zero" }));
+        chart.Chord(options => options.Ordering = new ChartChordOrdering(new[] { "b", "a" }, new[] { "zero" }, new[] { "zero" }));
         var zero = chart.Prepare(Context()); Assert.Equal(2, Role(zero, "chord-node").Length); Assert.Single(Role(zero, "chord-link"));
         Assert.DoesNotContain(zero.Scene.Nodes, item => item.Role == "chord-ribbon");
         source.ReplaceFlowData(source.Nodes, new[] { new ChartFlowLink("zero", "a", "b", 4) });

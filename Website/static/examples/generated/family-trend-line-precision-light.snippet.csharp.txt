@@ -20,7 +20,7 @@ var theme = VisualTheme.Graphite();
 
 var drift = ChartSeries.CreateTrendLine(new ChartSeriesId("least-squares-drift"), "Least-squares drift",
     Enumerable.Range(0, 4096).Select(index => new ChartPoint(index % 10 + .5, index % 7 - 3)));
-var chart = Chart.Create().WithXAxis("Measurement").WithYAxis("Fitted drift").AddSeries(drift);
+var chart = Chart.Create().XAxis(x => x.Title("Measurement")).YAxis(y => y.Title("Fitted drift")).AddSeries(drift);
 
 #region Output
 var context = new VisualRenderContext(

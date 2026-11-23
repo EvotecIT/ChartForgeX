@@ -27,7 +27,7 @@ public sealed class ProgressIndependentDomainTests {
     [Fact]
     public void TypedLifecycleRetainsIdentityOnUpdateAndReplacesSourceWithoutWritablePointAliases() {
         var items = new[] { new ChartProgressItem("Temperature", -8, -20, 20) };
-        var series = ChartSeries.CreateProgressBars(new ChartSeriesId("source"), "Source", items).WithObservationId(0, new ChartObservationId("one"));
+        var series = ChartSeries.CreateProgressBars(new ChartSeriesId("source"), "Source", items).ObservationId(0, new ChartObservationId("one"));
         items[0] = new ChartProgressItem("Changed", 1);
         Assert.Equal("Temperature", series.ProgressItems[0].Label); Assert.Empty(series.Points); Assert.Equal(1, series.SourcePointCount);
         Assert.Throws<NotSupportedException>(() => ((IList<ChartProgressItem>)series.ProgressItems)[0] = new ChartProgressItem("Mutated", 1));
@@ -41,8 +41,8 @@ public sealed class ProgressIndependentDomainTests {
 
     [Fact]
     public void SharedFactoryPreservesTheNumericSharedDomainDrawing() {
-        var typed = Chart.Create().WithLegend(false).AddProgressBars("Rows", new[] { new ChartProgressItem("First", 40), new ChartProgressItem("Second", 120) });
-        var numeric = Chart.Create().WithLegend(false).WithXLabels("First", "Second")
+        var typed = Chart.Create().Legend(false).AddProgressBars("Rows", new[] { new ChartProgressItem("First", 40), new ChartProgressItem("Second", 120) });
+        var numeric = Chart.Create().Legend(false).XLabels("First", "Second")
             .AddSeries(new ChartSeries("Rows", ChartSeriesKind.ProgressBar, new[] { new ChartPoint(1, 40), new ChartPoint(2, 120) }));
         var context = new VisualRenderContext(); var first = typed.Prepare(context); var second = numeric.Prepare(context);
         Assert.Equal(first.ToSvg("same"), second.ToSvg("same"));

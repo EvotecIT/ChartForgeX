@@ -15,10 +15,10 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class AutoThemeHtmlTests {
-    private static Chart Line(ThemeMode mode) => Chart.Create().WithSize(480, 300).WithThemeMode(mode).WithTitle("Orders")
+    private static Chart Line(ThemeMode mode) => Chart.Create().Size(480, 300).ThemeMode(mode).Title("Orders")
         .AddLine("Orders", new[] { new ChartPoint(1, 3), new ChartPoint(2, 5), new ChartPoint(3, 4) });
 
-    private static TopologyChart Topology(ThemeMode mode) => TopologyChart.Create().WithTheme(VisualTheme.Graphite(), mode).WithViewport(640, 240, 20)
+    private static TopologyChart Topology(ThemeMode mode) => TopologyChart.Create().Theme(VisualTheme.Graphite(), mode).Viewport(new TopologyViewport(640, 240, 20))
         .AddNode("a", "API", 80, 100).AddNode("b", "Worker", 340, 100).AddEdge("ab", "a", "b", "calls");
 
     public static IEnumerable<object[]> Renderers() {
@@ -31,12 +31,12 @@ public sealed class AutoThemeHtmlTests {
         }) };
         yield return new object[] { "interactive page", (Func<ThemeMode, string>)(mode => new HtmlInteractiveChartRenderer().RenderPage(Line(mode))) };
         yield return new object[] { "responsive fragment", (Func<ThemeMode, string>)(mode => new HtmlResponsiveChartRenderer().RenderFragment(Line(mode))) };
-        yield return new object[] { "chart grid page", (Func<ThemeMode, string>)(mode => new HtmlChartGridRenderer().RenderPage(ChartGrid.Create().WithThemeMode(mode).Add(Line(mode)))) };
+        yield return new object[] { "chart grid page", (Func<ThemeMode, string>)(mode => new HtmlChartGridRenderer().RenderPage(ChartGrid.Create().ThemeMode(mode).Add(Line(mode)))) };
         yield return new object[] { "topology fragment", (Func<ThemeMode, string>)(mode => Topology(mode).ToHtmlFragment()) };
         yield return new object[] { "topology page", (Func<ThemeMode, string>)(mode => Topology(mode).ToHtmlPage()) };
         yield return new object[] { "interactive topology", (Func<ThemeMode, string>)(mode => new HtmlInteractiveTopologyRenderer().RenderPage(Topology(mode))) };
         yield return new object[] { "visual block page", (Func<ThemeMode, string>)(mode => new HtmlVisualBlockRenderer().RenderPage(
-            MetricCard.Create().WithThemeMode(mode).WithMetric("Load", "42%").WithSize(360, 190))) };
+            MetricCard.Create().ThemeMode(mode).Metric("Load", "42%").Size(360, 190))) };
         yield return new object[] { "sequence diagram", (Func<ThemeMode, string>)(mode => {
             var sequence = SequenceArtifact.Create("handoff").AddParticipant("api", "API").AddParticipant("db", "Database").AddMessage("api", "db", "query");
             sequence.ThemeMode = mode;
@@ -63,7 +63,7 @@ public sealed class AutoThemeHtmlTests {
 
     [Fact]
     public void HostColourVariablesWinOverAuto() {
-        var chart = Line(ThemeMode.Auto).WithSvgColorVariables(SvgColorVariables.SharedRoles());
+        var chart = Line(ThemeMode.Auto).SvgColorVariables(SvgColorVariables.SharedRoles());
         Assert.DoesNotContain("cfx-auto", new HtmlChartRenderer().RenderFragment(chart));
         Assert.DoesNotContain("cfx-auto", new HtmlInteractiveChartRenderer().RenderFragment(chart));
         Assert.DoesNotContain("cfx-auto", Topology(ThemeMode.Auto).ToHtmlFragment(new TopologyRenderOptions { SvgColorVariables = SvgColorVariables.SharedRoles() }));
@@ -99,6 +99,6 @@ public sealed class AutoThemeHtmlTests {
         string Scope(Chart chart) => Regex.Match(new HtmlChartRenderer().RenderFragment(chart), "<div class=\"chartforgex-chart\" data-cfx-auto-theme=\"(cfx-auto-[0-9a-f]+)\"").Groups[1].Value;
         var brand = VisualTheme.Graphite().WithPalette(ThemeMode.Dark, ChartColor.FromHex("#FF00AA"));
         Assert.Equal(Scope(Line(ThemeMode.Auto)), Scope(Line(ThemeMode.Auto)));
-        Assert.NotEqual(Scope(Line(ThemeMode.Auto)), Scope(Line(ThemeMode.Auto).WithTheme(brand)));
+        Assert.NotEqual(Scope(Line(ThemeMode.Auto)), Scope(Line(ThemeMode.Auto).Theme(brand)));
     }
 }

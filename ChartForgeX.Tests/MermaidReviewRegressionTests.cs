@@ -71,7 +71,7 @@ public sealed class MermaidReviewRegressionTests {
     [InlineData(210, 130, TopologyEdgeRouting.Curved)]
     public void AssociationsAttachToPaintedSurfacesInTheirFinalRouteDirection(int dx, int dy, TopologyEdgeRouting routing) {
         foreach (var shape in new[] { TopologyNodeShape.Actor, TopologyNodeShape.Ellipse, TopologyNodeShape.Diamond }) {
-            var chart = TopologyChart.Create().WithViewport(800, 700, 20)
+            var chart = TopologyChart.Create().Viewport(new TopologyViewport(800, 700, 20))
                 .AddNode("a", "A", 300, 300, width: 180, height: 108)
                 .AddNode("b", "B", 300 + dx, 300 + dy, width: 180, height: 108)
                 .AddEdge("ab", "a", "b");
@@ -130,7 +130,7 @@ public sealed class MermaidReviewRegressionTests {
     public void ShortActorAssociationsKeepCaptionsClearAndApproachBothPaintedEndpoints(int gap, TopologyEdgeRouting routing) {
         foreach (var incoming in new[] { false, true }) {
             foreach (var caption in new[] { "User", "Project administrator" }) {
-                var chart = TopologyChart.Create().WithViewport(800, 700, 20)
+                var chart = TopologyChart.Create().Viewport(new TopologyViewport(800, 700, 20))
                     .AddNode("actor", caption, 300, 300, width: 180, height: 108)
                     .AddNode("action", "Do work", 300, 408 + gap, width: 180, height: 70)
                     .AddEdge("association", incoming ? "action" : "actor", incoming ? "actor" : "action");

@@ -1,6 +1,7 @@
 using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Themes;
 using Xunit;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.Tests;
 
@@ -12,8 +13,8 @@ public sealed class RadialValueTransitionDefaultControls {
     public void LayeredCircleAndProgressRingRecipesKeepExistingNativeAndAssetFreeOutputs(int width, bool dark) {
         var renderer = new HtmlInteractiveChartRenderer();
         foreach (var sample in new[] { ("layered", LayeredRadialRecipe.Create()), ("circle", CircleRecipe.Create()), ("rings", ProgressRingRecipe.Create()) }) {
-            var chart = sample.Item2.WithSize(width, 400).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-                .WithFontFamily(BrowserProofFonts.Family);
+            var chart = sample.Item2.Size(width, 400).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+                .FontFamily(BrowserProofFonts.Family);
             var section = renderer.PrepareSection(chart);
             Assert.DoesNotContain("native-motion", section.Html); Assert.DoesNotContain("update-frame", section.Html);
             var output = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY"); if (string.IsNullOrWhiteSpace(output)) continue;

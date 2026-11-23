@@ -24,7 +24,7 @@ public sealed class GaugeCircularScaleTests {
         if (labels.Length == 2)
             Assert.DoesNotContain(labels, region => region.Label == group.Metadata["data-cfx-gauge-target-0-formatted-value"]);
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
-        chart.WithValueFormatter(_ => throw new InvalidOperationException("Prepared facts must remain captured."));
+        chart.FormatValuesBy(_ => throw new InvalidOperationException("Prepared facts must remain captured."));
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
         Capture(prepared, "default-precision-" + form + "-" + fontSize);
     }
@@ -40,7 +40,7 @@ public sealed class GaugeCircularScaleTests {
         int width, int height, bool longFormat, double sweep) {
         var calls = new Dictionary<double, int>();
         var chart = Create(form, requested, width, height, longFormat, false, value => calls[value] = calls.GetValueOrDefault(value) + 1);
-        chart.ConfigureGauge(options => options.SweepAngleDegrees = sweep);
+        chart.Gauge(options => options.SweepAngleDegrees = sweep);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var ticks = prepared.Scene.Nodes.OfType<VisualSceneLine>().Where(node => node.Role == "gauge-tick").ToArray();
         Assert.InRange(ticks.Length, 2, longFormat ? 2 : 40);
@@ -62,7 +62,7 @@ public sealed class GaugeCircularScaleTests {
         Assert.Equal("75", group.Metadata["data-cfx-gauge-target-0-value"]);
         Assert.All(calls.Values, count => Assert.Equal(1, count));
         var captured = calls.ToArray(); var svg = prepared.ToSvg(); var png = prepared.ToPng();
-        chart.WithValueFormatter(_ => throw new InvalidOperationException("A prepared scale must retain captured captions."));
+        chart.FormatValuesBy(_ => throw new InvalidOperationException("A prepared scale must retain captured captions."));
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng()); Assert.Equal(captured, calls.ToArray());
         Capture(prepared, form + "-" + requested + "-" + sweep + "-" + width);
     }
@@ -73,16 +73,16 @@ public sealed class GaugeCircularScaleTests {
     [InlineData(ChartGaugeForm.Arc, false, true)]
     [InlineData(ChartGaugeForm.Needle, false, false)]
     public void EquivalentDefaultAnglesAndTickCountsKeepTheSameExportedGeometry(ChartGaugeForm form, bool compact, bool dark) {
-        Chart Baseline() => Chart.Create().WithSize(compact ? 360 : 800, compact ? 360 : 440).WithLegend(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
+        Chart Baseline() => Chart.Create().Size(compact ? 360 : 800, compact ? 360 : 440).Legend(false)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Capacity",
                 new ChartGaugeValue(50, targets: new[] { new ChartGaugeTarget(75, "Goal") })))
-            .ConfigureGauge(options => options.Form = form);
+            .Gauge(options => options.Form = form);
         var baselineChart = Baseline();
         var baseline = baselineChart.Prepare(VisualExportRequest.ForChart(baselineChart).Context);
         var svg = baseline.ToSvg("same"); var png = baseline.ToPng();
         foreach (var setting in new (double Start, int? Count)[] { (150, 2), (510, null), (-210, null), (-210, 2) }) {
-            var chart = Baseline().ConfigureGauge(options => { options.StartAngleDegrees = setting.Start; options.TickCount = setting.Count; });
+            var chart = Baseline().Gauge(options => { options.StartAngleDegrees = setting.Start; options.TickCount = setting.Count; });
             var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
             Assert.Equal(setting.Start, chart.Options.Gauge.StartAngleDegrees); Assert.Equal(setting.Count, chart.Options.Gauge.TickCount);
             Assert.Equal(svg, prepared.ToSvg("same")); Assert.Equal(png, prepared.ToPng());
@@ -97,25 +97,25 @@ public sealed class GaugeCircularScaleTests {
 
     [Fact]
     public void AuthoredCircularLabelsAndDifferentGeneratedCountsRetainTheirLocations() {
-        var chart = Chart.Create().WithSize(800, 440).WithLegend(false).AddGauge("Capacity", 50)
-            .ConfigureGauge(options => { options.TickCount = 2; options.TickLabels = new[] { new ChartAxisLabel(50, "Midpoint") }; });
+        var chart = Chart.Create().Size(800, 440).Legend(false).AddGauge("Capacity", 50)
+            .Gauge(options => { options.TickCount = 2; options.TickLabels = new[] { new ChartAxisLabel(50, "Midpoint") }; });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var track = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneSlice>(), node => node.Role == "gauge-track");
         var tick = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneLine>(), node => node.Role == "gauge-tick");
         Assert.Equal(track.Cx, tick.Start.X, 7); Assert.True(tick.Start.Y < track.Cy);
         Assert.Contains(prepared.Regions, region => region.Label == "Midpoint");
-        chart.ConfigureGauge(options => { options.TickLabels = Array.Empty<ChartAxisLabel>(); options.TickCount = 3; });
+        chart.Gauge(options => { options.TickLabels = Array.Empty<ChartAxisLabel>(); options.TickCount = 3; });
         Assert.Equal(3, chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes.Count(node => node.Role == "gauge-tick"));
     }
 
     internal static Chart Create(ChartGaugeForm form, int requested, int width, int height, bool longFormat, bool dark, Action<double>? observe = null) =>
-        Chart.Create().WithSize(width, height).WithHeader(false).WithLegend(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
+        Chart.Create().Size(width, height).ShowHeader(false).Legend(false)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Capacity",
                 new ChartGaugeValue(50, targets: new[] { new ChartGaugeTarget(75, "Goal") })))
-            .WithValueFormatter(value => { observe?.Invoke(value); return value.ToString(longFormat ? "0.00" : "0.0", CultureInfo.InvariantCulture)
+            .FormatValuesBy(value => { observe?.Invoke(value); return value.ToString(longFormat ? "0.00" : "0.0", CultureInfo.InvariantCulture)
                 + (longFormat ? " calibrated capacity measurement units" : " u"); })
-            .ConfigureGauge(options => { options.Form = form; options.StartAngleDegrees = -90; options.SweepAngleDegrees = 360; options.TickCount = requested; });
+            .Gauge(options => { options.Form = form; options.StartAngleDegrees = -90; options.SweepAngleDegrees = 360; options.TickCount = requested; });
 
     internal static Chart CreatePrecision(ChartGaugeForm form, double fontSize) {
         var series = ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Capacity",
@@ -123,8 +123,8 @@ public sealed class GaugeCircularScaleTests {
         series.ShowDataLabels = false;
         var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         // Match the browser fixture's room for an authored 60 px face rather than relying on host fallback metrics.
-        var chart = Chart.Create().WithSize(520, fontSize >= 60 ? 360 : 260).WithPngFont(font).WithHeader(false).WithLegend(false).AddSeries(series)
-            .ConfigureGauge(options => { options.Form = form; options.StartAngleDegrees = -90; options.SweepAngleDegrees = 360; options.TickCount = 97; });
+        var chart = Chart.Create().Size(520, fontSize >= 60 ? 360 : 260).Png(p => p.FontPath(font)).ShowHeader(false).Legend(false).AddSeries(series)
+            .Gauge(options => { options.Form = form; options.StartAngleDegrees = -90; options.SweepAngleDegrees = 360; options.TickCount = 97; });
         chart.Options.TickLabelStyle.FontSize = fontSize;
         return chart;
     }

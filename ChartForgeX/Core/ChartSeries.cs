@@ -1,12 +1,14 @@
 using System.Collections.Generic;
 using System;
 using ChartForgeX.Primitives;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>
 /// Represents one named series of chart data.
 /// </summary>
+[Fluent]
 public sealed partial class ChartSeries {
     private double _strokeWidth = 3;
     internal bool HasExplicitStrokeWidth { get; private set; }
@@ -17,9 +19,13 @@ public sealed partial class ChartSeries {
     internal bool PreserveInteractionTargetsWhenMarkersHidden { get; private set; }
 
     /// <summary>
-    /// Gets the display name shown in legends.
+    /// Gets or sets the display name shown in legends.
     /// </summary>
-    public string Name { get; private set; }
+    public string Name {
+        get => _name;
+        set => _name = value ?? throw new ArgumentNullException(nameof(value));
+    }
+    private string _name = string.Empty;
 
     /// <summary>
     /// Gets the series rendering kind.
@@ -54,6 +60,7 @@ public sealed partial class ChartSeries {
     /// <summary>
     /// Gets or sets the series color. When null, the chart theme palette is used.
     /// </summary>
+    [FluentPreset("ThemeColor", null, Summary = "Uses the theme palette colour.")]
     public ChartColor? Color { get; set; }
 
     /// <summary>Gets or sets the semantic colour role; explicit colours still take precedence.</summary>
@@ -69,6 +76,7 @@ public sealed partial class ChartSeries {
     /// <summary>
     /// Gets or sets the texture overlay applied to filled marks in this series.
     /// </summary>
+    [FluentPreset("SolidFill", ChartFillPattern.None, Summary = "Uses a solid fill without a pattern.")]
     public ChartFillPattern FillPattern {
         get => _fillPattern;
         set {
@@ -157,12 +165,18 @@ public sealed partial class ChartSeries {
     /// <summary>
     /// Gets the series-specific data-label style. When empty, the chart-level data-label style is used.
     /// </summary>
-    public TextStyleOverride DataLabelStyle { get; private set; } = new();
+    public TextStyleOverride DataLabelStyle {
+        get => _dataLabelStyle;
+        set => _dataLabelStyle = value ?? throw new ArgumentNullException(nameof(value));
+    }
+    private TextStyleOverride _dataLabelStyle = new();
 
     /// <summary>
     /// Gets or sets the primary or secondary value axis. Horizontal charts use the X axis; vertical and radial charts use the Y axis.
     /// Setting it releases any <see cref="AdditionalValueAxis"/> binding.
     /// </summary>
+    [FluentPreset("PrimaryAxis", ChartAxisSide.Primary, Summary = "Plots the series against the primary value axis.")]
+    [FluentPreset("SecondaryAxis", ChartAxisSide.Secondary, Summary = "Plots the series against the secondary value axis.")]
     public ChartAxisSide ValueAxis {
         get => _valueAxis;
         set {
@@ -201,31 +215,12 @@ public sealed partial class ChartSeries {
     }
 
     /// <summary>
-    /// Sets the series color. Pass null to use the chart theme palette.
-    /// </summary>
-    /// <param name="color">The series color, or null to use the theme palette.</param>
-    /// <returns>The current series.</returns>
-    public ChartSeries WithColor(ChartColor? color) {
-        Color = color;
-        return this;
-    }
-
-    /// <summary>
-    /// Clears the series color so the chart theme palette is used.
-    /// </summary>
-    /// <returns>The current series.</returns>
-    public ChartSeries UseThemeColor() {
-        Color = null;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the color for one point. Pass null to use the series color or theme palette.
     /// </summary>
     /// <param name="pointIndex">The zero-based point index.</param>
     /// <param name="color">The point color, or null to use the series color.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries WithPointColor(int pointIndex, ChartColor? color) {
+    public ChartSeries PointColor(int pointIndex, ChartColor? color) {
         ValidatePointIndex(pointIndex);
         while (PointColors.Count <= pointIndex) PointColors.Add(null);
         PointColors[pointIndex] = color;
@@ -238,7 +233,7 @@ public sealed partial class ChartSeries {
     /// <param name="pointIndex">The zero-based point index.</param>
     /// <param name="hex">The point color in #RGB, #RGBA, #RRGGBB, or #RRGGBBAA notation.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries WithPointColor(int pointIndex, string hex) => WithPointColor(pointIndex, ChartColor.FromHex(hex));
+    public ChartSeries PointColor(int pointIndex, string hex) => PointColor(pointIndex, ChartColor.FromHex(hex));
 
     /// <summary>
     /// Sets the same color for a contiguous point range.
@@ -247,11 +242,11 @@ public sealed partial class ChartSeries {
     /// <param name="count">The number of points to color.</param>
     /// <param name="color">The point color, or null to use the series color.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries WithPointColorRange(int startPointIndex, int count, ChartColor? color) {
+    public ChartSeries PointColorRange(int startPointIndex, int count, ChartColor? color) {
         ValidatePointIndex(startPointIndex);
         if (count <= 0) throw new ArgumentOutOfRangeException(nameof(count), count, "Point color range count must be greater than zero.");
         ValidatePointIndex(startPointIndex + count - 1);
-        for (var i = 0; i < count; i++) WithPointColor(startPointIndex + i, color);
+        for (var i = 0; i < count; i++) PointColor(startPointIndex + i, color);
         return this;
     }
 
@@ -262,37 +257,7 @@ public sealed partial class ChartSeries {
     /// <param name="count">The number of points to color.</param>
     /// <param name="hex">The point color in #RGB, #RGBA, #RRGGBB, or #RRGGBBAA notation.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries WithPointColorRange(int startPointIndex, int count, string hex) => WithPointColorRange(startPointIndex, count, ChartColor.FromHex(hex));
-
-    /// <summary>
-    /// Clears the color for one point so the series color or theme palette is used.
-    /// </summary>
-    /// <param name="pointIndex">The zero-based point index.</param>
-    /// <returns>The current series.</returns>
-    public ChartSeries UseSeriesColor(int pointIndex) {
-        ValidatePointIndex(pointIndex);
-        if (pointIndex < PointColors.Count) PointColors[pointIndex] = null;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the texture overlay applied to filled marks in this series.
-    /// </summary>
-    /// <param name="pattern">The fill pattern.</param>
-    /// <returns>The current series.</returns>
-    public ChartSeries WithFillPattern(ChartFillPattern pattern) {
-        FillPattern = pattern;
-        return this;
-    }
-
-    /// <summary>
-    /// Clears the series fill pattern.
-    /// </summary>
-    /// <returns>The current series.</returns>
-    public ChartSeries UseSolidFill() {
-        FillPattern = ChartFillPattern.None;
-        return this;
-    }
+    public ChartSeries PointColorRange(int startPointIndex, int count, string hex) => PointColorRange(startPointIndex, count, ChartColor.FromHex(hex));
 
     /// <summary>
     /// Sets the texture overlay for one point. Pass null to use the series fill pattern.
@@ -300,22 +265,11 @@ public sealed partial class ChartSeries {
     /// <param name="pointIndex">The zero-based point index.</param>
     /// <param name="pattern">The point fill pattern, or null to use the series fill pattern.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries WithPointFillPattern(int pointIndex, ChartFillPattern? pattern) {
+    public ChartSeries PointFillPattern(int pointIndex, ChartFillPattern? pattern) {
         ValidatePointIndex(pointIndex);
         if (pattern.HasValue && !Enum.IsDefined(typeof(ChartFillPattern), pattern.Value)) throw new ArgumentOutOfRangeException(nameof(pattern), pattern, "Unknown fill pattern.");
         while (PointFillPatterns.Count <= pointIndex) PointFillPatterns.Add(null);
         PointFillPatterns[pointIndex] = pattern;
-        return this;
-    }
-
-    /// <summary>
-    /// Clears the texture overlay for one point so the series fill pattern is used.
-    /// </summary>
-    /// <param name="pointIndex">The zero-based point index.</param>
-    /// <returns>The current series.</returns>
-    public ChartSeries UseSeriesFillPattern(int pointIndex) {
-        ValidatePointIndex(pointIndex);
-        if (pointIndex < PointFillPatterns.Count) PointFillPatterns[pointIndex] = null;
         return this;
     }
 
@@ -325,7 +279,7 @@ public sealed partial class ChartSeries {
     /// <param name="pointIndex">The zero-based point index.</param>
     /// <param name="label">The data label text.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries WithPointLabel(int pointIndex, string label) {
+    public ChartSeries PointLabel(int pointIndex, string label) {
         ValidatePointIndex(pointIndex);
         if (label == null) throw new ArgumentNullException(nameof(label));
         while (PointLabels.Count <= pointIndex) PointLabels.Add(null);
@@ -338,32 +292,9 @@ public sealed partial class ChartSeries {
     /// </summary>
     /// <param name="pointIndex">The zero-based point index.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries UseFormattedPointLabel(int pointIndex) {
+    public ChartSeries ResetPointLabel(int pointIndex) {
         ValidatePointIndex(pointIndex);
         if (pointIndex < PointLabels.Count) PointLabels[pointIndex] = null;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the stroke width for line and area series.
-    /// </summary>
-    /// <param name="width">The stroke width in pixels.</param>
-    /// <returns>The current series.</returns>
-    public ChartSeries WithStrokeWidth(double width) {
-        StrokeWidth = width;
-        return this;
-    }
-
-    /// <summary>Overrides the canonical marker radius for this series. Use zero to hide point glyphs.</summary>
-    /// <remarks>Bubble series use <see cref="ChartOptions.Bubble"/> instead and reject this override during preparation.</remarks>
-    public ChartSeries WithMarkerRadius(double radius) {
-        MarkerRadius = radius;
-        return this;
-    }
-
-    /// <summary>Clears the series marker override and uses the family default, including the shared bubble size scale.</summary>
-    public ChartSeries UseThemeMarkerRadius() {
-        MarkerRadius = null;
         return this;
     }
 
@@ -372,91 +303,12 @@ public sealed partial class ChartSeries {
     }
 
     /// <summary>
-    /// Sets whether capable renderers should smooth connected line segments.
-    /// </summary>
-    /// <param name="smooth">True to smooth connected segments; otherwise false.</param>
-    /// <returns>The current series.</returns>
-    public ChartSeries WithSmooth(bool smooth = true) {
-        Smooth = smooth;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets whether categorical entries for the series appear in the chart legend. Numeric color keys use ColorDimension.ShowLegend.
-    /// </summary>
-    /// <param name="visible">True to show the series in legends; otherwise false.</param>
-    /// <returns>The current series.</returns>
-    public ChartSeries WithLegendEntry(bool visible = true) {
-        ShowInLegend = visible;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets an optional semantic role emitted by capable renderers.
-    /// </summary>
-    /// <param name="role">The semantic role, or null to use the renderer default.</param>
-    /// <returns>The current series.</returns>
-    public ChartSeries WithSemanticRole(string? role) {
-        SemanticRole = role;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets a series-specific data-label visibility override.
-    /// </summary>
-    /// <param name="visible">A value indicating whether labels should render for this series.</param>
-    /// <returns>The current series.</returns>
-    public ChartSeries WithDataLabels(bool visible = true) {
-        ShowDataLabels = visible;
-        return this;
-    }
-
-    /// <summary>
-    /// Clears the series-specific data-label visibility override and uses the chart-level setting.
-    /// </summary>
-    /// <returns>The current series.</returns>
-    public ChartSeries UseChartDataLabels() {
-        ShowDataLabels = null;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets a series-specific data-label placement.
-    /// </summary>
-    /// <param name="placement">The preferred placement.</param>
-    /// <returns>The current series.</returns>
-    public ChartSeries WithDataLabelPlacement(ChartDataLabelPlacement placement) {
-        DataLabelPlacement = placement;
-        return this;
-    }
-
-    /// <summary>
-    /// Clears the series-specific data-label placement and uses the chart-level placement.
-    /// </summary>
-    /// <returns>The current series.</returns>
-    public ChartSeries UseChartDataLabelPlacement() {
-        DataLabelPlacement = null;
-        return this;
-    }
-
-    /// <summary>
-    /// Configures series-specific data-label styling.
-    /// </summary>
-    /// <param name="configure">The style configuration callback.</param>
-    /// <returns>The current series.</returns>
-    public ChartSeries ConfigureDataLabelStyle(Action<TextStyleOverride> configure) {
-        if (configure == null) throw new ArgumentNullException(nameof(configure));
-        DataLabelStyle = ChartOptionConfiguration.Configure(DataLabelStyle, configure, style => style.Clone());
-        return this;
-    }
-
-    /// <summary>
     /// Configures data-label styling for one point.
     /// </summary>
     /// <param name="pointIndex">The zero-based point index.</param>
     /// <param name="configure">The style configuration callback.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries ConfigurePointDataLabelStyle(int pointIndex, Action<TextStyleOverride> configure) {
+    public ChartSeries PointDataLabelStyle(int pointIndex, Action<TextStyleOverride> configure) {
         ValidatePointIndex(pointIndex);
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         var current = pointIndex < PointDataLabelStyles.Count ? PointDataLabelStyles[pointIndex] : null;
@@ -471,7 +323,7 @@ public sealed partial class ChartSeries {
     /// </summary>
     /// <param name="pointIndex">The zero-based point index.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries UseSeriesDataLabelStyle(int pointIndex) {
+    public ChartSeries ResetPointDataLabelStyle(int pointIndex) {
         ValidatePointIndex(pointIndex);
         if (pointIndex < PointDataLabelStyles.Count) PointDataLabelStyles[pointIndex] = null;
         return this;
@@ -484,7 +336,7 @@ public sealed partial class ChartSeries {
     /// <param name="pointIndex">The zero-based point index.</param>
     /// <param name="ratio">The offset ratio from zero to 0.35 of the observation's resolved outer radius.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries WithPointSliceOffset(int pointIndex, double ratio) {
+    public ChartSeries PointSliceOffset(int pointIndex, double ratio) {
         ValidatePointIndex(pointIndex);
         ChartGuards.Finite(ratio, nameof(ratio));
         if (ratio < 0 || ratio > 0.35) throw new ArgumentOutOfRangeException(nameof(ratio), ratio, "Slice offset ratio must be between zero and 0.35.");
@@ -494,40 +346,11 @@ public sealed partial class ChartSeries {
     }
 
     /// <summary>
-    /// Clears the pie/donut slice offset ratio for one point.
-    /// </summary>
-    /// <param name="pointIndex">The zero-based point index.</param>
-    /// <returns>The current series.</returns>
-    public ChartSeries UseDefaultSliceOffset(int pointIndex) {
-        ValidatePointIndex(pointIndex);
-        if (pointIndex < PointSliceOffsets.Count) PointSliceOffsets[pointIndex] = 0;
-        return this;
-    }
-
-    /// <summary>
-    /// Assigns the series to the primary value axis.
-    /// </summary>
-    /// <returns>The current series.</returns>
-    public ChartSeries UsePrimaryValueAxis() {
-        ValueAxis = ChartAxisSide.Primary;
-        return this;
-    }
-
-    /// <summary>
-    /// Assigns the series to the secondary value axis.
-    /// </summary>
-    /// <returns>The current series.</returns>
-    public ChartSeries UseSecondaryValueAxis() {
-        ValueAxis = ChartAxisSide.Secondary;
-        return this;
-    }
-
-    /// <summary>
     /// Draws the series against an additional value axis created by <see cref="Chart.AddValueAxis"/>.
     /// </summary>
     /// <param name="axis">The additional axis of the chart this series belongs to.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries UseValueAxis(ChartAdditionalValueAxis axis) {
+    internal ChartSeries SetValueAxis(ChartAdditionalValueAxis axis) {
         if (axis == null) throw new ArgumentNullException(nameof(axis));
         if (Owner != null && !ReferenceEquals(axis.Owner, Owner)) throw new ArgumentException("The axis belongs to another chart.", nameof(axis));
         _valueAxis = ChartAxisSide.Primary;

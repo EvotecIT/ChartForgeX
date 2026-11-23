@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using ChartForgeX.Topology;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Interactivity.Html;
 
@@ -10,6 +11,7 @@ namespace ChartForgeX.Interactivity.Html;
 /// <remarks>Unspecified messages use English. Templates retain named placeholders such as {count}, {current} and {total}.
 /// Chart language is inherited when Language is null. Automatic direction inherits the host document.
 /// Direction affects adapter chrome, not native axis order.</remarks>
+[Fluent]
 public sealed partial class HtmlChartLocalization {
     private readonly Dictionary<HtmlChartText, string> _overrides = new Dictionary<HtmlChartText, string>();
     private string? _language;

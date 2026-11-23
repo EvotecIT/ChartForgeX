@@ -1,8 +1,10 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>Controls the name, number display and optional numeric key of a numeric marker-size measurement.</summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class ChartSizeDimensionOptions {
     private string? _name;
 

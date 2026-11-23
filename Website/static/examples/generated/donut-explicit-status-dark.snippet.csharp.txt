@@ -28,8 +28,8 @@ var points = Enumerable.Range(0, count).Where(index => true)
 var findings = new ChartSeries(new ChartSeriesId("findings"), "Findings", ChartSeriesKind.Donut, points);
 var colors = VisualTheme.Graphite().Resolve(mode);
 var selected = new[] { colors.Status.Pass.Fill, colors.Status.Medium.Fill, colors.Status.Critical.Fill };
-for (var index = 0; index < findings.Points.Count; index++) findings.WithPointColor(index, selected[index % selected.Length]);
-var chart = Chart.Create().WithXLabels(Enumerable.Range(0, count).Select(Name).ToArray()).AddSeries(findings);
+for (var index = 0; index < findings.Points.Count; index++) findings.PointColor(index, selected[index % selected.Length]);
+var chart = Chart.Create().XLabels(Enumerable.Range(0, count).Select(Name).ToArray()).AddSeries(findings);
 
 #region Output
 var context = new VisualRenderContext(

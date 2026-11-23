@@ -140,7 +140,7 @@ public sealed partial class InteractiveSelectionDockBrowserTests {
     [InlineData(true)]
     public async Task PointerPressOnAPartlyVisibleChipKeepsItsClickWhileKeyboardFocusRevealsTheWholeChip(bool dark) {
         if (!Enabled) return;
-        var chart = StatusLines(dark).WithXLabels("Monday reading", "Tuesday reading", "Wednesday reading",
+        var chart = StatusLines(dark).XLabels("Monday reading", "Tuesday reading", "Wednesday reading",
             "Thursday reading", "Friday reading", "Saturday reading", "Sunday reading");
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options =>
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit), 320, 560);

@@ -32,14 +32,15 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 public static class TopologySiteLinksRecipe {
     /// <summary>Creates the site map in either theme mode.</summary>
     public static TopologyChart Create(string variant = "sites", ThemeMode mode = ThemeMode.Light) {
-        if (variant != "sites") throw new ArgumentOutOfRangeException(nameof(variant));
-        var chart = TopologyChart.Create().WithId("ad-site-links").WithTitle("Contoso replication sites")
-            .WithSubtitle("Domain controllers grouped per site; links show transports, cost and evidence")
-            .WithTheme(VisualTheme.Graphite(), mode).WithViewport(1360, 720, 24)
-            .WithLayout(TopologyLayoutMode.Layered, TopologyLayoutDirection.TopToBottom)
-            .WithSiblingGrouping(titleFormatter: (kind, members) => "Domain controllers");
-        chart.WithRenderOptions(new TopologyRenderOptions { FitContentToViewport = true, NodeDisplayMode = TopologyNodeDisplayMode.Card });
-        chart.WithLegend(TopologyLegend.Create("Legend")
+        // "wide" is the shared recipe registry default; this example has a single wide site map.
+        if (variant is not ("sites" or "wide")) throw new ArgumentOutOfRangeException(nameof(variant));
+        var chart = TopologyChart.Create().Id("ad-site-links").Title("Contoso replication sites")
+            .Subtitle("Domain controllers grouped per site; links show transports, cost and evidence")
+            .Theme(VisualTheme.Graphite(), mode).Viewport(new TopologyViewport(1360, 720, 24))
+            .LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(TopologyLayoutDirection.TopToBottom)
+            .SiblingGrouping(new TopologySiblingGrouping { TitleFormatter = (kind, members) => "Domain controllers" });
+        chart.DefaultRenderOptions(new TopologyRenderOptions { FitContentToViewport = true, NodeDisplayMode = TopologyNodeDisplayMode.Card });
+        chart.Legend(TopologyLegend.Create("Legend")
             .AddStatus("Healthy", TopologyHealthStatus.Healthy).AddStatus("Warning", TopologyHealthStatus.Warning)
             .AddEdgeKind("Site link", TopologyEdgeKind.Replication));
 
@@ -57,19 +58,19 @@ public static class TopologySiteLinksRecipe {
 
         chart.AddEdge("hub-par", "hub", "par", kind: TopologyEdgeKind.Replication, status: TopologyHealthStatus.Healthy)
             .AddEdgeStripe("hub-par", "#2563EB", "IP").AddEdgeStripe("hub-par", "#F97316", "SMTP")
-            .AddEdgeChip("hub-par", "cost 100").WithEdgeEvidence("hub-par", TopologyEdgeEvidence.Confirmed, "Site link object DEFAULTIPSITELINK");
+            .AddEdgeChip("hub-par", "cost 100").UpdateEdge("hub-par", e => e.Evidence(TopologyEdgeEvidence.Confirmed).EvidenceText("Site link object DEFAULTIPSITELINK"));
         chart.AddEdge("hub-ber", "hub", "ber", kind: TopologyEdgeKind.Replication, status: TopologyHealthStatus.Healthy)
-            .AddEdgeChip("hub-ber", "cost 200").WithEdgeEvidence("hub-ber", TopologyEdgeEvidence.Confirmed);
+            .AddEdgeChip("hub-ber", "cost 200").UpdateEdge("hub-ber", e => e.Evidence(TopologyEdgeEvidence.Confirmed).EvidenceText(null));
         chart.AddEdge("hub-nyc", "hub", "nyc", kind: TopologyEdgeKind.Replication, status: TopologyHealthStatus.Warning)
             .AddEdgeStripe("hub-nyc", "#2563EB", "IP").AddEdgeStripe("hub-nyc", "#F97316", "SMTP")
             .AddEdgeChip("hub-nyc", "cost 300").AddEdgeChip("hub-nyc", "lag 47m", Tone.Warning)
-            .WithEdgeEvidence("hub-nyc", TopologyEdgeEvidence.Confirmed);
+            .UpdateEdge("hub-nyc", e => e.Evidence(TopologyEdgeEvidence.Confirmed).EvidenceText(null));
         chart.AddEdge("hub-tyo", "hub", "tyo", kind: TopologyEdgeKind.Replication, status: TopologyHealthStatus.Healthy)
             .AddEdgeChip("hub-tyo", "cost 500")
-            .WithEdgeEvidence("hub-tyo", TopologyEdgeEvidence.Assumed, "Inferred from KCC-generated connection objects");
+            .UpdateEdge("hub-tyo", e => e.Evidence(TopologyEdgeEvidence.Assumed).EvidenceText("Inferred from KCC-generated connection objects"));
         // The branch end names its bridgehead; the uplink marker points back to the hub.
         foreach (var (site, bridgehead) in new[] { ("par", "PAR-DC01"), ("ber", "BER-DC01"), ("nyc", "NEW-DC01"), ("tyo", "TOK-DC01") })
-            chart.WithEdgeEndpointLabels("hub-" + site, null, bridgehead).WithEdgeUplink("hub-" + site, TopologyEdgeEnd.Target);
+            chart.UpdateEdge("hub-" + site, e => e.SourceLabel(null).TargetLabel(bridgehead)).UpdateEdge("hub-" + site, e => e.UplinkEnd(TopologyEdgeEnd.Target));
         return chart;
     }
 

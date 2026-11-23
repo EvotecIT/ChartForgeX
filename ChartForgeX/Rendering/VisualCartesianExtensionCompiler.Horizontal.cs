@@ -35,8 +35,8 @@ internal static partial class VisualCartesianCompiler {
         var slot = stacks.Slot(bars, index);
         var layout = ChartCategorySlotLayout.Create(stacks.HorizontalCategories.Select(map.Y),
             plot.Height, context.Theme.Spacing, slot.Count, slot.Position, requireMinimumFootprint: false,
-            maximumThickness: chart.Options.MaximumBarWidth ?? ChartMarkSurface.MaximumThickness(context.Theme.MaximumBarWidth, horizontal: true),
-            minimumThickness: Math.Min(.1, chart.Options.MaximumBarWidth ?? context.Theme.MaximumBarWidth),
+            maximumThickness: chart.Options.Bars.MaxWidth ?? ChartMarkSurface.MaximumThickness(context.Theme.MaximumBarWidth, horizontal: true),
+            minimumThickness: Math.Min(.1, chart.Options.Bars.MaxWidth ?? context.Theme.MaximumBarWidth),
             maximumPitch: map.CalendarBandPitch(horizontal: true));
         return (layout.Thickness, layout.Offset, layout.Pitch);
     }
@@ -44,8 +44,8 @@ internal static partial class VisualCartesianCompiler {
     private static void AddHorizontalLabel(Chart chart, VisualRenderContext context, ChartSeries series, int index, int item, ChartPoint anchor,
         ChartRect bounds, double value, double direction, ResolvedPointLabel label, List<LabelPlacementRequest> labels,
         string? associatedId = null, ChartColor? markFill = null, SvgColorRole? markFillRole = null) {
-        if (!(series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false)) || label.Text.Length == 0) return;
-        var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
+        if (!(series.ShowDataLabels ?? (chart.Options.DataLabels.Visible ?? false)) || label.Text.Length == 0) return;
+        var placement = series.DataLabelPlacement ?? chart.Options.DataLabels.Placement;
         if (placement == ChartDataLabelPlacement.Left) anchor = new ChartPoint(bounds.Left, anchor.Y);
         if (placement == ChartDataLabelPlacement.Right) anchor = new ChartPoint(bounds.Right, anchor.Y);
         if (placement == ChartDataLabelPlacement.Above) anchor = new ChartPoint(bounds.Left + bounds.Width / 2, bounds.Top);
@@ -117,7 +117,7 @@ internal static partial class VisualCartesianCompiler {
         var titleStyle = chart.Options.AxisTitleStyle.Resolve(new TextStyle { Font = context.FontWithWeight(context.Theme.Typography.AxisTitleWeight), FontSize = context.Theme.Typography.AxisTitleSize, Color = colors.MutedForeground });
         var xTitle = XAxisTitle(chart);
         if (chart.Options.XAxis.Visible && xTitle.Length > 0) bottom += builder.MeasureText(xTitle, titleStyle).Height + spacing;
-        var yTitle = ChartTimeScale.DecorateTitle(chart.Options.YAxis, chart.YAxisTitle);
+        var yTitle = ChartTimeScale.DecorateTitle(chart.Options.YAxis, chart.Options.YAxis.Title);
         var top = chart.Options.YAxis.Visible && yTitle.Length > 0 ? Math.Min(viewport.Height * .25, builder.MeasureText(yTitle, titleStyle).Height + spacing) : 0;
         bottom = Math.Min(viewport.Height * .45, bottom);
         left = Math.Max(left, Math.Min(valueMetrics.Width / 2, viewport.Width * .35));
@@ -128,7 +128,7 @@ internal static partial class VisualCartesianCompiler {
             cache.IncludeValueTicks(secondary, secondaryRange.MinX, secondaryRange.MaxX);
             var metrics = TickMetrics(builder, secondary, secondaryRange.MinX, secondaryRange.MaxX, style, chart.Options.ValueFormatter, cache);
             top += metrics.Height + spacing;
-            if (chart.SecondaryXAxisTitle.Length > 0) top += builder.MeasureText(chart.SecondaryXAxisTitle, titleStyle).Height + spacing;
+            if (chart.Options.SecondaryXAxis.Title.Length > 0) top += builder.MeasureText(chart.Options.SecondaryXAxis.Title, titleStyle).Height + spacing;
             top = Math.Min(top, viewport.Height * .4);
             left = Math.Max(left, Math.Min(metrics.Width / 2, viewport.Width * .35));
             right = Math.Max(right, Math.Min(metrics.Width / 2, viewport.Width * .35));
@@ -189,7 +189,7 @@ internal static partial class VisualCartesianCompiler {
                 new ChartRect(viewport.Left + groupWidth, viewport.Top, Math.Max(0, available - groupWidth), viewport.Height), style, spacing, null, cache, plot.Height);
             DrawCategoryGroups(chart, context, builder, cache, map.Y, range.MinY, range.MaxY,
                 new ChartRect(viewport.Left, plot.Top, groupWidth, plot.Height), colors, groupSizes);
-            var yTitle = ChartTimeScale.DecorateTitle(chart.Options.YAxis, chart.YAxisTitle);
+            var yTitle = ChartTimeScale.DecorateTitle(chart.Options.YAxis, chart.Options.YAxis.Title);
             if (yTitle.Length > 0) DrawAxisTitle(chart, context, builder, yTitle,
                 new ChartRect(plot.Left, viewport.Top, plot.Width, Math.Max(0, plot.Top - viewport.Top - spacing)), colors, TextAlignment.Left, "axis-y-title");
         } else if (!chart.Options.YAxis.Visible || !chart.Options.YAxis.CrossAt.HasValue)

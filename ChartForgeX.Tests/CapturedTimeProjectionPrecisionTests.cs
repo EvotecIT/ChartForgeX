@@ -18,7 +18,7 @@ public sealed class CapturedTimeProjectionPrecisionTests {
         var minimum = ChartDateTime.ToOADate(First);
         var middle = ChartDateTime.ToOADate(First.AddSeconds(5));
         var maximum = ChartDateTime.ToOADate(First.AddSeconds(10));
-        var axis = new ChartAxis().WithTimeScale(TimeZoneInfo.CreateCustomTimeZone("TestPlusTwo", TimeSpan.FromHours(2), "TestPlusTwo", "TestPlusTwo"));
+        var axis = new ChartAxis().TimeScale(TimeZoneInfo.CreateCustomTimeZone("TestPlusTwo", TimeSpan.FromHours(2), "TestPlusTwo", "TestPlusTwo"));
         var calls = new List<double>();
         var original = Assert.IsType<ChartDataProjection>(ChartDataProjection.TryCreate(new ChartRect(0, 0, 100, 100), minimum, maximum, axis));
         var projection = original.WithDisplayTicks(new[] { new ChartAxisLabel(minimum, string.Empty), new ChartAxisLabel(middle, "Middle") },
@@ -58,15 +58,15 @@ public sealed class CapturedTimeProjectionPrecisionTests {
     public void PhysicalTimeValueAxesCapturePreciseScalarFactsAndProjectionBounds(bool horizontal, bool secondary) {
         var first = ChartDateTime.ToOADate(First);
         var last = ChartDateTime.ToOADate(First.AddSeconds(10));
-        var chart = Chart.Create().WithSize(900, 360).AddLine("Readings", new[] { new ChartPoint(1, first), new ChartPoint(2, last) });
-        chart.Options.LineOrientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
+        var chart = Chart.Create().Size(900, 360).AddLine("Readings", new[] { new ChartPoint(1, first), new ChartPoint(2, last) });
+        chart.Options.Lines.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
         var valueAxis = horizontal ? chart.Options.XAxis : secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
         var categoryAxis = horizontal ? chart.Options.YAxis : chart.Options.XAxis;
-        valueAxis.WithTimeScale().WithBounds(first, last);
+        valueAxis.TimeScale().Bounds(first, last);
         valueAxis.Labels.Add(new ChartAxisLabel(First, "Start"));
         valueAxis.Labels.Add(new ChartAxisLabel(First.AddSeconds(10), "End"));
-        categoryAxis.WithBounds(0, 3);
-        if (secondary) chart.Series[0].UseSecondaryValueAxis();
+        categoryAxis.Bounds(0, 3);
+        if (secondary) chart.Series[0].SecondaryAxis();
         var prepared = chart.Prepare(new VisualRenderContext());
         var projection = Assert.IsType<ChartDataProjection>(prepared.Scene.DataProjection);
         var axis = horizontal ? projection.X : Assert.IsType<ChartDataAxisProjection>(projection.Y);
@@ -83,10 +83,10 @@ public sealed class CapturedTimeProjectionPrecisionTests {
     [Fact]
     public void StackedTimeValueFactsCaptureTheVisibleStackEndpoint() {
         var first = ChartDateTime.ToOADate(First);
-        var chart = Chart.Create().WithSize(900, 360).WithStackedBars().WithXAxisBounds(0, 2).WithYAxisBounds(first - 1, first + 1)
+        var chart = Chart.Create().Size(900, 360).Bars(b => b.Stacked()).XAxis(x => x.Bounds(0, 2)).YAxis(y => y.Bounds(first - 1, first + 1))
             .AddBar("Base", new[] { new ChartPoint(1, first) })
             .AddBar("Elapsed", new[] { new ChartPoint(1, 1d / 86400) });
-        chart.Options.YAxis.WithTimeScale();
+        chart.Options.YAxis.TimeScale();
         var point = Marks(chart.ToSvg()).Single(mark => (string?)mark.Attribute("data-cfx-series") == "1");
         Assert.Equal(First.AddSeconds(1).ToString("O"), point.Attribute("data-cfx-value-instant")!.Value);
         Assert.Equal(1d / 86400, double.Parse(point.Attribute("data-cfx-y")!.Value, CultureInfo.InvariantCulture));
@@ -97,10 +97,10 @@ public sealed class CapturedTimeProjectionPrecisionTests {
     [InlineData(false)]
     [InlineData(true)]
     public void LegacyCrossEpochTimeDomainsKeepTicksBoundsAndFactsNumeric(bool horizontal) {
-        var chart = Chart.Create().WithSize(900, 360).AddLine("Legacy", new[] { new ChartPoint(-1, -1), new ChartPoint(1, 1) });
-        chart.Options.LineOrientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
-        chart.Options.XAxis.WithTimeScale().WithBounds(-2, 2);
-        chart.Options.YAxis.WithTimeScale().WithBounds(-2, 2);
+        var chart = Chart.Create().Size(900, 360).AddLine("Legacy", new[] { new ChartPoint(-1, -1), new ChartPoint(1, 1) });
+        chart.Options.Lines.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
+        chart.Options.XAxis.TimeScale().Bounds(-2, 2);
+        chart.Options.YAxis.TimeScale().Bounds(-2, 2);
         chart.Options.XAxis.Labels.AddRange(new[] { new ChartAxisLabel(-1, "Before"), new ChartAxisLabel(1, "After") });
         chart.Options.YAxis.Labels.AddRange(new[] { new ChartAxisLabel(-1, "Before"), new ChartAxisLabel(1, "After") });
         var prepared = chart.Prepare(new VisualRenderContext());
@@ -127,14 +127,14 @@ public sealed class CapturedTimeProjectionPrecisionTests {
     }
 
     private static Chart CategoryTimeChart(bool horizontal) {
-        var chart = Chart.Create().WithSize(900, 360).AddLine("Readings", new[] { new ChartPoint(First, 1), new ChartPoint(First.AddSeconds(10), 2) });
-        chart.Options.LineOrientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
+        var chart = Chart.Create().Size(900, 360).AddLine("Readings", new[] { new ChartPoint(First, 1), new ChartPoint(First.AddSeconds(10), 2) });
+        chart.Options.Lines.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
         var category = horizontal ? chart.Options.YAxis : chart.Options.XAxis;
         var value = horizontal ? chart.Options.XAxis : chart.Options.YAxis;
-        category.WithTimeScale().WithBounds(ChartDateTime.ToOADate(First), ChartDateTime.ToOADate(First.AddSeconds(10)));
+        category.TimeScale().Bounds(ChartDateTime.ToOADate(First), ChartDateTime.ToOADate(First.AddSeconds(10)));
         category.Labels.Add(new ChartAxisLabel(First, "Start"));
         category.Labels.Add(new ChartAxisLabel(First.AddSeconds(10), "End"));
-        value.WithBounds(0, 3);
+        value.Bounds(0, 3);
         return chart;
     }
 

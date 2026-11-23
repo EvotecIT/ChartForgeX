@@ -11,7 +11,7 @@ public sealed class ResponsiveChartSpecificationGuardTests {
     private static readonly Regex SpecificationScript = new("<script[^>]*data-cfx-spec(?:-gzip)?[^>]*>.*?</script>", RegexOptions.Singleline | RegexOptions.CultureInvariant);
 
     private static string Fragment(bool compressed) {
-        var chart = Chart.Create().WithSize(320, 160).WithHeader(false).WithLegend(false)
+        var chart = Chart.Create().Size(320, 160).ShowHeader(false).Legend(false)
             .AddLine("Count", new[] { new ChartPoint(1, 1), new ChartPoint(2, 3) });
         return new HtmlResponsiveChartRenderer().RenderFragment(chart, 240, 480, compressLayouts: compressed);
     }

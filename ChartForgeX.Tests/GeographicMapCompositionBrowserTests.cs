@@ -21,7 +21,7 @@ public sealed class GeographicMapCompositionBrowserTests {
         sites.ReplaceMapPoints(new[] {
             new ChartMapPoint("North gateway", 10, 60, 100).WithColorValue(30),
             new ChartMapPoint("West gateway", 0, 50, 25).WithColorValue(-5)
-        }).WithObservationIds(new[] { new ChartObservationId("north"), new ChartObservationId("west") });
+        }).ObservationIds(new[] { new ChartObservationId("north"), new ChartObservationId("west") });
         updated.MoveSeries(sites, 0);
         await using var session = await OpenAsync(initial.ToInteractiveHtmlPage(Options), width + 24, 850);
         var page = session.Page;
@@ -58,10 +58,10 @@ public sealed class GeographicMapCompositionBrowserTests {
     }
 
     private static Chart Fixture(int width, ThemeMode mode) {
-        var chart = GeographicMapCompositionTests.Fixture(ChartMapGeoJsonProjection.Equirectangular, width, mode).WithSize(width, 600);
-        chart.Series[1].ConfigureColorDimension(options => options.ValueFormat = ChartValueFormat.Number("0 'min'"));
-        chart.Series[1].ConfigureMapPointSize(options => {
-            options.WithSizeDomain(0, 100); options.MinimumRadius = 3; options.MaximumRadius = 11;
+        var chart = GeographicMapCompositionTests.Fixture(ChartMapGeoJsonProjection.Equirectangular, width, mode).Size(width, 600);
+        chart.Series[1].ColorDimension(options => options.ValueFormat = ChartValueFormat.Number("0 'min'"));
+        chart.Series[1].MapPointSize(options => {
+            options.SizeDomain(0, 100); options.MinimumRadius = 3; options.MaximumRadius = 11;
             options.SizeDimension.Name = "Traffic"; options.SizeDimension.ShowLegend = true;
             options.SizeDimension.ValueFormat = ChartValueFormat.Number("0 'trips'");
         });

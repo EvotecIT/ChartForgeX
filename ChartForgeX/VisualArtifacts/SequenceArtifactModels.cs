@@ -1,6 +1,7 @@
 using System;
 using ChartForgeX.Accessibility;
 using System.Collections.Generic;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.VisualArtifacts;
 
@@ -93,6 +94,7 @@ public enum SequenceArtifactBlockKind {
 /// <summary>
 /// Describes a reusable product-neutral sequence or interaction diagram artifact.
 /// </summary>
+[Fluent]
 public sealed partial class SequenceArtifact {
     /// <summary>Gets accessible naming for static sequence previews.</summary>
     public VisualAccessibility Accessibility { get; } = new();
@@ -161,15 +163,6 @@ public sealed partial class SequenceArtifact {
 
     /// <summary>Creates a sequence artifact.</summary>
     public static SequenceArtifact Create(string id) => new() { Id = id ?? throw new ArgumentNullException(nameof(id)) };
-
-    /// <summary>Sets the title.</summary>
-    public SequenceArtifact WithTitle(string title) { Title = title ?? throw new ArgumentNullException(nameof(title)); return this; }
-
-    /// <summary>Sets the subtitle.</summary>
-    public SequenceArtifact WithSubtitle(string subtitle) { Subtitle = subtitle ?? throw new ArgumentNullException(nameof(subtitle)); return this; }
-
-    /// <summary>Sets the natural preview size.</summary>
-    public SequenceArtifact WithSize(double width, double height) { Width = width; Height = height; return this; }
 
     /// <summary>Adds or updates a participant.</summary>
     public SequenceArtifact AddParticipant(string id, string? label = null, SequenceArtifactParticipantKind kind = SequenceArtifactParticipantKind.Participant) {

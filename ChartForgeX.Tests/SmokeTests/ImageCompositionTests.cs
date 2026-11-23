@@ -145,7 +145,7 @@ internal static partial class SmokeTests {
     private static void VisualCanvasTileFitRepeatsAcrossSvgAndPng() {
         var tile = SolidImage(4, 4, 240, 20, 40, 255);
         var canvas = VisualCanvas.Create(12, 4)
-            .WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+            .BackdropStyle(VisualCanvasBackdropStyle.Transparent)
             .AddRasterImage(0, 0, 12, 4, tile, VisualCanvasImageFit.Tile);
 
         var svg = canvas.ToSvg();
@@ -158,7 +158,7 @@ internal static partial class SmokeTests {
     private static void VisualCanvasImageIdsStayDeterministicForFixedScope() {
         var tile = SolidImage(4, 4, 240, 20, 40, 255);
         var canvas = VisualCanvas.Create(12, 8)
-            .WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+            .BackdropStyle(VisualCanvasBackdropStyle.Transparent)
             .AddRasterImage(0, 0, 12, 4, tile, VisualCanvasImageFit.Tile)
             .AddRasterImage(2, 4, 6, 4, tile, VisualCanvasImageFit.Center);
 

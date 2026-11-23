@@ -15,11 +15,11 @@ public sealed class ChartItemStylingTests {
         var ink = ChartColor.FromArgb(128, 220, 20, 80);
         var series = ChartSeries.CreateScatter(new ChartSeriesId("samples"), "Samples", new[] {
             new ChartPoint(1, 10), new ChartPoint(3, 30)
-        }).WithSemanticRole("sample-glyph").WithItemStyler<ChartPoint>(item => item.Index == 1
+        }).SemanticRole("sample-glyph").ItemStyleBy<ChartPoint>(item => item.Index == 1
             ? new ChartItemStyle(stroke: new ChartStrokeStyle(width: 40, opacity: .5, dash: new[] { 6d, 3d })) : null);
-        series.ConfigureMarkers(options => { options.Radius = 4; options.Stroke = ink; });
-        var chart = Chart.Create().WithSize(440, 320).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithAxes(false).WithGrid(false).AddSeries(series);
+        series.Markers(options => { options.Radius = 4; options.Stroke = ink; });
+        var chart = Chart.Create().Size(440, 320).ShowHeader(false).Legend(false).DataLabels(false)
+            .Axes(false).ShowGrid(false).AddSeries(series);
         if (labeledBand) chart.AddHorizontalBand(19, 21, "Working range");
         chart.Options.ShowCard = false; chart.Options.ShowPlotBackground = false; chart.Options.TransparentBackground = true;
         var prepared = Prepare(chart);
@@ -44,8 +44,8 @@ public sealed class ChartItemStylingTests {
         var pink = ChartColor.FromHex("#F20B83");
         var series = ChartSeries.CreateBar(new ChartSeriesId("orders"), "Orders", new[] {
             new ChartPoint(2, 4), new ChartPoint(6, 8).WithMarkOptions(new ChartMarkOptions(selected: true))
-        }).WithColor(ChartColor.Black).WithPointColor(1, ChartColor.White)
-            .WithItemStyler<ChartPoint>(context => {
+        }).Color(ChartColor.Black).PointColor(1, ChartColor.White)
+            .ItemStyleBy<ChartPoint>(context => {
                 calls.Add((context.Datum.Y, context.Series.Id.Value, context.Index, context.IsHighlighted));
                 return context.Datum.Y >= 8 ? new ChartItemStyle(color: pink,
                     stroke: new ChartStrokeStyle(ChartColor.Black, 3, dash: new[] { 5d, 2d })) : null;
@@ -58,7 +58,7 @@ public sealed class ChartItemStylingTests {
         Assert.Equal("5 2", (string?)target.Attribute("stroke-dasharray"));
         Assert.Equal("3", (string?)target.Attribute("stroke-width"));
         Assert.True(ContainsColor(png, pink), "The callback's fill must reach actual native PNG pixels.");
-        series.WithItemStyler<ChartPoint>(_ => throw new InvalidOperationException("changed"));
+        series.ItemStyleBy<ChartPoint>(_ => throw new InvalidOperationException("changed"));
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng()); Assert.Equal(2, calls.Count);
         Assert.Throws<InvalidOperationException>(() => Prepare(chart));
         Assert.Equal(ChartColor.White, series.PointColors[1]); Assert.Equal(ChartColor.Black, series.Color);
@@ -71,7 +71,7 @@ public sealed class ChartItemStylingTests {
         markers.Shape = ChartMarkerShape.Circle;
         style.Markers!.Shape = ChartMarkerShape.Square;
         var series = ChartSeries.CreateBubble(new ChartSeriesId("batches"), "Batches", new[] { new ChartBubble(5, 5, 42) })
-            .WithItemStyler<ChartBubble>(context => {
+            .ItemStyleBy<ChartBubble>(context => {
                 Assert.Equal(42, context.Datum.Size); Assert.Equal(0, context.Index);
                 Assert.Equal(ChartSeriesKind.Bubble, context.Series.Kind); return style;
             });
@@ -87,11 +87,11 @@ public sealed class ChartItemStylingTests {
         var seen = new List<string>();
         var series = ChartSeries.CreateTreemap(new ChartSeriesId("work"), "Work", new[] {
             new ChartHierarchyItem("a", "Operations", value: 4), new ChartHierarchyItem("b", "Delivery", value: 6)
-        }).WithItemStyler<ChartHierarchyItem>(context => {
+        }).ItemStyleBy<ChartHierarchyItem>(context => {
             seen.Add(context.Datum.Id);
             return new ChartItemStyle(color: context.Datum.Id == "b" ? ChartColor.FromHex("#F20B83") : ChartColor.Black);
         });
-        Assert.Throws<ArgumentException>(() => series.WithItemStyler<ChartPoint>(_ => null));
+        Assert.Throws<ArgumentException>(() => series.ItemStyleBy<ChartPoint>(_ => null));
         var prepared = Prepare(Bare().AddSeries(series));
         Assert.Equal(new[] { "a", "b" }, seen);
         Assert.True(ContainsColor(prepared.ToPng(), ChartColor.FromHex("#F20B83")));
@@ -100,13 +100,13 @@ public sealed class ChartItemStylingTests {
     [Fact]
     public void ClearedStylerRestoresOrdinalSugarAndExceptionDoesNotInstallResolvedPaint() {
         var series = ChartSeries.CreateBar(new ChartSeriesId("bars"), "Bars", new[] { new ChartPoint(2, 4), new ChartPoint(6, 8) })
-            .WithPointColor(0, ChartColor.Black);
+            .PointColor(0, ChartColor.Black);
         var chart = Bare().AddSeries(series); var before = chart.ToSvg();
-        series.WithItemStyler<ChartPoint>(context => context.Index == 0 ? new ChartItemStyle(color: ChartColor.White)
+        series.ItemStyleBy<ChartPoint>(context => context.Index == 0 ? new ChartItemStyle(color: ChartColor.White)
             : throw new InvalidOperationException("formatter failed"));
         Assert.Throws<InvalidOperationException>(() => Prepare(chart));
         Assert.Equal(ChartColor.Black, series.PointColors[0]);
-        series.WithItemStyler<ChartPoint>(null);
+        series.ItemStyleBy<ChartPoint>(null);
         Assert.Equal(before, chart.ToSvg());
     }
 
@@ -121,15 +121,15 @@ public sealed class ChartItemStylingTests {
             : kind == ChartSeriesKind.Sankey ? ChartSeries.CreateSankey(id, "Relationships", nodes, new[] { new ChartFlowLink("ab", "a", "b", 4) })
             : ChartSeries.CreateChord(id, "Relationships", nodes, new[] { new ChartFlowLink("ab", "a", "b", 4) });
         var nodeCalls = 0; var linkCalls = 0; var pink = ChartColor.FromHex("#F20B83");
-        series.WithNodeState("a", ChartSeriesState.Warning);
-        series.WithItemStyler<ChartNode>(item => {
+        series.NodeState("a", ChartSeriesState.Warning);
+        series.ItemStyleBy<ChartNode>(item => {
             nodeCalls++; Assert.Equal(item.Index == 0 ? ChartSeriesState.Warning : ChartSeriesState.None, item.State);
             return new ChartItemStyle(color: ChartColor.Black);
         });
         ChartItemStyle LinkStyle() { linkCalls++; return new ChartItemStyle(color: pink, stroke: new ChartStrokeStyle(pink, 3, dash: new[] { 5d, 3d })); }
         if (kind == ChartSeriesKind.Tree)
-            series.WithItemStyler<ChartTreeLink>(item => { Assert.Equal("b", item.Datum.ChildId); return LinkStyle(); });
-        else series.WithItemStyler<ChartFlowLink>(item => { Assert.Equal("ab", item.Datum.Id); Assert.Equal(4, item.Datum.Value); return LinkStyle(); });
+            series.ItemStyleBy<ChartTreeLink>(item => { Assert.Equal("b", item.Datum.ChildId); return LinkStyle(); });
+        else series.ItemStyleBy<ChartFlowLink>(item => { Assert.Equal("ab", item.Datum.Id); Assert.Equal(4, item.Datum.Value); return LinkStyle(); });
         var prepared = Prepare(Bare().AddSeries(series));
         Assert.Equal(2, nodeCalls); Assert.Equal(1, linkCalls);
         var linkRole = kind == ChartSeriesKind.Tree ? "tree-link-path" : kind == ChartSeriesKind.Sankey ? "sankey-ribbon" : "chord-ribbon";
@@ -152,8 +152,8 @@ public sealed class ChartItemStylingTests {
         var id = new ChartSeriesId("readings"); var calls = 0; var hiddenWidth = 2d;
         var series = ChartSeries.CreateLine(id, "Readings", new[] {
             new ChartPoint(2, 4), new ChartPoint(5, 6), new ChartPoint(8, 5)
-        }).WithObservationIds(new[] { new ChartObservationId("a"), new ChartObservationId("b"), new ChartObservationId("c") })
-            .WithItemStyler<ChartPoint>(item => {
+        }).ObservationIds(new[] { new ChartObservationId("a"), new ChartObservationId("b"), new ChartObservationId("c") })
+            .ItemStyleBy<ChartPoint>(item => {
                 calls++;
                 return new ChartItemStyle(stroke: new ChartStrokeStyle(ChartColor.Black, item.Index == 0 ? hiddenWidth : 4,
                     dash: new[] { 5d, 2d }), markers: new ChartMarkerOptions { Shape = ChartMarkerShape.Square, Radius = 8, Enabled = true });
@@ -170,14 +170,14 @@ public sealed class ChartItemStylingTests {
         var second = chart.PrepareVisibility(context, view);
         Assert.Equal(6, calls);
         Assert.NotEqual(first.Scene.VisibilityCapture!.SourceKey, second.Scene.VisibilityCapture!.SourceKey);
-        series.WithItemStyler<ChartPoint>(_ => throw new InvalidOperationException("Must not be retained"));
+        series.ItemStyleBy<ChartPoint>(_ => throw new InvalidOperationException("Must not be retained"));
         var retained = first.Scene.VisibilityCapture.ReflowSource!.CreateNativeView(view).Prepare(context);
         Assert.Equal(6, calls);
         Assert.NotEmpty(retained.ToPng());
     }
     private static Chart Bare() {
-        var chart = Chart.Create().WithSize(440, 320).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithAxes(false).WithGrid(false).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10);
+        var chart = Chart.Create().Size(440, 320).ShowHeader(false).Legend(false).DataLabels(false)
+            .Axes(false).ShowGrid(false).XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10));
         chart.Options.ShowCard = false; chart.Options.ShowPlotBackground = false; chart.Options.TransparentBackground = true;
         return chart;
     }

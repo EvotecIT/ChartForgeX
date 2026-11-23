@@ -11,7 +11,7 @@ public static partial class TopologyChartExtensions {
     /// <param name="iconId">The icon id, for example <c>network:switch</c>.</param>
     /// <param name="catalog">Optional icon catalog. When omitted, built-in packs are used.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithNodeIcon(this TopologyChart chart, string nodeId, string iconId, TopologyIconCatalog? catalog = null) {
+    public static TopologyChart NodeIcon(this TopologyChart chart, string nodeId, string iconId, TopologyIconCatalog? catalog = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         nodeId = RequiredText(nodeId, nameof(nodeId), "Topology node ids");
         var icon = ResolveIcon(iconId, catalog);
@@ -32,7 +32,7 @@ public static partial class TopologyChartExtensions {
     /// <param name="iconId">The icon id, for example <c>common:certificate</c>.</param>
     /// <param name="catalog">Optional icon catalog. When omitted, built-in packs are used.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithNodesOfKindIcon(this TopologyChart chart, TopologyNodeKind kind, string iconId, TopologyIconCatalog? catalog = null) {
+    public static TopologyChart NodesOfKindIcon(this TopologyChart chart, TopologyNodeKind kind, string iconId, TopologyIconCatalog? catalog = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         ValidateEnum(typeof(TopologyNodeKind), kind, nameof(kind), "Topology node kinds");
         var icon = ResolveIcon(iconId, catalog);
@@ -71,7 +71,7 @@ public static partial class TopologyChartExtensions {
     /// <param name="iconId">The icon id, for example <c>microsoft-ad:site</c>.</param>
     /// <param name="catalog">Optional icon catalog. When omitted, built-in packs are used.</param>
     /// <returns>The current topology chart.</returns>
-    public static TopologyChart WithGroupIcon(this TopologyChart chart, string groupId, string iconId, TopologyIconCatalog? catalog = null) {
+    public static TopologyChart GroupIcon(this TopologyChart chart, string groupId, string iconId, TopologyIconCatalog? catalog = null) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         groupId = RequiredText(groupId, nameof(groupId), "Topology group ids");
         var icon = ResolveIcon(iconId, catalog);

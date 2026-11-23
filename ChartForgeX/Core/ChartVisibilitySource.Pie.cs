@@ -6,11 +6,11 @@ internal sealed partial class ChartVisibilitySource {
     internal PiePolicy? Pie => _pie;
     internal sealed class PiePolicy {
         internal PiePolicy(ChartOptions source) {
-            Maximum = source.MaximumPieSlices; Hole = source.DonutInnerRadiusRatio; Center = source.ShowDonutCenterLabel;
-            CenterValue = source.DonutCenterValue; CenterLabel = source.DonutCenterLabel; Outside = source.PieOutsideLabelDistanceRatio;
-            Content = source.PieSliceLabelContent; Inside = source.PieInsideLabelRadiusRatio; Opacity = source.PieSliceOpacity;
-            SliceOutline = source.PieSliceOutline; OuterOutline = source.PieOuterOutline; PreserveOrder = source.PiePreserveSourceOrder;
-            LegendContent = source.PieLegendContent; Bands = source.RadialBandAllocation;
+            Maximum = source.Pie.MaxSlices; Hole = source.Pie.InnerRadiusRatio; Center = source.Pie.ShowCenterLabel;
+            CenterValue = source.Pie.CenterValue; CenterLabel = source.Pie.CenterLabel; Outside = source.Pie.OutsideLabelDistanceRatio;
+            Content = source.Pie.SliceLabelContent; Inside = source.Pie.InsideLabelRadiusRatio; Opacity = source.Pie.SliceOpacity;
+            SliceOutline = source.Pie.SliceOutline; OuterOutline = source.Pie.OuterOutline; PreserveOrder = source.Pie.PreserveSourceOrder;
+            LegendContent = source.Pie.LegendContent; Bands = source.RadialBandAllocation;
         }
         internal int Maximum { get; }
         internal double Hole { get; }
@@ -27,11 +27,11 @@ internal sealed partial class ChartVisibilitySource {
         internal ChartPieLegendContent? LegendContent { get; }
         internal ChartRadialBandAllocation? Bands { get; }
         internal void Apply(ChartOptions target) {
-            target.MaximumPieSlices = Maximum; target.DonutInnerRadiusRatio = Hole; target.ShowDonutCenterLabel = Center;
-            target.DonutCenterValue = CenterValue; target.DonutCenterLabel = CenterLabel; target.PieOutsideLabelDistanceRatio = Outside;
-            target.PieSliceLabelContent = Content; target.PieInsideLabelRadiusRatio = Inside; target.PieSliceOpacity = Opacity;
-            target.PieSliceOutline = SliceOutline; target.PieOuterOutline = OuterOutline; target.PiePreserveSourceOrder = PreserveOrder;
-            target.PieLegendContent = LegendContent; target.RadialBandAllocation = Bands;
+            target.Pie.MaxSlices = Maximum; target.Pie.InnerRadiusRatio = Hole; target.Pie.ShowCenterLabel = Center;
+            target.Pie.CenterValue = CenterValue; target.Pie.CenterLabel = CenterLabel; target.Pie.OutsideLabelDistanceRatio = Outside;
+            target.Pie.SliceLabelContent = Content; target.Pie.InsideLabelRadiusRatio = Inside; target.Pie.SliceOpacity = Opacity;
+            target.Pie.SliceOutline = SliceOutline; target.Pie.OuterOutline = OuterOutline; target.Pie.PreserveSourceOrder = PreserveOrder;
+            target.Pie.LegendContent = LegendContent; target.RadialBandAllocation = Bands;
         }
     }
 }

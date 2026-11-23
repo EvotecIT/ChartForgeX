@@ -12,17 +12,17 @@ Core also provides `TreeViewBlock` for static directory trees. It uses immutable
 using ChartForgeX.VisualBlocks;
 
 var tree = TreeViewBlock.Create()
-    .WithTitle("Build inputs")
+    .Title("Build inputs")
     .AddItem("root", "Source/")
     .AddItem("engine", "Engine.cs", "root", "Native rendering")
     .AddItem("docs", "README.md", "root", "Public usage");
 tree.ShowIcons = true;
-tree.WithNaturalSize(520, 300);
+tree.NaturalSize(520, 300);
 ```
 
 Typed artifacts serialize through the existing `VisualArtifactInterchangeEnvelope` TreeView family and import with `ToTreeViewBlock()`. The envelope retains authoring identity and extension metadata; the imported block retains editable rows, native presentation and accessibility. Wire IDs obey the existing 512-character limit and are never silently rewritten. Older readers without TreeView support reject the new family.
 
-Rows use contiguous preorder and parents precede descendants. Explicit file rows reject children. Call `WithNaturalSize` after changing data, padding or typography. Native bounds are 10,000 rows, 128 levels and 8,192 pixels per axis; small explicit frames reject rather than omitting rows. Captions can shorten while full labels and descriptions remain in the model and SVG row titles.
+Rows use contiguous preorder and parents precede descendants. Explicit file rows reject children. Call `NaturalSize` after changing data, padding or typography. Native bounds are 10,000 rows, 128 levels and 8,192 pixels per axis; small explicit frames reject rather than omitting rows. Captions can shorten while full labels and descriptions remain in the model and SVG row titles.
 
 Current Visuals primitives:
 
@@ -59,50 +59,50 @@ using ChartForgeX.Typography;
 using ChartForgeX.VisualBlocks;
 
 var table = ChartTable.Create()
-    .WithTitle("Drive Summary")
-    .WithTheme(VisualTheme.TransparentOverlay(), ThemeMode.Dark)
-    .WithTransparentBackground()
+    .Title("Drive Summary")
+    .Theme(VisualTheme.TransparentOverlay()).ThemeMode(ThemeMode.Dark)
+    .TransparentBackground()
     .AddColumn("Drive")
     .AddColumn("Used", TextAlignment.Right, format: "0%")
     .AddColumn("Free", TextAlignment.Right)
     .AddColumn("Status")
     .AddRow("C:", 0.72, "128 GB", "OK")
     .AddRow("D:", 0.91, "34 GB", "Warning")
-    .WithStatusColumn("Status")
-    .WithDenseMode();
+    .StatusColumn("Status")
+    .Dense();
 
 table.SaveSvg("drives.svg");
 table.SaveHtml("drives.html");
 table.SavePng("drives.png");
 ```
 
-Themes are immutable snapshots shared by charts, diagrams, blocks and canvases. `WithTheme(theme, mode)` selects one palette, and `WithThemeMode(mode)` changes it without replacing the theme. `ConfigureTheme` creates and assigns a new snapshot for the block:
+Themes are immutable snapshots shared by charts, diagrams, blocks and canvases. `Theme(theme).ThemeMode(mode)` selects one palette, and `ThemeMode(mode)` alone changes it without replacing the theme. `Theme(builder => ...)` creates and assigns a new snapshot for the block:
 
 ```csharp
-table.ConfigureTheme(builder => {
+table.Theme(builder => {
     builder.Dark.Accent = ChartColor.FromHex("#60A5FA");
     builder.Typography = new VisualTypography(dataLabelSize: 14);
 });
 ```
 
-A `VisualGrid` has its own theme and mode for its frame and headings; it starts with Graphite in light mode. Configure each child when the whole composition should share a palette. Adding a child does not change the grid's theme. Use block options such as `WithCard(false)` and grid frame settings to control local framing.
+A `VisualGrid` has its own theme and mode for its frame and headings; it starts with Graphite in light mode. Configure each child when the whole composition should share a palette. Adding a child does not change the grid's theme. Use block options such as `ShowCard(false)` and grid frame settings to control local framing.
 
 Table cells can host bounded badges, chips, and microvisuals for dashboard tables without embedding full charts in each row:
 
 ```csharp
 var vacancies = ChartTable.Create()
-    .WithTitle("Recent Vacancies")
-    .WithDenseMode()
-    .WithColumns("Company", "Job Title", "Applications", "New", "Trend")
+    .Title("Recent Vacancies")
+    .Dense()
+    .Columns("Company", "Job Title", "Applications", "New", "Trend")
     .AddRow("Google", "Software Engineer", "92", "", "")
     .AddRow("Microsoft", "Software Engineer", "92", "", "")
-    .ConfigureRow(0, row => {
-        row.Cells[3].WithBadge("22 new", Tone.Info, ChartColor.FromHex("#7C3AED"));
-        row.Cells[4].WithSparkline(new[] { 12d, 16d, 13d, 19d, 22d }, color: ChartColor.FromHex("#7C3AED"));
+    .UpdateRow(0, row => {
+        row.Cells[3].Badge("22 new", Tone.Info, ChartColor.FromHex("#7C3AED"));
+        row.Cells[4].Sparkline(new[] { 12d, 16d, 13d, 19d, 22d }, color: ChartColor.FromHex("#7C3AED"));
     })
-    .ConfigureRow(1, row => {
-        row.Cells[3].WithBadge("12 new", Tone.Info, ChartColor.FromHex("#7C3AED"));
-        row.Cells[4].WithMiniBars(new[] { 10d, 14d, 12d, 11d, 12d }, color: ChartColor.FromHex("#7C3AED"));
+    .UpdateRow(1, row => {
+        row.Cells[3].Badge("12 new", Tone.Info, ChartColor.FromHex("#7C3AED"));
+        row.Cells[4].MiniBars(new[] { 10d, 14d, 12d, 11d, 12d }, color: ChartColor.FromHex("#7C3AED"));
     });
 ```
 
@@ -110,32 +110,32 @@ Metric cards can carry a short micro bar history without becoming a full chart:
 
 ```csharp
 var cpu = MetricCard.Create()
-    .WithMetric("CPU Load", "38%")
-    .WithTrend("-6%")
-    .WithCaption("5 minute trend")
-    .WithSymbol("CPU")
-    .WithBadgePlacement(MetricCardBadgePlacement.TopLeft)
-    .WithStatus(Tone.Success)
-    .WithMiniBars(new[] { 48d, 52d, 44d, 41d, 38d }, maximum: 100);
+    .Metric("CPU Load", "38%")
+    .Trend("-6%")
+    .Caption("5 minute trend")
+    .Symbol("CPU")
+    .BadgePlacement(MetricCardBadgePlacement.TopLeft)
+    .Status(Tone.Success)
+    .MiniBars(new[] { 48d, 52d, 44d, 41d, 38d }, maximum: 100);
 ```
 
 Use a mini sparkline when the shape of recent movement matters more than discrete columns:
 
 ```csharp
 var latency = MetricCard.Create()
-    .WithMetric("Latency", "18 ms")
-    .WithTrend("-12 ms")
-    .WithCaption("last samples")
-    .WithStatus(Tone.Info)
-    .WithMiniSparkline(new[] { 42d, 36d, 31d, 28d, 24d, 18d });
+    .Metric("Latency", "18 ms")
+    .Trend("-12 ms")
+    .Caption("last samples")
+    .Status(Tone.Info)
+    .MiniSparkline(new[] { 42d, 36d, 31d, 28d, 24d, 18d });
 ```
 
 Metric strips provide a reusable section preset for PowerBGInfo-style card rows:
 
 ```csharp
 var section = VisualGrid.CreateMetricStrip("Endpoint Snapshot", new[] {
-    MetricCard.Create().WithMetric("CPU Load", "38%").WithSymbol("CPU").WithBadgePlacement(MetricCardBadgePlacement.TopLeft).WithMiniSparkline(new[] { 52d, 48d, 44d, 41d, 38d }),
-    MetricCard.Create().WithMetric("Memory Used", "71%").WithMiniBars(new[] { 55d, 59d, 63d, 68d, 71d }, maximum: 100)
+    MetricCard.Create().Metric("CPU Load", "38%").Symbol("CPU").BadgePlacement(MetricCardBadgePlacement.TopLeft).MiniSparkline(new[] { 52d, 48d, 44d, 41d, 38d }),
+    MetricCard.Create().Metric("Memory Used", "71%").MiniBars(new[] { 55d, 59d, 63d, 68d, 71d }, maximum: 100)
 });
 ```
 
@@ -162,16 +162,16 @@ using ChartForgeX.Terminal;
 using ChartForgeX.Themes;
 
 var results = TerminalTable.Create()
-    .WithColumns("CHECK", "STATUS")
+    .Columns("CHECK", "STATUS")
     .AddRow("Restore", "PASS")
     .AddRow("Tests", "PASS");
 
 var console = TerminalStory.Create()
-    .WithTitle(@"pwsh - C:\OpenSource")
-    .WithDialect(TerminalDialect.PowerShell)
-    .WithTheme(TerminalThemes.PowerShell(), ThemeMode.Dark)
-    .WithWindowStyle(TerminalWindowStyle.WindowsTerminal)
-    .WithWorkingDirectory(@"C:\OpenSource")
+    .Title(@"pwsh - C:\OpenSource")
+    .Dialect(TerminalDialect.PowerShell)
+    .Theme(TerminalThemes.PowerShell()).ThemeMode(ThemeMode.Dark)
+    .WindowStyle(TerminalWindowStyle.WindowsTerminal)
+    .WorkingDirectory(@"C:\OpenSource")
     .Command(@".\Invoke-Validation.ps1")
     .Output("Running release validation...", TerminalTextTone.Muted)
     .Table(results)
@@ -181,11 +181,11 @@ console.SaveSvg("validation.svg");
 console.SaveGif("validation.gif");
 ```
 
-Available dialects are PowerShell, Bash, command prompt, Python, C#, and custom prompts. Dialect, palette, and window chrome are independent: a PowerShell prompt can use any theme with macOS, Windows Terminal, minimal, or no title-bar chrome. The structured model also supports blank lines, bounded pauses, semantic output tones, progress bars, and compact monospace tables. `WithPlaybackSpeed` applies a coherent Slow, Normal, or Fast pace, while `WithTiming` and `WithTabHold` independently tune code typing and the minimum reading time before a tab switch. SVG and HTML animate without JavaScript. GIF and APNG reuse the exact terminal timeline for portable chat, issue, and documentation embeds. PNG, print, and `prefers-reduced-motion` expose the same completed transcript immediately.
+Available dialects are PowerShell, Bash, command prompt, Python, C#, and custom prompts. Dialect, palette, and window chrome are independent: a PowerShell prompt can use any theme with macOS, Windows Terminal, minimal, or no title-bar chrome. The structured model also supports blank lines, bounded pauses, semantic output tones, progress bars, and compact monospace tables. `PlaybackSpeed` applies a coherent Slow, Normal, or Fast pace, while `InitialDelaySeconds`, `CharactersPerSecond`, `LineDelaySeconds` and `TabHoldSeconds` independently tune code typing and the minimum reading time before a tab switch. SVG and HTML animate without JavaScript. GIF and APNG reuse the exact terminal timeline for portable chat, issue, and documentation embeds. PNG, print, and `prefers-reduced-motion` expose the same completed transcript immediately.
 
 Use `TerminalStoryAnimationOptions` when a host needs a different frame rate, single-play output, a longer completed-state hold, a denser raster, or a different frame budget. The default 10 FPS, one-times-density GIF is intentionally suitable for Discord-style sharing without turning the export into a browser recording.
 
-Use `WithInitialTab`, `DeclareTab`, and `SelectTab` for an explicit multi-shell walkthrough. `OpenTab` is the shorter declare-and-select operation. Tabs preserve their own transcript buffers, prompts, directories, semantic icons, and palettes. The default initial session is named `main`; static and reduced-motion output show the completed active tab, while accessible transcript text includes every session.
+Use `InitialTab`, `DeclareTab`, and `SelectTab` for an explicit multi-shell walkthrough. `OpenTab` is the shorter declare-and-select operation. Tabs preserve their own transcript buffers, prompts, directories, semantic icons, and palettes. The default initial session is named `main`; static and reduced-motion output show the completed active tab, while accessible transcript text includes every session.
 
 ## Generic source-to-result stories
 
@@ -208,9 +208,9 @@ var motion = VisualMotionTimeline.Create()
     .Rise("portfolio", delaySeconds: 0.72);
 
 var grid = VisualGrid.Create()
-    .WithTitle("Engineering Portfolio")
-    .WithSubtitle("A reusable story for profiles, releases, reports, or dashboards")
-    .WithColumns(3)
+    .Title("Engineering Portfolio")
+    .Subtitle("A reusable story for profiles, releases, reports, or dashboards")
+    .Columns(3)
     .Add("projects", projectsCard)
     .Add("users", usersCard)
     .Add("releases", releasesCard)
@@ -232,12 +232,10 @@ Heatmaps can be tuned for dashboard matrix cards without hand-editing renderer o
 
 ```csharp
 var appointmentVolume = Chart.Create()
-    .WithTitle("Appointment Volume")
-    .WithHeatmapCellGap(5)
-    .WithHeatmapCellRadius(7)
-    .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Always)
-    .ConfigureHeatmapColorDimension(options => options.ShowLegend = false)
-    .WithXLabels("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+    .Title("Appointment Volume")
+    .Heatmap(h => h.CellGap(5).CellRadius(7).ValueTextMode(ChartHeatmapValueTextMode.Always))
+    .Heatmap(heatmap => heatmap.ColorDimension(options => options.ShowLegend = false))
+    .XLabels("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
     .AddHeatmapRows(new[] {
         ChartHeatmapRow.Create("9 AM", 9, 3, 2, 6, 4, 4, 12),
         ChartHeatmapRow.Create("10 AM", 11, 2, 4, 6, 7, 6, 9)
@@ -248,20 +246,20 @@ Point-color ranges keep compact peak-window bar cards readable without one call 
 
 ```csharp
 var peakHours = Chart.Create()
-    .WithDashboardBarPanelStyle()
-    .WithHighlightedXAxisRange(7.5, 11.5, ChartColor.FromHex("#DE442F"), opacity: 0.08, label: "review-peak-window")
+    .DashboardBarPanelStyle()
+    .HighlightXAxisRange(7.5, 11.5, ChartColor.FromHex("#DE442F"), opacity: 0.08, label: "review-peak-window")
     .AddBar("Reviews", new[] { 3d, 1, 3, 1, 0, 0, 0, 9, 10, 9, 7 }, ChartColor.FromHex("#D9DCE3"));
 
-peakHours.Series[0].WithPointColorRange(7, 4, ChartColor.FromHex("#DE442F"));
+peakHours.Series[0].PointColorRange(7, 4, ChartColor.FromHex("#DE442F"));
 ```
 
 Stacked horizontal row cards can use a dashboard preset for department or status splits:
 
 ```csharp
 var departments = Chart.Create()
-    .WithTitle("Employer by Department")
-    .WithDashboardStackedRowStyle(showTotals: true)
-    .WithXLabels("Engineering", "Maintenance", "Human Resources", "IT")
+    .Title("Employer by Department")
+    .DashboardStackedRowStyle(showTotals: true)
+    .XLabels("Engineering", "Maintenance", "Human Resources", "IT")
     .AddHorizontalBar("All employee", new[] { 68d, 62, 65, 70 }, ChartColor.FromHex("#7057E6"))
     .AddHorizontalBar("Terminated", new[] { 25d, 28, 27, 25 }, ChartColor.FromHex("#5FD3D9"))
     .AddHorizontalBar("New hires", new[] { 14d, 12, 13, 15 }, ChartColor.FromHex("#FFB05C"));
@@ -271,27 +269,27 @@ Multi-line trend cards can pair premium strokes with a reusable focus marker:
 
 ```csharp
 var attendance = Chart.Create()
-    .WithTitle("Attendance Rate")
-    .WithDashboardTrendPanelStyle(showLegend: true)
-    .WithXLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul")
+    .Title("Attendance Rate")
+    .DashboardTrendPanelStyle(showLegend: true)
+    .XLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul")
     .AddSmoothLine("On-time", new[] { 21d, 23, 25, 37, 31, 28, 47 }, ChartColor.FromHex("#7057E6"))
     .AddSmoothLine("Late attend", new[] { 24d, 20, 28, 22, 30, 34, 39 }, ChartColor.FromHex("#FFB05C"))
     .AddSmoothLine("Absent", new[] { 18d, 22, 17, 14, 23, 20, 31 }, ChartColor.FromHex("#5FD3D9"))
-    .WithDashboardTrendFocus(4, 37, "Apr", ChartColor.FromHex("#7057E6"), ChartDataLabelPlacement.Right);
+    .DashboardTrendFocus(4, 37, "Apr", ChartColor.FromHex("#7057E6"), ChartDataLabelPlacement.Right);
 ```
 
 Segmented metric blocks provide fixed-count progress rows, exact-value performance rows, capsule loops, part-to-whole status strips, funnel columns, and distribution rows without domain-specific card APIs. Items use the theme palette by default; provide a color or semantic status only when a specific item needs one. Filled and empty segments use the shared palette and borders in SVG and PNG:
 
-`WithHeaderSymbol()` adds a compact identity badge to progress rows, capsule loops, funnel columns, composition strips, and distribution rows.
+`HeaderSymbol(symbol)` adds a compact identity badge to progress rows, capsule loops, funnel columns, composition strips, and distribution rows.
 
 ```csharp
 var progress = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows)
-    .WithTitle("Project Progress")
-    .WithSubtitle("Overall completion rate all projects.")
-    .WithHeaderSymbol("%")
+    .Title("Project Progress")
+    .Subtitle("Overall completion rate all projects.")
+    .HeaderSymbol("%")
     .AddItem("Performing Progress", 89, segments: 44, delta: "+10.2%", status: Tone.Success)
     .AddItem("Target Sales", 67, segments: 44, delta: "+2.2%", status: Tone.Info)
-    .WithCaption("Up by 6% compared to last week");
+    .Caption("Up by 6% compared to last week");
 ```
 
 When an item needs several options, pass a callback or a prebuilt `SegmentedMetricItem` instead of relying on more domain-specific overloads:
@@ -305,30 +303,30 @@ var progressWithConfiguredRows = SegmentedMetricBlock.Create()
         item.Status = Tone.Success;
     })
     .AddItem(new SegmentedMetricItem("Operational Costs", 58)
-        .WithProgress(100, 35)
-        .WithDelta("-6.4%")
-        .WithStatus(Tone.Danger));
+        .Maximum(100).Segments(35)
+        .Delta("-6.4%")
+        .Status(Tone.Danger));
 ```
 
 Set `DisplayValue` when progress rows should show exact values instead of derived percentages. The row can still use `Value` and `Maximum` for filled segment geometry. `DisplayValue` accepts ordinary values plus an optional format, so callers do not need to pre-format simple counts or currency strings:
 
 ```csharp
 var performance = SegmentedMetricBlock.Create(SegmentedMetricStyle.ProgressRows)
-    .WithTitle("Content Performance")
+    .Title("Content Performance")
     .AddItem(new SegmentedMetricItem("Posts", 86)
-        .WithProgress(100, 44)
-        .WithDisplayValue(132034, "N0")
-        .WithDelta("+4.3%")
-        .WithStatus(Tone.Success));
+        .Maximum(100).Segments(44)
+        .DisplayValue(132034, "N0")
+        .Delta("+4.3%")
+        .Status(Tone.Success));
 ```
 
 Part-to-whole strips are the same model again: a calmer visual treatment for certificate counts, sales platforms, checks, inventory states, or any other split:
 
 ```csharp
 var certificates = SegmentedMetricBlock.Create(SegmentedMetricStyle.CompositionStrip)
-    .WithTitle("Certificate Count")
-    .WithSubtitle("Inventory split by lifecycle state.")
-    .WithMetric("Certificates", 277)
+    .Title("Certificate Count")
+    .Subtitle("Inventory split by lifecycle state.")
+    .Metric("Certificates", 277)
     .AddItem("Valid", 164, displayValue: "164")
     .AddItem("Expiring", 48, displayValue: "48")
     .AddItem("Revoked", 24, displayValue: "24")
@@ -339,7 +337,7 @@ Use `CapsuleLoop` for intentionally balanced compact part-to-whole compositions.
 
 ```csharp
 var channels = SegmentedMetricBlock.Create(SegmentedMetricStyle.CapsuleLoop)
-    .WithTitle("Channel Share")
+    .Title("Channel Share")
     .AddItem("Direct", 40, displayValue: "24,000")
     .AddItem("Partner", 35, displayValue: "21,000")
     .AddItem("Referral", 15, displayValue: "9,000")
@@ -350,7 +348,7 @@ Ordered stage visuals use the same item model. `segments` controls the compact v
 
 ```csharp
 var funnel = SegmentedMetricBlock.Create(SegmentedMetricStyle.FunnelColumns)
-    .WithTitle("Conversion Funnel")
+    .Title("Conversion Funnel")
     .AddItem("Clicks", 82000, segments: 24, displayValue: "82,000")
     .AddItem("Added to Cart", 7200, segments: 16, displayValue: "7,200")
     .AddItem("Payment", 1230, segments: 12, displayValue: "1,230")
@@ -361,10 +359,10 @@ Heatmap insight cards cover the appointment-volume pattern where the matrix need
 
 ```csharp
 var appointmentVolume = HeatmapInsightCard.Create()
-    .WithTitle("Appointment Volume")
-    .WithPeriodLabel("Jan 7 - Jan 13, 2024")
-    .WithColumns("S", "M", "T", "W", "T", "F", "S")
-    .WithColorKey(0, 12, ChartColor.FromHex("#D7F5F7"), ChartColor.FromHex("#08798C"))
+    .Title("Appointment Volume")
+    .PeriodLabel("Jan 7 - Jan 13, 2024")
+    .Columns("S", "M", "T", "W", "T", "F", "S")
+    .Minimum(0).Maximum(12).LowColor(ChartColor.FromHex("#D7F5F7")).HighColor(ChartColor.FromHex("#08798C"))
     .AddRow("9 AM", 9, 3, 2, 6, 4, 4, 12)
     .AddRow("10 AM", 11, 2, 4, 6, 7, 6, 9)
     .AddInsight("Fri, 5 PM - 6 PM", "16 appointments")
@@ -375,8 +373,8 @@ Composition strips use the same `SegmentedMetricBlock` surface with a different 
 
 ```csharp
 var tasks = SegmentedMetricBlock.Create(SegmentedMetricStyle.CompositionStrip)
-    .WithTitle("Overall Tasks")
-    .WithMetric("Tasks", 23, "Task")
+    .Title("Overall Tasks")
+    .Metric("Tasks", 23, "Task")
     .AddItem("On Going", 12, pattern: ChartFillPattern.DiagonalForward)
     .AddItem("Under Review", 6)
     .AddItem("Finish", 4);
@@ -386,8 +384,8 @@ Distribution rows also use `SegmentedMetricBlock`; the optional symbol/display-v
 
 ```csharp
 var currencies = SegmentedMetricBlock.Create(SegmentedMetricStyle.DistributionRows)
-    .WithTitle("Net Earning")
-    .WithMetric("Net earning", "EUR 56,980.00", caption: "Last month")
+    .Title("Net Earning")
+    .Metric("Net earning", "EUR 56,980.00", caption: "Last month")
     .AddItem("Euro (EUR)", 38.48, color: ChartColor.FromHex("#1389F2"), symbol: "EUR", displayValue: "EUR 20.23")
     .AddItem("United States Dollar (USD)", 14.11, color: ChartColor.FromHex("#24D47B"), symbol: "USD", displayValue: "EUR 12.00")
     .AddItem("British Pound Sterling (GBP)", 12.55, color: ChartColor.FromHex("#5FD3D9"), symbol: "GBP", displayValue: "EUR 10.00");
@@ -397,7 +395,7 @@ Workload list blocks cover staff-capacity rows and ranked people lists:
 
 ```csharp
 var workload = WorkloadListBlock.Create()
-    .WithTitle("Today Staff Workload")
+    .Title("Today Staff Workload")
     .AddPerson("Panji Dwi", "Zumba Trainer", 4, 8, Tone.Neutral, "PD", "4/8")
     .AddPerson("Raihan Fikri", "Aerobik Trainer", 10, 8, Tone.Danger, "RF", "10/8", note: "Overload")
     .AddPerson("Mufti Hidayat", "Massage Specialist", 6, 8, Tone.Success);
@@ -407,9 +405,9 @@ Activity timelines provide the chart-like vertical event-spine pattern without f
 
 ```csharp
 var timeline = ActivityTimelineBlock.Create()
-    .WithTransparentBackground()
-    .WithCard(false)
-    .WithEventSurfaces(false)
+    .TransparentBackground()
+    .ShowCard(false)
+    .ShowEventSurfaces(false)
     .AddSection("In-progress")
     .AddEvent("Shipment", status: Tone.Info, detail: "Delivery by Royal Mail Standard", symbol: "S")
     .AddEvent("Shipment 1", status: Tone.Neutral, symbol: "1")
@@ -424,10 +422,10 @@ Schedule timelines cover planner-style time-of-day swimlanes:
 
 ```csharp
 var schedule = ScheduleTimelineBlock.Create()
-    .WithTitle("Project Timeline")
-    .WithTimeRange(8, 17, tickInterval: 1)
-    .WithCurrentTime(14.2)
-    .WithSubtitle("12 Feb 2025")
+    .Title("Project Timeline")
+    .Start(8).End(17).TickInterval(1)
+    .CurrentTime(14.2)
+    .Subtitle("12 Feb 2025")
     .AddEvent("Meeting Brief Project", 8, 10, lane: 0, color: ChartColor.FromHex("#5EA2F6"), avatars: new[] { "AM", "RF", "PD" })
     .AddEvent("Research Analyze Content", 9, 11, lane: 1, color: ChartColor.FromHex("#8B5CF6"), avatars: new[] { "SC", "MR" })
     .AddEvent("Report Review", 16, 17.2, lane: 0, color: ChartColor.FromHex("#5EA2F6"), badge: "Report");

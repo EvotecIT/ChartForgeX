@@ -16,8 +16,8 @@ public sealed class StackedAreaMissingDataTests {
     [InlineData(ChartStackedAreaMissingDataPolicy.Zero)]
     public void GeometryUsesDeclaredPolicyWhileRawIdentityAndNormalizedTotalsStayAuthored(ChartStackedAreaMissingDataPolicy policy) {
         var chart = Model(policy);
-        foreach (var series in chart.Series) series.WithNormalization(100);
-        chart.Series[0].WithObservationId(1, new ChartObservationId("observed-zero"));
+        foreach (var series in chart.Series) series.NormalizedTo(100);
+        chart.Series[0].ObservationId(1, new ChartObservationId("observed-zero"));
         var layout = ChartStackLayout.Create(chart, ChartBarCoordinateMap.Create(chart));
         var aligned = layout.AreaVertices(0);
         if (policy == ChartStackedAreaMissingDataPolicy.Independent) Assert.Null(aligned);
@@ -41,7 +41,7 @@ public sealed class StackedAreaMissingDataTests {
         Assert.Equal("0", (string?)zero.Attribute("data-cfx-y"));
         Assert.Equal("1", (string?)zero.Attribute("data-cfx-source-point"));
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
-        chart.Series[0].Points.Clear(); chart.Series[1].WithStackedAreaMissingData(ChartStackedAreaMissingDataPolicy.Independent);
+        chart.Series[0].Points.Clear(); chart.Series[1].StackedAreaMissingData(ChartStackedAreaMissingDataPolicy.Independent);
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
     }
 
@@ -51,7 +51,7 @@ public sealed class StackedAreaMissingDataTests {
     public void GapCutsTheWholeStackAndZeroRendersAtMissingXInNativeAndSvg(bool reversed) {
         var gap = Model(ChartStackedAreaMissingDataPolicy.Gap); var zero = Model(ChartStackedAreaMissingDataPolicy.Zero);
         foreach (var chart in new[] { gap, zero }) {
-            chart.Options.XAxis.WithBounds(0, 3).WithReversal(reversed); chart.Options.YAxis.WithBounds(0, 8).WithReversal(reversed);
+            chart.Options.XAxis.Bounds(0, 3).Reversed(reversed); chart.Options.YAxis.Bounds(0, 8).Reversed(reversed);
         }
         var empty = Prepare(gap); var filled = Prepare(zero);
         var lines = filled.Scene.Nodes.OfType<VisualScenePath>().Where(path => path.Role == "line").ToArray();
@@ -72,13 +72,13 @@ public sealed class StackedAreaMissingDataTests {
         var chart = Model(ChartStackedAreaMissingDataPolicy.Zero);
         chart.Series[1].StackedAreaMissingData = ChartStackedAreaMissingDataPolicy.Gap;
         Assert.Throws<InvalidOperationException>(() => Prepare(chart));
-        chart.Series[1].UseSecondaryValueAxis(); Prepare(chart);
-        chart.Series[1].UsePrimaryValueAxis().WithStackGroup("Other"); Prepare(chart);
+        chart.Series[1].SecondaryAxis(); Prepare(chart);
+        chart.Series[1].PrimaryAxis().StackGroup("Other"); Prepare(chart);
         chart.Series[0].Points.Add(new ChartPoint(3, 4));
         Assert.Throws<InvalidOperationException>(() => Prepare(chart));
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Series[0].StackedAreaMissingData = (ChartStackedAreaMissingDataPolicy)99);
         Assert.Throws<InvalidOperationException>(() => ChartSeries.CreateLine(new ChartSeriesId("line"), "Line", Array.Empty<ChartPoint>())
-            .WithStackedAreaMissingData(ChartStackedAreaMissingDataPolicy.Zero));
+            .StackedAreaMissingData(ChartStackedAreaMissingDataPolicy.Zero));
     }
 
     [Fact]
@@ -89,7 +89,7 @@ public sealed class StackedAreaMissingDataTests {
             .AddSeries(new ChartSeries(new ChartSeriesId("negative"), "Negative", ChartSeriesKind.StackedArea,
                 new[] { new ChartPoint(0, -3), new ChartPoint(1, -5), new ChartPoint(2, -6) }))
             .AddSeries(new ChartSeries(new ChartSeriesId("absent"), "Absent", ChartSeriesKind.StackedArea, Array.Empty<ChartPoint>()));
-        foreach (var series in chart.Series) series.WithStackedAreaMissingData(ChartStackedAreaMissingDataPolicy.Zero).WithNormalization(100);
+        foreach (var series in chart.Series) series.StackedAreaMissingData(ChartStackedAreaMissingDataPolicy.Zero).NormalizedTo(100);
         var layout = ChartStackLayout.Create(chart, ChartBarCoordinateMap.Create(chart));
         var negative = layout.AreaVertices(1)!; var absent = layout.AreaVertices(2)!;
         Assert.All(negative, vertex => { Assert.Equal(0, vertex.Base); Assert.Equal(-100, vertex.End); });
@@ -102,13 +102,13 @@ public sealed class StackedAreaMissingDataTests {
     }
 
     private static Chart Model(ChartStackedAreaMissingDataPolicy policy) {
-        var chart = Chart.Create().WithSize(600, 400).WithHeader(false).WithAxes(false).WithGrid(false).WithLegend(false).WithDataLabels(false)
-            .WithLineVisualStyle(ChartLineVisualStyle.Plain());
+        var chart = Chart.Create().Size(600, 400).ShowHeader(false).Axes(false).ShowGrid(false).Legend(false).DataLabels(false)
+            .Lines(l => l.VisualStyle(ChartLineVisualStyle.Plain()));
         chart.AddSeries(new ChartSeries(new ChartSeriesId("lower"), "Lower", ChartSeriesKind.StackedArea,
-            new[] { new ChartPoint(0, 2), new ChartPoint(2, 0), new ChartPoint(3, 2) }).WithStackedAreaMissingData(policy));
+            new[] { new ChartPoint(0, 2), new ChartPoint(2, 0), new ChartPoint(3, 2) }).StackedAreaMissingData(policy));
         chart.AddSeries(new ChartSeries(new ChartSeriesId("upper"), "Upper", ChartSeriesKind.StackedArea,
-            new[] { new ChartPoint(0, 3), new ChartPoint(1, 3), new ChartPoint(2, 3), new ChartPoint(3, 3) }).WithStackedAreaMissingData(policy));
-        foreach (var series in chart.Series) series.ConfigureMarkers(markers => markers.Enabled = false).WithStrokeWidth(1);
+            new[] { new ChartPoint(0, 3), new ChartPoint(1, 3), new ChartPoint(2, 3), new ChartPoint(3, 3) }).StackedAreaMissingData(policy));
+        foreach (var series in chart.Series) series.Markers(markers => markers.Enabled = false).StrokeWidth(1);
         return chart;
     }
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(600, 400)),

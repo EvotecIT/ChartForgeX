@@ -16,7 +16,7 @@ public sealed class ChartContextMenuBrowserTests {
     [InlineData(true, 390)]
     public async Task ExistingActionsKeepTranslationsKeyboardFocusExportsAndOwnedLifetime(bool rtl, int width) {
         if (!Enabled) return;
-        var chart = SeverityBars(rtl).WithSize(width, 420);
+        var chart = SeverityBars(rtl).Size(width, 420);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => Options(options, rtl)), width + 24, 720);
         var page = session.Page;
         var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);

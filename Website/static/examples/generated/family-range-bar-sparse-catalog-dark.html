@@ -119,18 +119,18 @@ public static class RangeBarRecipe {
             throw new ArgumentOutOfRangeException(nameof(variant));
         Chart chart;
         if (variant is &quot;dense&quot; or &quot;compact-dense&quot; or &quot;dense-horizontal&quot; or &quot;compact-dense-horizontal&quot;) {
-            chart = Chart.Create().WithTitle(&quot;Signed delivery intervals&quot;)
-                .WithXLabels(Enumerable.Range(1, 24).Select(index =&gt; &quot;R&quot; + index.ToString(&quot;00&quot;, CultureInfo.InvariantCulture)).ToArray())
-                .WithBarStyle(ChartBarStyle.Flat).WithDataLabels()
-                .ConfigureRangeBar(options =&gt; options.Orientation = variant.Contains(&quot;horizontal&quot;) ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
+            chart = Chart.Create().Title(&quot;Signed delivery intervals&quot;)
+                .XLabels(Enumerable.Range(1, 24).Select(index =&gt; &quot;R&quot; + index.ToString(&quot;00&quot;, CultureInfo.InvariantCulture)).ToArray())
+                .Bars(b =&gt; b.Style(ChartBarStyle.Flat)).DataLabels()
+                .RangeBar(options =&gt; options.Orientation = variant.Contains(&quot;horizontal&quot;) ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
                 .AddSeries(ChartSeries.CreateRangeBar(new ChartSeriesId(&quot;range&quot;), &quot;Delivery range&quot;, Enumerable.Range(1, 24).Select(index =&gt; {
                     var start = index % 6 == 0 ? 0 : Math.Sin(index * .9) * 20;
                     return new ChartInterval(index, start, index % 6 == 0 ? 0 : start + (index % 3 == 0 ? -10 : 10));
                 })));
         }
         else if (variant is &quot;sparse-catalog&quot; or &quot;compact-sparse-catalog&quot;)
-            chart = Chart.Create().WithTitle(&quot;Observed service intervals&quot;)
-                .WithXLabels(Enumerable.Range(1, 8).Select(index =&gt; &quot;Region &quot; + index).ToArray()).WithDataLabels()
+            chart = Chart.Create().Title(&quot;Observed service intervals&quot;)
+                .XLabels(Enumerable.Range(1, 8).Select(index =&gt; &quot;Region &quot; + index).ToArray()).DataLabels()
                 .AddSeries(ChartSeries.CreateRangeBar(new ChartSeriesId(&quot;range&quot;), &quot;Delivery range&quot;,
                     new[] { new ChartInterval(1, -7, -1), new ChartInterval(4, 0, 0), new ChartInterval(8, 4, -4) }));
         else if (variant is &quot;endpoint-labels&quot; or &quot;compact-endpoint-labels&quot; or &quot;horizontal-endpoint-labels&quot; or &quot;compact-horizontal-endpoint-labels&quot;
@@ -142,7 +142,7 @@ public static class RangeBarRecipe {
             var count = variant == &quot;sparse&quot; ? 2 : 5;
             var intervals = Enumerable.Range(1, count).Select(index =&gt; new ChartInterval(index, 20 + index * 2, 40 + index * 4));
             var range = ChartSeries.CreateRangeBar(new ChartSeriesId(&quot;range&quot;), &quot;Range&quot;, intervals);
-            chart = Chart.Create().WithXLabels(&quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;, &quot;Return&quot;).AddSeries(range);
+            chart = Chart.Create().XLabels(&quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;, &quot;Return&quot;).AddSeries(range);
         }
         return chart;
     }
@@ -155,11 +155,11 @@ public static class RangeBarRecipe {
         var observed = ChartSeries.CreateRangeBar(new ChartSeriesId(&quot;observed&quot;), &quot;Observed&quot;, new[] {
             new ChartInterval(1, 22, 45), new ChartInterval(2, 32, 12), new ChartInterval(3, 18, 42), new ChartInterval(4, 28, 55)
         });
-        var chart = Chart.Create().WithXLabels(&quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;).AddSeries(expected).AddSeries(observed)
-            .ConfigureRangeBar(options =&gt; options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
-            .WithBarStyle(ChartBarStyle.SegmentedCapsule).WithDataLabels();
-        if (horizontal) chart.WithXAxis(&quot;Delivery time (minutes)&quot;).WithYAxis(&quot;Service&quot;);
-        else chart.WithYAxis(&quot;Delivery time (minutes)&quot;);
+        var chart = Chart.Create().XLabels(&quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;).AddSeries(expected).AddSeries(observed)
+            .RangeBar(options =&gt; options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
+            .Bars(b =&gt; b.Style(ChartBarStyle.SegmentedCapsule)).DataLabels();
+        if (horizontal) chart.XAxis(x =&gt; x.Title(&quot;Delivery time (minutes)&quot;)).YAxis(y =&gt; y.Title(&quot;Service&quot;));
+        else chart.YAxis(y =&gt; y.Title(&quot;Delivery time (minutes)&quot;));
         return chart;
     }
 
@@ -170,25 +170,25 @@ public static class RangeBarRecipe {
         });
         var observed = ChartSeries.CreateRangeBar(new ChartSeriesId(&quot;observed&quot;), &quot;Observed&quot;, new[] {
             new ChartInterval(1, 20, 42), new ChartInterval(2, 32, 12), new ChartInterval(3, 30, 55)
-        }).WithPointLabel(1, &quot;Recorded express delivery&quot;);
-        var chart = Chart.Create().WithXLabels(&quot;Standard&quot;, &quot;Express&quot;, &quot;Bulk&quot;).AddSeries(expected).AddSeries(observed)
-            .ConfigureRangeBar(options =&gt; {
+        }).PointLabel(1, &quot;Recorded express delivery&quot;);
+        var chart = Chart.Create().XLabels(&quot;Standard&quot;, &quot;Express&quot;, &quot;Bulk&quot;).AddSeries(expected).AddSeries(observed)
+            .RangeBar(options =&gt; {
                 options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
                 options.LabelContent = ChartRangeBarLabelContent.Endpoints;
                 options.EndpointLabelFormatter = label =&gt; label.FormattedValue + (label.Endpoint == ChartRangeBarEndpoint.Start ? &quot; S&quot; : &quot; E&quot;);
                 if (variant.Contains(&quot;independent&quot;)) {
-                    options.StartLabel.Style.WithColor(mode == ThemeMode.Dark ? &quot;#82b8ff&quot; : &quot;#235b9f&quot;).WithFontSize(10);
-                    options.EndLabel.Style.WithColor(mode == ThemeMode.Dark ? &quot;#ffbe79&quot; : &quot;#975000&quot;).WithFontSize(12).WithWeight(&quot;700&quot;);
+                    options.StartLabel.Style.Color(ChartColor.FromHex(mode == ThemeMode.Dark ? &quot;#82b8ff&quot; : &quot;#235b9f&quot;)).FontSize(10);
+                    options.EndLabel.Style.Color(ChartColor.FromHex(mode == ThemeMode.Dark ? &quot;#ffbe79&quot; : &quot;#975000&quot;)).FontSize(12).FontWeight(&quot;700&quot;);
                     options.StartLabel.Placement = horizontal ? ChartDataLabelPlacement.Above : ChartDataLabelPlacement.Left;
                     options.EndLabel.Placement = horizontal ? ChartDataLabelPlacement.Below : ChartDataLabelPlacement.Right;
                 }
-            }).WithBarStyle(ChartBarStyle.Flat).WithDataLabels();
-        (horizontal ? chart.Options.XAxis : chart.Options.YAxis).WithBounds(0, 70);
+            }).Bars(b =&gt; b.Style(ChartBarStyle.Flat)).DataLabels();
+        (horizontal ? chart.Options.XAxis : chart.Options.YAxis).Bounds(0, 70);
         if (horizontal) {
-            chart.WithXAxis(&quot;Delivery time (minutes)&quot;).WithYAxis(&quot;Service&quot;);
-            chart.ConfigureDataLabelStyle(style =&gt; style.WithFontSize(10));
+            chart.XAxis(x =&gt; x.Title(&quot;Delivery time (minutes)&quot;)).YAxis(y =&gt; y.Title(&quot;Service&quot;));
+            chart.DataLabelStyle(style =&gt; style.FontSize(10));
         }
-        else chart.WithYAxis(&quot;Delivery time (minutes)&quot;);
+        else chart.YAxis(y =&gt; y.Title(&quot;Delivery time (minutes)&quot;));
         return chart;
     }
 }
@@ -231,18 +231,18 @@ public static class RangeBarRecipe {
             throw new ArgumentOutOfRangeException(nameof(variant));
         Chart chart;
         if (variant is &quot;dense&quot; or &quot;compact-dense&quot; or &quot;dense-horizontal&quot; or &quot;compact-dense-horizontal&quot;) {
-            chart = Chart.Create().WithTitle(&quot;Signed delivery intervals&quot;)
-                .WithXLabels(Enumerable.Range(1, 24).Select(index =&gt; &quot;R&quot; + index.ToString(&quot;00&quot;, CultureInfo.InvariantCulture)).ToArray())
-                .WithBarStyle(ChartBarStyle.Flat).WithDataLabels()
-                .ConfigureRangeBar(options =&gt; options.Orientation = variant.Contains(&quot;horizontal&quot;) ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
+            chart = Chart.Create().Title(&quot;Signed delivery intervals&quot;)
+                .XLabels(Enumerable.Range(1, 24).Select(index =&gt; &quot;R&quot; + index.ToString(&quot;00&quot;, CultureInfo.InvariantCulture)).ToArray())
+                .Bars(b =&gt; b.Style(ChartBarStyle.Flat)).DataLabels()
+                .RangeBar(options =&gt; options.Orientation = variant.Contains(&quot;horizontal&quot;) ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
                 .AddSeries(ChartSeries.CreateRangeBar(new ChartSeriesId(&quot;range&quot;), &quot;Delivery range&quot;, Enumerable.Range(1, 24).Select(index =&gt; {
                     var start = index % 6 == 0 ? 0 : Math.Sin(index * .9) * 20;
                     return new ChartInterval(index, start, index % 6 == 0 ? 0 : start + (index % 3 == 0 ? -10 : 10));
                 })));
         }
         else if (variant is &quot;sparse-catalog&quot; or &quot;compact-sparse-catalog&quot;)
-            chart = Chart.Create().WithTitle(&quot;Observed service intervals&quot;)
-                .WithXLabels(Enumerable.Range(1, 8).Select(index =&gt; &quot;Region &quot; + index).ToArray()).WithDataLabels()
+            chart = Chart.Create().Title(&quot;Observed service intervals&quot;)
+                .XLabels(Enumerable.Range(1, 8).Select(index =&gt; &quot;Region &quot; + index).ToArray()).DataLabels()
                 .AddSeries(ChartSeries.CreateRangeBar(new ChartSeriesId(&quot;range&quot;), &quot;Delivery range&quot;,
                     new[] { new ChartInterval(1, -7, -1), new ChartInterval(4, 0, 0), new ChartInterval(8, 4, -4) }));
         else if (variant is &quot;endpoint-labels&quot; or &quot;compact-endpoint-labels&quot; or &quot;horizontal-endpoint-labels&quot; or &quot;compact-horizontal-endpoint-labels&quot;
@@ -254,7 +254,7 @@ public static class RangeBarRecipe {
             var count = variant == &quot;sparse&quot; ? 2 : 5;
             var intervals = Enumerable.Range(1, count).Select(index =&gt; new ChartInterval(index, 20 + index * 2, 40 + index * 4));
             var range = ChartSeries.CreateRangeBar(new ChartSeriesId(&quot;range&quot;), &quot;Range&quot;, intervals);
-            chart = Chart.Create().WithXLabels(&quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;, &quot;Return&quot;).AddSeries(range);
+            chart = Chart.Create().XLabels(&quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;, &quot;Return&quot;).AddSeries(range);
         }
         return chart;
     }
@@ -267,11 +267,11 @@ public static class RangeBarRecipe {
         var observed = ChartSeries.CreateRangeBar(new ChartSeriesId(&quot;observed&quot;), &quot;Observed&quot;, new[] {
             new ChartInterval(1, 22, 45), new ChartInterval(2, 32, 12), new ChartInterval(3, 18, 42), new ChartInterval(4, 28, 55)
         });
-        var chart = Chart.Create().WithXLabels(&quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;).AddSeries(expected).AddSeries(observed)
-            .ConfigureRangeBar(options =&gt; options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
-            .WithBarStyle(ChartBarStyle.SegmentedCapsule).WithDataLabels();
-        if (horizontal) chart.WithXAxis(&quot;Delivery time (minutes)&quot;).WithYAxis(&quot;Service&quot;);
-        else chart.WithYAxis(&quot;Delivery time (minutes)&quot;);
+        var chart = Chart.Create().XLabels(&quot;Standard&quot;, &quot;Express&quot;, &quot;Premium&quot;, &quot;Bulk&quot;).AddSeries(expected).AddSeries(observed)
+            .RangeBar(options =&gt; options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical)
+            .Bars(b =&gt; b.Style(ChartBarStyle.SegmentedCapsule)).DataLabels();
+        if (horizontal) chart.XAxis(x =&gt; x.Title(&quot;Delivery time (minutes)&quot;)).YAxis(y =&gt; y.Title(&quot;Service&quot;));
+        else chart.YAxis(y =&gt; y.Title(&quot;Delivery time (minutes)&quot;));
         return chart;
     }
 
@@ -282,25 +282,25 @@ public static class RangeBarRecipe {
         });
         var observed = ChartSeries.CreateRangeBar(new ChartSeriesId(&quot;observed&quot;), &quot;Observed&quot;, new[] {
             new ChartInterval(1, 20, 42), new ChartInterval(2, 32, 12), new ChartInterval(3, 30, 55)
-        }).WithPointLabel(1, &quot;Recorded express delivery&quot;);
-        var chart = Chart.Create().WithXLabels(&quot;Standard&quot;, &quot;Express&quot;, &quot;Bulk&quot;).AddSeries(expected).AddSeries(observed)
-            .ConfigureRangeBar(options =&gt; {
+        }).PointLabel(1, &quot;Recorded express delivery&quot;);
+        var chart = Chart.Create().XLabels(&quot;Standard&quot;, &quot;Express&quot;, &quot;Bulk&quot;).AddSeries(expected).AddSeries(observed)
+            .RangeBar(options =&gt; {
                 options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
                 options.LabelContent = ChartRangeBarLabelContent.Endpoints;
                 options.EndpointLabelFormatter = label =&gt; label.FormattedValue + (label.Endpoint == ChartRangeBarEndpoint.Start ? &quot; S&quot; : &quot; E&quot;);
                 if (variant.Contains(&quot;independent&quot;)) {
-                    options.StartLabel.Style.WithColor(mode == ThemeMode.Dark ? &quot;#82b8ff&quot; : &quot;#235b9f&quot;).WithFontSize(10);
-                    options.EndLabel.Style.WithColor(mode == ThemeMode.Dark ? &quot;#ffbe79&quot; : &quot;#975000&quot;).WithFontSize(12).WithWeight(&quot;700&quot;);
+                    options.StartLabel.Style.Color(ChartColor.FromHex(mode == ThemeMode.Dark ? &quot;#82b8ff&quot; : &quot;#235b9f&quot;)).FontSize(10);
+                    options.EndLabel.Style.Color(ChartColor.FromHex(mode == ThemeMode.Dark ? &quot;#ffbe79&quot; : &quot;#975000&quot;)).FontSize(12).FontWeight(&quot;700&quot;);
                     options.StartLabel.Placement = horizontal ? ChartDataLabelPlacement.Above : ChartDataLabelPlacement.Left;
                     options.EndLabel.Placement = horizontal ? ChartDataLabelPlacement.Below : ChartDataLabelPlacement.Right;
                 }
-            }).WithBarStyle(ChartBarStyle.Flat).WithDataLabels();
-        (horizontal ? chart.Options.XAxis : chart.Options.YAxis).WithBounds(0, 70);
+            }).Bars(b =&gt; b.Style(ChartBarStyle.Flat)).DataLabels();
+        (horizontal ? chart.Options.XAxis : chart.Options.YAxis).Bounds(0, 70);
         if (horizontal) {
-            chart.WithXAxis(&quot;Delivery time (minutes)&quot;).WithYAxis(&quot;Service&quot;);
-            chart.ConfigureDataLabelStyle(style =&gt; style.WithFontSize(10));
+            chart.XAxis(x =&gt; x.Title(&quot;Delivery time (minutes)&quot;)).YAxis(y =&gt; y.Title(&quot;Service&quot;));
+            chart.DataLabelStyle(style =&gt; style.FontSize(10));
         }
-        else chart.WithYAxis(&quot;Delivery time (minutes)&quot;);
+        else chart.YAxis(y =&gt; y.Title(&quot;Delivery time (minutes)&quot;));
         return chart;
     }
 }

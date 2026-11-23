@@ -83,11 +83,11 @@ public static class VisualWatermarkDecoration {
 
     /// <summary>Appends a snapshot of the supplied watermarks in declaration order.</summary>
     /// <remarks>The artifact retains its semantic model. Repeated calls append presentation layers.</remarks>
-    public static VisualArtifact WithWatermarks(this VisualArtifact artifact, params VisualWatermark[] watermarks) =>
-        WithWatermarks(artifact, null, watermarks);
+    public static VisualArtifact AddWatermarks(this VisualArtifact artifact, params VisualWatermark[] watermarks) =>
+        AddWatermarks(artifact, null, watermarks);
 
     /// <summary>Appends watermark presentation over a static source resolved with the supplied core options.</summary>
-    public static VisualArtifact WithWatermarks(this VisualArtifact artifact, VisualArtifactRenderOptions? renderOptions,
+    public static VisualArtifact AddWatermarks(this VisualArtifact artifact, VisualArtifactRenderOptions? renderOptions,
         params VisualWatermark[] watermarks) {
         if (artifact == null) throw new ArgumentNullException(nameof(artifact));
         var snapshots = SnapshotWatermarks(watermarks);

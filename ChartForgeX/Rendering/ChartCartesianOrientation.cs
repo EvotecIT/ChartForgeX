@@ -22,7 +22,7 @@ internal static class ChartCartesianOrientation {
 
     internal static bool IsHorizontalLine(Chart chart, ChartSeries series) =>
         (series.Kind == ChartSeriesKind.Line || series.Kind == ChartSeriesKind.StepLine)
-        && chart.Options.LineOrientation == ChartOrientation.Horizontal;
+        && chart.Options.Lines.Orientation == ChartOrientation.Horizontal;
 
     internal static ChartAxis ValueAxis(Chart chart, ChartAxisSide side) => IsHorizontal(chart)
         ? side == ChartAxisSide.Secondary ? chart.Options.SecondaryXAxis : chart.Options.XAxis

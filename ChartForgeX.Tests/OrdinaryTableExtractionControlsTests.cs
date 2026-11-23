@@ -51,24 +51,24 @@ public sealed class OrdinaryTableExtractionControlsTests {
     }
 
     private static ChartTable Create(string variant, int width, bool dark) {
-        var table = ChartTable.Create().WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithSize(width, 280).WithPngOutputScale(1).WithTitle("Publication facts")
-            .WithSubtitle("Source values and independent cell presentations");
+        var table = ChartTable.Create().Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Size(width, 280).PngOutputScale(1).Title("Publication facts")
+            .Subtitle("Source values and independent cell presentations");
         if (variant == "rich") {
-            table.WithDenseMode(width == 390).AddColumn("Name", width: 70).AddColumn("State", width: 80)
+            table.Dense(width == 390).AddColumn("Name", width: 70).AddColumn("State", width: 80)
                 .AddColumn("Load", TextAlignment.Right).AddColumn("History", TextAlignment.Center)
-                .WithStatusColumn(1).AddRow("API", "Ready", "bars", "trend").AddRow("Queue", "Warning", 0, false);
-            table.ConfigureRow(0, row => {
+                .StatusColumn(1).AddRow("API", "Ready", "bars", "trend").AddRow("Queue", "Warning", 0, false);
+            table.UpdateRow(0, row => {
                 row.Background = ChartColor.FromHex("#18394A"); row.Foreground = ChartColor.FromHex("#F2F6FA");
-                row.Cells[1].WithBadge("Ready", Tone.Success, style: VisualBadgeStyle.Outline);
-                row.Cells[2].WithMiniBars(new[] { 0d, 2, 4 }, minimum: 0, maximum: 4);
-                row.Cells[3].WithSparkline(new SparklineData(new double?[] { 0, null, 4, 2 }, minimum: 0, maximum: 4));
+                row.Cells[1].Badge("Ready", Tone.Success, style: VisualBadgeStyle.Outline);
+                row.Cells[2].MiniBars(new[] { 0d, 2, 4 }, minimum: 0, maximum: 4);
+                row.Cells[3].Sparkline(new SparklineData(new double?[] { 0, null, 4, 2 }, minimum: 0, maximum: 4));
             });
-            table.ConfigureRow(1, row => { row.Cells[1].Status = Tone.Warning; row.Cells[2].Alignment = TextAlignment.Center;
+            table.UpdateRow(1, row => { row.Cells[1].Status = Tone.Warning; row.Cells[2].Alignment = TextAlignment.Center;
                 row.Cells[2].Foreground = ChartColor.FromHex("#245C41"); row.Cells[2].Background = ChartColor.FromHex("#D8F0E2"); });
         } else {
-            table.WithColumns("Name", "Value").AddRow("API", 0).AddRow("Queue", false).AddRow("Missing", null).AddRow("Empty", "");
-            if (variant == "bare") table.WithHeader(false).WithRowStriping(false).WithDenseMode().WithCard(false).WithTransparentBackground().WithPadding(12);
+            table.Columns("Name", "Value").AddRow("API", 0).AddRow("Queue", false).AddRow("Missing", null).AddRow("Empty", "");
+            if (variant == "bare") table.ShowHeader(false).RowStriping(false).Dense().ShowCard(false).TransparentBackground().Padding(12);
         }
         return table;
     }

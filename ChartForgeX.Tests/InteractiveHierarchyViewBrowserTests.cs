@@ -266,8 +266,8 @@ public sealed class InteractiveHierarchyViewBrowserTests {
         private int _sequence;
         private readonly HashSet<string> _bases = new() { "initial" };
         internal Host(ChartSeriesKind kind, bool dark, bool spaced = false) {
-            _chart = HierarchyViewPreparationTests.Source(kind, dark).WithDataLabels();
-            if (spaced) _chart.ConfigureSunburst(options => { options.SectorGap = 10; options.MinimumLabelFontSize = 9; options.CornerRadius = 4; });
+            _chart = HierarchyViewPreparationTests.Source(kind, dark).DataLabels();
+            if (spaced) _chart.Sunburst(options => { options.SectorGap = 10; options.MinimumLabelFontSize = 9; options.CornerRadius = 4; });
             Last = Section(null);
         }
         internal HtmlChartSection Last { get; private set; }

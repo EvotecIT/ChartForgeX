@@ -16,10 +16,10 @@ public sealed class MatrixRowLifecycleTests {
     [InlineData(true, true)]
     public void FixedNumericKeysIdentifyMissingCellsSeparatelyFromObservedZero(bool hexagonal, bool allMissing) {
         var missingColor = ChartColor.FromHex("#9CA3AF");
-        var chart = Chart.Create().WithSize(520, 320).WithHeader(false).WithLegend(true)
-            .WithHeatmapColorScale(ChartColorScale.Sequential(ChartColor.Black, ChartColor.White)
-                .WithValueRange(0, 10).WithNoDataColor(missingColor))
-            .ConfigureLabels(labels => labels.NoData = "Not measured");
+        var chart = Chart.Create().Size(520, 320).ShowHeader(false).Legend(true)
+            .Heatmap(h => h.ColorScale(ChartColorScale.Sequential(ChartColor.Black, ChartColor.White)
+                .WithValueRange(0, 10).WithNoDataColor(missingColor)))
+            .Labels(labels => labels.NoData = "Not measured");
         Add(chart, hexagonal, "Observed", new double?[] { null, allMissing ? null : 0, null });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var document = XDocument.Parse(prepared.ToSvg());
@@ -41,8 +41,8 @@ public sealed class MatrixRowLifecycleTests {
     [InlineData(true, ThemeMode.Light)]
     [InlineData(true, ThemeMode.Dark)]
     public void EntirelyMissingRowsKeepTheirAuthoredColumnsWithoutInventingZeroCells(bool hexagonal, ThemeMode mode) {
-        var chart = Chart.Create().WithSize(520, 320).WithHeader(false).WithLegend(false)
-            .WithXLabels("First", "Second", "Third").WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Hidden);
+        var chart = Chart.Create().Size(520, 320).ShowHeader(false).Legend(false)
+            .XLabels("First", "Second", "Third").Heatmap(h => h.ValueTextMode(ChartHeatmapValueTextMode.Hidden));
         Add(chart, hexagonal, "Missing", new double?[] { null, null, null });
         var missing = chart.Series[0];
         var before = chart.Prepare(Context(mode));
@@ -78,12 +78,12 @@ public sealed class MatrixRowLifecycleTests {
     [InlineData(true, ThemeMode.Light)]
     [InlineData(true, ThemeMode.Dark)]
     public void ClearingAndRefillingANumericPeerKeepsItsRowAndTheOtherRowsSourceFacts(bool hexagonal, ThemeMode mode) {
-        var chart = Chart.Create().WithSize(520, 320).WithHeader(false).WithLegend(false)
-            .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Hidden);
+        var chart = Chart.Create().Size(520, 320).ShowHeader(false).Legend(false)
+            .Heatmap(h => h.ValueTextMode(ChartHeatmapValueTextMode.Hidden));
         AddPoints(chart, hexagonal, "Changing", new[] { new ChartPoint(1, 10) });
         AddPoints(chart, hexagonal, "Retained", new[] { new ChartPoint(3, 0) });
         var changing = chart.Series[0]; var retained = chart.Series[1];
-        retained.WithObservationId(0, new ChartObservationId("retained-zero"));
+        retained.ObservationId(0, new ChartObservationId("retained-zero"));
         var before = chart.Prepare(Context(mode)); var frozenSvg = before.ToSvg(); var frozenPng = before.ToPng(Raster());
         changing.Points.Clear();
         var cleared = chart.Prepare(Context(mode));

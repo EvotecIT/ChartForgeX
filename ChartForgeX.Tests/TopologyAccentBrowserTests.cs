@@ -18,15 +18,15 @@ public sealed class TopologyAccentBrowserTests {
     public async Task ImplicitSurfacesFollowThemeWhileExplicitPaintAndIconFallbackSurvivePatches(HtmlGraphRenderBackend backend, TopologyAccentSource source) {
         if (!Enabled) return;
         var render = TopologyAccentSourceTests.Options(source);
-        var chart = TopologyChart.Create().WithTheme(VisualTheme.Graphite()).WithLayout(TopologyLayoutMode.Manual);
+        var chart = TopologyChart.Create().Theme(VisualTheme.Graphite()).LayoutMode(TopologyLayoutMode.Manual);
         var displays = new[] { TopologyNodeDisplayMode.Dot, TopologyNodeDisplayMode.Icon, TopologyNodeDisplayMode.Tile, TopologyNodeDisplayMode.Card };
         for (var index = 0; index < displays.Length; index++) {
             chart.AddNode("implicit-" + index, displays[index].ToString(), 80 + index * 160, 100, status: TopologyHealthStatus.Critical,
-                iconId: "accent-proof:certificate").WithNodeDisplay("implicit-" + index, displays[index]);
+                iconId: "accent-proof:certificate").UpdateNode("implicit-" + index, n => n.DisplayMode(displays[index]).Badge(null));
             chart.Nodes[index].Color = index % 2 == 0 ? "" : "   ";
         }
         chart.AddNode("explicit", "Authored white", 80, 300, color: "#713CA6", backgroundColor: "#ffffff")
-            .WithNodeDisplay("explicit", TopologyNodeDisplayMode.Dot);
+            .UpdateNode("explicit", n => n.DisplayMode(TopologyNodeDisplayMode.Dot).Badge(null));
         var graph = chart.ToGraphScene(o => { o.AccentSource = source; o.IconCatalog = render.IconCatalog; });
         graph.Options.Enable(GraphSceneFeatures.LevelOfDetail);
         if (backend == HtmlGraphRenderBackend.Canvas) graph.Options.LevelOfDetail.CanvasPreferredNodeThreshold = 1;
@@ -155,7 +155,7 @@ public sealed class TopologyAccentBrowserTests {
     [InlineData(390, HtmlGraphRenderBackend.WebGl)]
     public async Task StatusAccentsFollowTheExplorerThemeToggleWithoutFreezingIconColor(int width, HtmlGraphRenderBackend backend) {
         if (!Enabled) return;
-        var chart = TopologyAccentSourceTests.Chart().WithTheme(VisualTheme.Graphite());
+        var chart = TopologyAccentSourceTests.Chart().Theme(VisualTheme.Graphite());
         var render = TopologyAccentSourceTests.Options(ChartForgeX.Topology.TopologyAccentSource.Status);
         var graph = chart.ToGraphScene(options => { options.AccentSource = render.AccentSource; options.IconCatalog = render.IconCatalog; });
         Assert.Contains("var(--cfx-topology-status-accent,", graph.Nodes[0].Style.BorderColor);

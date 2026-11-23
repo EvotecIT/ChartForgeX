@@ -1,9 +1,11 @@
 using System;
 using ChartForgeX.Primitives;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>Names and fill overrides for a paired difference area. Polarity always compares authored First with Second.</summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class ChartDifferenceAreaOptions {
     private string _firstName = "First", _secondName = "Second";
     private ChartColor? _positiveFill, _negativeFill;

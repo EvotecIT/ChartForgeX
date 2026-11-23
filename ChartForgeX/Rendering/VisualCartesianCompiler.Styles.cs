@@ -19,7 +19,7 @@ internal static partial class VisualCartesianCompiler {
     // A nonzero capsule must retain colored ink at ordinary output density. Anchor
     // its minimum painted extent at the base without changing the numeric source.
     private static ChartRect VisibleSegmentBounds(Chart chart, ChartRect bounds, double direction, bool horizontal = false) =>
-        VisibleSegmentBounds(chart.Options.ResolvePreparedBarVisualStyle(), bounds, direction, horizontal);
+        VisibleSegmentBounds(chart.Options.Bars.ResolvePreparedVisualStyle(), bounds, direction, horizontal);
 
     private static ChartRect VisibleSegmentBounds(ChartBarVisualStyle style, ChartRect bounds, double direction, bool horizontal = false) {
         if (direction == 0 || style.Kind != ChartBarStyle.SegmentedCapsule) return bounds;

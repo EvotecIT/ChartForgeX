@@ -28,17 +28,17 @@ public sealed class NumericRadialAxisVisibilityTests {
 
     private static VisualScene Scene(bool bars, string hidden, bool longText) {
         var text = longText ? "Hidden caption that must not reserve any plotted radius" : "x";
-        var chart = NumericRadialSeriesTests.Add(Chart.Create().WithSize(460, 460).WithLegend(false)
-            .WithFontFamily("Carlito").WithXLabels(hidden == "category" ? text : "North", "South"), bars, "Requests", new(1, 1200), new(2, 800));
+        var chart = NumericRadialSeriesTests.Add(Chart.Create().Size(460, 460).Legend(false)
+            .FontFamily("Carlito").XLabels(hidden == "category" ? text : "North", "South"), bars, "Requests", new(1, 1200), new(2, 800));
         NumericRadialSeriesTests.Add(chart, bars, "Follow-ups", new(1, 600), new(2, 400));
-        chart.Series[1].UseSecondaryValueAxis();
-        chart.WithYAxisBounds(0, 1500); chart.Options.SecondaryYAxis.WithBounds(0, 1000);
-        chart.Options.PngFontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
+        chart.Series[1].SecondaryAxis();
+        chart.YAxis(y => y.Bounds(0, 1500)); chart.Options.SecondaryYAxis.Bounds(0, 1000);
+        chart.Options.Png.FontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         chart.Options.XAxis.Visible = hidden != "category";
         chart.Options.YAxis.Visible = hidden != "primary";
         chart.Options.SecondaryYAxis.Visible = hidden != "secondary";
-        if (hidden == "primary") chart.Options.YAxis.WithLabelFormatter(_ => text);
-        if (hidden == "secondary") chart.Options.SecondaryYAxis.WithLabelFormatter(_ => text);
+        if (hidden == "primary") chart.Options.YAxis.LabelBy(_ => text);
+        if (hidden == "secondary") chart.Options.SecondaryYAxis.LabelBy(_ => text);
         var scene = chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene;
         var capture = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(capture)) {

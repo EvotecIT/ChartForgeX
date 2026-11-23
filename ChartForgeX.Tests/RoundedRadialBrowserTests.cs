@@ -32,8 +32,8 @@ public sealed class RoundedRadialBrowserTests {
         if (!Enabled) return;
         var width = compact ? 360 : 800; var height = compact ? 360 : 440;
         var chart = V2GalleryModels.Create(kind, compact ? "compact-options" : "options", dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithSize(width, height).WithTitle(V2GalleryModels.Title(kind)).WithSubtitle("Rounded sectors retain source values")
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+            .Size(width, height).Title(V2GalleryModels.Title(kind)).Subtitle("Rounded sectors retain source values")
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         if (relativeLabels) {
             chart.Options.XAxis.LabelOrientation = ChartAxisLabelOrientation.Parallel;
             chart.Options.YAxis.LabelOrientation = chart.Options.SecondaryYAxis.LabelOrientation = ChartAxisLabelOrientation.Perpendicular;
@@ -56,7 +56,7 @@ public sealed class RoundedRadialBrowserTests {
         var interior = new { x = cx + Math.Cos(middle) * radius, y = cy + Math.Sin(middle) * radius };
         var corner = new { x = cx + Math.Cos(start + .25 / outer) * (outer - .25), y = cy + Math.Sin(start + .25 / outer) * (outer - .25) };
         var html = chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
-        var font = Convert.ToBase64String(await File.ReadAllBytesAsync(chart.Options.PngFontPath!));
+        var font = Convert.ToBase64String(await File.ReadAllBytesAsync(chart.Options.Png.FontPath!));
         html = html.Replace("</head>", "<style>@font-face{font-family:'Carlito';src:url(data:font/ttf;base64," + font + ")}</style></head>", StringComparison.Ordinal);
         await using var session = await OpenAsync(html, width + 24, height + 150);
         var page = session.Page; var errors = new List<string>(); page.PageError += (_, error) => errors.Add(error);

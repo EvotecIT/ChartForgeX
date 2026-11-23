@@ -43,8 +43,8 @@ public sealed partial class MarkupChartParser {
     }
 
     private static void ApplyFamilyOptions(Chart chart, ChartState state) {
-        if (state.Theme != null) chart.WithTheme(state.Theme);
-        if (state.ThemeMode.HasValue) chart.WithThemeMode(state.ThemeMode.Value);
-        if (state.HeatmapValueName != null) chart.Options.HeatmapColorDimension.Name = state.HeatmapValueName;
+        if (state.Theme != null) chart.Theme(state.Theme);
+        if (state.ThemeMode.HasValue) chart.ThemeMode(state.ThemeMode.Value);
+        if (state.HeatmapValueName != null) chart.Options.Heatmap.ColorDimension.Name = state.HeatmapValueName;
     }
 }

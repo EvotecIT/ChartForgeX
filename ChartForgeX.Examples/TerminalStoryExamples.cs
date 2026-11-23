@@ -6,18 +6,18 @@ using ChartForgeX.Terminal;
 internal static class TerminalStoryExamples {
     public static void Write(string output, ChartPngOutputScale pngOutputScale) {
         var portfolio = TerminalTable.Create()
-            .WithColumns("PROJECT", "STACK", "STATUS")
+            .Columns("PROJECT", "STACK", "STATUS")
             .AddRow("ChartForgeX", ".NET", "ready")
             .AddRow("ImagePlayground", "PowerShell", "ready")
             .AddRow("OfficeIMO", ".NET", "active");
 
         var story = TerminalStory.Create()
-            .WithTitle(@"pwsh - C:\OpenSource")
-            .WithDialect(TerminalDialect.PowerShell)
-            .WithWorkingDirectory(@"C:\OpenSource")
-            .WithTheme(TerminalThemes.PowerShell())
-            .WithWindowStyle(TerminalWindowStyle.MacOS)
-            .WithPngOutputScale((int)pngOutputScale)
+            .Title(@"pwsh - C:\OpenSource")
+            .Dialect(TerminalDialect.PowerShell)
+            .WorkingDirectory(@"C:\OpenSource")
+            .Theme(TerminalThemes.PowerShell())
+            .WindowStyle(TerminalWindowStyle.MacOS)
+            .PngOutputScale((int)pngOutputScale)
             .Command("Get-ActivePortfolio | Format-Table")
             .Table(portfolio)
             .Blank()
@@ -32,31 +32,31 @@ internal static class TerminalStoryExamples {
         story.SavePng(Path.Combine(output, "powershell-console-story.png"));
 
         var fiveLineDemo = TerminalStory.Create()
-            .WithTitle("dotnet run - ChartForgeX")
-            .WithDialect(TerminalDialect.CSharp)
-            .WithWorkingDirectory(@"C:\Charts")
-            .WithTheme(TerminalThemes.Default())
-            .WithWindowStyle(TerminalWindowStyle.WindowsTerminal)
-            .WithWidth(1000)
+            .Title("dotnet run - ChartForgeX")
+            .Dialect(TerminalDialect.CSharp)
+            .WorkingDirectory(@"C:\Charts")
+            .Theme(TerminalThemes.Default())
+            .WindowStyle(TerminalWindowStyle.WindowsTerminal)
+            .Width(1000)
             .Command("using ChartForgeX; using ChartForgeX.Core; using System.Linq;", 0.65)
-            .Command("var chart = Chart.Create().WithTitle(\"Weekly builds\");", 0.65)
-            .Command("chart.WithXLabels(\"Mon\", \"Tue\", \"Wed\", \"Thu\", \"Fri\");", 0.65)
+            .Command("var chart = Chart.Create().Title(\"Weekly builds\");", 0.65)
+            .Command("chart.XLabels(\"Mon\", \"Tue\", \"Wed\", \"Thu\", \"Fri\");", 0.65)
             .Command("chart.AddLine(\"Builds\", new[] { 12d, 18d, 15d, 24d, 31d }.Select((y, x) => new ChartPoint(x + 1, y)));", 1.1)
             .Command("chart.SavePng(\"weekly-builds.png\");", 0.65)
             .Output("Saved weekly-builds.png (1000 x 560)", TerminalTextTone.Success);
         var animation = TerminalStoryAnimationOptions.Create()
-            .WithFramesPerSecond(10)
-            .WithEndHold(1.4);
+            .FramesPerSecond(10)
+            .EndHoldSeconds(1.4);
         fiveLineDemo.SaveGif(Path.Combine(output, "chart-in-five-lines-console-story.gif"), animation);
         fiveLineDemo.SaveApng(Path.Combine(output, "chart-in-five-lines-console-story.apng"), animation);
 
         var multiShell = TerminalStory.Create()
-            .WithTitle("PowerShell")
-            .WithDialect(TerminalDialect.PowerShell)
-            .WithWorkingDirectory(@"C:\OpenSource")
-            .WithTheme(TerminalThemes.Campbell())
-            .WithWindowStyle(TerminalWindowStyle.WindowsTerminal)
-            .WithWidth(1100)
+            .Title("PowerShell")
+            .Dialect(TerminalDialect.PowerShell)
+            .WorkingDirectory(@"C:\OpenSource")
+            .Theme(TerminalThemes.Campbell())
+            .WindowStyle(TerminalWindowStyle.WindowsTerminal)
+            .Width(1100)
             .Command("Get-Module ImagePlayground")
             .Output("ImagePlayground  3.2.0", TerminalTextTone.Success)
             .OpenTab("windows-powershell", "Windows PowerShell", TerminalDialect.PowerShell, @"C:\Legacy", TerminalThemes.WindowsPowerShell(), TerminalTabIcon.WindowsPowerShell)

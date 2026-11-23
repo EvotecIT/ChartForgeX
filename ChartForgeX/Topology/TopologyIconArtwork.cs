@@ -2,12 +2,14 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Topology;
 
 /// <summary>
 /// Describes optional external artwork for a topology icon.
 /// </summary>
+[Fluent]
 public sealed partial class TopologyIconArtwork {
     internal TopologyIconArtwork Clone() => (TopologyIconArtwork)MemberwiseClone();
 
@@ -27,7 +29,11 @@ public sealed partial class TopologyIconArtwork {
     public string? ImageHref { get; set; }
 
     /// <summary>Gets or sets the preserveAspectRatio value used when rendering SVG or image artwork.</summary>
-    public string PreserveAspectRatio { get; set; } = "xMidYMid meet";
+    public string PreserveAspectRatio {
+        get => _preserveAspectRatio;
+        set => _preserveAspectRatio = RequiredText(value, nameof(value));
+    }
+    private string _preserveAspectRatio = "xMidYMid meet";
 
     /// <summary>Gets whether this artwork defines an inline SVG fragment.</summary>
     public bool HasSvgBody => !string.IsNullOrWhiteSpace(SvgBody);
@@ -64,12 +70,6 @@ public sealed partial class TopologyIconArtwork {
             SvgViewBox = RequiredText(svgViewBox, nameof(svgViewBox)),
             PreviewPath = string.IsNullOrWhiteSpace(previewPath) ? null : previewPath!.Trim()
         };
-    }
-
-    /// <summary>Sets the preserveAspectRatio value used when rendering SVG or image artwork.</summary>
-    public TopologyIconArtwork WithPreserveAspectRatio(string preserveAspectRatio) {
-        PreserveAspectRatio = RequiredText(preserveAspectRatio, nameof(preserveAspectRatio));
-        return this;
     }
 
     /// <summary>

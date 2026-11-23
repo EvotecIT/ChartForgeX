@@ -8,11 +8,10 @@ internal static class NativeNumberCultureCaseRecipe {
     internal static Chart Create(string kind, string policy, double reading, int width, ThemeMode mode, string family) {
         ChartSeries series; var id = new ChartSeriesId("revenue");
         if (kind == "treemap") series = ChartSeries.CreateTreemap(id, "Revenue", new[] { new ChartHierarchyItem("root", "Revenue"), new ChartHierarchyItem("primary", "Subscriptions", "root", reading), new ChartHierarchyItem("second", "Support", "root", .1), new ChartHierarchyItem("third", "Services", "root", .2) });
-        else if (kind is "pie" or "donut") series = new ChartSeries(id, "Revenue", kind == "pie" ? ChartSeriesKind.Pie : ChartSeriesKind.Donut, new[] { new ChartForgeX.Primitives.ChartPoint(1, reading), new ChartForgeX.Primitives.ChartPoint(2, .1), new ChartForgeX.Primitives.ChartPoint(3, .2) }).WithObservationIds(new[] { new ChartObservationId("primary"), new ChartObservationId("second"), new ChartObservationId("third") });
+        else if (kind is "pie" or "donut") series = new ChartSeries(id, "Revenue", kind == "pie" ? ChartSeriesKind.Pie : ChartSeriesKind.Donut, new[] { new ChartForgeX.Primitives.ChartPoint(1, reading), new ChartForgeX.Primitives.ChartPoint(2, .1), new ChartForgeX.Primitives.ChartPoint(3, .2) }).ObservationIds(new[] { new ChartObservationId("primary"), new ChartObservationId("second"), new ChartObservationId("third") });
         else throw new ArgumentOutOfRangeException(nameof(kind));
-        var chart = Chart.Create().WithSize(width, 420).WithTheme(VisualTheme.Graphite().WithFontFamily(family), mode).WithHeader(false).WithLegend(false).WithDataLabels(true).WithDonutCenterLabel(false)
-            .WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndValue).WithXLabels("Subscriptions", "Support", "Services").AddSeries(series);
-        var (format, textCase) = Policy(policy); return chart.WithValueFormat(format).ConfigureDataLabelStyle(style => style.TextCase = textCase);
+        var chart = Chart.Create().Size(width, 420).Theme(VisualTheme.Graphite().WithFontFamily(family)).ThemeMode(mode).ShowHeader(false).Legend(false).DataLabels(true).Pie(p => p.ShowCenterLabel(false).SliceLabelContent(ChartPieSliceLabelContent.LabelAndValue)).XLabels("Subscriptions", "Support", "Services").AddSeries(series);
+        var (format, textCase) = Policy(policy); return chart.ValueFormat(format).DataLabelStyle(style => style.TextCase = textCase);
     }
     internal static (double First, double Last) Readings(string policy) => policy == "ar-percent" ? (9,11)
         : policy == "scaled" ? (900000,1100000) : policy == "permille" ? (.009,.011) : (900,1100);

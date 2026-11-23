@@ -126,7 +126,7 @@ public sealed class ChartLineStrokeQualityTests {
     [Fact]
     public void SparklinePathLandsWhereTheSvgDrawsIt() {
         var amber = ChartColor.FromRgb(217, 119, 6);
-        Chart Sparkline(ChartColor color) => Chart.Create().WithSize(360, 90).WithSparkline().WithLineVisualStyle(ChartLineVisualStyle.Plain()).AddLine("Signal", Wave(16), color);
+        Chart Sparkline(ChartColor color) => Chart.Create().Size(360, 90).Sparkline().Lines(l => l.VisualStyle(ChartLineVisualStyle.Plain())).AddLine("Signal", Wave(16), color);
         var png = Coverage(Sparkline(amber).ToRgbaImage(), Sparkline(Hidden(amber)).ToRgbaImage(), amber);
         var svg = Coverage(SvgRasterizer.ToImage(Sparkline(amber).ToSvg()), SvgRasterizer.ToImage(Sparkline(Hidden(amber)).ToSvg()), amber);
         var compared = 0;
@@ -143,22 +143,22 @@ public sealed class ChartLineStrokeQualityTests {
     }
 
     private static Chart LineChart(IReadOnlyList<ChartPoint> points, ChartColor color, double width, bool smooth) {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(640, 400).WithHeader(false).WithLegend(false).WithGrid(false).WithAxes(false).WithLineVisualStyle(ChartLineVisualStyle.Plain());
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).Size(640, 400).ShowHeader(false).Legend(false).ShowGrid(false).Axes(false).Lines(l => l.VisualStyle(ChartLineVisualStyle.Plain()));
         // Fixed domains keep the stroke cross-section proof independent of automatic tick rounding.
-        chart.WithXAxisBounds(points.Min(point => point.X), points.Max(point => point.X)).WithYAxisBounds(0, 100);
+        chart.XAxis(x => x.Bounds(points.Min(point => point.X), points.Max(point => point.X))).YAxis(y => y.Bounds(0, 100));
         if (smooth) chart.AddSmoothLine("Series", points, color);
         else chart.AddLine("Series", points, color);
-        chart.Series[0].WithStrokeWidth(width).ConfigureMarkers(markers => markers.Radius = 0);
+        chart.Series[0].StrokeWidth(width).Markers(markers => markers.Radius = 0);
         return chart;
     }
 
     private static Chart ReferenceLineChart(ChartColor color) =>
-        Chart.Create().WithSize(640, 300).WithHeader(false).WithLegend(false).WithGrid(false).WithLineVisualStyle(ChartLineVisualStyle.Plain())
+        Chart.Create().Size(640, 300).ShowHeader(false).Legend(false).ShowGrid(false).Lines(l => l.VisualStyle(ChartLineVisualStyle.Plain()))
             .AddLine("Series", new[] { new ChartPoint(0, 10), new ChartPoint(10, 12) }, ChartColor.FromRgba(0, 0, 0, 0))
             .AddHorizontalLine(40, "", color);
 
     private static Chart AxisChart(bool showLine) {
-        var chart = Chart.Create().WithSize(640, 300).WithHeader(false).WithLegend(false).WithGrid(false)
+        var chart = Chart.Create().Size(640, 300).ShowHeader(false).Legend(false).ShowGrid(false)
             .AddLine("Series", new[] { new ChartPoint(0, 10), new ChartPoint(10, 12) }, ChartColor.FromRgba(0, 0, 0, 0));
         chart.Options.XAxis.ShowLine = showLine;
         chart.Options.YAxis.ShowLine = false;

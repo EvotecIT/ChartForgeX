@@ -57,19 +57,19 @@ public sealed class MinimumSpanBodyLayoutTests {
     }
 
     private static PreparedVisual Prepare(bool boxPlot, bool horizontal, ChartBarStyle style, bool reversed) {
-        var chart = Chart.Create().WithSize(480, 320).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithAxes(false).WithGrid(false).WithBarStyle(style).WithTheme(VisualTheme.Graphite())
-            .WithFontFamily("Carlito").WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
+        var chart = Chart.Create().Size(480, 320).ShowHeader(false).Legend(false).DataLabels(false)
+            .Axes(false).ShowGrid(false).Bars(b => b.Style(style)).Theme(VisualTheme.Graphite())
+            .FontFamily("Carlito").Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
         var orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
-        if (boxPlot) chart.ConfigureBoxPlot(options => options.Orientation = orientation).AddBoxPlot("Summary", Intervals.Select((interval, point) => {
+        if (boxPlot) chart.BoxPlot(options => options.Orientation = orientation).AddBoxPlot("Summary", Intervals.Select((interval, point) => {
             var low = Math.Min(interval.Start, interval.End); var high = Math.Max(interval.Start, interval.End);
             return new ChartBoxPlot(point + 1, low, low, (low + high) / 2, high, high);
         }));
-        else chart.ConfigureRangeBar(options => options.Orientation = orientation).AddRangeBar("Interval",
+        else chart.RangeBar(options => options.Orientation = orientation).AddRangeBar("Interval",
             Intervals.Select((interval, point) => new ChartInterval(point + 1, interval.Start, interval.End)));
-        chart.Series[0].WithStrokeWidth(.1);
-        (horizontal ? chart.Options.XAxis : chart.Options.YAxis).WithBounds(0, 100).WithReversal(reversed);
-        (horizontal ? chart.Options.YAxis : chart.Options.XAxis).WithBounds(0, 6);
+        chart.Series[0].StrokeWidth(.1);
+        (horizontal ? chart.Options.XAxis : chart.Options.YAxis).Bounds(0, 100).Reversed(reversed);
+        (horizontal ? chart.Options.YAxis : chart.Options.XAxis).Bounds(0, 6);
         return chart.Prepare(VisualExportRequest.ForChart(chart).Context);
     }
 

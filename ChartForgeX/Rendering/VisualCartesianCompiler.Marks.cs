@@ -71,7 +71,7 @@ internal static partial class VisualCartesianCompiler {
                     : ChartPathBuilder.FromPoints(contour, series.Interpolation, series.StepPosition, false, treads);
                 VisualSeriesStroke.DrawSegmentedPath(chart, builder, series, linePath, color, VisualChartPaint.Series(series, color), stroke, "line",
                     horizontal ? map.Y : map.X, horizontal);
-                if (chart.Series.Any(item => item.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false))
+                if (chart.Series.Any(item => item.ShowDataLabels ?? (chart.Options.DataLabels.Visible ?? false))
                     || chart.Annotations.Any(annotation => annotation.ShowLabel && annotation.Label.Length > 0)) {
                     var contours = ChartPointSegments.Split(linePath.Flatten(12)).Select(segment => segment.ToList()).ToArray();
                     obstacles.Add(new LabelObstacle(SeriesId(index) + "-line", new LabelMarkShape(contours, false, stroke, clipMarks ? plot : null)));
@@ -143,7 +143,7 @@ internal static partial class VisualCartesianCompiler {
             var axis = ChartCartesianOrientation.ValueAxis(chart, series.ValueAxis);
             var direction = MappedBarDirection(axis, stack.Value, baseY, y);
             var bounds = series.IsHistogramDensity ? new ChartRect(left, Math.Min(y, baseY), barWidth, Math.Abs(baseY - y))
-                : VerticalBarBounds(chart.Options.ResolvePreparedBarVisualStyle(), left, barWidth, baseY, y, direction);
+                : VerticalBarBounds(chart.Options.Bars.ResolvePreparedVisualStyle(), left, barWidth, baseY, y, direction);
             var resolvedLabel = ((CartesianLabels)labels).PointLabel(chart, series, pointIndex, labelStyle);
             using (PointGroup(builder, series, index, pointIndex, bounds, resolvedLabel, chart.Options.Labels, stack)) {
                 if (series.IsHistogramDensity) DrawDensityHistogramSurface(chart, context, builder, series, index, pointIndex, bounds, colors);
@@ -163,8 +163,8 @@ internal static partial class VisualCartesianCompiler {
         var sampleSlots = chart.Options.IsSparkline ? chart.Options.SparklineSampleCount : 0;
         var layout = ChartCategorySlotLayout.Create(barIndices.SelectMany(i => chart.Series[i].RenderPoints.Select((point, pointIndex) => map.X(coordinates.Resolve(i, pointIndex).Value))),
             plot.Width, context.Theme.Spacing, slot.Count, slot.Position, requireMinimumFootprint: false,
-            maximumThickness: chart.Options.IsSparkline ? double.PositiveInfinity : chart.Options.MaximumBarWidth ?? ChartMarkSurface.MaximumThickness(context.Theme.MaximumBarWidth, horizontal: false),
-            minimumThickness: sampleSlots > 0 ? 0 : Math.Min(.1, chart.Options.MaximumBarWidth ?? context.Theme.MaximumBarWidth),
+            maximumThickness: chart.Options.IsSparkline ? double.PositiveInfinity : chart.Options.Bars.MaxWidth ?? ChartMarkSurface.MaximumThickness(context.Theme.MaximumBarWidth, horizontal: false),
+            minimumThickness: sampleSlots > 0 ? 0 : Math.Min(.1, chart.Options.Bars.MaxWidth ?? context.Theme.MaximumBarWidth),
             sampleSlots: sampleSlots, maximumPitch: map.CalendarBandPitch(horizontal: false));
         return (layout.Thickness, layout.Offset, slot.Count > 1 ? layout.Stride : layout.Pitch);
     }
@@ -176,9 +176,9 @@ internal static partial class VisualCartesianCompiler {
         if (chart.Options.IsSparkline) return false;
         // Design rule 5: no lone dot on the last point unless that point carries a label. A point the author singled out
         // (its own colour or label) is an emphasis and keeps its marker.
-        if (!chart.Options.LineMarkerMode.HasValue && (pointIndex < series.PointColors.Count && series.PointColors[pointIndex].HasValue
+        if (!chart.Options.Lines.MarkerMode.HasValue && (pointIndex < series.PointColors.Count && series.PointColors[pointIndex].HasValue
             || pointIndex < series.PreparedLabels.Count && series.PreparedLabels[pointIndex] != null)) return true;
-        var mode = chart.Options.LineMarkerMode ?? (series.ShowDataLabels ?? chart.Options.ShowDataLabels ?? false
+        var mode = chart.Options.Lines.MarkerMode ?? (series.ShowDataLabels ?? chart.Options.DataLabels.Visible ?? false
             ? ChartLineMarkerMode.Last : ChartLineMarkerMode.None);
         if (mode == ChartLineMarkerMode.None) return false;
         if (mode == ChartLineMarkerMode.All) return true;
@@ -231,13 +231,13 @@ internal static partial class VisualCartesianCompiler {
         TextMetrics? calloutMetrics = null, double? barDirection = null, bool horizontal = false, ChartColor? markFill = null, SvgColorRole? markFillRole = null, SvgPaint? markFillPaint = null,
         string? labelId = null, ChartValueLabelOptions? valueLabel = null) {
         if (valueLabel?.Visible == false) return;
-        if (!(series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false)) || resolvedLabel.Text.Length == 0) return;
+        if (!(series.ShowDataLabels ?? (chart.Options.DataLabels.Visible ?? false)) || resolvedLabel.Text.Length == 0) return;
         // An empty bin draws nothing, including a floating "0" caption; authored captions still paint.
         if (series.HistogramBinLayout != null && (!series.HistogramBins[pointIndex].Value.HasValue || series.HistogramBins[pointIndex].Count == 0) &&
             (pointIndex >= series.PreparedLabels.Count || series.PreparedLabels[pointIndex] == null)) return;
         var value = observationValue ?? series.RenderPoints[pointIndex].Y;
         var spacing = context.Theme.Spacing;
-        var placement = valueLabel?.Placement ?? series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
+        var placement = valueLabel?.Placement ?? series.DataLabelPlacement ?? chart.Options.DataLabels.Placement;
         if (horizontal && valueLabel?.Placement.HasValue == true) {
             if (placement == ChartDataLabelPlacement.Above) anchor = new ChartPoint(anchor.X, mark.Top);
             if (placement == ChartDataLabelPlacement.Below) anchor = new ChartPoint(anchor.X, mark.Bottom);
@@ -359,7 +359,7 @@ internal static partial class VisualCartesianCompiler {
             // Waterfall steps and their derived total can use status fills independently of the series palette.
             var fill = markFill ?? PointColor(series, seriesIndex, pointIndex, colors);
             if (bar || series.Kind == ChartSeriesKind.RangeBar) {
-                var barStyle = chart.Options.ResolvePreparedBarVisualStyle();
+                var barStyle = chart.Options.Bars.ResolvePreparedVisualStyle();
                 if (barStyle.Kind == ChartBarStyle.SegmentedCapsule) fill = ChartColorMath.WithOpacity(fill, barStyle.BodyOpacity);
             }
             var backdrop = ChartStateMark.Backdrop(chart.Options, colors, context.Frame);

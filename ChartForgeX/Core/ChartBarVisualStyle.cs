@@ -1,10 +1,12 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>
 /// Defines reusable visual tokens for bar and horizontal-bar marks.
 /// </summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class ChartBarVisualStyle {
     private ChartBarStyle _kind = ChartBarStyle.Flat;
     private double _bodyOpacity = 0.18;
@@ -165,49 +167,4 @@ public sealed class ChartBarVisualStyle {
     /// Creates a copy that can be safely reused and customized.
     /// </summary>
     public ChartBarVisualStyle Clone() => (ChartBarVisualStyle)MemberwiseClone();
-
-    /// <summary>
-    /// Sets the bar visual treatment.
-    /// </summary>
-    public ChartBarVisualStyle WithKind(ChartBarStyle kind) { Kind = kind; return this; }
-
-    /// <summary>
-    /// Sets the opacity used for translucent segment bodies.
-    /// </summary>
-    public ChartBarVisualStyle WithBodyOpacity(double opacity) { BodyOpacity = opacity; return this; }
-
-    /// <summary>
-    /// Sets the opacity used for value-edge caps.
-    /// </summary>
-    public ChartBarVisualStyle WithCapOpacity(double opacity) { CapOpacity = opacity; return this; }
-
-    /// <summary>
-    /// Sets the cap thickness in pixels.
-    /// </summary>
-    public ChartBarVisualStyle WithCapThickness(double thickness) { CapThickness = thickness; return this; }
-
-    /// <summary>
-    /// Sets the inset from the segment edge before a rounded cap starts.
-    /// </summary>
-    public ChartBarVisualStyle WithCapInset(double inset) { CapInset = inset; return this; }
-
-    /// <summary>
-    /// Sets the maximum translucent segment body corner radius in pixels.
-    /// </summary>
-    public ChartBarVisualStyle WithCornerRadius(double radius) { CornerRadius = radius; return this; }
-
-    /// <summary>
-    /// Sets the soft cap shadow opacity and offset in pixels.
-    /// </summary>
-    public ChartBarVisualStyle WithCapShadow(double opacity, double offset) { CapShadowOpacity = opacity; CapShadowOffset = offset; return this; }
-
-    /// <summary>
-    /// Sets the soft cap shadow opacity, offset, and spread in pixels.
-    /// </summary>
-    public ChartBarVisualStyle WithCapShadow(double opacity, double offset, double spread) { CapShadowOpacity = opacity; CapShadowOffset = offset; CapShadowSpread = spread; return this; }
-
-    /// <summary>
-    /// Sets the white highlight opacity drawn over value-edge caps.
-    /// </summary>
-    public ChartBarVisualStyle WithCapHighlight(double opacity) { CapHighlightOpacity = opacity; return this; }
 }

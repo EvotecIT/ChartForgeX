@@ -20,8 +20,8 @@ public sealed class InteractiveTrendLineModelsBrowserTests {
         if (!Enabled) return;
         var series = ChartSeries.CreateTrendLine(new ChartSeriesId("fitted-source"), "Native polynomial fit",
             new[] { new ChartPoint(-2, 10), new ChartPoint(-1, -2), new ChartPoint(0, 7), new ChartPoint(1, 2), new ChartPoint(2, 18) })
-            .ConfigureTrendLine(options => { options.Model = ChartTrendLineModel.Polynomial; options.Interval = ChartTrendLineIntervalKind.Prediction; });
-        var chart = Chart.Create().WithSize(900, 500).WithLegend(false).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).AddSeries(series);
+            .TrendLine(options => { options.Model = ChartTrendLineModel.Polynomial; options.Interval = ChartTrendLineIntervalKind.Prediction; });
+        var chart = Chart.Create().Size(900, 500).Legend(false).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).AddSeries(series);
         var svg = System.Xml.Linq.XDocument.Parse(chart.ToSvg());
         var curve = svg.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "trend-line");
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), width, 650);

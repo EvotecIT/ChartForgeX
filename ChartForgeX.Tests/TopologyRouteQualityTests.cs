@@ -59,7 +59,7 @@ public sealed class TopologyRouteQualityTests {
     [Fact]
     public void ScatteredCards_AreStillPlannedWhenGridLinesAreMerged() {
         // 150 cards that share no rows or columns produce far more grid lines than the search holds.
-        var chart = TopologyChart.Create().WithId("scattered").WithViewport(4200, 3200, 24).WithLegend(null);
+        var chart = TopologyChart.Create().Id("scattered").Viewport(new TopologyViewport(4200, 3200, 24)).Legend((TopologyLegend?)null);
         for (var i = 0; i < 150; i++) {
             chart.AddNode("n" + i, "N" + i, 60 + i % 15 * 270 + i * 0.7, 60 + i / 15 * 300 + i % 15 * 9.3, width: 60, height: 40);
         }
@@ -73,16 +73,16 @@ public sealed class TopologyRouteQualityTests {
 
     [Fact]
     public void NamedPort_KeepsItsPositionWhenLanesAreSeparated() {
-        var chart = TopologyChart.Create().WithId("named-lanes").WithViewport(900, 520, 24).WithLegend(null)
+        var chart = TopologyChart.Create().Id("named-lanes").Viewport(new TopologyViewport(900, 520, 24)).Legend((TopologyLegend?)null)
             .AddNode("hub", "Hub", 120, 220, width: 60, height: 44)
             .AddNodePort("hub", "upper", TopologyEdgePort.Right, 0.2);
         for (var i = 0; i < 4; i++) {
             chart.AddNode("leaf" + i, "Leaf " + i, 640, 60 + i * 110, width: 60, height: 44)
                 .AddEdge("link" + i, "hub", "leaf" + i, routing: TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
-                .WithEdgePorts("link" + i, TopologyEdgePort.Right, TopologyEdgePort.Left);
+                .UpdateEdge("link" + i, e => e.SourcePort(TopologyEdgePort.Right).TargetPort(TopologyEdgePort.Left));
         }
 
-        chart.WithEdgeNamedPorts("link0", "upper", null);
+        chart.UpdateEdge("link0", e => e.SourcePortId("upper").TargetPortId(null));
         var report = chart.Prepare(DenseRouteFixture.Options(legend: false)).Analyze();
         var hub = report.Nodes.Single(node => node.Id == "hub").Bounds;
         var starts = report.Edges.Select(edge => edge.Points[0]).ToArray();

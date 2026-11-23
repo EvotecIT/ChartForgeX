@@ -70,7 +70,7 @@ internal static partial class VisualNumericRadialCompiler {
                             }
                         }
                     }
-                    if (geometry.Outer > 0 && (series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false)))
+                    if (geometry.Outer > 0 && (series.ShowDataLabels ?? (chart.Options.DataLabels.Visible ?? false)))
                         RadarDataLabel(chart, context, builder, plot, series, source, id, text, mapped[category], angle, labels);
                 }
             }
@@ -102,7 +102,7 @@ internal static partial class VisualNumericRadialCompiler {
         if (source >= 0 && source < series.PointDataLabelStyles.Count && series.PointDataLabelStyles[source] != null)
             style = series.PointDataLabelStyles[source]!.Resolve(style);
         var gap = context.Theme.Spacing;
-        var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
+        var placement = series.DataLabelPlacement ?? chart.Options.DataLabels.Placement;
         var candidate = placement switch {
             ChartDataLabelPlacement.Center or ChartDataLabelPlacement.Inside => new LabelCandidate(0, 0, .5, .5),
             ChartDataLabelPlacement.Above => new LabelCandidate(0, -gap, .5, 1),

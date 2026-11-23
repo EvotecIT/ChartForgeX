@@ -112,7 +112,7 @@ public static class TopologyRenderOptionsExtensions {
                 options.NodeDisplayMode = TopologyNodeDisplayMode.CompactCard;
                 break;
             case TopologyViewPreset.RelationshipOverview:
-                options.WithRelationshipOverviewStyle();
+                options.RelationshipOverviewStyle();
                 break;
         }
 
@@ -121,64 +121,27 @@ public static class TopologyRenderOptionsExtensions {
     }
 
     /// <summary>
-    /// Uses edge metrics as stacked edge labels.
-    /// </summary>
-    /// <param name="options">The render options.</param>
-    /// <param name="primaryMetricKey">The metric key for the primary edge label.</param>
-    /// <param name="secondaryMetricKey">The optional metric key for the secondary edge label.</param>
-    /// <param name="tertiaryMetricKey">The optional metric key for the tertiary edge label.</param>
-    /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithEdgeMetricLabels(this TopologyRenderOptions options, string? primaryMetricKey, string? secondaryMetricKey = null, string? tertiaryMetricKey = null) {
-        if (options == null) throw new ArgumentNullException(nameof(options));
-        options.IncludeEdgeLabels = true;
-        options.EdgeLabelMetricKey = primaryMetricKey;
-        options.EdgeSecondaryLabelMetricKey = secondaryMetricKey;
-        options.EdgeTertiaryLabelMetricKey = tertiaryMetricKey;
-        return options;
-    }
-
-    /// <summary>
-    /// Uses a caller supplied visual style for topology edge strokes across SVG and PNG output.
-    /// </summary>
-    /// <param name="options">The render options.</param>
-    /// <param name="style">The edge stroke visual style. Pass null to return to the topology default.</param>
-    /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithTopologyEdgeVisualStyle(this TopologyRenderOptions options, ChartLineVisualStyle? style) {
-        if (options == null) throw new ArgumentNullException(nameof(options));
-        options.EdgeVisualStyle = style;
-        return options;
-    }
-
-    /// <summary>
-    /// Uses a plain single-stroke topology edge style without halo or highlight layers.
-    /// </summary>
-    /// <param name="options">The render options.</param>
-    /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithPlainTopologyEdges(this TopologyRenderOptions options) =>
-        options.WithTopologyEdgeVisualStyle(ChartLineVisualStyle.Plain());
-
-    /// <summary>
     /// Uses a stronger luminous topology edge style for dark dashboards and deliberate emphasis.
     /// </summary>
     /// <param name="options">The render options.</param>
     /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithLuminousTopologyEdges(this TopologyRenderOptions options) =>
-        options.WithTopologyEdgeVisualStyle(ChartLineVisualStyle.Luminous().WithAmbientHalo(0.045, 5.8).WithHalo(0.13, 3.0).WithHighlight(0.10, 0.28));
+    public static TopologyRenderOptions LuminousEdges(this TopologyRenderOptions options) =>
+        options.EdgeVisualStyle(ChartLineVisualStyle.Luminous().AmbientHaloOpacity(0.045).AmbientHaloStrokeExtra(5.8).HaloOpacity(0.13).HaloStrokeExtra(3.0).HighlightOpacity(0.10).HighlightStrokeRatio(0.28));
 
     /// <summary>
     /// Applies the reusable monitoring-dashboard visual treatment used for dense topology and geographic monitoring views.
     /// </summary>
     /// <param name="options">The render options.</param>
     /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithMonitoringDashboardStyle(this TopologyRenderOptions options) {
+    public static TopologyRenderOptions MonitoringDashboardStyle(this TopologyRenderOptions options) {
         if (options == null) throw new ArgumentNullException(nameof(options));
         options.VisualStyle = TopologyVisualStyle.MonitoringDashboard;
         options.MapBackgroundStyle = TopologyMapBackgroundStyle.SoftSilhouette;
         options.CanvasSurfaceStyle = TopologyCanvasSurfaceStyle.Panel;
-        options.IncludeGeographicRegionHulls = true;
-        options.GeographicRegionHullPadding = 16;
-        options.GeographicRegionHullMaxRadius = 82;
-        options.PreferGeographicCalloutMapEdges = true;
+        options.Geography.IncludeRegionHulls = true;
+        options.Geography.RegionHullPadding = 16;
+        options.Geography.RegionHullMaxRadius = 82;
+        options.Geography.PreferCalloutMapEdges = true;
         options.IncludeGroupStatusDots = true;
         options.IncludeEdgeLabelBackplates = false;
         if (options.LegendMode != TopologyLegendMode.Explicit) options.LegendMode = TopologyLegendMode.Merge;
@@ -190,9 +153,9 @@ public static class TopologyRenderOptionsExtensions {
     /// </summary>
     /// <param name="options">The render options.</param>
     /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithRelationshipOverviewStyle(this TopologyRenderOptions options) {
+    public static TopologyRenderOptions RelationshipOverviewStyle(this TopologyRenderOptions options) {
         if (options == null) throw new ArgumentNullException(nameof(options));
-        options.WithMonitoringDashboardStyle();
+        options.MonitoringDashboardStyle();
         options.NodeDisplayMode = TopologyNodeDisplayMode.Card;
         options.CanvasSurfaceStyle = TopologyCanvasSurfaceStyle.PanelGrid;
         options.ArrowMarkerStyle = TopologyArrowMarkerStyle.Chevron;
@@ -218,7 +181,7 @@ public static class TopologyRenderOptionsExtensions {
     /// </summary>
     /// <param name="options">The render options.</param>
     /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithMindMapStyle(this TopologyRenderOptions options) {
+    public static TopologyRenderOptions MindMapStyle(this TopologyRenderOptions options) {
         if (options == null) throw new ArgumentNullException(nameof(options));
         options.IncludeLegend = false;
         options.IncludeGroups = false;
@@ -244,9 +207,9 @@ public static class TopologyRenderOptionsExtensions {
     /// </summary>
     /// <param name="options">The render options.</param>
     /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithForceGraphStyle(this TopologyRenderOptions options) {
+    public static TopologyRenderOptions ForceGraphStyle(this TopologyRenderOptions options) {
         if (options == null) throw new ArgumentNullException(nameof(options));
-        options.WithMonitoringDashboardStyle();
+        options.MonitoringDashboardStyle();
         options.UseForceGraphPresentation = true;
         options.ForceLayoutProfile = TopologyForceLayoutProfile.RelationshipGraph;
         options.NodeDisplayMode = TopologyNodeDisplayMode.Dot;
@@ -269,22 +232,6 @@ public static class TopologyRenderOptionsExtensions {
     }
 
     /// <summary>
-    /// Selects a deterministic force-directed solver profile.
-    /// </summary>
-    /// <param name="options">The render options.</param>
-    /// <param name="profile">The force layout profile.</param>
-    /// <param name="iterations">Optional solver iteration override.</param>
-    /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithForceLayout(this TopologyRenderOptions options, TopologyForceLayoutProfile profile, int? iterations = null) {
-        if (options == null) throw new ArgumentNullException(nameof(options));
-        TopologyModelGuards.EnumDefined(profile, nameof(profile));
-        if (iterations.HasValue && iterations.Value < 1) throw new ArgumentOutOfRangeException(nameof(iterations), "Force layout iterations must be greater than zero.");
-        options.ForceLayoutProfile = profile;
-        options.ForceLayoutIterations = iterations;
-        return options;
-    }
-
-    /// <summary>
     /// Selects the root and caps used by relationship-radial ego layouts.
     /// </summary>
     /// <param name="options">The render options.</param>
@@ -292,7 +239,7 @@ public static class TopologyRenderOptionsExtensions {
     /// <param name="maxDepth">The maximum number of relationship hops to expand.</param>
     /// <param name="maxFanout">The maximum neighbor count expanded per node.</param>
     /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithRelationshipRadialFocus(this TopologyRenderOptions options, string nodeId, int maxDepth = 2, int maxFanout = 18) {
+    public static TopologyRenderOptions RelationshipRadialFocus(this TopologyRenderOptions options, string nodeId, int maxDepth = 2, int maxFanout = 18) {
         if (options == null) throw new ArgumentNullException(nameof(options));
         if (string.IsNullOrWhiteSpace(nodeId)) throw new ArgumentException("Relationship radial root node id cannot be empty.", nameof(nodeId));
         if (maxDepth < 1) throw new ArgumentOutOfRangeException(nameof(maxDepth), "Relationship radial depth must be greater than zero.");
@@ -305,113 +252,15 @@ public static class TopologyRenderOptionsExtensions {
     }
 
     /// <summary>
-    /// Renders group containers as neutral cards while preserving status/identity borders and labels.
-    /// </summary>
-    /// <param name="options">The render options.</param>
-    /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithNeutralGroupSurfaces(this TopologyRenderOptions options) {
-        if (options == null) throw new ArgumentNullException(nameof(options));
-        options.GroupSurfaceStyle = TopologyGroupSurfaceStyle.Neutral;
-        return options;
-    }
-
-    /// <summary>
-    /// Keeps status marks in their colours in forced-colours mode (see <see cref="TopologyRenderOptions.PinStateColorsInForcedColors"/>).
-    /// </summary>
-    /// <param name="options">The render options.</param>
-    /// <param name="pin">True to pin the status colours; false (the default) lets forced colours apply.</param>
-    /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithStateColorsPinnedInForcedColors(this TopologyRenderOptions options, bool pin = true) {
-        if (options == null) throw new ArgumentNullException(nameof(options));
-        options.PinStateColorsInForcedColors = pin;
-        return options;
-    }
-
-    /// <summary>
-    /// Keeps topology output at the requested viewport size by scaling dense rendered content down when needed.
-    /// </summary>
-    /// <param name="options">The render options.</param>
-    /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithFitContentToViewport(this TopologyRenderOptions options) {
-        if (options == null) throw new ArgumentNullException(nameof(options));
-        options.FitContentToViewport = true;
-        return options;
-    }
-
-    /// <summary>Sets a readable minimum drawing height in narrow interactive topology containers.</summary>
-    /// <param name="options">The render options.</param>
-    /// <param name="height">The minimum drawing height in pixels. Zero preserves proportional sizing.</param>
-    /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithHtmlNarrowMinimumHeight(this TopologyRenderOptions options, double height) {
-        if (options == null) throw new ArgumentNullException(nameof(options));
-        options.HtmlNarrowMinimumHeight = height;
-        return options;
-    }
-
-    /// <summary>
-    /// Enables reusable multi-line node labels and optional word wrapping for dense relationship diagrams.
-    /// </summary>
-    /// <param name="options">The render options.</param>
-    /// <param name="wrap">Whether text should wrap at word boundaries when it exceeds the available width.</param>
-    /// <param name="maxLabelLines">The maximum title rows.</param>
-    /// <param name="maxSubtitleLines">The maximum subtitle rows.</param>
-    /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithMultilineNodeLabels(this TopologyRenderOptions options, bool wrap = true, int maxLabelLines = 2, int maxSubtitleLines = 2) {
-        if (options == null) throw new ArgumentNullException(nameof(options));
-        if (maxLabelLines < 1) throw new ArgumentOutOfRangeException(nameof(maxLabelLines), "Maximum node label lines must be at least 1.");
-        if (maxSubtitleLines < 1) throw new ArgumentOutOfRangeException(nameof(maxSubtitleLines), "Maximum node subtitle lines must be at least 1.");
-        options.AllowMultilineNodeLabels = true;
-        options.WrapNodeLabels = wrap;
-        options.MaxNodeLabelLines = maxLabelLines;
-        options.MaxNodeSubtitleLines = maxSubtitleLines;
-        return options;
-    }
-
-    /// <summary>
-    /// Requires all topology icon ids to resolve in the active icon catalog before rendering.
-    /// </summary>
-    /// <param name="options">The render options.</param>
-    /// <param name="required">Whether unresolved icon ids should fail validation.</param>
-    /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithRequiredIcons(this TopologyRenderOptions options, bool required = true) {
-        if (options == null) throw new ArgumentNullException(nameof(options));
-        options.RequireResolvedIcons = required;
-        return options;
-    }
-
-    /// <summary>
-    /// Activates an existing topology scenario for static highlighting and initial interactive HTML state.
-    /// </summary>
-    /// <param name="options">The render options.</param>
-    /// <param name="scenarioId">The scenario id.</param>
-    /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithActiveScenario(this TopologyRenderOptions options, string scenarioId) {
-        if (options == null) throw new ArgumentNullException(nameof(options));
-        options.ActiveScenarioId = RequiredScenarioToken(scenarioId, nameof(scenarioId));
-        return options;
-    }
-
-    /// <summary>
-    /// Clears the active topology scenario.
-    /// </summary>
-    /// <param name="options">The render options.</param>
-    /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithoutActiveScenario(this TopologyRenderOptions options) {
-        if (options == null) throw new ArgumentNullException(nameof(options));
-        options.ActiveScenarioId = null;
-        return options;
-    }
-
-    /// <summary>
     /// Enables or disables topology scenario picker controls in interactive HTML output.
     /// </summary>
     /// <param name="options">The render options.</param>
     /// <param name="enabled">Whether interactive HTML should render scenario picker controls.</param>
     /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithHtmlScenarioControls(this TopologyRenderOptions options, bool enabled = true) {
+    public static TopologyRenderOptions HtmlScenarioControls(this TopologyRenderOptions options, bool enabled = true) {
         if (options == null) throw new ArgumentNullException(nameof(options));
-        options.EnableHtmlScenarioControls = enabled;
-        if (enabled) options.EnableHtmlInteractions = true;
+        options.Html.ScenarioControls = enabled;
+        if (enabled) options.Html.Interactions = true;
         return options;
     }
 
@@ -421,22 +270,14 @@ public static class TopologyRenderOptionsExtensions {
     /// <param name="options">The render options.</param>
     /// <param name="mode">The scenario control mode.</param>
     /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithHtmlScenarioControlMode(this TopologyRenderOptions options, TopologyHtmlScenarioControlMode mode) {
+    public static TopologyRenderOptions HtmlScenarioControlMode(this TopologyRenderOptions options, TopologyHtmlScenarioControlMode mode) {
         if (options == null) throw new ArgumentNullException(nameof(options));
         TopologyModelGuards.EnumDefined(mode, nameof(mode));
-        options.HtmlScenarioControlMode = mode;
-        options.EnableHtmlInteractions = true;
-        options.EnableHtmlScenarioControls = true;
+        options.Html.ScenarioControlMode = mode;
+        options.Html.Interactions = true;
+        options.Html.ScenarioControls = true;
         return options;
     }
-
-    /// <summary>
-    /// Renders topology scenarios as independent route checkboxes.
-    /// </summary>
-    /// <param name="options">The render options.</param>
-    /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithHtmlScenarioCheckboxes(this TopologyRenderOptions options) =>
-        options.WithHtmlScenarioControlMode(TopologyHtmlScenarioControlMode.Checkboxes);
 
     /// <summary>
     /// Enables or disables the compact topology scenario detail panel in interactive HTML output.
@@ -444,10 +285,10 @@ public static class TopologyRenderOptionsExtensions {
     /// <param name="options">The render options.</param>
     /// <param name="enabled">Whether interactive HTML should render the scenario detail panel.</param>
     /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithHtmlScenarioPanel(this TopologyRenderOptions options, bool enabled = true) {
+    public static TopologyRenderOptions HtmlScenarioPanel(this TopologyRenderOptions options, bool enabled = true) {
         if (options == null) throw new ArgumentNullException(nameof(options));
-        options.EnableHtmlScenarioPanel = enabled;
-        if (enabled) options.EnableHtmlInteractions = true;
+        options.Html.ScenarioPanel = enabled;
+        if (enabled) options.Html.Interactions = true;
         return options;
     }
 
@@ -457,10 +298,10 @@ public static class TopologyRenderOptionsExtensions {
     /// <param name="options">The render options.</param>
     /// <param name="enabled">Whether interactive HTML should render scenario sequence diagrams.</param>
     /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithHtmlScenarioSequence(this TopologyRenderOptions options, bool enabled = true) {
+    public static TopologyRenderOptions HtmlScenarioSequence(this TopologyRenderOptions options, bool enabled = true) {
         if (options == null) throw new ArgumentNullException(nameof(options));
-        options.EnableHtmlScenarioSequence = enabled;
-        if (enabled) options.EnableHtmlInteractions = true;
+        options.Html.ScenarioSequence = enabled;
+        if (enabled) options.Html.Interactions = true;
         return options;
     }
 
@@ -470,10 +311,10 @@ public static class TopologyRenderOptionsExtensions {
     /// <param name="options">The render options.</param>
     /// <param name="enabled">Whether interactive HTML should render the selected-record panel.</param>
     /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithHtmlSelectionPanel(this TopologyRenderOptions options, bool enabled = true) {
+    public static TopologyRenderOptions HtmlSelectionPanel(this TopologyRenderOptions options, bool enabled = true) {
         if (options == null) throw new ArgumentNullException(nameof(options));
-        options.EnableHtmlSelectionPanel = enabled;
-        if (enabled) options.EnableHtmlInteractions = true;
+        options.Html.SelectionPanel = enabled;
+        if (enabled) options.Html.Interactions = true;
         return options;
     }
 
@@ -483,49 +324,10 @@ public static class TopologyRenderOptionsExtensions {
     /// <param name="options">The render options.</param>
     /// <param name="enabled">Whether interactive HTML should render a fullscreen control.</param>
     /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithHtmlFullscreenControl(this TopologyRenderOptions options, bool enabled = true) {
+    public static TopologyRenderOptions HtmlFullscreenControl(this TopologyRenderOptions options, bool enabled = true) {
         if (options == null) throw new ArgumentNullException(nameof(options));
-        options.EnableHtmlFullscreenControl = enabled;
-        if (enabled) options.EnableHtmlInteractions = true;
-        return options;
-    }
-
-    /// <summary>
-    /// Places viewport, fullscreen, and export controls inside the interactive HTML topology viewport.
-    /// </summary>
-    /// <param name="options">The render options.</param>
-    /// <param name="placement">The control placement.</param>
-    /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithHtmlControlPlacement(this TopologyRenderOptions options, TopologyHtmlControlPlacement placement) {
-        if (options == null) throw new ArgumentNullException(nameof(options));
-        TopologyModelGuards.EnumDefined(placement, nameof(placement));
-        options.HtmlControlPlacement = placement;
-        return options;
-    }
-
-    /// <summary>
-    /// Chooses the view an interactive HTML topology with viewport controls opens at.
-    /// </summary>
-    /// <param name="options">The render options.</param>
-    /// <param name="view">The opening view.</param>
-    /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithHtmlOpeningView(this TopologyRenderOptions options, TopologyHtmlOpeningView view) {
-        if (options == null) throw new ArgumentNullException(nameof(options));
-        TopologyModelGuards.EnumDefined(view, nameof(view));
-        options.HtmlOpeningView = view;
-        return options;
-    }
-
-    /// <summary>
-    /// Chooses how the mouse wheel acts on an interactive HTML topology with viewport controls.
-    /// </summary>
-    /// <param name="options">The render options.</param>
-    /// <param name="wheelZoom">The wheel behavior.</param>
-    /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithHtmlWheelZoom(this TopologyRenderOptions options, TopologyHtmlWheelZoom wheelZoom) {
-        if (options == null) throw new ArgumentNullException(nameof(options));
-        TopologyModelGuards.EnumDefined(wheelZoom, nameof(wheelZoom));
-        options.HtmlWheelZoom = wheelZoom;
+        options.Html.FullscreenControl = enabled;
+        if (enabled) options.Html.Interactions = true;
         return options;
     }
 
@@ -535,10 +337,10 @@ public static class TopologyRenderOptionsExtensions {
     /// <param name="options">The render options.</param>
     /// <param name="enabled">Whether interactive HTML should read and update scenario state from the page query string.</param>
     /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithHtmlScenarioUrlState(this TopologyRenderOptions options, bool enabled = true) {
+    public static TopologyRenderOptions HtmlScenarioUrlState(this TopologyRenderOptions options, bool enabled = true) {
         if (options == null) throw new ArgumentNullException(nameof(options));
-        options.EnableHtmlScenarioUrlState = enabled;
-        if (enabled) options.EnableHtmlInteractions = true;
+        options.Html.ScenarioUrlState = enabled;
+        if (enabled) options.Html.Interactions = true;
         return options;
     }
 
@@ -548,12 +350,12 @@ public static class TopologyRenderOptionsExtensions {
     /// <param name="options">The render options.</param>
     /// <param name="enabled">Whether interactive HTML should render graph exploration controls.</param>
     /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithHtmlForceGraphControls(this TopologyRenderOptions options, bool enabled = true) {
+    public static TopologyRenderOptions HtmlForceGraphControls(this TopologyRenderOptions options, bool enabled = true) {
         if (options == null) throw new ArgumentNullException(nameof(options));
-        options.EnableHtmlForceGraphControls = enabled;
+        options.Html.ForceGraphControls = enabled;
         if (enabled) {
-            options.EnableHtmlInteractions = true;
-            options.EnableHtmlViewportControls = true;
+            options.Html.Interactions = true;
+            options.Html.ViewportControls = true;
         }
 
         return options;
@@ -566,12 +368,12 @@ public static class TopologyRenderOptionsExtensions {
     /// <param name="enabled">Whether interactive HTML should render a find bar with text, group and kind filters.</param>
     /// <returns>The current render options.</returns>
     /// <remarks>Matches are highlighted rather than hidden, and the viewport moves to them at a readable scale.</remarks>
-    public static TopologyRenderOptions WithHtmlFindControls(this TopologyRenderOptions options, bool enabled = true) {
+    public static TopologyRenderOptions HtmlFindControls(this TopologyRenderOptions options, bool enabled = true) {
         if (options == null) throw new ArgumentNullException(nameof(options));
-        options.EnableHtmlFindControls = enabled;
+        options.Html.FindControls = enabled;
         if (enabled) {
-            options.EnableHtmlInteractions = true;
-            options.EnableHtmlViewportControls = true;
+            options.Html.Interactions = true;
+            options.Html.ViewportControls = true;
         }
 
         return options;
@@ -583,7 +385,7 @@ public static class TopologyRenderOptionsExtensions {
     /// <param name="options">The render options.</param>
     /// <param name="groupId">The group id.</param>
     /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithSelectedGroup(this TopologyRenderOptions options, string groupId) {
+    public static TopologyRenderOptions SelectGroup(this TopologyRenderOptions options, string groupId) {
         if (options == null) throw new ArgumentNullException(nameof(options));
         if (string.IsNullOrWhiteSpace(groupId)) throw new ArgumentException("Selected group id cannot be empty.", nameof(groupId));
         if (!options.SelectedGroupIds.Contains(groupId)) options.SelectedGroupIds.Add(groupId);
@@ -596,7 +398,7 @@ public static class TopologyRenderOptionsExtensions {
     /// <param name="options">The render options.</param>
     /// <param name="nodeId">The node id.</param>
     /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithSelectedNode(this TopologyRenderOptions options, string nodeId) {
+    public static TopologyRenderOptions SelectNode(this TopologyRenderOptions options, string nodeId) {
         if (options == null) throw new ArgumentNullException(nameof(options));
         if (string.IsNullOrWhiteSpace(nodeId)) throw new ArgumentException("Selected node id cannot be empty.", nameof(nodeId));
         if (!options.SelectedNodeIds.Contains(nodeId)) options.SelectedNodeIds.Add(nodeId);
@@ -609,7 +411,7 @@ public static class TopologyRenderOptionsExtensions {
     /// <param name="options">The render options.</param>
     /// <param name="edgeId">The edge id.</param>
     /// <returns>The current render options.</returns>
-    public static TopologyRenderOptions WithSelectedEdge(this TopologyRenderOptions options, string edgeId) {
+    public static TopologyRenderOptions SelectEdge(this TopologyRenderOptions options, string edgeId) {
         if (options == null) throw new ArgumentNullException(nameof(options));
         if (string.IsNullOrWhiteSpace(edgeId)) throw new ArgumentException("Selected edge id cannot be empty.", nameof(edgeId));
         if (!options.SelectedEdgeIds.Contains(edgeId)) options.SelectedEdgeIds.Add(edgeId);
@@ -620,7 +422,7 @@ public static class TopologyRenderOptionsExtensions {
         if (!options.HighlightStatuses.Contains(status)) options.HighlightStatuses.Add(status);
     }
 
-    private static string RequiredScenarioToken(string? value, string parameterName) {
+    internal static string RequiredScenarioToken(string? value, string parameterName) {
         if (value == null) throw new ArgumentNullException(parameterName);
         var trimmed = value.Trim();
         if (trimmed.Length == 0) throw new ArgumentException("Active scenario id cannot be empty.", parameterName);

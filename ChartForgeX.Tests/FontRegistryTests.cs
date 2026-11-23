@@ -37,7 +37,7 @@ public sealed class FontRegistryTests : IDisposable {
     public void GridTitleUsesTheRequestedNumericFaceFromItsTheme() {
         if (!TryGetGeorgia(out var regular,out var bold)) return;
         FontRegistry.Register(Family,regular,weight:600); FontRegistry.Register(Family,bold,weight:700);
-        var grid=ChartGrid.Create().WithTheme(VisualTheme.Graphite().WithFontFamily(Family)).WithTitle("Numeric grid title").Add(BarChart(Family));
+        var grid=ChartGrid.Create().Theme(VisualTheme.Graphite().WithFontFamily(Family)).Title("Numeric grid title").Add(BarChart(Family));
         grid.TitleStyle.FontWeight="600";
         byte[] semibold=grid.ToPng();
         grid.TitleStyle.FontWeight="700";
@@ -195,14 +195,14 @@ public sealed class FontRegistryTests : IDisposable {
     }
 
     private static Chart BarChart(string family) => Chart.Create()
-        .WithTitle("Readership")
-        .WithTheme(VisualTheme.Graphite().WithFontFamily(family), ThemeMode.Dark)
-        .WithSize(360, 220)
-        .WithXLabels("A", "B", "C")
+        .Title("Readership")
+        .Theme(VisualTheme.Graphite().WithFontFamily(family)).ThemeMode(ThemeMode.Dark)
+        .Size(360, 220)
+        .XLabels("A", "B", "C")
         .AddBar("Issues", ChartPoints.FromValues(12, 18, 9));
 
     private static VisualCanvas Canvas(string family) =>
-        VisualCanvas.Create(400, 80).WithBackdrop(VisualCanvasBackdropStyle.Transparent).WithTheme(VisualTheme.Graphite().WithFontFamily(family))
+        VisualCanvas.Create(400, 80).BackdropStyle(VisualCanvasBackdropStyle.Transparent).Theme(VisualTheme.Graphite().WithFontFamily(family))
             .AddText(10, 10, 380, "Registered canvas text", 24, ChartColors.White, emphasized: true);
 
     private static byte[] Svg(string family, int weight) =>

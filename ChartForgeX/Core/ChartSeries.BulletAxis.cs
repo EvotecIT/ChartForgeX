@@ -1,4 +1,5 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
@@ -6,10 +7,11 @@ public sealed partial class ChartSeries {
     private ChartAxis? _bulletAxis;
     /// <summary>Gets a detached copy of the optional local numeric bullet axis. Null uses the reading domain and default axis presentation.</summary>
     /// <remarks>Changes to this copy are not installed. Use ConfigureBulletAxis; local axes require ChartBulletOptions.IndependentAxes.</remarks>
+    [NoFluent]
     public ChartAxis? BulletAxis => _bulletAxis?.Clone();
 
     /// <summary>Atomically captures one bullet row's numeric bounds, scale, reversal and caption policy.</summary>
-    public ChartSeries ConfigureBulletAxis(Action<ChartAxis> configure) {
+    internal ChartSeries SetBulletAxis(Action<ChartAxis> configure) {
         RequireObservationKind(ChartSeriesKind.Bullet);
         var axis = ChartOptionConfiguration.Configure(_bulletAxis ?? new ChartAxis(), configure, candidate => candidate.Clone());
         ValidateBulletAxis(axis); _bulletAxis = axis; return this;

@@ -21,7 +21,7 @@ public sealed class ChartLinkedNumericSnapshotTests {
     public void ReadoutsReuseNativeNumericSnapshotsWithoutFormattingHiddenAxes(string family, int expectedCalls, string expectedValue) {
         var chart = CreateChart(family);
         var calls = 0;
-        chart.WithValueFormatter(value => value.ToString("0.00", CultureInfo.GetCultureInfo("pl-PL")) + " ms #" + ++calls);
+        chart.FormatValuesBy(value => value.ToString("0.00", CultureInfo.GetCultureInfo("pl-PL")) + " ms #" + ++calls);
         var prepared = chart.Prepare(new VisualRenderContext());
         var svg = prepared.ToSvg();
         var point = Mark(svg);
@@ -34,7 +34,7 @@ public sealed class ChartLinkedNumericSnapshotTests {
             Assert.Equal("10.25", point.Attribute("data-cfx-start")!.Value);
             Assert.Equal("24.75", point.Attribute("data-cfx-end")!.Value);
         }
-        chart.WithValueFormatter(_ => throw new InvalidOperationException("A prepared snapshot must stay detached."));
+        chart.FormatValuesBy(_ => throw new InvalidOperationException("A prepared snapshot must stay detached."));
         Assert.Equal(svg, prepared.ToSvg());
         Assert.NotEmpty(prepared.ToPng());
         Assert.Equal(expectedCalls, calls);
@@ -53,8 +53,8 @@ public sealed class ChartLinkedNumericSnapshotTests {
     public void CustomObservationCaptionsKeepUnneededNumericFormattingLazyDuringReadoutCapture(string family) {
         var chart = CreateChart(family);
         const string caption = "Operator supplied complete caption";
-        chart.Series[0].WithPointLabel(0, caption);
-        chart.WithValueFormatter(_ => throw new InvalidOperationException("The custom caption bypasses numeric formatting."));
+        chart.Series[0].PointLabel(0, caption);
+        chart.FormatValuesBy(_ => throw new InvalidOperationException("The custom caption bypasses numeric formatting."));
         var prepared = chart.Prepare(new VisualRenderContext());
         var point = Mark(prepared.ToSvg());
         Assert.Equal(caption, point.Attribute("data-cfx-label")!.Value);
@@ -69,12 +69,12 @@ public sealed class ChartLinkedNumericSnapshotTests {
     [InlineData("dumbbell", "start", "end")]
     [InlineData("rangearea", "lower", "upper")]
     public void EqualTupleMembersRetainTheirOwnCapturedFormatterResults(string family, string firstKey, string secondKey) {
-        var chart = Chart.Create().WithAxes(false).WithLegend(false).WithHeader(false).WithDataLabels(false);
+        var chart = Chart.Create().Axes(false).Legend(false).ShowHeader(false).DataLabels(false);
         if (family == "rangebar") chart.AddRangeBar("Interval", new[] { new ChartInterval(1, 10.25, 10.25) });
         else if (family == "dumbbell") chart.AddDumbbell("Comparison", new[] { new ChartDumbbell(1, 10.25, 10.25) });
         else chart.AddRangeArea("Envelope", new[] { new ChartRangeBand(1, 10.25, 10.25) });
         var calls = 0;
-        chart.WithValueFormatter(value => value.ToString("0.00", CultureInfo.GetCultureInfo("pl-PL")) + " ms #" + ++calls);
+        chart.FormatValuesBy(value => value.ToString("0.00", CultureInfo.GetCultureInfo("pl-PL")) + " ms #" + ++calls);
         var prepared = chart.Prepare(new VisualRenderContext());
         var svg = prepared.ToSvg();
         var point = Mark(svg);
@@ -89,7 +89,7 @@ public sealed class ChartLinkedNumericSnapshotTests {
     }
 
     private static Chart CreateChart(string family) {
-        var chart = Chart.Create().WithAxes(false).WithLegend(false).WithHeader(false).WithDataLabels(false);
+        var chart = Chart.Create().Axes(false).Legend(false).ShowHeader(false).DataLabels(false);
         chart.Options.ShowGrid = false;
         return family switch {
             "bar" => chart.AddBar("Requests", new[] { new ChartPoint(1, 10.25) }),
@@ -100,7 +100,7 @@ public sealed class ChartLinkedNumericSnapshotTests {
             "boxplot" => chart.AddSeries(ChartSeries.CreateBoxPlot(new ChartSeriesId("latency"), "Latency", new[] { new ChartBoxPlot(1, 1, 2, 3.25, 4, 5) })),
             "rangebar" => chart.AddRangeBar("Interval", new[] { new ChartInterval(1, 10.25, 24.75) }),
             "rangebarendpoints" => chart.AddRangeBar("Interval", new[] { new ChartInterval(1, 10.25, 24.75) })
-                .ConfigureRangeBar(options => options.LabelContent = ChartRangeBarLabelContent.Endpoints),
+                .RangeBar(options => options.LabelContent = ChartRangeBarLabelContent.Endpoints),
             "dumbbell" => chart.AddDumbbell("Comparison", new[] { new ChartDumbbell(1, 10.25, 24.75) }),
             "rangearea" => chart.AddRangeArea("Envelope", new[] { new ChartRangeBand(1, 10.25, 24.75) }),
             "waterfall" => chart.AddWaterfall("Net change", new[] { ChartWaterfallItem.OpeningBalance(1, 10.25) }),

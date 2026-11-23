@@ -13,11 +13,11 @@ public sealed class PolarAxisOrientationDepthTests {
     [InlineData(true, 360, false)] [InlineData(true, 360, true)] [InlineData(true, 800, false)] [InlineData(true, 800, true)]
     [InlineData(false, 360, false)] [InlineData(false, 360, true)] [InlineData(false, 800, false)] [InlineData(false, 800, true)]
     public void RelativeAndFixedAxisTextShareRotatedNativeFootprintsAndCompleteSourceCaptions(bool radar, int width, bool dark) {
-        var chart = Chart.Create().WithSize(width, 420).WithHeader(false).WithLegend(false).WithDataLabels(false).WithYAxisBounds(0, 100)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+        var chart = Chart.Create().Size(width, 420).ShowHeader(false).Legend(false).DataLabels(false).YAxis(y => y.Bounds(0, 100))
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         var points = Enumerable.Range(0, 4).Select(index => new ChartPoint(radar ? index + 1 : index * Math.PI / 2, 35 + index * 15)).ToArray();
-        if (radar) chart.WithXLabels("North", "East", "South", "West").AddRadarLine("Signal", points); else chart.AddPolar("Signal", points);
-        chart.Options.PolarRotationDegrees = 25;
+        if (radar) chart.XLabels("North", "East", "South", "West").AddRadarLine("Signal", points); else chart.AddPolar("Signal", points);
+        chart.Options.Polar.RotationDegrees = 25;
         chart.Options.XAxis.LabelOrientation = ChartAxisLabelOrientation.Parallel; chart.Options.XAxis.LabelAngle = 12;
         chart.Options.YAxis.LabelOrientation = ChartAxisLabelOrientation.Perpendicular; chart.Options.YAxis.LabelAngle = -15;
         var prepared = PolarDepthContractTests.Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng(); var document = XDocument.Parse(svg);

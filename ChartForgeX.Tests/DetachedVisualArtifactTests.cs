@@ -7,6 +7,7 @@ using ChartForgeX.Rendering;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualArtifacts;
 using Xunit;
+using ChartForgeX.Accessibility;
 
 namespace ChartForgeX.Tests;
 
@@ -22,7 +23,7 @@ public sealed class DetachedVisualArtifactTests {
         source.ExportFormats = VisualArtifactExportFormat.Svg | VisualArtifactExportFormat.Png;
         source.NaturalSize = new VisualArtifactSize(80, 40);
         source.PreserveNaturalSize = true;
-        source.Accessibility.WithTextAlternative("Original accessible name", "Description", "pl-PL");
+        source.Accessibility.TextAlternative("Original accessible name", "Description", "pl-PL");
         source.Metadata.Add("owner", "source");
         var region = new VisualArtifactRegion {
             Id = "region", Kind = "node", Label = "Original region", Bounds = new ChartRect(1, 2, 3, 4),
@@ -47,7 +48,7 @@ public sealed class DetachedVisualArtifactTests {
         Assert.Equal(region.AlternativeText, copy.Regions[0].AlternativeText);
         Assert.Equal(source.Legend[0].Color, copy.Legend[0].Color);
         copy.Title = "Copy";
-        copy.Accessibility.WithTextAlternative("Copy accessible name", "Copy description", "de-DE").AsDecorative();
+        copy.Accessibility.TextAlternative("Copy accessible name", "Copy description", "de-DE").Decorative();
         copy.Metadata["owner"] = "copy";
         copy.Regions[0].Label = "Copy region";
         copy.Regions[0].Metadata["state"] = "copy";
@@ -102,7 +103,7 @@ public sealed class DetachedVisualArtifactTests {
         source.PreserveNaturalSize = true;
         source.Accessibility.Language = "pl-PL";
         // Updating the borrowed model after envelope creation must still resolve producer accessibility.
-        topology.Accessibility.WithTextAlternative("Updated model name", "Updated model description", "pl-PL");
+        topology.Accessibility.TextAlternative("Updated model name", "Updated model description", "pl-PL");
         var options = new VisualArtifactRenderOptions {
             Topology = new TopologyRenderOptions { IncludeLegend = false, PngOutputScale = 2 },
             Raster = new RasterImageOptions { Dpi = 144 }
@@ -215,17 +216,17 @@ public sealed class DetachedVisualArtifactTests {
     [Fact]
     public void MutatingWatermarkApiStillReturnsAndAppendsToTheOriginalArtifact() {
         var source = CreateTopology().ToVisualArtifact();
-        Assert.Same(source, source.WithWatermarks());
-        Assert.Same(source, source.WithWatermarks(VisualWatermark.FromText("FIRST")));
-        Assert.Same(source, source.WithWatermarks(VisualWatermark.FromText("SECOND")));
+        Assert.Same(source, source.AddWatermarks());
+        Assert.Same(source, source.AddWatermarks(VisualWatermark.FromText("FIRST")));
+        Assert.Same(source, source.AddWatermarks(VisualWatermark.FromText("SECOND")));
         string svg = source.ToSvg();
         Assert.Contains("FIRST", svg);
         Assert.Contains("SECOND", svg);
         Assert.Equal(2, XDocument.Parse(svg).Descendants().Count(element => (string?)element.Attribute("data-cfx-role") == "watermarks"));
     }
 
-    private static TopologyChart CreateTopology() => TopologyChart.Create().WithViewport(320, 180).WithLegend(null)
-        .WithLayout(TopologyLayoutMode.Matrix).WithTitle("Detached topology")
+    private static TopologyChart CreateTopology() => TopologyChart.Create().Viewport(new TopologyViewport(320, 180)).Legend((TopologyLegend?)null)
+        .LayoutMode(TopologyLayoutMode.Matrix).Title("Detached topology")
         .AddAutoNode("api", "API").AddAutoNode("worker", "Worker").AddAutoNode("data", "Data")
         .AddEdge("request", "api", "worker").AddEdge("storage", "worker", "data");
 

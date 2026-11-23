@@ -134,8 +134,8 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         if (!Enabled) return;
         var series = ChartSeries.CreateHistogram(new ChartSeriesId("histogram"), "Duration", new[] { .2, .4, 1, 1.5 },
             ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 1, 2 }))
-            .WithObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("second"), new ChartObservationId("boundary"), new ChartObservationId("third") });
-        var chart = Chart.Create().WithSize(640, 360).AddSeries(series);
+            .ObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("second"), new ChartObservationId("boundary"), new ChartObservationId("third") });
+        var chart = Chart.Create().Size(640, 360).AddSeries(series);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(Fit), 820, 600);
         var page = session.Page;
         await BindLinkedEventsAsync(page);
@@ -162,9 +162,9 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
 
     private static Chart LinkedBars(bool dark = false) {
         var series = ChartSeries.CreateBar(new ChartSeriesId("orders"), "Orders", new[] { new ChartPoint(0, 34), new ChartPoint(1, 52), new ChartPoint(2, 41) })
-            .WithObservationIds(new[] { new ChartObservationId("north"), new ChartObservationId("south"), new ChartObservationId("west") });
-        return Chart.Create().WithSize(640, 360).WithTheme(ChartForgeX.Themes.VisualTheme.Graphite(), dark ? ChartForgeX.ThemeMode.Dark : ChartForgeX.ThemeMode.Light)
-            .WithXLabels(new[] { new ChartAxisLabel(0, "North"), new ChartAxisLabel(1, "South"), new ChartAxisLabel(2, "West") }).WithYAxisBounds(0, 60).AddSeries(series);
+            .ObservationIds(new[] { new ChartObservationId("north"), new ChartObservationId("south"), new ChartObservationId("west") });
+        return Chart.Create().Size(640, 360).Theme(ChartForgeX.Themes.VisualTheme.Graphite()).ThemeMode(dark ? ChartForgeX.ThemeMode.Dark : ChartForgeX.ThemeMode.Light)
+            .XLabels(new[] { new ChartAxisLabel(0, "North"), new ChartAxisLabel(1, "South"), new ChartAxisLabel(2, "West") }).YAxis(y => y.Bounds(0, 60)).AddSeries(series);
     }
     private static string LinkedPoint(string id) => "[data-cfx-role=point][data-cfx-observation-id=" + id + "]";
     private static Task<int> LinkedSelectionCountAsync(IPage page) => page.EvaluateAsync<int>("()=>chartController.getSelection().length");

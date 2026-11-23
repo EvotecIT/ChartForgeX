@@ -41,10 +41,10 @@ internal static class ChartTicks {
     public static IReadOnlyList<double> Generate(ChartAxis axis, double min, double max) {
         if (axis == null) throw new ArgumentNullException(nameof(axis));
         if (ChartAxisTickPolicy.Generate(axis, min, max, inside: false) is { } authored) return authored;
-        if (axis.Scale == ChartScaleKind.Linear && axis.IntegerTicks) return GenerateInteger(min, max, axis.TickCount, axis.Minimum.HasValue || axis.Maximum.HasValue);
+        if (axis.Scale == ChartScaleKind.Linear && axis.IntegerTicks) return GenerateInteger(min, max, axis.TickCount, axis.Min.HasValue || axis.Max.HasValue);
         if (axis.Scale == ChartScaleKind.Time) return ChartTimeScale.Generate(axis, min, max, false) ?? new NumericTimeTicks(Generate(min, max, axis.TickCount));
         if (axis.Scale == ChartScaleKind.Logarithmic) return GenerateLogarithmic(axis, min, max, axis.TickCount, false);
-        if (axis.Scale != ChartScaleKind.SymmetricLogarithmic) return axis.Minimum.HasValue || axis.Maximum.HasValue ? GenerateInside(min, max, axis.TickCount) : Generate(min, max, axis.TickCount);
+        if (axis.Scale != ChartScaleKind.SymmetricLogarithmic) return axis.Min.HasValue || axis.Max.HasValue ? GenerateInside(min, max, axis.TickCount) : Generate(min, max, axis.TickCount);
         return GenerateTransformed(axis, min, max, axis.TickCount, false);
     }
 

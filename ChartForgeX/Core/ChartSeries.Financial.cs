@@ -4,15 +4,11 @@ namespace ChartForgeX.Core;
 
 public sealed partial class ChartSeries {
     /// <summary>Gets the shared direction-specific candlestick and OHLC configuration.</summary>
-    public ChartFinancialOptions Financial { get; private set; } = new();
-
-    /// <summary>Configures financial body, wick and OHLC paint without changing the source observations.</summary>
-    /// <param name="configure">The configuration callback.</param>
-    /// <returns>The current series.</returns>
-    public ChartSeries ConfigureFinancial(Action<ChartFinancialOptions> configure) {
-        if (configure == null) throw new ArgumentNullException(nameof(configure));
-        Financial = ChartOptionConfiguration.Configure(Financial, configure, options => options.Clone()); return this;
+    public ChartFinancialOptions Financial {
+        get => _financial;
+        set => _financial = value ?? throw new ArgumentNullException(nameof(value));
     }
+    private ChartFinancialOptions _financial = new();
 
     internal void ValidateFinancialOptions() {
         if (!Financial.IsConfigured) return;

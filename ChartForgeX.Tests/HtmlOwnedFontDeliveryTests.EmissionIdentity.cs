@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Xml.Linq;
 using ChartForgeX.Interactivity.Html;
 using Xunit;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.Tests;
 
@@ -17,7 +18,7 @@ public sealed partial class HtmlOwnedFontDeliveryTests {
         Assert.Equal(original.Select(face => (face.Alias, face.Font.CapturedByteIdentity, face.Weight, face.Italic)),
             second.WideEmission!.Fonts!.Faces.Select(face => (face.Alias, face.Font.CapturedByteIdentity, face.Weight, face.Italic)));
         Assert.NotEqual(first.WideEmission.Svg, second.WideEmission.Svg);
-        var changed = renderer.PrepareSection(chart.WithTitle("A new title"), configure: value => value.IdScope = "first-font-scope");
+        var changed = renderer.PrepareSection(chart.Title("A new title"), configure: value => value.IdScope = "first-font-scope");
         using var payload = JsonDocument.Parse(renderer.PrepareNativeTransitionJson(changed, new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.InitialFade, 3)));
         var aliases = changed.WideEmission!.Fonts!.Faces.Select(face => face.Alias).ToHashSet(StringComparer.Ordinal);
         foreach (var frame in payload.RootElement.GetProperty("drawings").GetProperty("wide").GetProperty("frames").EnumerateArray()) {

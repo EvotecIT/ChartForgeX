@@ -8,14 +8,14 @@ public sealed partial class Chart {
     /// </summary>
     /// <param name="showHeader">True to keep the chart title and subtitle visible; otherwise false.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithOverlay(bool showHeader = false) {
+    public Chart Overlay(bool showHeader = false) {
         Options.TransparentBackground = true;
         Options.ShowHeader = showHeader;
-        Options.ShowLegend = false;
+        Options.Legend.Visible = false;
         Options.ShowGrid = false;
         Options.ShowAxes = false;
-        Options.ShowXAxis = false;
-        Options.ShowYAxis = false;
+        Options.XAxis.Visible = false;
+        Options.YAxis.Visible = false;
         Options.ShowAxisLines = false;
         Options.ShowCard = false;
         Options.ShowPlotBackground = false;

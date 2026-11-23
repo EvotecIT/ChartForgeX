@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Topology;
 
 /// <summary>
 /// Defines deterministic, script-free topology motion for SVG and sampled raster exports.
 /// </summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class TopologyMotionOptions {
     private string? _scenarioId;
     private string? _markerColor;
@@ -17,13 +19,25 @@ public sealed class TopologyMotionOptions {
     public List<string> EdgeIds { get; } = new();
 
     /// <summary>Gets or sets the animation duration in seconds.</summary>
-    public double DurationSeconds { get; set; } = 4;
+    public double DurationSeconds {
+        get => _durationSeconds;
+        set => _durationSeconds = RequiredPositiveFinite(value, nameof(value), "Topology motion duration must be a positive finite number.");
+    }
+    private double _durationSeconds = 4;
 
     /// <summary>Gets or sets the sampled frame rate used by animated raster exports.</summary>
-    public double FramesPerSecond { get; set; } = 12;
+    public double FramesPerSecond {
+        get => _framesPerSecond;
+        set => _framesPerSecond = RequiredPositiveFinite(value, nameof(value), "Topology motion frame rate must be a positive finite number.");
+    }
+    private double _framesPerSecond = 12;
 
     /// <summary>Gets or sets the maximum number of frames sampled by animated raster exports.</summary>
-    public int MaximumRasterFrames { get; set; } = 240;
+    public int MaximumRasterFrames {
+        get => _maximumRasterFrames;
+        set => _maximumRasterFrames = value > 0 ? value : throw new ArgumentOutOfRangeException(nameof(value), value, "Topology motion raster frame limit must be greater than zero.");
+    }
+    private int _maximumRasterFrames = 240;
 
     /// <summary>Gets or sets whether the animation loops.</summary>
     public bool Loop { get; set; } = true;
@@ -32,7 +46,11 @@ public sealed class TopologyMotionOptions {
     public double Progress { get; set; }
 
     /// <summary>Gets or sets the moving route marker radius.</summary>
-    public double MarkerRadius { get; set; } = 5.5;
+    public double MarkerRadius {
+        get => _markerRadius;
+        set => _markerRadius = RequiredPositiveFinite(value, nameof(value), "Topology motion marker radius must be a positive finite number.");
+    }
+    private double _markerRadius = 5.5;
 
     /// <summary>Gets or sets the optional moving route marker color. When unset, the scenario or edge color is used.</summary>
     public string? MarkerColor { get => _markerColor; set => _markerColor = string.IsNullOrWhiteSpace(value) ? null : value!.Trim(); }
@@ -84,59 +102,6 @@ public sealed class TopologyMotionOptions {
     }
 
     /// <summary>
-    /// Sets the animation duration.
-    /// </summary>
-    /// <param name="seconds">The duration in seconds.</param>
-    /// <returns>The current motion options.</returns>
-    public TopologyMotionOptions WithDuration(double seconds) {
-        DurationSeconds = RequiredPositiveFinite(seconds, nameof(seconds), "Topology motion duration must be a positive finite number.");
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the sampled frame rate used by animated raster exports.
-    /// </summary>
-    /// <param name="framesPerSecond">The sampled frame rate.</param>
-    /// <returns>The current motion options.</returns>
-    public TopologyMotionOptions WithFrameRate(double framesPerSecond) {
-        FramesPerSecond = RequiredPositiveFinite(framesPerSecond, nameof(framesPerSecond), "Topology motion frame rate must be a positive finite number.");
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the maximum number of frames sampled by animated raster exports.
-    /// </summary>
-    /// <param name="maximumFrames">The maximum sampled frame count.</param>
-    /// <returns>The current motion options.</returns>
-    public TopologyMotionOptions WithFrameLimit(int maximumFrames) {
-        if (maximumFrames <= 0) throw new ArgumentOutOfRangeException(nameof(maximumFrames), maximumFrames, "Topology motion raster frame limit must be greater than zero.");
-        MaximumRasterFrames = maximumFrames;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the moving route marker radius and optional color.
-    /// </summary>
-    /// <param name="radius">The marker radius.</param>
-    /// <param name="color">Optional marker color.</param>
-    /// <returns>The current motion options.</returns>
-    public TopologyMotionOptions WithMarker(double radius, string? color = null) {
-        MarkerRadius = RequiredPositiveFinite(radius, nameof(radius), "Topology motion marker radius must be a positive finite number.");
-        MarkerColor = color;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the optional moving route marker color.
-    /// </summary>
-    /// <param name="color">The marker color. Empty values clear the override.</param>
-    /// <returns>The current motion options.</returns>
-    public TopologyMotionOptions WithMarkerColor(string? color) {
-        MarkerColor = color;
-        return this;
-    }
-
-    /// <summary>
     /// Sets the sampled progress used by static raster frame rendering.
     /// </summary>
     /// <param name="progress">Progress from 0.0 to 1.0.</param>
@@ -144,16 +109,6 @@ public sealed class TopologyMotionOptions {
     public TopologyMotionOptions AtProgress(double progress) {
         if (progress < 0 || progress > 1 || double.IsNaN(progress) || double.IsInfinity(progress)) throw new ArgumentOutOfRangeException(nameof(progress), progress, "Topology motion progress must be between 0.0 and 1.0.");
         Progress = progress;
-        return this;
-    }
-
-    /// <summary>
-    /// Enables or disables endpoint node pulses for explicit-edge route motion.
-    /// </summary>
-    /// <param name="enabled">Whether endpoint nodes should pulse.</param>
-    /// <returns>The current motion options.</returns>
-    public TopologyMotionOptions WithEndpointPulses(bool enabled = true) {
-        PulseRouteEndpoints = enabled;
         return this;
     }
 

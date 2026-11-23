@@ -22,7 +22,7 @@ public sealed class ComfortableCalendarAxisTests {
     [InlineData("date-bars", ThemeMode.Light)]
     [InlineData("date-bars", ThemeMode.Dark)]
     public void AutomaticCalendarLabelsKeepMeasuredBreathingRoomAndTheirOwnTicks(string scenario, ThemeMode mode) {
-        var chart = Fixture(scenario).WithThemeMode(mode);
+        var chart = Fixture(scenario).ThemeMode(mode);
         var prepared = Prepare(chart);
         ScatterBubbleColorRenderingTests.Capture(prepared, "comfortable-calendar-" + scenario + "-" + mode);
         var schedule = scenario.StartsWith("state-", StringComparison.Ordinal);
@@ -62,7 +62,7 @@ public sealed class ComfortableCalendarAxisTests {
         try {
             CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(culture);
             var start = new DateTime(2026, 9, 14);
-            var chart = Base(110).ConfigureYAxis(axis => axis.Visible = false).WithPadding(0, 0, 0, 0)
+            var chart = Base(110).YAxis(axis => axis.Visible = false).Padding(0, 0, 0, 0)
                 .AddLine("Readings", new[] { new ChartPoint(start, 10), new ChartPoint(start.AddDays(14), 20) });
             var prepared = Prepare(chart);
             ScatterBubbleColorRenderingTests.Capture(prepared, "numeric-short-date-" + culture);
@@ -81,7 +81,7 @@ public sealed class ComfortableCalendarAxisTests {
         var automatic = Prepare(chart);
         Assert.All(Labels(automatic, "axis-x-label"), label => Assert.Matches("^[0-9]{4}-[0-9]{2}-[0-9]{2}$", label.Text.Lines.Single().Text));
         var polish = CultureInfo.GetCultureInfo("pl-PL");
-        chart.ConfigureXAxis(axis => axis.WithLabelFormatter(value => DateTime.FromOADate(value).ToString("d MMM yyyy", polish)));
+        chart.XAxis(axis => axis.LabelBy(value => DateTime.FromOADate(value).ToString("d MMM yyyy", polish)));
         Assert.Contains(Labels(Prepare(chart), "axis-x-label"), label => label.Text.Lines.Single().Text.Contains("sty", StringComparison.Ordinal));
     }
 
@@ -89,9 +89,9 @@ public sealed class ComfortableCalendarAxisTests {
     [InlineData(ThemeMode.Light)]
     [InlineData(ThemeMode.Dark)]
     public void AnAuthoredFormatterDoesNotOptIntoDenserAutomaticCalendarTicks(ThemeMode mode) {
-        var chart = Fixture("threshold-month").WithThemeMode(mode);
+        var chart = Fixture("threshold-month").ThemeMode(mode);
         var automatic = Labels(Prepare(chart), "axis-x-label");
-        chart.ConfigureXAxis(axis => axis.WithLabelFormatter(value => DateTime.FromOADate(value).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)));
+        chart.XAxis(axis => axis.LabelBy(value => DateTime.FromOADate(value).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)));
         var formatted = Labels(Prepare(chart), "axis-x-label");
         Assert.Equal(automatic.Select(node => node.Text.Lines.Single().Text), formatted.Select(node => node.Text.Lines.Single().Text));
         Assert.Equal(automatic.Select(node => node.X), formatted.Select(node => node.X));
@@ -110,7 +110,7 @@ public sealed class ComfortableCalendarAxisTests {
     [InlineData("date-bars", ThemeMode.Dark)]
     public async Task StaticBrowserCalendarCaptionsRetainTheNativeComfortableSpacing(string scenario, ThemeMode mode) {
         if (!InteractiveChartBrowser.Enabled) return;
-        var chart = Fixture(scenario).WithThemeMode(mode);
+        var chart = Fixture(scenario).ThemeMode(mode);
         var role = scenario.StartsWith("state-", StringComparison.Ordinal) ? "schedule-tick-label" : "axis-x-label";
         var prepared = Prepare(chart);
         var native = Labels(prepared, role);
@@ -127,7 +127,7 @@ public sealed class ComfortableCalendarAxisTests {
             File.WriteAllText(Path.Combine(captures, name + ".svg"), prepared.ToSvg());
             File.WriteAllText(Path.Combine(captures, name + ".json"), JsonSerializer.Serialize(new {
                 scenario, mode = mode.ToString(), browser = InteractiveChartBrowser.Engine.ToString(),
-                authoredFamily = chart.Options.Theme.Typography.Family, authoredFile = chart.Options.PngFontPath,
+                authoredFamily = chart.Options.Theme.Typography.Family, authoredFile = chart.Options.Png.FontPath,
                 native = native.Select(node => {
                     var line = node.Text.Lines.Single();
                     var ink = node.Text.Face.Font?.MeasureGlyphInk(line.Glyphs, node.Text.Size, node.Text.Face.SynthesizeItalic);
@@ -158,7 +158,7 @@ public sealed class ComfortableCalendarAxisTests {
         var start = new DateTime(2026, 10, 13);
         if (scenario.StartsWith("state-", StringComparison.Ordinal)) {
             var hours = scenario == "state-ten-hours" ? 10 : 24;
-            var chart = Base(hours == 10 ? 800 : 720).WithSize(hours == 10 ? 800 : 720, 320);
+            var chart = Base(hours == 10 ? 800 : 720).Size(hours == 10 ? 800 : 720, 320);
             var first = start.AddHours(hours == 10 ? 8 : 0);
             chart.AddStateTimelineLane("Primary", new[] { new ChartStateTimelineSegment(first, first.AddHours(hours), "up") });
             return chart;
@@ -172,10 +172,10 @@ public sealed class ComfortableCalendarAxisTests {
             .Select(day => new ChartPoint(new DateTime(2026, 9, 14).AddDays(day * 2), 40 + day)));
     }
 
-    private static Chart Base(int width) => Chart.Create().WithSize(width, 320).WithHeader(false).WithLegend(false).WithXAxisTimeScale()
-        .WithFontFamily(BrowserProofFonts.CarlitoFamily)
-        .WithPngFont(BrowserProofFonts.CarlitoPath)
-        .ConfigureGridStyle(style => style.ShowVerticalLines = true);
+    private static Chart Base(int width) => Chart.Create().Size(width, 320).ShowHeader(false).Legend(false).XAxis(x => x.TimeScale())
+        .FontFamily(BrowserProofFonts.CarlitoFamily)
+        .Png(p => p.FontPath(BrowserProofFonts.CarlitoPath))
+        .GridLineStyle(style => style.ShowVerticalLines = true);
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
     private static VisualSceneText[] Labels(PreparedVisual prepared, string role) => prepared.Scene.Nodes.OfType<VisualSceneText>()
         .Where(node => node.Role == role).OrderBy(Left).ToArray();

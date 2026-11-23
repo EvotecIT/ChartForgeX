@@ -54,7 +54,7 @@ public sealed class StorySourceTimelineTests {
 
     [Fact]
     public void EditorChromeCannotSilentlyConsumeTheWholeSourceViewport() {
-        var story = VisualStory.Create("Narrow editor").WithSize(600, 400);
+        var story = VisualStory.Create("Narrow editor").Size(600, 400);
         story.Scene("edit", "Edit", 2, VisualStorySceneLayout.Split)
             .Panel("source", new VisualStorySourceSurface(StorySourceText.Create("Ready"), options: new VisualStorySourceOptions("demo.cs")), weight: .15)
             .Panel("result", new VisualStoryTextSurface("Ready"), weight: .85);
@@ -113,7 +113,7 @@ public sealed class StorySourceTimelineTests {
     public void PortraitReflowKeepsReadableEditorTextAndChaptersInThePlayer() {
         var editor = StorySourceTimeline.Create(StorySourceText.Create(""))
             .Type("ready", TimeSpan.FromSeconds(1));
-        var story = Story(editor).WithFormat(VisualStoryFormat.Portrait, 480);
+        var story = Story(editor).Format(VisualStoryFormat.Portrait, 480);
         var prepared = story.Prepare(new VisualStoryPlaybackOptions(TimeSpan.Zero, TimeSpan.Zero, 1));
         var svg = prepared.ToAnimatedSvg(new VisualStoryFrameOptions(4));
         var root = XDocument.Parse(svg).Root!;
@@ -170,7 +170,7 @@ public sealed class StorySourceTimelineTests {
     }
 
     private static VisualStory Story(StorySourceTimeline editor) {
-        var story = VisualStory.Create("Source editing").WithSize(600, 400);
+        var story = VisualStory.Create("Source editing").Size(600, 400);
         story.Scene("edit", "Edit", 2).Panel("result", new VisualStorySourceSurface(editor, options: new VisualStorySourceOptions("demo.ps1")));
         story.Outcome("source", "Completed source", "result"); return story;
     }

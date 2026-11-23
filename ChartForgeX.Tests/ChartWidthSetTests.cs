@@ -5,8 +5,8 @@ using Xunit;
 namespace ChartForgeX.Tests;
 
 public sealed class ChartWidthSetTests {
-    private static Chart Chart() => ChartForgeX.Core.Chart.Create().WithTitle("Checks over the week").WithSize(1000, 320)
-        .WithXLabels("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+    private static Chart Chart() => ChartForgeX.Core.Chart.Create().Title("Checks over the week").Size(1000, 320)
+        .XLabels("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
         .AddLine("Passed", Enumerable.Range(1, 7).Select(index => new ChartPoint(index, index * 3 % 7 + 2)).ToArray());
 
     [Fact]
@@ -23,7 +23,7 @@ public sealed class ChartWidthSetTests {
         // A default (Auto) chart follows the viewer in every drawing; an explicit Light chart keeps literal colours.
         Assert.Contains("var(--cfx-auto-", html, StringComparison.Ordinal);
         Assert.Contains("prefers-color-scheme:dark", html, StringComparison.Ordinal);
-        var light = new HtmlChartRenderer().RenderWidths(Chart().WithTheme(ChartForgeX.Themes.VisualTheme.Graphite(), ThemeMode.Light), "checks");
+        var light = new HtmlChartRenderer().RenderWidths(Chart().Theme(ChartForgeX.Themes.VisualTheme.Graphite()).ThemeMode(ThemeMode.Light), "checks");
         Assert.DoesNotContain("var(--cfx-auto-", light, StringComparison.Ordinal);
     }
 

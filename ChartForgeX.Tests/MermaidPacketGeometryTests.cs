@@ -103,8 +103,8 @@ public sealed class MermaidPacketGeometryTests {
     [InlineData(0)]
     [InlineData(1000000)]
     public void ZeroAndOversizedGapsKeepDenseFieldsInsideTheirBitCells(double gap) {
-        var block = PacketLayoutBlock.Create().WithSize(80, 100).WithPadding(4).WithBitsPerRow(512)
-            .WithBitNumbers(false).WithFieldGap(gap).WithRowGap(gap).WithBitWidth(1000000).WithRowHeight(1000000)
+        var block = PacketLayoutBlock.Create().Size(80, 100).Padding(4).BitsPerRow(512)
+            .ShowBitNumbers(false).FieldGap(gap).RowGap(gap).BitWidth(1000000).RowHeight(1000000)
             .AddField(0, 0, "A").AddField(1, 1, "B").AddField(2, 512, "Payload");
         var fields = Fields(block);
         Assert.True(Number(fields[0], "x") + Number(fields[0], "width") <= Number(fields[1], "x") + .01);
@@ -131,7 +131,7 @@ public sealed class MermaidPacketGeometryTests {
         Assert.Empty(parsed.Diagnostics);
         var block = parsed.Document!.ToPacketLayoutBlock(new MermaidPacketRenderOptions { Width = width, Height = 300 });
         block.Options.ShowCard = false;
-        block.WithFieldGap(gap);
+        block.FieldGap(gap);
         var fields = Fields(block);
         Assert.All(fields, field => {
             Assert.InRange(Number(field, "x"), 0, width);
@@ -148,7 +148,7 @@ public sealed class MermaidPacketGeometryTests {
                 Number(fields[index], "x") + Number(fields[index], "width") + Number(ascending[index], "x"), 2);
         }
         block.BitOrder = PacketBitOrder.Descending;
-        block.WithTransparentBackground();
+        block.TransparentBackground();
         var raster = SvgRasterizer.Rasterize(block.ToSvg(), width, 300);
         Assert.Empty(raster.Diagnostics);
         var nativeImage = block.RenderRgba();
@@ -159,7 +159,7 @@ public sealed class MermaidPacketGeometryTests {
             Assert.InRange(actualInk[0] - expectedInk[0], -1, 1);
             Assert.InRange(actualInk[actualInk.Length - 1] - expectedInk[expectedInk.Length - 1], -1, 1);
         }
-        block.WithTransparentBackground(false);
+        block.TransparentBackground(false);
         if (!InteractiveChartBrowser.Enabled) return;
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body style='margin:0'>" + block.ToSvg() + "</body></html>", width, 300);
         var bounds = await session.Page.EvaluateAsync<string>("() => JSON.stringify([...document.querySelectorAll('[data-cfx-role=packet-field]')].map(n=>n.getBoundingClientRect().toJSON()))");

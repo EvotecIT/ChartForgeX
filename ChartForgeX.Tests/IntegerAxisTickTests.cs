@@ -15,7 +15,7 @@ public sealed class IntegerAxisTickTests {
     [InlineData(3)]
     [InlineData(4)]
     public void SmallCountDomainsGenerateWholeUnitPositions(int maximum) {
-        var axis = new ChartAxis().WithIntegerTicks();
+        var axis = new ChartAxis().IntegerTicks();
         var expected = Enumerable.Range(0, maximum + 1).Select(value => (double)value).ToArray();
         Assert.Equal(expected, ChartTicks.Generate(axis, 0, maximum));
         Assert.Equal(expected, ChartTicks.GenerateInside(axis, 0, maximum));
@@ -27,7 +27,7 @@ public sealed class IntegerAxisTickTests {
     [InlineData(-4, 4, 2)]
     [InlineData(-1e308, 1e308, 5e307)]
     public void LargerCountDomainsKeepBoundedRegularWholeNumberSteps(double minimum, double maximum, double expectedStep) {
-        var axis = new ChartAxis().WithIntegerTicks();
+        var axis = new ChartAxis().IntegerTicks();
         foreach (var ticks in new[] { ChartTicks.Generate(axis, minimum, maximum), ChartTicks.GenerateInside(axis, minimum, maximum) }) {
             Assert.InRange(ticks.Count, 2, axis.TickCount);
             Assert.All(ticks, tick => { Assert.True(double.IsFinite(tick)); Assert.Equal(Math.Round(tick), tick); });
@@ -41,25 +41,25 @@ public sealed class IntegerAxisTickTests {
     [InlineData(-.2, .2, new double[] { 0 })]
     [InlineData(-2.8, -.2, new double[] { -2, -1 })]
     public void FractionalBoundsNeverIntroduceFractionalFallbackTicks(double minimum, double maximum, double[] expected) {
-        var axis = new ChartAxis().WithBounds(minimum, maximum).WithIntegerTicks();
+        var axis = new ChartAxis().Bounds(minimum, maximum).IntegerTicks();
         Assert.Equal(expected, ChartTicks.Generate(axis, minimum, maximum));
         Assert.Equal(expected, ChartTicks.GenerateInside(axis, minimum, maximum));
-        Assert.Equal(minimum, axis.Minimum); Assert.Equal(maximum, axis.Maximum);
+        Assert.Equal(minimum, axis.Min); Assert.Equal(maximum, axis.Max);
     }
 
     [Fact]
     public void IntegerPolicyIsOptInAndPreservesAuthoredLabelsAndOtherScales() {
         var axis = new ChartAxis();
         Assert.Contains(.2, ChartTicks.GenerateInside(axis, 0, 1));
-        axis.WithIntegerTicks().Labels.Add(new ChartAxisLabel(.5, "Half"));
+        axis.IntegerTicks().Labels.Add(new ChartAxisLabel(.5, "Half"));
         Assert.Equal(new[] { .5 }, ChartTicks.ForAxis(axis, 0, 1));
         Assert.Equal(new[] { 0d, .5, 1d }, ChartTicks.ForValueAxis(axis, 0, 1));
         foreach (var scale in new[] { ChartScaleKind.Logarithmic, ChartScaleKind.SymmetricLogarithmic, ChartScaleKind.Time }) {
-            var ordinary = new ChartAxis().WithScale(scale);
-            axis.WithScale(scale);
+            var ordinary = new ChartAxis().Scale(scale);
+            axis.Scale(scale);
             Assert.Equal(ChartTicks.GenerateInside(ordinary, .1, .9), ChartTicks.GenerateInside(axis, .1, .9));
         }
-        axis.WithScale(ChartScaleKind.Linear).WithIntegerTicks(false);
+        axis.Scale(ChartScaleKind.Linear).IntegerTicks(false);
         Assert.Contains(.2, ChartTicks.GenerateInside(axis, 0, 1));
     }
 
@@ -67,7 +67,7 @@ public sealed class IntegerAxisTickTests {
     [InlineData(2, new double[] { 0, 4 })]
     [InlineData(100, new double[] { 0, 1, 2, 3, 4 })]
     public void TickCountPreferenceNeverRequiresFractionalPositions(int count, double[] expected) {
-        var axis = new ChartAxis().WithIntegerTicks(); axis.TickCount = count;
+        var axis = new ChartAxis().IntegerTicks(); axis.TickCount = count;
         Assert.Equal(expected, ChartTicks.GenerateInside(axis, 0, 4));
     }
 
@@ -77,8 +77,8 @@ public sealed class IntegerAxisTickTests {
     [InlineData(ChartSeriesKind.RadialBar, "radial-value-label")]
     [InlineData(ChartSeriesKind.RadialColumn, "radial-value-label")]
     public void RadialCountChartsReuseTheSharedIntegerValueTicks(ChartSeriesKind kind, string role) {
-        var chart = Chart.Create().WithSize(640, 400).WithLegend(false).WithDataLabels(false)
-            .WithXLabels("Ready", "Running", "Complete").WithYAxisIntegerTicks();
+        var chart = Chart.Create().Size(640, 400).Legend(false).DataLabels(false)
+            .XLabels("Ready", "Running", "Complete").YAxis(y => y.IntegerTicks());
         var values = new[] { new ChartPoint(1, 2), new ChartPoint(2, 0), new ChartPoint(3, 1) };
         switch (kind) {
             case ChartSeriesKind.Radar: chart.AddRadar("Items", values); break;
@@ -96,13 +96,13 @@ public sealed class IntegerAxisTickTests {
 
     [Fact]
     public void FractionalViewportWithoutAnIntegerRendersWithoutInventingEndpoints() {
-        var chart = Chart.Create().WithSize(480, 240).WithYAxisIntegerTicks().WithYAxisBounds(.2, .8)
+        var chart = Chart.Create().Size(480, 240).YAxis(y => y.IntegerTicks().Bounds(.2, .8))
             .AddLine("Measured", new[] { new ChartPoint(0, .4), new ChartPoint(1, .6) });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.DoesNotContain(prepared.Scene.Nodes, node => node.Role == "axis-y-label");
         Assert.DoesNotContain(XDocument.Parse(prepared.ToSvg()).Descendants(), node => (string?)node.Attribute("data-cfx-role") == "axis-y-label");
         Assert.NotEmpty(prepared.ToPng());
-        var expanded = ChartTicks.Generate(new ChartAxis().WithIntegerTicks(), 0, 0);
+        var expanded = ChartTicks.Generate(new ChartAxis().IntegerTicks(), 0, 0);
         Assert.True(expanded[0] < expanded[^1]);
         Assert.All(expanded, value => Assert.Equal(Math.Round(value), value));
     }
@@ -114,23 +114,23 @@ public sealed class IntegerAxisTickTests {
     [InlineData("horizontal-value")]
     public void SmallCountsKeepIntegerGridPositionsAndCaptionsInSvgAndNativePng(string location) {
         foreach (var maximum in new[] { 1, 2, 3, 4 }) foreach (var dark in new[] { false, true }) {
-            var chart = Chart.Create().WithSize(640, 300).WithHeader(false).WithLegend(false)
-                .WithPadding(20, 20, 20, 20)
-                .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-                .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
+            var chart = Chart.Create().Size(640, 300).ShowHeader(false).Legend(false)
+                .Padding(20, 20, 20, 20)
+                .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+                .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
             ChartAxis axis;
             if (location == "horizontal-value") {
-                chart.AddHorizontalBar("Items", new[] { new ChartPoint(1, 1), new ChartPoint(2, maximum) }).WithXAxisIntegerTicks();
+                chart.AddHorizontalBar("Items", new[] { new ChartPoint(1, 1), new ChartPoint(2, maximum) }).XAxis(xAxis => xAxis.IntegerTicks());
                 axis = chart.Options.XAxis;
             } else if (location == "x") {
-                chart.AddLine("Items", new[] { new ChartPoint(0, 1), new ChartPoint(maximum, 2) }).WithXAxisIntegerTicks();
+                chart.AddLine("Items", new[] { new ChartPoint(0, 1), new ChartPoint(maximum, 2) }).XAxis(xAxis => xAxis.IntegerTicks());
                 axis = chart.Options.XAxis;
             } else {
                 chart.AddBar("Items", new[] { new ChartPoint(1, 1), new ChartPoint(2, maximum) });
-                if (location == "secondary-y") { chart.Series[0].UseSecondaryValueAxis(); chart.WithSecondaryYAxisIntegerTicks(); axis = chart.Options.SecondaryYAxis; }
-                else { chart.WithYAxisIntegerTicks(); axis = chart.Options.YAxis; }
+                if (location == "secondary-y") { chart.Series[0].SecondaryAxis(); chart.SecondaryYAxis(s => s.IntegerTicks()); axis = chart.Options.SecondaryYAxis; }
+                else { chart.YAxis(yAxis => yAxis.IntegerTicks()); axis = chart.Options.YAxis; }
             }
-            if (dark) axis.WithBounds(0, maximum);
+            if (dark) axis.Bounds(0, maximum);
             axis.Reversed = dark;
             var points = chart.Series[0].Points.Select(point => (point.X, point.Y)).ToArray();
             var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);

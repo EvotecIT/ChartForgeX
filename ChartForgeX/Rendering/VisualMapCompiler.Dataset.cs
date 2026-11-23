@@ -12,9 +12,9 @@ internal static partial class VisualMapCompiler {
     internal sealed class MapDataset {
         internal MapDataset(Chart chart, int index, ChartColorPresentation? presentation = null) {
             Chart = chart; Index = index; Series = chart.Series[index];
-            Scale = Series.ColorScale ?? (Series.Kind is ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap ? chart.Options.MapColorScale : null);
+            Scale = Series.ColorScale ?? (Series.Kind is ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap ? chart.Options.Map.ColorScale : null);
             Presentation = presentation ?? new ChartColorPresentation(Series.ColorDimension.HasOverrides
-                ? Series.ColorDimension : chart.Options.MapColorDimension, chart.Options.Labels, chart.Options.Labels.Value, chart.Options.ValueFormat);
+                ? Series.ColorDimension : chart.Options.Map.ColorDimension, chart.Options.Labels, chart.Options.Labels.Value, chart.Options.ValueFormat);
             ColorValues = Series.Kind is ChartSeriesKind.RegionMap or ChartSeriesKind.TileMap ? Series.RegionValues.Select(item => (double?)item.Value).ToArray()
                 : Series.MapPoints.Select(item => item.ColorValue).ToArray();
             var values = ColorValues.Where(value => value.HasValue).Select(value => value!.Value).ToArray();

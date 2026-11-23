@@ -70,9 +70,9 @@ public sealed class TopologyTableAllocationRegressionTests {
     }
 
     private static TopologyChart Source(double? fontSize) {
-        var chart = TopologyChart.Create().WithViewport(1000, 700, 24).WithLegend(null)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family))
-            .WithLayout(TopologyLayoutMode.Layered, TopologyLayoutDirection.LeftToRight)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(1000, 700, 24)).Legend((TopologyLegend?)null)
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family))
+            .LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddAutoNode("facts", "Facts", width: 300, height: 240)
             .AddAutoNode("next", "Continue", width: 260, height: 100).AddEdge("next-step", "facts", "next");
         foreach (var item in chart.Nodes) {
@@ -81,7 +81,7 @@ public sealed class TopologyTableAllocationRegressionTests {
         }
         chart.Nodes[0].TextStyle = fontSize.HasValue ? new TextStyleOverride { FontSize = fontSize, FontFamily = BrowserProofFonts.Family } : null;
         chart.Nodes[0].FitLabelToContent = true;
-        var table = TableArtifact.Create("readings").WithTitle("Readings").WithSubtitle("Source values")
+        var table = TableArtifact.Create("readings").Title("Readings").Subtitle("Source values")
             .AddColumn("field", "Property").AddColumn("value", "Value").AddRow("/count", "count", "0").AddRow("/active", "active", "false");
         table.Rows[0].Cells[1].Metadata["raw.type"] = "Number";
         chart.Nodes[0].TableContent = table;

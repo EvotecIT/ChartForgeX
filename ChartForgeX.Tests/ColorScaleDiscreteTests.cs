@@ -61,7 +61,7 @@ public sealed class ColorScaleDiscreteTests {
     [InlineData("region-map", ChartMapScaleLegendPosition.Right, 460, 300)]
     [InlineData("tile-map", ChartMapScaleLegendPosition.Right, 460, 300)]
     public void MapBands_DrawEveryNamedIntervalAndMatchSvgAndNativePng(string family, ChartMapScaleLegendPosition placement, int width, int height) {
-        var chart = Map(family, placement).WithSize(width, height);
+        var chart = Map(family, placement).Size(width, height);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var document = XDocument.Parse(prepared.ToSvg(new VisualSvgOptions()));
         Assert.Equal("discrete", (string?)Role(document, "map-scale").Single().Attribute("data-cfx-scale-mode"));
@@ -90,7 +90,7 @@ public sealed class ColorScaleDiscreteTests {
     public void MapBands_BindRampRolesAndKeepLiteralPngAndThemeFallbackForMissingData() {
         var chart = Map("tile-map", ChartMapScaleLegendPosition.Bottom);
         var literalPng = chart.ToPng();
-        chart.WithSvgColorVariables(new SvgColorVariables().Add("--series-same", Low, SvgColorRole.Series)
+        chart.SvgColorVariables(new SvgColorVariables().Add("--series-same", Low, SvgColorRole.Series)
             .Add("--band-low", Low, SvgColorRole.Ramp).Add("--band-middle", Middle, SvgColorRole.Ramp)
             .Add("--band-high", High, SvgColorRole.Ramp).Add("--band-missing", Missing, SvgColorRole.Ramp));
         var themed = XDocument.Parse(chart.ToSvg());
@@ -98,14 +98,14 @@ public sealed class ColorScaleDiscreteTests {
             Role(themed, "map-scale-step").Select(element => (string?)element.Attribute("fill")));
         Assert.Equal("var(--band-missing, #E2E4E7)", (string?)Role(themed, "map-scale-no-data").Single().Attribute("fill"));
         Assert.Equal(literalPng, chart.ToPng());
-        chart.WithMapColorScale(ChartColorScale.Discrete(new[] { new ChartColorBand(null, Low) }));
+        chart.Map(m => m.ColorScale(ChartColorScale.Discrete(new[] { new ChartColorBand(null, Low) })));
         Assert.NotEqual(Low.ToCss(), (string?)Role(XDocument.Parse(chart.ToSvg()), "map-scale-no-data").Single().Attribute("fill"));
     }
 
     private static Chart Map(string family, ChartMapScaleLegendPosition placement) {
         var scale = ChartColorScale.Discrete(new[] { new ChartColorBand(10, Low, "Low"), new ChartColorBand(20, Middle, "Middle"), new ChartColorBand(null, High, "High") })
             .WithNoDataColor(Missing);
-        var chart = Chart.Create().WithSize(760, 420).WithPngSupersampling(1).WithMapLabels(false).WithMapColorScale(scale).WithMapScaleLegendPosition(placement);
+        var chart = Chart.Create().Size(760, 420).Png(p => p.SupersamplingScale(1)).Map(m => m.ShowLabels(false).ColorScale(scale).ScaleLegendPosition(placement));
         var items = new[] { new ChartRegionMapItem("CA", 0), new ChartRegionMapItem("NY", 10), new ChartRegionMapItem("TX", 20) };
         return family == "region-map" ? chart.AddRegionMap("Dimension", ChartMapCatalog.Get("us-states"), items)
             : chart.AddTileMap("Dimension", ChartTileMapCatalog.Get("us-states"), items);

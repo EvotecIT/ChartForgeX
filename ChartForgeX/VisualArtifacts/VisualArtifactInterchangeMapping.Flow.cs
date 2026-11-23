@@ -23,11 +23,11 @@ public static partial class VisualArtifactInterchangeMapping {
         if (envelope.Scenarios.Count != 0 || envelope.Annotations.Count != 0 || envelope.Presentation?.MapViewport != null
             || envelope.Presentation?.Legend != null || envelope.Presentation?.TopologyCaptions != null)
             throw new NotSupportedException("Editable Flow has no scenario, annotation, geographic or topology legend/caption owner.");
-        var flow = FlowArtifact.Create(envelope.Id).WithTitle(envelope.Title).WithSubtitle(envelope.Subtitle);
+        var flow = FlowArtifact.Create(envelope.Id).Title(envelope.Title).Subtitle(envelope.Subtitle);
         flow.LayoutMode = envelope.Flow.LayoutMode; flow.Direction = envelope.Flow.LayoutDirection;
         var layout = new VisualLayoutOptions(new VisualSize(Bound(envelope.Width, "flow width"), Bound(envelope.Height, "flow height")),
             envelope.Flow.ViewportPadding ?? ChartPadding.All(24));
-        flow.WithSize(layout.Size.Width, layout.Size.Height, layout.Padding);
+        flow.Width(layout.Size.Width).Height(layout.Size.Height).Padding(layout.Padding);
         flow.ExportFormats = envelope.Flow.ExportFormats ?? FlowArtifact.DefaultExportFormats;
         Copy(envelope.Extensions, flow.Metadata);
         foreach (var group in envelope.Groups) {
@@ -44,7 +44,7 @@ public static partial class VisualArtifactInterchangeMapping {
                 || node.BackgroundColor != null || node.LabelColor != null || node.Href != null || node.Tooltip != null)
                 throw new NotSupportedException("Editable Flow steps require their native kind and supported source fields.");
             flow.AddStep(node.Id, node.Label, source.Kind, node.GroupId, Status(node.Status));
-            flow.ConfigureStep(node.Id, step => {
+            flow.UpdateStep(node.Id, step => {
                 step.Subtitle = node.Subtitle; step.Icon = node.IconId; step.Symbol = node.Symbol; step.Color = node.Color; step.Badge = node.Badge;
                 step.Width = source.AuthoredWidth ?? Bound(node.Width, "flow step width"); step.Height = source.AuthoredHeight ?? Bound(node.Height, "flow step height");
                 step.FitLabelToContent = source.FitLabelToContent; Copy(node.Extensions, step.Metadata);
@@ -59,7 +59,7 @@ public static partial class VisualArtifactInterchangeMapping {
                 || edge.SourcePortId != null || edge.TargetPortId != null || edge.LabelColor != null || edge.Href != null || edge.Tooltip != null || edge.Metrics.Count != 0)
                 throw new NotSupportedException("Editable Flow connectors require their native ordered source fields.");
             flow.AddConnector(edge.SourceId, edge.TargetId, edge.Label ?? string.Empty, source.Kind, source.Direction, Status(edge.Status), edge.Color);
-            flow.ConfigureConnector(flow.Connectors.Count - 1, connector => { connector.Id = edge.Id; Copy(edge.Extensions, connector.Metadata); });
+            flow.UpdateConnector(flow.Connectors.Count - 1, connector => { connector.Id = edge.Id; Copy(edge.Extensions, connector.Metadata); });
         }
         var theme = envelope.Presentation?.Theme is {} captured ? RestoreCompleteTopologyTheme(captured) : VisualTheme.Graphite();
         flow.PreparedPresentation = new FlowPreparedPresentation(flow, layout, theme, envelope.Presentation?.Theme?.Mode ?? ThemeMode.Light,

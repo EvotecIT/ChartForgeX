@@ -41,7 +41,7 @@ public sealed class SequenceParticipantCaptionInkTests {
     }
 
     private static SequenceArtifact Model(SequenceArtifactParticipantKind kind,bool bands,bool dark) {
-        var model=SequenceArtifact.Create("caption-surface").WithSize(900,600)
+        var model=SequenceArtifact.Create("caption-surface").Width(900).Height(600)
             .AddParticipant("A","Caption contrast",kind).AddParticipant("B","Archive").AddMessage("A","B","Save");
         model.Participants[0].Stereotype="service";
         model.Theme=VisualTheme.Graphite().Configure(theme=>{

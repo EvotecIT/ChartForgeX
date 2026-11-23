@@ -29,7 +29,7 @@ var links = new[] {
     new ChartTreeLink("operations", "operations-support", 40)
 };
 var teams = ChartSeries.CreateTree(new ChartSeriesId("teams"), "Teams", nodes, links);
-var chart = Chart.Create().WithDataLabels().AddSeries(teams);
+var chart = Chart.Create().DataLabels().AddSeries(teams);
 
 #region Output
 var context = new VisualRenderContext(

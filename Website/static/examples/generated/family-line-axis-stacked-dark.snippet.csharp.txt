@@ -1,0 +1,53 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+using static AxisControlRecipe;
+
+var mode = ThemeMode.Dark;
+var theme = VisualTheme.Graphite();
+#endregion
+
+if (!Options.Contains("axis-stacked")) throw new ArgumentOutOfRangeException("variant");
+var chart = Climate();
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Data hall climate on stacked axes", "Temperature and humidity share the right side", showLegend: true, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion
+
+static class AxisControlRecipe {
+    public static readonly string[] Options = { "axis-step", "axis-values", "axis-spacing", "axis-minor", "axis-grid", "axis-time-step", "axis-log-step", "axis-stacked" };
+
+    // Two days of hourly data-hall readings. IT load reads on the left; supply-air temperature on the secondary axis and
+    // relative humidity on an additional axis stack outward on the right, each coloured like its line.
+    internal static Chart Climate() {
+        var hours = Enumerable.Range(0, 49).ToArray();
+        double Daily(int hour, double phase) => Math.Sin((hour - phase) / 24d * 2 * Math.PI);
+        var chart = Chart.Create().XAxis(x => x.Title("Hour")).YAxis(y => y.Title("IT load (kW)")).SecondaryYAxis(s => s.Title("Supply air (°C)")).XAxis(x => x.Bounds(0, 48))
+            .XAxis(axis => axis.TickStep(6))
+            .AddArea("IT load", hours.Select(hour => new ChartPoint(hour, Math.Round(300 + 70 * Daily(hour, 8) + hour % 4 * 6))).ToArray())
+            .AddLine("Supply air", hours.Select(hour => new ChartPoint(hour, Math.Round(21.5 + 2.5 * Daily(hour, 10) + hour % 3 * .4, 1))).ToArray());
+        chart.Series[1].SecondaryAxis();
+        var humidity = chart.AddValueAxis(ChartAxisPlacement.End, "Humidity (%)", axis => axis.Bounds(30, 70).TickStep(10));
+        chart.AddLine("Humidity", hours.Select(hour => new ChartPoint(hour, Math.Round(48 - 9 * Daily(hour, 12) + hour % 5, 1))).ToArray());
+        chart.Series[2].ValueAxis(humidity);
+        return chart;
+    }
+}

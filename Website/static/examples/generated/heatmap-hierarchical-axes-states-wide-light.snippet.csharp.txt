@@ -21,23 +21,23 @@ var outputTheme = VisualTheme.Graphite();
 
 var theme = VisualTheme.Graphite();
 var colors = theme.Resolve(mode);
-var chart = Chart.Create().WithSize(1000, 560).WithTheme(theme, mode)
-    .WithTitle("Service states by region and work window")
-    .WithXAxis("Work window").WithYAxis("Source row slots").WithDataLabels(false)
-    .WithHeatmapCellGap(3);
-chart.WithStateCategories(new ChartStateCategory("pass", "Available", colors.Status.Pass.Fill),
+var chart = Chart.Create().Size(1000, 560).Theme(theme).ThemeMode(mode)
+    .Title("Service states by region and work window")
+    .XAxis(x => x.Title("Work window")).YAxis(y => y.Title("Source row slots")).DataLabels(false)
+    .Heatmap(h => h.CellGap(3));
+chart.StateCategories(new ChartStateCategory("pass", "Available", colors.Status.Pass.Fill),
     new ChartStateCategory("review", "Review", colors.Status.Medium.Fill));
 chart.AddSeries(States("west", "West service", new[] { "pass", null, "review", "pass" }));
 chart.AddSeries(States("unknown", "Unknown service", new string?[] { null, null, null, null }));
 chart.AddSeries(States("east", "East service", new[] { "review", "pass", "pass", "review" }));
 chart.AddSeries(States("return", "Return service", new[] { null, "pass", "review", "pass" }));
-chart.WithXLabels(new[] {
+chart.XLabels(new[] {
     new ChartAxisLabel(1, "A", "Morning", "Work"), new ChartAxisLabel(2, "B", "Morning", "Work"),
     new ChartAxisLabel(3, "A", "Evening", "Work"), new ChartAxisLabel(4, "B", "Evening", "Work")
 });
 // Y labels bind one-based SOURCE ROW SLOTS, not intensities or series IDs.
 // Reorder these mappings deliberately when changing row membership; mirroring axes leaves them intact.
-chart.ConfigureYAxis(axis => axis.Labels.AddRange(new[] {
+chart.YAxis(axis => axis.Labels.AddRange(new[] {
     new ChartAxisLabel(1, "West", "North", "Core"), new ChartAxisLabel(2, "Unknown", "North", "Core"),
     new ChartAxisLabel(3, "East", "South", "Core"), new ChartAxisLabel(4, "Return", "North", "Core")
 }));
@@ -55,5 +55,5 @@ File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKi
 static class HeatmapHierarchicalAxesRecipe {
     internal static ChartSeries States(string id, string name, string?[] values) => ChartSeries.CreateHeatmapCategoryRow(new ChartSeriesId(id), name,
         values.Select(value => value == null ? (ChartHeatmapCell?)null : new ChartHeatmapCell(value)))
-        .WithObservationIds(Enumerable.Range(1, values.Length).Select(column => new ChartObservationId("column-" + column.ToString(CultureInfo.InvariantCulture))));
+        .ObservationIds(Enumerable.Range(1, values.Length).Select(column => new ChartObservationId("column-" + column.ToString(CultureInfo.InvariantCulture))));
 }

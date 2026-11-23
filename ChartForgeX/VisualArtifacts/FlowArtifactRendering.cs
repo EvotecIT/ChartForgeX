@@ -18,12 +18,12 @@ public static class FlowArtifactRendering {
     public static TopologyChart ToTopologyChart(this FlowArtifact flow) {
         if (flow == null) throw new ArgumentNullException(nameof(flow));
         var chart = TopologyChart.Create()
-            .WithId(flow.Id)
-            .WithTitle(flow.Title)
-            .WithSubtitle(flow.Subtitle)
-            .WithViewport(flow.Width, flow.Height, flow.Padding)
-            .WithLayout(flow.LayoutMode == FlowArtifactLayoutMode.Layered && flow.Lanes.Count > 0
-                ? TopologyLayoutMode.Swimlane : ToTopologyLayout(flow.LayoutMode), ToVisualLinkDirection(flow.Direction));
+            .Id(flow.Id)
+            .Title(flow.Title)
+            .Subtitle(flow.Subtitle)
+            .Viewport(new TopologyViewport(flow.Width, flow.Height, flow.Padding))
+            .LayoutMode(flow.LayoutMode == FlowArtifactLayoutMode.Layered && flow.Lanes.Count > 0
+                ? TopologyLayoutMode.Swimlane : ToTopologyLayout(flow.LayoutMode)).LayoutDirection(ToVisualLinkDirection(flow.Direction));
 
         for (var i = 0; i < flow.Lanes.Count; i++) {
             var lane = flow.Lanes[i];
@@ -37,8 +37,8 @@ public static class FlowArtifactRendering {
             // Flow declaration order is the progression contract. Infrastructure node-kind ranks
             // would put starts, decisions and ends in one layer and then reorder them by id.
             chart.Nodes[i].Metadata["layer"] = i.ToString(CultureInfo.InvariantCulture);
-            chart.WithNodeDisplay(step.Id, ToDisplay(step.Kind));
-            if (!string.IsNullOrWhiteSpace(step.Badge)) chart.WithNodeBadge(step.Id, step.Badge);
+            chart.UpdateNode(step.Id, n => n.DisplayMode(ToDisplay(step.Kind)).Badge(null));
+            if (!string.IsNullOrWhiteSpace(step.Badge)) chart.UpdateNode(step.Id, n => n.Badge(step.Badge));
         }
 
         for (var i = 0; i < flow.Connectors.Count; i++) {

@@ -36,7 +36,7 @@ var fit = ChartSeries.CreateTrendLine(new ChartSeriesId("native-fit"), model + "
     options.Interval = ChartTrendLineIntervalKind.Prediction;
     options.ConfidenceLevel = .95;
 });
-var chart = Chart.Create().WithXAxis("Source X").WithYAxis("Observed response").WithLegend(true).WithDataLabels(false)
+var chart = Chart.Create().XAxis(xAxis => xAxis.Title("Source X")).YAxis(y => y.Title("Observed response")).Legend(true).DataLabels(false)
     .AddSeries(observations).AddSeries(fit);
 
 #region Output

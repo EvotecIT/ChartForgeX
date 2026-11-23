@@ -21,7 +21,7 @@ public sealed class GaugeConfigurationBrowserTests {
         if (!Enabled) return;
         var fontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         var chart = GaugeConfigurationRenderingTests.Create(layout, dark, viewportWidth == 390)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily("CFX Gauge Carlito"), dark ? ThemeMode.Dark : ThemeMode.Light).WithPngFont(fontPath);
+            .Theme(VisualTheme.Graphite().WithFontFamily("CFX Gauge Carlito")).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Png(p => p.FontPath(fontPath));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var html = "<!doctype html><html><head><style>@font-face{font-family:'CFX Gauge Carlito';src:url(data:font/ttf;base64,"
             + Convert.ToBase64String(File.ReadAllBytes(fontPath)) + ") format('truetype');font-weight:400}body{margin:12px;background:"
@@ -76,7 +76,7 @@ public sealed class GaugeConfigurationBrowserTests {
     [InlineData(true)]
     public async Task NearbyHorizontalExplicitTicksKeepReadableBrowserGlyphsAndTheirNativeFacts(bool dark) {
         if (!Enabled) return;
-        var chart = GaugeHorizontalExplicitScaleTests.Create(dark, 1, "Near minimum").WithFontFamily("CFX Gauge Carlito");
+        var chart = GaugeHorizontalExplicitScaleTests.Create(dark, 1, "Near minimum").FontFamily("CFX Gauge Carlito");
         var context = VisualExportRequest.ForChart(chart).Context;
         var prepared = chart.Prepare(context);
         var omitted = Assert.Single(prepared.Regions, region => region.Id == "series-0-gauge-scale-1");
@@ -84,7 +84,7 @@ public sealed class GaugeConfigurationBrowserTests {
         Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "gauge.label-overflow");
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
         var html = "<!doctype html><html><head><style>@font-face{font-family:'CFX Gauge Carlito';src:url(data:font/ttf;base64,"
-            + Convert.ToBase64String(File.ReadAllBytes(chart.Options.PngFontPath!)) + ") format('truetype');font-weight:400}body{margin:12px;background:"
+            + Convert.ToBase64String(File.ReadAllBytes(chart.Options.Png.FontPath!)) + ") format('truetype');font-weight:400}body{margin:12px;background:"
             + (dark ? "#17191d" : "#fff") + "}svg,img{display:block;max-width:100%;height:auto}</style></head><body>" + svg
             + "<img src='data:image/png;base64," + Convert.ToBase64String(png) + "'></body></html>";
         await using var session = await OpenAsync(html, 390, 440);

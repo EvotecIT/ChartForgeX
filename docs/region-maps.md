@@ -8,13 +8,13 @@ regions.
 
 ```csharp
 var chart = Chart.Create()
-    .WithTitle("Sales by country")
+    .Title("Sales by country")
     .AddRegionMap("Sales", ChartMapCatalog.Get("europe"), new[] {
         new ChartRegionMapItem("PL", 82),
         new ChartRegionMapItem("DEU", 64),      // ISO alpha-3 alias
         new ChartRegionMapItem("France", 51)    // name
     })
-    .WithMapColorScale(ChartColor.FromHex("#DBEAFE"), ChartColor.FromHex("#1D4ED8"));
+    .Map(m => m.ColorScale(ChartColorScale.Sequential(ChartColor.FromHex("#DBEAFE"), ChartColor.FromHex("#1D4ED8"))));
 ```
 
 ## Built-in maps
@@ -62,8 +62,8 @@ between coordinates.
 ```csharp
 var states = ChartMapCatalog.Get("us-states");
 var chart = Chart.Create()
-    .WithTitle("Regional offices")
-    .WithDataLabels()
+    .Title("Regional offices")
+    .DataLabels(d => d.Visible(true))
     .AddRegionMap("Coverage", states, new[] {
         new ChartRegionMapItem("CO", 40),
         new ChartRegionMapItem("NY", 90)
@@ -80,12 +80,12 @@ var chart = Chart.Create()
 
 Use one colour per status (for example green, amber and red) to show a tone
 for each marker; `WithColorValue` on a point maps it through the dataset's
-colour scale instead. `ChartMapPointSizeOptions` (`ConfigureMapPointSize`)
+colour scale instead. `ChartMapPointSizeOptions` (`MapPointSize`)
 controls how weights become marker radii.
 
 The frame fits the regions and every marker and route. A marker far outside the
 map widens the frame; leave it out, or fix the frame with
-`WithRegionMapBounds`.
+`Map(m => m.RegionBounds(bounds))`.
 
 The `russia` and `oceania` maps store places east of the antimeridian (Chukotka,
 Fiji, Samoa and others) at longitudes above 180 so the region stays in one

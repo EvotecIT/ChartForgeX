@@ -16,11 +16,11 @@ public sealed class StagePresentationOptionsTests {
     public void CombinedDefaultKeepsExactIncumbentExportsAndIgnoresSeparateOverrides(bool pyramid, ChartFunnelForm form, ChartOrientation orientation) {
         var chart = Create(pyramid, form, orientation);
         var first = Prepare(chart); var svg = first.ToSvg(); var png = first.ToPng();
-        chart.ConfigureFunnel(options => {
+        chart.Funnel(options => {
             options.LabelContent = ChartStageLabelContent.Combined;
             options.CategoryLabel.Visible = false; options.ValueLabel.Placement = ChartDataLabelPlacement.Left;
             options.RetentionLabel.Style.FontSize = 28; options.DropOffLabel.Visible = false;
-        }).ConfigurePyramid(options => {
+        }).Pyramid(options => {
             options.LabelContent = ChartStageLabelContent.Combined;
             options.CategoryLabel.Visible = false; options.ValueLabel.Placement = ChartDataLabelPlacement.Above;
         });
@@ -34,18 +34,18 @@ public sealed class StagePresentationOptionsTests {
     public void ComponentTypographyIsCapturedAtomicallyAndPreparedExportsAreDetached() {
         var chart = Create(false, ChartFunnelForm.StageBars, ChartOrientation.Vertical);
         ChartValueLabelOptions? escaped = null;
-        chart.ConfigureFunnel(options => { options.LabelContent = ChartStageLabelContent.Separate; escaped = options.CategoryLabel; options.CategoryLabel.Style.FontSize = 13; });
+        chart.Funnel(options => { options.LabelContent = ChartStageLabelContent.Separate; escaped = options.CategoryLabel; options.CategoryLabel.Style.FontSize = 13; });
         escaped!.Visible = false; escaped.Style.FontSize = 60;
         Assert.True(chart.Options.Funnel.CategoryLabel.Visible); Assert.Equal(13, chart.Options.Funnel.CategoryLabel.Style.FontSize);
         var before = chart.Options.Funnel;
-        Assert.Throws<ArgumentOutOfRangeException>(() => chart.ConfigureFunnel(options => { options.CategoryLabel.Visible = false; options.StageOutlineDashOffset = double.NaN; }));
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Funnel(options => { options.CategoryLabel.Visible = false; options.StageOutlineDashOffset = double.NaN; }));
         Assert.Same(before, chart.Options.Funnel); Assert.True(before.CategoryLabel.Visible);
         var prepared = Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng();
         chart.Options.Funnel.ValueLabel.Visible = false; chart.Options.Funnel.CategoryLabel.Style.FontSize = 36;
         chart.Series[0].Points.Clear();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
         chart = Create(true, ChartFunnelForm.StageBars, ChartOrientation.Vertical);
-        chart.ConfigurePyramid(options => { escaped = options.ValueLabel; options.ValueLabel.Style.FontSize = 12; });
+        chart.Pyramid(options => { escaped = options.ValueLabel; options.ValueLabel.Style.FontSize = 12; });
         escaped!.Style.FontSize = 72;
         Assert.Equal(12, chart.Options.Pyramid.ValueLabel.Style.FontSize);
     }
@@ -59,19 +59,19 @@ public sealed class StagePresentationOptionsTests {
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartFunnelConnectorStyle(fillOpacity: -.1));
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartFunnelConnectorStyle(fillPattern: (ChartFillPattern)99));
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartFunnelConnectorStyle(strokeDashOffset: double.NaN));
-        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Series[0].WithFunnelConnectorStyle(3, new()));
+        Assert.Throws<ArgumentOutOfRangeException>(() => chart.Series[0].FunnelConnectorStyle(3, new()));
         var line = ChartSeries.CreateLine(new ChartSeriesId("line"), "Line", new[] { new ChartPoint(1, 1) });
-        Assert.Throws<NotSupportedException>(() => line.WithFunnelConnectorStyle(0, new()));
-        Assert.Throws<NotSupportedException>(() => line.WithPointStrokeColor(0, ChartColor.Black));
+        Assert.Throws<NotSupportedException>(() => line.FunnelConnectorStyle(0, new()));
+        Assert.Throws<NotSupportedException>(() => line.PointStrokeColor(0, ChartColor.Black));
     }
 
     internal static Chart Create(bool pyramid, ChartFunnelForm form, ChartOrientation orientation, int width = 800, int height = 520) {
-        var chart = Chart.Create().WithSize(width, height).WithHeader(false).WithLegend(false).WithDataLabels().WithXLabels("Intake", "Review", "Complete");
+        var chart = Chart.Create().Size(width, height).ShowHeader(false).Legend(false).DataLabels().XLabels("Intake", "Review", "Complete");
         var points = new[] { new ChartPoint(1, 100), new ChartPoint(2, 75), new ChartPoint(3, 25) };
         chart.AddSeries(new ChartSeries(new ChartSeriesId("stages"), "Stages", pyramid ? ChartSeriesKind.Pyramid : ChartSeriesKind.Funnel, points)
-            .WithObservationIds(new[] { new ChartObservationId("intake"), new ChartObservationId("review"), new ChartObservationId("complete") }));
-        chart.ConfigureFunnel(options => { options.Form = form; options.Orientation = orientation; });
-        chart.ConfigurePyramid(options => options.Orientation = orientation);
+            .ObservationIds(new[] { new ChartObservationId("intake"), new ChartObservationId("review"), new ChartObservationId("complete") }));
+        chart.Funnel(options => { options.Form = form; options.Orientation = orientation; });
+        chart.Pyramid(options => options.Orientation = orientation);
         RoundedRadialSeriesTests.UseFixtureFont(chart);
         return chart;
     }

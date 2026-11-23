@@ -21,7 +21,7 @@ internal static partial class MermaidFlowchartAssets {
             if (imageKey != null) {
                 if (options.ImageBindings == null || !options.ImageBindings.TryGetValue(imageKey, out var image)) continue;
                 if (!images.TryGetValue(imageKey, out var artwork)) {
-                    artwork = TopologyIconArtwork.Portrait(image).WithPreserveAspectRatio("none");
+                    artwork = TopologyIconArtwork.Portrait(image).PreserveAspectRatio("none");
                     var length = artwork.ImageHref!.Length;
                     if (length > VisualArtifactInterchangeEnvelope.MaximumArtworkImageDataUriCharacters)
                         throw new MermaidResourceLimitException(nameof(VisualArtifactInterchangeEnvelope.MaximumArtworkImageDataUriCharacters),

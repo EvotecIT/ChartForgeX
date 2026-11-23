@@ -34,7 +34,7 @@ public sealed class SequenceMessagePresentationBeforeTests {
     }
     [Fact]
     public void NativeMetadataNumberingRetainsItsOrdinaryInlineCaptionControl() {
-        var model=SequenceArtifact.Create("native-inline-control").WithSize(900,600).AddParticipant("A","Review").AddParticipant("B","Archive").AddMessage("A","B","Save");model.Metadata["mermaid.autonumber"]="true";
+        var model=SequenceArtifact.Create("native-inline-control").Width(900).Height(600).AddParticipant("A","Review").AddParticipant("B","Archive").AddMessage("A","B","Save");model.Metadata["mermaid.autonumber"]="true";
         var output=Environment.GetEnvironmentVariable("CFX_NATIVE_CAPTURE_DIRECTORY")??Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if(!string.IsNullOrWhiteSpace(output)){Directory.CreateDirectory(output);File.WriteAllText(Path.Combine(output,"sequence-message-before-native-inline.svg"),model.ToSvg());File.WriteAllBytes(Path.Combine(output,"sequence-message-before-native-inline.png"),model.ToPng());File.WriteAllText(Path.Combine(output,"sequence-message-before-native-inline.json"),model.ToVisualArtifact().ToInterchangeJson());}
         Assert.Contains("1. Save",model.ToSvg());

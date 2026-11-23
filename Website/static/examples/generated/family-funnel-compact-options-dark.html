@@ -120,13 +120,13 @@ public static class FunnelRecipe {
     public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot; or &quot;cone-vertical&quot; or &quot;stage-bars-horizontal&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
-        var chart = Chart.Create().WithDataLabels();
+        var chart = Chart.Create().DataLabels();
         if (variant is &quot;options&quot; or &quot;compact-options&quot; or &quot;cone-vertical&quot; or &quot;stage-bars-horizontal&quot;) {
             var requests = new ChartSeries(new ChartSeriesId(&quot;requests&quot;), &quot;Requests&quot;, ChartSeriesKind.Funnel, new[] {
                 new ChartPoint(1, 100), new ChartPoint(2, 75), new ChartPoint(3, 25), new ChartPoint(4, 0)
             });
-            chart.WithXLabels(&quot;Received&quot;, &quot;Reviewed&quot;, &quot;Qualified&quot;, &quot;Completed&quot;).AddSeries(requests)
-                .ConfigureFunnel(options =&gt; {
+            chart.XLabels(&quot;Received&quot;, &quot;Reviewed&quot;, &quot;Qualified&quot;, &quot;Completed&quot;).AddSeries(requests)
+                .Funnel(options =&gt; {
                     options.Form = variant == &quot;stage-bars-horizontal&quot; ? ChartFunnelForm.StageBars : ChartFunnelForm.Cone;
                     options.Orientation = variant == &quot;cone-vertical&quot; ? ChartOrientation.Vertical : ChartOrientation.Horizontal;
                 });
@@ -135,7 +135,7 @@ public static class FunnelRecipe {
             var requests = new ChartSeries(new ChartSeriesId(&quot;requests&quot;), &quot;Requests&quot;, ChartSeriesKind.Funnel, new[] {
                 new ChartPoint(1, 120), new ChartPoint(2, 95), new ChartPoint(3, 74), new ChartPoint(4, 41)
             });
-            chart.WithXLabels(&quot;Received&quot;, &quot;Qualified&quot;, &quot;Reviewed&quot;, &quot;Completed&quot;).AddSeries(requests);
+            chart.XLabels(&quot;Received&quot;, &quot;Qualified&quot;, &quot;Reviewed&quot;, &quot;Completed&quot;).AddSeries(requests);
         }
         return chart;
     }
@@ -174,13 +174,13 @@ public static class FunnelRecipe {
     public static Chart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot; or &quot;sparse&quot; or &quot;options&quot; or &quot;compact-options&quot; or &quot;cone-vertical&quot; or &quot;stage-bars-horizontal&quot;))
             throw new ArgumentOutOfRangeException(nameof(variant));
-        var chart = Chart.Create().WithDataLabels();
+        var chart = Chart.Create().DataLabels();
         if (variant is &quot;options&quot; or &quot;compact-options&quot; or &quot;cone-vertical&quot; or &quot;stage-bars-horizontal&quot;) {
             var requests = new ChartSeries(new ChartSeriesId(&quot;requests&quot;), &quot;Requests&quot;, ChartSeriesKind.Funnel, new[] {
                 new ChartPoint(1, 100), new ChartPoint(2, 75), new ChartPoint(3, 25), new ChartPoint(4, 0)
             });
-            chart.WithXLabels(&quot;Received&quot;, &quot;Reviewed&quot;, &quot;Qualified&quot;, &quot;Completed&quot;).AddSeries(requests)
-                .ConfigureFunnel(options =&gt; {
+            chart.XLabels(&quot;Received&quot;, &quot;Reviewed&quot;, &quot;Qualified&quot;, &quot;Completed&quot;).AddSeries(requests)
+                .Funnel(options =&gt; {
                     options.Form = variant == &quot;stage-bars-horizontal&quot; ? ChartFunnelForm.StageBars : ChartFunnelForm.Cone;
                     options.Orientation = variant == &quot;cone-vertical&quot; ? ChartOrientation.Vertical : ChartOrientation.Horizontal;
                 });
@@ -189,7 +189,7 @@ public static class FunnelRecipe {
             var requests = new ChartSeries(new ChartSeriesId(&quot;requests&quot;), &quot;Requests&quot;, ChartSeriesKind.Funnel, new[] {
                 new ChartPoint(1, 120), new ChartPoint(2, 95), new ChartPoint(3, 74), new ChartPoint(4, 41)
             });
-            chart.WithXLabels(&quot;Received&quot;, &quot;Qualified&quot;, &quot;Reviewed&quot;, &quot;Completed&quot;).AddSeries(requests);
+            chart.XLabels(&quot;Received&quot;, &quot;Qualified&quot;, &quot;Reviewed&quot;, &quot;Completed&quot;).AddSeries(requests);
         }
         return chart;
     }

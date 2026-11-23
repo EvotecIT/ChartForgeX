@@ -17,7 +17,7 @@ public static partial class MermaidTopologyRendering {
             var values = comments ? new object?[] { attribute.Type, attribute.Name, attribute.Key ?? "", MermaidLabelText.EntityCaption(attribute.Comment ?? "") }
                 : new object?[] { attribute.Type, attribute.Name, attribute.Key ?? "" };
             table.AddRow(key, values);
-            table.ConfigureRow(index, row => {
+            table.UpdateRow(index, row => {
                 if (comments) row.Cells[3].Content = MermaidInlineCaption.Content(attribute.Comment ?? "", markdownByDefault: true);
                 row.Metadata["mermaid.attribute.type"] = attribute.Type;
                 row.Metadata["mermaid.attribute.name"] = attribute.Name;

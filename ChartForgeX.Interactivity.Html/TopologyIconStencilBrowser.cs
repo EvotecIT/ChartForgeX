@@ -4,12 +4,14 @@ using System.Globalization;
 using System.Linq;
 using ChartForgeX.Html;
 using ChartForgeX.Topology;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Interactivity.Html;
 
 /// <summary>
 /// Defines settings for rendering a topology icon catalog as a stencil browser page.
 /// </summary>
+[Fluent]
 public sealed class TopologyIconStencilBrowserOptions {
     /// <summary>Gets or sets the browser DOM id.</summary>
     public string Id { get; set; } = "topology-icon-stencil-browser";
@@ -84,11 +86,7 @@ public static class TopologyIconStencilBrowserExtensions {
         paletteOptions.Categories.AddRange(options.Categories);
         paletteOptions.Tags.AddRange(options.Tags);
         var palette = catalog.ToPaletteChart(paletteOptions);
-        var renderOptions = new TopologyRenderOptions {
-            IconCatalog = catalog,
-            IncludeLegend = false,
-            EnableHtmlInteractions = false
-        };
+        var renderOptions = new TopologyRenderOptions { IconCatalog = catalog, IncludeLegend = false, Html = { Interactions = false } };
 
         var writer = new HtmlMarkupWriter();
         writer.Doctype().Line()

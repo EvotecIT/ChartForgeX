@@ -14,7 +14,7 @@ internal static partial class VisualRadialCompiler {
         if (chart.Series.Count == 0 || chart.Series.Any(series => series.Id.IsAutomatic) || !raw && !text.SupportsCapturedReplay) return null;
         foreach (var series in chart.Series) {
             var count = series.Points.Count;
-            if (!ChartSeriesKindTraits.IsPieLikeKind(series.Kind) || raw && series.ObservationIds.Keys.Any(index => index < 0 || index >= count) || !raw && (count == 0 || count > chart.Options.MaximumPieSlices)
+            if (!ChartSeriesKindTraits.IsPieLikeKind(series.Kind) || raw && series.ObservationIds.Keys.Any(index => index < 0 || index >= count) || !raw && (count == 0 || count > chart.Options.Pie.MaxSlices)
                 || series.Points.Any(point => !ChartMath.IsFinite(point.Y) || (raw ? point.Y < 0 : point.Y <= 0))
                 || Enumerable.Range(0, count).Any(index => !series.ObservationIds.ContainsKey(index) || !raw && series.SliceRadiusRatio(index).GetValueOrDefault(1) <= 0)) return null;
         }

@@ -15,19 +15,11 @@ public sealed partial class ChartSeries {
     /// Markers, fills and labels keep their own styling. Other series kinds reject segments during preparation.</remarks>
     public List<ChartStrokeSegment> StrokeSegments { get; } = new();
 
-    /// <summary>Sets the series line stroke, or clears it to restore legacy width and family paint.</summary>
-    /// <param name="style">The immutable stroke overrides, or null to clear them.</param>
-    /// <returns>The current series.</returns>
-    public ChartSeries WithStrokeStyle(ChartStrokeStyle? style) {
-        StrokeStyle = style;
-        return this;
-    }
-
     /// <summary>Restyles the line from a source X onward, for example dashing a forecast after the last actual point.</summary>
     /// <param name="fromX">The source X where the style starts.</param>
     /// <param name="style">The stroke overrides; unset members inherit <see cref="StrokeStyle"/>.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries WithStrokeStyleFrom(double fromX, ChartStrokeStyle style) {
+    public ChartSeries StrokeStyleFrom(double fromX, ChartStrokeStyle style) {
         StrokeSegments.Add(new ChartStrokeSegment(fromX, style));
         return this;
     }
@@ -36,7 +28,7 @@ public sealed partial class ChartSeries {
     /// <param name="fromX">The date/time where the style starts.</param>
     /// <param name="style">The stroke overrides; unset members inherit <see cref="StrokeStyle"/>.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries WithStrokeStyleFrom(DateTime fromX, ChartStrokeStyle style) {
+    public ChartSeries StrokeStyleFrom(DateTime fromX, ChartStrokeStyle style) {
         StrokeSegments.Add(new ChartStrokeSegment(fromX, style));
         return this;
     }

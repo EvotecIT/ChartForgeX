@@ -62,7 +62,7 @@ public sealed class InnerShadowPresentationTests {
 
     [Fact]
     public void KnownEditableFamilyCannotSilentlyDropInnerAppearanceOnModelImport() {
-        var model = SequenceArtifact.Create("inner-editable").WithSize(480, 480)
+        var model = SequenceArtifact.Create("inner-editable").Width(480).Height(480)
             .AddParticipant("review", "Review").AddParticipant("archive", "Archive")
             .AddMessage("review", "archive", "Save");
         var prepared = model.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(480, 480), 20)));

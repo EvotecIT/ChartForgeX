@@ -11,11 +11,11 @@ internal static class ChartMarkParityFixture {
         theme = theme.Configure(builder => { builder.Light.Background = builder.Dark.Background = builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = builder.Light.Surface = builder.Dark.Surface = ChartColor.Transparent; });
         theme = theme.Configure(builder => { builder.Light.Positive = builder.Dark.Positive = builder.Light.Negative = builder.Dark.Negative = builder.Light.Warning = builder.Dark.Warning = builder.Light.Foreground = builder.Dark.Foreground = ink; builder.Light.Muted = builder.Dark.Muted = ink; });
         theme = theme.Configure(builder => { builder.Light.Palette = builder.Dark.Palette = new[] { ink, ChartColor.FromRgba(170, 70, 30, alpha) }; });
-        var chart = Chart.Create().WithSize(400, 280).WithTheme(theme).WithCard(false).WithPlotBackground(false).WithLegend(false);
-        chart.Options.ShowAxes = chart.Options.ShowGrid = false; chart.Options.ShowDataLabels = false;
-        chart.Options.PngOutputScale = density;
-        chart.Options.XAxis.Minimum = 0; chart.Options.XAxis.Maximum = 4;
-        chart.Options.YAxis.Minimum = 0; chart.Options.YAxis.Maximum = 10;
+        var chart = Chart.Create().Size(400, 280).Theme(theme).ShowCard(false).ShowPlotBackground(false).Legend(false);
+        chart.Options.ShowAxes = chart.Options.ShowGrid = false; chart.Options.DataLabels.Visible = false;
+        chart.Options.Png.OutputScale = density;
+        chart.Options.XAxis.Min = 0; chart.Options.XAxis.Max = 4;
+        chart.Options.YAxis.Min = 0; chart.Options.YAxis.Max = 10;
         switch (family) {
             case "error": chart.AddErrorBar("Range", new[] { new ChartErrorBar(2, 5, yBounds: new ChartErrorBounds(2, 8)) }, ink); break;
             case "box": chart.AddBoxPlot("Distribution", new[] { new ChartBoxPlot(2, 1, 3, 5, 7, 9) }, ink); break;
@@ -26,17 +26,17 @@ internal static class ChartMarkParityFixture {
             case "range": chart.AddRangeBar("Interval", new[] { new ChartInterval(2, 2, 8) }, ink); break;
             case "waterfall": chart.AddWaterfall("Changes", new[] { new ChartPoint(1, 5), new ChartPoint(2, -2) }, ink); break;
             case "bullet": chart.AddBullet("Target", 55, 75, 0, 100, new[] { 60d, 80d }, ink); break;
-            case "hatch": chart.AddBar("Value", new[] { new ChartPoint(2, 8) }, ink); chart.Series[0].WithFillPattern(ChartFillPattern.Crosshatch); break;
+            case "hatch": chart.AddBar("Value", new[] { new ChartPoint(2, 8) }, ink); chart.Series[0].FillPattern(ChartFillPattern.Crosshatch); break;
             case "pie": chart.AddPie("Parts", new[] { new ChartPoint(0, 1), new ChartPoint(1, 1) }); theme = theme.Configure(builder => { builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.FromRgba(240, 245, 250, alpha); }); break;
-            case "donut": chart.AddDonut("Parts", new[] { new ChartPoint(0, 1), new ChartPoint(1, 1) }); theme = theme.Configure(builder => { builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.FromRgba(240, 245, 250, alpha); }); chart.Options.ShowDonutCenterLabel = false; break;
+            case "donut": chart.AddDonut("Parts", new[] { new ChartPoint(0, 1), new ChartPoint(1, 1) }); theme = theme.Configure(builder => { builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.FromRgba(240, 245, 250, alpha); }); chart.Options.Pie.ShowCenterLabel = false; break;
             case "pie-full": chart.AddPie("Whole", new[] { new ChartPoint(0, 1) }); theme = theme.Configure(builder => { builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.FromRgba(240, 245, 250, alpha); }); break;
-            case "pie-offset": chart.AddPie("Parts", new[] { new ChartPoint(0, 1), new ChartPoint(1, 3) }); chart.Series[0].WithPointSliceOffset(0, 0.12); theme = theme.Configure(builder => { builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.FromRgba(240, 245, 250, alpha); }); break;
+            case "pie-offset": chart.AddPie("Parts", new[] { new ChartPoint(0, 1), new ChartPoint(1, 3) }); chart.Series[0].PointSliceOffset(0, 0.12); theme = theme.Configure(builder => { builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.FromRgba(240, 245, 250, alpha); }); break;
             case "polar": chart.AddPolarArea("Parts", new[] { new ChartPoint(0, 1), new ChartPoint(1, 4), new ChartPoint(2, 2) }); theme = theme.Configure(builder => { builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.FromRgba(240, 245, 250, alpha); }); break;
             case "polar-zero": chart.AddPolarArea("Parts", new[] { new ChartPoint(0, 0), new ChartPoint(1, 4), new ChartPoint(2, 2) }); theme = theme.Configure(builder => { builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.FromRgba(240, 245, 250, alpha); }); break;
             case "sunburst": chart.AddSunburst("Hierarchy", new[] { new ChartHierarchyItem("Root", "Root"), new ChartHierarchyItem("A", "A", "Root", 3), new ChartHierarchyItem("B", "B", "Root", 2), new ChartHierarchyItem("C", "C", "A", 2), new ChartHierarchyItem("D", "D", "A", 1) }); theme = theme.Configure(builder => { builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.FromRgba(240, 245, 250, alpha); }); break;
             default: throw new ArgumentException("Unknown fixture family.", nameof(family));
         }
-        chart.WithTheme(theme);
+        chart.Theme(theme);
         foreach (var series in chart.Series) series.ShowDataLabels = false;
         return chart;
     }

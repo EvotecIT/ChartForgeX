@@ -25,7 +25,7 @@ public sealed class V2CartesianExtensionTests {
     [InlineData(ChartSeriesKind.Ohlc, "ohlc-stem")]
     [InlineData(ChartSeriesKind.TrendLine, "trend-line")]
     public void PublicPreparation_AllCartesianExtensionsProduceNativeGeometryAndDetachedExports(ChartSeriesKind kind, string role) {
-        var chart = Fixture(kind).WithAxes(false).WithDataLabels(false);
+        var chart = Fixture(kind).Axes(false).DataLabels(false);
         chart.Options.ShowGrid = false;
         var context = new VisualRenderContext(frame: new VisualFrame(showLegend: false, showSurface: false, transparentBackground: true));
         var prepared = chart.Prepare(context);
@@ -37,7 +37,7 @@ public sealed class V2CartesianExtensionTests {
         Assert.DoesNotContain("NaN", numericMarkup); Assert.DoesNotContain("Infinity", numericMarkup);
         var pixels = prepared.ToRgba(new VisualRenderOptions(supersampling: 1));
         Assert.Contains(Enumerable.Range(0, pixels.Width * pixels.Height), index => pixels.Pixels[index * 4 + 3] > 0);
-        chart.Series[0].WithPointLabel(0, "Changed after preparation");
+        chart.Series[0].PointLabel(0, "Changed after preparation");
         Assert.Equal(svg, prepared.ToSvg());
     }
 
@@ -66,8 +66,8 @@ public sealed class V2CartesianExtensionTests {
     [InlineData(ChartBarStyle.SegmentedCapsule)]
     public void HorizontalNegativeStacks_PreserveIndependentSignsTreatmentsLabelsAndCategoryMappings(ChartBarStyle style) {
         var chart = Chart.Create().AddHorizontalBar("A", new[] { new ChartPoint(1, 8), new ChartPoint(2, -6) })
-            .AddHorizontalBar("B", new[] { new ChartPoint(1, 4), new ChartPoint(2, -3) }).WithStackedHorizontalBars();
-        chart.Options.BarStyle = style; chart.Options.ShowStackTotals = true;
+            .AddHorizontalBar("B", new[] { new ChartPoint(1, 4), new ChartPoint(2, -3) }).Bars(b => b.Stacked());
+        chart.Options.Bars.Style = style; chart.Options.Bars.ShowTotals = true;
         chart.Options.XAxis.Labels.Add(new ChartAxisLabel(1, "Category one"));
         chart.Options.XAxis.Labels.Add(new ChartAxisLabel(2, "Category two"));
         chart.Series[0].FillPattern = ChartFillPattern.Crosshatch;
@@ -102,12 +102,12 @@ public sealed class V2CartesianExtensionTests {
 
     [Fact]
     public void EncodedPointOptions_AreIndexedByObservationAndFullLabelsSurvivePlacement() {
-        var chart = Fixture(ChartSeriesKind.Candlestick).WithDataLabels();
+        var chart = Fixture(ChartSeriesKind.Candlestick).DataLabels();
         var first = "Complete first trade description that cannot fit the tiny plotting viewport";
         var second = "Second trade";
         chart.Series[0].PointLabels.AddRange(new[] { first, second });
-        var accent = ChartColor.FromHex("#B34C89"); chart.Series[0].WithPointColor(1, accent);
-        chart.Options.ShowPointLegend = true;
+        var accent = ChartColor.FromHex("#B34C89"); chart.Series[0].PointColor(1, accent);
+        chart.Options.Legend.ShowPoints = true;
         var context = new VisualRenderContext();
         var builder = new VisualSceneBuilder(new VisualSize(160, 100), context.Font);
         VisualCartesianCompiler.Build(chart, context, builder, new ChartRect(10, 10, 30, 20));
@@ -149,7 +149,7 @@ public sealed class V2CartesianExtensionTests {
         chart.Series[0].FillPattern = ChartFillPattern.Crosshatch;
         var calls = 0;
         chart.Options.ValueFormatter = value => { calls++; return value.ToString(CultureInfo.InvariantCulture); };
-        chart.WithAxes(false); chart.Options.ShowGrid = false;
+        chart.Axes(false); chart.Options.ShowGrid = false;
         var prepared = chart.Prepare(new VisualRenderContext(frame: new VisualFrame(showLegend: false)));
         Assert.Equal(8, calls);
         Assert.Equal(2, prepared.Scene.Nodes.Count(node => node.Role == "range-area"));
@@ -175,7 +175,7 @@ public sealed class V2CartesianExtensionTests {
     public void HorizontalTimeValues_PreserveCalendarTickAlignmentDisplayZoneAndCategoryLabels() {
         var date = new DateTime(2026, 10, 7, 12, 0, 0, DateTimeKind.Utc).ToOADate();
         var chart = Chart.Create().AddHorizontalBar("Schedule", new[] { new ChartPoint(1, date), new ChartPoint(2, date + .25) });
-        chart.Options.XAxis.WithTimeScale(TimeZoneInfo.CreateCustomTimeZone("TestPlusTwo", TimeSpan.FromHours(2), "TestPlusTwo", "TestPlusTwo"), true, "UTC+02");
+        chart.Options.XAxis.TimeScale(TimeZoneInfo.CreateCustomTimeZone("TestPlusTwo", TimeSpan.FromHours(2), "TestPlusTwo", "TestPlusTwo"), true, "UTC+02");
         chart.Options.YAxis.Labels.Add(new ChartAxisLabel(1, "First event"));
         chart.Options.YAxis.Labels.Add(new ChartAxisLabel(2, "Second event"));
         var range = ChartRange.FromChart(chart);

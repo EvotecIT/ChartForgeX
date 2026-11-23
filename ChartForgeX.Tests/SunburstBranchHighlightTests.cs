@@ -28,7 +28,7 @@ public sealed class SunburstBranchHighlightTests {
         Assert.Equal("zero", nodes["zero"].Attribute("data-cfx-geometry-status")?.Value);
         Assert.Equal("precision-collapse", nodes["tiny"].Attribute("data-cfx-geometry-status")?.Value);
         Assert.Empty(nodes["zero"].Elements()); Assert.Empty(nodes["tiny"].Elements());
-        first.ConfigureSunburst(options => options.ParentValuePolicy = ChartHierarchyValuePolicy.AuthoredTotal);
+        first.Sunburst(options => options.ParentValuePolicy = ChartHierarchyValuePolicy.AuthoredTotal);
         Assert.Equal("a", SunburstHierarchyTests.Nodes(prepared)["leaf"].Attribute("data-cfx-branch-root")?.Value);
         var only = SunburstHierarchyTests.Nodes(SunburstHierarchyTests.Prepare(Chart.Create().AddSunburst("Only", new[] { new ChartHierarchyItem("only", "Only", value: 1) })));
         Assert.Null(only["only"].Attribute("data-cfx-branch-root"));
@@ -36,7 +36,7 @@ public sealed class SunburstBranchHighlightTests {
 
     [Fact]
     public void SparseHighlightOptionsReachAllHtmlSurfacesAndDoNotChangeNativeExports() {
-        var chart = Chart.Create().WithSize(360, 300).AddSunburst("Work", new[] {
+        var chart = Chart.Create().Size(360, 300).AddSunburst("Work", new[] {
             new ChartHierarchyItem("root", "All"), new ChartHierarchyItem("child", "Child", "root", 1)
         });
         var svg = chart.ToSvg(); var png = chart.ToPng();

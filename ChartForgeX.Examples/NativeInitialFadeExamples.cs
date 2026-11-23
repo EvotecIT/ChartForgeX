@@ -9,7 +9,7 @@ internal static class NativeInitialFadeExamples {
         Directory.CreateDirectory(output); var renderer = new HtmlInteractiveChartRenderer();
         foreach (var kind in new[] { ChartSeriesKind.Line, ChartSeriesKind.Pie, ChartSeriesKind.Gauge, ChartSeriesKind.Sunburst })
         foreach (var width in new[] { 390, 760 }) foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
-            var chart = (Chart)ExampleRecipes.ForKind(kind).Create(width == 390 ? "compact" : "wide", mode); chart.WithSize(width, 420);
+            var chart = (Chart)ExampleRecipes.ForKind(kind).Create(width == 390 ? "compact" : "wide", mode); chart.Size(width, 420);
             var final = renderer.PrepareSection(chart, configure: options => options.Interaction.ChartId = "native-initial-fade");
             var payload = renderer.PrepareNativeTransitionJson(final, new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.InitialFade, 12));
             var script = "const chart=ChartForgeXCharts.get(document.querySelector('.cfx-interactive-chart'));const play=()=>chart.presentInitial("

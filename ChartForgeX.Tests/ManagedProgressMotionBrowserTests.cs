@@ -221,9 +221,9 @@ public sealed partial class ManagedProgressMotionBrowserTests {
             if (reordered) {
                 var rows = chart.Series[0].ProgressItems.ToArray();
                 chart.Series[0].ReplaceProgressItems(new[] { rows[1], rows[0], rows[2] })
-                    .WithObservationId(0, new ChartObservationId("verified"))
-                    .WithObservationId(1, new ChartObservationId("reviewed"))
-                    .WithObservationId(2, new ChartObservationId("temperature"));
+                    .ObservationId(0, new ChartObservationId("verified"))
+                    .ObservationId(1, new ChartObservationId("reviewed"))
+                    .ObservationId(2, new ChartObservationId("temperature"));
             }
             return _renderer.PrepareSection(chart, configure: Configure);
         }

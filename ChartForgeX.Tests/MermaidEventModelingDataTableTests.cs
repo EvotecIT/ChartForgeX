@@ -21,7 +21,7 @@ public sealed class MermaidEventModelingDataTableTests {
         Assert.Equal("Object", table.Rows.Single(row => row.Key == "/customer").Cells[1].DisplayText);
         Assert.Equal("Array", table.Rows.Single(row => row.Key == "/tags").Cells[1].DisplayText);
         Assert.Equal("", table.Rows.Single(row => row.Key == "/escaped~1key/~0value").Cells[2].DisplayText);
-        table.ConfigureRow(0, row => row.Cells[2].DisplayText = "Edited detached table");
+        table.UpdateRow(0, row => row.Cells[2].DisplayText = "Edited detached table");
         Assert.Equal("ABC", block.ToDataTable().Rows[0].Cells[2].DisplayText); Assert.Equal("ABC", frameTable.Rows[0].Cells[2].DisplayText);
         document.Frames.Single(frame => frame.Number == "10").InlineData = "sku: changed, quantity: 2";
         var edited = document.ToDataTable("10"); Assert.Equal("changed", edited.Rows[0].Cells[2].DisplayText);

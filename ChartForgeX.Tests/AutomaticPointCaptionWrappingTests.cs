@@ -33,7 +33,7 @@ public sealed class AutomaticPointCaptionWrappingTests {
         Assert.Equal("region-north", (string?)source.Attribute("data-cfx-observation-id"));
         Assert.Equal(Caption, chart.Series[0].PointLabels[0]);
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
-        chart.Series[0].WithPointLabel(0, "Changed");
+        chart.Series[0].PointLabel(0, "Changed");
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
     }
 
@@ -56,7 +56,7 @@ public sealed class AutomaticPointCaptionWrappingTests {
     [Fact]
     public void NonfittingFormattedValueOmitsWholeCaptionAndKeepsExactSourceFact() {
         var chart = Create(ChartSeriesKind.Scatter, 220);
-        chart.Series[0].UseFormattedPointLabel(0);
+        chart.Series[0].ResetPointLabel(0);
         chart.Options.ValueFormatter = _ => Caption;
         var prepared = Prepare(chart);
         Assert.Empty(Captions(prepared));
@@ -100,13 +100,13 @@ public sealed class AutomaticPointCaptionWrappingTests {
     }
 
     private static Chart Create(ChartSeriesKind kind, int width) {
-        var chart = Chart.Create().WithSize(width, 240).WithTheme(VisualTheme.Graphite())
-            .WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false).WithDataLabels()
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10);
+        var chart = Chart.Create().Size(width, 240).Theme(VisualTheme.Graphite())
+            .ShowHeader(false).Legend(false).Axes(false).ShowGrid(false).DataLabels()
+            .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10));
         var series = kind == ChartSeriesKind.Scatter
             ? ChartSeries.CreateScatter(new ChartSeriesId("observed"), "Observed", new[] { new ChartPoint(5, 5) })
             : ChartSeries.CreateDumbbell(new ChartSeriesId("observed"), "Observed", new[] { new ChartDumbbell(5, 4, 5) });
-        series.WithObservationId(0, new ChartObservationId("region-north")).WithPointLabel(0, Caption);
+        series.ObservationId(0, new ChartObservationId("region-north")).PointLabel(0, Caption);
         return chart.AddSeries(series);
     }
 

@@ -5,6 +5,7 @@ using ChartForgeX.Rendering;
 using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 using Xunit;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.Tests;
 
@@ -91,7 +92,7 @@ public sealed partial class TopologyPaletteSelectionTests {
         Assert.Equal(chart.Theme.Resolve(ThemeMode.Light).Palette[0].ToCss(), (string?)Surface(original, "first").Attribute("stroke"));
         Assert.Equal(chart.Theme.Resolve(ThemeMode.Light).Palette[2].ToCss(), (string?)Route(original).Attribute("stroke"));
         chart.Nodes[0].PaletteIndex = 2; chart.Nodes[1].PaletteIndex = 0; chart.Edges[0].PaletteIndex = 1;
-        chart.ConfigureTheme(builder => builder.Light.Palette = ChartPalettes.FromHex("#831843", "#9D174D", "#BE185D"));
+        chart.Theme(builder => builder.Light.Palette = ChartPalettes.FromHex("#831843", "#9D174D", "#BE185D"));
         var fresh = XDocument.Parse(chart.Prepare(options).ToSvg());
         Assert.Equal("#BE185D", (string?)Surface(fresh, "first").Attribute("stroke"));
         Assert.Equal("#9D174D", (string?)Route(fresh).Attribute("stroke"));
@@ -105,7 +106,7 @@ public sealed partial class TopologyPaletteSelectionTests {
     public void MermaidDepthSectionsReachCustomThemePaintAndPermitHostOverrides(ThemeMode mode) {
         var parsed = new MermaidParser().ParseMindMap("%%{init: {'mindmap': {'colorBy': 'depth'}}}%%\nmindmap\n Root\n   Owner\n       Child");
         Assert.Empty(parsed.Diagnostics);
-        var chart = parsed.Document!.ToTopologyChart().WithTheme(Theme(), mode);
+        var chart = parsed.Document!.ToTopologyChart().Theme(Theme(), mode);
         var colors = chart.Theme.Resolve(mode);
         var options = Options();
         var svg = XDocument.Parse(chart.ToSvg(options));
@@ -137,15 +138,15 @@ public sealed partial class TopologyPaletteSelectionTests {
         builder.Dark.Palette = ChartPalettes.FromHex("#FDA4AF", "#5EEAD4", "#A5B4FC");
     });
 
-    private static TopologyChart Diagram(ThemeMode mode) => TopologyChart.Create().WithId("palette-selection")
-        .WithTheme(Theme(), mode).WithViewport(500, 240, 20).WithLegend(null).WithLayout(TopologyLayoutMode.Manual)
+    private static TopologyChart Diagram(ThemeMode mode) => TopologyChart.Create().Id("palette-selection")
+        .Theme(Theme(), mode).Viewport(new TopologyViewport(500, 240, 20)).Legend((TopologyLegend?)null).LayoutMode(TopologyLayoutMode.Manual)
         .AddNode("first", "First", 40, 80, width: 130, height: 60)
         .AddNode("second", "Second", 320, 80, width: 130, height: 60)
         .AddEdge("route", "first", "second", routing: TopologyEdgeRouting.Straight);
 
     private static TopologyRenderOptions Options() => new TopologyRenderOptions {
         IncludeLegend = false, IncludeTitle = false, IncludeStatusBadges = false, NodeSurfaceStyle = TopologyNodeSurfaceStyle.Tinted
-    }.WithPlainTopologyEdges();
+    }.EdgeVisualStyle(ChartLineVisualStyle.Plain());
 
     private static XElement Owner(XDocument svg, string role, string key, string id) => svg.Descendants().Single(element =>
         (string?)element.Attribute("data-cfx-role") == role && (string?)element.Attribute(key) == id);

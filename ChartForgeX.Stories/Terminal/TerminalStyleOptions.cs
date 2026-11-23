@@ -1,10 +1,12 @@
 using System;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Terminal;
 
 /// <summary>Terminal-specific cursor and title-bar treatments, independent of shared colors and fonts.</summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class TerminalStyleOptions {
     /// <summary>Overrides the title-bar surface.</summary>
     public ChartColor? HeaderBackground { get; set; }
@@ -34,14 +36,6 @@ internal sealed partial class ResolvedTerminalStyle {
 }
 
 public sealed partial class TerminalStory {
-    /// <summary>Chooses the initial tab's explicit light or dark appearance before timeline authoring.</summary>
-    public TerminalStory WithThemeMode(ThemeMode mode) {
-        EnsureInitialConfiguration(); InitialTab.ThemeMode = mode; return this;
-    }
-    /// <summary>Sets independent cursor and title-bar options before timeline authoring.</summary>
-    public TerminalStory WithStyle(TerminalStyleOptions style) {
-        EnsureInitialConfiguration(); InitialTab.Style = (style ?? throw new ArgumentNullException(nameof(style))).Clone(); return this;
-    }
 }
 
 /// <summary>Authored terminal palette recipes represented by the shared immutable theme type.</summary>

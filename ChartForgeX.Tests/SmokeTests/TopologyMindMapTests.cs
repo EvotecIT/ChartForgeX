@@ -12,9 +12,9 @@ internal static partial class SmokeTests {
         explicitPortEdge.SourcePort = TopologyEdgePort.Bottom;
         explicitPortEdge.TargetPort = TopologyEdgePort.Top;
         var options = new TopologyRenderOptions()
-            .WithMindMapStyle()
-            .WithRequiredIcons()
-            .WithMultilineNodeLabels();
+            .MindMapStyle()
+            .RequireResolvedIcons()
+            .AllowMultilineNodeLabels(true).WrapNodeLabels().MaxNodeLabelLines(2).MaxNodeSubtitleLines(2);
 
         var prepared = TopologyLayoutEngine.Prepare(chart, options: options);
         var root = Node(prepared, "entra");
@@ -47,15 +47,15 @@ internal static partial class SmokeTests {
 
     private static void TopologyMindMapDirectLayoutBreaksReachableCycles() {
         var chart = TopologyChart.Create()
-            .WithId("direct-mindmap-cycle")
-            .WithViewport(640, 360, 24)
+            .Id("direct-mindmap-cycle")
+            .Viewport(new TopologyViewport(640, 360, 24))
             .AddNode("root", "Root", 0, 0, TopologyNodeKind.Hub, width: 220, height: 88, iconId: "cloud:cloud")
             .AddNode("child", "Child", 0, 0, TopologyNodeKind.Application, width: 180, height: 64, iconId: "common:application")
             .AddEdge("root-child", "root", "child")
             .AddEdge("child-root", "child", "root")
-            .WithLayout(TopologyLayoutMode.MindMap);
+            .LayoutMode(TopologyLayoutMode.MindMap);
 
-        var svg = chart.ToSvg(new TopologyRenderOptions().WithMindMapStyle().WithRequiredIcons());
+        var svg = chart.ToSvg(new TopologyRenderOptions().MindMapStyle().RequireResolvedIcons());
         Assert(svg.Contains("data-layout-mode=\"MindMap\"", StringComparison.Ordinal), "Direct mind-map layout should render cyclic input without unbounded recursion.");
     }
 
@@ -69,15 +69,15 @@ internal static partial class SmokeTests {
 
     private static void TopologyMindMapDirectLayoutUsesMetadataParentRoot() {
         var chart = TopologyChart.Create()
-            .WithId("metadata-parent-root")
-            .WithViewport(640, 360, 24)
+            .Id("metadata-parent-root")
+            .Viewport(new TopologyViewport(640, 360, 24))
             .AddNode("a-child", "Child", 0, 0, TopologyNodeKind.Application, width: 160, height: 56)
             .AddNode("z-root", "Root", 0, 0, TopologyNodeKind.Hub, width: 220, height: 88)
-            .WithLayout(TopologyLayoutMode.MindMap);
+            .LayoutMode(TopologyLayoutMode.MindMap);
 
         Node(chart, "a-child").Metadata["mindmap.parentId"] = "z-root";
 
-        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions().WithMindMapStyle());
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions().MindMapStyle());
         var root = Node(prepared, "z-root");
         var child = Node(prepared, "a-child");
         Assert(root.Metadata["mindmap.side"] == "center", "Direct mind-map layout should use metadata parent links when selecting the centered root.");
@@ -86,27 +86,27 @@ internal static partial class SmokeTests {
 
     private static void TopologyMindMapPreservesCurvedRouting() {
         var chart = TopologyChart.Create()
-            .WithId("curved-mindmap")
-            .WithViewport(640, 360, 24)
+            .Id("curved-mindmap")
+            .Viewport(new TopologyViewport(640, 360, 24))
             .AddMindMap(new[] {
                 new TopologyHierarchyItem("root", "Root"),
                 new TopologyHierarchyItem("child", "Child", "root")
             }, new TopologyMindMapOptions { EdgeRouting = TopologyEdgeRouting.Curved });
 
-        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions().WithMindMapStyle());
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions().MindMapStyle());
         Assert(prepared.Edges.Count == 1 && prepared.Edges[0].Routing == TopologyEdgeRouting.Curved, "Mind-map layout should preserve caller-selected curved routing.");
     }
 
     private static void TopologyMindMapMarksOnlyParentlessRoot() {
         var chart = TopologyChart.Create()
-            .WithId("explicit-level-root")
-            .WithViewport(640, 360, 24)
+            .Id("explicit-level-root")
+            .Viewport(new TopologyViewport(640, 360, 24))
             .AddMindMap(new[] {
                 new TopologyHierarchyItem("z-root", "Root"),
                 new TopologyHierarchyItem("a-child", "Child", "z-root") { Level = 0 }
             });
 
-        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions().WithMindMapStyle());
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions().MindMapStyle());
         var root = Node(prepared, "z-root");
         var child = Node(prepared, "a-child");
         Assert(root.Metadata["mindmap.side"] == "center", "Mind-map builder should mark only the validated parentless item as the root.");
@@ -115,17 +115,17 @@ internal static partial class SmokeTests {
 
     private static void TopologyMindMapDirectLayoutPlacesDetachedTrees() {
         var chart = TopologyChart.Create()
-            .WithId("direct-mindmap-forest")
-            .WithViewport(760, 420, 24)
+            .Id("direct-mindmap-forest")
+            .Viewport(new TopologyViewport(760, 420, 24))
             .AddNode("a-root", "Primary", 0, 0, TopologyNodeKind.Hub, width: 180, height: 72)
             .AddNode("a-child", "Primary Child", 0, 0, TopologyNodeKind.Application, width: 150, height: 52)
             .AddNode("z-root", "Detached", 0, 0, TopologyNodeKind.Service, width: 170, height: 58)
             .AddNode("z-child", "Detached Child", 0, 0, TopologyNodeKind.Queue, width: 150, height: 52)
             .AddEdge("a-root-child", "a-root", "a-child")
             .AddEdge("z-root-child", "z-root", "z-child")
-            .WithLayout(TopologyLayoutMode.MindMap);
+            .LayoutMode(TopologyLayoutMode.MindMap);
 
-        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions().WithMindMapStyle());
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions().MindMapStyle());
         var root = Node(prepared, "a-root");
         var detached = Node(prepared, "z-root");
         var detachedChild = Node(prepared, "z-child");
@@ -136,8 +136,8 @@ internal static partial class SmokeTests {
 
     private static void TopologyMindMapDirectLayoutPlacesDetachedCycles() {
         var chart = TopologyChart.Create()
-            .WithId("direct-mindmap-detached-cycle")
-            .WithViewport(760, 420, 24)
+            .Id("direct-mindmap-detached-cycle")
+            .Viewport(new TopologyViewport(760, 420, 24))
             .AddNode("root", "Root", 0, 0, TopologyNodeKind.Hub, width: 180, height: 72)
             .AddNode("child", "Child", 0, 0, TopologyNodeKind.Application, width: 150, height: 52)
             .AddNode("cycle-a", "Cycle A", 0, 0, TopologyNodeKind.Service, width: 150, height: 52)
@@ -145,9 +145,9 @@ internal static partial class SmokeTests {
             .AddEdge("root-child", "root", "child")
             .AddEdge("cycle-a-b", "cycle-a", "cycle-b")
             .AddEdge("cycle-b-a", "cycle-b", "cycle-a")
-            .WithLayout(TopologyLayoutMode.MindMap);
+            .LayoutMode(TopologyLayoutMode.MindMap);
 
-        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions().WithMindMapStyle());
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions().MindMapStyle());
         var cycleA = Node(prepared, "cycle-a");
         var cycleB = Node(prepared, "cycle-b");
         Assert(cycleA.Metadata.ContainsKey("mindmap.side"), "Direct mind-map layout should place detached cyclic components that have no source-free node.");
@@ -156,16 +156,16 @@ internal static partial class SmokeTests {
 
     private static void TopologyMindMapDirectLayoutFallsBackFromStaleParentMetadata() {
         var chart = TopologyChart.Create()
-            .WithId("stale-parent-metadata")
-            .WithViewport(640, 360, 24)
+            .Id("stale-parent-metadata")
+            .Viewport(new TopologyViewport(640, 360, 24))
             .AddNode("root", "Root", 0, 0, TopologyNodeKind.Hub, width: 220, height: 88)
             .AddNode("child", "Child", 0, 0, TopologyNodeKind.Application, width: 160, height: 56)
             .AddEdge("root-child", "root", "child")
-            .WithLayout(TopologyLayoutMode.MindMap);
+            .LayoutMode(TopologyLayoutMode.MindMap);
 
         Node(chart, "child").Metadata["mindmap.parentId"] = "missing-parent";
 
-        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions().WithMindMapStyle());
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions().MindMapStyle());
         var root = Node(prepared, "root");
         var child = Node(prepared, "child");
         Assert(child.Metadata.ContainsKey("mindmap.side"), "Direct mind-map layout should fall back to valid edges when parent metadata points at a missing node.");
@@ -174,16 +174,16 @@ internal static partial class SmokeTests {
 
     private static void TopologyMindMapDirectLayoutKeepsMetadataRootWithCrossLinks() {
         var chart = TopologyChart.Create()
-            .WithId("metadata-root-cross-link")
-            .WithViewport(640, 360, 24)
+            .Id("metadata-root-cross-link")
+            .Viewport(new TopologyViewport(640, 360, 24))
             .AddNode("a-child", "Child", 0, 0, TopologyNodeKind.Application, width: 160, height: 56)
             .AddNode("z-root", "Root", 0, 0, TopologyNodeKind.Hub, width: 220, height: 88)
             .AddEdge("child-root-cross-link", "a-child", "z-root")
-            .WithLayout(TopologyLayoutMode.MindMap);
+            .LayoutMode(TopologyLayoutMode.MindMap);
 
         Node(chart, "a-child").Metadata["mindmap.parentId"] = "z-root";
 
-        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions().WithMindMapStyle());
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions().MindMapStyle());
         var root = Node(prepared, "z-root");
         var child = Node(prepared, "a-child");
         Assert(root.Metadata["mindmap.side"] == "center", "Direct mind-map root discovery should prefer resolved parent metadata over cross-link edge targets.");
@@ -192,16 +192,16 @@ internal static partial class SmokeTests {
 
     private static void TopologyMindMapDirectLayoutPrefersMetadataRootBeforeDetachedNodes() {
         var chart = TopologyChart.Create()
-            .WithId("metadata-root-before-detached")
-            .WithViewport(760, 420, 24)
+            .Id("metadata-root-before-detached")
+            .Viewport(new TopologyViewport(760, 420, 24))
             .AddNode("a-detached", "Detached", 0, 0, TopologyNodeKind.Service, width: 150, height: 52)
             .AddNode("b-child", "Child", 0, 0, TopologyNodeKind.Application, width: 150, height: 52)
             .AddNode("z-root", "Root", 0, 0, TopologyNodeKind.Cloud, width: 220, height: 88)
-            .WithLayout(TopologyLayoutMode.MindMap);
+            .LayoutMode(TopologyLayoutMode.MindMap);
 
         Node(chart, "b-child").Metadata["mindmap.parentId"] = "z-root";
 
-        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions().WithMindMapStyle());
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions().MindMapStyle());
         var root = Node(prepared, "z-root");
         var detached = Node(prepared, "a-detached");
         Assert(root.Metadata["mindmap.side"] == "center", "Direct mind-map root discovery should prefer the parentless metadata hierarchy root before sorted detached components.");
@@ -210,19 +210,19 @@ internal static partial class SmokeTests {
 
     private static void TopologyMindMapBuilderPreservesValidatedHierarchyMetadata() {
         var chart = TopologyChart.Create()
-            .WithId("validated-mindmap-metadata")
-            .WithViewport(720, 420, 24)
+            .Id("validated-mindmap-metadata")
+            .Viewport(new TopologyViewport(720, 420, 24))
             .AddMindMap(new[] {
                 new TopologyHierarchyItem("z-root", "Root"),
                 new TopologyHierarchyItem("b-parent", "Other Parent", "z-root"),
                 new TopologyHierarchyItem("a-child", "Child", "z-root") { Level = 2 }
-                    .WithMetadata("mindmap.root", "true")
-                    .WithMetadata("mindmap.parentId", "b-parent")
-                    .WithMetadata("mindmap.level", "0")
-                    .WithMetadata("layer", "0")
+                    .Metadata("mindmap.root", "true")
+                    .Metadata("mindmap.parentId", "b-parent")
+                    .Metadata("mindmap.level", "0")
+                    .Metadata("layer", "0")
             });
 
-        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions().WithMindMapStyle());
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions().MindMapStyle());
         var root = Node(prepared, "z-root");
         var child = Node(prepared, "a-child");
         Assert(root.Metadata["mindmap.side"] == "center", "Mind-map builder should preserve the validated parentless root even when item metadata contains reserved root keys.");
@@ -233,8 +233,8 @@ internal static partial class SmokeTests {
 
     private static void TopologyMindMapBuilderStylesParentlessRootAsRoot() {
         var chart = TopologyChart.Create()
-            .WithId("positive-level-root")
-            .WithViewport(720, 420, 24)
+            .Id("positive-level-root")
+            .Viewport(new TopologyViewport(720, 420, 24))
             .AddMindMap(new[] {
                 new TopologyHierarchyItem("root", "Root") { Level = 2 },
                 new TopologyHierarchyItem("child", "Child", "root") { Level = 3 }
@@ -255,9 +255,9 @@ internal static partial class SmokeTests {
 
     private static void TopologyMindMapCenterBannerClampsNarrowViewportWidth() {
         var chart = TopologyChart.Create()
-            .WithId("narrow-banner")
-            .WithTitle("Narrow")
-            .WithViewport(120, 180, 80)
+            .Id("narrow-banner")
+            .Title("Narrow")
+            .Viewport(new TopologyViewport(120, 180, 80))
             .AddNode("root", "Root", 0, 0, TopologyNodeKind.Hub, width: 64, height: 42);
 
         var options = new TopologyRenderOptions { HeaderStyle = TopologyHeaderStyle.CenterBanner, IncludeLegend = false };
@@ -269,17 +269,17 @@ internal static partial class SmokeTests {
 
     private static void TopologyMindMapInfersReverseSameBranchPortsFromPositions() {
         var chart = TopologyChart.Create()
-            .WithId("reverse-branch-link")
-            .WithViewport(760, 420, 24)
+            .Id("reverse-branch-link")
+            .Viewport(new TopologyViewport(760, 420, 24))
             .AddMindMap(new[] {
                 new TopologyHierarchyItem("root", "Root"),
-                new TopologyHierarchyItem("parent", "Parent", "root").WithMetadata("mindmap.side", "left"),
+                new TopologyHierarchyItem("parent", "Parent", "root").Metadata("mindmap.side", "left"),
                 new TopologyHierarchyItem("child", "Child", "parent")
             });
 
         chart.AddEdge("child-parent-back", "child", "parent");
 
-        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions().WithMindMapStyle());
+        var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions().MindMapStyle());
         var parent = Node(prepared, "parent");
         var child = Node(prepared, "child");
         var edge = prepared.Edges.First(item => item.Id == "child-parent-back");
@@ -296,15 +296,15 @@ internal static partial class SmokeTests {
 
     private static void TopologyRequiredIconsRejectMissingMindMapIcons() {
         var chart = TopologyChart.Create()
-            .WithId("strict-mindmap-icons")
-            .WithViewport(720, 420, 24)
+            .Id("strict-mindmap-icons")
+            .Viewport(new TopologyViewport(720, 420, 24))
             .AddMindMap(new[] {
                 new TopologyHierarchyItem("root", "Root") { IconId = "cloud:cloud" },
                 new TopologyHierarchyItem("missing", "Missing Icon", "root") { IconId = "microsoft-entra:not-real" }
             });
 
         try {
-            chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false }.WithRequiredIcons());
+            chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false }.RequireResolvedIcons());
         } catch (TopologyValidationException ex) {
             Assert(ex.Result.Errors.Any(error => error.Code == "missing-node-icon" && error.ItemId == "missing"), "Required icon validation should identify the unresolved mind-map node icon.");
             return;
@@ -315,17 +315,17 @@ internal static partial class SmokeTests {
 
     private static TopologyChart BuildMindMapFixture() {
         return TopologyChart.Create()
-            .WithId("entra-mind-map")
-            .WithTitle("Microsoft Entra Mind Map")
-            .WithViewport(980, 560, 28)
+            .Id("entra-mind-map")
+            .Title("Microsoft Entra Mind Map")
+            .Viewport(new TopologyViewport(980, 560, 28))
             .AddMindMap(new[] {
                 new TopologyHierarchyItem("entra", "Microsoft Entra") { IconId = "cloud:cloud", Kind = TopologyNodeKind.Cloud, Status = TopologyHealthStatus.Healthy, Color = "#34489A" },
-                new TopologyHierarchyItem("users", "Users", "entra") { IconId = "people:person", Kind = TopologyNodeKind.Person, Status = TopologyHealthStatus.Healthy }.WithMetadata("mindmap.side", "right").WithMetadata("mindmap.order", "10"),
-                new TopologyHierarchyItem("groups", "Groups", "entra") { IconId = "people:team", Kind = TopologyNodeKind.Team, Status = TopologyHealthStatus.Healthy }.WithMetadata("mindmap.side", "right").WithMetadata("mindmap.order", "20"),
+                new TopologyHierarchyItem("users", "Users", "entra") { IconId = "people:person", Kind = TopologyNodeKind.Person, Status = TopologyHealthStatus.Healthy }.Metadata("mindmap.side", "right").Metadata("mindmap.order", "10"),
+                new TopologyHierarchyItem("groups", "Groups", "entra") { IconId = "people:team", Kind = TopologyNodeKind.Team, Status = TopologyHealthStatus.Healthy }.Metadata("mindmap.side", "right").Metadata("mindmap.order", "20"),
                 new TopologyHierarchyItem("protection", "ID Protection", "users") { IconId = "common:certificate", Kind = TopologyNodeKind.Certificate, Status = TopologyHealthStatus.Warning },
                 new TopologyHierarchyItem("mfa-registration", "MFA Registration Policy", "protection") { IconId = "common:service", Kind = TopologyNodeKind.Service, Status = TopologyHealthStatus.Healthy },
-                new TopologyHierarchyItem("devices", "Devices", "entra") { IconId = "common:desktop", Kind = TopologyNodeKind.Endpoint, Status = TopologyHealthStatus.Healthy }.WithMetadata("mindmap.side", "left").WithMetadata("mindmap.order", "10"),
-                new TopologyHierarchyItem("applications", "Applications", "entra") { IconId = "common:application", Kind = TopologyNodeKind.Application, Status = TopologyHealthStatus.Healthy }.WithMetadata("mindmap.side", "left").WithMetadata("mindmap.order", "20"),
+                new TopologyHierarchyItem("devices", "Devices", "entra") { IconId = "common:desktop", Kind = TopologyNodeKind.Endpoint, Status = TopologyHealthStatus.Healthy }.Metadata("mindmap.side", "left").Metadata("mindmap.order", "10"),
+                new TopologyHierarchyItem("applications", "Applications", "entra") { IconId = "common:application", Kind = TopologyNodeKind.Application, Status = TopologyHealthStatus.Healthy }.Metadata("mindmap.side", "left").Metadata("mindmap.order", "20"),
                 new TopologyHierarchyItem("hybrid", "Hybrid management", "devices") { IconId = "network:wan-link", Kind = TopologyNodeKind.Network, Status = TopologyHealthStatus.Healthy },
                 new TopologyHierarchyItem("hybrid-cloud-sync", "Cloud Sync", "hybrid") { IconId = "cloud:cloud", Kind = TopologyNodeKind.Cloud, Status = TopologyHealthStatus.Healthy },
                 new TopologyHierarchyItem("app-roles", "App roles", "applications") { IconId = "common:service", Kind = TopologyNodeKind.Service, Status = TopologyHealthStatus.Healthy }

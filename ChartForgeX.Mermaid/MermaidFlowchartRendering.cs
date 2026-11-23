@@ -28,11 +28,11 @@ public static partial class MermaidFlowchartRendering {
         var sourcePadding = document.Configuration.Graph?.Padding ?? document.Configuration.UseCase?.Padding;
         var padding = sourcePadding.HasValue && !options.HasExplicitPadding ? sourcePadding.Value : options.Padding;
         var chart = TopologyChart.Create()
-            .WithId(artifactId)
-            .WithTitle(ResolveTitle(document, options))
-            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
-            .WithViewport(options.Width, options.Height, padding)
-            .WithLayout(document.Kind == MermaidDiagramKind.Swimlane || (document.Kind == MermaidDiagramKind.UseCase && document.Subgraphs.Count > 0) ? TopologyLayoutMode.Swimlane : TopologyLayoutMode.Layered, ToVisualLinkDirection(document.Direction));
+            .Id(artifactId)
+            .Title(ResolveTitle(document, options))
+            .Subtitle(MermaidHeading.Subtitle(options.Subtitle))
+            .Viewport(new TopologyViewport(options.Width, options.Height, padding))
+            .LayoutMode(document.Kind == MermaidDiagramKind.Swimlane || (document.Kind == MermaidDiagramKind.UseCase && document.Subgraphs.Count > 0) ? TopologyLayoutMode.Swimlane : TopologyLayoutMode.Layered).LayoutDirection(ToVisualLinkDirection(document.Direction));
         if (options.HasExplicitViewportSize || options.IconCatalog != null) chart.DefaultRenderOptions = ToTopologyRenderOptions(options);
         // Filtered Swimlane ranking owns these constraints; all-edge adapter hints would reintroduce excluded cross-lane ranks.
         var inferredLayers = swimlane?.IgnoreCrossLaneEdges == true ? new Dictionary<string,int>() : MermaidFlowchartLayering.Infer(document);
@@ -342,10 +342,7 @@ public static partial class MermaidFlowchartRendering {
             requiredHeight += horizontal ? 48 : chart.Groups.Count * 16;
         }
 
-        chart.WithViewport(
-            Clamp(requiredWidth, Math.Min(options.MinimumFittedWidth, options.MaximumFittedWidth), Math.Max(options.MinimumFittedWidth, options.MaximumFittedWidth)),
-            Clamp(requiredHeight, Math.Min(options.MinimumFittedHeight, options.MaximumFittedHeight), Math.Max(options.MinimumFittedHeight, options.MaximumFittedHeight)),
-            padding);
+        chart.Viewport(new TopologyViewport(Clamp(requiredWidth, Math.Min(options.MinimumFittedWidth, options.MaximumFittedWidth), Math.Max(options.MinimumFittedWidth, options.MaximumFittedWidth)), Clamp(requiredHeight, Math.Min(options.MinimumFittedHeight, options.MaximumFittedHeight), Math.Max(options.MinimumFittedHeight, options.MaximumFittedHeight)), padding));
     }
 
     // Layered topology layout routes an edge that skips ranks through a reserved corridor beside each intermediate rank.

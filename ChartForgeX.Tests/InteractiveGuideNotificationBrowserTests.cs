@@ -112,9 +112,9 @@ public sealed class InteractiveGuideNotificationBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    private static Chart Frame(bool dark, string title) => Chart.Create().WithSize(800, 540).WithTitle(title)
-        .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithLineMarkers(ChartLineMarkerMode.None)
-        .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10);
+    private static Chart Frame(bool dark, string title) => Chart.Create().Size(800, 540).Title(title)
+        .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Lines(l => l.MarkerMode(ChartLineMarkerMode.None))
+        .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10));
 
     private static string Dashboard(bool tooltips, bool dark) {
         var points = new[] { new ChartPoint(3, 5), new ChartPoint(5, 5), new ChartPoint(7, 5) };

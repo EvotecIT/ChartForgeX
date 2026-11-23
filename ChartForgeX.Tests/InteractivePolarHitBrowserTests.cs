@@ -17,9 +17,9 @@ public sealed class InteractivePolarHitBrowserTests {
     [InlineData(true, false, true)]
     public async Task NativeSectorHitRetainsObservationAndEmptyPolarSpaceHasNoInferredTarget(bool donut, bool dark, bool compact) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(compact ? 320 : 600, 340)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithLegend(false).WithDataLabels(false).WithXLabels("North", "South");
+        var chart = Chart.Create().Size(compact ? 320 : 600, 340)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Legend(false).DataLabels(false).XLabels("North", "South");
         var points = new[] { new ChartPoint(1, 1200), new ChartPoint(2, 300) };
         chart.AddSeries(new ChartSeries(new ChartSeriesId("requests"), "Requests", donut ? ChartSeriesKind.Donut : ChartSeriesKind.Pie, points));
         var mark = chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes.OfType<VisualSceneSlice>().First();
@@ -54,8 +54,8 @@ public sealed class InteractivePolarHitBrowserTests {
         if (!Enabled) return;
         var first = new ChartSeries(new ChartSeriesId("first"), "First", ChartSeriesKind.Polar, new[] { new ChartPoint(0, 40), new ChartPoint(1, 50) });
         var second = new ChartSeries(new ChartSeriesId("second"), "Second", ChartSeriesKind.Polar, new[] { new ChartPoint(2, 80), new ChartPoint(3, 70) });
-        var chart = Chart.Create().WithSize(600, 360).WithLegend(false).WithDataLabels(false)
-            .AddSeries(first).AddSeries(second).WithYAxisBounds(0, 100);
+        var chart = Chart.Create().Size(600, 360).Legend(false).DataLabels(false)
+            .AddSeries(first).AddSeries(second).YAxis(y => y.Bounds(0, 100));
         await using var session = await OpenAsync(PolarContract(chart.ToInteractiveHtmlPage()));
         var page = session.Page;
         var target = page.Locator("[data-cfx-role='polar-series'][data-cfx-series='1'] [data-cfx-point='0']");
@@ -72,7 +72,7 @@ public sealed class InteractivePolarHitBrowserTests {
     [BrowserFact]
     public async Task NativeAnnotationTargetRetainsItsTooltipWithoutNearestPointGeometry() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(600, 360).WithLegend(false).WithYAxisBounds(0, 100)
+        var chart = Chart.Create().Size(600, 360).Legend(false).YAxis(y => y.Bounds(0, 100))
             .AddLine("Counts", new[] { new ChartPoint(1, 0), new ChartPoint(2, 0) }).AddHorizontalBand(80, 90, "Target");
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage());
         await MoveToAsync(session.Page, "[data-cfx-role='annotation-band']");

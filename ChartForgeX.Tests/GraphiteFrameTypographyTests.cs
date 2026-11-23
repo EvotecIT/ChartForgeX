@@ -19,8 +19,8 @@ public sealed class GraphiteFrameTypographyTests {
     [Theory]
     [MemberData(nameof(Families))]
     public void EveryFamilyUsesSharedFrameTypography(ChartSeriesKind kind, ChartGaugeForm form, bool dark) {
-        var chart = Create(kind).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithSize(640, 360).WithTitle("Shared title").WithSubtitle("Shared subtitle");
+        var chart = Create(kind).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Size(640, 360).Title("Shared title").Subtitle("Shared subtitle");
         chart.Options.Gauge.Form = form;
         var svg = XDocument.Parse(chart.ToSvg());
         var headings = svg.Descendants().Where(e => (string?)e.Attribute("data-cfx-role") == "frame-heading")
@@ -98,10 +98,10 @@ public sealed class GraphiteFrameTypographyTests {
             case ChartSeriesKind.TrendLine: return chart.AddTrendLine("Measure", points);
             case ChartSeriesKind.Polar: return chart.AddPolar("Measure", points);
             case ChartSeriesKind.StateTimeline:
-                return chart.WithStateCategories(new ChartStateCategory("ok", "Healthy", ChartColor.FromHex("#2A78D6")))
+                return chart.StateCategories(new ChartStateCategory("ok", "Healthy", ChartColor.FromHex("#2A78D6")))
                     .AddStateTimelineLane("Measure", new[] { new ChartStateTimelineSegment(1, 3, "ok") });
             case ChartSeriesKind.GanttLane:
-                return chart.WithStateCategories(new ChartStateCategory("ok", "Healthy", ChartColor.FromHex("#2A78D6")))
+                return chart.StateCategories(new ChartStateCategory("ok", "Healthy", ChartColor.FromHex("#2A78D6")))
                     .AddGanttLane("Measure", new[] { new ChartGanttLaneItem(1, 3, "ok") });
             default: throw new ArgumentOutOfRangeException(nameof(kind), kind, "Add a public-API fixture for this family.");
         }

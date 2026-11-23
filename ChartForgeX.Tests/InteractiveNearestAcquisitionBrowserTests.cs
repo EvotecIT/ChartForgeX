@@ -12,8 +12,8 @@ public sealed class InteractiveNearestAcquisitionBrowserTests {
     [BrowserFact]
     public async Task InferredRankingKeepsDomTiesAndLivePaintGeometryAfterMutationAndResize() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(800, 500).WithHeader(false).WithLegend(false)
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+        var chart = Chart.Create().Size(800, 500).ShowHeader(false).Legend(false)
+            .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
             .AddScatter("Readings", new[] { new ChartPoint(3, 5), new ChartPoint(3, 5), new ChartPoint(8, 5) });
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             options.Interaction.Features = ChartInteractionFeatures.Tooltips;

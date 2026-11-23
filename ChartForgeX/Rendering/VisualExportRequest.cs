@@ -27,9 +27,9 @@ internal sealed partial class VisualExportRequest {
                 : VisualChartCompiler.LegendEntries(family, chart, theme.Resolve(options.ThemeMode)).Count);
         var frame = new VisualFrame(options.ShowHeader && !options.HostOwnsFrame ? chart.Title : string.Empty,
             options.ShowHeader && !options.HostOwnsFrame ? chart.Subtitle : string.Empty,
-            showLegend && !options.HostOwnsFrame, options.LegendPosition,
+            showLegend && !options.HostOwnsFrame, options.Legend.Position,
             options.ShowPlotBackground && !options.HostOwnsFrame, options.TransparentBackground || options.HostOwnsFrame,
-            legendMaximumRows: options.LegendMaximumRows, legendMaximumHeightFraction: options.LegendMaximumHeightFraction,
+            legendMaximumRows: options.Legend.MaxRows, legendMaximumHeightFraction: options.Legend.MaxHeightFraction,
             showCard: options.ShowCard && !options.HostOwnsFrame);
         var padding = options.Padding;
         if (!options.HasExplicitPadding && (padding.Left + padding.Right >= options.Size.Width || padding.Top + padding.Bottom >= options.Size.Height))
@@ -37,13 +37,13 @@ internal sealed partial class VisualExportRequest {
                 Math.Min(padding.Right, options.Size.Width / 4), Math.Min(padding.Bottom, options.Size.Height / 4));
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(options.Size.Width, options.Size.Height), padding),
             theme, options.ThemeMode, frame: frame, font: ChartFont(options));
-        return new VisualExportRequest(context, new VisualRenderOptions(options.PngOutputScale, options.PngSupersamplingScale,
-            textHinting: options.PngTextHinting));
+        return new VisualExportRequest(context, new VisualRenderOptions(options.Png.OutputScale, options.Png.SupersamplingScale,
+            textHinting: options.Png.TextHinting));
     }
 
     internal static FontSpec ChartFont(ChartOptions options) => new() {
-        Family = options.Theme.Typography.Family, FilePath = options.PngFontPath,
-        FaceName = options.PngFontFaceName, CollectionIndex = options.PngFontCollectionIndex
+        Family = options.Theme.Typography.Family, FilePath = options.Png.FontPath,
+        FaceName = options.Png.FontFaceName, CollectionIndex = options.Png.FontCollectionIndex
     };
 
     internal static VisualExportRequest ForGrid(ChartGrid grid) {

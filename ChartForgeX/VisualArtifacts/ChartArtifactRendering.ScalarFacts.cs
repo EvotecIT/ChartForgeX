@@ -58,8 +58,8 @@ public static partial class ChartArtifactRendering {
                     writer.Property("target"); writer.Number(value.Target); writer.Property("rangeEnds"); writer.StartArray();
                     foreach (var boundary in value.RangeEnds) writer.Number(boundary); writer.EndArray();
                     if (series.BulletAxis is { } axis) {
-                        writer.Property("axis"); writer.StartObject(); writer.Property("minimum"); if (axis.Minimum.HasValue) writer.Number(axis.Minimum.Value); else writer.String(null);
-                        writer.Property("maximum"); if (axis.Maximum.HasValue) writer.Number(axis.Maximum.Value); else writer.String(null);
+                        writer.Property("axis"); writer.StartObject(); writer.Property("minimum"); if (axis.Min.HasValue) writer.Number(axis.Min.Value); else writer.String(null);
+                        writer.Property("maximum"); if (axis.Max.HasValue) writer.Number(axis.Max.Value); else writer.String(null);
                         writer.Property("scale"); writer.String(axis.Scale.ToString()); writer.Property("reversed"); writer.Boolean(axis.Reversed);
                         writer.Property("logarithmBase"); writer.Number(axis.LogarithmBase); writer.Property("logarithmicDomain"); writer.String(axis.LogarithmicDomain.ToString());
                         writer.Property("symmetricLogarithmThreshold"); writer.Number(axis.SymmetricLogarithmThreshold);
@@ -70,8 +70,8 @@ public static partial class ChartArtifactRendering {
                     }
                 } else {
                     var item = series.IsTypedProgress ? series.ProgressItems[index] : (ChartProgressItem?)null;
-                    ScalarReading(writer, item?.Value ?? series.RenderPoints[index].Y, item?.Minimum ?? 0, item?.Maximum ?? chart.Options.ProgressMaximum);
-                    writer.Property("label"); writer.String(item?.Label ?? ChartForgeX.Rendering.ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxisLabels, series.RenderPoints[index].X));
+                    ScalarReading(writer, item?.Value ?? series.RenderPoints[index].Y, item?.Minimum ?? 0, item?.Maximum ?? chart.Options.Progress.Max);
+                    writer.Property("label"); writer.String(item?.Label ?? ChartForgeX.Rendering.ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxis.Labels, series.RenderPoints[index].X));
                     writer.Property("color"); writer.String(item?.Color?.ToCss());
                 }
                 writer.EndObject();

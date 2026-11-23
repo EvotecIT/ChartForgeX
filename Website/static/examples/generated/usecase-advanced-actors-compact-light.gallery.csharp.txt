@@ -20,7 +20,7 @@ var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = UseCaseAdvancedActorsRecipe.Create("compact", mode);
 if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.WithTitle("Finite native actor forms").WithSubtitle("Hollow, business, silhouette and retained native icon participants share measured captions and routes").WithTheme(theme.WithFontFamily(ChartFontStacks.ProductSans), mode).ToVisualArtifact();
+    var natural = topology.Title("Finite native actor forms").Subtitle("Hollow, business, silhouette and retained native icon participants share measured captions and routes").Theme(theme.WithFontFamily(ChartFontStacks.ProductSans), mode).ToVisualArtifact();
     natural.SaveSvg("visual.svg");
     File.WriteAllBytes("visual.png", natural.ToPng());
     File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
@@ -42,10 +42,10 @@ public static class UseCaseAdvancedActorsRecipe {
     public static TopologyChart Create(string variant = "wide", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant == "compact";
-        var chart = TopologyChart.Create().WithId("native-usecase-advanced-actors").WithTitle("Participants in a request")
-            .WithSubtitle("Plain, hollow, business, silhouette and finite native icon actors")
-            .WithTheme(VisualTheme.Graphite(), mode).WithViewport(compact ? 390 : 1100, compact ? 1160 : 680, 28)
-            .WithLayout(TopologyLayoutMode.Layered, compact ? TopologyLayoutDirection.LeftToRight : TopologyLayoutDirection.TopToBottom);
+        var chart = TopologyChart.Create().Id("native-usecase-advanced-actors").Title("Participants in a request")
+            .Subtitle("Plain, hollow, business, silhouette and finite native icon actors")
+            .Theme(VisualTheme.Graphite(), mode).Viewport(new TopologyViewport(compact ? 390 : 1100, compact ? 1160 : 680, 28))
+            .LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(compact ? TopologyLayoutDirection.LeftToRight : TopologyLayoutDirection.TopToBottom);
         chart.DefaultRenderOptions = new TopologyRenderOptions { FitContentToViewport = false, IncludeLegend = false,
             WrapNodeLabels = true, AllowMultilineNodeLabels = true, MaxNodeLabelLines = 6, MaxNodeSubtitleLines = 6 };
         var ids = new[] { "Plain", "Hollow", "Business", "BusinessHollow", "Silhouette", "Icon" };

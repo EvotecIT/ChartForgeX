@@ -16,11 +16,11 @@ public sealed partial class ExampleRecipeTests {
     [MemberData(nameof(MultiRingSelections))]
     public void MultiRingDownloadIsCompleteAndPreservesEachSourceOwnedCalloutAndExplosion(string variant, ThemeMode mode) {
         var recipe = ExampleRecipes.Named("multi-ring-callouts"); var source = Source(recipe, variant);
-        Assert.Contains("WithPointSliceOffset", source); Assert.Contains("WithObservationIds", source); Assert.Contains("WithAutomaticRadialBands", source);
+        Assert.Contains("PointSliceOffset", source); Assert.Contains("ObservationIds", source); Assert.Contains("RadialBandAllocation", source);
         Assert.DoesNotContain("{{", source); Assert.DoesNotContain("ChartForgeX.Examples", source);
         var chart = Assert.IsType<Chart>(recipe.Create(variant, mode)); Assert.Equal(2, chart.Series.Count);
         Assert.Equal(new[] { 90d, 120 }, chart.Series.Select(series => series.Points.Sum(point => point.Y)));
-        chart.WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), mode);
+        chart.Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(mode);
         var prepared = MultiRingDepthTests.Prepare(chart); Assert.Equal(4, prepared.Scene.Nodes.OfType<VisualSceneSlice>().Count());
         MultiRingDepthTests.AssertCalloutAssociations(prepared); Assert.Equal((int)chart.Options.Size.Width, RasterImageDecoder.Decode(prepared.ToPng()).Width);
         // A compact frame's side lanes are narrow; its automatic callouts use the open bands above and below the rings instead of shortening names.

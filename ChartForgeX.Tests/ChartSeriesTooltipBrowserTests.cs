@@ -81,11 +81,11 @@ public sealed class ChartSeriesTooltipBrowserTests {
     private static string EnhancedPoint(int series, int point) =>
         "[data-cfx-mark][data-cfx-series='" + series + "'][data-cfx-point='" + point + "']";
 
-    private static Chart Model() => Chart.Create().WithSize(900, 500).WithLegend(false)
+    private static Chart Model() => Chart.Create().Size(900, 500).Legend(false)
         .AddSeries(new ChartSeries(new ChartSeriesId("custom"), "Custom", ChartSeriesKind.Bar,
             new[] { new ChartPoint(1, 11), new ChartPoint(2, 12) })
-            .WithTooltipFormatter(context => context.Index == 0 ? Caption : ""))
+            .TooltipBy(context => context.Index == 0 ? Caption : ""))
         .AddBar("Default", new[] { new ChartPoint(1, 22) })
         .AddSeries(new ChartSeries(new ChartSeriesId("suppressed"), "Suppressed", ChartSeriesKind.Bar,
-            new[] { new ChartPoint(1, 33) }).WithTooltipFormatter(_ => ""));
+            new[] { new ChartPoint(1, 33) }).TooltipBy(_ => ""));
 }

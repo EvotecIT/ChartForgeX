@@ -20,9 +20,9 @@ public static class NativeMaskExample {
         var width = variant == "compact" ? 320 : 740; var theme = VisualTheme.Graphite();
         var series = ChartSeries.CreateLine(new ChartSeriesId("finished"), "Finished",
             new[] { new ChartPoint(1, 9), new ChartPoint(2, 24), new ChartPoint(3, 17), new ChartPoint(4, 31) })
-            .WithObservationId(1, new ChartObservationId("second-cycle"));
-        var chart = Chart.Create().WithSize(width, 240).WithTheme(theme, mode).WithDataLabels(false)
-            .WithXAxis("Cycle").WithYAxis("Finished").AddSeries(series);
+            .ObservationId(1, new ChartObservationId("second-cycle"));
+        var chart = Chart.Create().Size(width, 240).Theme(theme).ThemeMode(mode).DataLabels(false)
+            .XAxis(x => x.Title("Cycle")).YAxis(y => y.Title("Finished")).AddSeries(series);
         return chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, 240), 24), theme, mode,
             new VisualFrame("Finished service requests", "The final cycles fade; the prepared source retains every observation",
                 showLegend: false, transparentBackground: true)));

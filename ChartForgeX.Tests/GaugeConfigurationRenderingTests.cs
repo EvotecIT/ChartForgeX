@@ -69,8 +69,8 @@ public sealed class GaugeConfigurationRenderingTests {
 
     [Fact]
     public void FullTurnGeneratedTicksHaveDistinctPositionsAndKeepTheAuthoredMaximum() {
-        var chart = Chart.Create().WithSize(800, 440).WithLegend(false).AddGauge("Capacity", 100)
-            .ConfigureGauge(options => { options.SweepAngleDegrees = 360; options.TickCount = 6; });
+        var chart = Chart.Create().Size(800, 440).Legend(false).AddGauge("Capacity", 100)
+            .Gauge(options => { options.SweepAngleDegrees = 360; options.TickCount = 6; });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var ticks = prepared.Scene.Nodes.OfType<VisualSceneLine>().Where(node => node.Role == "gauge-tick").ToArray();
         Assert.Equal(6, ticks.Length);
@@ -83,8 +83,8 @@ public sealed class GaugeConfigurationRenderingTests {
     [InlineData(ChartGaugeForm.Arc)]
     [InlineData(ChartGaugeForm.Needle)]
     public void ExplicitFullTurnEndpointsShareOnePaintedSeamWhileBothCaptionsRemainSemantic(ChartGaugeForm form) {
-        var chart = Chart.Create().WithSize(640, 440).WithLegend(false).AddGauge("Capacity", 50)
-            .ConfigureGauge(options => { options.Form = form; options.StartAngleDegrees = -90; options.SweepAngleDegrees = 360;
+        var chart = Chart.Create().Size(640, 440).Legend(false).AddGauge("Capacity", 50)
+            .Gauge(options => { options.Form = form; options.StartAngleDegrees = -90; options.SweepAngleDegrees = 360;
                 options.TickLabels = new[] { new ChartAxisLabel(0, "Empty"), new ChartAxisLabel(50, "Half"), new ChartAxisLabel(100, "Full") }; });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Equal(2, prepared.Scene.Nodes.Count(node => node.Role == "gauge-tick"));
@@ -98,10 +98,10 @@ public sealed class GaugeConfigurationRenderingTests {
     [Fact]
     public void ExplicitTickLabelsUseTheirValuesAndLeaveTheReadingDomainUnchanged() {
         var seen = new List<double>();
-        var chart = Chart.Create().WithSize(800, 440).WithLegend(false)
+        var chart = Chart.Create().Size(800, 440).Legend(false)
             .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Capacity", new ChartGaugeValue(30, -20, 80)))
-            .WithValueFormatter(number => { seen.Add(number); return "Value " + number.ToString(CultureInfo.InvariantCulture); })
-            .ConfigureGauge(options => { options.Form = ChartGaugeForm.Linear; options.TickCount = 100;
+            .FormatValuesBy(number => { seen.Add(number); return "Value " + number.ToString(CultureInfo.InvariantCulture); })
+            .Gauge(options => { options.Form = ChartGaugeForm.Linear; options.TickCount = 100;
                 options.TickLabels = new[] { new ChartAxisLabel(80, "Full"), new ChartAxisLabel(-20, "Empty"), new ChartAxisLabel(30, "Half") }; });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Equal(30, Assert.Single(seen));
@@ -117,9 +117,9 @@ public sealed class GaugeConfigurationRenderingTests {
         var seen = new List<double>();
         var series = ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Capacity", new ChartGaugeValue(30, targets: new[] {
             new ChartGaugeTarget(30, "Current baseline"), new ChartGaugeTarget(30, "Repeated reference"), new ChartGaugeTarget(120, "") }));
-        var chart = Chart.Create().WithSize(240, 220).WithLegend(false).WithAxes(false).AddSeries(series)
-            .WithValueFormatter(number => { seen.Add(number); return "Reading " + number.ToString(CultureInfo.InvariantCulture); })
-            .ConfigureGauge(options => options.Form = ChartGaugeForm.Linear);
+        var chart = Chart.Create().Size(240, 220).Legend(false).Axes(false).AddSeries(series)
+            .FormatValuesBy(number => { seen.Add(number); return "Reading " + number.ToString(CultureInfo.InvariantCulture); })
+            .Gauge(options => options.Form = ChartGaugeForm.Linear);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Equal(new[] { 30d, 120d }, seen.OrderBy(value => value));
         var metadata = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneGroup>(), node => node.Role == "gauge").Metadata;
@@ -132,7 +132,7 @@ public sealed class GaugeConfigurationRenderingTests {
         Assert.Equal(track.Bounds.Right, marks[2].Start.X, 7);
         Assert.Contains(prepared.Diagnostics, diagnostic => diagnostic.Code == "gauge.label-overflow");
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
-        series.UpdateGaugeValue(0, new ChartGaugeValue(70)); chart.WithValueFormatter(_ => throw new InvalidOperationException());
+        series.UpdateGaugeValue(0, new ChartGaugeValue(70)); chart.FormatValuesBy(_ => throw new InvalidOperationException());
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng()); Assert.Equal(2, seen.Count);
     }
 
@@ -140,8 +140,8 @@ public sealed class GaugeConfigurationRenderingTests {
     [InlineData(ChartOrientation.Horizontal)]
     [InlineData(ChartOrientation.Vertical)]
     public void CrowdedGeneratedScalesChooseUniformCoarserTicks(ChartOrientation orientation) {
-        var chart = Chart.Create().WithSize(360, 360).WithLegend(false).AddLinearGauge("Capacity", 50)
-            .ConfigureGauge(options => { options.Orientation = orientation; options.TickCount = 100; });
+        var chart = Chart.Create().Size(360, 360).Legend(false).AddLinearGauge("Capacity", 50)
+            .Gauge(options => { options.Orientation = orientation; options.TickCount = 100; });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var ticks = prepared.Scene.Nodes.OfType<VisualSceneLine>().Where(node => node.Role == "gauge-tick").ToArray();
         Assert.InRange(ticks.Length, 2, 20);
@@ -155,8 +155,8 @@ public sealed class GaugeConfigurationRenderingTests {
     public void DefaultLinearTicksKeepCompleteFormattedCaptionsAtCompactWidth() {
         var culture = CultureInfo.GetCultureInfo("fr-FR");
         var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
-        var chart = Chart.Create().WithSize(340, 360).WithPngFont(font).WithLegend(false).AddLinearGauge("Readiness", 81.75)
-            .WithValueFormatter(value => "Reading " + value.ToString("0.00", culture));
+        var chart = Chart.Create().Size(340, 360).Png(p => p.FontPath(font)).Legend(false).AddLinearGauge("Readiness", 81.75)
+            .FormatValuesBy(value => "Reading " + value.ToString("0.00", culture));
         Assert.Null(chart.Options.Gauge.TickCount);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var ticks = prepared.Scene.Nodes.OfType<VisualSceneLine>().Where(node => node.Role == "gauge-tick").ToArray();
@@ -176,9 +176,9 @@ public sealed class GaugeConfigurationRenderingTests {
 
     internal static Chart Create(string layout, bool dark, bool compact) {
         var reading = new ChartGaugeValue(30, -20, 80, new[] { new ChartGaugeTarget(10, "Baseline"), new ChartGaugeTarget(60, "Goal") });
-        return Chart.Create().WithSize(compact ? 360 : 800, compact ? 360 : 440).WithLegend(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithTitle("Available capacity")
-            .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Capacity", reading)).ConfigureGauge(options => {
+        return Chart.Create().Size(compact ? 360 : 800, compact ? 360 : 440).Legend(false)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Title("Available capacity")
+            .AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Capacity", reading)).Gauge(options => {
                 options.Caption = "Declared range -20 to 80";
                 options.Bands.Add(new ChartGaugeBand(-20, 20, ChartSeriesState.Warning)); options.Bands.Add(new ChartGaugeBand(20, 80, ChartSeriesState.Success));
                 if (layout == "semicircle") { options.StartAngleDegrees = 180; options.SweepAngleDegrees = 180; options.TickCount = 5; }

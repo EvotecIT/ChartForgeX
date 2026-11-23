@@ -13,9 +13,9 @@ public sealed partial class DifferenceAreaTests {
     [InlineData(true, true)]
     public void IndependentSmoothAndStepFillsFollowPaintedBoundariesAndSourcePolarity(bool reverseX, bool reverseY) {
         var chart = Model(new(0, 8, 3), new(1, 2, 6), new(10, 8, 2), new(11, 2, 7));
-        chart.Options.XAxis.WithBounds(0, 11).WithReversal(reverseX); chart.Options.YAxis.WithBounds(0, 10).WithReversal(reverseY);
-        chart.Series[0].WithBoundaryInterpolation(new(ChartInterpolation.Smooth), new(ChartInterpolation.Step, ChartStepPosition.Middle))
-            .ConfigureMarkers(markers => markers.Enabled = false);
+        chart.Options.XAxis.Bounds(0, 11).Reversed(reverseX); chart.Options.YAxis.Bounds(0, 10).Reversed(reverseY);
+        chart.Series[0].BoundaryInterpolation(new(ChartInterpolation.Smooth), new(ChartInterpolation.Step, ChartStepPosition.Middle))
+            .Markers(markers => markers.Enabled = false);
         var prepared = Prepare(chart);
         var first = Boundary(prepared, "difference-first"); var second = Boundary(prepared, "difference-second");
         Assert.Contains(first.Commands, command => command.Kind == ChartPathCommandKind.CubicTo);
@@ -52,12 +52,12 @@ public sealed partial class DifferenceAreaTests {
     [Fact]
     public void SeriesSmoothAndExplicitBreaksUseTheSameDetachedNativeCurves() {
         var chart = Model(new(0, 8, 3), new(1, 2, 6), new(10, 8, 2), new(11, 2, 7), new(13, 1, 8, true));
-        chart.Series[0].WithInterpolation(ChartInterpolation.Smooth);
+        chart.Series[0].Interpolation(ChartInterpolation.Smooth);
         var prepared = Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng();
         Assert.Equal(2, Boundary(prepared, "difference-first").Commands.Count(command => command.Kind == ChartPathCommandKind.MoveTo));
         Assert.Equal(2, Boundary(prepared, "difference-second").Commands.Count(command => command.Kind == ChartPathCommandKind.MoveTo));
         Assert.Contains(Boundary(prepared, "difference-first").Commands, command => command.Kind == ChartPathCommandKind.CubicTo);
-        chart.Series[0].WithBoundaryInterpolation(new(ChartInterpolation.Step), null).ReplaceDifferencePoints(Array.Empty<ChartDifferencePoint>());
+        chart.Series[0].BoundaryInterpolation(new(ChartInterpolation.Step), null).ReplaceDifferencePoints(Array.Empty<ChartDifferencePoint>());
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
     }
 

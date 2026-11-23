@@ -29,7 +29,7 @@ public sealed partial class Chart {
             .ThenBy(item => item.Index)
             .ToArray();
 
-        Options.XAxisLabels.Clear();
+        Options.XAxis.Labels.Clear();
         var bars = new List<ChartPoint>(sorted.Length);
         var cumulative = new List<ChartPoint>(sorted.Length);
         var running = 0.0;
@@ -38,7 +38,7 @@ public sealed partial class Chart {
             var percent = sorted[i].Item.Value / total * 100.0;
             running += percent;
             if (i == sorted.Length - 1) running = 100.0;
-            Options.XAxisLabels.Add(new ChartAxisLabel(x, sorted[i].Item.Label));
+            Options.XAxis.Labels.Add(new ChartAxisLabel(x, sorted[i].Item.Label));
             bars.Add(new ChartPoint(x, percent));
             cumulative.Add(new ChartPoint(x, running));
         }

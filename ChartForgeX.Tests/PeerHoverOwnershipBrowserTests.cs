@@ -116,8 +116,8 @@ public sealed class PeerHoverOwnershipBrowserTests {
     }
 
     private static Chart Model(params ChartSeries[] series) {
-        var chart = Chart.Create().WithSize(420, 300).WithHeader(false).WithLegend(false)
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10);
+        var chart = Chart.Create().Size(420, 300).ShowHeader(false).Legend(false)
+            .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10));
         foreach (var item in series) chart.AddSeries(item);
         return chart;
     }
@@ -126,7 +126,7 @@ public sealed class PeerHoverOwnershipBrowserTests {
         var series = ChartSeries.CreateScatter(new ChartSeriesId(key), key,
             observations.Select(value => new ChartPoint(value.X, value.Y)));
         foreach (var (value, index) in observations.Select((value, index) => (value, index)))
-            series.WithObservationId(index, new ChartObservationId(value.Id));
+            series.ObservationId(index, new ChartObservationId(value.Id));
         return series;
     }
 

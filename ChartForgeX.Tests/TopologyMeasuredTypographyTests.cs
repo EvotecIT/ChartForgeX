@@ -31,7 +31,7 @@ public sealed class TopologyMeasuredTypographyTests {
         const string text = "iiiiiiiiiiiiiiii";
         const double size = 20;
         var theme = VisualTheme.Graphite().WithFontFamily("Georgia");
-        var chart = TopologyChart.Create().WithTheme(theme).AddAutoNode("a", text);
+        var chart = TopologyChart.Create().Theme(theme).AddAutoNode("a", text);
         var prepared = TopologyLayoutEngine.Prepare(chart, options: supplyOptions ? new TopologyRenderOptions() : null);
         var expected = text.Length * size * 0.56;
         Assert.Equal(expected, prepared.TextMeasurement!.Measure(text, size, false));
@@ -52,7 +52,7 @@ public sealed class TopologyMeasuredTypographyTests {
             .FirstOrDefault(System.IO.File.Exists);
         if (regularPath == null) return; // The portable fallback remains covered on hosts without Arial.
         var theme = VisualTheme.Graphite().WithFontFamily("Arial, sans-serif");
-        Assert.Equal("Arial", TopologyChart.Create().WithTheme(theme).GetPngFontInfo().ResolvedFaceName);
+        Assert.Equal("Arial", TopologyChart.Create().Theme(theme).GetPngFontInfo().ResolvedFaceName);
         var boldPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(regularPath)!,
             regularPath.StartsWith("/System/", StringComparison.Ordinal) ? "Arial Bold.ttf" : "arialbd.ttf");
         var bold = TrueTypeFont.TryLoadFromPath(boldPath);
@@ -67,7 +67,7 @@ public sealed class TopologyMeasuredTypographyTests {
         var theme = TerminalThemes.Default().Configure(builder => builder.Typography = new VisualTypography(monospaceFamily: "Arial, monospace"));
         Assert.False(TrueTypeFont.IsMonospaceFamily(theme.Typography.MonospaceFamily));
         var outline = TrueTypeFont.TryLoadForFamily(theme.Typography.MonospaceFamily, out _);
-        var table = PngTerminalStoryRenderer.ResolveTableFont(TerminalStory.Create().WithTheme(theme).ResolvedStyle, outline);
+        var table = PngTerminalStoryRenderer.ResolveTableFont(TerminalStory.Create().Theme(theme).ResolvedStyle, outline);
         if (table == null) return;
         var style = new TextStyle { FontSize = 14 };
         Assert.Equal(TextLayoutEngine.MeasureWidth("iiii", style, table),
@@ -77,9 +77,9 @@ public sealed class TopologyMeasuredTypographyTests {
     [Fact]
     public void FontDiagnosticsReflectCurrentTheme() {
         var theme = VisualTheme.Graphite().WithFontFamily("monospace");
-        var chart = TopologyChart.Create().WithTheme(theme);
+        var chart = TopologyChart.Create().Theme(theme);
         Assert.Equal("monospace", chart.GetPngFontInfo().ThemeFontFamily);
-        chart.WithTheme(theme.WithFontFamily("serif"));
+        chart.Theme(theme.WithFontFamily("serif"));
         Assert.Equal("serif", chart.GetPngFontInfo().ThemeFontFamily);
         Assert.Equal("monospace", theme.Typography.Family);
     }
@@ -90,7 +90,7 @@ public sealed class TopologyMeasuredTypographyTests {
     [InlineData(TopologyNodeDisplayMode.Tile)]
     public void SubtitleChipsContainTheirMeasuredText(TopologyNodeDisplayMode mode) {
         var theme = VisualTheme.Graphite().WithFontFamily("monospace");
-        var chart = TopologyChart.Create().WithTheme(theme).AddAutoNode("a", "Service", subtitle: "WWWWWWWWWWWWWWWW");
+        var chart = TopologyChart.Create().Theme(theme).AddAutoNode("a", "Service", subtitle: "WWWWWWWWWWWWWWWW");
         var options = new TopologyRenderOptions { TextMeasurementMode = TextMeasurementMode.InstalledFonts, NodeDisplayMode = mode, CardSubtitleMode = TopologyCardSubtitleMode.Chip, IncludeTileSubtitles = true };
         var svg = XDocument.Parse(chart.ToSvg(options));
         var chip = svg.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == (mode == TopologyNodeDisplayMode.Tile ? "topology-node-subtitle" : "topology-node-card-subtitle"));
@@ -128,7 +128,7 @@ public sealed class TopologyMeasuredTypographyTests {
         var theme = VisualTheme.Graphite();
         theme = theme.WithFontFamily("monospace");
         const string label = "WWWWWWWWWWWWWWWWWWWWWWWW";
-        var chart = TopologyChart.Create().WithTheme(theme)
+        var chart = TopologyChart.Create().Theme(theme)
             .AddNode("a", "A", 80, 100).AddNode("b", "B", 500, 300).AddEdge("ab", "a", "b", label);
         var svg = XDocument.Parse(chart.ToSvg(new TopologyRenderOptions { TextMeasurementMode = TextMeasurementMode.InstalledFonts }));
         var box = svg.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "topology-edge-label");

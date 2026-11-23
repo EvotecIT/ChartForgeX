@@ -67,7 +67,7 @@ public sealed class NativeArtworkPortableSizeTests {
         var tiny=TopologyIconArtwork.Portrait(new RgbaImage(1,1,new byte[]{255,0,0,255}));var facts=Chart(tiny).ToVisualArtifact().ToInterchangeEnvelope();facts.Nodes[0].Topology!.Artwork!.ImageHref=href;return facts;
     }
     private static TopologyChart Chart(TopologyIconArtwork artwork) {
-        var chart=TopologyChart.Create().WithTitle("").WithViewport(320,240,12).WithLegend(null);chart.Nodes.Add(new TopologyNode{Id="image",Label="Image",X=70,Y=40,Width=160,Height=160,
+        var chart=TopologyChart.Create().Title("").Viewport(new TopologyViewport(320, 240, 12)).Legend((TopologyLegend?)null);chart.Nodes.Add(new TopologyNode{Id="image",Label="Image",X=70,Y=40,Width=160,Height=160,
             DisplayMode=TopologyNodeDisplayMode.Artwork,Artwork=artwork,ShowLabel=false,ShowStatusBadge=false,PreserveDisplayModeSize=true});return chart;
     }
     private static void Capture(string name,string value){var output=Output();if(output!=null)File.WriteAllText(Path.Combine(output,name),value);}

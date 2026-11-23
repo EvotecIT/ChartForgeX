@@ -28,10 +28,10 @@ public sealed class MermaidAllocatedTypographyClosureTests {
     [InlineData(TopologyNodeDisplayMode.Tile, false, TopologyEdgeRouting.Straight)]
     [InlineData(TopologyNodeDisplayMode.Tile, true, TopologyEdgeRouting.Straight)]
     public async Task AutomaticActorRoutesAvoidThePaintedCaption(TopologyNodeDisplayMode mode, bool incoming, TopologyEdgeRouting routing) {
-        var chart = TopologyChart.Create().WithViewport(320, 280, 16)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(320, 280, 16))
             .AddNode("actor", "API", 80, 40, width: 64, height: 46)
             .AddNode("target", "Store", 80, 135, width: 64, height: 46)
-            .WithNodeDisplay("actor", mode)
+            .UpdateNode("actor", n => n.DisplayMode(mode).Badge(null))
             .AddEdge("link", incoming ? "target" : "actor", incoming ? "actor" : "target");
         chart.Nodes[0].Shape = TopologyNodeShape.Actor;
         foreach (var node in chart.Nodes) node.ShowStatusBadge = false;
@@ -58,10 +58,10 @@ public sealed class MermaidAllocatedTypographyClosureTests {
     [InlineData(360, 32, 90, false)]
     [InlineData(760, 256, 45, true)]
     public async Task AxisCaptionsRetainACompleteMonth(int width, int size, double angle, bool dark) {
-        var chart = Chart.Create().WithSize(width, 420).WithLegend(false).WithHeader(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithXLabels("September", "October", "November")
-            .ConfigureTickLabelStyle(style => style.WithFontFamily("Arial").WithFontSize(size))
+        var chart = Chart.Create().Size(width, 420).Legend(false).ShowHeader(false)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .XLabels("September", "October", "November")
+            .TickLabelStyle(style => style.FontFamily("Arial").FontSize(size))
             .AddLine("Readings", new[] { new ChartPoint(1, 10), new ChartPoint(2, 20), new ChartPoint(3, 15) });
         chart.Options.XAxis.LabelAngle = angle;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -76,10 +76,10 @@ public sealed class MermaidAllocatedTypographyClosureTests {
     [InlineData(TopologyNodeDisplayMode.Icon)]
     [InlineData(TopologyNodeDisplayMode.CompactCard)]
     public async Task CompactActorDisplayModesPaintAndRouteTheSameFigure(TopologyNodeDisplayMode mode) {
-        var chart = TopologyChart.Create().WithViewport(360, 240, 16)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(360, 240, 16))
             .AddNode("actor", "API", 60, 70, width: 64, height: 46)
             .AddNode("target", "Store", 240, 70, width: 64, height: 46)
-            .WithNodeDisplay("actor", mode).WithNodeDisplay("target", TopologyNodeDisplayMode.Tile)
+            .UpdateNode("actor", n => n.DisplayMode(mode).Badge(null)).UpdateNode("target", n => n.DisplayMode(TopologyNodeDisplayMode.Tile).Badge(null))
             .AddEdge("link", "actor", "target");
         chart.Nodes[0].Shape = TopologyNodeShape.Actor;
         foreach (var node in chart.Nodes) node.ShowStatusBadge = false;
@@ -155,7 +155,7 @@ public sealed class MermaidAllocatedTypographyClosureTests {
     public async Task NarrowPacketSlicesRetainTheirCompleteShortFieldCaption(int size) {
         var result = MermaidRenderer.Render("%%{init: {'fontFamily':'Arial','themeVariables':{'fontSize':" + size + "}}}%%\npacket-beta\n0-1: \"ACK\"\n2-31: \"Payload\"");
         Assert.Empty(result.Diagnostics);
-        var block = Assert.IsType<PacketLayoutBlock>(result.Artifact!.Model).WithSize(480, 280);
+        var block = Assert.IsType<PacketLayoutBlock>(result.Artifact!.Model).Size(480, 280);
         var svg = block.ToSvg(); var png = block.ToPng();
         var labels = XDocument.Parse(svg).Descendants().Where(node => node.Name.LocalName == "text").Select(node => node.Value).ToArray();
         Assert.Contains("ACK", labels); Assert.Contains("Payload", labels);
@@ -168,7 +168,7 @@ public sealed class MermaidAllocatedTypographyClosureTests {
     [InlineData(true)]
     public async Task OrdinaryGroupTitlesKeepTheirWidthPolicyWhenSubtitleNeedsFitting(bool subtitle) {
         const string label = "An ordinary group title that needs shortening";
-        var chart = TopologyChart.Create().WithViewport(600, 400, 0).WithLegend(null)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(600, 400, 0)).Legend((TopologyLegend?)null)
             .AddGroup("group", label, 40, 40, 160, 120, subtitle: subtitle ? "Description" : null);
         var fontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         var font = FontSpec.FromFile(fontPath); font.Family = "Carlito";

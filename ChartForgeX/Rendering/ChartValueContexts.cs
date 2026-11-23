@@ -45,7 +45,7 @@ internal sealed class ChartValueContexts {
                 value = point.Y; coordinate = point.X;
                 if (_partTotal > 0) percent = Math.Max(0, point.Y) / _partScale / _partTotal;
                 if (_series.Kind == ChartSeriesKind.ProgressRing) percent = point.Y / 100;
-                if (_series.Kind == ChartSeriesKind.ProgressBar) percent = Fraction(point.Y, 0, _chart.Options.ProgressMaximum);
+                if (_series.Kind == ChartSeriesKind.ProgressBar) percent = Fraction(point.Y, 0, _chart.Options.Progress.Max);
                 if (_series.Kind == ChartSeriesKind.Funnel && _series.Points.Count > 0 && _series.Points[0].Y > 0)
                     percent = point.Y / _series.Points[0].Y;
                 if (_series.HistogramBinLayout != null && !_series.HistogramBins[index].Value.HasValue) value = null;
@@ -70,7 +70,7 @@ internal sealed class ChartValueContexts {
             case ChartWaterfallItem waterfall: value = _waterfallValues![index]; coordinate = waterfall.X; break;
             case ChartProgressItem progress:
                 value = progress.Value; category = progress.Label;
-                var maximum = progress.Maximum ?? _chart.Options.ProgressMaximum;
+                var maximum = progress.Maximum ?? _chart.Options.Progress.Max;
                 if (maximum > progress.Minimum) percent = Fraction(progress.Value, progress.Minimum, maximum);
                 break;
             case ChartGaugeValue gauge:

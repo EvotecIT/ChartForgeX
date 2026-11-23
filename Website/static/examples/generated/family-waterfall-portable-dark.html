@@ -117,7 +117,7 @@ public static class WaterfallRecipe {
         if (variant is &quot;portable&quot; or &quot;compact-portable&quot; or &quot;portable-horizontal&quot; or &quot;compact-portable-horizontal&quot;) {
             var horizontalPortable = variant.EndsWith(&quot;horizontal&quot;, StringComparison.Ordinal);
             var authored = Create(horizontalPortable ? &quot;horizontal&quot; : &quot;options&quot;, mode)
-                .WithTitle(&quot;Editable imported waterfall&quot;).WithTheme(VisualTheme.Graphite(), mode);
+                .Title(&quot;Editable imported waterfall&quot;).Theme(VisualTheme.Graphite()).ThemeMode(mode);
             var bytes = authored.ToVisualArtifact(&quot;portable-movement&quot;).ToInterchangeUtf8Json();
             var imported = VisualArtifactInterchangeEnvelope.FromUtf8Json(bytes).ToWaterfallChart();
             // An imported delta remains authored; totals and checkpoint contributors are recalculated by the native owner.
@@ -131,22 +131,22 @@ public static class WaterfallRecipe {
                 ChartWaterfallItem.OpeningBalance(1, 120), ChartWaterfallItem.Delta(2, -30), ChartWaterfallItem.Subtotal(3),
                 ChartWaterfallItem.Delta(4, -130), ChartWaterfallItem.Subtotal(5), ChartWaterfallItem.Delta(6, 70),
                 ChartWaterfallItem.Total(7)
-            }).WithObservationId(3, new ChartObservationId(&quot;cost-change&quot;))
-                .WithObservationId(4, new ChartObservationId(&quot;cost-checkpoint&quot;))
-                .WithPointColor(4, &quot;#A5358A&quot;);
-            chart.WithXLabels(&quot;Open&quot;, &quot;Adjust&quot;, &quot;Stage&quot;, &quot;Costs&quot;, &quot;Cost sum&quot;, &quot;Recover&quot;, &quot;Balance&quot;).AddSeries(movement)
-                .ConfigureWaterfall(options =&gt; options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
-            if (horizontal) chart.WithXAxis(&quot;Running balance&quot;).WithYAxis(&quot;Stage&quot;).WithBarStyle(ChartBarStyle.SegmentedCapsule);
-            else chart.WithYAxis(&quot;Running balance&quot;);
-            chart.Options.XAxis.WithReversal(!horizontal || variant == &quot;compact-horizontal&quot;);
-            chart.Options.YAxis.WithReversal();
-            chart.WithDataLabels();
+            }).ObservationId(3, new ChartObservationId(&quot;cost-change&quot;))
+                .ObservationId(4, new ChartObservationId(&quot;cost-checkpoint&quot;))
+                .PointColor(4, &quot;#A5358A&quot;);
+            chart.XLabels(&quot;Open&quot;, &quot;Adjust&quot;, &quot;Stage&quot;, &quot;Costs&quot;, &quot;Cost sum&quot;, &quot;Recover&quot;, &quot;Balance&quot;).AddSeries(movement)
+                .Waterfall(options =&gt; options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
+            if (horizontal) chart.XAxis(x =&gt; x.Title(&quot;Running balance&quot;)).YAxis(y =&gt; y.Title(&quot;Stage&quot;)).Bars(b =&gt; b.Style(ChartBarStyle.SegmentedCapsule));
+            else chart.YAxis(y =&gt; y.Title(&quot;Running balance&quot;));
+            chart.Options.XAxis.Reversed(!horizontal || variant == &quot;compact-horizontal&quot;);
+            chart.Options.YAxis.Reversed();
+            chart.DataLabels();
         }
         else {
             var changes = new ChartSeries(new ChartSeriesId(&quot;changes&quot;), &quot;Changes&quot;, ChartSeriesKind.Waterfall, new[] {
                 new ChartPoint(1, 60), new ChartPoint(2, -15), new ChartPoint(3, 25), new ChartPoint(4, -10), new ChartPoint(5, 12)
             });
-            chart.WithXLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;, &quot;Central&quot;, &quot;Total&quot;).AddSeries(changes);
+            chart.XLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;, &quot;Central&quot;, &quot;Total&quot;).AddSeries(changes);
         }
         return chart;
     }
@@ -188,7 +188,7 @@ public static class WaterfallRecipe {
         if (variant is &quot;portable&quot; or &quot;compact-portable&quot; or &quot;portable-horizontal&quot; or &quot;compact-portable-horizontal&quot;) {
             var horizontalPortable = variant.EndsWith(&quot;horizontal&quot;, StringComparison.Ordinal);
             var authored = Create(horizontalPortable ? &quot;horizontal&quot; : &quot;options&quot;, mode)
-                .WithTitle(&quot;Editable imported waterfall&quot;).WithTheme(VisualTheme.Graphite(), mode);
+                .Title(&quot;Editable imported waterfall&quot;).Theme(VisualTheme.Graphite()).ThemeMode(mode);
             var bytes = authored.ToVisualArtifact(&quot;portable-movement&quot;).ToInterchangeUtf8Json();
             var imported = VisualArtifactInterchangeEnvelope.FromUtf8Json(bytes).ToWaterfallChart();
             // An imported delta remains authored; totals and checkpoint contributors are recalculated by the native owner.
@@ -202,22 +202,22 @@ public static class WaterfallRecipe {
                 ChartWaterfallItem.OpeningBalance(1, 120), ChartWaterfallItem.Delta(2, -30), ChartWaterfallItem.Subtotal(3),
                 ChartWaterfallItem.Delta(4, -130), ChartWaterfallItem.Subtotal(5), ChartWaterfallItem.Delta(6, 70),
                 ChartWaterfallItem.Total(7)
-            }).WithObservationId(3, new ChartObservationId(&quot;cost-change&quot;))
-                .WithObservationId(4, new ChartObservationId(&quot;cost-checkpoint&quot;))
-                .WithPointColor(4, &quot;#A5358A&quot;);
-            chart.WithXLabels(&quot;Open&quot;, &quot;Adjust&quot;, &quot;Stage&quot;, &quot;Costs&quot;, &quot;Cost sum&quot;, &quot;Recover&quot;, &quot;Balance&quot;).AddSeries(movement)
-                .ConfigureWaterfall(options =&gt; options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
-            if (horizontal) chart.WithXAxis(&quot;Running balance&quot;).WithYAxis(&quot;Stage&quot;).WithBarStyle(ChartBarStyle.SegmentedCapsule);
-            else chart.WithYAxis(&quot;Running balance&quot;);
-            chart.Options.XAxis.WithReversal(!horizontal || variant == &quot;compact-horizontal&quot;);
-            chart.Options.YAxis.WithReversal();
-            chart.WithDataLabels();
+            }).ObservationId(3, new ChartObservationId(&quot;cost-change&quot;))
+                .ObservationId(4, new ChartObservationId(&quot;cost-checkpoint&quot;))
+                .PointColor(4, &quot;#A5358A&quot;);
+            chart.XLabels(&quot;Open&quot;, &quot;Adjust&quot;, &quot;Stage&quot;, &quot;Costs&quot;, &quot;Cost sum&quot;, &quot;Recover&quot;, &quot;Balance&quot;).AddSeries(movement)
+                .Waterfall(options =&gt; options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
+            if (horizontal) chart.XAxis(x =&gt; x.Title(&quot;Running balance&quot;)).YAxis(y =&gt; y.Title(&quot;Stage&quot;)).Bars(b =&gt; b.Style(ChartBarStyle.SegmentedCapsule));
+            else chart.YAxis(y =&gt; y.Title(&quot;Running balance&quot;));
+            chart.Options.XAxis.Reversed(!horizontal || variant == &quot;compact-horizontal&quot;);
+            chart.Options.YAxis.Reversed();
+            chart.DataLabels();
         }
         else {
             var changes = new ChartSeries(new ChartSeriesId(&quot;changes&quot;), &quot;Changes&quot;, ChartSeriesKind.Waterfall, new[] {
                 new ChartPoint(1, 60), new ChartPoint(2, -15), new ChartPoint(3, 25), new ChartPoint(4, -10), new ChartPoint(5, 12)
             });
-            chart.WithXLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;, &quot;Central&quot;, &quot;Total&quot;).AddSeries(changes);
+            chart.XLabels(&quot;North&quot;, &quot;South&quot;, &quot;East&quot;, &quot;West&quot;, &quot;Central&quot;, &quot;Total&quot;).AddSeries(changes);
         }
         return chart;
     }

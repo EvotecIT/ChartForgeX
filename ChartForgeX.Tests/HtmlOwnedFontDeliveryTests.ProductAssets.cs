@@ -7,6 +7,7 @@ using ChartForgeX.Interactivity;
 using ChartForgeX.VisualArtifacts;
 using System.Xml.Linq;
 using Xunit;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.Tests;
 
@@ -14,7 +15,7 @@ public sealed partial class HtmlOwnedFontDeliveryTests {
     [Fact]
     public void ChartSvgHostFontPolicyOnlyRemovesFontsAndRetainsScopedExportOptions() {
         var chart = Model("Archivo");
-        chart.WithSvgColorVariables(SvgColorVariables.SharedRoles(chart.Options.Theme, chart.Options.ThemeMode));
+        chart.SvgColorVariables(SvgColorVariables.SharedRoles(chart.Options.Theme, chart.Options.ThemeMode));
         const string scope = "report chart/1|light";
         var defaults = new VisualSvgOptions(colorVariables: chart.Options.SvgColorVariables);
         var options = new VisualSvgOptions("original-policy", chart.Options.SvgColorVariables, responsive: true)
@@ -47,7 +48,7 @@ public sealed partial class HtmlOwnedFontDeliveryTests {
     [Fact]
     public void StandaloneSvgDeliversTheBundledFaceActuallyUsedByAFallbackGlyph() {
         FontRegistry.Register("HostMono", ProductFont("JetBrainsMono", "ttf"));
-        var chart = Model("HostMono, Archivo").WithTitle("Ĳ");
+        var chart = Model("HostMono, Archivo").Title("Ĳ");
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var heading = prepared.Scene.Nodes.OfType<VisualSceneText>().Single(node => node.Role == "frame-heading");
         Assert.Equal("Archivo", Assert.Single(Assert.Single(heading.Text.Lines).Glyphs).Face.SelectedFamily);
@@ -80,7 +81,7 @@ public sealed partial class HtmlOwnedFontDeliveryTests {
         Assert.Contains("@font-face{font-family:'Archivo'", HtmlGraphExplorerRenderer.BuildFragmentStyle(), StringComparison.Ordinal);
         FontRegistry.Register("Archivo", ProductFont("JetBrainsMono", "ttf"));
         var renderer = new HtmlInteractiveChartRenderer();
-        var chart = Model().WithTitle("11118888");
+        var chart = Model().Title("11118888");
         foreach (var html in new[] {
             renderer.RenderPage(chart, value => value.TextPresentation = HtmlChartTextPresentation.Browser),
             ChartFontAssets.StyleSheet,
@@ -135,7 +136,7 @@ public sealed partial class HtmlOwnedFontDeliveryTests {
     public async Task StandaloneFallbackGlyphLoadsItsBundledBrowserFaceWithoutTheProofFontInjector() {
         if (!InteractiveChartBrowser.Enabled) return;
         FontRegistry.Register("HostMono", ProductFont("JetBrainsMono", "ttf"));
-        var chart = Model("HostMono, Archivo").WithTitle("Ĳ");
+        var chart = Model("HostMono, Archivo").Title("Ĳ");
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var heading = prepared.Scene.Nodes.OfType<VisualSceneText>().Single(node => node.Role == "frame-heading");
         var host = "<style>@font-face{font-family:HostMono;font-weight:100 800;src:url(data:font/woff2;base64,"
@@ -151,7 +152,7 @@ public sealed partial class HtmlOwnedFontDeliveryTests {
     public async Task BrowserOverrideKeepsTheHostFaceAndItsNativeMeasuredAdvance() {
         if (!InteractiveChartBrowser.Enabled) return;
         FontRegistry.Register("Archivo", ProductFont("JetBrainsMono", "ttf"));
-        var chart = Model().WithTitle("11118888");
+        var chart = Model().Title("11118888");
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var heading = prepared.Scene.Nodes.OfType<VisualSceneText>().Single(node => node.Role == "frame-heading");
         var host = "<style>@font-face{font-family:Archivo;font-weight:100 800;src:url(data:font/woff2;base64,"
@@ -183,8 +184,8 @@ public sealed partial class HtmlOwnedFontDeliveryTests {
     }
 
     private static (string Html, string? Fragment) ProductHost(string path) {
-        var chart = Model().WithTitle("Product font delivery");
-        var topology = TopologyChart.Create().WithTitle("Product font delivery").WithViewport(720, 420, 24)
+        var chart = Model().Title("Product font delivery");
+        var topology = TopologyChart.Create().Title("Product font delivery").Viewport(new TopologyViewport(720, 420, 24))
             .AddNode("node", "Bundled face", 40, 60, width: 180, height: 72);
         if (path == "topology-page") return (new TopologyHtmlRenderer().RenderPage(topology), null);
         if (path == "graph-page") return (GraphScene.Create("product-graph", "Product font delivery")

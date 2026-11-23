@@ -17,19 +17,19 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
     public async Task ExplicitPlotEdgesRetainGuideInkAndRejectOffPlotObservationAnchors(bool graphite, int width, double scale) {
         if (!Enabled) return;
         // Use the public chart path that exposed the three-decimal SVG/full-precision plot mismatch.
-        var chart = Chart.Create().WithSize(600, 440).WithTitle("Explicit plot edges").WithLegend(false).WithDataLabels(false)
-            .WithTheme(VisualTheme.Graphite(), graphite ? ThemeMode.Dark : ThemeMode.Light)
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+        var chart = Chart.Create().Size(600, 440).Title("Explicit plot edges").Legend(false).DataLabels(false)
+            .Theme(VisualTheme.Graphite()).ThemeMode(graphite ? ThemeMode.Dark : ThemeMode.Light)
+            .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
             .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("boundary-source"), "Boundary", new[] {
                 new ChartPoint(0, 5), new ChartPoint(10, 5), new ChartPoint(5, 0),
                 new ChartPoint(5, 10), new ChartPoint(5, 5), new ChartPoint(10.01, 2)
             }));
-        chart.Series[0].WithPointLabel(5, "Outside plot");
+        chart.Series[0].PointLabel(5, "Outside plot");
         var features = ChartInteractionFeatures.Tooltips | ChartInteractionFeatures.Crosshair;
         await using var session = await OpenAsync(Host(graphite, HtmlChartResponsiveLayout.Fit, width, scale, false, features, chart), 950, 760);
         var page = session.Page;
         foreach (var customStroke in new[] { false, true }) {
-            chart.WithPlotClipping();
+            chart.ClipMarksToPlot();
             Action<HtmlChartCrosshairOptions>? configure = customStroke ? options => {
                 options.Stroke = ChartColor.FromRgb(37, 99, 235);
                 options.StrokeWidth = 3;
@@ -60,7 +60,7 @@ public sealed partial class InteractiveOverlayCoordinatesBrowserTests {
             }
             // Unclipped marks are supported, but do not enlarge the plot's guide domain.
             // Their native readout remains available without clamping an off-plot centre onto an edge.
-            chart.WithPlotClipping(false);
+            chart.ClipMarksToPlot(false);
             await page.GotoAsync("about:blank");
             await page.SetContentAsync(Host(graphite, HtmlChartResponsiveLayout.Fit, width, scale, false, features, chart,
                 configureCrosshair: configure));

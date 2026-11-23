@@ -8,15 +8,15 @@ using ChartForgeX.Themes;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualMapCompiler {
-    private static bool UsesDatasetComposition(Chart chart) => chart.Options.MapViewport.CrossesAntimeridian
-        || chart.Options.MapBaseLayers.Concat(chart.Options.MapOverlayLayers).Any(layer => layer.Definition.PolygonViewport.HasValue) || chart.Series.Count > 1 || chart.Series.Any(series =>
+    private static bool UsesDatasetComposition(Chart chart) => chart.Options.Map.Viewport.CrossesAntimeridian
+        || chart.Options.Map.BaseLayers.Concat(chart.Options.Map.OverlayLayers).Any(layer => layer.Definition.PolygonViewport.HasValue) || chart.Series.Count > 1 || chart.Series.Any(series =>
         series.RegionMapDefinition?.PolygonViewport != null || series.ColorScale != null || series.ColorDimension.HasOverrides || series.MapConnectors.Count > 0
-        || series.MapPointSize.HasOverrides || series.MapClustering != null || series.MapPoints.Any(point => point.ColorValue.HasValue)) || chart.Options.MapConnectors.Count > 0
+        || series.MapPointSize.HasOverrides || series.MapClustering != null || series.MapPoints.Any(point => point.ColorValue.HasValue)) || chart.Options.Map.Connectors.Count > 0
             && chart.Series[0].RegionMapDefinition?.GeographicProjection != null;
 
     /// <summary>Fits one declared coordinate frame and draws retained datasets and independent tile insets in authored paint order.</summary>
     private static void Composed(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartColorPresentationSet? colorScales) {
-        if (!Finite(chart.Options.MapRegionStrokeWidth) || chart.Options.MapRegionStrokeWidth < 0)
+        if (!Finite(chart.Options.Map.RegionStrokeWidth) || chart.Options.Map.RegionStrokeWidth < 0)
             throw new InvalidOperationException("Map region stroke width must be non-negative and finite.");
         if (!chart.Series.All(series => ChartMapComposition.IsMap(series.Kind)))
             throw new InvalidOperationException("Map composition requires map datasets.");
@@ -28,7 +28,7 @@ internal static partial class VisualMapCompiler {
         if (!Finite(source.Left) || !Finite(source.Top) || !Finite(source.Width) || !Finite(source.Height) || source.Width <= 0 || source.Height <= 0)
             throw new InvalidOperationException("Map source bounds must be finite and have positive dimensions.");
         foreach (var data in datasets) data.SizeScale?.SetFrame(source.Width, source.Height,
-            chart.Series.Where(series => series.Kind != ChartSeriesKind.TileMap).All(series => series.Kind == ChartSeriesKind.DottedMap) && !UsesCompactMapDot(chart.Options.MapViewport) ? 5.2 : 3.6);
+            chart.Series.Where(series => series.Kind != ChartSeriesKind.TileMap).All(series => series.Kind == ChartSeriesKind.DottedMap) && !UsesCompactMapDot(chart.Options.Map.Viewport) ? 5.2 : 3.6);
         var viewport = DatasetKeys(chart, context, builder, plot, colors, datasets);
         viewport = SizeKeyViewport(chart, context, builder, viewport, datasets, out var sizeKeys);
         var initial = Fit(viewport, source.Width, source.Height);
@@ -39,15 +39,15 @@ internal static partial class VisualMapCompiler {
         radius = Math.Max(radius, datasets.Where(data => data.Series.MapClustering != null)
             .Select(data => data.Series.MapClustering!.Radius).DefaultIfEmpty(0).Max());
         var map = Fit(viewport, source.Width, source.Height, Math.Max(MapCalloutInset(chart, viewport),
-            Math.Max(chart.Options.MapRegionStrokeWidth / 2, radius * 1.85 + Math.Max(1, dot * .55) / 2)));
+            Math.Max(chart.Options.Map.RegionStrokeWidth / 2, radius * 1.85 + Math.Max(1, dot * .55) / 2)));
         foreach (var data in datasets.Where(data => data.Series.Kind == ChartSeriesKind.DottedMap))
             data.CaptureClusters(map, GeographicPoint, IsVisible);
-        ChartPoint GeographicPoint(ChartPoint point) => Project(ChartGeographicProjection.Project(point.X, point.Y, projection!.Value, chart.Options.MapViewport), source, map);
-        ChartPoint[] RoutePoints(IReadOnlyList<ChartPoint> points) => ChartGeographicProjection.ProjectRoute(points, projection!.Value, chart.Options.MapViewport)
+        ChartPoint GeographicPoint(ChartPoint point) => Project(ChartGeographicProjection.Project(point.X, point.Y, projection!.Value, chart.Options.Map.Viewport), source, map);
+        ChartPoint[] RoutePoints(IReadOnlyList<ChartPoint> points) => ChartGeographicProjection.ProjectRoute(points, projection!.Value, chart.Options.Map.Viewport)
             .Select(point => Project(point, source, map)).ToArray();
         bool IsVisible(ChartPoint point) {
-            if (chart.Options.MapViewport.CrossesAntimeridian && !ChartGeographicProjection.Contains(point, chart.Options.MapViewport)) return false;
-            var projected = ChartGeographicProjection.Project(point.X, point.Y, projection!.Value, chart.Options.MapViewport);
+            if (chart.Options.Map.Viewport.CrossesAntimeridian && !ChartGeographicProjection.Contains(point, chart.Options.Map.Viewport)) return false;
+            var projected = ChartGeographicProjection.Project(point.X, point.Y, projection!.Value, chart.Options.Map.Viewport);
             return projected.X >= source.Left && projected.X <= source.Right && projected.Y >= source.Top && projected.Y <= source.Bottom;
         }
         var labels = new List<MapLabel>(); var obstacles = new List<LabelObstacle>();
@@ -59,8 +59,8 @@ internal static partial class VisualMapCompiler {
             ["data-cfx-source-width"] = N(source.Width), ["data-cfx-source-height"] = N(source.Height),
             ["data-cfx-dataset-count"] = N(datasets.Length)
         };
-        if (chart.Options.MapViewport.CrossesAntimeridian) {
-            var window = chart.Options.MapViewport;
+        if (chart.Options.Map.Viewport.CrossesAntimeridian) {
+            var window = chart.Options.Map.Viewport;
             mapMetadata["data-cfx-crosses-antimeridian"] = "true";
             mapMetadata["data-cfx-viewport-min-longitude"] = N(window.MinimumLongitude); mapMetadata["data-cfx-viewport-max-longitude"] = N(window.MaximumLongitude);
             mapMetadata["data-cfx-unwrapped-longitude-span"] = N(window.LongitudeSpan);
@@ -69,9 +69,9 @@ internal static partial class VisualMapCompiler {
         using (builder.PushClip(viewport)) {
             using (builder.PushClip(map)) {
                 if (chart.Series.Where(series => series.Kind != ChartSeriesKind.TileMap).All(series => series.Kind == ChartSeriesKind.DottedMap))
-                    DottedLand(chart, context, builder, map, chart.Options.MapViewport, dot, colors);
+                    DottedLand(chart, context, builder, map, chart.Options.Map.Viewport, dot, colors);
                 else Surface(chart, context, builder, map, colors, "region-map-surface");
-                Layers(chart.Options.MapBaseLayers, builder, source, map, "base");
+                Layers(chart.Options.Map.BaseLayers, builder, source, map, "base");
             }
             foreach (var data in datasets) using (builder.PushGroup(data.Prefix, data.Series.Kind == ChartSeriesKind.DottedMap ? "dotted-map" : "map-series", new Dictionary<string, string> {
                 ["data-cfx-series"] = N(data.Index), ["data-cfx-series-key"] = data.Series.InteractionIdentityKey,
@@ -88,16 +88,16 @@ internal static partial class VisualMapCompiler {
                 }
                 if (data.Series.Kind == ChartSeriesKind.RegionMap) using (builder.PushClip(map)) DrawRegions(chart, context, builder, source, map, colors, data, labels, obstacles, viewport);
                 var routes = data.Series.MapConnectors.AsEnumerable();
-                if (data.Index == routeOwner) routes = chart.Options.MapConnectors.Concat(routes);
+                if (data.Index == routeOwner) routes = chart.Options.Map.Connectors.Concat(routes);
                 using (builder.PushClip(map)) DrawRoutes(chart, context, builder, map, viewport, dot, data.Weights, data.MinimumWeight, data.MaximumWeight,
                     colors, labels, data.Series, data.Index, routes.ToArray(), GeographicPoint, IsVisible, data.SizeScale, datasets,
-                    chart.Options.MapViewport.CrossesAntimeridian ? RoutePoints : null,
-                    chart.Options.MapViewport.CrossesAntimeridian ? 360 * map.Width / source.Width : (double?)null);
+                    chart.Options.Map.Viewport.CrossesAntimeridian ? RoutePoints : null,
+                    chart.Options.Map.Viewport.CrossesAntimeridian ? 360 * map.Width / source.Width : (double?)null);
                 if (data.Series.Kind == ChartSeriesKind.DottedMap)
                     DrawPoints(chart, context, builder, map, viewport, dot, data.Weights, data.MinimumWeight, data.MaximumWeight, colors,
                         labels, obstacles, data, GeographicPoint, IsVisible);
             }
-            using (builder.PushClip(map)) Layers(chart.Options.MapOverlayLayers, builder, source, map, "overlay");
+            using (builder.PushClip(map)) Layers(chart.Options.Map.OverlayLayers, builder, source, map, "overlay");
         }
         DrawMapLabels(builder, viewport, labels, obstacles, context.Theme.Spacing, outline: datasets.Any(data => data.Series.Kind == ChartSeriesKind.RegionMap));
         foreach (var item in sizeKeys) using (builder.PushGroup(null, "map-size-scale-source", new Dictionary<string, string> {
@@ -106,9 +106,9 @@ internal static partial class VisualMapCompiler {
     }
 
     private static ChartRect CompositionBounds(Chart chart, ChartMapGeoJsonProjection? projection) {
-        if (chart.Options.RegionMapBounds.HasValue) return chart.Options.RegionMapBounds.Value;
-        if (projection.HasValue && (chart.Options.HasExplicitMapViewport || chart.Series.Where(series => series.Kind != ChartSeriesKind.TileMap).All(series => series.Kind == ChartSeriesKind.DottedMap)))
-            return ChartGeographicProjection.Bounds(chart.Options.MapViewport, projection.Value);
+        if (chart.Options.Map.RegionBounds.HasValue) return chart.Options.Map.RegionBounds.Value;
+        if (projection.HasValue && (chart.Options.Map.HasExplicitViewport || chart.Series.Where(series => series.Kind != ChartSeriesKind.TileMap).All(series => series.Kind == ChartSeriesKind.DottedMap)))
+            return ChartGeographicProjection.Bounds(chart.Options.Map.Viewport, projection.Value);
         var points = new List<ChartPoint>();
         foreach (var series in chart.Series) {
             if (series.RegionMapDefinition is ChartMapDefinition definition) {
@@ -120,7 +120,7 @@ internal static partial class VisualMapCompiler {
                 foreach (var route in series.MapConnectors) AddRouteBounds(points, route, projection.Value);
             }
         }
-        if (projection.HasValue) foreach (var route in chart.Options.MapConnectors) AddRouteBounds(points, route, projection.Value);
+        if (projection.HasValue) foreach (var route in chart.Options.Map.Connectors) AddRouteBounds(points, route, projection.Value);
         var bounds = Bounds(points);
         return new ChartRect(bounds.Left, bounds.Top, Math.Max(.000001, bounds.Width), Math.Max(.000001, bounds.Height));
     }

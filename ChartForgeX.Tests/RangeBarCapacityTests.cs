@@ -12,8 +12,8 @@ public sealed class RangeBarCapacityTests {
     [InlineData(false)]
     [InlineData(true)]
     public void DenseFlatGroupsRejectOversizedStrokesAndKeepAllObservationsWhenTheStrokeFits(bool horizontal) {
-        var chart = Chart.Create().WithHeader(false).WithAxes(false).WithLegend(false).WithDataLabels(false).WithBarStyle(ChartBarStyle.Flat)
-            .ConfigureRangeBar(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
+        var chart = Chart.Create().ShowHeader(false).Axes(false).Legend(false).DataLabels(false).Bars(b => b.Style(ChartBarStyle.Flat))
+            .RangeBar(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
         for (var series = 0; series < 2; series++) {
             chart.AddRangeBar("Group " + series, Enumerable.Range(1, 30).Select(category => new ChartInterval(category, 10, 20)));
             chart.Series[series].StrokeWidth = 8;

@@ -3,6 +3,7 @@ using ChartForgeX.Interactivity.Html;
 using Microsoft.Playwright;
 using Xunit;
 using static ChartForgeX.Tests.InteractiveChartBrowser;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.Tests;
 
@@ -17,7 +18,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
     public async Task PointerExitRepositionsTheFocusedLegendUsingItsCurrentNativeAnchor(HtmlChartTooltipAnchor anchor, bool shadow, int width, bool dark) {
         if (!Enabled) return;
         var placements = FocusRecoveryPlacements(anchor);
-        var fragment = Observations(dark).WithLegend().ToInteractiveHtmlFragment(options => {
+        var fragment = Observations(dark).Legend().ToInteractiveHtmlFragment(options => {
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;
             options.Tooltip.Mode = HtmlChartTooltipMode.Single;
             options.Tooltip.DelayMilliseconds = shadow ? 360 : 0;

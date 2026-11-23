@@ -151,28 +151,28 @@ public sealed class RuntimeReadableValuesBrowserTests {
     }
 
     private static string CreatePage(bool dark) {
-        Chart Frame(string title) => Chart.Create().WithSize(800, 360).WithDataLabels(false).WithTitle(title)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
-        var time = Frame("Requests over time").WithXAxisTimeScale().WithXAxisBounds(First.ToOADate(), First.AddDays(10).ToOADate())
+        Chart Frame(string title) => Chart.Create().Size(800, 360).DataLabels(false).Title(title)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
+        var time = Frame("Requests over time").XAxis(x => x.TimeScale().Bounds(First.ToOADate(), First.AddDays(10).ToOADate()))
             .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("time"), "Requests", new[] {
                 new ChartPoint(First, 17),new ChartPoint(First.AddDays(5), 27),new ChartPoint(First.AddDays(10), 21) })
-                .WithObservationIds(new[] {new ChartObservationId("time-first"),new ChartObservationId("time-middle"),new ChartObservationId("time-last")}));
+                .ObservationIds(new[] {new ChartObservationId("time-first"),new ChartObservationId("time-middle"),new ChartObservationId("time-last")}));
         time.Options.XAxis.LabelFormatter = value => DateTime.FromOADate(value).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         var scatter = Frame("Measured samples").AddSeries(new ChartSeries(new ChartSeriesId("scatter"), "Samples", ChartSeriesKind.Scatter,
             new[] { new ChartPoint(ScatterX, ScatterY),new ChartPoint(5.5, 11.25) })
-            .WithObservationIds(new[] { new ChartObservationId("scatter-first"),new ChartObservationId("scatter-second") }));
+            .ObservationIds(new[] { new ChartObservationId("scatter-first"),new ChartObservationId("scatter-second") }));
         scatter.Options.XAxis.ValueFormat = ChartValueFormat.Number("0.0", CultureInfo.GetCultureInfo("de-DE"));
         scatter.Options.YAxis.ValueFormat = ChartValueFormat.Number("0.0", CultureInfo.GetCultureInfo("de-DE"));
         var histogram = Frame("Duration distribution").AddSeries(ChartSeries.CreateHistogram(new ChartSeriesId("histogram"), "Duration",
             new[] {30d,45}, ChartHistogramBinLayout.FromBoundaries(new[] {20d,40,60}))
-            .WithObservationIds(new[] {new ChartObservationId("histogram-first"),new ChartObservationId("histogram-second")}));
-        var state = Frame("Service state").WithXAxisTimeScale().WithStateCategories(new ChartStateCategory("up", "Available", ChartColor.FromRgb(13, 148, 136)))
+            .ObservationIds(new[] {new ChartObservationId("histogram-first"),new ChartObservationId("histogram-second")}));
+        var state = Frame("Service state").XAxis(x => x.TimeScale()).StateCategories(new ChartStateCategory("up", "Available", ChartColor.FromRgb(13, 148, 136)))
             .AddStateTimelineLane("Service", new[] {new ChartStateTimelineSegment(First,First.AddHours(6),"up")});
-        state.Series[0].WithObservationId(0,new ChartObservationId("state-run"));
+        state.Series[0].ObservationId(0,new ChartObservationId("state-run"));
         state.Options.XAxis.LabelFormatter = value => DateTime.FromOADate(value).ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture);
-        var box = Frame("Service latency").WithXLabels(new[] {new ChartAxisLabel(0,"Service A")})
+        var box = Frame("Service latency").XLabels(new[] {new ChartAxisLabel(0,"Service A")})
             .AddSeries(ChartSeries.CreateBoxPlot(new ChartSeriesId("box"),"Latency",new[] {new ChartBoxPlot(0,1,2,3,4,5)})
-                .WithObservationId(0,new ChartObservationId("box-first")));
+                .ObservationId(0,new ChartObservationId("box-first")));
         return new HtmlInteractiveDashboardRenderer().RenderPage(new[] {time,scatter,histogram,state,box}, options => {
             options.IdScope = "readable-values";
             options.Toolbar = HtmlChartToolbarLayout.Compact;

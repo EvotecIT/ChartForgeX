@@ -15,9 +15,9 @@ public sealed class RangeBarEndpointLabelBrowserTests {
         if (!Enabled) return;
         var directory = Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY");
         if (!string.IsNullOrWhiteSpace(directory)) Directory.CreateDirectory(directory);
-        var chart = RangeBarEndpointLabelTests.Fixture(true).WithSize(360, 360).WithLegend(true).WithTheme(VisualTheme.Graphite(), ThemeMode.Dark);
-        chart.Series[0].WithPointLabel(0, "Promised <&> delivery");
-        chart.ConfigureLabels(labels => { labels.Category = "Kategoria"; labels.Start = "Początek"; labels.End = "Koniec"; });
+        var chart = RangeBarEndpointLabelTests.Fixture(true).Size(360, 360).Legend(true).Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark);
+        chart.Series[0].PointLabel(0, "Promised <&> delivery");
+        chart.Labels(labels => { labels.Category = "Kategoria"; labels.Start = "Początek"; labels.End = "Koniec"; });
         chart.Options.RangeBar.EndpointLabelFormatter = context => context.FormattedValue + (context.Endpoint == ChartRangeBarEndpoint.Start ? " S" : " E");
         if (!string.IsNullOrWhiteSpace(directory)) {
             await File.WriteAllTextAsync(Path.Combine(directory, "range-bar-endpoint-captions.svg"), chart.ToSvg());

@@ -109,7 +109,7 @@ public sealed class ServerRenderedPageBrowserTests {
     [InlineData(ChartDataTableMode.Details)]
     [InlineData(ChartDataTableMode.VisuallyHidden)]
     public async Task NativeDataFallbackRemainsAvailableOnScreenAndInPrint(ChartDataTableMode mode) {
-        var chart = Chart.Create().WithTitle("Requests").WithSize(500, 220)
+        var chart = Chart.Create().Title("Requests").Size(500, 220)
             .AddBar("API", new[] { new ChartPoint(1, 24), new ChartPoint(2, 18) });
         var fragment = new HtmlChartRenderer().RenderFragment(chart, new VisualSvgOptions("requests"), mode);
         await using var session = await InteractiveChartBrowser.OpenAsync("<!doctype html><html><body>" + fragment + "</body></html>", 600, 500);

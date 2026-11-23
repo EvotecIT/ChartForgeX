@@ -3,10 +3,12 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 using ChartForgeX.Terminal;
 using ChartForgeX.Rendering;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Stories;
 
 /// <summary>Story-specific window, desktop and syntax controls. Shared colors and fonts remain in <see cref="VisualTheme"/>.</summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class VisualStoryStyleOptions {
     private TerminalWindowStyle _windowStyle = TerminalWindowStyle.Minimal;
     /// <summary>Chooses source/replay window chrome without changing the common palette.</summary>
@@ -85,9 +87,5 @@ public sealed partial class VisualStory {
     public ThemeMode ThemeMode { get => _themeMode; set { if (!Enum.IsDefined(typeof(ThemeMode), value)) throw new ArgumentOutOfRangeException(nameof(value)); _themeMode = value; } }
     /// <summary>Gets or sets local window and source styling.</summary>
     public VisualStoryStyleOptions Style { get => _style; set => _style = value ?? throw new ArgumentNullException(nameof(value)); }
-    /// <summary>Changes appearance without replacing the immutable theme snapshot.</summary>
-    public VisualStory WithThemeMode(ThemeMode mode) { ThemeMode = mode; return this; }
-    /// <summary>Sets local desktop, window and syntax controls.</summary>
-    public VisualStory WithStyle(VisualStoryStyleOptions style) { Style = style; return this; }
     internal ResolvedVisualStoryStyle ResolvedStyle => ResolvedVisualStoryStyle.FromTheme(Theme, ThemeMode, Style);
 }

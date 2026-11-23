@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Topology;
 
@@ -93,7 +94,7 @@ public sealed partial class TopologyIconCatalog {
 
     private static TopologyIconPack BuiltInCommon() {
         return new TopologyIconPack("common", "Common Infrastructure", isBuiltIn: true)
-            .WithTags("common", "infrastructure")
+            .AddTags("common", "infrastructure")
             .AddIcon("server", "Server", TopologyNodeKind.Server, TopologyIconShape.Server, "SRV", "#2563EB", "Compute")
             .AddIcon("database", "Database", TopologyNodeKind.Database, TopologyIconShape.Database, "DB", "#0F766E", "Data")
             .AddIcon("storage", "Storage", TopologyNodeKind.Storage, TopologyIconShape.Storage, "ST", "#64748B", "Data")
@@ -107,20 +108,20 @@ public sealed partial class TopologyIconCatalog {
 
     private static TopologyIconPack BuiltInNetwork() {
         return new TopologyIconPack("network", "Network", isBuiltIn: true)
-            .WithTags("network", "connectivity")
+            .AddTags("network", "connectivity")
             .AddIcon("switch", "Switch", TopologyNodeKind.Network, TopologyIconShape.NetworkSwitch, "SW", "#0891B2", "Network")
             .AddIcon("router", "Router", TopologyNodeKind.Gateway, TopologyIconShape.Router, "RTR", "#2563EB", "Network")
             .AddIcon("firewall", "Firewall", TopologyNodeKind.Gateway, TopologyIconShape.Firewall, "FW", "#EA580C", "Security")
             .AddIcon("load-balancer", "Load Balancer", TopologyNodeKind.Gateway, TopologyIconShape.LoadBalancer, "LB", "#7C3AED", "Network")
             .AddIcon("subnet", "Subnet", TopologyNodeKind.NetworkSegment, TopologyIconShape.NetworkSegment, "NET", "#0891B2", "Network")
             .AddIcon("wan-link", "WAN Link", TopologyNodeKind.Network, TopologyIconShape.Network, "WAN", "#2563EB", "Network")
-            .WithIconTags("load-balancer", "loadbalancer", "lb")
-            .WithIconTags("subnet", "cidr", "network-segment");
+            .AddIconTags("load-balancer", "loadbalancer", "lb")
+            .AddIconTags("subnet", "cidr", "network-segment");
     }
 
     private static TopologyIconPack BuiltInActiveDirectory() {
         return new TopologyIconPack("microsoft-ad", "Microsoft Active Directory", vendor: "Microsoft", isBuiltIn: true)
-            .WithTags("active-directory", "directory", "microsoft", "ad")
+            .AddTags("active-directory", "directory", "microsoft", "ad")
             .AddIcon("forest", "Forest", TopologyNodeKind.Namespace, TopologyIconShape.Forest, "FOR", "#16A34A", "Directory")
             .AddIcon("domain", "Domain", TopologyNodeKind.Namespace, TopologyIconShape.Domain, "DOM", "#2563EB", "Directory")
             .AddIcon("domain-controller", "Domain Controller", TopologyNodeKind.Server, TopologyIconShape.DomainController, "DC", "#2563EB", "Directory")
@@ -130,17 +131,17 @@ public sealed partial class TopologyIconCatalog {
             .AddIcon("site-link", "AD Site Link", TopologyNodeKind.Network, TopologyIconShape.Network, "LINK", "#2563EB", "Directory")
             .AddIcon("ad-subnet", "AD Subnet", TopologyNodeKind.NetworkSegment, TopologyIconShape.NetworkSegment, "NET", "#0891B2", "Directory")
             .AddIcon("bridgehead", "Bridgehead Server", TopologyNodeKind.Server, TopologyIconShape.DomainController, "BH", "#0F766E", "Directory")
-            .WithIconTags("domain-controller", "dc", "ldap", "kerberos")
-            .WithIconTags("read-only-domain-controller", "rodc", "read-only")
-            .WithIconTags("global-catalog", "gc")
-            .WithIconTags("site-link", "replication", "transport")
-            .WithIconTags("ad-subnet", "subnet", "cidr", "network-segment")
-            .WithIconTags("bridgehead", "replication", "inter-site");
+            .AddIconTags("domain-controller", "dc", "ldap", "kerberos")
+            .AddIconTags("read-only-domain-controller", "rodc", "read-only")
+            .AddIconTags("global-catalog", "gc")
+            .AddIconTags("site-link", "replication", "transport")
+            .AddIconTags("ad-subnet", "subnet", "cidr", "network-segment")
+            .AddIconTags("bridgehead", "replication", "inter-site");
     }
 
     private static TopologyIconPack BuiltInCloud() {
         return new TopologyIconPack("cloud", "Cloud", isBuiltIn: true)
-            .WithTags("cloud")
+            .AddTags("cloud")
             .AddIcon("cloud", "Cloud", TopologyNodeKind.Cloud, TopologyIconShape.Cloud, "CLD", "#2563EB", "Cloud")
             .AddIcon("microsoft-365", "Microsoft 365", TopologyNodeKind.Cloud, TopologyIconShape.Cloud, "M365", "#2563EB", "Cloud")
             .AddIcon("azure", "Azure", TopologyNodeKind.Cloud, TopologyIconShape.Cloud, "AZ", "#2563EB", "Cloud")
@@ -150,7 +151,7 @@ public sealed partial class TopologyIconCatalog {
 
     private static TopologyIconPack BuiltInPeople() {
         return new TopologyIconPack("people", "People and Teams", isBuiltIn: true)
-            .WithTags("people", "team")
+            .AddTags("people", "team")
             .AddIcon("person", "Person", TopologyNodeKind.Person, TopologyIconShape.Person, "USR", "#475569", "People")
             .AddIcon("team", "Team", TopologyNodeKind.Team, TopologyIconShape.Team, "TEAM", "#2563EB", "People")
             .AddIcon("operator", "Operator", TopologyNodeKind.Person, TopologyIconShape.Person, "OPS", "#0F766E", "People")
@@ -161,6 +162,7 @@ public sealed partial class TopologyIconCatalog {
 /// <summary>
 /// Represents a named set of reusable topology icons.
 /// </summary>
+[Fluent]
 public sealed class TopologyIconPack {
     private readonly List<TopologyIconDefinition> _icons = new();
     private string _id;
@@ -236,7 +238,7 @@ public sealed class TopologyIconPack {
     /// <summary>
     /// Adds or replaces pack metadata and returns the current pack.
     /// </summary>
-    public TopologyIconPack WithMetadata(string key, string value) {
+    internal TopologyIconPack SetMetadata(string key, string value) {
         Metadata[RequiredText(key, nameof(key))] = value ?? string.Empty;
         return this;
     }
@@ -244,7 +246,7 @@ public sealed class TopologyIconPack {
     /// <summary>
     /// Adds pack-level search tags and returns the current pack.
     /// </summary>
-    public TopologyIconPack WithTags(params string[] tags) {
+    public TopologyIconPack AddTags(params string[] tags) {
         AddTags(Tags, tags);
         return this;
     }
@@ -252,11 +254,11 @@ public sealed class TopologyIconPack {
     /// <summary>
     /// Adds search tags to an icon inside this pack.
     /// </summary>
-    public TopologyIconPack WithIconTags(string iconId, params string[] tags) {
+    public TopologyIconPack AddIconTags(string iconId, params string[] tags) {
         var id = RequiredText(iconId, nameof(iconId));
         var icon = ResolveLocal(id);
         if (icon == null) throw new ArgumentException("Topology icon '" + id + "' was not found in pack '" + Id + "'.", nameof(iconId));
-        icon.WithTags(tags);
+        icon.AddTags(tags);
         return this;
     }
 
@@ -291,6 +293,7 @@ public sealed class TopologyIconPack {
 /// <summary>
 /// Describes one topology icon that can be referenced by nodes and groups.
 /// </summary>
+[Fluent]
 public sealed class TopologyIconDefinition {
     private string _packId;
     private string _id;
@@ -370,23 +373,15 @@ public sealed class TopologyIconDefinition {
     /// <summary>
     /// Adds or replaces icon metadata and returns the current icon definition.
     /// </summary>
-    public TopologyIconDefinition WithMetadata(string key, string value) {
+    internal TopologyIconDefinition SetMetadata(string key, string value) {
         Metadata[RequiredText(key, nameof(key))] = value ?? string.Empty;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets icon artwork and returns the current icon definition.
-    /// </summary>
-    public TopologyIconDefinition WithArtwork(TopologyIconArtwork artwork) {
-        Artwork = artwork ?? throw new ArgumentNullException(nameof(artwork));
         return this;
     }
 
     /// <summary>
     /// Adds icon-level search tags and returns the current icon definition.
     /// </summary>
-    public TopologyIconDefinition WithTags(params string[] tags) {
+    public TopologyIconDefinition AddTags(params string[] tags) {
         AddTags(Tags, tags);
         return this;
     }

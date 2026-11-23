@@ -21,7 +21,7 @@ public sealed class NativeHorizontalCylinderTests {
         TopologyNodeShapeGeometry.AttachRoute(node,route,0,1,0,port,.5);Assert.InRange(Distance(route[0],boundary),0,.002);
         var serialized=ChartMapPathParser.ParseSubpaths(TopologyNodeShapeGeometry.Path(node),.1);Assert.Equal(2,serialized.Count);Assert.InRange(Distance(endpoint,serialized[0].Points),0,.002);
         var caption=TopologyNodeShapeGeometry.CaptionBounds(node,30);Assert.True(caption.Left>node.X+14&&caption.Right<node.X+node.Width-14);Assert.InRange(caption.Height,0,node.Height-12);
-        var chart=TopologyChart.Create().WithTitle("").WithViewport(360,220,12).WithLegend(null);chart.Nodes.Add(node);
+        var chart=TopologyChart.Create().Title("").Viewport(new TopologyViewport(360, 220, 12)).Legend((TopologyLegend?)null);chart.Nodes.Add(node);
         var prepared=chart.Prepare(new TopologyRenderOptions {IncludeLegend=false,IncludeStatusBadges=false,IncludeTitle=false});
         Assert.Equal(2,prepared.Visual.Scene.Nodes.OfType<VisualScenePath>().Count(path=>path.Role=="topology-node-surface"));
         Assert.Contains("data-node-shape=\"HorizontalCylinder\"",prepared.ToSvg(),StringComparison.Ordinal);Assert.NotEmpty(prepared.ToPng());

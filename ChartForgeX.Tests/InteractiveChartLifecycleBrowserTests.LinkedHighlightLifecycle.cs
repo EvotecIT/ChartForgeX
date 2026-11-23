@@ -81,11 +81,11 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
 
     private static Chart HighlightLifecycleChart(bool shared, bool updated) {
         var points = new[] { new ChartPoint(updated ? 1 : 0, updated ? 99 : 34), new ChartPoint(updated ? 0 : 1, updated ? 77 : 52) };
-        var chart = Chart.Create().WithSize(640, 360).WithXLabels(new[] {
+        var chart = Chart.Create().Size(640, 360).XLabels(new[] {
             new ChartAxisLabel(0, updated ? "South" : "North"), new ChartAxisLabel(1, updated ? "North" : "South") });
         if (shared) chart.AddSeries(ChartSeries.CreateBar(new ChartSeriesId("orders"), "Orders", points));
         else chart.AddBar(updated ? "Unrelated readings" : "Original readings", points);
-        chart.Series[0].WithObservationIds(new[] { new ChartObservationId("north"), new ChartObservationId("south") });
+        chart.Series[0].ObservationIds(new[] { new ChartObservationId("north"), new ChartObservationId("south") });
         return chart;
     }
 }

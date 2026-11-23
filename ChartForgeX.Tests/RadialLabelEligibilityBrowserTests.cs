@@ -26,7 +26,7 @@ public sealed class RadialLabelEligibilityBrowserTests {
     [InlineData(ChartSeriesKind.PolarArea, false)]
     public async Task LegendMuteRejectsCaptionHoverSelectionAndPinUntilItsNativeObservationIsRestored(ChartSeriesKind kind, bool crosshair) {
         if (!Enabled) return;
-        var chart = RadialLabelTargetBrowserTests.Create(kind, true).WithLegend();
+        var chart = RadialLabelTargetBrowserTests.Create(kind, true).Legend();
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             if (!crosshair) options.Interaction.Disable(ChartInteractionFeatures.Crosshair);
         }), 800, 560);

@@ -8,7 +8,7 @@ internal static partial class MermaidExamples {
         foreach(var family in new[]{"flowchart","agentflow","native"})foreach(var mode in new[]{ThemeMode.Light,ThemeMode.Dark})foreach(var variant in new[]{"compact","wide"}) {
             var width=variant=="compact"?390:1100;string source="";VisualArtifact artifact;
             if(family=="native") {
-                var chart=TopologyChart.Create().WithTitle("Native contour paints").WithViewport(width,360,24).WithLegend(null).WithTheme(VisualTheme.Graphite().WithFontFamily(ExampleTypography.FontFamily), mode);
+                var chart=TopologyChart.Create().Title("Native contour paints").Viewport(new TopologyViewport(width, 360, 24)).Legend((TopologyLegend?)null).Theme(VisualTheme.Graphite().WithFontFamily(ExampleTypography.FontFamily), mode);
                 chart.Groups.Add(new TopologyGroup{Id="scope",Label="Own container ink",X=16,Y=16,Width=310,Height=240,StrokeWidth=4,Opacity=.5,SurfaceOpacity=.8,BackgroundColor="#ffd8b8"});chart.Groups[0].DashPattern.AddRange(new double[]{7,3});
                 chart.Nodes.Add(new TopologyNode{Id="node",Label="Independent node ink",X=50,Y=85,Width=220,Height=100,Shape=TopologyNodeShape.Rectangle,GroupId="scope",StrokeWidth=3,Opacity=.6,SurfaceOpacity=.7,BackgroundColor="#b8d8ff",ShowStatusBadge=false});chart.Nodes[0].DashPattern.AddRange(new double[]{9,4});artifact=chart.ToVisualArtifact();
             } else {

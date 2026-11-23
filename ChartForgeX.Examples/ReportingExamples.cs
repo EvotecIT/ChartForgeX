@@ -28,18 +28,18 @@ internal static class ReportingExamples {
         var start = new DateTime(2026, 9, 7);
         var items = counts.Select((count, day) => new ChartCalendarHeatmapItem(start.AddDays(day), count)).ToArray();
         var chart = Chart.Create()
-            .WithTitle("Konfigurationsänderungen pro Tag")
-            .WithSubtitle("Letzte zwei Wochen; Tage ohne Änderungen bleiben neutral")
-            .WithTheme(VisualTheme.Graphite())
-            .WithSize(800, 379)
-            .WithPngOutputScale(pngOutputScale)
-            .ConfigureCalendar(options => {
+            .Title("Konfigurationsänderungen pro Tag")
+            .Subtitle("Letzte zwei Wochen; Tage ohne Änderungen bleiben neutral")
+            .Theme(VisualTheme.Graphite())
+            .Size(800, 379)
+            .Png(p => p.OutputScale((int)pngOutputScale))
+            .Calendar(options => {
                 options.MaximumCellSize = 30;
                 options.FirstDayOfWeek = DayOfWeek.Monday;
                 options.DayNames = new[] { "So", "Mo", "Di", "Mi", "Do", "Fr", "Sa" };
                 options.MonthNames = new[] { "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" };
             })
-            .ConfigureLabels(labels => {
+            .Labels(labels => {
                 labels.Less = "Weniger";
                 labels.More = "Mehr";
                 labels.NoData = "Keine Daten";
@@ -72,12 +72,12 @@ internal static class ReportingExamples {
         }
 
         var chart = Chart.Create()
-            .WithTitle("Sign-in failures by hour and weekday")
-            .WithSubtitle("Four weeks of events; darker cells had more failures")
-            .WithTheme(VisualTheme.Graphite())
-            .WithSize(800, 298)
-            .WithPngOutputScale(pngOutputScale)
-            .WithHeatmapValueTextMode(ChartHeatmapValueTextMode.Hidden)
+            .Title("Sign-in failures by hour and weekday")
+            .Subtitle("Four weeks of events; darker cells had more failures")
+            .Theme(VisualTheme.Graphite())
+            .Size(800, 298)
+            .Png(p => p.OutputScale((int)pngOutputScale))
+            .Heatmap(h => h.ValueTextMode(ChartHeatmapValueTextMode.Hidden))
             .AddHourWeekdayHeatmap(events, color: ChartColor.FromHex("#2a78d6"));
 
         chart.SaveSvg(Path.Combine(output, "reporting-hour-weekday.svg"));
@@ -91,15 +91,15 @@ internal static class ReportingExamples {
         ChartGanttLaneItem Incident(double fromHours, double? toHours, string severity, string label, string? detail = null) =>
             new(start.AddHours(fromHours), toHours.HasValue ? start.AddHours(toHours.Value) : null, severity, label, detail);
         var chart = Chart.Create()
-            .WithTitle("Incidents by service")
-            .WithSubtitle("Last 48 hours; overlapping incidents stack within a lane and open incidents run to now")
-            .WithTheme(VisualTheme.Graphite())
-            .WithSize(800, 380)
-            .WithPngOutputScale(pngOutputScale)
-            .WithXAxisTimeScale(showTimeZone: true)
-            .WithGanttLaneNow(start.AddHours(44))
-            .WithStateCategories(new VisualStatusTokens().SeverityCategories());
-        chart.Options.LaneSummaryHeader = "Incidents";
+            .Title("Incidents by service")
+            .Subtitle("Last 48 hours; overlapping incidents stack within a lane and open incidents run to now")
+            .Theme(VisualTheme.Graphite())
+            .Size(800, 380)
+            .Png(p => p.OutputScale((int)pngOutputScale))
+            .XAxis(x => x.TimeScale(showTimeZone: true))
+            .GanttLaneNow(start.AddHours(44))
+            .StateCategories(new VisualStatusTokens().SeverityCategories());
+        chart.Options.StateTimeline.SummaryHeader = "Incidents";
         chart.AddGanttLane("LDAP", new[] { Incident(2, 5.5, "high", "Bind latency", "p95 above 250 ms"), Incident(20, 21, "low", "Slow search") }, "Warsaw", "2")
             .AddGanttLane("Replication", new[] { Incident(8, 30, "critical", "USN rollback suspected"), Incident(12, 16, "medium", "Queue backlog"), Incident(26, null, "medium", "Link flapping") }, "Warsaw", "3")
             .AddGanttLane("DNS", Array.Empty<ChartGanttLaneItem>(), "Warsaw", "0")
@@ -116,12 +116,12 @@ internal static class ReportingExamples {
         // Graphite palette v1 (light): a failed check is coloured by its severity. The three neutral outcomes differ by
         // pattern, not colour: not evaluated is hatched, could not evaluate is outlined. Passed is quiet so findings stand out.
         var chart = Chart.Create()
-            .WithTitle("Directory health by domain controller")
-            .WithSubtitle("Worst finding per check, grouped by site; select a cell to open its evidence")
-            .WithTheme(VisualTheme.Graphite())
-            .WithSize(800, 420)
-            .WithPngOutputScale(pngOutputScale)
-            .WithStateCategories(
+            .Title("Directory health by domain controller")
+            .Subtitle("Worst finding per check, grouped by site; select a cell to open its evidence")
+            .Theme(VisualTheme.Graphite())
+            .Size(800, 420)
+            .Png(p => p.OutputScale((int)pngOutputScale))
+            .StateCategories(
                 new ChartStateCategory("pass", "Passed", ChartColor.FromHex("#1d8a52"), emphasis: ChartStateEmphasis.Quiet),
                 new ChartStateCategory("low", "Low", ChartColor.FromHex("#0c8aa8")),
                 new ChartStateCategory("medium", "Medium", ChartColor.FromHex("#c78404")),
@@ -129,7 +129,7 @@ internal static class ReportingExamples {
                 new ChartStateCategory("critical", "Critical", ChartColor.FromHex("#d4302f")),
                 new ChartStateCategory("notEvaluated", "Not evaluated", ChartColor.FromHex("#7c818a"), ChartStatePattern.Hatched),
                 new ChartStateCategory("couldNotEvaluate", "Could not evaluate", ChartColor.FromHex("#7c818a"), ChartStatePattern.Outlined))
-            .WithXLabels("Replication", "SYSVOL", "DNS", "Time sync", "LDAP", "Kerberos", "Certificates", "Backups", "Services", "Disk");
+            .XLabels("Replication", "SYSVOL", "DNS", "Time sync", "LDAP", "Kerberos", "Certificates", "Backups", "Services", "Disk");
         var severities = new[] { "pass", "pass", "pass", "low", "pass", "medium", "pass", "high", "pass", "critical" };
         var names = new[] { "DC01-WAW", "DC02-WAW", "DC03-KRK", "DC04-GDN", "DC05-FRA", "DC06-FRA", "DC07-LON", "DC08-NYC" };
         var sites = new[] { "Poland", "Poland", "Poland", "Poland", "Germany", "Germany", "United Kingdom", "United States" };
@@ -164,15 +164,15 @@ internal static class ReportingExamples {
             new ChartStateCategory("unknown", "Unknown", ChartColor.FromHex("#7c818a"), ChartStatePattern.Outlined)
         };
         var chart = Chart.Create()
-            .WithTitle("Domain controller availability")
-            .WithSubtitle("15-minute rollups over the last 24 hours, grouped by site; gaps mean no data was collected")
-            .WithTheme(VisualTheme.Graphite())
-            .WithSize(800, 420)
-            .WithPngOutputScale(pngOutputScale)
-            .WithXAxisTimeScale(showTimeZone: true)
-            .WithStateCategories(states)
-            .ConfigureGridStyle(style => { style.StrokeWidth = 1; style.VerticalOpacity = 0.35; style.Dash = 3; style.Gap = 4; });
-        chart.Options.LaneSummaryHeader = "Available";
+            .Title("Domain controller availability")
+            .Subtitle("15-minute rollups over the last 24 hours, grouped by site; gaps mean no data was collected")
+            .Theme(VisualTheme.Graphite())
+            .Size(800, 420)
+            .Png(p => p.OutputScale((int)pngOutputScale))
+            .XAxis(x => x.TimeScale(showTimeZone: true))
+            .StateCategories(states)
+            .GridLineStyle(style => { style.StrokeWidth = 1; style.VerticalOpacity = 0.35; style.Dash = 3; style.Gap = 4; });
+        chart.Options.StateTimeline.SummaryHeader = "Available";
         var start = WindowStart.AddHours(12);
         var names = new[] { "DC01-WAW", "DC02-WAW", "DC03-KRK", "DC04-GDN", "DC05-FRA", "DC06-FRA", "DC07-LON", "DC08-NYC" };
         var sites = new[] { "Poland", "Poland", "Poland", "Poland", "Germany", "Germany", "United Kingdom", "United States" };
@@ -215,22 +215,22 @@ internal static class ReportingExamples {
     private static void WriteTimeAxisRegressions(string output, ChartPngOutputScale pngOutputScale) {
         var start = WindowStart.ToOADate();
         var end = start + 200.0 / 86400000;
-        var fast = Chart.Create().WithTitle("Sub-second time-axis fallback")
-            .WithSubtitle("Fractional OLE Automation dates keep distinct values below one second")
-            .WithTheme(VisualTheme.Graphite()).WithSize(800, 272).WithPngOutputScale(pngOutputScale)
-            .WithXAxisTimeScale().WithXAxis("Observed (OLE Automation days)").WithYAxis("Sample")
+        var fast = Chart.Create().Title("Sub-second time-axis fallback")
+            .Subtitle("Fractional OLE Automation dates keep distinct values below one second")
+            .Theme(VisualTheme.Graphite()).Size(800, 272).Png(p => p.OutputScale((int)pngOutputScale))
+            .XAxis(x => x.TimeScale().Title("Observed (OLE Automation days)")).YAxis(y => y.Title("Sample"))
             .AddLine("Signal", new[] { new ChartPoint(start, 1), new ChartPoint(end, 2) });
-        fast.Options.XAxis.WithBounds(start, end);
+        fast.Options.XAxis.Bounds(start, end);
         fast.SaveSvg(Path.Combine(output, "reporting-time-axis-subsecond.svg"));
         fast.SaveHtml(Path.Combine(output, "reporting-time-axis-subsecond.html"));
         fast.SavePng(Path.Combine(output, "reporting-time-axis-subsecond.png"));
 
         var zone = TimeZoneInfo.CreateCustomTimeZone("Example/Plus5", TimeSpan.FromHours(5), "UTC+05", "UTC+05");
-        var schedule = Chart.Create().WithTitle("Classic wall-clock schedule")
-            .WithSubtitle("Date inputs keep their fields; calendar ticks align to midnight in the UTC+05 display zone")
-            .WithTheme(VisualTheme.Graphite()).WithSize(800, 272).WithPngOutputScale(pngOutputScale)
-            .WithXAxis("Window").WithXAxisTimeScale(zone, showTimeZone: true, label: "UTC+05")
-            .WithTickCount(3)
+        var schedule = Chart.Create().Title("Classic wall-clock schedule")
+            .Subtitle("Date inputs keep their fields; calendar ticks align to midnight in the UTC+05 display zone")
+            .Theme(VisualTheme.Graphite()).Size(800, 272).Png(p => p.OutputScale((int)pngOutputScale))
+            .XAxis(x => x.Title("Window").TimeScale(timeZone: zone, showTimeZone: true, label: "UTC+05"))
+            .TickCount(3)
             .AddGanttTask("Maintenance", WindowStart.Date, WindowStart.Date.AddDays(2));
         schedule.SaveSvg(Path.Combine(output, "reporting-classic-wall-clock.svg"));
         schedule.SaveHtml(Path.Combine(output, "reporting-classic-wall-clock.html"));
@@ -248,17 +248,17 @@ internal static class ReportingExamples {
         double P95(int index) => P50(index) + 14 + Math.Sin(index / 9d) * 4 + (index is > 300 and < 318 ? 38 : 0);
 
         var chart = Chart.Create()
-            .WithTitle("LDAP bind latency")
-            .WithSubtitle("5-minute rollups; the collection outage stays empty instead of being bridged")
-            .WithTheme(VisualTheme.Graphite())
-            .WithSize(800, 325)
-            .WithPngOutputScale(pngOutputScale)
-            .WithXAxis("Observed")
-            .WithYAxis("Latency (ms)")
-            .WithXAxisTimeScale(showTimeZone: true)
+            .Title("LDAP bind latency")
+            .Subtitle("5-minute rollups; the collection outage stays empty instead of being bridged")
+            .Theme(VisualTheme.Graphite())
+            .Size(800, 325)
+            .Png(p => p.OutputScale((int)pngOutputScale))
+            .XAxis(x => x.Title("Observed"))
+            .YAxis(y => y.Title("Latency (ms)"))
+            .XAxis(x => x.TimeScale(showTimeZone: true))
             .AddLine("p50", samples.Select(sample => Point(sample, P50(sample.Index))), ChartColor.FromHex("#2a78d6"))
             .AddLine("p95", samples.Select(sample => Point(sample, P95(sample.Index))), ChartColor.FromHex("#0f9f8c"));
-        foreach (var series in chart.Series) series.WithStrokeWidth(2).ConfigureMarkers(markers => markers.Radius = 0);
+        foreach (var series in chart.Series) series.StrokeWidth(2).Markers(markers => markers.Radius = 0);
 
         chart.SaveSvg(Path.Combine(output, "reporting-time-axis-utc.svg"));
         chart.SaveHtml(Path.Combine(output, "reporting-time-axis-utc.html"));

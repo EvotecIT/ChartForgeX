@@ -14,7 +14,7 @@ internal sealed partial class VisualTopologyCompiler {
     /// <summary>Captures only final logical paint, after endpoint/trunk resolution and before fitting.</summary>
     private void PrepareCrossingPaintPaths() {
         var policy = _chart.CrossingPaint; if (policy == null) return;
-        if (_options.EnableHtmlInteractions && _options.EnableHtmlForceGraphControls)
+        if (_options.Html.Interactions && _options.Html.ForceGraphControls)
             throw new NotSupportedException("Native crossing paint cannot be rewritten by live force graph controls.");
         var strokes = new List<TopologyCrossingPaintPlan.Stroke>(); var owners = new List<(TopologyEdge Edge, bool Tail)>();
         var retainedPaths = _chart.PathDecorations.Count; var retainedCommands = _chart.PathDecorations.Sum(path => path.Commands.Count);

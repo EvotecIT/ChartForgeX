@@ -95,7 +95,7 @@ public sealed class NativeTopologyDuplicateEdgeTests {
     [Fact]
     public void AnimationPaintKeepsStatusAndSurfaceVariablesDetachedFromCallerChanges() {
         var theme = VisualTheme.Graphite();
-        var chart = Diagram().WithTheme(theme);
+        var chart = Diagram().Theme(theme);
         var variables = new SvgColorVariables().Add("--background", theme.Resolve(ThemeMode.Light).Background, SvgColorRole.Surface)
             .Add("--neutral", theme.Resolve(ThemeMode.Light).Status.Neutral.Fill, SvgColorRole.Status);
         var prepared = chart.WithMotion(TopologyMotionOptions.RoutePulseForEdges("dup"), new TopologyRenderOptions { IncludeLegend = false, SvgColorVariables = variables });
@@ -110,13 +110,13 @@ public sealed class NativeTopologyDuplicateEdgeTests {
 
     [Fact]
     public void AuthoredAccessibilityRemainsSubjectToPortableValidationWithoutRestrictingStaticOutput() {
-        var chart = Diagram().ConfigureAccessibility(accessibility => accessibility.Description = new string('x', VisualArtifactInterchangeValidation.MaximumTextCharacters + 1));
+        var chart = Diagram().Accessibility(accessibility => accessibility.Description = new string('x', VisualArtifactInterchangeValidation.MaximumTextCharacters + 1));
         var prepared = chart.Prepare();
         Assert.Contains(new string('x', 128), prepared.ToSvg(), StringComparison.Ordinal);
         Assert.Throws<ArgumentException>(() => prepared.ToInterchangeEnvelope());
     }
 
-    private static TopologyChart Diagram() => TopologyChart.Create().WithId("duplicate-native").WithViewport(700, 300, 20).WithLegend(null)
+    private static TopologyChart Diagram() => TopologyChart.Create().Id("duplicate-native").Viewport(new TopologyViewport(700, 300, 20)).Legend((TopologyLegend?)null)
         .AddNode("a", "A", 40, 80, width: 80, height: 48)
         .AddNode("b", "B", 280, 80, width: 80, height: 48)
         .AddNode("c", "C", 520, 80, width: 80, height: 48)

@@ -16,7 +16,7 @@ public sealed class ChartStripScale {
     /// spacing is not supported: every row must map the same source coordinate to the same horizontal position.</remarks>
     public ChartStripScale(ChartAxis axis) {
         if (axis == null) throw new ArgumentNullException(nameof(axis));
-        if (!axis.Minimum.HasValue || !axis.Maximum.HasValue || axis.Maximum <= axis.Minimum)
+        if (!axis.Min.HasValue || !axis.Max.HasValue || axis.Max <= axis.Min)
             throw new ArgumentException("A shared strip scale requires explicit increasing minimum and maximum bounds.", nameof(axis));
         _axis = axis.Clone();
         if (ChartDataAxisProjection.TryCreate(Minimum, Maximum, _axis) == null)
@@ -26,9 +26,9 @@ public sealed class ChartStripScale {
     }
 
     /// <summary>Gets the shared lower bound.</summary>
-    public double Minimum => _axis.Minimum!.Value;
+    public double Minimum => _axis.Min!.Value;
     /// <summary>Gets the shared upper bound.</summary>
-    public double Maximum => _axis.Maximum!.Value;
+    public double Maximum => _axis.Max!.Value;
     /// <summary>Gets a detached copy of the axis policy.</summary>
     public ChartAxis Axis => _axis.Clone();
 

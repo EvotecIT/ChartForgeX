@@ -38,11 +38,11 @@ public sealed class TopologyHiddenLabelAndTranslationRegressionTests {
 
     [Fact]
     public void UnitScalePlainEdgePaintRetainsItsActualLineLayersWhileTheOrdinaryRequestStaysVersionOne() {
-        var chart = TopologyChart.Create().WithId("plain-route-capture").WithTitle("").WithViewport(640,400,24).WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().Id("plain-route-capture").Title("").Viewport(new TopologyViewport(640, 400, 24)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("from","From",80,120,width:100,height:60).AddNode("to","To",380,120,width:100,height:60)
             .AddEdge("link","from","to",routing:TopologyEdgeRouting.Orthogonal);
         foreach (var node in chart.Nodes) { node.Shape=TopologyNodeShape.Rectangle; node.ShowStatusBadge=false; node.PreserveDisplayModeSize=true; }
-        chart.WithRenderOptions(new TopologyRenderOptions { IncludeTitle=false, IncludeLegend=false, FitContentToViewport=false });
+        chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeTitle=false, IncludeLegend=false, FitContentToViewport=false });
         var ordinary = chart.Prepare(); var ordinaryJson=ordinary.ToInterchangeEnvelope().ToJson(); Capture("ordinary-route", ordinary);
         Assert.Null(ordinary.ToInterchangeEnvelope().Presentation!.TopologyCaptions); Assert.Equal(1,ordinary.ToInterchangeEnvelope().Version);
         var options=chart.ResolveRenderOptions(null).Clone(); options.EdgeVisualStyle=ChartLineVisualStyle.Plain();
@@ -57,12 +57,12 @@ public sealed class TopologyHiddenLabelAndTranslationRegressionTests {
     }
 
     private static TopologyChart Source(TopologyIconShape icon) {
-        var chart=TopologyChart.Create().WithId("hidden-glyph-and-unit-pose").WithTitle("").WithViewport(640,400,24).WithLayout(TopologyLayoutMode.Manual)
+        var chart=TopologyChart.Create().Id("hidden-glyph-and-unit-pose").Title("").Viewport(new TopologyViewport(640, 400, 24)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("node","Native caption",111.1875,83.46770833333333,width:63,height:63);
         chart.Theme=VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family);
         var node=chart.Nodes[0];node.DisplayMode=TopologyNodeDisplayMode.Icon;node.Shape=TopologyNodeShape.Rounded;node.IconShape=icon;
         node.PreserveDisplayModeSize=true;node.ShowStatusBadge=false;node.GlyphScale=48d/26;
-        chart.WithRenderOptions(new TopologyRenderOptions{IncludeLegend=false,IncludeIconLabels=true,FitContentToViewport=false});return chart;
+        chart.DefaultRenderOptions(new TopologyRenderOptions{IncludeLegend=false,IncludeIconLabels=true,FitContentToViewport=false});return chart;
     }
     private static void Capture(string name,PreparedTopology prepared) {
         if(Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY") is not {Length:>0} output)return;

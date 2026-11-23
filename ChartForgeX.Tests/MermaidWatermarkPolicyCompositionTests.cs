@@ -89,7 +89,7 @@ public sealed class MermaidWatermarkPolicyCompositionTests {
 
     [Fact]
     public void CapturedStorySourcesProvideExactDimensionsThroughNestedWatermarks() {
-        var story = VisualStory.Create("Completed story").WithSize(480, 320);
+        var story = VisualStory.Create("Completed story").Size(480, 320);
         story.Scene("result", "Ready", 1).Panel("result", new VisualStoryTextSurface("Delivered"));
         story.Outcome("done", "Delivered", "result");
         var original = story.ToVisualArtifact();

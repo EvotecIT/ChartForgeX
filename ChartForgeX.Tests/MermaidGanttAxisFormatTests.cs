@@ -30,7 +30,7 @@ public sealed class MermaidGanttAxisFormatTests {
                 foreach (var value in contract.GetProperty("values").EnumerateArray()) {
                     document.AxisFormat = value[0].GetString();
                     var chart = document.ToChart();
-                    Assert.Equal(value[1].GetString(), chart.Options.XAxisValueFormatter!(task.Start.ToOADate()));
+                    Assert.Equal(value[1].GetString(), chart.Options.XAxis.LabelFormatter!(task.Start.ToOADate()));
                 }
             }
         } finally { CultureInfo.CurrentCulture = original; }
@@ -57,7 +57,7 @@ public sealed class MermaidGanttAxisFormatTests {
     [InlineData("2021-01-01 00:00:00.000", "1609459200000|1609459200|+0000")]
     public void EpochAndZoneDirectivesUseDeterministicUtcWallClockInterpretation(string start, string expected) {
         var chart = new MermaidParser().ParseGantt("gantt\ndateFormat YYYY-MM-DD HH:mm:ss.SSS\naxisFormat %Q|%s|%Z\nTask :task, " + start + ", 1d").Document!.ToChart();
-        Assert.Equal(expected, chart.Options.XAxisValueFormatter!(chart.Series[0].GanttItems[0].Start));
+        Assert.Equal(expected, chart.Options.XAxis.LabelFormatter!(chart.Series[0].GanttItems[0].Start));
     }
 
     [BrowserTheory]
@@ -69,11 +69,11 @@ public sealed class MermaidGanttAxisFormatTests {
         if (!InteractiveChartBrowser.Enabled) return;
         var document = new MermaidParser().ParseGantt("gantt\naxisFormat %a %d %b\nFirst :first, 2026-01-04, 4d").Document!;
         var chart = document.ToChart(new MermaidGanttRenderOptions { Width = width, Height = 360 })
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .ConfigureGridStyle(style => style.ShowVerticalLines = true);
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .GridLineStyle(style => style.ShowVerticalLines = true);
         var source = chart.Series[0].GanttItems[0];
-        Assert.Equal("Sun 04 Jan", chart.Options.XAxisValueFormatter!(source.Start));
-        Assert.Equal("Thu 08 Jan", chart.Options.XAxisValueFormatter!(source.End));
+        Assert.Equal("Sun 04 Jan", chart.Options.XAxis.LabelFormatter!(source.Start));
+        Assert.Equal("Thu 08 Jan", chart.Options.XAxis.LabelFormatter!(source.End));
         Assert.Equal(new DateTime(2026, 1, 4).ToOADate(), source.Start);
         Assert.Equal(new DateTime(2026, 1, 8).ToOADate(), source.End);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);

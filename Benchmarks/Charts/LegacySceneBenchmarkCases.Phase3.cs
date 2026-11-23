@@ -31,11 +31,11 @@ public static partial class LegacySceneBenchmarkCases {
 #else
         var theme = CurrentTheme();
 #endif
-        var chart = Chart.Create().WithSize(Width, Height).WithTheme(theme).WithTitle(Title)
-            .WithSubtitle("One prepared scene for SVG and native PNG").WithLegend().WithPadding(24, 24, 24, 24).WithPngOutputScale(1).WithPngSupersampling(2);
+        var chart = Chart.Create().Size(Width, Height).Theme(theme).Title(Title)
+            .Subtitle("One prepared scene for SVG and native PNG").Legend().Padding(24, 24, 24, 24).Png(p => p.OutputScale(1).SupersamplingScale(2));
         switch (fixture) {
             case "matrix":
-                chart.WithXLabels(Enumerable.Range(1, 12).Select(index => "Slot " + index).ToArray());
+                chart.XLabels(Enumerable.Range(1, 12).Select(index => "Slot " + index).ToArray());
                 for (var row = 0; row < 8; row++) chart.AddHeatmapRow("Lane " + (row + 1), Enumerable.Range(0, 12)
                     .Select(column => new ChartPoint(column + 1, (row * 17 + column * 7) % 101)));
                 break;
@@ -44,7 +44,7 @@ public static partial class LegacySceneBenchmarkCases {
                 chart.AddCalendarHeatmap("Daily checks", Enumerable.Range(0, 120).Where(index => index % 7 != 0)
                     .Select(index => new ChartCalendarHeatmapItem(new DateTime(2025, 1, 1).AddDays(index), index % 9 == 0 ? 0 : (index * 13) % 37)), firstDayOfWeek: DayOfWeek.Monday);
 #else
-                chart.ConfigureCalendar(options => options.FirstDayOfWeek = DayOfWeek.Monday)
+                chart.Calendar(options => options.FirstDayOfWeek = DayOfWeek.Monday)
                     .AddCalendarHeatmap("Daily checks", Enumerable.Range(0, 120).Where(index => index % 7 != 0)
                         .Select(index => new ChartCalendarHeatmapItem(new DateTime(2025, 1, 1).AddDays(index), index % 9 == 0 ? 0 : (index * 13) % 37)));
 #endif
@@ -104,13 +104,13 @@ public static partial class LegacySceneBenchmarkCases {
 #endif
 
     private static TopologyChart CreateTopology() {
-        var chart = TopologyChart.Create().WithId("scene-topology").WithTitle(Title)
-            .WithSubtitle("One prepared scene for SVG and native PNG").WithViewport(Width, Height, 24)
-            .WithLayout(TopologyLayoutMode.Layered);
+        var chart = TopologyChart.Create().Id("scene-topology").Title(Title)
+            .Subtitle("One prepared scene for SVG and native PNG").Viewport(new TopologyViewport(Width, Height, 24))
+            .LayoutMode(TopologyLayoutMode.Layered);
 #if LEGACY_CHART_API
         chart.WithDesignTokens(Phase3Tokens());
 #else
-        chart.WithTheme(CurrentTheme());
+        chart.Theme(CurrentTheme());
 #endif
         chart.DefaultRenderOptions = new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true,
             WrapNodeLabels = true, PngOutputScale = 1, PngSupersamplingScale = 2 };
@@ -144,7 +144,7 @@ public static partial class LegacySceneBenchmarkCases {
             else if (fixture == "map") {
                 var items = MapFacts(chart);
                 for (var index = 0; index < items.Count; index++) source.Append('|').Append(Numeric(index + 1)).Append(':').Append(items[index].Label);
-            } else if (fixture != "treemap") foreach (var label in chart.Options.XAxisLabels) source.Append('|').Append(Numeric(label.Value)).Append(':').Append(label.Text);
+            } else if (fixture != "treemap") foreach (var label in chart.Options.XAxis.Labels) source.Append('|').Append(Numeric(label.Value)).Append(':').Append(label.Text);
             foreach (var series in chart.Series) {
                 source.Append('|').Append(series.Kind).Append(':').Append(series.Name);
                 if (series.Kind == ChartSeriesKind.Sankey) {
@@ -161,7 +161,7 @@ public static partial class LegacySceneBenchmarkCases {
                 } else foreach (var point in series.Points) source.Append('|').Append(Numeric(point.X)).Append(',').Append(Numeric(point.Y)).Append(',').Append(point.BreakBefore);
             }
             if (fixture == "map") foreach (var point in MapFacts(chart)) source.Append('|').Append(point.Label).Append(':').Append(Numeric(point.Value!.Value));
-            source.Append('|').Append(Numeric(chart.Options.ProgressMaximum)).Append("|calendar-first-day=Monday");
+            source.Append('|').Append(Numeric(chart.Options.Progress.Max)).Append("|calendar-first-day=Monday");
         }
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(source.ToString())));
     }

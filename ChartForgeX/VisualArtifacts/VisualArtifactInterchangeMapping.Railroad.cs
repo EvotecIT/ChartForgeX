@@ -9,7 +9,7 @@ public static partial class VisualArtifactInterchangeMapping {
     /// <param name="envelope">A railroad-family interchange envelope. Metadata and source-language identity remain on this envelope.</param>
     /// <returns>A new native block and rule collection; immutable expressions and theme values may be shared safely.</returns>
     /// <remarks>This imports semantics, not executable grammar or source text. Editing rules may require
-    /// <see cref="RailroadDiagramBlock.WithNaturalSize"/> before rendering. No rendered fallback is consulted.</remarks>
+    /// <see cref="RailroadDiagramBlock.NaturalSize"/> before rendering. No rendered fallback is consulted.</remarks>
     public static RailroadDiagramBlock ToRailroadDiagramBlock(this VisualArtifactInterchangeEnvelope envelope) {
         if (envelope == null) throw new ArgumentNullException(nameof(envelope));
         envelope.Validate();
@@ -17,9 +17,9 @@ public static partial class VisualArtifactInterchangeMapping {
         if (envelope.Family != VisualArtifactInterchangeFamily.Railroad || envelope.Railroad == null)
             throw new NotSupportedException("Only a typed railroad envelope can rebuild a railroad diagram.");
         var source = envelope.Railroad;
-        var block = RailroadDiagramBlock.Create().WithTitle(envelope.Title).WithSubtitle(envelope.Subtitle)
-            .WithTheme(source.Theme, source.ThemeMode).WithTransparentBackground(source.TransparentBackground)
-            .WithCard(source.ShowCard).WithPngOutputScale(source.PngOutputScale);
+        var block = RailroadDiagramBlock.Create().Title(envelope.Title).Subtitle(envelope.Subtitle)
+            .Theme(source.Theme).ThemeMode(source.ThemeMode).TransparentBackground(source.TransparentBackground)
+            .ShowCard(source.ShowCard).PngOutputScale(source.PngOutputScale);
         block.RuleComparison = source.RuleComparison; block.Options.Padding = source.Padding;
         block.Options.HostOwnsFrame = source.HostOwnsFrame;
         block.Options.Accessibility.Name = envelope.AccessibleName;
@@ -28,7 +28,7 @@ public static partial class VisualArtifactInterchangeMapping {
         block.Options.Accessibility.IsDecorative = envelope.IsDecorative;
         foreach (var rule in source.Rules) block.AddRule(rule.Id, rule.Expression, rule.Label);
         if (envelope.Width.HasValue) block.Options.Size = new ChartSize((int)envelope.Width.Value, (int)envelope.Height!.Value);
-        else block.WithNaturalSize();
+        else block.NaturalSize();
         return block;
     }
 

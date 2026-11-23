@@ -5,8 +5,8 @@ namespace ChartForgeX.VisualBlocks;
 
 public sealed partial class MetricCard {
     /// <summary>Sets a numeric metric using the same display policy as chart labels and axes.</summary>
-    public MetricCard WithMetric(string label, double value, ChartValueFormat format, string? unit = null) =>
-        WithMetric(label, (format ?? throw new ArgumentNullException(nameof(format))).Format(value), unit: unit);
+    public MetricCard Metric(string label, double value, ChartValueFormat format, string? unit = null) =>
+        Metric(label, (format ?? throw new ArgumentNullException(nameof(format))).Format(value), unit: unit);
 }
 
 public sealed partial class ChartTableCell {

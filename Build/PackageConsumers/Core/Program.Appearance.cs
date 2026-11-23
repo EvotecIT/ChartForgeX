@@ -8,7 +8,7 @@ internal static partial class Program {
     private static void NativeAppearanceContracts() {
         PackageAssertions.Owner(typeof(VisualOutline), "ChartForgeX");
         PackageAssertions.Owner(typeof(VisualBloom), "ChartForgeX");
-        var model = SequenceArtifact.Create("package-appearance").WithSize(320, 320)
+        var model = SequenceArtifact.Create("package-appearance").Width(320).Height(320)
             .AddParticipant("review", "Review").AddParticipant("archive", "Archive")
             .AddMessage("review", "archive", "Save");
         var prepared = model.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(320, 320), 20)));

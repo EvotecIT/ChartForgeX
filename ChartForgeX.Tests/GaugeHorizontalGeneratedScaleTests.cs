@@ -23,8 +23,8 @@ public sealed class GaugeHorizontalGeneratedScaleTests {
             new ChartGaugeTarget(10500, "Goal"), new ChartGaugeTarget(19000, "Limit") };
         var chart = Chart.Create().AddSeries(ChartSeries.CreateGauge(new ChartSeriesId("capacity"), "Capacity",
                 new ChartGaugeValue(12500.125, 0, 20000, targets)))
-            .WithValueFormat(ChartValueFormat.Number("0.000", CultureInfo.InvariantCulture))
-            .ConfigureGauge(options => { options.Form = ChartGaugeForm.Linear; options.TickCount = 11; options.Caption = "Processed requests"; });
+            .ValueFormat(ChartValueFormat.Number("0.000", CultureInfo.InvariantCulture))
+            .Gauge(options => { options.Form = ChartGaugeForm.Linear; options.TickCount = 11; options.Caption = "Processed requests"; });
         var height = width == 390 ? 300 : 440;
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, height), 14),
             VisualTheme.Graphite(), mode, new VisualFrame("Measured capacity", "Native generated scale", showLegend: false), FontSpec.FromFamily(family)));

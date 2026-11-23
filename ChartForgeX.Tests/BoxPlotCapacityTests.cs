@@ -13,8 +13,8 @@ public sealed class BoxPlotCapacityTests {
     [InlineData(false)]
     [InlineData(true)]
     public void DenseGroupsRejectOversizedStrokesAndKeepEverySummaryWhenTheStrokeFits(bool horizontal) {
-        var chart = Chart.Create().WithHeader(false).WithAxes(false).WithLegend(false).WithDataLabels(false)
-            .ConfigureBoxPlot(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
+        var chart = Chart.Create().ShowHeader(false).Axes(false).Legend(false).DataLabels(false)
+            .BoxPlot(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
         for (var series = 0; series < 2; series++) {
             chart.AddBoxPlot("Group " + series, Enumerable.Range(1, 30).Select(category => new ChartBoxPlot(category, 10, 12, 15, 18, 20)));
             chart.Series[series].StrokeWidth = 8;

@@ -15,14 +15,14 @@ internal static partial class VisualMatrixCompiler {
 
     internal static IReadOnlyList<VisualLegendEntry> LegendEntries(Chart chart, VisualThemeColors colors) {
         var categorical = chart.Series.Any(series => series.IsCategoricalHeatmapRow);
-        if (categorical && !chart.Options.ShowHeatmapCategoryLegend) return Array.Empty<VisualLegendEntry>();
-        var entries = categorical ? chart.Options.StateCategories.Select((state, i) => new VisualLegendEntry(state.Label, state.Color, "state-" + i,
-            state: state, pinStateColors: chart.Options.PinStateColorsInForcedColors)).ToList() : new List<VisualLegendEntry>();
+        if (categorical && !chart.Options.Heatmap.ShowCategoryLegend) return Array.Empty<VisualLegendEntry>();
+        var entries = categorical ? chart.Options.StateTimeline.Categories.Select((state, i) => new VisualLegendEntry(state.Label, state.Color, "state-" + i,
+            state: state, pinStateColors: chart.Options.StateTimeline.PinColorsInForcedColors)).ToList() : new List<VisualLegendEntry>();
         var columns = chart.Series.SelectMany(row => row.RenderPoints.Select(point => point.X)
             .Concat(Enumerable.Range(1, row.HeatmapColumnCount ?? 0).Select(index => (double)index))).Distinct().Count();
-        if (chart.Series.All(row => row.Kind == ChartSeriesKind.Heatmap) && (categorical || chart.Options.HeatmapColorScale == null)
+        if (chart.Series.All(row => row.Kind == ChartSeriesKind.Heatmap) && (categorical || chart.Options.Heatmap.ColorScale == null)
             && chart.Series.Any(row => row.RenderPoints.Count < columns)) {
-            var look = ChartMissingData.Look(chart.Options.HeatmapColorScale, colors);
+            var look = ChartMissingData.Look(chart.Options.Heatmap.ColorScale, colors);
             entries.Add(new VisualLegendEntry(chart.Options.Labels.NoData, look.Fill.Color, "matrix-missing",
                 marker: (builder, box, context) => VisualMissingDataScene.Swatch(builder, box, look, "heatmap-key", colors.MutedForeground)));
         }
@@ -31,7 +31,7 @@ internal static partial class VisualMatrixCompiler {
 
     internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect viewport, ChartColorPresentation? presentation = null) {
         if (viewport.Width <= 0 || viewport.Height <= 0 || chart.Series.Count == 0) return;
-        presentation ??= new ChartColorPresentation(chart.Options.HeatmapColorDimension, chart.Options.Labels, ChartColorPresentationSet.HeatmapName(chart), chart.Options.ValueFormat);
+        presentation ??= new ChartColorPresentation(chart.Options.Heatmap.ColorDimension, chart.Options.Labels, ChartColorPresentationSet.HeatmapName(chart), chart.Options.ValueFormat);
         var kind = chart.Series[0].Kind;
         if (chart.Series.Any(series => series.Kind != kind)) throw new InvalidOperationException("Matrix families cannot mix different layout kinds.");
         if (kind == ChartSeriesKind.CalendarHeatmap) { Calendar(chart, context, builder, viewport, presentation); return; }
@@ -44,7 +44,7 @@ internal static partial class VisualMatrixCompiler {
         if (values.Any(value => !ChartMath.IsFinite(value))) throw new InvalidOperationException("Matrix values must be finite; omit missing cells rather than supplying NaN.");
         var min = values.Length == 0 ? 0 : values.Min(); var max = values.Length == 0 ? 0 : values.Max();
         var missing = rows.Any(row => row.RenderPoints.Count < columns.Length);
-        var hasDomain = ChartColorScaleSurface.HasDomain(chart.Options.HeatmapColorScale, values.Length > 0 ? min : null, values.Length > 0 ? max : null);
+        var hasDomain = ChartColorScaleSurface.HasDomain(chart.Options.Heatmap.ColorScale, values.Length > 0 ? min : null, values.Length > 0 ? max : null);
         var colors = context.Theme.Resolve(context.ThemeMode);
         var backdrop = ChartStateMark.Backdrop(chart.Options, colors, context.Frame);
         var categorical = ChartStateCategoryLegend.IsCategoricalHeatmap(rows);
@@ -55,9 +55,9 @@ internal static partial class VisualMatrixCompiler {
         var layout = MeasureMatrix(chart, context, builder, viewport, rows, columns, categorical, formatColumn, presentation, hasDomain, min, max, missing, categoryGroups);
         var allColumns = columns;
         var omittedColumns = 0;
-        if (kind == ChartSeriesKind.Heatmap && chart.Options.HeatmapColumnWindow == ChartHeatmapColumnWindow.Latest) {
+        if (kind == ChartSeriesKind.Heatmap && chart.Options.Heatmap.ColumnWindow == ChartHeatmapColumnWindow.Latest) {
             // Each retained cell keeps at least 14 pixels of painted width, plus the authored inter-cell gap.
-            var columnGap = Math.Max(0, chart.Options.HeatmapCellGap ?? 2);
+            var columnGap = Math.Max(0, chart.Options.Heatmap.CellGap ?? 2);
             while (columns.Length > 1) {
                 var capacity = Math.Max(1, (int)Math.Floor((layout.Plot.Width + columnGap) / (14 + columnGap)));
                 if (capacity >= columns.Length) break;
@@ -71,7 +71,7 @@ internal static partial class VisualMatrixCompiler {
                 var description = omittedColumns + " earlier heatmap columns were omitted to keep cells readable.";
                 builder.AddDiagnostic(new VisualDiagnostic("matrix.cell-density", description));
                 builder.AddRegion(new VisualSemanticRegion("matrix-omitted-columns", "matrix-column-window", layout.Plot, description));
-                if (chart.Options.ShowAxes && chart.Options.XAxis.Visible && chart.Options.ShowHeatmapColumnLabels)
+                if (chart.Options.ShowAxes && chart.Options.XAxis.Visible && chart.Options.Heatmap.ShowColumnLabels)
                     for (var index = 0; index < omittedColumns; index++)
                         builder.AddRegion(new VisualSemanticRegion("matrix-column-" + index, "heatmap-column-label", new ChartRect(layout.Plot.Left, layout.Plot.Bottom, 0, 0), formatColumn(allColumns[index])));
             }
@@ -79,7 +79,7 @@ internal static partial class VisualMatrixCompiler {
         var plot = layout.Plot;
         builder.AddRegion(new VisualSemanticRegion("matrix-plot", "matrix-plot", plot));
         var rowLayout = ChartHeatmapRowLayout.Build(rows, plot.Height, context.Theme.Typography.AxisSize);
-        var gap = Math.Max(0, Math.Min(chart.Options.HeatmapCellGap ?? 2,
+        var gap = Math.Max(0, Math.Min(chart.Options.Heatmap.CellGap ?? 2,
             Math.Min(columns.Length > 1 ? plot.Width / columns.Length * .5 : double.PositiveInfinity,
                 rows.Length > 1 ? Math.Max(0, plot.Height - rowLayout.HeadersHeight) / rows.Length * .5 : double.PositiveInfinity)));
         var cellWidth = Math.Max(0, (plot.Width - gap * (columns.Length - 1)) / columns.Length);
@@ -93,13 +93,13 @@ internal static partial class VisualMatrixCompiler {
             builder.AddDiagnostic(new VisualDiagnostic("matrix.row-label-density",
                 "Some row names were omitted because the frame is too short for readable labels; complete names remain in semantic regions."));
         // Theme rounding is for bars; small cells keep a rounded-square reading instead of becoming dots.
-        var radius = Math.Min(chart.Options.HeatmapCellRadius ?? context.Theme.BarRadius, Math.Min(cellWidth, cellHeight) * (chart.Options.HeatmapCellRadius.HasValue ? .5 : MaximumThemeCellRounding));
+        var radius = Math.Min(chart.Options.Heatmap.CellRadius ?? context.Theme.BarRadius, Math.Min(cellWidth, cellHeight) * (chart.Options.Heatmap.CellRadius.HasValue ? .5 : MaximumThemeCellRounding));
         var hex = ChartHexbinLayout.Build(plot, rows.Length, columns.Length);
         var hexRadius = Math.Min(hex.Radius, Math.Min(cellHeight / 2, cellWidth / Math.Sqrt(3)));
         var matrixMetadata = new Dictionary<string, string> {
             ["data-cfx-row-count"] = rows.Length.ToString(), ["data-cfx-column-count"] = columns.Length.ToString(),
             ["data-cfx-cell-gap"] = VisualStateSceneTools.Number(gap), ["data-cfx-cell-radius"] = VisualStateSceneTools.Number(radius),
-            ["data-cfx-value-text-mode"] = chart.Options.HeatmapValueTextMode.ToString(), ["data-cfx-label-level"] = chart.Options.Labels.Level
+            ["data-cfx-value-text-mode"] = chart.Options.Heatmap.ValueTextMode.ToString(), ["data-cfx-label-level"] = chart.Options.Labels.Level
         };
         if (values.Length > 0) {
             matrixMetadata["data-cfx-min"] = VisualStateSceneTools.Number(min); matrixMetadata["data-cfx-max"] = VisualStateSceneTools.Number(max);
@@ -171,12 +171,12 @@ internal static partial class VisualMatrixCompiler {
                             metadata["data-cfx-formatted-value"] = readout;
                             metadata["data-cfx-label-value"] = presentation.Name;
                         } else if (state == null && chart.Options.ValueUnit != null) metadata["data-cfx-formatted-value"] = readout;
-                        if (state == null && chart.Options.HeatmapColorScale == null) {
+                        if (state == null && chart.Options.Heatmap.ColorScale == null) {
                             var ratio = ChartHeatmapSurface.Ratio(chart, point.Y, min, max);
                             var status = ChartHeatmapSurface.CellStatus(chart, ratio);
                             if (status != null) metadata["data-cfx-status"] = status;
                             else metadata["data-cfx-level"] = ChartHeatmapSurface.Level(ratio).ToString();
-                            if (status != null && chart.Options.PinStateColorsInForcedColors) metadata["data-cfx-pin-state-colors"] = "true";
+                            if (status != null && chart.Options.StateTimeline.PinColorsInForcedColors) metadata["data-cfx-pin-state-colors"] = "true";
                         }
                         categoryGroups?.CaptureContext(metadata, rowIndex, columnIndex, series.Name, column);
                         var id = VisualStateSceneTools.SourceId(rowIndex, pointIndex);

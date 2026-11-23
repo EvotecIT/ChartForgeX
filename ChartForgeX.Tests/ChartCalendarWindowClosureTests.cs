@@ -124,26 +124,26 @@ public sealed class ChartCalendarWindowClosureTests {
     [Fact]
     public void CalendarBoundaryEnumerationStillRejectsOverBudgetRepeatedHourSchedules() {
         var chart = DstChart(Utc(2024, 11, 2, 5), Utc(2024, 11, 4, 5));
-        chart.Options.XAxis.WithTimeSpacing(ChartTimeSpacing.Unit(new ChartTimeTickInterval(ChartTimeTickUnit.Second)));
+        chart.Options.XAxis.TimeSpacing(ChartTimeSpacing.Unit(new ChartTimeTickInterval(ChartTimeTickUnit.Second)));
         Assert.Contains("100,000", Assert.Throws<InvalidOperationException>(() => chart.Prepare(Context())).Message);
         Assert.Equal(2, chart.Series[0].Points.Count);
     }
 
     private static Chart MonthlyChart(bool horizontal, bool reversed) {
         var points = new[] { new ChartPoint(Oa(January.AddDays(2)), 2), new ChartPoint(Oa(January.AddMonths(1).AddDays(9)), 4), new ChartPoint(Oa(January.AddMonths(2).AddDays(9)), 6) };
-        var chart = Chart.Create().WithLegend(false);
+        var chart = Chart.Create().Legend(false);
         if (horizontal) chart.AddHorizontalBar("Monthly", points); else chart.AddLine("Monthly", points);
         if (!horizontal) chart.Series[0].Markers.Enabled = false;
         var axis = horizontal ? chart.Options.YAxis : chart.Options.XAxis;
-        axis.WithTimeSpacing(ChartTimeSpacing.Unit(new ChartTimeTickInterval(ChartTimeTickUnit.Month))).Reversed = reversed;
+        axis.TimeSpacing(ChartTimeSpacing.Unit(new ChartTimeTickInterval(ChartTimeTickUnit.Month))).Reversed = reversed;
         return chart;
     }
 
     private static ChartAxisProjection Axis(PreparedVisual prepared, bool horizontal) => horizontal ? prepared.YProjection! : prepared.XProjection!;
     private static Chart DstChart(params DateTime[] instants) {
-        var chart = Chart.Create().WithLegend(false).AddLine("Observed instants", instants.Select((instant, index) => new ChartPoint(Oa(instant), index + 1)));
+        var chart = Chart.Create().Legend(false).AddLine("Observed instants", instants.Select((instant, index) => new ChartPoint(Oa(instant), index + 1)));
         chart.Series[0].Markers.Enabled = false;
-        chart.Options.XAxis.WithTimeScale(DstZone()).WithTimeSpacing(ChartTimeSpacing.Unit(new ChartTimeTickInterval(ChartTimeTickUnit.Minute, 30)));
+        chart.Options.XAxis.TimeScale(DstZone()).TimeSpacing(ChartTimeSpacing.Unit(new ChartTimeTickInterval(ChartTimeTickUnit.Minute, 30)));
         return chart;
     }
 

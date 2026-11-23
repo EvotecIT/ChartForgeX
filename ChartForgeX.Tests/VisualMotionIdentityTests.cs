@@ -16,8 +16,8 @@ namespace ChartForgeX.Tests;
 public sealed class VisualMotionIdentityTests {
     [Fact]
     public void CompletedTerminalArtifactsKeepAccessibleReferencesIsolatedBetweenExports() {
-        var terminal = TerminalStory.Create().WithTitle("Completed terminal").WithWidth(480)
-            .WithPngOutputScale(1).WithFinalPrompt(false).Command("status", .1).Output("Ready");
+        var terminal = TerminalStory.Create().Title("Completed terminal").Width(480)
+            .PngOutputScale(1).ShowFinalPrompt(false).Command("status", .1).Output("Ready");
         var artifact = terminal.ToVisualArtifact();
         Assert.Same(terminal, artifact.Model);
         var source = Assert.IsAssignableFrom<IStaticVisualSource>(artifact.RenderSource);
@@ -33,8 +33,8 @@ public sealed class VisualMotionIdentityTests {
 
     [Fact]
     public void GridMotionKeepsAccessibleReferencesWithinEachExport() {
-        var grid = VisualGrid.Create().WithTitle("Capacity").WithSubtitle("Completed snapshot")
-            .Add("metric", MetricCard.Create().WithMetric("Ready", 42));
+        var grid = VisualGrid.Create().Title("Capacity").Subtitle("Completed snapshot")
+            .Add("metric", MetricCard.Create().Metric("Ready", 42));
         var motion = VisualMotionPresentation.Create(grid, VisualMotionTimeline.Create().Fade("metric"));
         var first = XDocument.Parse(motion.ToSvg("first"));
         var second = XDocument.Parse(motion.ToSvg("second"));

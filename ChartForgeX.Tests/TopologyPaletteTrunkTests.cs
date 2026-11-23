@@ -4,6 +4,7 @@ using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 using Xunit;
 using static ChartForgeX.Tests.InteractiveChartBrowser;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.Tests;
 
@@ -92,7 +93,7 @@ public sealed class TopologyPaletteTrunkTests {
     public async Task EqualRgbIncomingSlotsKeepIndependentHostColorsAndMarkers() {
         if (!Enabled) return;
         var tokens = new VisualDesignTokens { Palette = ChartPalettes.FromHex("#607080", "#607080", "#607080") };
-        var chart = FanIn(false).WithTheme(new VisualTheme(tokens, tokens)); var options = Options();
+        var chart = FanIn(false).Theme(new VisualTheme(tokens, tokens)); var options = Options();
         options.SvgColorVariables = tokens.ToSvgColorVariables(path => "--host-" + path.Replace('.', '-'));
         var prepared = chart.Prepare(options); var svg = prepared.ToSvg();
         await using var session = await OpenAsync("<!doctype html><html><body style='margin:0'>" + svg + "</body></html>", 940, 500);
@@ -105,7 +106,7 @@ public sealed class TopologyPaletteTrunkTests {
               routes:[...edge.querySelectorAll('[data-cfx-role=topology-edge-line]')].map(line=>getComputedStyle(line).stroke),
               markers:[...edge.querySelectorAll('[data-cfx-role=topology-marker]')].map(marker=>getComputedStyle(marker).stroke)}))
             """);
-        chart.WithTheme(new VisualTheme(target, target));
+        chart.Theme(new VisualTheme(target, target));
         TopologyPaletteRegressionEvidence.Write("trunk-equal-rgb-host", chart.Prepare(options), receipt);
         await TopologyPaletteRegressionEvidence.CaptureAsync(session.Page, "trunk-equal-rgb-host");
         Assert.Equal(0, await session.Page.Locator("[data-cfx-role=topology-shared-trunk-tail]").CountAsync());
@@ -120,13 +121,13 @@ public sealed class TopologyPaletteTrunkTests {
     }
 
     private static TopologyChart FanIn(bool namedPort) {
-        var chart = TopologyRoutingFixtures.FanIn(namedPort).WithTheme(VisualTheme.Graphite().WithPalette(ThemeMode.Light,
+        var chart = TopologyRoutingFixtures.FanIn(namedPort).Theme(VisualTheme.Graphite().WithPalette(ThemeMode.Light,
             ChartColor.FromHex("#BE123C"), ChartColor.FromHex("#0F766E"), ChartColor.FromHex("#4338CA")));
         for (var index = 0; index < chart.Edges.Count; index++) chart.Edges[index].PaletteIndex = index;
         return chart;
     }
 
-    private static TopologyRenderOptions Options() { var options = TopologyRoutingFixtures.Options().WithPlainTopologyEdges(); options.ShareIncomingTrunks = true; return options; }
+    private static TopologyRenderOptions Options() { var options = TopologyRoutingFixtures.Options().EdgeVisualStyle(ChartLineVisualStyle.Plain()); options.ShareIncomingTrunks = true; return options; }
     private static string? Role(XElement element) => (string?)element.Attribute("data-cfx-role");
     private static int Count(XDocument svg, string role) => svg.Descendants().Count(element => Role(element) == role);
     private static XElement Owner(XDocument svg, string id) => svg.Descendants().Single(element => Role(element) == "topology-edge" && (string?)element.Attribute("data-edge-id") == id);

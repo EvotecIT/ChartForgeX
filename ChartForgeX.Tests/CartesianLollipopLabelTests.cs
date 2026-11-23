@@ -49,12 +49,12 @@ public sealed class CartesianLollipopLabelTests {
     [InlineData(760, true)]
     public void DenseAutomaticCaptionsStayBesideTheirOwnValueEndpoints(int width, bool reversed) {
         var xs = Enumerable.Range(1, 24).Where(x => x is not (3 or 9 or 15 or 21)).ToArray();
-        var chart = Chart.Create().WithSize(width, 420).WithTitle("Regional changes").WithLegend(false).WithDataLabels()
-            .WithXLabels(Enumerable.Range(1, 24).Select(x => $"Region {x}: international distribution").ToArray())
+        var chart = Chart.Create().Size(width, 420).Title("Regional changes").Legend(false).DataLabels()
+            .XLabels(Enumerable.Range(1, 24).Select(x => $"Region {x}: international distribution").ToArray())
             .AddLollipop("Observed regional change", xs.Select((x, i) => new ChartPoint(x,
                 i is 4 or 14 ? 0 : (i % 3 == 0 ? -1 : 1) * (5 + i % 8 * 3))));
-        chart.Options.YAxis.WithReversal(reversed);
-        chart.Series[0].WithObservationIds(xs.Select(x => new ChartObservationId("region-" + x)));
+        chart.Options.YAxis.Reversed(reversed);
+        chart.Series[0].ObservationIds(xs.Select(x => new ChartObservationId("region-" + x)));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var document = XDocument.Parse(prepared.ToSvg());
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label").ToArray();
@@ -76,11 +76,11 @@ public sealed class CartesianLollipopLabelTests {
     }
 
     internal static Chart Create(bool secondary, bool reversed, int sign) {
-        var chart = Chart.Create().WithSize(640, 360).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false)
-            .WithDataLabels().AddLollipop("Observations", new[] { new ChartPoint(1, 40 * sign), new ChartPoint(2, 60 * sign) });
-        if (secondary) chart.Series[0].UseSecondaryValueAxis();
-        chart.Options.YAxis.WithBounds(-100, 100).WithReversal(secondary ? false : reversed);
-        chart.Options.SecondaryYAxis.WithBounds(-100, 100).WithReversal(secondary ? reversed : false);
+        var chart = Chart.Create().Size(640, 360).ShowHeader(false).Legend(false).Axes(false).ShowGrid(false)
+            .DataLabels().AddLollipop("Observations", new[] { new ChartPoint(1, 40 * sign), new ChartPoint(2, 60 * sign) });
+        if (secondary) chart.Series[0].SecondaryAxis();
+        chart.Options.YAxis.Bounds(-100, 100).Reversed(secondary ? false : reversed);
+        chart.Options.SecondaryYAxis.Bounds(-100, 100).Reversed(secondary ? reversed : false);
         return chart;
     }
 }

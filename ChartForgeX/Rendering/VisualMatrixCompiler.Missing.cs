@@ -10,7 +10,7 @@ internal static partial class VisualMatrixCompiler {
     // A missing position is part of the grid, but is neither a measured value nor an interactive target.
     private static void MissingCells(Chart chart, VisualSceneBuilder builder, ChartSeries series, double[] columns,
         ChartRect plot, double top, double width, double height, double gap, double radius, VisualThemeColors colors) {
-        var look = ChartMissingData.Look(chart.Options.HeatmapColorScale, colors);
+        var look = ChartMissingData.Look(chart.Options.Heatmap.ColorScale, colors);
         var present = new HashSet<double>(series.RenderPoints.Select(point => point.X));
         for (var column = 0; column < columns.Length; column++) {
             if (present.Contains(columns[column])) continue;

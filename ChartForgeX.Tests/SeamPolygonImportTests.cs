@@ -23,8 +23,8 @@ public sealed class SeamPolygonImportTests {
         var chart = SeamPolygonMapRecipe.Create(variant, mode); var definition = chart.Series[0].RegionMapDefinition!;
         var prepared = MapLabelClusterDepthTests.Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng();
         MapLabelClusterDepthTests.Capture(prepared, "seam-polygons-" + variant + "-" + mode);
-        Assert.Equal(chart.Options.MapViewport.MinimumLongitude, definition.PolygonViewport!.Value.MinimumLongitude);
-        Assert.Equal(chart.Options.MapViewport.GeographicProjection, definition.GeographicProjection);
+        Assert.Equal(chart.Options.Map.Viewport.MinimumLongitude, definition.PolygonViewport!.Value.MinimumLongitude);
+        Assert.Equal(chart.Options.Map.Viewport.GeographicProjection, definition.GeographicProjection);
         Assert.Equal(3, definition.Regions.Count);
         var island = definition.Regions.Single(region => region.Code == "I"); var feature = Assert.IsType<ChartMapFeature>(island.Feature);
         Assert.Equal("123456789012345678901", feature.IdJson); Assert.Equal(island.GeoJsonGeometry, island.WithFeature(null).GeoJsonGeometry);
@@ -66,7 +66,7 @@ public sealed class SeamPolygonImportTests {
         options.MaximumExpandedFeatureCharacters++; Assert.Equal(ring.Path, ChartMapGeoJson.ToMapDefinition("copies", "Copies", json, options).Regions[0].Path);
         const string filtered = """{"type":"FeatureCollection","features":[{"type":"Feature","properties":{"code":"OUT","payload":"No output allocation for this filtered feature"},"geometry":{"type":"Polygon","coordinates":[[[0,50],[10,50],[10,60],[0,60],[0,50]]]}},{"type":"Feature","properties":{"code":"IN"},"geometry":{"type":"Polygon","coordinates":[[[175,-25],[-175,-25],[-175,-5],[175,-5],[175,-25]]]}}]}""";
         var filteredOptions = new ChartMapGeoJsonOptions { PolygonViewport = ChartMapViewport.AcrossAntimeridian("Pacific", 170, -170, -30, 10), MaximumObservations = 5 };
-        filteredOptions.WithCoordinateBounds(-180, 180, -30, 10);
+        filteredOptions.MinimumLongitude(-180).MaximumLongitude(180).MinimumLatitude(-30).MaximumLatitude(10).IncludeFeaturesIntersectingCoordinateBounds();
         Assert.Equal("IN", Assert.Single(ChartMapGeoJson.ToMapDefinition("filtered", "Filtered", filtered, filteredOptions).Regions).Code);
     }
 
@@ -101,15 +101,15 @@ public sealed class SeamPolygonImportTests {
         var ordinary = ChartMapGeoJson.ToMapDefinition("ordinary", "Ordinary", json);
         Assert.Equal("M1 -1L11 -1L11 -11L1 -11L1 -1Z", ordinary.Regions[0].Path); Assert.Null(ordinary.PolygonViewport);
         Assert.Null(ordinary.Regions[0].Feature); Assert.Null(ordinary.Regions[0].GeoJsonGeometry);
-        var baseline = Chart.Create().WithSize(480, 320).WithLegend(false).AddSeries(ChartSeries.CreateRegionMap(new ChartSeriesId("ordinary"), "Ordinary", ordinary, new[] { new ChartRegionMapItem("A", 1) }));
+        var baseline = Chart.Create().Size(480, 320).Legend(false).AddSeries(ChartSeries.CreateRegionMap(new ChartSeriesId("ordinary"), "Ordinary", ordinary, new[] { new ChartRegionMapItem("A", 1) }));
         var before = MapLabelClusterDepthTests.Prepare(baseline); var original = ordinary.Regions[0];
         var changed = original.WithFeature(new ChartMapFeature("inert", "{\"color\":\"not paint\"}"));
         var decorated = new ChartMapDefinition(ordinary.Id, ordinary.Name, ordinary.Bounds, new[] { changed });
-        var chart = Chart.Create().WithSize(480, 320).WithLegend(false).AddSeries(ChartSeries.CreateRegionMap(new ChartSeriesId("ordinary"), "Ordinary", decorated, new[] { new ChartRegionMapItem("A", 1) }));
+        var chart = Chart.Create().Size(480, 320).Legend(false).AddSeries(ChartSeries.CreateRegionMap(new ChartSeriesId("ordinary"), "Ordinary", decorated, new[] { new ChartRegionMapItem("A", 1) }));
         Assert.Equal(before.ToPng(), MapLabelClusterDepthTests.Prepare(chart).ToPng());
         Assert.Equal(original.Path, changed.WithFeature(null).Path); Assert.Null(changed.WithFeature(null).Feature);
         var cleared = new ChartMapDefinition(ordinary.Id, ordinary.Name, ordinary.Bounds, new[] { changed.WithFeature(null) });
-        var reset = Chart.Create().WithSize(480, 320).WithLegend(false).AddSeries(ChartSeries.CreateRegionMap(new ChartSeriesId("ordinary"), "Ordinary", cleared, new[] { new ChartRegionMapItem("A", 1) }));
+        var reset = Chart.Create().Size(480, 320).Legend(false).AddSeries(ChartSeries.CreateRegionMap(new ChartSeriesId("ordinary"), "Ordinary", cleared, new[] { new ChartRegionMapItem("A", 1) }));
         Assert.Equal(before.ToSvg(), MapLabelClusterDepthTests.Prepare(reset).ToSvg());
     }
 

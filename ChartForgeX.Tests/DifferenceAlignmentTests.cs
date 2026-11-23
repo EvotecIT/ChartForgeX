@@ -29,12 +29,12 @@ public sealed class DifferenceAlignmentTests {
         Assert.Throws<NotSupportedException>(() => ((IDictionary<int, ChartObservationId>)alignment.FirstObservationIds).Clear());
         var series = ChartSeries.CreateAlignedDifferenceArea(new ChartSeriesId("comparison"), "Comparison", alignment);
         Assert.Empty(series.ObservationIds);
-        var prepared = Prepare(Chart.Create().WithSize(640, 420).AddSeries(series));
+        var prepared = Prepare(Chart.Create().Size(640, 420).AddSeries(series));
         var facts = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Single(group => group.Id == "series-0-point-1").Metadata;
         Assert.Equal("actual", facts["data-cfx-first-source-series-id"]); Assert.Equal("2", facts["data-cfx-first-source-index"]);
         Assert.Equal("forecast-2", facts["data-cfx-second-source-observation-id"]);
         Assert.False(facts.ContainsKey("data-cfx-observation-id"));
-        first.Points.Clear(); second.Points[0] = new ChartPoint(1, 999); second.WithName("Changed");
+        first.Points.Clear(); second.Points[0] = new ChartPoint(1, 999); second.Name("Changed");
         Assert.Equal("forecast", alignment.SecondName); Assert.Equal(10, alignment.SecondPoints[0].Y); Assert.Equal(4, alignment.FirstPoints.Count);
     }
 
@@ -44,15 +44,15 @@ public sealed class DifferenceAlignmentTests {
         var second = Source("forecast", new[] { new ChartPoint(1, 10), new ChartPoint(2, 11) });
         var alignment = ChartDifferencePoints.Align(first, second);
         var series = ChartSeries.CreateAlignedDifferenceArea(new ChartSeriesId("comparison"), "Comparison", alignment)
-            .WithObservationIds(new[] { new ChartObservationId("pair-one"), new ChartObservationId("pair-two") });
-        var chart = Chart.Create().WithSize(640, 420).AddSeries(series); var before = Prepare(chart); var svg = before.ToSvg(); var png = before.ToPng();
+            .ObservationIds(new[] { new ChartObservationId("pair-one"), new ChartObservationId("pair-two") });
+        var chart = Chart.Create().Size(640, 420).AddSeries(series); var before = Prepare(chart); var svg = before.ToSvg(); var png = before.ToPng();
         Assert.Throws<NotSupportedException>(() => series.UpdateDifferencePoint(0, new ChartDifferencePoint(1, 100, 1)));
         Assert.Throws<NotSupportedException>(() => series.ApplyDifferenceChanges(new[] { ChartObservationChange<ChartDifferencePoint>.Remove(new ChartObservationId("pair-one")) }));
         Assert.Same(alignment, series.DifferenceAlignment); Assert.Equal(2, series.DifferencePoints.Count);
         IEnumerable<ChartDifferencePoint> Broken() { yield return new ChartDifferencePoint(1, 100, 2); throw new InvalidOperationException("intake failed"); }
         Assert.Throws<InvalidOperationException>(() => series.ReplaceDifferencePoints(Broken()));
         Assert.Same(alignment, series.DifferenceAlignment); Assert.Equal(svg, Prepare(chart).ToSvg());
-        first.Points[0] = new ChartPoint(1, 25); first.WithName("Observed");
+        first.Points[0] = new ChartPoint(1, 25); first.Name("Observed");
         var current = ChartDifferencePoints.Align(first, second); series.ReplaceDifferenceAlignment(current);
         Assert.Empty(series.ObservationIds); Assert.Equal("Observed", series.DifferenceArea.FirstName); Assert.Equal(25, series.DifferencePoints[0].First);
         Assert.Equal(12, alignment.Points[0].First); Assert.Equal(svg, before.ToSvg()); Assert.Equal(png, before.ToPng());
@@ -95,7 +95,7 @@ public sealed class DifferenceAlignmentTests {
 
     [Fact]
     public void CapturedInterpolationAndMissingIdentityNeverBecomeFabricatedPairsOrIDs() {
-        var first = ChartSeries.CreateLine(new ChartSeriesId("a"), "", new[] { new ChartPoint(1, 3), new ChartPoint(2, 7) }).WithInterpolation(ChartInterpolation.Smooth);
+        var first = ChartSeries.CreateLine(new ChartSeriesId("a"), "", new[] { new ChartPoint(1, 3), new ChartPoint(2, 7) }).Interpolation(ChartInterpolation.Smooth);
         var second = new ChartSeries(new ChartSeriesId("b"), "Forecast", ChartSeriesKind.StepLine, new[] { new ChartPoint(1, 5), new ChartPoint(2, 2) });
         var aligned = ChartDifferencePoints.Align(first, second);
         var series = ChartSeries.CreateAlignedDifferenceArea(new ChartSeriesId("result"), "Result", aligned);
@@ -119,7 +119,7 @@ public sealed class DifferenceAlignmentTests {
 
     internal static ChartSeries Source(string id, IEnumerable<ChartPoint> points) {
         var series = ChartSeries.CreateLine(new ChartSeriesId(id), id, points);
-        return series.WithObservationIds(Enumerable.Range(0, series.Points.Count).Select(index => new ChartObservationId(id + "-" + index)));
+        return series.ObservationIds(Enumerable.Range(0, series.Points.Count).Select(index => new ChartObservationId(id + "-" + index)));
     }
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
 }

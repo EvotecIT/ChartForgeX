@@ -11,7 +11,7 @@ internal static partial class VisualCartesianCompiler {
     internal static IVisualValuePlan? TryCaptureBubbleValues(Chart chart, VisualRenderContext context,
         VisualSceneTextCapture text, VisualScene scene, ChartCartesianProjection? axes, ChartBubbleSizeScale sizes) {
         if (!context.CaptureNativeValueSource || axes == null || ChartCartesianOrientation.IsHorizontal(chart)
-            || !text.SupportsCapturedReplay || chart.Series.Count == 0 || chart.Options.ShowPointLegend
+            || !text.SupportsCapturedReplay || chart.Series.Count == 0 || chart.Options.Legend.ShowPoints
             || !chart.Options.Bubble.MinimumValue.HasValue || !chart.Options.Bubble.MaximumValue.HasValue
             || chart.Options.ValueFormatter != null || chart.Series.Any(series => series.Kind != ChartSeriesKind.Bubble
                 || series.Id.IsAutomatic || series.Bubbles.Count == 0 || series.PointStrokeColors.Any(color => color.HasValue)

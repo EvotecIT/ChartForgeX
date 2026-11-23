@@ -6,6 +6,6 @@ public sealed class NativeCompleteCartesianValueProgramSourceTests {
     public void PublicCompleteValueProgramsUseRealSourceAndTheExistingHtmlLifetime(string variant,int width,bool dark) {
         var program=ExampleRecipeSource.EmitNativeCompleteCartesianValue(variant,width,dark?ThemeMode.Dark:ThemeMode.Light);
         NativeRadialMotionBeforeControls.Save("complete-cartesian-program-"+variant+"-"+width+".cs",program);
-        Assert.DoesNotContain("{{",program,StringComparison.Ordinal);Assert.Contains("PrepareNativeTransitionJson",program,StringComparison.Ordinal);Assert.Contains("FontRegistry.Register",program,StringComparison.Ordinal);Assert.Contains("ChartSeriesKind.StackedArea",program,StringComparison.Ordinal);Assert.Contains("WithStackedAreaMissingData",program,StringComparison.Ordinal);Assert.DoesNotContain("requestAnimationFrame",program,StringComparison.Ordinal);
+        Assert.DoesNotContain("{{",program,StringComparison.Ordinal);Assert.Contains("PrepareNativeTransitionJson",program,StringComparison.Ordinal);Assert.Contains("FontRegistry.Register",program,StringComparison.Ordinal);Assert.Contains("ChartSeriesKind.StackedArea",program,StringComparison.Ordinal);Assert.Contains("StackedAreaMissingData",program,StringComparison.Ordinal);Assert.DoesNotContain("requestAnimationFrame",program,StringComparison.Ordinal);
     }
 }

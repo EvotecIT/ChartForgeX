@@ -1,9 +1,11 @@
 using System;
 using ChartForgeX.Typography;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>Overrides one numeric component caption while retaining the shared data-label visibility and collision policy.</summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class ChartValueLabelOptions {
     private ChartDataLabelPlacement? _placement;
 

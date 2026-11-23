@@ -76,7 +76,7 @@ public sealed class PreparedTopologyTests {
     [Fact]
     public void ReportPreservesAndSnapshotsCustomIconCatalog() {
         var icon = new TopologyIconDefinition("vendor", "service", "Service", TopologyNodeKind.Service)
-            .WithArtwork(TopologyIconArtwork.InlineSvg("<path d='M0 0h24v24H0z'/>", "0 0 24 24"));
+            .Artwork(TopologyIconArtwork.InlineSvg("<path d='M0 0h24v24H0z'/>", "0 0 24 24"));
         var catalog = new TopologyIconCatalog().AddPack(new TopologyIconPack("vendor", "Vendor").AddIcon(icon));
         var chart = TopologyChart.Create().AddIconNode("a", "Service", "vendor:service", 100, 100, catalog: catalog);
         var report = chart.PrepareReport(new TopologyReportOptions { IconCatalog = catalog, RequireResolvedIcons = true });
@@ -181,7 +181,7 @@ public sealed class PreparedTopologyTests {
 
     [Fact]
     public void ReportInterchangeRelocatesCollidingSourceIdMetadata() {
-        var chart = TopologyChart.Create().WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().LayoutMode(TopologyLayoutMode.Manual)
             .AddGroup("shared", "Group", 0, 0, 400, 200)
             .AddNode("shared", "Bounded identifier", 30, 70, groupId: "shared");
         chart.Nodes[0].Metadata["chartforgex.sourceId"] = "caller-owned";
@@ -195,7 +195,7 @@ public sealed class PreparedTopologyTests {
 
     [Fact]
     public void ReportRelocatesCallerMetadataThatUsesTheGeneratedGroupKey() {
-        var chart = TopologyChart.Create().WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().LayoutMode(TopologyLayoutMode.Manual)
             .AddGroup("group", "Group", 0, 0, 500, 260)
             .AddNode("node", "Node", 40, 90, groupId: "group");
         chart.Nodes[0].Metadata["report.sourceGroupId"] = "caller-owned";
@@ -234,7 +234,7 @@ public sealed class PreparedTopologyTests {
     [Fact]
     public void ReportPageTitlesRetainTheirSuffixWithinTheInterchangeTextBudget() {
         string title = new string('t', 65_536);
-        var report = TopologyChart.Create().WithTitle(title).AddAutoNode("node", "Node").PrepareReport();
+        var report = TopologyChart.Create().Title(title).AddAutoNode("node", "Node").PrepareReport();
 
         VisualArtifactInterchangeEnvelope page = Assert.Single(report.Pages).ToInterchangeEnvelope();
 
@@ -286,7 +286,7 @@ public sealed class PreparedTopologyTests {
 
     [Fact]
     public void ReportHtmlRetainsUserLanguageAndEnglishNavigation() {
-        var chart = TopologyChart.Create().WithTitle("Usługi")
+        var chart = TopologyChart.Create().Title("Usługi")
             .AddAutoNode("a", "Źródło").AddAutoNode("b", "Cel").AddEdge("ab", "a", "b");
         chart.Accessibility.Language = "pl";
         var report = chart.PrepareReport(new TopologyReportOptions { MaximumNodesPerPage = 1 });
@@ -305,13 +305,13 @@ public sealed class PreparedTopologyTests {
 
     [Fact]
     public void PreparedExportsAreDetachedFromSourceAndReturnedEnvelope() {
-        var chart = TopologyChart.Create().WithViewport(600, 400).WithTheme(VisualTheme.Graphite())
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(600, 400)).Theme(VisualTheme.Graphite())
             .AddNode("a", "Original", 80, 100).AddNode("b", "Second", 320, 100)
             .AddEdge("ab", "a", "b");
         var prepared = chart.Prepare();
         var original = prepared.ToSvg();
         chart.Nodes[0].Label = "Changed";
-        chart.ConfigureTheme(builder => { builder.Light.Foreground = builder.Dark.Foreground = ChartForgeX.Primitives.ChartColor.FromHex("#ff0000"); });
+        chart.Theme(builder => { builder.Light.Foreground = builder.Dark.Foreground = ChartForgeX.Primitives.ChartColor.FromHex("#ff0000"); });
         var envelope = prepared.ToInterchangeEnvelope();
         envelope.Nodes[0].Label = "External change";
         Assert.Equal(original, prepared.ToSvg());
@@ -324,7 +324,7 @@ public sealed class PreparedTopologyTests {
     [InlineData(500)]
     [InlineData(1000)]
     public void ReportRetainsEveryNodeAndRelationshipInReadablePages(int count) {
-        var chart = TopologyChart.Create().WithViewport(1200, 800).WithLayout(TopologyLayoutMode.Matrix);
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(1200, 800)).LayoutMode(TopologyLayoutMode.Matrix);
         for (int i = 0; i < count; i++) chart.AddAutoNode("n" + i, "Service " + i);
         for (int i = 1; i < count; i++) chart.AddEdge("e" + i, "n" + ((i - 1) / 3), "n" + i);
         var report = chart.PrepareReport();
@@ -343,7 +343,7 @@ public sealed class PreparedTopologyTests {
 
     [Fact]
     public void DenseRelationshipsAlsoLimitPageCapacity() {
-        var chart = TopologyChart.Create().WithLayout(TopologyLayoutMode.Matrix);
+        var chart = TopologyChart.Create().LayoutMode(TopologyLayoutMode.Matrix);
         for (int i = 0; i < 20; i++) chart.AddAutoNode("n" + i, "Node " + i);
         for (int i = 0; i < 20; i++) for (int j = i + 1; j < 20; j++) chart.AddEdge("e" + i + "-" + j, "n" + i, "n" + j);
         var report = chart.PrepareReport(new TopologyReportOptions { MaximumEdgesPerPage = 6 });
@@ -354,7 +354,7 @@ public sealed class PreparedTopologyTests {
     [Fact]
     public void HtmlReportEncodesUserTextAndStoresInactivePagesAsText() {
         const string label = "</template><script>alert(1)</script>";
-        var report = TopologyChart.Create().WithTitle(label).AddAutoNode("node", label).PrepareReport();
+        var report = TopologyChart.Create().Title(label).AddAutoNode("node", label).PrepareReport();
         string html = report.ToInteractiveHtmlPage();
         Assert.DoesNotContain(label, html);
         Assert.Contains("&lt;/template&gt;", html);
@@ -372,7 +372,7 @@ public sealed class PreparedTopologyTests {
     [Fact]
     public void ReportNavigationUsesOriginalIdsWhenInterchangeRenamesThem() {
         string longId = new string('x', 300);
-        var chart = TopologyChart.Create().WithLayout(TopologyLayoutMode.Matrix)
+        var chart = TopologyChart.Create().LayoutMode(TopologyLayoutMode.Matrix)
             .AddAutoGroup("shared", "Group")
             .AddAutoNode("shared", "Shared node", groupId: "shared")
             .AddAutoNode(longId, "Long ID node")
@@ -387,7 +387,7 @@ public sealed class PreparedTopologyTests {
 
     [Fact]
     public void ReadabilityExplainsFittingLossAndRejectsInvalidTargets() {
-        var prepared = TopologyChart.Create().WithViewport(3000, 800).AddNode("a", "A", 80, 100).Prepare();
+        var prepared = TopologyChart.Create().Viewport(new TopologyViewport(3000, 800)).AddNode("a", "A", 80, 100).Prepare();
         Assert.True(prepared.AssessReadability(600, 400).NeedsDetailViews);
         Assert.Equal(0.2, prepared.AssessReadability(600, 400).FitScale, 3);
         Assert.Throws<ArgumentOutOfRangeException>(() => prepared.AssessReadability(double.NaN, 400));
@@ -396,10 +396,10 @@ public sealed class PreparedTopologyTests {
 
     [Fact]
     public void ReadabilityIgnoresHiddenAnchorsOutsideTheVisibleViewport() {
-        var chart = TopologyChart.Create().WithViewport(600, 400).WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(600, 400)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("visible", "Visible", 80, 140)
             .AddNode("anchor", "Anchor", 900, 900)
-            .WithNodeDisplay("anchor", TopologyNodeDisplayMode.Hidden);
+            .UpdateNode("anchor", n => n.DisplayMode(TopologyNodeDisplayMode.Hidden).Badge(null));
 
         var readability = chart.Prepare().AssessReadability(600, 400);
 

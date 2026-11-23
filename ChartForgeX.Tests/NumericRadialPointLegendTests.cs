@@ -32,7 +32,7 @@ public sealed class NumericRadialPointLegendTests {
         Assert.All(calls.Values, count => Assert.Equal(1, count));
         if (authored) Assert.Equal("Authored", legends[0]);
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
-        chart.Options.XAxis.WithLabelFormatter(_ => throw new InvalidOperationException("Prepared output must not format again."));
+        chart.Options.XAxis.LabelBy(_ => throw new InvalidOperationException("Prepared output must not format again."));
         chart.Options.XAxis.Labels.Clear(); chart.Series[0].Points.Clear();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
     }
@@ -50,11 +50,11 @@ public sealed class NumericRadialPointLegendTests {
     }
 
     internal static Chart Create(bool bars, Dictionary<double, int> calls, bool authored) {
-        var chart = Chart.Create().WithSize(760, 480).WithHeader(false).WithLegend().WithPointLegend().WithDataLabels(false)
-            .WithGrid(false).WithYAxisBounds(0, 100);
+        var chart = Chart.Create().Size(760, 480).ShowHeader(false).Legend().Legend(l => l.ShowPoints()).DataLabels(false)
+            .ShowGrid(false).YAxis(y => y.Bounds(0, 100));
         NumericRadialSeriesTests.Add(chart, bars, "Observations", new[] { new ChartPoint(1, 30), new ChartPoint(2, 50), new ChartPoint(3, 70) });
         chart.Options.YAxis.Visible = false;
-        chart.Options.XAxis.WithLabelFormatter(value => {
+        chart.Options.XAxis.LabelBy(value => {
             calls[value] = calls.TryGetValue(value, out var count) ? count + 1 : 1;
             return $"Group {value} pass {calls[value]}";
         });

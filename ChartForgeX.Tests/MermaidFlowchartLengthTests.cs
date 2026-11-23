@@ -78,11 +78,11 @@ public sealed class MermaidFlowchartLengthTests {
     [InlineData(VisualLinkDirection.Bidirectional)]
     [InlineData(VisualLinkDirection.None)]
     public void NativeRankHintsFollowTheRelationshipDirection(VisualLinkDirection direction) {
-        var chart = TopologyChart.Create().WithViewport(600, 300).WithLegend(null)
-            .WithLayout(TopologyLayoutMode.Layered, TopologyLayoutDirection.LeftToRight)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(600, 300)).Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddAutoNode("A", "A").AddAutoNode("B", "B")
             .AddEdge("link", "A", "B", direction: direction)
-            .WithEdgeLayoutHints("link", minimumRankSpan: 3);
+            .UpdateEdge("link", e => e.PreferredLength(null).MinimumRankSpan(3).RoutingPriority(0));
         var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { IncludeLegend = false });
         var first = prepared.Nodes.Single(node => node.Id == (direction == VisualLinkDirection.Backward ? "B" : "A"));
         var second = prepared.Nodes.Single(node => node.Id == (direction == VisualLinkDirection.Backward ? "A" : "B"));

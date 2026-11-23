@@ -15,14 +15,14 @@ public sealed partial class ChartSeries {
     /// <param name="pointIndex">An existing zero-based source observation.</param>
     /// <param name="ratio">The finite fraction of band thickness, from zero to one.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries WithPointSliceRadiusRatio(int pointIndex, double ratio) {
+    public ChartSeries PointSliceRadiusRatio(int pointIndex, double ratio) {
         RequireObservationKind(ChartSeriesKind.Pie, ChartSeriesKind.Donut);
         ValidatePointIndex(pointIndex); ChartGuards.UnitInterval(ratio, nameof(ratio));
         while (_pointSliceRadiusRatios.Count <= pointIndex) _pointSliceRadiusRatios.Add(null);
         _pointSliceRadiusRatios[pointIndex] = ratio; return this;
     }
     /// <summary>Clears a radius override and restores the full resolved band thickness for this observation.</summary>
-    public ChartSeries UseDefaultSliceRadius(int pointIndex) {
+    public ChartSeries ResetPointSliceRadius(int pointIndex) {
         RequireObservationKind(ChartSeriesKind.Pie, ChartSeriesKind.Donut); ValidatePointIndex(pointIndex);
         if (pointIndex < _pointSliceRadiusRatios.Count) _pointSliceRadiusRatios[pointIndex] = null;
         return this;

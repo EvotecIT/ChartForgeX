@@ -7,11 +7,11 @@ public static class TrendLineRecipe {
         if (variant is "precision" or "compact-precision") {
             var drift = ChartSeries.CreateTrendLine(new ChartSeriesId("least-squares-drift"), "Least-squares drift",
                 Enumerable.Range(0, 4096).Select(index => new ChartPoint(index % 10 + .5, index % 7 - 3)));
-            return Chart.Create().WithXAxis("Measurement").WithYAxis("Fitted drift").AddSeries(drift);
+            return Chart.Create().XAxis(x => x.Title("Measurement")).YAxis(y => y.Title("Fitted drift")).AddSeries(drift);
         }
         if (variant == "sparse") {
             var sparse = new[] { 1, 3, 6 }.Select(index => new ChartPoint(index, 20 + index * 7 % 29, index == 6)).ToArray();
-            return Chart.Create().WithXLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+            return Chart.Create().XLabels("Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
                 .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("observations"), "Observations", sparse))
                 .AddSeries(ChartSeries.CreateTrendLine(new ChartSeriesId("least-squares-trend"), "Least-squares trend", sparse));
         }
@@ -21,6 +21,6 @@ public static class TrendLineRecipe {
         var points = requests.Select((value, index) => new ChartPoint(index + 1, value)).ToArray();
         var observations = ChartSeries.CreateScatter(new ChartSeriesId("observations"), "Weekly requests", points);
         var trend = ChartSeries.CreateTrendLine(new ChartSeriesId("least-squares-trend"), "Least-squares trend", points);
-        return Chart.Create().WithXLabels(weeks).WithYAxis("Requests").AddSeries(observations).AddSeries(trend);
+        return Chart.Create().XLabels(weeks).YAxis(y => y.Title("Requests")).AddSeries(observations).AddSeries(trend);
     }
 }

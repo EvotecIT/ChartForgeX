@@ -34,7 +34,7 @@ public sealed class BoxPlotDistributionTests {
     public void IqrUsesFullSampleQuartilesAndOriginalOutlierIndices() {
         var series = Raw(new ChartBoxPlotSampleGroup(1, new[] { 100d, 0, 1, 2, 3, 4, 5, 6, 7, 8 }),
             new ChartBoxPlotSampleGroup(1, new[] { 1d, 1, 1, 1, 2 }));
-        series.ConfigureBoxPlotStatistics(options => options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr);
+        series.BoxPlotStatistics(options => options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr);
         Assert.Equal(new[] { 0d, 2.25, 4.5, 6.75, 8 }, Values(series.BoxPlots[0]));
         Assert.Equal(new[] { 0 }, series.BoxPlotDistributions[0].OutlierSourceIndices);
         Assert.Equal(new[] { 14 }, series.BoxPlotDistributions[1].OutlierSourceIndices);
@@ -45,17 +45,17 @@ public sealed class BoxPlotDistributionTests {
     [Fact]
     public void InclusiveFencesKeepTiesAndSeparateSparseInliersFromDrawableWhiskers() {
         var ties = Raw(new ChartBoxPlotSampleGroup(1, new[] { -3d, 0, 1, 2, 5 }));
-        ties.ConfigureBoxPlotStatistics(options => options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr);
+        ties.BoxPlotStatistics(options => options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr);
         Assert.Empty(ties.BoxPlotDistributions[0].OutlierSourceIndices);
         ties.UpdateBoxPlotSampleGroup(0, new ChartBoxPlotSampleGroup(1, new[] { Math.BitDecrement(-3d), 0, 1, 2, Math.BitIncrement(5d) }));
         Assert.Equal(new[] { 0, 4 }, ties.BoxPlotDistributions[0].OutlierSourceIndices);
         var sparse = Raw(new ChartBoxPlotSampleGroup(1, new[] { 0d, 100, 101, 102 }));
-        sparse.ConfigureBoxPlotStatistics(options => options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr);
+        sparse.BoxPlotStatistics(options => options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr);
         var result = sparse.BoxPlotDistributions[0];
         Assert.Equal(0, result.SourceMinimum); Assert.Equal(100, result.InlierMinimum); Assert.Equal(75, result.Summary.Minimum);
         Assert.Equal(75, result.Summary.Q1); Assert.Equal(new[] { 0 }, result.OutlierSourceIndices);
         var none = Raw(new ChartBoxPlotSampleGroup(1, new[] { 0d, 10 }));
-        none.ConfigureBoxPlotStatistics(options => { options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr; options.IqrMultiplier = double.Epsilon; });
+        none.BoxPlotStatistics(options => { options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr; options.IqrMultiplier = double.Epsilon; });
         Assert.Null(none.BoxPlotDistributions[0].InlierMinimum); Assert.Null(none.BoxPlotDistributions[0].InlierMaximum);
         Assert.Equal(new[] { 2.5, 2.5, 5, 7.5, 7.5 }, Values(none.BoxPlots[0]));
         Assert.Equal(new[] { 0, 1 }, none.BoxPlotDistributions[0].OutlierSourceIndices);
@@ -66,26 +66,26 @@ public sealed class BoxPlotDistributionTests {
         var series = Raw(new ChartBoxPlotSampleGroup(1, new[] { -double.MaxValue, double.MaxValue }));
         Assert.Equal(0, series.BoxPlots[0].Median);
         Assert.True(double.IsFinite(series.BoxPlots[0].Q1)); Assert.True(double.IsFinite(series.BoxPlots[0].Q3));
-        series.ConfigureBoxPlotStatistics(options => { options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr; options.IqrMultiplier = double.MaxValue; });
+        series.BoxPlotStatistics(options => { options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr; options.IqrMultiplier = double.MaxValue; });
         Assert.Empty(series.BoxPlotDistributions[0].OutlierSourceIndices);
         var remote = Raw(new ChartBoxPlotSampleGroup(1, new[] { 0d, double.Epsilon, double.Epsilon, double.Epsilon, double.MaxValue }));
-        remote.ConfigureBoxPlotStatistics(options => options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr);
+        remote.BoxPlotStatistics(options => options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr);
         Assert.Equal(new[] { 0, 4 }, remote.BoxPlotDistributions[0].OutlierSourceIndices);
     }
 
     [Fact]
     public void StatisticsCallbacksAndInvalidInputsRollbackAllInstalledState() {
         var series = Keyed(); var groups = series.BoxPlotSourceGroups; var distributions = series.BoxPlotDistributions;
-        Assert.Throws<InvalidOperationException>(() => series.ConfigureBoxPlotStatistics(options => { options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr; throw new InvalidOperationException(); }));
+        Assert.Throws<InvalidOperationException>(() => series.BoxPlotStatistics(options => { options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr; throw new InvalidOperationException(); }));
         foreach (var value in new[] { 0d, -1, double.NaN, double.PositiveInfinity })
-            Assert.Throws<ArgumentOutOfRangeException>(() => series.ConfigureBoxPlotStatistics(options => options.IqrMultiplier = value));
-        Assert.Throws<ArgumentOutOfRangeException>(() => series.ConfigureBoxPlotStatistics(options => options.WhiskerPolicy = (ChartBoxPlotWhiskerPolicy)99));
+            Assert.Throws<ArgumentOutOfRangeException>(() => series.BoxPlotStatistics(options => options.IqrMultiplier = value));
+        Assert.Throws<ArgumentOutOfRangeException>(() => series.BoxPlotStatistics(options => options.WhiskerPolicy = (ChartBoxPlotWhiskerPolicy)99));
         Assert.Throws<InvalidOperationException>(() => series.ReplaceBoxPlotSampleGroups(BrokenGroups()));
         Assert.Throws<ArgumentException>(() => series.ReplaceBoxPlotSampleGroups(new ChartBoxPlotSampleGroup[] { null! }));
         Assert.Same(groups, series.BoxPlotSourceGroups); Assert.Same(distributions, series.BoxPlotDistributions);
         Assert.Equal("group-a", series.BoxPlotGroupIds[0].Value); Assert.Equal("sample-4", series.ObservationIds[4].Value);
         ChartBoxPlotStatisticsOptions? escaped = null;
-        series.ConfigureBoxPlotStatistics(options => { escaped = options; options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr; });
+        series.BoxPlotStatistics(options => { escaped = options; options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr; });
         escaped!.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.MinMax;
         Assert.Equal(ChartBoxPlotWhiskerPolicy.Iqr, series.BoxPlotWhiskerPolicy);
         Assert.Equal("group-a", series.BoxPlotGroupIds[0].Value); Assert.Equal("sample-4", series.ObservationIds[4].Value);
@@ -103,10 +103,10 @@ public sealed class BoxPlotDistributionTests {
         Assert.Equal(new[] { "sample-2", "sample-3", "sample-4" }, series.ObservationIds.Values.Select(value => value.Value));
         Assert.Equal("group-a", series.BoxPlotGroupIds[0].Value); Assert.Equal("group-b", series.BoxPlotGroupIds[1].Value);
         Assert.Equal("A", series.PointLabels[0]); Assert.Equal(ChartColor.FromRgb(220, 30, 30), series.PointColors[0]);
-        series.WithObservationId(0, new ChartObservationId("group-a")); // Separate namespace permits identical strings.
-        Assert.Throws<ArgumentException>(() => series.WithBoxPlotGroupId(1, new ChartObservationId("group-a")));
-        Assert.Throws<ArgumentException>(() => series.WithBoxPlotGroupIds(new[] { new ChartObservationId("same"), new ChartObservationId("same") }));
-        Assert.Throws<ArgumentException>(() => series.WithBoxPlotGroupIds(new[] { new ChartObservationId("short") }));
+        series.ObservationId(0, new ChartObservationId("group-a")); // Separate namespace permits identical strings.
+        Assert.Throws<ArgumentException>(() => series.BoxPlotGroupId(1, new ChartObservationId("group-a")));
+        Assert.Throws<ArgumentException>(() => series.BoxPlotGroupIds(new[] { new ChartObservationId("same"), new ChartObservationId("same") }));
+        Assert.Throws<ArgumentException>(() => series.BoxPlotGroupIds(new[] { new ChartObservationId("short") }));
         Assert.Equal("group-b", series.BoxPlotGroupIds[1].Value);
         series.UpdateBoxPlotSampleGroup(0, new ChartBoxPlotSampleGroup(1, new[] { 12d }));
         Assert.Equal(new[] { 1, 2, 3 }, series.ObservationIds.Keys);
@@ -120,20 +120,20 @@ public sealed class BoxPlotDistributionTests {
 
     [Fact]
     public void ReplacementAndSummaryConversionKeepPolicyWithoutReinterpretingSourceIdentities() {
-        var series = Keyed().ConfigureBoxPlotStatistics(options => options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr);
+        var series = Keyed().BoxPlotStatistics(options => options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr);
         series.PointLabels.Add("Retained edit caption");
         series.UpdateBoxPlot(0, new ChartBoxPlot(1, 0, 1, 2, 3, 4));
         Assert.Empty(series.BoxPlotSourceGroups); Assert.Empty(series.BoxPlotSourceSamples); Assert.Empty(series.BoxPlotDistributions);
         Assert.Empty(series.ObservationIds); Assert.Empty(series.BoxPlotGroupIds); Assert.Null(series.BoxPlotWhiskerPolicy);
         Assert.Equal("Retained edit caption", series.PointLabels[0]); Assert.Equal(2, series.SourcePointCount);
-        Assert.Throws<InvalidOperationException>(() => series.ConfigureBoxPlotStatistics(_ => { }));
-        Assert.Throws<InvalidOperationException>(() => series.WithBoxPlotGroupId(0, new ChartObservationId("no")));
+        Assert.Throws<InvalidOperationException>(() => series.BoxPlotStatistics(_ => { }));
+        Assert.Throws<InvalidOperationException>(() => series.BoxPlotGroupId(0, new ChartObservationId("no")));
         series.ReplaceBoxPlotSampleGroups(new[] { new ChartBoxPlotSampleGroup(1, new[] { 1d, 2, 3 }) });
         Assert.Equal(ChartBoxPlotWhiskerPolicy.Iqr, series.BoxPlotWhiskerPolicy); Assert.Empty(series.PointLabels);
-        series.WithBoxPlotGroupId(0, new ChartObservationId("new")).WithObservationIds(new[] { new ChartObservationId("a"), new ChartObservationId("b"), new ChartObservationId("c") });
+        series.BoxPlotGroupId(0, new ChartObservationId("new")).ObservationIds(new[] { new ChartObservationId("a"), new ChartObservationId("b"), new ChartObservationId("c") });
         series.ReplaceBoxPlots(new[] { new ChartBoxPlot(1, 0, 1, 2, 3, 4) });
         Assert.Empty(series.ObservationIds); Assert.Empty(series.BoxPlotGroupIds); Assert.Null(series.BoxPlotQuartileEstimator);
-        series.ReplaceBoxPlotSampleGroups(Array.Empty<ChartBoxPlotSampleGroup>()).ConfigureBoxPlotStatistics(options => options.IqrMultiplier = 2);
+        series.ReplaceBoxPlotSampleGroups(Array.Empty<ChartBoxPlotSampleGroup>()).BoxPlotStatistics(options => options.IqrMultiplier = 2);
         Assert.Equal(0, series.ObservationCount); Assert.Equal(0, series.SourcePointCount); Assert.Equal(2, series.BoxPlotIqrMultiplier);
         var empty = Chart.Create().AddSeries(series).Prepare(new VisualRenderContext());
         Assert.DoesNotContain(empty.Scene.Nodes, node => node.Role is "boxplot-body" or "boxplot-outlier");
@@ -143,7 +143,7 @@ public sealed class BoxPlotDistributionTests {
     private static IEnumerable<ChartBoxPlotSampleGroup> BrokenGroups() { yield return new ChartBoxPlotSampleGroup(1, new[] { 1d }); throw new InvalidOperationException(); }
     private static ChartSeries Raw(params ChartBoxPlotSampleGroup[] groups) => ChartSeries.CreateBoxPlot(new ChartSeriesId("raw"), "Raw", groups);
     private static ChartSeries Keyed() => Raw(new ChartBoxPlotSampleGroup(1, new[] { 0d, 1 }), new ChartBoxPlotSampleGroup(1, new[] { 2d, 3, 4 }))
-        .WithBoxPlotGroupIds(new[] { new ChartObservationId("group-a"), new ChartObservationId("group-b") })
-        .WithObservationIds(Enumerable.Range(0, 5).Select(index => new ChartObservationId("sample-" + index)));
+        .BoxPlotGroupIds(new[] { new ChartObservationId("group-a"), new ChartObservationId("group-b") })
+        .ObservationIds(Enumerable.Range(0, 5).Select(index => new ChartObservationId("sample-" + index)));
     private static double[] Values(ChartBoxPlot value) => new[] { value.Minimum, value.Q1, value.Median, value.Q3, value.Maximum };
 }

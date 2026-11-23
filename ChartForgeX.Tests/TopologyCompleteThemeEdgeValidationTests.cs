@@ -31,7 +31,7 @@ public sealed class TopologyCompleteThemeEdgeValidationTests {
     }
 
     private static PreparedVisual Source() {
-        var chart=TopologyExplicitLabelMarkerTests.Source().WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family));
+        var chart=TopologyExplicitLabelMarkerTests.Source().Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family));
         chart.Edges[0].TextStyle=null;chart.Edges[0].SourceMarkerStyle=null;chart.Edges[0].TargetMarkerStyle=null;chart.Edges[0].StrokeWidth=null;
         return chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(400,280),20),chart.Theme),
             new TopologyRenderOptions{IncludeTitle=false,IncludeLegend=false,FitContentToViewport=true});

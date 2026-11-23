@@ -58,9 +58,9 @@ internal sealed class ChartCartesianFullDomain {
         }
     }
     private static ChartAxisWindow Expanded(ChartAxis axis, double minimum, double maximum, ChartAxisWindow domain) {
-        if (axis.Minimum.HasValue && domain.Minimum != minimum || axis.Maximum.HasValue && domain.Maximum != maximum)
+        if (axis.Min.HasValue && domain.Minimum != minimum || axis.Max.HasValue && domain.Maximum != maximum)
             throw new InvalidOperationException("Aligned preparation must preserve every authored axis bound exactly.");
-        return new ChartAxisWindow(axis.Minimum.HasValue ? minimum : Math.Min(minimum, domain.Minimum),
-            axis.Maximum.HasValue ? maximum : Math.Max(maximum, domain.Maximum));
+        return new ChartAxisWindow(axis.Min.HasValue ? minimum : Math.Min(minimum, domain.Minimum),
+            axis.Max.HasValue ? maximum : Math.Max(maximum, domain.Maximum));
     }
 }

@@ -41,7 +41,7 @@ public sealed partial class ChartSeries {
     /// <summary>Refits this trend line from its retained source with an independently captured configuration.</summary>
     /// <remarks>Callback, domain, numerical rank and cancellation failures leave source, identity, configuration and fit unchanged.
     /// Every retained source row participates in one regression; source segment breaks do not split it into independent fits.</remarks>
-    public ChartSeries ConfigureTrendLine(Action<ChartTrendLineOptions> configure, CancellationToken cancellationToken = default) {
+    public ChartSeries TrendLine(Action<ChartTrendLineOptions> configure, CancellationToken cancellationToken = default) {
         RequireTrendLineSource();
         var options = ChartOptionConfiguration.Configure(_trendLineOptions, configure, value => value.Capture());
         var fit = ChartTrendLineFit.Create(TrendLineSourcePoints, options, cancellationToken);

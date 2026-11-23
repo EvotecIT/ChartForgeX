@@ -26,16 +26,16 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     [InlineData("native-lasso-append-compare")]
     public async Task SharedToLocalTransitionsRetireSharedPeerSelectionWithoutTransportingLocalFacts(string profile) {
         if (!Enabled) return;
-        var source = Chart.Create().WithSize(640, 360).WithLegend(false)
+        var source = Chart.Create().Size(640, 360).Legend(false)
             .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("shared"), "Shared", new[] { new ChartPoint(1, 4) })
-                .WithObservationId(0, new ChartObservationId("shared-a")))
+                .ObservationId(0, new ChartObservationId("shared-a")))
             .AddLine("PRIVATE LOCAL SERIES", new[] { new ChartPoint(987654, 876543) });
-        source.Series[1].WithObservationId(0, new ChartObservationId("local-b")).WithPointLabel(0, "PRIVATE LOCAL CAPTION");
-        var peer = Chart.Create().WithSize(640, 360).WithLegend(false)
+        source.Series[1].ObservationId(0, new ChartObservationId("local-b")).PointLabel(0, "PRIVATE LOCAL CAPTION");
+        var peer = Chart.Create().Size(640, 360).Legend(false)
             .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("shared"), "Shared", new[] { new ChartPoint(1, 4) })
-                .WithObservationId(0, new ChartObservationId("shared-a")))
+                .ObservationId(0, new ChartObservationId("shared-a")))
             .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("unrelated"), "Unrelated", new[] { new ChartPoint(3, 8) })
-                .WithObservationId(0, new ChartObservationId("unrelated")));
+                .ObservationId(0, new ChartObservationId("unrelated")));
         var mode = profile == "native-single" ? ChartSelectionMode.Single : profile == "native-replace" ? ChartSelectionMode.Replace : ChartSelectionMode.Toggle;
         var html = new[] { source, peer }.ToInteractiveHtmlDashboardPage(options => {
             options.Columns = 1; options.Interaction.GroupName = "shared-local-transition";

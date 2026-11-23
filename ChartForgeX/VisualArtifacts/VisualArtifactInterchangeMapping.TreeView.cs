@@ -16,16 +16,16 @@ public static partial class VisualArtifactInterchangeMapping {
         if (envelope.Family != VisualArtifactInterchangeFamily.TreeView || envelope.TreeView == null)
             throw new NotSupportedException("Only a typed tree-view envelope can rebuild directory rows.");
         var block = CreateTreeViewBlock(envelope);
-        if (!envelope.Width.HasValue) block.WithNaturalSize();
+        if (!envelope.Width.HasValue) block.NaturalSize();
         return block;
     }
 
     // Validation and reconstruction share the same native object builder; native measurement owns graph and frame limits.
     internal static TreeViewBlock CreateTreeViewBlock(VisualArtifactInterchangeEnvelope envelope) {
         var source = envelope.TreeView!;
-        var block = TreeViewBlock.Create().WithTitle(envelope.Title).WithSubtitle(envelope.Subtitle)
-            .WithTheme(source.Theme, source.ThemeMode).WithTransparentBackground(source.TransparentBackground)
-            .WithCard(source.ShowCard).WithPngOutputScale(source.PngOutputScale);
+        var block = TreeViewBlock.Create().Title(envelope.Title).Subtitle(envelope.Subtitle)
+            .Theme(source.Theme).ThemeMode(source.ThemeMode).TransparentBackground(source.TransparentBackground)
+            .ShowCard(source.ShowCard).PngOutputScale(source.PngOutputScale);
         block.Options.Padding = source.Padding; block.Options.HostOwnsFrame = source.HostOwnsFrame;
         block.ShowIcons = source.ShowIcons; block.RowIndent = source.RowIndent; block.RowPadding = source.RowPadding;
         block.Options.Accessibility.Name = envelope.AccessibleName;

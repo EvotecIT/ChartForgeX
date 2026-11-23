@@ -20,11 +20,11 @@ public sealed partial class Chart {
     /// <param name="placement">The side that holds the axis.</param>
     /// <param name="title">The axis title shown above the plot.</param>
     /// <param name="configure">An optional axis configuration.</param>
-    /// <returns>The new axis, which series bind to with <see cref="ChartSeries.UseValueAxis"/>.</returns>
+    /// <returns>The new axis, which series bind to with <see cref="ChartSeries.ValueAxis"/>.</returns>
     /// <remarks>An axis without bound series draws nothing. Line, step line, area, step area, scatter and unstacked bar series can bind to it.</remarks>
     public ChartAdditionalValueAxis AddValueAxis(ChartAxisPlacement placement, string title, Action<ChartAxis>? configure = null) {
         var axis = new ChartAdditionalValueAxis(this, placement, title);
-        if (configure != null) axis.Configure(configure);
+        if (configure != null) axis.Axis(configure);
         _additionalValueAxes.Add(axis);
         return axis;
     }

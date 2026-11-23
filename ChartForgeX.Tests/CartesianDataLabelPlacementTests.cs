@@ -8,7 +8,7 @@ namespace ChartForgeX.Tests;
 public sealed class CartesianDataLabelPlacementTests {
     [Fact]
     public void OrdinaryOneBasedBarsKeepAllThreeFullLabels() {
-        var chart = Chart.Create().WithSize(640, 360).WithDataLabels()
+        var chart = Chart.Create().Size(640, 360).DataLabels()
             .AddBar("Values", new[] { new ChartPoint(1, 42), new ChartPoint(2, 84), new ChartPoint(3, 126) });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label").ToArray();
@@ -23,9 +23,9 @@ public sealed class CartesianDataLabelPlacementTests {
     [InlineData(true)]
     public void AutomaticCaptionOnAFullHeightBar_StaysAboveLikeItsNeighboursAndKeepsExplicitInk(bool explicitInk) {
         var fill = ChartColor.FromHex("#172554");
-        var chart = Chart.Create().WithSize(180, 180).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false)
-            .WithYAxisBounds(0, 100).WithDataLabels().AddBar("Value", new[] { new ChartPoint(1, 100) }, fill);
-        if (explicitInk) chart.Series[0].ConfigureDataLabelStyle(style => style.WithColor("#FFFF00"));
+        var chart = Chart.Create().Size(180, 180).ShowHeader(false).Legend(false).Axes(false).ShowGrid(false)
+            .YAxis(y => y.Bounds(0, 100)).DataLabels().AddBar("Value", new[] { new ChartPoint(1, 100) }, fill);
+        if (explicitInk) chart.Series[0].DataLabelStyle(style => style.Color(ChartColor.FromHex("#FFFF00")));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var label = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Role == "data-label");
         Assert.Equal("100", label.Text.Lines.Single().Text);

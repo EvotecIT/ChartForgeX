@@ -47,7 +47,7 @@ public sealed class V2ChartPaintPolicyTests {
         var tokens = new VisualDesignTokens { Border = border };
         var context = new VisualRenderContext(theme: new VisualTheme(tokens, tokens));
         var chart = Fixture(ChartSeriesKind.Line)
-            .WithGridStyle(new ChartGridLineStyle().WithVerticalLines().WithHorizontalOpacity(0.5).WithVerticalOpacity(0.25));
+            .GridLineStyle(new ChartGridLineStyle().ShowVerticalLines().HorizontalOpacity(0.5).VerticalOpacity(0.25));
         var prepared = chart.Prepare(context);
         var literal = XDocument.Parse(prepared.ToSvg(new VisualSvgOptions()));
         foreach (var role in new[] { "grid-x", "grid-y" }) {
@@ -67,9 +67,9 @@ public sealed class V2ChartPaintPolicyTests {
 
     [Fact]
     public void FrameAxesGridAndExplicitPointColorsSeparateEqualRgbRolesWithoutChangingPixels() {
-        var chart = Fixture(ChartSeriesKind.Scatter).WithTitle("Observation");
+        var chart = Fixture(ChartSeriesKind.Scatter).Title("Observation");
         chart.Series[0].StateRole = ChartSeriesState.Danger;
-        chart.Series[0].WithPointColor(0, Shared);
+        chart.Series[0].PointColor(0, Shared);
         chart.Options.SvgColorVariables = Variables();
         var context = Context(); var prepared = chart.Prepare(context);
         var mapped = XDocument.Parse(prepared.ToSvg());
@@ -88,7 +88,7 @@ public sealed class V2ChartPaintPolicyTests {
 
     [Fact]
     public void OpaqueBarGradientFollowsSourceRoleWhileDerivedSheenStaysLiteral() {
-        var chart = Fixture(ChartSeriesKind.Bar).WithBarStyle(ChartBarStyle.Solid);
+        var chart = Fixture(ChartSeriesKind.Bar).Bars(b => b.Style(ChartBarStyle.Solid));
         chart.Series[0].StateRole = ChartSeriesState.Danger;
         var variables = Variables().Add("--white-surface", ChartColor.White, SvgColorRole.Surface);
         var prepared = chart.Prepare(Context()); var mapped = XDocument.Parse(prepared.ToSvg(new VisualSvgOptions(colorVariables: variables)));
@@ -111,7 +111,7 @@ public sealed class V2ChartPaintPolicyTests {
         var variables = new SvgColorVariables().Add("--alpha", alpha, SvgColorRole.Series).Add("--status", Shared, SvgColorRole.Status);
         var mapped = chart.Prepare(Context()).ToSvg(new VisualSvgOptions(colorVariables: variables));
         Assert.Contains("color-mix(in srgb, var(--alpha, #2864B480) 50%, transparent)", mapped);
-        var pie = Fixture(ChartSeriesKind.Pie).WithDataLabels();
+        var pie = Fixture(ChartSeriesKind.Pie).DataLabels();
         pie.Series[0].Color = Shared;
         variables = Variables().AddInk("--ink", Shared, ChartColor.White, SvgColorRole.Series);
         var ink = XDocument.Parse(pie.Prepare(Context()).ToSvg(new VisualSvgOptions(colorVariables: variables)));
@@ -128,7 +128,7 @@ public sealed class V2ChartPaintPolicyTests {
             ChartSeriesKind.Area => Chart.Create().AddArea("Observed", Points),
             ChartSeriesKind.StepArea => Chart.Create().AddStepArea("Observed", Points),
             ChartSeriesKind.StackedArea => Chart.Create().AddStackedArea("Observed", Points),
-            ChartSeriesKind.Bar => Chart.Create().AddBar("Observed", Points).WithBarStyle(ChartBarStyle.Flat),
+            ChartSeriesKind.Bar => Chart.Create().AddBar("Observed", Points).Bars(b => b.Style(ChartBarStyle.Flat)),
             ChartSeriesKind.Scatter => Chart.Create().AddScatter("Observed", Points),
             ChartSeriesKind.Pie => Chart.Create().AddPie("Observed", Points),
             ChartSeriesKind.Donut => Chart.Create().AddDonut("Observed", Points),
@@ -139,7 +139,7 @@ public sealed class V2ChartPaintPolicyTests {
             ChartSeriesKind.LayeredRadial => Chart.Create().AddLayeredRadial("Observed", new[] { new ChartRadialLayer("A", 35), new ChartRadialLayer("B", 75) }),
             _ => throw new ArgumentOutOfRangeException(nameof(kind))
         };
-        chart.Options.ShowLegend = true;
+        chart.Options.Legend.Visible = true;
         return chart;
     }
 

@@ -25,9 +25,9 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
         if (!Enabled) return;
         var chart = SunburstBranchHighlightExamples.CreateChart(width, dark, graphite);
         if (composed) {
-            chart.WithHeader(false).WithLegend(false);
+            chart.ShowHeader(false).Legend(false);
             RoundedRadialSeriesTests.UseFixtureFont(chart);
-            chart.ConfigureSunburst(options => {
+            chart.Sunburst(options => {
                 options.CornerRadius = 6;
                 options.ColorDimension.ShowLegend = false;
                 options.SecondaryLabelFormatter = context => context.Item.Id == "engineering-support" ? "Delivery team" : context.Item.Id == "engineering" ? "Delivery" : null;
@@ -41,7 +41,7 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
             }
         });
         if (composed) {
-            var font = Convert.ToBase64String(await File.ReadAllBytesAsync(chart.Options.PngFontPath!));
+            var font = Convert.ToBase64String(await File.ReadAllBytesAsync(chart.Options.Png.FontPath!));
             html = html.Replace("</head>", "<style>@font-face{font-family:'Carlito';src:url(data:font/ttf;base64," + font + ")}</style></head>", StringComparison.Ordinal);
         }
         await using var session = await OpenAsync(html, width + 24, width < 500 ? 540 : 650);
@@ -214,7 +214,7 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
     public async Task SynchronizedDashboardResolvesLocalBranchesAndMixedFamiliesKeepTheirOwnEmphasis() {
         if (!Enabled) return;
         var first = SunburstBranchHighlightExamples.CreateChart(360);
-        var second = Chart.Create().WithSize(360, 360).AddSeries(ChartSeries.CreateSunburst(new ChartSeriesId("allocation"), "Renamed allocation", first.Series[0].HierarchyItems.Reverse()));
+        var second = Chart.Create().Size(360, 360).AddSeries(ChartSeries.CreateSunburst(new ChartSeriesId("allocation"), "Renamed allocation", first.Series[0].HierarchyItems.Reverse()));
         var line = StatusLines(false);
         var html = new[] { first, second, line }.ToInteractiveHtmlDashboardPage(options => {
             options.Highlight.Mode = HtmlChartHighlightMode.RootBranch;
@@ -250,7 +250,7 @@ public sealed class InteractiveSunburstBranchHighlightBrowserTests {
     [InlineData(true)]
     public async Task DefaultBranchStylesAndLegendTargetsKeepTheirPresentation(bool graphite) {
         if (!Enabled) return;
-        var chart = SunburstBranchHighlightExamples.CreateChart(graphite: graphite).WithLegend().ConfigureSunburst(options => options.ColorDimension.ShowLegend = false);
+        var chart = SunburstBranchHighlightExamples.CreateChart(graphite: graphite).Legend().Sunburst(options => options.ColorDimension.ShowLegend = false);
         var html = chart.ToInteractiveHtmlPage(options => options.Highlight.Mode = HtmlChartHighlightMode.RootBranch);
         await using var session = await OpenAsync(html, 850, 650);
         var page = session.Page;

@@ -10,7 +10,7 @@ public sealed partial class Chart {
     /// <param name="value">The x-axis value whose displayed label should be highlighted.</param>
     /// <param name="color">The highlight color. When omitted, the first theme palette color is used.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithHighlightedXAxisLabel(double value, ChartColor? color = null) {
+    public Chart HighlightXAxisLabel(double value, ChartColor? color = null) {
         ChartGuards.Finite(value, nameof(value));
         Options.XAxisLabelHighlights[value] = color ?? Options.ResolvedTheme.Palette[0];
         return this;
@@ -22,7 +22,7 @@ public sealed partial class Chart {
     /// <param name="value">The x-axis value whose displayed label should be highlighted.</param>
     /// <param name="paletteIndex">The zero-based theme palette index. Values greater than the palette length wrap.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithHighlightedXAxisLabel(double value, int paletteIndex) => WithHighlightedXAxisLabel(value, PaletteColor(paletteIndex));
+    public Chart HighlightXAxisLabel(double value, int paletteIndex) => HighlightXAxisLabel(value, PaletteColor(paletteIndex));
 
     /// <summary>
     /// Highlights an x-axis category label and draws guide lines around that category.
@@ -31,12 +31,12 @@ public sealed partial class Chart {
     /// <param name="halfWidth">Half of the focused category width in axis units.</param>
     /// <param name="color">The focus color. When omitted, the first theme palette color is used.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithFocusedXAxisCategory(double value, double halfWidth = 0.5, ChartColor? color = null) {
+    public Chart FocusXAxisCategory(double value, double halfWidth = 0.5, ChartColor? color = null) {
         ChartGuards.Finite(value, nameof(value));
         ChartGuards.Finite(halfWidth, nameof(halfWidth));
         if (halfWidth <= 0) throw new ArgumentOutOfRangeException(nameof(halfWidth), halfWidth, "Category focus width must be positive.");
         var focusColor = color ?? Options.ResolvedTheme.Palette[0];
-        WithHighlightedXAxisLabel(value, focusColor);
+        HighlightXAxisLabel(value, focusColor);
         var left = value - halfWidth;
         var right = value + halfWidth;
         AddXAxisFocusGuideLine(left, focusColor);
@@ -51,7 +51,7 @@ public sealed partial class Chart {
     /// <param name="paletteIndex">The zero-based theme palette index. Values greater than the palette length wrap.</param>
     /// <param name="halfWidth">Half of the focused category width in axis units.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithFocusedXAxisCategory(double value, int paletteIndex, double halfWidth = 0.5) => WithFocusedXAxisCategory(value, halfWidth, PaletteColor(paletteIndex));
+    public Chart FocusXAxisCategory(double value, int paletteIndex, double halfWidth = 0.5) => FocusXAxisCategory(value, halfWidth, PaletteColor(paletteIndex));
 
     /// <summary>
     /// Highlights a contiguous x-axis range with a translucent band and matching labels when explicit labels exist.
@@ -62,7 +62,7 @@ public sealed partial class Chart {
     /// <param name="opacity">The highlight band opacity.</param>
     /// <param name="label">The range metadata label.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithHighlightedXAxisRange(double start, double end, ChartColor? color = null, double opacity = 0.10, string label = "selected-window") {
+    public Chart HighlightXAxisRange(double start, double end, ChartColor? color = null, double opacity = 0.10, string label = "selected-window") {
         ChartGuards.Finite(start, nameof(start));
         ChartGuards.Finite(end, nameof(end));
         ChartGuards.UnitInterval(opacity, nameof(opacity));
@@ -73,7 +73,7 @@ public sealed partial class Chart {
 
         var minimum = Math.Min(start, end);
         var maximum = Math.Max(start, end);
-        foreach (var axisLabel in Options.XAxisLabels) {
+        foreach (var axisLabel in Options.XAxis.Labels) {
             if (axisLabel.Value >= minimum && axisLabel.Value <= maximum) Options.XAxisLabelHighlights[axisLabel.Value] = rangeColor;
         }
 
@@ -89,7 +89,7 @@ public sealed partial class Chart {
     /// <param name="opacity">The highlight band opacity.</param>
     /// <param name="label">The range metadata label.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithHighlightedXAxisRange(double start, double end, int paletteIndex, double opacity = 0.10, string label = "selected-window") => WithHighlightedXAxisRange(start, end, PaletteColor(paletteIndex), opacity, label);
+    public Chart HighlightXAxisRange(double start, double end, int paletteIndex, double opacity = 0.10, string label = "selected-window") => HighlightXAxisRange(start, end, PaletteColor(paletteIndex), opacity, label);
 
     /// <summary>
     /// Clears all x-axis tick label highlights.

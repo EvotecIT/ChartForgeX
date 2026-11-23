@@ -6,7 +6,7 @@ namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
     private static void StaticSvgRetainsRegionIdentityWithoutBrowserBehavior() {
-        var heatmap = Chart.Create().WithXLabels("A").AddHeatmapRow("Row", Points(42));
+        var heatmap = Chart.Create().XLabels("A").AddHeatmapRow("Row", Points(42));
         var calendar = Chart.Create().AddCalendarHeatmap("Days", new[] { new ChartCalendarHeatmapItem(new DateTime(2026, 1, 5), 1) });
         var map = Chart.Create().AddDottedMap("Visited", new[] {
             new ChartMapPoint("Spain", -3.7038, 40.4168), new ChartMapPoint("Poland", 19.1451, 51.9194)

@@ -7,7 +7,7 @@ namespace ChartForgeX.Tests;
 
 public sealed class TopologyGroupCaptionVisibilityTests {
     private static TopologyChart Chart(TopologyLayoutMode mode, bool show) {
-        var chart = TopologyChart.Create().WithTitle("").WithViewport(600, 400, 24).WithLayout(mode, TopologyLayoutDirection.LeftToRight)
+        var chart = TopologyChart.Create().Title("").Viewport(new TopologyViewport(600, 400, 24)).LayoutMode(mode).LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddAutoGroup("scope", "Line one\nLine two\nLine three", subtitle: "Further detail", iconId: "common:server")
             .AddAutoNode("node", "Visible node", groupId: "scope", width: 144, height: 64);
         chart.Groups[0].ShowLabel = show; chart.Groups[0].LayoutPolicy = TopologyGroupLayoutPolicy.VerticalStack;
@@ -40,7 +40,7 @@ public sealed class TopologyGroupCaptionVisibilityTests {
 
     [Fact]
     public void DefaultVisibleGroupsKeepTheExistingWireShapeAndOmittedFieldReadsAsTrue() {
-        var chart = TopologyChart.Create().WithViewport(600, 400).WithLayout(TopologyLayoutMode.DenseGrouped).AddAutoGroup("scope", "Scope").AddAutoNode("node", "Node", groupId: "scope");
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(600, 400)).LayoutMode(TopologyLayoutMode.DenseGrouped).AddAutoGroup("scope", "Scope").AddAutoNode("node", "Node", groupId: "scope");
         var baseline = chart.Prepare(); var json = baseline.ToInterchangeEnvelope().ToJson();
         Assert.True(chart.Groups[0].ShowLabel); Assert.DoesNotContain("\"showLabel\"", json); Assert.DoesNotContain("data-group-show-label", baseline.ToSvg());
         var oldWire = VisualArtifactInterchangeEnvelope.FromJson(json); Assert.True(oldWire.Groups[0].Topology!.ShowLabel);
@@ -49,11 +49,11 @@ public sealed class TopologyGroupCaptionVisibilityTests {
 
     [Fact]
     public void GeographicCalloutCaptionPaintAlsoHonorsTheGroupFlagWhileStatusFactsRemain() {
-        var chart = TopologyChart.Create().WithViewport(900, 500).WithLayout(TopologyLayoutMode.Geographic)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(900, 500)).LayoutMode(TopologyLayoutMode.Geographic)
             .AddAutoGroup("scope", "Hidden scope", subtitle: "Hidden detail").AddAutoNode("node", "Node", groupId: "scope");
         chart.Groups[0].Longitude = 10; chart.Groups[0].Latitude = 52; chart.Groups[0].ShowLabel = false;
         chart.Nodes[0].Longitude = 10; chart.Nodes[0].Latitude = 52;
-        var prepared = chart.Prepare(new TopologyRenderOptions { IncludeGeographicCallouts = true, IncludeLegend = false });
+        var prepared = chart.Prepare(new TopologyRenderOptions { Geography = { IncludeCallouts = true }, IncludeLegend = false });
         Capture(prepared, "group-caption-hidden-geographic");
         var roles = prepared.Visual.Scene.Nodes.OfType<VisualSceneText>().Select(text => text.Role).ToArray();
         Assert.DoesNotContain("topology-callout-title", roles); Assert.DoesNotContain("topology-callout-subtitle", roles);

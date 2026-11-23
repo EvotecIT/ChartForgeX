@@ -23,17 +23,17 @@ public sealed class EnhanceHookTests {
         ChartPoint Point(int index, double value, string kind) => new ChartPoint(index + 1, value).WithMarkOptions(new ChartMarkOptions(
             keys: Enumerable.Range(0, (int)value).Select(n => kind + "-" + index + "-" + n),
             fields: new Dictionary<string, object> { ["day"] = day.AddDays(index) }));
-        var chart = Chart.Create().WithStackedBars().WithLegend(true).WithXLabels("Mon", "Tue", "Wed")
+        var chart = Chart.Create().Bars(b => b.Stacked()).Legend(true).XLabels("Mon", "Tue", "Wed")
             .AddBar("Updates", new[] { 3d, 2, 4 }.Select((v, i) => Point(i, v, "u")))
             .AddBar("Notes", new[] { 1d, 2, 1 }.Select((v, i) => Point(i, v, "n")));
-        chart.Series[0].WithMarkOptions(new ChartMarkOptions(fields: new Dictionary<string, object> { ["kind"] = "Updates" }));
-        chart.Series[1].WithMarkOptions(new ChartMarkOptions(fields: new Dictionary<string, object> { ["kind"] = "Notes", ["count"] = 2, ["final"] = true }));
+        chart.Series[0].MarkOptions(new ChartMarkOptions(fields: new Dictionary<string, object> { ["kind"] = "Updates" }));
+        chart.Series[1].MarkOptions(new ChartMarkOptions(fields: new Dictionary<string, object> { ["kind"] = "Notes", ["count"] = 2, ["final"] = true }));
         return chart;
     }
 
     private static Chart Trend() {
         var start = new DateTime(2026, 10, 1);
-        return Chart.Create().WithLegend(true).ConfigureXAxis(axis => axis.Scale = ChartScaleKind.Time)
+        return Chart.Create().Legend(true).XAxis(axis => axis.Scale = ChartScaleKind.Time)
             .AddLine("A", Enumerable.Range(0, 6).Select(i => new ChartPoint(start.AddDays(i).ToOADate(), i % 4)))
             .AddLine("B", Enumerable.Range(0, 6).Select(i => new ChartPoint(start.AddDays(i).ToOADate(), (i * 3) % 5)));
     }

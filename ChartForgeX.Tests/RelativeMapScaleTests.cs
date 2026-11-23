@@ -15,8 +15,8 @@ public sealed class RelativeMapScaleTests {
         var region = Chart.Create().AddRegionHeatmap("Regions", ChartMapCatalog.Get("us-states"), values);
         var tile = Chart.Create().AddTileHeatmap("Tiles", ChartTileMapCatalog.Get("us-states"), values);
         foreach (var chart in new[] { region, tile }) {
-            chart.Options.HeatmapRelativeScale = true;
-            chart.Options.HeatmapScale = semantic ? ChartHeatmapScale.Semantic : ChartHeatmapScale.Sequential;
+            chart.Options.Heatmap.RelativeScale = true;
+            chart.Options.Heatmap.Scale = semantic ? ChartHeatmapScale.Semantic : ChartHeatmapScale.Sequential;
             var svg = XDocument.Parse(chart.Prepare(VisualExportRequest.ForChart(chart).Context).ToSvg(new VisualSvgOptions()));
             var highest = svg.Descendants().Single(element =>
                 (string?)element.Attribute("data-cfx-role") is "region-map-region-source" or "tile-map-region-source" &&

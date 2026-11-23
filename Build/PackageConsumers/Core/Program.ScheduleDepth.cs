@@ -8,8 +8,8 @@ using ChartForgeX.Rendering;
 
 internal static partial class Program {
     private static void MixedScheduleContracts() {
-        var chart = Chart.Create().WithSize(800, 520).WithHeader(false).WithLegend(false).WithXAxisBounds(0, 10)
-            .WithStateCategories(new ChartStateCategory("up", "Up", ChartColor.FromHex("#218A63")));
+        var chart = Chart.Create().Size(800, 520).ShowHeader(false).Legend(false).XAxis(x => x.Bounds(0, 10))
+            .StateCategories(new ChartStateCategory("up", "Up", ChartColor.FromHex("#218A63")));
         chart.AddSeries(new ChartSeries(new ChartSeriesId("window"), "Window", ChartSeriesKind.Timeline, new[] { new ChartPoint(1, 9) }));
         var first = ChartSeries.CreateGanttTask(new ChartSeriesId("first"), "First", 2, 4, .5); chart.AddSeries(first);
         chart.AddSeries(ChartSeries.CreateStateTimelineLane(new ChartSeriesId("state"), "State", new[] { new ChartStateTimelineSegment(2, 8, "up") }));

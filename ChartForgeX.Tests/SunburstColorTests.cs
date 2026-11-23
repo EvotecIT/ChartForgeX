@@ -23,12 +23,12 @@ public sealed class SunburstColorTests {
             ChartColorScale.Sequential(Red, Blue).WithValueRange(0, 100).WithNoDataColor(Missing),
             ChartColorScale.Discrete(new[] { new ChartColorBand(50, Red, "Lower"), new ChartColorBand(null, Blue, "Upper") }).WithNoDataColor(Missing)
         }) {
-            var chart = Chart.Create().WithDataLabels(false).AddSunburst("Work", new[] {
+            var chart = Chart.Create().DataLabels(false).AddSunburst("Work", new[] {
                 new ChartHierarchyItem("root", "All", colorValue: 100),
                 new ChartHierarchyItem("low", "Same", "root", 9, 0),
                 new ChartHierarchyItem("high", "Same", "root", 1, 100),
                 new ChartHierarchyItem("missing", "Missing", "root", 2)
-            }).ConfigureSunburst(options => options.ColorScale = scale);
+            }).Sunburst(options => options.ColorScale = scale);
             var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(720, 460)),
                 themeMode: mode, frame: new VisualFrame(showLegend: true)));
             var nodes = Nodes(prepared); var xml = XDocument.Parse(prepared.ToSvg());
@@ -51,7 +51,7 @@ public sealed class SunburstColorTests {
 
     [Fact]
     public void InferredDomainUsesGroupAndLeafFactsWithoutInheritanceOrAggregation() {
-        var chart = Chart.Create().WithDataLabels(false).AddSunburst("Colors", new[] {
+        var chart = Chart.Create().DataLabels(false).AddSunburst("Colors", new[] {
             new ChartHierarchyItem("root", "All", value: 100, colorValue: -10),
             new ChartHierarchyItem("group", "Group", "root"),
             new ChartHierarchyItem("leaf", "Leaf", "group", 7, 15),
@@ -68,7 +68,7 @@ public sealed class SunburstColorTests {
     [Fact]
     public void MissingOnlyScaleHasNoInventedDomainAndLegendVisibilityUsesSharedPolicy() {
         var chart = Chart.Create().AddSunburst("Unknown", new[] { new ChartHierarchyItem("one", "One", value: 2) })
-            .ConfigureSunburst(options => options.ColorScale = ChartColorScale.Sequential(Red, Blue).WithNoDataColor(Missing));
+            .Sunburst(options => options.ColorScale = ChartColorScale.Sequential(Red, Blue).WithNoDataColor(Missing));
         var prepared = Prepare(chart, true); var xml = XDocument.Parse(prepared.ToSvg());
         var scale = xml.Descendants().Single(element => (string?)element.Attribute("data-cfx-role") == "sunburst-color-scale");
         Assert.Null(scale.Attribute("data-cfx-min-value")); Assert.Null(scale.Attribute("data-cfx-max-value"));
@@ -82,11 +82,11 @@ public sealed class SunburstColorTests {
 
     [Fact]
     public void OrdinalPaintPatternsLabelsAndStateKeepTheirMeaningAndScaleProvenance() {
-        var chart = Chart.Create().WithDataLabels().AddSunburst("Styles", new[] {
+        var chart = Chart.Create().DataLabels().AddSunburst("Styles", new[] {
             new ChartHierarchyItem("root", "All", colorValue: 0), new ChartHierarchyItem("band", "Band", "root", 5, 50), new ChartHierarchyItem("custom", "Custom", "root", 5, 100)
-        }).ConfigureSunburst(options => options.ColorScale = ChartColorScale.Discrete(new[] { new ChartColorBand(50, Red), new ChartColorBand(null, Blue) }));
-        chart.Series[0].WithNodeState("band", ChartSeriesState.Warning);
-        chart.Series[0].WithPointColor(2, Missing).WithPointFillPattern(2, ChartFillPattern.Crosshatch).WithPointLabel(2, "Override label");
+        }).Sunburst(options => options.ColorScale = ChartColorScale.Discrete(new[] { new ChartColorBand(50, Red), new ChartColorBand(null, Blue) }));
+        chart.Series[0].NodeState("band", ChartSeriesState.Warning);
+        chart.Series[0].PointColor(2, Missing).PointFillPattern(2, ChartFillPattern.Crosshatch).PointLabel(2, "Override label");
         var prepared = Prepare(chart, true); var nodes = Nodes(prepared);
         Assert.Equal(Blue.ToCss(), (string?)Mark(nodes["band"]).Attribute("fill"));
         Assert.Equal("Warning", (string?)nodes["band"].Attribute("data-cfx-state"));
@@ -100,7 +100,7 @@ public sealed class SunburstColorTests {
         Assert.Contains("var(--ramp-high,", (string?)Mark(themed["band"]).Attribute("fill"));
         Assert.Contains("var(--explicit,", (string?)Mark(themed["custom"]).Attribute("fill"));
         var svg = prepared.ToSvg(); chart.Options.Sunburst.ColorScale = null; chart.Options.Sunburst.ColorDimension.Name = "Changed";
-        chart.Series[0].WithNodeState("band", ChartSeriesState.None);
+        chart.Series[0].NodeState("band", ChartSeriesState.None);
         Assert.Equal(svg, prepared.ToSvg());
     }
 

@@ -14,9 +14,9 @@ public sealed class BoxPlotStatisticLabelBrowserTests {
     [InlineData(true)]
     public async Task EveryStatisticCaptionSelectsAndReadsTheSameCompleteSummaryWithoutInventingSampleIdentity(bool horizontal) {
         if (!Enabled) return;
-        var chart = BoxPlotStatisticLabelTests.Fixture(horizontal).WithLegend(true);
-        chart.Series[0].WithPointLabel(0, "Delivery interval summary");
-        chart.ConfigureBoxPlot(options => {
+        var chart = BoxPlotStatisticLabelTests.Fixture(horizontal).Legend(true);
+        chart.Series[0].PointLabel(0, "Delivery interval summary");
+        chart.BoxPlot(options => {
             options.LabelContent = ChartBoxPlotLabelContent.Statistics;
             options.StatisticLabelFormatter = context => context.Statistic + ": " + context.FormattedValue;
             foreach (var label in new[] { options.MinimumLabel, options.Q1Label, options.MedianLabel, options.Q3Label, options.MaximumLabel })

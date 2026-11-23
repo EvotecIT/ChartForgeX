@@ -163,9 +163,9 @@ public sealed class MermaidPacketConfigurationTests {
         theme = theme.Configure(builder => { builder.Light.Background = builder.Dark.Background = builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = builder.Light.Surface = builder.Dark.Surface = builder.Light.Foreground = builder.Dark.Foreground = ChartColor.Transparent; });
         theme = theme.Configure(builder => { builder.Light.Muted = builder.Dark.Muted = ChartColor.FromHex("#FF0000"); });
         theme = theme.Configure(builder => { builder.Light.Palette = builder.Dark.Palette = new[] { ChartColor.Transparent }; });
-        var block = PacketLayoutBlock.Create().WithSize(520, 200).WithPadding(18)
-            .WithCard(false).WithTransparentBackground().WithTheme(theme).WithBitsPerRow(4)
-            .WithBitOrder(order).AddField(0, 0, "Flag");
+        var block = PacketLayoutBlock.Create().Size(520, 200).Padding(18)
+            .ShowCard(false).TransparentBackground().Theme(theme).BitsPerRow(4)
+            .BitOrder(order).AddField(0, 0, "Flag");
         var svg = block.ToSvg();
         var raster = SvgRasterizer.Rasterize(svg, 520, 200);
         Assert.Empty(raster.Diagnostics);

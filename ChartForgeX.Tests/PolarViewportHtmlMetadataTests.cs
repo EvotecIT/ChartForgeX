@@ -13,10 +13,10 @@ namespace ChartForgeX.Tests;
 public sealed class PolarViewportHtmlMetadataTests {
     [Fact]
     public void AdaptiveDrawingsCaptureTheSameIndependentDomainsAndDetachedPolarPolicy() {
-        var chart = PolarViewportContractTests.Create().WithSecondaryYAxisBounds(1, 1000)
+        var chart = PolarViewportContractTests.Create().SecondaryYAxis(s => s.Bounds(1, 1000))
             .AddPolar("Secondary", new[] { new ChartPoint(0, 1), new ChartPoint(1, 10), new ChartPoint(2, 1000) });
-        chart.Series[1].UseSecondaryValueAxis(); chart.Options.SecondaryYAxis.Scale = ChartScaleKind.Logarithmic;
-        chart.Options.SecondaryYAxis.Reversed = true; chart.Options.XAxis.Reversed = true; chart.Options.PolarRotationDegrees = 25;
+        chart.Series[1].SecondaryAxis(); chart.Options.SecondaryYAxis.Scale = ChartScaleKind.Logarithmic;
+        chart.Options.SecondaryYAxis.Reversed = true; chart.Options.XAxis.Reversed = true; chart.Options.Polar.RotationDegrees = 25;
         var request = new ChartPolarViewport(new ChartAxisWindow(5.5, 6.8), new ChartAxisWindow(20, 80, false), new ChartAxisWindow(10, 100));
         var section = new HtmlInteractiveChartRenderer().PreparePolarSection(chart, request, options => {
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Adaptive; options.Adaptive.NarrowWidth = 360; options.Adaptive.NarrowHeight = 340;
@@ -43,7 +43,7 @@ public sealed class PolarViewportHtmlMetadataTests {
             Assert.Equal(.5, polar.GetProperty("secondaryRadius").GetProperty("innerRadius").GetDouble() / polar.GetProperty("outerRadius").GetDouble(), 8);
         }
         Assert.Null(chart.Options.YAxis.PreparedViewportWindow); Assert.Null(chart.Options.SecondaryYAxis.PreparedViewportWindow);
-        chart.Options.PolarRotationDegrees = 180; chart.Options.SecondaryYAxis.Reversed = false;
+        chart.Options.Polar.RotationDegrees = 180; chart.Options.SecondaryYAxis.Reversed = false;
         Assert.True(section.PreparedVisual.PolarProjection!.AngleReversed);
         Assert.Equal(25 * Math.PI / 180, section.PreparedVisual.PolarProjection.RotationRadians);
     }

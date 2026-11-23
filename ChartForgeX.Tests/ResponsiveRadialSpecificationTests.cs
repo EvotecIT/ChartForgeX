@@ -11,7 +11,7 @@ public sealed class ResponsiveRadialSpecificationTests {
     [Fact]
     public void SourceContainsEveryNativeSliceAndLegendWithoutMutatingTheCallerBudget() {
         var chart = ResponsiveRadialFixture.Model(false);
-        chart.Options.LegendMaximumRows = 1;
+        chart.Options.Legend.MaxRows = 1;
         var html = new HtmlResponsiveChartRenderer().RenderFragment(chart, 240, 480);
         using var document = JsonDocument.Parse(Regex.Match(html, "<script[^>]*data-cfx-spec>(.*?)</script>", RegexOptions.Singleline).Groups[1].Value);
         var root = document.RootElement;
@@ -23,7 +23,7 @@ public sealed class ResponsiveRadialSpecificationTests {
         var svg = XDocument.Parse(Regex.Match(html, "<svg.*?</svg>", RegexOptions.Singleline).Value);
         Assert.Equal(6, svg.Descendants().Count(e => (string?)e.Attribute("data-cfx-role") == "legend-entry"));
         Assert.DoesNotContain(svg.Descendants(), e => (string?)e.Attribute("data-cfx-role") == "legend-entry-omitted");
-        Assert.Equal(1, chart.Options.LegendMaximumRows);
+        Assert.Equal(1, chart.Options.Legend.MaxRows);
         Assert.Equal(1100, chart.Options.Size.Width); Assert.Equal(420, chart.Options.Size.Height);
     }
 }

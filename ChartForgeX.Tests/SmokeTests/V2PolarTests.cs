@@ -13,10 +13,10 @@ namespace ChartForgeX.Tests;
 public sealed class V2PolarTests {
     [Fact]
     public void PolarMapsRadiansAndExplicitValueDomainWithSourceColorsAndFullFormatting() {
-        var chart = Chart.Create().AddPolar("Signal", new[] { new ChartPoint(0, 100), new ChartPoint(Math.PI / 2, 50), new ChartPoint(Math.PI, 25) }).WithDataLabels();
-        chart.Options.YAxis.Minimum = 0; chart.Options.YAxis.Maximum = 100;
+        var chart = Chart.Create().AddPolar("Signal", new[] { new ChartPoint(0, 100), new ChartPoint(Math.PI / 2, 50), new ChartPoint(Math.PI, 25) }).DataLabels();
+        chart.Options.YAxis.Min = 0; chart.Options.YAxis.Max = 100;
         chart.Options.ValueFormatter = value => value.ToString("0.0", CultureInfo.GetCultureInfo("pl-PL")) + " units";
-        var color = ChartColor.FromHex("#123456"); chart.Series[0].WithPointColor(1, color).ConfigureMarkers(markers => markers.Radius = 6);
+        var color = ChartColor.FromHex("#123456"); chart.Series[0].PointColor(1, color).Markers(markers => markers.Radius = 6);
         var scene = Compile(chart);
         var points = scene.Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role == "polar-point").ToArray();
         var cx = 220d; var cy = 165d;
@@ -33,7 +33,7 @@ public sealed class V2PolarTests {
     [Fact]
     public void RadarAlignsCategoriesAndRetainsMissingObservationsWithoutInventingSourcePointIds() {
         var chart = Chart.Create().AddRadar("First", new[] { new ChartPoint(1, 80), new ChartPoint(2, 60), new ChartPoint(3, 40) })
-            .AddRadar("Second", new[] { new ChartPoint(1 + 4e-16, 30), new ChartPoint(3, 70), new ChartPoint(4, 50) }).WithXLabels("North", "East", "South", "West");
+            .AddRadar("Second", new[] { new ChartPoint(1 + 4e-16, 30), new ChartPoint(3, 70), new ChartPoint(4, 50) }).XLabels("North", "East", "South", "West");
         chart.Series[1].StateRole = ChartSeriesState.Warning;
         var scene = Compile(chart);
         Assert.Equal(2, scene.Nodes.Count(node => node.Role == "radar-area"));
@@ -52,8 +52,8 @@ public sealed class V2PolarTests {
 
     [Fact]
     public void PolarAreaUsesEqualAnglesSquareRootRadiiAndVisibleZeroSlotsWithPatterns() {
-        var chart = Chart.Create().AddPolarArea("Distribution", new[] { new ChartPoint(1, 100), new ChartPoint(2, 25), new ChartPoint(3, 0) }).WithXLabels("Large", "Small", "Zero");
-        chart.Series[0].WithPointFillPattern(1, ChartFillPattern.Crosshatch);
+        var chart = Chart.Create().AddPolarArea("Distribution", new[] { new ChartPoint(1, 100), new ChartPoint(2, 25), new ChartPoint(3, 0) }).XLabels("Large", "Small", "Zero");
+        chart.Series[0].PointFillPattern(1, ChartFillPattern.Crosshatch);
         var scene = Compile(chart);
         var segments = scene.Nodes.OfType<VisualSceneSlice>().Where(slice => slice.Role == "polar-area-segment").ToArray();
         Assert.Equal(2, segments.Length); Assert.Equal(Math.PI * 2 / 3, segments[0].Sweep, 8);
@@ -73,7 +73,7 @@ public sealed class V2PolarTests {
     [InlineData(700, 180)]
     public void MeasuredAxesFitFixedViewportAndRetainCompleteLabelsInArtifacts(int width, int height) {
         const string full = "The complete category label remains available after fitting a compact polar viewport";
-        var chart = Chart.Create().AddRadar("Categories", new[] { new ChartPoint(1, 20), new ChartPoint(2, 40), new ChartPoint(3, 60) }).WithXLabels(full, full + " B", full + " C");
+        var chart = Chart.Create().AddRadar("Categories", new[] { new ChartPoint(1, 20), new ChartPoint(2, 40), new ChartPoint(3, 60) }).XLabels(full, full + " B", full + " C");
         var scene = Compile(chart, new ChartRect(0, 0, width, height));
         var artifact = new PreparedVisual(scene).ToArtifact("radar", VisualArtifactKind.Chart);
         Assert.Contains(artifact.Regions, region => region.Label == full);
@@ -105,9 +105,9 @@ public sealed class V2PolarTests {
 
     [Fact]
     public void RadarPointOverridesFollowSourceOrderAfterCategoriesAreSorted() {
-        var chart = Chart.Create().AddRadar("Unsorted", new[] { new ChartPoint(3, 90), new ChartPoint(1, 70), new ChartPoint(2, 80) }).WithDataLabels();
+        var chart = Chart.Create().AddRadar("Unsorted", new[] { new ChartPoint(3, 90), new ChartPoint(1, 70), new ChartPoint(2, 80) }).DataLabels();
         chart.Options.ShowAxes = false;
-        chart.Series[0].WithPointLabel(0, "kept").ConfigurePointDataLabelStyle(0, style => style.WithFontSize(18).WithTextCase(TextCaseTransform.Uppercase));
+        chart.Series[0].PointLabel(0, "kept").PointDataLabelStyle(0, style => style.FontSize(18).TextCase(TextCaseTransform.Uppercase));
         var scene = Compile(chart);
         var label = Assert.Single(scene.Nodes.OfType<VisualSceneText>(), text => text.Id == "series-0-point-0-label");
         Assert.Equal("KEPT", Assert.Single(label.Text.Lines).Text); Assert.Equal(18, label.Text.Size);

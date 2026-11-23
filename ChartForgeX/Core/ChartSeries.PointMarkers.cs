@@ -15,7 +15,7 @@ public sealed partial class ChartSeries {
     /// <param name="configure">Configures a copy; a throwing callback leaves the installed overrides unchanged. Explicit point colors retain fill precedence.</param>
     /// <returns>The current series.</returns>
     /// <remarks>Item replacement preserves these overrides. Insert/remove/keyed transactions remap them with source identity; clearing data removes them. Other families reject.</remarks>
-    public ChartSeries ConfigurePointMarkers(int index, Action<ChartMarkerOptions> configure) {
+    public ChartSeries PointMarkers(int index, Action<ChartMarkerOptions> configure) {
         RequirePointMarkers(index);
         var current = index < _pointMarkers.Count ? _pointMarkers[index] : null;
         var candidate = ChartOptionConfiguration.Configure(current ?? new ChartMarkerOptions(), configure, options => options.Clone());
@@ -35,7 +35,7 @@ public sealed partial class ChartSeries {
     /// <summary>Removes one Scatter observation's marker overrides without changing source data or identity.</summary>
     /// <param name="index">The zero-based existing numeric observation ordinal.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries UseSeriesMarkers(int index) {
+    public ChartSeries ResetPointMarkers(int index) {
         RequirePointMarkers(index);
         if (index < _pointMarkers.Count) _pointMarkers[index] = null;
         return this;

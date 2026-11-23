@@ -22,7 +22,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     public async Task NativeBrushReportsTheSoleObservedValueDomainAndOmitsMixedY(string domains, bool dark, int width) {
         if (!Enabled) return;
         var chart = ChartLinkedProjectionContractsTests.ValueDomainsChart(domains)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(ConfigureProjectionBrush), width, 650);
         var result = await NativeProjectionBrushAsync(session.Page);
         var range = result.GetProperty("range");
@@ -51,11 +51,11 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     [InlineData(ChartSeriesKind.Waterfall)]
     public async Task HorizontalNativeBrushKeepsScreenValueAndCategoryDomains(ChartSeriesKind kind) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(640, 360).WithXAxisBounds(0, 100).WithYAxisBounds(.5, 3.5);
+        var chart = Chart.Create().Size(640, 360).XAxis(x => x.Bounds(0, 100)).YAxis(y => y.Bounds(.5, 3.5));
         chart.Options.YAxis.Labels.AddRange(new[] { new ChartAxisLabel(1, "A"), new ChartAxisLabel(2, "B"), new ChartAxisLabel(3, "C") });
         var points = new[] { new ChartPoint(1, 20), new ChartPoint(2, 50), new ChartPoint(3, 80) };
         if (kind == ChartSeriesKind.HorizontalBar) chart.AddHorizontalBar("Values", points);
-        else if (kind == ChartSeriesKind.Line) { chart.AddLine("Values", points); chart.Options.LineOrientation = ChartOrientation.Horizontal; }
+        else if (kind == ChartSeriesKind.Line) { chart.AddLine("Values", points); chart.Options.Lines.Orientation = ChartOrientation.Horizontal; }
         else if (kind == ChartSeriesKind.RangeBar) {
             chart.AddRangeBar("Values", new[] { new ChartInterval(1, 10, 20), new ChartInterval(2, 30, 50), new ChartInterval(3, 60, 80) });
             chart.Options.RangeBar.Orientation = ChartOrientation.Horizontal;
@@ -91,8 +91,8 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         var start = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         var boundary = unit == ChartTimeTickUnit.Month ? start.AddMonths(1) : start.AddDays(unit == ChartTimeTickUnit.Week ? 7 : 1);
         var series = ChartSeries.CreateBar(new ChartSeriesId("buckets"), "Buckets", new[] { new ChartPoint(start, 5), new ChartPoint(boundary, 8) })
-            .WithTimeBuckets(new ChartTimeTickInterval(unit)).WithObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("second") });
-        await using var session = await OpenAsync(Chart.Create().WithSize(640, 360).WithXAxisTimeScale().AddSeries(series).ToInteractiveHtmlPage(Fit), 820, 650);
+            .TimeBuckets(new ChartTimeTickInterval(unit)).ObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("second") });
+        await using var session = await OpenAsync(Chart.Create().Size(640, 360).XAxis(x => x.TimeScale()).AddSeries(series).ToInteractiveHtmlPage(Fit), 820, 650);
         await BindLinkedEventsAsync(session.Page);
         var result = await session.Page.EvaluateAsync<JsonElement>("""
             boundary=>{
@@ -135,7 +135,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     [InlineData(46000, 46002)]
     public async Task TimeRangesAndNativeBrushPairsKeepOneUnitAcrossTheOleEpoch(double start, double end) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(640, 360).WithXAxisTimeScale().WithXAxisBounds(start, end).AddTimelineRange("Interval", start, end);
+        var chart = Chart.Create().Size(640, 360).XAxis(x => x.TimeScale().Bounds(start, end)).AddTimelineRange("Interval", start, end);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(ConfigureProjectionBrush), 820, 650);
         await BindLinkedEventsAsync(session.Page);
         var target = await session.Page.EvaluateAsync<JsonElement>("()=>{chartController.select({seriesKeys:[JSON.parse(chartController.root.dataset.cfxPreparedChart).series[0].key]});return chartController.getSelection()[0]}");
@@ -150,7 +150,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
             Assert.All(brushRange.EnumerateArray(), value => Assert.EndsWith("Z", value.GetString()));
         }
         Assert.Equal(brushRange.GetRawText(), brush.GetProperty("displayRange").GetProperty("x").GetRawText());
-        await UpdateAsync(session.Page, Chart.Create().WithSize(640, 360).WithXAxisTimeScale()
+        await UpdateAsync(session.Page, Chart.Create().Size(640, 360).XAxis(x => x.TimeScale())
             .AddLine("Point", new[] { new ChartPoint(start < 0 ? -1.5 : start, 5) }).ToInteractiveHtmlFragmentWithoutAssets(Fit));
         var point = await session.Page.EvaluateAsync<JsonElement>("()=>{chartController.select({seriesKeys:[JSON.parse(chartController.root.dataset.cfxPreparedChart).series[0].key]});return chartController.getSelection()[0]}");
         if (start < 0) Assert.Equal(-1.5, point.GetProperty("x").GetDouble());
@@ -197,9 +197,9 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         if (!Enabled) return;
         var minimum = legacyDomain ? -3 : 10; var maximum = legacyDomain ? 3 : 16;
         var first = legacyDomain ? -1 : 12; var second = legacyDomain ? 1 : 14;
-        var chart = Chart.Create().WithSize(640, 360).WithXAxisTimeScale().WithXAxisBounds(minimum, maximum)
+        var chart = Chart.Create().Size(640, 360).XAxis(x => x.TimeScale().Bounds(minimum, maximum))
             .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("time-readings"), "Readings", new[] { new ChartPoint(first, 5), new ChartPoint(second, 8) })
-                .WithObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("second") }));
+                .ObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("second") }));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => { ConfigureProjectionBrush(options); options.Interaction.BrushAxis = ChartBrushAxis.X; }), 820, 650);
         await BindLinkedEventsAsync(session.Page);
         var brush = await NativeProjectionBrushAsync(session.Page);

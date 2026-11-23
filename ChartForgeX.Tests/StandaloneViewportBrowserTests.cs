@@ -137,12 +137,12 @@ public sealed partial class StandaloneViewportBrowserTests {
         var series = kind == ChartSeriesKind.Candlestick
             ? ChartSeries.CreateCandlestick(id, "Measurements", points.Select(point => new ChartCandlestick(point.X, point.Y, point.Y + 4, point.Y - 4, point.Y + 2)))
             : new ChartSeries(id, "Measurements", kind, points);
-        for (var index = 0; index < points.Length; index++) series.WithObservationId(index, new ChartObservationId("sample-" + index));
+        for (var index = 0; index < points.Length; index++) series.ObservationId(index, new ChartObservationId("sample-" + index));
         if (kind is ChartSeriesKind.Line or ChartSeriesKind.Area or ChartSeriesKind.Scatter)
-            series.ConfigureMarkers(markers => { markers.Enabled = true; markers.Radius = 4; });
-        var chart = Chart.Create().WithSize(800, 440).WithTitle("Inspect saved measurements")
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithXAxisBounds(0, 12).WithYAxisBounds(0, 100).WithLegend().WithDataLabels(false).AddSeries(series);
+            series.Markers(markers => { markers.Enabled = true; markers.Radius = 4; });
+        var chart = Chart.Create().Size(800, 440).Title("Inspect saved measurements")
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .XAxis(x => x.Bounds(0, 12)).YAxis(y => y.Bounds(0, 100)).Legend().DataLabels(false).AddSeries(series);
         if (reference) chart.AddSeries(new ChartSeries(new ChartSeriesId("reference"), "Reference", ChartSeriesKind.Line,
             new[] { new ChartPoint(0, 95), new ChartPoint(12, 95) }));
         return chart.ToInteractiveHtmlPage(options => {

@@ -45,7 +45,7 @@ internal static partial class VisualMarkerScene {
                 // Segments alone keep the default key's plain line rather than adding a marker dot.
                 if (connected && series.StrokeStyle == null && !series.Markers.IsConfigured) return;
             }
-            var familyDefault = connected ? !chart.Options.IsSparkline && chart.Options.LineMarkerMode != ChartLineMarkerMode.None : true;
+            var familyDefault = connected ? !chart.Options.IsSparkline && chart.Options.Lines.MarkerMode != ChartLineMarkerMode.None : true;
             if (series.Kind is ChartSeriesKind.RangeBand or ChartSeriesKind.RangeArea)
                 familyDefault = series.MarkerRadius.HasValue || series.PointColors.Any(value => value.HasValue)
                     || series.PointFillPatterns.Any(value => value.HasValue);

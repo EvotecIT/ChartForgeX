@@ -38,10 +38,10 @@ internal static partial class Program {
             "Packed Quadrant portable facts discarded source style declarations.");
         var detached = points.GetPointMarkers(0)!; detached.Radius = 44;
         PackageAssertions.Require(points.GetPointMarkers(0)!.Radius == 9, "Packed per-point marker getter exposed mutable installed state.");
-        points.WithObservationId(0, new ChartObservationId("opportunity"))
-            .WithObservationId(1, new ChartObservationId("investment"))
-            .WithObservationId(2, new ChartObservationId("experiment"))
-            .WithObservationId(3, new ChartObservationId("review"));
+        points.ObservationId(0, new ChartObservationId("opportunity"))
+            .ObservationId(1, new ChartObservationId("investment"))
+            .ObservationId(2, new ChartObservationId("experiment"))
+            .ObservationId(3, new ChartObservationId("review"));
         points.ApplyPointChanges(new[] {
             ChartObservationChange<ChartPoint>.Remove(new ChartObservationId("opportunity")),
             ChartObservationChange<ChartPoint>.Replace(new ChartObservationId("investment"), new ChartPoint(.8, .8))

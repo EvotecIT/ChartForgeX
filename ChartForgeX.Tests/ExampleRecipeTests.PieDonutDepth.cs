@@ -24,14 +24,14 @@ public sealed partial class ExampleRecipeTests {
         Assert.Contains(selection, ExampleRecipes.FamilySelections(kind)); Assert.Contains(selection, ExampleRecipes.FamilySelections(kind, curated: true));
         Assert.Contains(selection, ExampleRecipes.StandaloneFamilySelections());
         var source = Source(selection.Recipe, variant); Assert.DoesNotContain("{{", source); Assert.DoesNotContain("ChartForgeX.Examples", source);
-        Assert.DoesNotContain("Interactivity.Html", source); Assert.Contains("WithPointSliceRadiusRatio", source);
+        Assert.DoesNotContain("Interactivity.Html", source); Assert.Contains("PointSliceRadiusRatio", source);
         var chart = Assert.IsType<Chart>(selection.Recipe.Create(variant, mode)); var automatic = variant.EndsWith("automatic-rings", StringComparison.Ordinal);
         Assert.Equal(automatic ? new[] { 100d, 150, 220 } : new[] { 160d }, chart.Series.Select(series => series.Points.Sum(point => point.Y)));
         Assert.All(chart.Series, series => { Assert.Equal(kind, series.Kind); Assert.Null(series.RadialBand); Assert.Equal(3, series.ObservationIds.Count); });
         Assert.Equal(new double?[] { .35, .7, 1 }, chart.Series[^1].PointSliceRadiusRatios);
         Assert.Equal(automatic, chart.Options.RadialBandAllocation != null);
         var width = variant.StartsWith("compact-", StringComparison.Ordinal) ? 390 : 900;
-        chart.WithSize(width, automatic ? 600 : 480).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), mode);
+        chart.Size(width, automatic ? 600 : 480).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(mode);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context); var svg = prepared.ToSvg(); var png = prepared.ToPng();
         Assert.Equal(automatic ? 9 : 3, prepared.Scene.Nodes.OfType<VisualSceneSlice>().Count());
         for (var index = 0; index < chart.Series.Count; index++) {

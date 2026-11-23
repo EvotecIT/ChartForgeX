@@ -8,34 +8,34 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void RadarHonorsAxesAndGridVisibility() {
         var axesOff = RadarSample()
-            .WithAxes(false)
+            .Axes(false)
             .ToSvg();
         Assert(axesOff.Contains("data-cfx-role=\"radar-area\"", System.StringComparison.Ordinal), "Radar polygons should still render when axes are disabled.");
         Assert(!axesOff.Contains("data-cfx-role=\"radar-axis-label\"", System.StringComparison.Ordinal), "Radar category labels should hide when axes are disabled.");
         Assert(!axesOff.Contains("data-cfx-role=\"radar-ring-label\"", System.StringComparison.Ordinal), "Radar ring labels should hide when axes are disabled.");
 
         var gridOff = RadarSample()
-            .WithGrid(false)
+            .ShowGrid(false)
             .ToSvg();
         Assert(gridOff.Contains("data-cfx-role=\"radar-outline\"", System.StringComparison.Ordinal), "Radar outlines should still render when grid is disabled.");
         Assert(!gridOff.Contains("data-cfx-role=\"radar-ring\"", System.StringComparison.Ordinal), "Radar rings should hide when grid is disabled.");
         Assert(!gridOff.Contains("data-cfx-role=\"radar-spoke\"", System.StringComparison.Ordinal), "Radar spokes should hide when grid is disabled.");
-        Assert(RadarSample().WithAxes(false).WithGrid(false).ToPng().Length > 64, "Compact radar options should render valid PNG output.");
+        Assert(RadarSample().Axes(false).ShowGrid(false).ToPng().Length > 64, "Compact radar options should render valid PNG output.");
 
         var baselinePng = RadarSample().ToPng();
-        var hiddenValueAxis = RadarSample().ConfigureYAxis(axis => axis.Visible = false);
+        var hiddenValueAxis = RadarSample().YAxis(axis => axis.Visible = false);
         var hiddenValueAxisSvg = hiddenValueAxis.ToSvg();
         Assert(!hiddenValueAxisSvg.Contains("data-cfx-role=\"radar-ring-label\"", System.StringComparison.Ordinal), "Radar ring labels should follow Y-axis visibility.");
         Assert(hiddenValueAxisSvg.Contains("data-cfx-role=\"radar-axis-label\"", System.StringComparison.Ordinal), "Hiding the radar value axis should preserve visible category labels.");
         Assert(!baselinePng.SequenceEqual(hiddenValueAxis.ToPng()), "PNG radar ring labels should follow Y-axis visibility.");
 
-        var hiddenCategoryAxis = RadarSample().ConfigureXAxis(axis => axis.Visible = false);
+        var hiddenCategoryAxis = RadarSample().XAxis(axis => axis.Visible = false);
         var hiddenCategoryAxisSvg = hiddenCategoryAxis.ToSvg();
         Assert(!hiddenCategoryAxisSvg.Contains("data-cfx-role=\"radar-axis-label\"", System.StringComparison.Ordinal), "Radar category labels should follow X-axis visibility.");
         Assert(hiddenCategoryAxisSvg.Contains("data-cfx-role=\"radar-ring-label\"", System.StringComparison.Ordinal), "Hiding radar categories should preserve visible value-axis labels.");
         Assert(!baselinePng.SequenceEqual(hiddenCategoryAxis.ToPng()), "PNG radar category labels should follow X-axis visibility.");
 
-        var positionedLegend = RadarSample().WithLegend(true).WithLegendPosition(ChartLegendPosition.Right);
+        var positionedLegend = RadarSample().Legend(true).Legend(l => l.Position(ChartLegendPosition.Right));
         var legendPrepared = PreparedFamily(positionedLegend);
         var legend = legendPrepared.Regions.Single(region => region.Role == "legend").Bounds;
         Assert(legend.Left > legendPrepared.Regions.Where(region => region.Role == "radar-point").Max(region => region.Bounds.Right), "Radar charts should place the shared right legend beside their data.");
@@ -44,14 +44,14 @@ internal static partial class SmokeTests {
         var axisTicks = RadarSample();
         axisTicks.Options.XAxis.TickCount = 2;
         axisTicks.Options.YAxis.TickCount = 10;
-        var coarseTicks = RadarSample().ConfigureYAxis(axis => axis.TickCount = 3);
+        var coarseTicks = RadarSample().YAxis(axis => axis.TickCount = 3);
         Assert(CountOccurrences(axisTicks.ToSvg(), "data-cfx-role=\"radar-ring\"") > CountOccurrences(coarseTicks.ToSvg(), "data-cfx-role=\"radar-ring\""), "A meaningfully denser y-axis tick budget should add rings independently from the category x-axis.");
         Assert(CountOccurrences(axisTicks.ToSvg(), "data-cfx-role=\"radar-axis-label\"") == CountOccurrences(coarseTicks.ToSvg(), "data-cfx-role=\"radar-axis-label\""),
             "Changing the value tick budget should preserve all authored category labels.");
         Assert(axisTicks.ToPng().Length > 64, "Radar y-axis tick counts should render through the PNG path.");
 
-        var formattedRings = RadarSample().ConfigureYAxis(axis => {
-            axis.WithBounds(0, 100);
+        var formattedRings = RadarSample().YAxis(axis => {
+            axis.Bounds(0, 100);
             axis.TickCount = 6;
             axis.Labels.Add(new ChartAxisLabel(20, "explicit-ring"));
             axis.LabelFormatter = value => "ring-" + value.ToString("0", CultureInfo.InvariantCulture);
@@ -68,10 +68,10 @@ internal static partial class SmokeTests {
 
     private static void RadarNegativeExplicitMaximumInfersCompatibleMinimum() {
         var chart = Chart.Create()
-            .WithSize(520, 360)
-            .WithXLabels("A", "B", "C")
+            .Size(520, 360)
+            .XLabels("A", "B", "C")
             .AddRadar("Debt", Points(-12, -10.5, -11));
-        chart.Options.YAxisMaximum = -10;
+        chart.Options.YAxis.Max = -10;
 
         var svg = chart.ToSvg();
 
@@ -82,7 +82,7 @@ internal static partial class SmokeTests {
     }
 
     private static Chart RadarSample() => Chart.Create()
-        .WithSize(520, 360)
-        .WithXLabels("Coverage", "Policy", "Alerts", "Response")
+        .Size(520, 360)
+        .XLabels("Coverage", "Policy", "Alerts", "Response")
         .AddRadar("Current", Points(92, 74, 88, 81));
 }

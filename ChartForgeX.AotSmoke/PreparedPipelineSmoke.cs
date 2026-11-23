@@ -17,7 +17,7 @@ internal static class PreparedPipelineSmoke {
         foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
             var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 400)), theme, mode,
                 new VisualFrame("Shared AOT output", "Prepared static pipeline", showLegend: false));
-            var chart = Chart.Create().WithSize(640, 400).WithXLabels("First", "Second", "Third")
+            var chart = Chart.Create().Size(640, 400).XLabels("First", "Second", "Third")
                 .AddBar("Counts", new[] { new ChartPoint(1, 2), new ChartPoint(2, 5), new ChartPoint(3, 4) });
             var preparedChart = chart.Prepare(context);
             AssertPrepared(preparedChart, "bar");
@@ -25,18 +25,18 @@ internal static class PreparedPipelineSmoke {
             var chartPortable = VisualArtifactInterchangeEnvelope.FromUtf8Json(chartArtifact.ToInterchangeUtf8Json());
             Require(chartPortable.Id == "aot-v2-chart" && chartPortable.Kind == VisualArtifactKind.Chart,
                 "Prepared chart artifact identity failed.");
-            var donut = Chart.Create().WithXLabels("Ready", "Waiting")
+            var donut = Chart.Create().XLabels("Ready", "Waiting")
                 .AddDonut("Share", new[] { new ChartPoint(1, 72), new ChartPoint(2, 28) });
             AssertPrepared(donut.Prepare(context), "donut-slice");
             AssertXZoom(context);
 
-            var topology = CreateTopology().WithTheme(theme, mode);
+            var topology = CreateTopology().Theme(theme, mode);
             var preparedTopology = topology.Prepare(context);
             AssertPrepared(preparedTopology, "topology-node");
             AssertSemanticHandoff(preparedTopology, topology.ToVisualArtifact().ToInterchangeEnvelope(),
                 VisualArtifactInterchangeFamily.Topology, 1);
 
-            var sequence = SequenceArtifact.Create("aot-v2-sequence").WithSize(640, 400)
+            var sequence = SequenceArtifact.Create("aot-v2-sequence").Width(640).Height(400)
                 .AddParticipant("client", "Client").AddParticipant("server", "Server")
                 .AddMessage("client", "server", "Request\npayload")
                 .AddMessage("server", "client", "Response", SequenceArtifactMessageLineStyle.Dashed, SequenceArtifactMessageKind.Return);
@@ -52,7 +52,7 @@ internal static class PreparedPipelineSmoke {
 
     private static void AssertXZoom(VisualRenderContext context) {
         foreach (var step in new[] { false, true }) {
-            var chart = Chart.Create().WithLegend(false).WithDataLabels().WithXAxisBounds(0, 10).WithYAxisBounds(0, 10);
+            var chart = Chart.Create().Legend(false).DataLabels().XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10));
             var points = new[] { new ChartPoint(0, 2), new ChartPoint(4, 5, breakBefore: true), new ChartPoint(10, 8) };
             if (step) chart.AddStepLine("Observed", points); else chart.AddLine("Observed", points);
             chart.Options.XAxis.Reversed = step;

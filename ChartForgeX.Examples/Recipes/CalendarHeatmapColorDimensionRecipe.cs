@@ -4,17 +4,17 @@ public static class CalendarHeatmapColorDimensionRecipe {
     public static Chart Create(string variant = "color-dimension", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("color-dimension" or "compact-color-dimension")) throw new ArgumentOutOfRangeException(nameof(variant));
         var colors = VisualTheme.Graphite().Resolve(mode);
-        return Chart.Create().ConfigureLabels(labels => labels.NoData = "Not sampled")
-            .ConfigureCalendar(options => options.FirstDayOfWeek = DayOfWeek.Monday)
+        return Chart.Create().Labels(labels => labels.NoData = "Not sampled")
+            .Calendar(options => options.FirstDayOfWeek = DayOfWeek.Monday)
             .AddCalendarHeatmap("Daily mean", Enumerable.Range(0, 120)
                 .Where(index => index % 7 != 0 && index % 9 != 0)
                 .Select(index => new ChartCalendarHeatmapItem(new DateTime(2026, 1, 1).AddDays(index), index * 2.5 % 13)),
                 id: new ChartSeriesId("daily-mean"))
-            .WithHeatmapColorScale(ChartColorScale.Sequential(colors.SequentialRamp).WithValueRange(0, 12)
-                .WithLabels("Cool", null, "Warm").WithNoDataColor(colors.Border))
-            .ConfigureHeatmapColorDimension(options => {
+            .Heatmap(h => h.ColorScale(ChartColorScale.Sequential(colors.SequentialRamp).WithValueRange(0, 12)
+                .WithLabels("Cool", null, "Warm").WithNoDataColor(colors.Border)))
+            .Heatmap(heatmap => heatmap.ColorDimension(options => {
                 options.Name = "Temperature"; options.ValueFormat = ChartValueFormat.Number("#,0.### '°C'", CultureInfo.InvariantCulture);
                 options.LegendStyle = ChartColorLegendStyle.Auto;
-            });
+            }));
     }
 }

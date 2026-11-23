@@ -22,9 +22,9 @@ public sealed partial class StageConeCaptionContrastTests {
         var raw = chart.Series[0].Points.ToArray(); var prior = StagePresentationOptionsTests.Prepare(chart); var oldSvg = prior.ToSvg(); var oldPng = prior.ToPng();
         var inherited = mode == ThemeMode.Dark ? ChartColor.Black : ChartColor.White;
         var overridden = mode == ThemeMode.Dark ? ChartColor.White : ChartColor.Black;
-        chart.ConfigureFunnel(options => options.ConnectorStyle = new ChartFunnelConnectorStyle(fill: inherited, fillOpacity: 1));
+        chart.Funnel(options => options.ConnectorStyle = new ChartFunnelConnectorStyle(fill: inherited, fillOpacity: 1));
         foreach (var variant in new[] { "hidden", "alpha", "opaque" }) {
-            chart.Series[0].WithFunnelConnectorStyle(0, new ChartFunnelConnectorStyle(visible: variant != "hidden", fill: overridden,
+            chart.Series[0].FunnelConnectorStyle(0, new ChartFunnelConnectorStyle(visible: variant != "hidden", fill: overridden,
                 fillOpacity: variant == "opaque" ? 1 : .12));
             var prepared = StagePresentationOptionsTests.Prepare(chart); var texts = CaptionTexts(prepared, component);
             Assert.Equal(component == "dropoff" ? 2 : 3, texts.Length);
@@ -54,7 +54,7 @@ public sealed partial class StageConeCaptionContrastTests {
     [InlineData(true, ChartOrientation.Horizontal, ThemeMode.Dark)]
     public void AlphaFilledPartitionsUseTheirPaintedFrameWithoutChangingTheAuthoredAlpha(bool pyramid, ChartOrientation orientation, ThemeMode mode) {
         var chart = Component(pyramid, ChartFunnelForm.StageBars, orientation, mode, "value");
-        var fill = (mode == ThemeMode.Dark ? ChartColor.White : ChartColor.Black).WithAlpha(24); chart.Series[0].WithPointColor(0, fill);
+        var fill = (mode == ThemeMode.Dark ? ChartColor.White : ChartColor.Black).WithAlpha(24); chart.Series[0].PointColor(0, fill);
         var prepared = StagePresentationOptionsTests.Prepare(chart); var first = CaptionTexts(prepared, "value").Single(text => text.Id == "series-0-point-0-value-label");
         ScatterBubbleColorRenderingTests.Capture(prepared, $"stage-alpha-caption-{pyramid}-{orientation}-{mode}");
         Assert.False(first.Stroke.HasValue); var surface = Pixel(WithoutText(prepared), prepared.Regions.Single(region => region.Id == first.Id).Bounds);
@@ -69,7 +69,7 @@ public sealed partial class StageConeCaptionContrastTests {
     [InlineData(true, ChartOrientation.Horizontal)]
     public void OpaquePartitionsRetainTheIncumbentInkPaintAndHaveNoHalo(bool pyramid, ChartOrientation orientation) {
         var chart = Component(pyramid, ChartFunnelForm.StageBars, orientation, ThemeMode.Dark, "value");
-        var fill = ChartColor.FromHex("#C8A5EF"); chart.Series[0].WithColor(fill);
+        var fill = ChartColor.FromHex("#C8A5EF"); chart.Series[0].Color(fill);
         var prepared = StagePresentationOptionsTests.Prepare(chart);
         Assert.Equal(3, CaptionTexts(prepared, "value").Length);
         foreach (var text in CaptionTexts(prepared, "value")) {
@@ -90,7 +90,7 @@ public sealed partial class StageConeCaptionContrastTests {
         if (level == "component") chart.Options.Funnel.ValueLabel.Style.Color = ink;
         else if (level == "chart") chart.Options.DataLabelStyle.Color = ink;
         else if (level == "series") chart.Series[0].DataLabelStyle.Color = ink;
-        else chart.Series[0].ConfigurePointDataLabelStyle(0, style => style.Color = ink);
+        else chart.Series[0].PointDataLabelStyle(0, style => style.Color = ink);
         var prepared = StagePresentationOptionsTests.Prepare(chart); var text = CaptionTexts(prepared, "value").Single(item => item.Id == "series-0-point-0-value-label");
         Assert.Equal(ink, text.Color); Assert.False(text.Stroke.HasValue); Assert.Equal(ink.ToCss(), SvgText(prepared, text.Id!).Attribute("fill")!.Value);
     }
@@ -101,8 +101,8 @@ public sealed partial class StageConeCaptionContrastTests {
     [InlineData(ChartOrientation.Horizontal, 390, ThemeMode.Dark)]
     [InlineData(ChartOrientation.Horizontal, 800, ThemeMode.Light)]
     public void PatternedConeSurfacesUseTheExistingRealGlyphHaloInBothStaticBackends(ChartOrientation orientation, int width, ThemeMode mode) {
-        var chart = Component(false, ChartFunnelForm.Cone, orientation, mode, "value").WithSize(width, 640);
-        chart.Series[0].WithFunnelConnectorStyle(0, new ChartFunnelConnectorStyle(fill: ChartColor.White, fillOpacity: 1, fillPattern: ChartFillPattern.Crosshatch));
+        var chart = Component(false, ChartFunnelForm.Cone, orientation, mode, "value").Size(width, 640);
+        chart.Series[0].FunnelConnectorStyle(0, new ChartFunnelConnectorStyle(fill: ChartColor.White, fillOpacity: 1, fillPattern: ChartFillPattern.Crosshatch));
         var prepared = StagePresentationOptionsTests.Prepare(chart); var text = CaptionTexts(prepared, "value").Single(item => item.Id == "series-0-point-1-value-label");
         ScatterBubbleColorRenderingTests.Capture(prepared, $"cone-pattern-halo-{orientation}-{width}-{mode}");
         Assert.True(text.Stroke.HasValue); Assert.True(text.StrokeWidth > 0); Assert.True(ChartColorMath.ContrastRatio(text.Color, text.Stroke!.Value) >= 4.5);
@@ -134,13 +134,13 @@ public sealed partial class StageConeCaptionContrastTests {
     }
 
     private static Chart Component(bool pyramid, ChartFunnelForm form, ChartOrientation orientation, ThemeMode mode, string component) {
-        var chart = StagePresentationOptionsTests.Create(pyramid, form, orientation, 900, 800).WithTheme(VisualTheme.Graphite(), mode);
-        chart.ConfigureFunnel(options => {
+        var chart = StagePresentationOptionsTests.Create(pyramid, form, orientation, 900, 800).Theme(VisualTheme.Graphite()).ThemeMode(mode);
+        chart.Funnel(options => {
             options.LabelContent = ChartStageLabelContent.Separate; options.CategoryLabel.Visible = options.ValueLabel.Visible = options.RetentionLabel.Visible = options.DropOffLabel.Visible = false;
             var policy = component == "category" ? options.CategoryLabel : component == "retention" ? options.RetentionLabel : component == "dropoff" ? options.DropOffLabel : options.ValueLabel;
             policy.Visible = true; policy.Placement = component == "value" ? ChartDataLabelPlacement.Inside : ChartDataLabelPlacement.Center; policy.Style.FontSize = 11;
         });
-        chart.ConfigurePyramid(options => {
+        chart.Pyramid(options => {
             options.LabelContent = ChartStageLabelContent.Separate; options.CategoryLabel.Visible = false; options.ValueLabel.Visible = true;
             options.ValueLabel.Placement = ChartDataLabelPlacement.Inside; options.ValueLabel.Style.FontSize = 11;
         });

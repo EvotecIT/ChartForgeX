@@ -1,8 +1,10 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>Configures one retained-source regression; installing configuration refits the complete source atomically.</summary>
+[Fluent(Copy = nameof(Capture))]
 public sealed class ChartTrendLineOptions {
     /// <summary>Gets or sets the fit model. Linear preserves the existing least-squares endpoint behavior.</summary>
     public ChartTrendLineModel Model { get; set; }

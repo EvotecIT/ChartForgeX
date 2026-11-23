@@ -59,7 +59,7 @@ public sealed class ImageCompositionEffectTests {
         var image = ImageComposition.CreateTransparent(64, 48).FillRoundedRectangle(12, 12, 32, 20, 5, ChartColor.FromHex("#2166AC"))
             .Blur(2).DrawShadow(ChartColor.FromRgba(0, 0, 0, 144), 2, 4, 3).ToImage();
         var expected = (byte[])image.Pixels.Clone();
-        var canvas = VisualCanvas.Create(64, 48).WithPngOutputScale(1).WithBackdrop(VisualCanvasBackdropStyle.Transparent).AddImage(image, 0, 0, 64, 48);
+        var canvas = VisualCanvas.Create(64, 48).PngOutputScale(1).BackdropStyle(VisualCanvasBackdropStyle.Transparent).AddImage(image, 0, 0, 64, 48);
         var svg = canvas.ToSvg(); var png = canvas.ToPng(); var document = XDocument.Parse(svg);
         var href = Assert.Single(document.Descendants(), node => node.Name.LocalName == "image").Attribute("href")!.Value;
         Assert.StartsWith("data:image/png;base64,", href);

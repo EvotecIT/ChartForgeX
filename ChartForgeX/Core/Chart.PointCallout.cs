@@ -17,11 +17,11 @@ public sealed partial class Chart {
         if (label == null) throw new ArgumentNullException(nameof(label));
         AddScatter(label, new[] { point }, color);
         Series[Series.Count - 1]
-            .WithDataLabels()
-            .WithDataLabelPlacement(placement)
-            .WithLegendEntry(false)
-            .WithSemanticRole("point-callout")
-            .WithPointLabel(0, label);
+            .ShowDataLabels(true)
+            .DataLabelPlacement(placement)
+            .ShowInLegend(false)
+            .SemanticRole("point-callout")
+            .PointLabel(0, label);
         return this;
     }
 

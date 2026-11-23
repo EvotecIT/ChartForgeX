@@ -38,7 +38,7 @@ public static class TopologyGraphExplorerExtensions {
                     scene.Metadata["topology.statusAccent." + Token(status) + "." + mode.ToString().ToLowerInvariant()] = paints.StatusColor(status);
             }
         }
-        if (options.UseSuperTopologyDefaults) scene.Options.UseSuperTopologyDefaults(options.EnableManipulation);
+        if (options.UseSuperTopologyDefaults) scene.Options.SuperTopologyDefaults(options.EnableManipulation);
         if (seededLayout) scene.Options.Physics.Stabilization.Enabled = options.StabilizePreparedLayoutOnLoad;
         if (source.Nodes.Count <= 20) scene.Options.LevelOfDetail.DetailScaleThreshold = Math.Min(scene.Options.LevelOfDetail.DetailScaleThreshold, 0.72);
         ApplyLayoutOptions(scene, source);

@@ -46,12 +46,12 @@ public sealed class MarkupTopologyDocument {
     /// <returns>The topology chart.</returns>
     public TopologyChart ToTopologyChart() {
         var chart = TopologyChart.Create()
-            .WithViewport(Width, Height, Padding)
-            .WithLayout(LayoutMode, LayoutDirection);
+            .Viewport(new TopologyViewport(Width, Height, Padding))
+            .LayoutMode(LayoutMode).LayoutDirection(LayoutDirection);
 
-        if (!string.IsNullOrWhiteSpace(Id)) chart.WithId(Id!);
-        if (!string.IsNullOrWhiteSpace(Title)) chart.WithTitle(Title!);
-        if (!string.IsNullOrWhiteSpace(Subtitle)) chart.WithSubtitle(Subtitle!);
+        if (!string.IsNullOrWhiteSpace(Id)) chart.Id(Id!);
+        if (!string.IsNullOrWhiteSpace(Title)) chart.Title(Title!);
+        if (!string.IsNullOrWhiteSpace(Subtitle)) chart.Subtitle(Subtitle!);
 
         foreach (var group in Groups) {
             chart.AddGroup(group.Id, group.Label, 0, 0, group.Width, group.Height, group.Status, group.Subtitle, color: group.Color, iconId: group.Icon);
@@ -59,8 +59,8 @@ public sealed class MarkupTopologyDocument {
 
         foreach (var node in Nodes) {
             chart.AddAutoNode(node.Id, node.Label, node.Kind, node.Status, node.Group, node.Subtitle, width: node.Width, height: node.Height, symbol: node.Symbol, color: node.Color, iconId: node.Icon);
-            if (!string.IsNullOrWhiteSpace(node.Badge)) chart.WithNodeBadge(node.Id, node.Badge);
-            if (node.Display.HasValue) chart.WithNodeDisplay(node.Id, node.Display.Value);
+            if (!string.IsNullOrWhiteSpace(node.Badge)) chart.UpdateNode(node.Id, n => n.Badge(node.Badge));
+            if (node.Display.HasValue) chart.UpdateNode(node.Id, n => n.DisplayMode(node.Display.Value).Badge(null));
         }
 
         foreach (var edge in Edges) {

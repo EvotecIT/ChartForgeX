@@ -91,7 +91,7 @@ public sealed class TopologyReadablePanelTests {
     public void ThemeMinimum_RaisesSmallCaptionsUpToTheDataLabelSize(double minimum, double expected) {
         // Captions grow to the minimum but not past the 12 px data-label size their footprints are measured for.
         var theme = VisualTheme.Graphite().WithMinimumReadableTextSize(minimum);
-        var (prepared, svg) = Render(Build("controller-detail").WithTheme(theme));
+        var (prepared, svg) = Render(Build("controller-detail").Theme(theme));
         var text = RenderedText.Measure(svg, DirectoryScaleTopologyFixture.ReportWidth, expected);
 
         Assert.Equal(11, VisualTheme.Graphite().Typography.MinimumReadableTextSize);
@@ -103,7 +103,7 @@ public sealed class TopologyReadablePanelTests {
 
     [Fact]
     public void ThemeMinimum_TravelsWithAPreparedTopology() {
-        var chart = Build("critical-groups").WithTheme(VisualTheme.Graphite().WithMinimumReadableTextSize(12));
+        var chart = Build("critical-groups").Theme(VisualTheme.Graphite().WithMinimumReadableTextSize(12));
         var restored = VisualArtifactInterchangeEnvelope.FromJson(chart.Prepare().ToInterchangeEnvelope().ToJson()).ToTopologyChart();
 
         Assert.Equal(12, restored.Theme.Typography.MinimumReadableTextSize);
@@ -137,9 +137,9 @@ public sealed class TopologyReadablePanelTests {
     [Fact]
     public void UnequalPanels_WrapWhenTheEqualColumnRowWouldOverflow() {
         // One wide and one narrow panel: their own widths fit 1,000 px, but an equal-column row would not.
-        var chart = TopologyChart.Create().WithId("unequal").WithViewport(1000, 600, 24)
-            .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.LeftToRight)
-            .WithRenderOptions(new TopologyRenderOptions { ReadableDenseLayout = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeLegend = false });
+        var chart = TopologyChart.Create().Id("unequal").Viewport(new TopologyViewport(1000, 600, 24))
+            .LayoutMode(TopologyLayoutMode.DenseGrouped).LayoutDirection(TopologyLayoutDirection.LeftToRight)
+            .DefaultRenderOptions(new TopologyRenderOptions { ReadableDenseLayout = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile, IncludeLegend = false });
         chart.AddAutoGroup("wide", "Wide").AddAutoGroup("narrow", "Narrow");
         for (var i = 0; i < 4; i++) chart.AddAutoNode("w" + i, "Wide " + i, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, "wide", width: 64, height: 40);
         chart.AddAutoNode("n0", "Narrow", TopologyNodeKind.Server, TopologyHealthStatus.Healthy, "narrow", width: 64, height: 40);
@@ -155,7 +155,7 @@ public sealed class TopologyReadablePanelTests {
         var chart = Build("controller-detail");
         var options = chart.DefaultRenderOptions!.Clone();
         options.ReadableDenseLayout = false;
-        var text = RenderedText.Measure(Render(chart.WithRenderOptions(options), save: false).Svg, double.MaxValue);
+        var text = RenderedText.Measure(Render(chart.DefaultRenderOptions(options), save: false).Svg, double.MaxValue);
 
         Assert.True(text.Smallest < 11, text.ToString());
     }

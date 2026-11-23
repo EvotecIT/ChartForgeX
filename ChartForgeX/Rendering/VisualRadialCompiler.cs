@@ -24,8 +24,8 @@ internal static partial class VisualRadialCompiler {
             entries.AddRange(slices.Select(slice => new VisualLegendEntry(chart.Series.Count > 1 ? series.Name + ": " + slice.Label : slice.Label,
                 slice.Color, SliceId(slice), series.Kind, slice.Pattern, series.StateRole, series.InteractionIdentityKey,
                 paint: SlicePaint(chart, slice),
-                value: chart.Options.PieLegendContent == ChartPieLegendContent.Label ? null : DisplayValue(chart, slice),
-                percentage: chart.Options.PieLegendContent.HasValue ? null : FormatPercentage(chart, Fraction(chart, slice, total)),
+                value: chart.Options.Pie.LegendContent == ChartPieLegendContent.Label ? null : DisplayValue(chart, slice),
+                percentage: chart.Options.Pie.LegendContent.HasValue ? null : FormatPercentage(chart, Fraction(chart, slice, total)),
                 metadata: Metadata(chart, slice, Fraction(chart, slice, total), null, !total.FiniteTotal.HasValue, bands[seriesIndex]))));
         }
         return entries;
@@ -34,9 +34,9 @@ internal static partial class VisualRadialCompiler {
     internal static void Build(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot) {
         var bands = ChartRadialBandResolver.Resolve(chart);
         var centerSeries = Enumerable.Range(0, chart.Series.Count).OrderBy(index => bands[index]?.InnerRatio
-            ?? (chart.Series[index].Kind == ChartSeriesKind.Donut ? chart.Options.DonutInnerRadiusRatio : 0)).First();
+            ?? (chart.Series[index].Kind == ChartSeriesKind.Donut ? chart.Options.Pie.InnerRadiusRatio : 0)).First();
         var outerSeries = Enumerable.Range(0, chart.Series.Count).OrderByDescending(index => bands[index]?.OuterRatio ?? 1).First();
-        var outerPlacement = chart.Series[outerSeries].DataLabelPlacement ?? chart.Options.DataLabelPlacement;
+        var outerPlacement = chart.Series[outerSeries].DataLabelPlacement ?? chart.Options.DataLabels.Placement;
         var frame = ResolveBandFrame(chart, context, plot, bands, outerSeries);
         for (var index = 0; index < chart.Series.Count; index++)
             BuildSeries(chart, context, builder, plot, index, bands[index], index == centerSeries, outerPlacement, frame);
@@ -68,7 +68,7 @@ internal static partial class VisualRadialCompiler {
             return;
         }
 
-        var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
+        var placement = series.DataLabelPlacement ?? chart.Options.DataLabels.Placement;
         var framePlacement = chart.Series.Count > 1 ? outerPlacement : placement;
         var vertical = placement is ChartDataLabelPlacement.Above or ChartDataLabelPlacement.Below;
         // Positive-radius source slices contribute to the envelope; Other has no source offset.
@@ -82,7 +82,7 @@ internal static partial class VisualRadialCompiler {
 
         var cx = plot.Left + plot.Width / 2;
         var cy = plot.Top + plot.Height / 2;
-        var inner = series.Kind == ChartSeriesKind.Donut ? radius * chart.Options.DonutInnerRadiusRatio : 0;
+        var inner = series.Kind == ChartSeriesKind.Donut ? radius * chart.Options.Pie.InnerRadiusRatio : 0;
         if (band != null) { inner = radius * band.InnerRatio; radius *= band.OuterRatio; }
         if (band != null && radius - inner < 1) {
             builder.AddDiagnostic(new VisualDiagnostic("radial.band-insufficient-space", "The " + (chart.Options.RadialBandAllocation == null ? "explicit" : "automatic") + " radial band cannot fit a one-unit painted thickness in this frame."));
@@ -109,7 +109,7 @@ internal static partial class VisualRadialCompiler {
                 var sliceY = cy + Math.Sin(mid) * offset;
                 var role = inner > 0 ? "donut-slice" : "pie-slice";
                 var formattedValue = DisplayValue(chart, slice);
-                var resolvedLabel = (series.ShowDataLabels ?? (chart.Options.ShowDataLabels ?? false)) ? FormatLabel(chart, slice, percent, formattedValue) : null;
+                var resolvedLabel = (series.ShowDataLabels ?? (chart.Options.DataLabels.Visible ?? false)) ? FormatLabel(chart, slice, percent, formattedValue) : null;
                 if (painted) using (builder.PushGroup(null, "radial-point", Metadata(chart, slice, percent, resolvedLabel, !total.FiniteTotal.HasValue, band))) {
                     PaintSlice(chart, builder, series, slice, sliceX, sliceY, sliceRadius, inner, start, sweep, role, colors);
                     if (slice.Pattern != ChartFillPattern.None)
@@ -134,7 +134,7 @@ internal static partial class VisualRadialCompiler {
                 if (vertical) DrawVerticalLabels(chart, context, builder, plot, labels, radius, cy, maximumOffset, placement);
                 else DrawOutsideLabels(chart, context, builder, plot, labels, radius);
             }
-            if (ownsCenter && inner > 0 && chart.Options.ShowDonutCenterLabel && series.ResolveDataLabels(chart.Options, defaultVisible: true))
+            if (ownsCenter && inner > 0 && chart.Options.Pie.ShowCenterLabel && series.ResolveDataLabels(chart.Options, defaultVisible: true))
                 DrawCenter(chart, context, builder, cx, cy, inner, radius, total.FiniteTotal, seriesIndex);
         }
     }
@@ -156,14 +156,14 @@ internal static partial class VisualRadialCompiler {
         var series = chart.Series[seriesIndex];
         var slices = GetSourceSlices(chart, colors, seriesIndex);
         var positive = slices.Where(slice => slice.Value > 0).ToList();
-        if (positive.Count <= chart.Options.MaximumPieSlices)
-            return chart.Options.PiePreserveSourceOrder ? slices.ToArray()
+        if (positive.Count <= chart.Options.Pie.MaxSlices)
+            return chart.Options.Pie.PreserveSourceOrder ? slices.ToArray()
                 : slices.OrderByDescending(slice => slice.Value).ThenBy(slice => slice.PointIndex).ToArray();
         var retained = positive.OrderByDescending(slice => slice.Value).ThenBy(slice => slice.PointIndex)
-            .Take(chart.Options.MaximumPieSlices - 1).Select(slice => slice.PointIndex).ToArray();
+            .Take(chart.Options.Pie.MaxSlices - 1).Select(slice => slice.PointIndex).ToArray();
         var rest = positive.Where(slice => !retained.Contains(slice.PointIndex)).ToArray();
         var retainedSlices = slices.Where(slice => retained.Contains(slice.PointIndex));
-        var result = (chart.Options.PiePreserveSourceOrder ? retainedSlices.OrderBy(slice => slice.PointIndex)
+        var result = (chart.Options.Pie.PreserveSourceOrder ? retainedSlices.OrderBy(slice => slice.PointIndex)
             : retainedSlices.OrderByDescending(slice => slice.Value).ThenBy(slice => slice.PointIndex)).ToList();
         var patterns = rest.Select(slice => slice.Pattern).Distinct().ToArray();
         // Other is the neutral aggregate (never a categorical hue) and is always last, also with source order.
@@ -225,7 +225,7 @@ internal static partial class VisualRadialCompiler {
     }
 
     private static string Label(Chart chart, ChartPoint point, int index) {
-        foreach (var label in chart.Options.XAxisLabels) if (Math.Abs(label.Value - point.X) < 0.000001) return label.Text;
+        foreach (var label in chart.Options.XAxis.Labels) if (Math.Abs(label.Value - point.X) < 0.000001) return label.Text;
         return "Slice " + (index + 1).ToString(CultureInfo.InvariantCulture);
     }
 
@@ -235,7 +235,7 @@ internal static partial class VisualRadialCompiler {
     private static IReadOnlyDictionary<string, string> Metadata(Chart chart, RadialSlice slice, double percent, string? resolvedLabel, bool totalOverflow, ChartRadialBand? band) {
         var metadata = new Dictionary<string, string> {
             ["data-cfx-series"] = slice.SeriesIndex.ToString(CultureInfo.InvariantCulture),
-            ["data-cfx-pin-state-colors"] = chart.Options.PinStateColorsInForcedColors && chart.Series[slice.SeriesIndex].StateRole != ChartSeriesState.None ? "true" : "false",
+            ["data-cfx-pin-state-colors"] = chart.Options.StateTimeline.PinColorsInForcedColors && chart.Series[slice.SeriesIndex].StateRole != ChartSeriesState.None ? "true" : "false",
             ["data-cfx-point"] = slice.PointIndex.ToString(CultureInfo.InvariantCulture),
             ["data-cfx-derived"] = "radial-slice",
             ["data-cfx-source-points"] = string.Join(",", slice.SourcePointIndices),
@@ -271,10 +271,10 @@ internal static partial class VisualRadialCompiler {
         var captured = chart.Series[slice.SeriesIndex].PreparedLabel(slice.PointIndex);
         if (captured != null) return captured;
         var percentage = FormatPercentage(chart, percent);
-        if (chart.Options.PieSliceLabelFormatter != null && ChartMath.IsFinite(slice.Value))
-            return chart.Options.PieSliceLabelFormatter(new ChartPieSliceLabelContext(chart.Series[slice.SeriesIndex].Name, slice.Label,
+        if (chart.Options.Pie.SliceLabelFormatter != null && ChartMath.IsFinite(slice.Value))
+            return chart.Options.Pie.SliceLabelFormatter(new ChartPieSliceLabelContext(chart.Series[slice.SeriesIndex].Name, slice.Label,
                 slice.Value, percent, value, percentage, slice.PointIndex)) ?? string.Empty;
-        return FormatLabelContent(chart.Options.PieSliceLabelContent, slice.Label, percentage, value);
+        return FormatLabelContent(chart.Options.Pie.SliceLabelContent, slice.Label, percentage, value);
     }
     private static string FormatLabelContent(ChartPieSliceLabelContent content, string label, string percentage, string value) => content switch {
         ChartPieSliceLabelContent.Value => value, ChartPieSliceLabelContent.Label => label,

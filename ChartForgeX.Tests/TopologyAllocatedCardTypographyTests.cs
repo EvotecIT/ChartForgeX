@@ -16,9 +16,9 @@ public sealed class TopologyAllocatedCardTypographyTests {
     [InlineData("Inter, Segoe UI, system-ui, sans-serif")]
     public async Task CompactPillSubtitleRetainsReadableOrdinaryTypography(string font) {
         var theme = VisualTheme.Graphite(); theme = theme.WithTypography(new VisualTypography(font, dataLabelSize: 12));
-        var chart = TopologyChart.Create().WithTheme(theme).WithViewport(240, 160, 16)
+        var chart = TopologyChart.Create().Theme(theme).Viewport(new TopologyViewport(240, 160, 16))
             .AddNode("region", "AMER", 50, 60, kind: TopologyNodeKind.Hub, width: 104, height: 34, subtitle: "47 sites")
-            .WithNodeDisplay("region", TopologyNodeDisplayMode.Pill);
+            .UpdateNode("region", n => n.DisplayMode(TopologyNodeDisplayMode.Pill).Badge(null));
         var options = new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false };
         var svg = chart.ToSvg(options); var xml = XDocument.Parse(svg);
         var subtitle = Assert.Single(RoleText(xml, "topology-node-subtitle"));
@@ -33,12 +33,12 @@ public sealed class TopologyAllocatedCardTypographyTests {
     [InlineData(256)]
     public async Task GeographicCalloutsRetainTheirFixedHeightText(int size) {
         var theme = VisualTheme.Graphite(); theme = theme.WithTypography(new VisualTypography("Arial", dataLabelSize: size));
-        var chart = TopologyChart.Create().WithTheme(theme).WithViewport(720, 420, 24)
-            .WithLayout(TopologyLayoutMode.Geographic).WithMapViewport(ChartMapViewport.World())
+        var chart = TopologyChart.Create().Theme(theme).Viewport(new TopologyViewport(720, 420, 24))
+            .LayoutMode(TopologyLayoutMode.Geographic).MapViewport(ChartMapViewport.World())
             .AddGroup("region", "Europe", 0, 0, 100, 80, subtitle: "One site")
-            .WithGroupCoordinates("region", 10, 50)
-            .AddNode("site", "Site", 0, 0, groupId: "region").WithNodeCoordinates("site", 10, 50);
-        var options = new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, IncludeGroups = false, IncludeGeographicCallouts = true };
+            .UpdateGroup("region", g => g.Longitude(10).Latitude(50))
+            .AddNode("site", "Site", 0, 0, groupId: "region").UpdateNode("site", n => n.Longitude(10).Latitude(50));
+        var options = new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, IncludeGroups = false, Geography = { IncludeCallouts = true } };
         var svg = chart.ToSvg(options); var xml = XDocument.Parse(svg);
         Assert.Contains(RoleText(xml, "topology-callout-title"), element => element.Value == "Europe");
         Assert.NotEmpty(RoleText(xml, "topology-callout-subtitle"));
@@ -85,8 +85,8 @@ public sealed class TopologyAllocatedCardTypographyTests {
     public async Task ThemeDrivenExportsFitTheCompleteBadgeAndNodeSymbol(TopologyNodeDisplayMode mode, int size) {
         var theme = VisualTheme.Graphite();
         theme = theme.WithTypography(new VisualTypography("Arial", dataLabelSize: size));
-        var chart = TopologyChart.Create().WithTheme(theme).WithViewport(360, 240, 16)
-            .AddNode("api", "API", 80, 60, width: 120, height: 64, symbol: "A").WithNodeDisplay("api", mode);
+        var chart = TopologyChart.Create().Theme(theme).Viewport(new TopologyViewport(360, 240, 16))
+            .AddNode("api", "API", 80, 60, width: 120, height: 64, symbol: "A").UpdateNode("api", n => n.DisplayMode(mode).Badge(null));
         chart.Nodes[0].Badge = "42";
         var options = new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false };
         var svg = chart.ToSvg(options);

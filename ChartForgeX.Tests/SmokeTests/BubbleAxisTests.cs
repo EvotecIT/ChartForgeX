@@ -8,13 +8,13 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void SecondaryAxisBubbleRangeIgnoresBubbleSizes() {
         var chart = Chart.Create()
-            .WithSize(640, 360)
-            .WithSecondaryYAxis("Risk score")
+            .Size(640, 360)
+            .SecondaryYAxis(s => s.Title("Risk score"))
             .AddBubble("Risk clusters", new[] {
                 new ChartBubble(1, 18, 800),
                 new ChartBubble(2, 34, 1200)
             });
-        chart.Series[0].UseSecondaryValueAxis();
+        chart.Series[0].SecondaryAxis();
 
         var range = ChartRange.FromSecondaryValueAxis(chart, ChartRange.FromChart(chart));
         Assert(range.MaxY >= 34 && range.MaxY < 100, "Secondary-axis bounds must reflect observed Y, independently of bubble sizes.");

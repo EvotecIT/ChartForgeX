@@ -33,10 +33,10 @@ public sealed class TopologyTransparentDefaultFrameCausalTests {
     }
     private static string[] Background(string svg)=>XDocument.Parse(svg).Descendants().Where(mark=>(string?)mark.Attribute("data-cfx-role")=="background").Select(mark=>{var copy=new XElement(mark);copy.Attributes().Where(attribute=>attribute.Name.LocalName=="id").Remove();return copy.ToString(SaveOptions.DisableFormatting);}).ToArray();
     private static TopologyChart Source(bool transparent) {
-        var chart=TopologyChart.Create().WithId("transparent-default-frame").WithTitle("").WithViewport(640,400,24).WithLayout(TopologyLayoutMode.Manual).AddNode("node","Node",180,140,width:120,height:70);
+        var chart=TopologyChart.Create().Id("transparent-default-frame").Title("").Viewport(new TopologyViewport(640, 400, 24)).LayoutMode(TopologyLayoutMode.Manual).AddNode("node","Node",180,140,width:120,height:70);
         chart.Theme=VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family);if(transparent)chart.Theme=chart.Theme.Configure(builder=>{builder.Light.Background=ChartColor.Transparent;builder.Dark.Background=ChartColor.Transparent;});
         chart.Nodes[0].Shape=TopologyNodeShape.Rectangle;chart.Nodes[0].ShowStatusBadge=false;chart.Nodes[0].PreserveDisplayModeSize=true;
-        chart.WithRenderOptions(new TopologyRenderOptions{IncludeTitle=false,IncludeLegend=false,FitContentToViewport=false});return chart;
+        chart.DefaultRenderOptions(new TopologyRenderOptions{IncludeTitle=false,IncludeLegend=false,FitContentToViewport=false});return chart;
     }
     private static void Capture(string name,PreparedVisual value) {
         if(Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY") is not{Length:>0} output)return;

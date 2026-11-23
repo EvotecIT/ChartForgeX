@@ -30,8 +30,8 @@ public static partial class VisualArtifactInterchangeMapping {
         var messages=envelope.Edges.OrderBy(item=>item.Order).ToArray();
         if(!messages.Select(item=>item.Order).SequenceEqual(Enumerable.Range(0,messages.Length)))throw new NotSupportedException("Sequence message order must be unique and contiguous.");
         ValidateSequenceRestorationIdentities(envelope,nodes,messages);
-        var sequence=SequenceArtifact.Create(envelope.Id).WithTitle(envelope.Title).WithSubtitle(envelope.Subtitle)
-            .WithSize(SourceBound(envelope,"width",envelope.Width),SourceBound(envelope,"height",envelope.Height));
+        var sequence=SequenceArtifact.Create(envelope.Id).Title(envelope.Title).Subtitle(envelope.Subtitle)
+            .Width(SourceBound(envelope,"width",envelope.Width)).Height(SourceBound(envelope,"height",envelope.Height));
         sequence.Padding=NativeNumber(envelope.Extensions,"padding",sequence.Padding,false);
         sequence.Layout=envelope.Sequence.Layout;sequence.Typography=envelope.Sequence.Typography;
         if(envelope.Sequence.Theme!=null) {

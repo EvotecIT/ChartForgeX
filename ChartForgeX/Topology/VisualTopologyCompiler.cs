@@ -68,7 +68,7 @@ internal sealed partial class VisualTopologyCompiler {
         ValidateSurfacePaintHost();
         var external = validator.ValidateExternalPresentationInputs(_source, _options);
         if (!external.IsValid) throw new TopologyValidationException(external);
-        if (_options.EnableHtmlInteractions && _options.EnableHtmlForceGraphControls && _source.Nodes.Any(TopologyExternalPresentationRules.HasPolicy))
+        if (_options.Html.Interactions && _options.Html.ForceGraphControls && _source.Nodes.Any(TopologyExternalPresentationRules.HasPolicy))
             throw new NotSupportedException("Explicit native external presentation cannot be rewritten by live force graph controls.");
         var references = validator.ValidateScenarioReferences(_source);
         if (!references.IsValid) throw new TopologyValidationException(references);
@@ -170,7 +170,7 @@ internal sealed partial class VisualTopologyCompiler {
     }
 
     private void DiagnoseExportOptions() {
-        if (_options.EnableHtmlInteractions || _options.EnableHtmlViewportControls || _options.EnableHtmlExportControls || _options.EnableHtmlForceGraphControls || _options.EnableHtmlFindControls || _options.EnableHtmlSynchronizedState || _options.EnableHtmlSelectionPanel || _options.EnableHtmlFullscreenControl || _options.EnableHtmlScenarioUrlState)
+        if (_options.Html.Interactions || _options.Html.ViewportControls || _options.Html.ExportControls || _options.Html.ForceGraphControls || _options.Html.FindControls || _options.Html.SynchronizedState || _options.Html.SelectionPanel || _options.Html.FullscreenControl || _options.Html.ScenarioUrlState)
             _builder.AddDiagnostic(new VisualDiagnostic("topology.host-options", "HTML interaction and viewport options remain host metadata; a static prepared scene does not install their controls."));
     }
 

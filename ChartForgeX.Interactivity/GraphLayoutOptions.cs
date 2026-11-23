@@ -1,10 +1,12 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Interactivity;
 
 /// <summary>
 /// Describes deterministic graph layout preferences shared by static and interactive graph adapters.
 /// </summary>
+[Fluent]
 public sealed class GraphLayoutOptions {
     /// <summary>Gets or sets the prepared layout family used before adapter-side runtime physics begins.</summary>
     public GraphLayoutMode Mode { get; set; } = GraphLayoutMode.StructuredPrepared;

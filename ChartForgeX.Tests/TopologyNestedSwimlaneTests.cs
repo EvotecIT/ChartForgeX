@@ -8,7 +8,7 @@ namespace ChartForgeX.Tests;
 
 public sealed class TopologyNestedSwimlaneTests {
     private static TopologyChart Chart(TopologyLayoutDirection direction) {
-        var chart = TopologyChart.Create().WithTitle("").WithViewport(800, 600, 24).WithLegend(null).WithLayout(TopologyLayoutMode.Swimlane, direction)
+        var chart = TopologyChart.Create().Title("").Viewport(new TopologyViewport(800, 600, 24)).Legend((TopologyLegend?)null).LayoutMode(TopologyLayoutMode.Swimlane).LayoutDirection(direction)
             .AddAutoGroup("parent", "Product\nDelivery", subtitle: "Authored\nresponsibility", iconId: "common:server")
             .AddAutoGroup("first", "API", iconId: "common:server").AddAutoGroup("deep", "Storage")
             .AddAutoGroup("second", "Operations").AddAutoGroup("peer", "Partner");
@@ -52,7 +52,7 @@ public sealed class TopologyNestedSwimlaneTests {
     [Theory]
     [InlineData(TopologyLayoutDirection.LeftToRight)] [InlineData(TopologyLayoutDirection.TopToBottom)]
     public void ParentWithOnlyChildBandsGetsNoFabricatedEmptyLaneAndEmptyDescendantRetainsItsRealShell(TopologyLayoutDirection direction) {
-        var chart = TopologyChart.Create().WithTitle("").WithViewport(800, 600, 24).WithLayout(TopologyLayoutMode.Swimlane, direction)
+        var chart = TopologyChart.Create().Title("").Viewport(new TopologyViewport(800, 600, 24)).LayoutMode(TopologyLayoutMode.Swimlane).LayoutDirection(direction)
             .AddAutoGroup("parent", "Parent").AddAutoGroup("child", "Child").AddAutoGroup("empty", "Empty");
         chart.Groups[1].ParentGroupId = "parent"; chart.Groups[2].ParentGroupId = "parent";
         chart.AddAutoNode("node", "Node", groupId: "child", width: 144, height: 64); chart.Nodes[0].DisplayMode = TopologyNodeDisplayMode.Card; chart.Nodes[0].PreserveDisplayModeSize = true;
@@ -101,7 +101,7 @@ public sealed class TopologyNestedSwimlaneTests {
     [Theory]
     [InlineData(false)] [InlineData(true)]
     public void MissingParentsAndCyclesUseTheExistingHierarchyDiagnosticBeforeRecursivePlacement(bool cycle) {
-        var chart = TopologyChart.Create().WithLayout(TopologyLayoutMode.Swimlane).AddAutoGroup("a", "A").AddAutoGroup("b", "B");
+        var chart = TopologyChart.Create().LayoutMode(TopologyLayoutMode.Swimlane).AddAutoGroup("a", "A").AddAutoGroup("b", "B");
         chart.Groups[0].ParentGroupId = "b"; chart.Groups[1].ParentGroupId = cycle ? "a" : "missing";
         var error = Assert.Throws<TopologyValidationException>(() => chart.Prepare());
         Assert.Contains(error.Result.Errors, issue => issue.Code == (cycle ? "group-parent-cycle" : "missing-parent-group"));

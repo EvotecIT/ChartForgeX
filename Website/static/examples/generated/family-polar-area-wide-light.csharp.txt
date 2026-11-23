@@ -35,13 +35,13 @@ public static class PolarAreaRecipe {
         if (variant is "angular-reversal" or "compact-angular-reversal") {
             var reversedRevenue = new ChartSeries(new ChartSeriesId("revenue"), "Revenue", ChartSeriesKind.PolarArea,
                 new[] { new ChartPoint(1, 92), new ChartPoint(2, 0), new ChartPoint(3, 58), new ChartPoint(4, 74) })
-                .WithPointColor(0, ChartColor.FromHex("#2563EB")).WithPointFillPattern(2, ChartFillPattern.DiagonalForward);
-            return Chart.Create().WithXLabels("North", "East", "South", "West").WithDataLabels().AddSeries(reversedRevenue)
-                .ConfigureXAxis(axis => axis.WithReversal());
+                .PointColor(0, ChartColor.FromHex("#2563EB")).PointFillPattern(2, ChartFillPattern.DiagonalForward);
+            return Chart.Create().XLabels("North", "East", "South", "West").DataLabels().AddSeries(reversedRevenue)
+                .XAxis(axis => axis.Reversed());
         }
         var points = (variant == "sparse" ? new[] { 1, 3, 6 } : Enumerable.Range(1, 6))
             .Select(index => new ChartPoint(index, 20 + index * 7 % 29));
         var revenue = new ChartSeries(new ChartSeriesId("revenue"), "Revenue", ChartSeriesKind.PolarArea, points);
-        return Chart.Create().WithXLabels("Subscriptions", "Consulting", "Support", "Licenses", "Training", "Other").AddSeries(revenue);
+        return Chart.Create().XLabels("Subscriptions", "Consulting", "Support", "Licenses", "Training", "Other").AddSeries(revenue);
     }
 }

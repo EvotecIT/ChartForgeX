@@ -23,7 +23,7 @@ public static partial class ChartExtensions {
     /// <param name="chart">The chart to configure.</param>
     /// <param name="configure">The theme customization callback.</param>
     /// <returns>The current chart.</returns>
-    public static Chart ConfigureTheme(this Chart chart, Action<VisualThemeBuilder> configure) {
+    public static Chart Theme(this Chart chart, Action<VisualThemeBuilder> configure) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         chart.Options.Theme = chart.Options.Theme.Configure(configure);
@@ -36,7 +36,7 @@ public static partial class ChartExtensions {
     /// <param name="chart">The chart to configure.</param>
     /// <param name="colors">The palette colors.</param>
     /// <returns>The current chart.</returns>
-    public static Chart WithPalette(this Chart chart, params ChartColor[] colors) {
+    public static Chart Palette(this Chart chart, params ChartColor[] colors) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         chart.Options.Theme = chart.Options.Theme.WithPalette(chart.Options.ThemeMode, colors);
         return chart;
@@ -48,7 +48,7 @@ public static partial class ChartExtensions {
     /// <param name="chart">The chart to configure.</param>
     /// <param name="colors">The color strings in #RGB, #RGBA, #RRGGBB, or #RRGGBBAA notation.</param>
     /// <returns>The current chart.</returns>
-    public static Chart WithPalette(this Chart chart, params string[] colors) {
+    public static Chart Palette(this Chart chart, params string[] colors) {
         if (chart == null) throw new ArgumentNullException(nameof(chart));
         chart.Options.Theme = chart.Options.Theme.WithPalette(chart.Options.ThemeMode, ChartPalettes.FromHex(colors));
         return chart;
@@ -60,7 +60,7 @@ public static partial class ChartExtensions {
     /// <param name="grid">The chart grid to configure.</param>
     /// <param name="configure">The theme customization callback.</param>
     /// <returns>The current chart grid.</returns>
-    public static ChartGrid ConfigureTheme(this ChartGrid grid, Action<VisualThemeBuilder> configure) {
+    public static ChartGrid Theme(this ChartGrid grid, Action<VisualThemeBuilder> configure) {
         if (grid == null) throw new ArgumentNullException(nameof(grid));
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         grid.Theme = grid.Theme.Configure(configure);
@@ -225,7 +225,7 @@ public static partial class ChartExtensions {
     /// <param name="block">The visual block to configure.</param>
     /// <param name="colors">The palette colors.</param>
     /// <returns>The current visual block.</returns>
-    public static TBlock WithPalette<TBlock>(this TBlock block, params ChartColor[] colors) where TBlock : IVisualBlock {
+    public static TBlock Palette<TBlock>(this TBlock block, params ChartColor[] colors) where TBlock : IVisualBlock {
         if (block == null) throw new ArgumentNullException(nameof(block));
         block.Options.Theme = block.Options.Theme.WithPalette(block.Options.ThemeMode, colors);
         return block;
@@ -238,22 +238,9 @@ public static partial class ChartExtensions {
     /// <param name="block">The visual block to configure.</param>
     /// <param name="colors">The color strings in #RGB, #RGBA, #RRGGBB, or #RRGGBBAA notation.</param>
     /// <returns>The current visual block.</returns>
-    public static TBlock WithPalette<TBlock>(this TBlock block, params string[] colors) where TBlock : IVisualBlock {
+    public static TBlock Palette<TBlock>(this TBlock block, params string[] colors) where TBlock : IVisualBlock {
         if (block == null) throw new ArgumentNullException(nameof(block));
         block.Options.Theme = block.Options.Theme.WithPalette(block.Options.ThemeMode, ChartPalettes.FromHex(colors));
-        return block;
-    }
-
-    /// <summary>
-    /// Sets the output pixel multiplier used by visual block PNG exports using a named density preset.
-    /// </summary>
-    /// <typeparam name="TBlock">The visual block type.</typeparam>
-    /// <param name="block">The visual block to configure.</param>
-    /// <param name="scale">The output density preset.</param>
-    /// <returns>The current visual block.</returns>
-    public static TBlock WithPngOutputScale<TBlock>(this TBlock block, ChartPngOutputScale scale) where TBlock : IVisualBlock {
-        if (block == null) throw new ArgumentNullException(nameof(block));
-        block.Options.PngOutputScale = (int)scale;
         return block;
     }
 

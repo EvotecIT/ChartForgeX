@@ -10,7 +10,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     [BrowserFact]
     public async Task DisposedConnectedPeerIgnoresSynchronizedSelectionUntilFreshMount() {
         if (!Enabled) return;
-        var html = new[] { Readings().WithTitle("Selection source"), Readings().WithTitle("Selection peer") }
+        var html = new[] { Readings().Title("Selection source"), Readings().Title("Selection peer") }
             .ToInteractiveHtmlDashboardPage(options => {
                 options.Columns = 1;
                 options.Interaction.GroupName = "chart-lifecycle-peers";
@@ -58,10 +58,10 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         if (!Enabled) return;
         Chart Create(bool updated) {
             var values = new[] { new ChartBubble(1, updated ? 17 : 5, 25), new ChartBubble(2, 9, 9) };
-            var chart = Chart.Create().WithSize(640, 360).WithTitle("Series identity provenance").WithLegend();
+            var chart = Chart.Create().Size(640, 360).Title("Series identity provenance").Legend();
             if (explicitSeries) chart.AddSeries(ChartSeries.CreateBubble(new ChartSeriesId("series-1"), "Samples", values));
             else chart.AddBubble("Samples", values);
-            chart.Series[0].WithObservationId(0, new ChartObservationId("north"));
+            chart.Series[0].ObservationId(0, new ChartObservationId("north"));
             return chart;
         }
         var initial = Create(false); var updated = Create(true);

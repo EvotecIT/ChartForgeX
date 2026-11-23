@@ -12,8 +12,8 @@ public static partial class MermaidZenUmlRendering {
         if (document == null) throw new ArgumentNullException(nameof(document));
         MermaidZenUmlModel.Validate(document); options ??= new MermaidSequenceRenderOptions();
         var sequence = SequenceArtifact.Create(options.Id ?? "mermaid-zenuml")
-            .WithTitle(MermaidHeading.Title(document, options.Title, document.Title, "ZenUML sequence"))
-            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle)).WithSize(options.Width, options.Height);
+            .Title(MermaidHeading.Title(document, options.Title, document.Title, "ZenUML sequence"))
+            .Subtitle(MermaidHeading.Subtitle(options.Subtitle)).Width(options.Width).Height(options.Height);
         sequence.Padding = options.Padding;
         sequence.Metadata["mermaid.kind"] = document.Kind.ToString(); sequence.Metadata["mermaid.header"] = document.Header;
         var participants = new Dictionary<string, SequenceArtifactParticipant>(StringComparer.Ordinal);

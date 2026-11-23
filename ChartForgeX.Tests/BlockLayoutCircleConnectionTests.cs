@@ -26,8 +26,8 @@ public sealed class BlockLayoutCircleConnectionTests {
         var theme = VisualTheme.Graphite();
         theme = theme.Configure(builder => { builder.Light.Axis = builder.Dark.Axis = ChartColor.FromHex("#FF0000"); });
         theme = theme.Configure(builder => { builder.Light.Palette = builder.Dark.Palette = new[] { ChartColor.FromHex("#2563EB") }; });
-        var block = BlockLayoutBlock.Create().WithSize(width, 300).WithCard(false).WithTheme(theme)
-            .WithColumns(layout == 1 ? 1 : 2).AddItem("a", "A", shape: firstShape);
+        var block = BlockLayoutBlock.Create().Size(width, 300).ShowCard(false).Theme(theme)
+            .Columns(layout == 1 ? 1 : 2).AddItem("a", "A", shape: firstShape);
         if (layout == 2) block.AddSpace().AddSpace();
         block.AddItem("b", "B", shape: secondShape).AddEdge(reverse ? "b" : "a", reverse ? "a" : "b");
         var svg = block.ToSvg();
@@ -43,7 +43,7 @@ public sealed class BlockLayoutCircleConnectionTests {
 
     [Fact]
     public void RectangularConnectionsKeepTheirExistingSidePorts() {
-        var block = BlockLayoutBlock.Create().WithSize(960, 300).WithColumns(2)
+        var block = BlockLayoutBlock.Create().Size(960, 300).Columns(2)
             .AddItem("a", "A").AddItem("b", "B", shape: BlockLayoutShape.Rounded).AddEdge("a", "b");
         var document = XDocument.Parse(block.ToSvg());
         var edge = Assert.Single(document.Descendants(), element => Role(element) == "block-layout-edge");

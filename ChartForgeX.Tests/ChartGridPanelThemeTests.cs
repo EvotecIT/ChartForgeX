@@ -19,7 +19,7 @@ public sealed class ChartGridPanelThemeTests {
         var outerTheme = Theme("sans-serif", "#3344CC", "#8899FF");
         var first = ChartWithTheme("First panel", firstTheme, ThemeMode.Light);
         var second = ChartWithTheme("Second panel", secondTheme, ThemeMode.Dark);
-        var grid = ChartGrid.Create().WithTitle("Outer heading").WithPanelThemes(usePanelThemes).Add(first).Add(second);
+        var grid = ChartGrid.Create().Title("Outer heading").UsePanelThemes(usePanelThemes).Add(first).Add(second);
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 350)), outerTheme,
             ThemeMode.Dark, new VisualFrame(showCard: true), new FontSpec { Family = "Outer explicit font" });
 
@@ -35,9 +35,9 @@ public sealed class ChartGridPanelThemeTests {
         Assert.Equal(ThemeMode.Dark, second.Options.ThemeMode);
 
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
-        first.WithTheme(VisualTheme.Graphite(), ThemeMode.Dark);
-        second.WithFontFamily("serif");
-        grid.WithPanelThemes(!usePanelThemes);
+        first.Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark);
+        second.FontFamily("serif");
+        grid.UsePanelThemes(!usePanelThemes);
         Assert.Equal(svg, prepared.ToSvg());
         Assert.Equal(png, prepared.ToPng());
     }
@@ -45,11 +45,11 @@ public sealed class ChartGridPanelThemeTests {
     [Fact]
     public void AuthoredPanelKeepsStandaloneNativePixelsAndFontRequest() {
         var chart = ChartWithTheme("Panel", Theme("serif", "#A34200", "#F09530"), ThemeMode.Dark)
-            .WithHeader(false).WithCard(false).WithPlotBackground(false).WithLegend(false).WithTransparentBackground();
+            .ShowHeader(false).ShowCard(false).ShowPlotBackground(false).Legend(false).TransparentBackground();
         chart.Options.Padding = ChartPadding.All(8);
         var request = VisualExportRequest.ForChart(chart);
         var expected = chart.Prepare(request.Context);
-        var grid = ChartGrid.Create().WithColumns(1).WithPanelThemes().Add(chart);
+        var grid = ChartGrid.Create().Columns(1).UsePanelThemes().Add(chart);
         var prepared = grid.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 260), 0),
             VisualTheme.Graphite(), ThemeMode.Light, new VisualFrame(showLegend: false, transparentBackground: true),
             new FontSpec { Family = "monospace" }));
@@ -58,7 +58,7 @@ public sealed class ChartGridPanelThemeTests {
 
         var fontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(fontPath));
-        chart.WithPngFont(fontPath);
+        chart.Png(p => p.FontPath(fontPath));
         var authored = grid.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 260), 0),
             frame: new VisualFrame(showLegend: false, transparentBackground: true)));
         Assert.All(authored.Scene.Nodes.OfType<VisualSceneText>(), node => Assert.Equal(fontPath, node.Text.Style.Font.FilePath));
@@ -71,10 +71,10 @@ public sealed class ChartGridPanelThemeTests {
         var theme = Theme("sans-serif", color.ToCss(), color.ToCss());
         var childVariables = new SvgColorVariables().Add("--panel-series", color, SvgColorRole.Series);
         var gridVariables = new SvgColorVariables().Add("--outer-series", color, SvgColorRole.Series);
-        var grid = ChartGrid.Create().WithTheme(theme).WithPanelThemes().WithPanelSize(360, 260)
-            .WithSvgColorVariables(gridVariables)
+        var grid = ChartGrid.Create().Theme(theme).UsePanelThemes().PanelSize(360, 260)
+            .SvgColorVariables(gridVariables)
             .Add(ChartWithTheme("Literal", theme, ThemeMode.Light))
-            .Add(ChartWithTheme("Mapped", theme, ThemeMode.Light).WithSvgColorVariables(childVariables));
+            .Add(ChartWithTheme("Mapped", theme, ThemeMode.Light).SvgColorVariables(childVariables));
         var prepared = grid.Prepare(VisualExportRequest.ForGrid(grid).Context);
         var svg = prepared.ToSvg();
         var document = XDocument.Parse(svg);
@@ -92,13 +92,13 @@ public sealed class ChartGridPanelThemeTests {
         Assert.Equal(pixels, artifact.Clone().ToPng());
         childVariables.Add("--later", ChartColor.Black);
         gridVariables.Add("--later", ChartColor.Black);
-        grid.Charts[1].WithSvgColorVariables(null);
+        grid.Charts[1].SvgColorVariables((SvgColorVariables?)null);
         Assert.Equal(svg, prepared.ToSvg());
 
         var explicitExport = XDocument.Parse(prepared.ToSvg(new VisualSvgOptions(colorVariables: gridVariables)));
         Assert.DoesNotContain("--outer-series", Panel(explicitExport, 0).ToString());
         Assert.Contains("--panel-series", Panel(explicitExport, 1).ToString());
-        grid.WithPanelThemes(false);
+        grid.UsePanelThemes(false);
         Assert.Contains("--outer-series", Panel(XDocument.Parse(grid.ToSvg()), 1).ToString());
     }
 
@@ -142,7 +142,7 @@ public sealed class ChartGridPanelThemeTests {
         builder.Dark.Palette = new[] { ChartColor.FromHex(dark) };
     });
     private static Chart ChartWithTheme(string title, VisualTheme theme, ThemeMode mode) => Chart.Create()
-        .WithTitle(title).WithTheme(theme, mode).WithSize(360, 260).WithDataLabels(false)
+        .Title(title).Theme(theme).ThemeMode(mode).Size(360, 260).DataLabels(false)
         .AddBar("Values", new[] { new ChartPoint(0, 2), new ChartPoint(1, 4) });
     private static string Text(VisualSceneText node) => string.Join("\n", node.Text.Lines.Select(line => line.Text));
     private static XElement Panel(XDocument document, int index) => document.Descendants().Single(element =>

@@ -22,8 +22,8 @@ internal static partial class SmokeTests {
         AssertSelfContainedMarkup(chart.ToSvg(), "SVG output");
         AssertSelfContainedMarkup(chart.ToHtmlPage(), "HTML page output");
         AssertSelfContainedMarkup(chart.ToHtmlFragment(), "HTML fragment output");
-        AssertSelfContainedMarkup(Chart.Create().WithTitle("Radar").WithXLabels("A", "B", "C").AddRadar("Values", Points(80, 60, 90)).ToSvg(), "radar SVG output");
-        AssertSelfContainedMarkup(Chart.Create().WithTitle("Funnel").WithXLabels("A", "B", "C").AddFunnel("Values", Points(90, 60, 30)).ToHtmlPage(), "funnel HTML output");
+        AssertSelfContainedMarkup(Chart.Create().Title("Radar").XLabels("A", "B", "C").AddRadar("Values", Points(80, 60, 90)).ToSvg(), "radar SVG output");
+        AssertSelfContainedMarkup(Chart.Create().Title("Funnel").XLabels("A", "B", "C").AddFunnel("Values", Points(90, 60, 30)).ToHtmlPage(), "funnel HTML output");
     }
 
     private static void PngIsValid() {
@@ -42,40 +42,40 @@ internal static partial class SmokeTests {
     private static void SvgAndPngPreserveRequestedDimensionsAcrossChartKinds() {
         var timelineStart = new DateTime(2026, 1, 1);
         var charts = new[] {
-            Chart.Create().WithSize(640, 360).AddLine("Line", Points(10, 20, 16)),
-            Chart.Create().WithSize(640, 360).AddStepArea("Step area", Points(10, 20, 16)),
-            Chart.Create().WithSize(640, 360).WithXLabels("A", "B", "C").AddBar("Bar", Points(10, 20, 16)),
-            Chart.Create().WithSize(640, 360).AddScatter("Scatter", Points(10, 20, 16)).AddTrendLine("Trend", Points(10, 20, 16)),
-            Chart.Create().WithSize(640, 360).WithXLabels("A", "B", "C").AddHorizontalBar("Horizontal", Points(10, 20, 16)),
-            Chart.Create().WithSize(640, 360).AddBubble("Bubble", new[] { new ChartBubble(1, 10, 6), new ChartBubble(2, 20, 16), new ChartBubble(3, 16, 28) }),
-            Chart.Create().WithSize(640, 360).AddErrorBar("Error", new[] { new ChartErrorBar(1, 10, yBounds: new ChartErrorBounds(8, 14)), new ChartErrorBar(2, 20, yBounds: new ChartErrorBounds(17, 23)), new ChartErrorBar(3, 16, yBounds: new ChartErrorBounds(13, 22)) }),
-            Chart.Create().WithSize(640, 360).AddCandlestick("Candles", new[] { new ChartCandlestick(1, 10, 14, 8, 12), new ChartCandlestick(2, 20, 23, 17, 18), new ChartCandlestick(3, 16, 22, 13, 21) }),
-            Chart.Create().WithSize(640, 360).AddOhlc("OHLC", new[] { new ChartCandlestick(1, 10, 14, 8, 12), new ChartCandlestick(2, 20, 23, 17, 18), new ChartCandlestick(3, 16, 22, 13, 21) }),
-            Chart.Create().WithSize(640, 360).AddRangeBand("Band", new[] { new ChartRangeBand(1, 8, 14), new ChartRangeBand(2, 17, 23), new ChartRangeBand(3, 13, 22) }),
-            Chart.Create().WithSize(640, 360).AddRangeArea("Area", new[] { new ChartRangeBand(1, 8, 14), new ChartRangeBand(2, 17, 23), new ChartRangeBand(3, 13, 22) }),
-            Chart.Create().WithSize(640, 360).AddStackedArea("Passed", Points(10, 20, 16)).AddStackedArea("Warnings", Points(2, 4, 3)),
-            Chart.Create().WithSize(640, 360).AddSlope("Current", 42, 88).AddSlope("Target", 58, 94),
-            Chart.Create().WithSize(640, 360).AddDumbbell("Dumbbell", new[] { new ChartDumbbell(1, 8, 14), new ChartDumbbell(2, 17, 23), new ChartDumbbell(3, 13, 22) }),
-            Chart.Create().WithSize(640, 360).AddPareto("Pareto", new[] { new ChartParetoItem("A", 50), new ChartParetoItem("B", 30), new ChartParetoItem("C", 20) }),
-            Chart.Create().WithSize(640, 360).WithXLabels("A", "B", "C").AddHeatmapRow("Heat", Points(96, 82, 74)),
-            Chart.Create().WithSize(640, 360).AddGauge("Gauge", 87),
-            Chart.Create().WithSize(640, 360).AddCircle("Circle", 87),
-            Chart.Create().WithSize(640, 360).WithXLabels("A", "B", "C").AddProgressRing("Radial", Points(96, 82, 74)),
-            Chart.Create().WithSize(640, 360).AddBullet("Bullet", 82, 90),
-            Chart.Create().WithSize(640, 360).AddWaterfall("Waterfall", Points(18, -42, 9)),
-            Chart.Create().WithSize(640, 360).WithXLabels("A", "B", "C").AddRadar("Radar", Points(92, 74, 88)),
-            Chart.Create().WithSize(640, 360).WithXLabels("A", "B", "C").AddPolarArea("Polar", Points(92, 74, 88)),
-            Chart.Create().WithSize(640, 360).WithXLabels("A", "B", "C").AddFunnel("Funnel", Points(420, 318, 174)),
-            Chart.Create().WithSize(640, 360).AddTreemap("Treemap", new[] { new ChartHierarchyItem("A", "A", value: 50), new ChartHierarchyItem("B", "B", value: 30), new ChartHierarchyItem("C", "C", value: 20) }),
-            Chart.Create().WithSize(640, 360).AddPictorial("Pictorial", new[] { new ChartPictorialItem("A", 50), new ChartPictorialItem("B", 30), new ChartPictorialItem("C", 20) }, ChartPictorialShape.Diamond),
-            Chart.Create().WithSize(640, 360).AddWordCloud("WordCloud", new[] { new ChartWordCloudItem("Alpha", 50), new ChartWordCloudItem("Beta", 30), new ChartWordCloudItem("Gamma", 20) }),
-            Chart.Create().WithSize(640, 360).AddTimelineItem("Timeline", timelineStart, timelineStart.AddDays(14)),
-            Chart.Create().WithSize(640, 360).WithGanttToday(timelineStart.AddDays(8)).AddGanttTask("Gantt", timelineStart, timelineStart.AddDays(14), 0.5),
-            Chart.Create().WithSize(640, 360).AddSankey("Sankey", new[] { new ChartNode("A", "A"), new ChartNode("B", "B"), new ChartNode("C", "C") }, new[] { new ChartFlowLink("flow-1", "A", "B", 10), new ChartFlowLink("flow-2", "B", "C", 7) }),
-            Chart.Create().WithSize(640, 360).AddTree("Tree", new[] { new ChartNode("A", "A"), new ChartNode("B", "B"), new ChartNode("C", "C") }, new[] { new ChartTreeLink("A", "B"), new ChartTreeLink("A", "C") }),
-            Chart.Create().WithSize(640, 360).AddSunburst("Sunburst", new[] { new ChartHierarchyItem("A", "A"), new ChartHierarchyItem("B", "B", "A", 10), new ChartHierarchyItem("C", "C", "A", 7), new ChartHierarchyItem("D", "D", "B", 4) }),
-            Chart.Create().WithSize(640, 360).WithXLabels("Passed", "Warnings", "Failed").AddDonut("Donut", Points(70, 20, 10)),
-            Chart.Create().WithSize(360, 90).WithSparkline().AddSmoothArea("Spark", Points(10, 14, 13, 19))
+            Chart.Create().Size(640, 360).AddLine("Line", Points(10, 20, 16)),
+            Chart.Create().Size(640, 360).AddStepArea("Step area", Points(10, 20, 16)),
+            Chart.Create().Size(640, 360).XLabels("A", "B", "C").AddBar("Bar", Points(10, 20, 16)),
+            Chart.Create().Size(640, 360).AddScatter("Scatter", Points(10, 20, 16)).AddTrendLine("Trend", Points(10, 20, 16)),
+            Chart.Create().Size(640, 360).XLabels("A", "B", "C").AddHorizontalBar("Horizontal", Points(10, 20, 16)),
+            Chart.Create().Size(640, 360).AddBubble("Bubble", new[] { new ChartBubble(1, 10, 6), new ChartBubble(2, 20, 16), new ChartBubble(3, 16, 28) }),
+            Chart.Create().Size(640, 360).AddErrorBar("Error", new[] { new ChartErrorBar(1, 10, yBounds: new ChartErrorBounds(8, 14)), new ChartErrorBar(2, 20, yBounds: new ChartErrorBounds(17, 23)), new ChartErrorBar(3, 16, yBounds: new ChartErrorBounds(13, 22)) }),
+            Chart.Create().Size(640, 360).AddCandlestick("Candles", new[] { new ChartCandlestick(1, 10, 14, 8, 12), new ChartCandlestick(2, 20, 23, 17, 18), new ChartCandlestick(3, 16, 22, 13, 21) }),
+            Chart.Create().Size(640, 360).AddOhlc("OHLC", new[] { new ChartCandlestick(1, 10, 14, 8, 12), new ChartCandlestick(2, 20, 23, 17, 18), new ChartCandlestick(3, 16, 22, 13, 21) }),
+            Chart.Create().Size(640, 360).AddRangeBand("Band", new[] { new ChartRangeBand(1, 8, 14), new ChartRangeBand(2, 17, 23), new ChartRangeBand(3, 13, 22) }),
+            Chart.Create().Size(640, 360).AddRangeArea("Area", new[] { new ChartRangeBand(1, 8, 14), new ChartRangeBand(2, 17, 23), new ChartRangeBand(3, 13, 22) }),
+            Chart.Create().Size(640, 360).AddStackedArea("Passed", Points(10, 20, 16)).AddStackedArea("Warnings", Points(2, 4, 3)),
+            Chart.Create().Size(640, 360).AddSlope("Current", 42, 88).AddSlope("Target", 58, 94),
+            Chart.Create().Size(640, 360).AddDumbbell("Dumbbell", new[] { new ChartDumbbell(1, 8, 14), new ChartDumbbell(2, 17, 23), new ChartDumbbell(3, 13, 22) }),
+            Chart.Create().Size(640, 360).AddPareto("Pareto", new[] { new ChartParetoItem("A", 50), new ChartParetoItem("B", 30), new ChartParetoItem("C", 20) }),
+            Chart.Create().Size(640, 360).XLabels("A", "B", "C").AddHeatmapRow("Heat", Points(96, 82, 74)),
+            Chart.Create().Size(640, 360).AddGauge("Gauge", 87),
+            Chart.Create().Size(640, 360).AddCircle("Circle", 87),
+            Chart.Create().Size(640, 360).XLabels("A", "B", "C").AddProgressRing("Radial", Points(96, 82, 74)),
+            Chart.Create().Size(640, 360).AddBullet("Bullet", 82, 90),
+            Chart.Create().Size(640, 360).AddWaterfall("Waterfall", Points(18, -42, 9)),
+            Chart.Create().Size(640, 360).XLabels("A", "B", "C").AddRadar("Radar", Points(92, 74, 88)),
+            Chart.Create().Size(640, 360).XLabels("A", "B", "C").AddPolarArea("Polar", Points(92, 74, 88)),
+            Chart.Create().Size(640, 360).XLabels("A", "B", "C").AddFunnel("Funnel", Points(420, 318, 174)),
+            Chart.Create().Size(640, 360).AddTreemap("Treemap", new[] { new ChartHierarchyItem("A", "A", value: 50), new ChartHierarchyItem("B", "B", value: 30), new ChartHierarchyItem("C", "C", value: 20) }),
+            Chart.Create().Size(640, 360).AddPictorial("Pictorial", new[] { new ChartPictorialItem("A", 50), new ChartPictorialItem("B", 30), new ChartPictorialItem("C", 20) }, ChartPictorialShape.Diamond),
+            Chart.Create().Size(640, 360).AddWordCloud("WordCloud", new[] { new ChartWordCloudItem("Alpha", 50), new ChartWordCloudItem("Beta", 30), new ChartWordCloudItem("Gamma", 20) }),
+            Chart.Create().Size(640, 360).AddTimelineItem("Timeline", timelineStart, timelineStart.AddDays(14)),
+            Chart.Create().Size(640, 360).GanttToday(timelineStart.AddDays(8)).AddGanttTask("Gantt", timelineStart, timelineStart.AddDays(14), 0.5),
+            Chart.Create().Size(640, 360).AddSankey("Sankey", new[] { new ChartNode("A", "A"), new ChartNode("B", "B"), new ChartNode("C", "C") }, new[] { new ChartFlowLink("flow-1", "A", "B", 10), new ChartFlowLink("flow-2", "B", "C", 7) }),
+            Chart.Create().Size(640, 360).AddTree("Tree", new[] { new ChartNode("A", "A"), new ChartNode("B", "B"), new ChartNode("C", "C") }, new[] { new ChartTreeLink("A", "B"), new ChartTreeLink("A", "C") }),
+            Chart.Create().Size(640, 360).AddSunburst("Sunburst", new[] { new ChartHierarchyItem("A", "A"), new ChartHierarchyItem("B", "B", "A", 10), new ChartHierarchyItem("C", "C", "A", 7), new ChartHierarchyItem("D", "D", "B", 4) }),
+            Chart.Create().Size(640, 360).XLabels("Passed", "Warnings", "Failed").AddDonut("Donut", Points(70, 20, 10)),
+            Chart.Create().Size(360, 90).Sparkline().AddSmoothArea("Spark", Points(10, 14, 13, 19))
         };
 
         foreach (var chart in charts) {
@@ -93,28 +93,27 @@ internal static partial class SmokeTests {
     private static void PngUsesReadableAxisLayout() {
         var labels = Enumerable.Range(1, 20).Select(value => "Checkpoint " + value.ToString("00", System.Globalization.CultureInfo.InvariantCulture)).ToArray();
         var values = Points(Enumerable.Range(1, 20).Select(value => (double)value).ToArray());
-        var auto = Chart.Create().WithSize(420, 280).WithXLabels(labels).AddLine("Values", values).ToPng();
+        var auto = Chart.Create().Size(420, 280).XLabels(labels).AddLine("Values", values).ToPng();
         values = Points(Enumerable.Range(1, 20).Select(value => (double)value).ToArray());
-        var all = Chart.Create().WithSize(420, 280).WithXAxisLabelDensity(ChartLabelDensity.All).WithXLabels(labels).AddLine("Values", values).ToPng();
+        var all = Chart.Create().Size(420, 280).XAxis(x => x.LabelDensity(ChartLabelDensity.All)).XLabels(labels).AddLine("Values", values).ToPng();
         Assert(!auto.SequenceEqual(all), "PNG renderer should honor x-axis label density when explicit labels are crowded.");
 
         var longAxis = Chart.Create()
-            .WithSize(420, 280)
-            .WithXAxis("Month")
-            .WithYAxis("Latency")
-            .WithValueFormatter(value => "$" + value.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " ms")
+            .Size(420, 280)
+            .XAxis(x => x.Title("Month"))
+            .YAxis(y => y.Title("Latency"))
+            .FormatValuesBy(value => "$" + value.ToString("N0", System.Globalization.CultureInfo.InvariantCulture) + " ms")
             .AddLine("Latency budget", Points(1000000, 1120000, 1080000))
             .ToPng();
         Assert(longAxis.Length > 64, "PNG renderer should handle long formatted axis labels and axis titles.");
         Assert(ReadBigEndianInt32(longAxis, 16) == 420 && ReadBigEndianInt32(longAxis, 20) == 280, "PNG axis layout should preserve the requested output dimensions.");
 
         var rotatedAxis = Chart.Create()
-            .WithSize(420, 280)
-            .WithXAxis("Region")
-            .WithYAxis("Certificates")
-            .WithXAxisLabelDensity(ChartLabelDensity.All)
-            .WithXAxisLabelAngle(-35)
-            .WithXLabels("North America", "Western Europe", "Central Europe", "Asia Pacific")
+            .Size(420, 280)
+            .XAxis(x => x.Title("Region"))
+            .YAxis(y => y.Title("Certificates"))
+            .XAxis(x => x.LabelDensity(ChartLabelDensity.All).LabelAngle(-35))
+            .XLabels("North America", "Western Europe", "Central Europe", "Asia Pacific")
             .AddBar("Logged", Points(1200000, 2350000, 1840000, 3120000))
             .ToPng();
         Assert(rotatedAxis.Length > 64, "PNG renderer should support rotated category labels and vertical axis titles.");
@@ -123,13 +122,13 @@ internal static partial class SmokeTests {
 
     private static void PngUsesSupersampledEdges() {
         var chart = Chart.Create()
-            .WithSize(140, 90)
+            .Size(140, 90)
             .AddLine("Diagonal", new[] { new ChartPoint(1, 1), new ChartPoint(3, 3) }, ChartColor.FromRgb(96, 165, 250));
         chart.Options.ShowAxes = false;
         chart.Options.ShowCard = false;
         chart.Options.ShowGrid = false;
         chart.Options.ShowHeader = false;
-        chart.Options.ShowLegend = false;
+        chart.Options.Legend.Visible = false;
         chart.Options.ShowPlotBackground = false;
 
         var pixels = ReadPngRgba(chart.ToPng(), out var width, out var height);
@@ -147,19 +146,19 @@ internal static partial class SmokeTests {
 
     private static void PngSupersamplingScaleIsConfigurable() {
         var low = Chart.Create()
-            .WithSize(180, 120)
-            .WithPngSupersampling(1)
+            .Size(180, 120)
+            .Png(p => p.SupersamplingScale(1))
             .AddLine("Diagonal", new[] { new ChartPoint(1, 1), new ChartPoint(3, 3) }, ChartColor.FromRgb(96, 165, 250));
         var high = Chart.Create()
-            .WithSize(180, 120)
-            .WithPngSupersampling(4)
+            .Size(180, 120)
+            .Png(p => p.SupersamplingScale(4))
             .AddLine("Diagonal", new[] { new ChartPoint(1, 1), new ChartPoint(3, 3) }, ChartColor.FromRgb(96, 165, 250));
         foreach (var chart in new[] { low, high }) {
             chart.Options.ShowAxes = false;
             chart.Options.ShowCard = false;
             chart.Options.ShowGrid = false;
             chart.Options.ShowHeader = false;
-            chart.Options.ShowLegend = false;
+            chart.Options.Legend.Visible = false;
             chart.Options.ShowPlotBackground = false;
         }
 
@@ -168,24 +167,24 @@ internal static partial class SmokeTests {
         Assert(ReadBigEndianInt32(lowPng, 16) == 180 && ReadBigEndianInt32(lowPng, 20) == 120, "PNG supersampling should not alter low-quality output dimensions.");
         Assert(ReadBigEndianInt32(highPng, 16) == 180 && ReadBigEndianInt32(highPng, 20) == 120, "PNG supersampling should not alter high-quality output dimensions.");
         Assert(!lowPng.SequenceEqual(highPng), "Changing PNG supersampling should affect raster output.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().WithPngSupersampling(0), "PNG supersampling should reject values below one.");
-        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Options.PngSupersamplingScale = 5, "PNG supersampling should reject values above four.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Png(p => p.SupersamplingScale(0)), "PNG supersampling should reject values below one.");
+        AssertThrows<ArgumentOutOfRangeException>(() => Chart.Create().Options.Png.SupersamplingScale = 5, "PNG supersampling should reject values above four.");
     }
 
     private static void PngSmoothSeriesUseCurvedRasterPaths() {
         var points = new[] { new ChartPoint(1, 10), new ChartPoint(2, 90), new ChartPoint(3, 20), new ChartPoint(4, 82), new ChartPoint(5, 24) };
         var straight = Chart.Create()
-            .WithSize(260, 160)
+            .Size(260, 160)
             .AddLine("Values", points, ChartColor.FromRgb(96, 165, 250));
         var smooth = Chart.Create()
-            .WithSize(260, 160)
+            .Size(260, 160)
             .AddSmoothLine("Values", points, ChartColor.FromRgb(96, 165, 250));
         foreach (var chart in new[] { straight, smooth }) {
             chart.Options.ShowAxes = false;
             chart.Options.ShowCard = false;
             chart.Options.ShowGrid = false;
             chart.Options.ShowHeader = false;
-            chart.Options.ShowLegend = false;
+            chart.Options.Legend.Visible = false;
             chart.Options.ShowPlotBackground = false;
         }
 
@@ -193,10 +192,10 @@ internal static partial class SmokeTests {
     }
 
     private static void PngRendersReportChrome() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite())
-            .WithSize(360, 220)
-            .WithTitle("Chrome")
-            .WithSubtitle("Subtitle")
+        var chart = Chart.Create().Theme(VisualTheme.Graphite())
+            .Size(360, 220)
+            .Title("Chrome")
+            .Subtitle("Subtitle")
             .AddLine("Primary", Points(10, 20, 30), ChartColor.FromRgb(37, 99, 235))
             .AddLine("Secondary", Points(12, 18, 26), ChartColor.FromRgb(16, 185, 129));
         chart.Options.ShowAxes = false;
@@ -221,14 +220,14 @@ internal static partial class SmokeTests {
     }
 
     private static void PngOutlineFontsUseEmSizedText() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite())
-            .WithSize(360, 150)
-            .WithTitle("ChartForgeX")
+        var chart = Chart.Create().Theme(VisualTheme.Graphite())
+            .Size(360, 150)
+            .Title("ChartForgeX")
             .AddLine("Hidden", Points(1, 1), ChartColor.Transparent);
         chart.Options.ShowAxes = false;
         chart.Options.ShowCard = false;
         chart.Options.ShowGrid = false;
-        chart.Options.ShowLegend = false;
+        chart.Options.Legend.Visible = false;
         chart.Options.ShowPlotBackground = false;
 
         var pixels = ReadPngRgba(chart.ToPng(), out var width, out _);
@@ -244,16 +243,16 @@ internal static partial class SmokeTests {
     private static void PngFontPathFallsBackGracefully() {
         var missingFont = Path.Combine(Path.GetTempPath(), "ChartForgeX-missing-font-" + Guid.NewGuid().ToString("N", System.Globalization.CultureInfo.InvariantCulture) + ".ttf");
         var baseline = Chart.Create()
-            .WithSize(360, 220)
-            .WithTitle("PNG font")
-            .WithSubtitle("Automatic fallback")
+            .Size(360, 220)
+            .Title("PNG font")
+            .Subtitle("Automatic fallback")
             .AddLine("Primary", Points(10, 20, 30), ChartColor.FromRgb(37, 99, 235))
             .ToPng();
         var fallback = Chart.Create()
-            .WithSize(360, 220)
-            .WithTitle("PNG font")
-            .WithSubtitle("Automatic fallback")
-            .WithPngFont(missingFont)
+            .Size(360, 220)
+            .Title("PNG font")
+            .Subtitle("Automatic fallback")
+            .Png(p => p.FontPath(missingFont))
             .AddLine("Primary", Points(10, 20, 30), ChartColor.FromRgb(37, 99, 235))
             .ToPng();
 
@@ -263,44 +262,44 @@ internal static partial class SmokeTests {
     private static void PngFontPathSupportsTrueTypeCollections() {
         var collectionPath = "/System/Library/Fonts/HelveticaNeue.ttc";
         var baseline = Chart.Create()
-            .WithSize(360, 220)
-            .WithTitle("PNG collection")
-            .WithSubtitle("TrueType collection")
+            .Size(360, 220)
+            .Title("PNG collection")
+            .Subtitle("TrueType collection")
             .AddLine("Primary", Points(10, 20, 30), ChartColor.FromRgb(37, 99, 235))
             .ToPng();
         var collection = Chart.Create()
-            .WithSize(360, 220)
-            .WithTitle("PNG collection")
-            .WithSubtitle("TrueType collection")
-            .WithPngFont(collectionPath)
+            .Size(360, 220)
+            .Title("PNG collection")
+            .Subtitle("TrueType collection")
+            .Png(p => p.FontPath(collectionPath))
             .AddLine("Primary", Points(10, 20, 30), ChartColor.FromRgb(37, 99, 235))
             .ToPng();
         var indexedCollection = Chart.Create()
-            .WithSize(360, 220)
-            .WithTitle("PNG collection")
-            .WithSubtitle("TrueType collection")
-            .WithPngFont(collectionPath, 0)
+            .Size(360, 220)
+            .Title("PNG collection")
+            .Subtitle("TrueType collection")
+            .Png(p => p.FontPath(collectionPath).FontCollectionIndex(0))
             .AddLine("Primary", Points(10, 20, 30), ChartColor.FromRgb(37, 99, 235))
             .ToPng();
         var namedCollection = Chart.Create()
-            .WithSize(360, 220)
-            .WithTitle("PNG collection")
-            .WithSubtitle("TrueType collection")
-            .WithPngFont(collectionPath, faceName: "Helvetica Neue")
+            .Size(360, 220)
+            .Title("PNG collection")
+            .Subtitle("TrueType collection")
+            .Png(p => p.FontPath(collectionPath).FontFaceName("Helvetica Neue"))
             .AddLine("Primary", Points(10, 20, 30), ChartColor.FromRgb(37, 99, 235))
             .ToPng();
         var missingFace = Chart.Create()
-            .WithSize(360, 220)
-            .WithTitle("PNG collection")
-            .WithSubtitle("TrueType collection")
-            .WithPngFont(collectionPath, faceName: "Definitely Missing Face")
+            .Size(360, 220)
+            .Title("PNG collection")
+            .Subtitle("TrueType collection")
+            .Png(p => p.FontPath(collectionPath).FontFaceName("Definitely Missing Face"))
             .AddLine("Primary", Points(10, 20, 30), ChartColor.FromRgb(37, 99, 235))
             .ToPng();
         var outOfRangeIndex = Chart.Create()
-            .WithSize(360, 220)
-            .WithTitle("PNG collection")
-            .WithSubtitle("TrueType collection")
-            .WithPngFont(collectionPath, 9999)
+            .Size(360, 220)
+            .Title("PNG collection")
+            .Subtitle("TrueType collection")
+            .Png(p => p.FontPath(collectionPath).FontCollectionIndex(9999))
             .AddLine("Primary", Points(10, 20, 30), ChartColor.FromRgb(37, 99, 235))
             .ToPng();
 
@@ -317,17 +316,17 @@ internal static partial class SmokeTests {
     private static void PngTrueTypeRendererHandlesCompositeGlyphs() {
         var collectionPath = "/System/Library/Fonts/HelveticaNeue.ttc";
         var fallback = Chart.Create()
-            .WithSize(420, 240)
-            .WithTitle("München Łódź Café")
-            .WithSubtitle("Zażółć gęślą jaźń")
-            .WithPngFont(collectionPath, faceName: "Definitely Missing Face")
+            .Size(420, 240)
+            .Title("München Łódź Café")
+            .Subtitle("Zażółć gęślą jaźń")
+            .Png(p => p.FontPath(collectionPath).FontFaceName("Definitely Missing Face"))
             .AddLine("Żółć", Points(10, 20, 30), ChartColor.FromRgb(37, 99, 235))
             .ToPng();
         var configured = Chart.Create()
-            .WithSize(420, 240)
-            .WithTitle("München Łódź Café")
-            .WithSubtitle("Zażółć gęślą jaźń")
-            .WithPngFont(collectionPath, faceName: "Helvetica Neue")
+            .Size(420, 240)
+            .Title("München Łódź Café")
+            .Subtitle("Zażółć gęślą jaźń")
+            .Png(p => p.FontPath(collectionPath).FontFaceName("Helvetica Neue"))
             .AddLine("Żółć", Points(10, 20, 30), ChartColor.FromRgb(37, 99, 235))
             .ToPng();
 
@@ -336,13 +335,13 @@ internal static partial class SmokeTests {
     }
 
     private static void PngSurfacesUseRoundedCorners() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite())
-            .WithSize(160, 100)
+        var chart = Chart.Create().Theme(VisualTheme.Graphite())
+            .Size(160, 100)
             .AddLine("Invisible", new[] { new ChartPoint(1, 1), new ChartPoint(2, 2) }, ChartColor.Transparent);
         chart.Options.ShowAxes = false;
         chart.Options.ShowGrid = false;
         chart.Options.ShowHeader = false;
-        chart.Options.ShowLegend = false;
+        chart.Options.Legend.Visible = false;
         chart.Options.ShowPlotBackground = false;
 
         var pixels = ReadPngRgba(chart.ToPng(), out var width, out _);
@@ -356,18 +355,18 @@ internal static partial class SmokeTests {
 
     private static void PngAnnotationsUseReadableRasterStyling() {
         var chart = Chart.Create()
-            .WithSize(260, 180)
-            .WithPadding(20, 20, 20, 24)
+            .Size(260, 180)
+            .Padding(20, 20, 20, 24)
             .AddLine("Hidden", new[] { new ChartPoint(1, 0), new ChartPoint(3, 20) }, ChartColor.Transparent)
             .AddHorizontalLine(10, "target", ChartColor.FromRgb(251, 191, 36));
         // Fix the coordinate domain: automatic nice domains may expand beyond the data.
-        chart.Options.YAxis.Minimum = 0;
-        chart.Options.YAxis.Maximum = 20;
+        chart.Options.YAxis.Min = 0;
+        chart.Options.YAxis.Max = 20;
         chart.Options.ShowAxes = false;
         chart.Options.ShowCard = false;
         chart.Options.ShowGrid = false;
         chart.Options.ShowHeader = false;
-        chart.Options.ShowLegend = false;
+        chart.Options.Legend.Visible = false;
         chart.Options.ShowPlotBackground = false;
 
         var pixels = ReadPngRgba(chart.ToPng(), out var width, out _);
@@ -387,13 +386,13 @@ internal static partial class SmokeTests {
 
     private static void PngPieLikeChartsUseReadableDetails() {
         var chart = Chart.Create()
-            .WithSize(260, 180)
-            .WithDataLabels()
-            .WithXLabels("Passed", "Warning", "Failed")
+            .Size(260, 180)
+            .DataLabels()
+            .XLabels("Passed", "Warning", "Failed")
             .AddDonut("Checks", Points(70, 20, 10));
         chart.Options.ShowCard = false;
         chart.Options.ShowHeader = false;
-        chart.Options.ShowLegend = false;
+        chart.Options.Legend.Visible = false;
         chart.Options.ShowPlotBackground = false;
 
         var pixels = ReadPngRgba(chart.ToPng(), out _, out _);
@@ -406,14 +405,14 @@ internal static partial class SmokeTests {
 
     private static void PngDataLabelsUseReadableHalos() {
         var chart = Chart.Create()
-            .WithSize(220, 140)
-            .WithDataLabels()
+            .Size(220, 140)
+            .DataLabels()
             .AddLine("Values", new[] { new ChartPoint(1, 12), new ChartPoint(2, 18), new ChartPoint(3, 15) }, ChartColor.FromRgb(37, 99, 235));
         chart.Options.ShowAxes = false;
         chart.Options.ShowCard = false;
         chart.Options.ShowGrid = false;
         chart.Options.ShowHeader = false;
-        chart.Options.ShowLegend = false;
+        chart.Options.Legend.Visible = false;
         chart.Options.ShowPlotBackground = false;
 
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -427,17 +426,17 @@ internal static partial class SmokeTests {
     }
 
     private static void PngReadableLabelsFitInsidePlotBounds() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite())
-            .WithSize(180, 120)
-            .WithPadding(24, 16, 18, 24)
-            .WithDataLabels()
+        var chart = Chart.Create().Theme(VisualTheme.Graphite())
+            .Size(180, 120)
+            .Padding(24, 16, 18, 24)
+            .DataLabels()
             .AddBar("Values", Points(72), ChartColor.FromRgb(37, 99, 235));
-        chart.Series[0].WithPointLabel(0, "Extremely long remediation status label that must fit");
+        chart.Series[0].PointLabel(0, "Extremely long remediation status label that must fit");
         chart.Options.ShowAxes = false;
         chart.Options.ShowCard = false;
         chart.Options.ShowGrid = false;
         chart.Options.ShowHeader = false;
-        chart.Options.ShowLegend = false;
+        chart.Options.Legend.Visible = false;
         chart.Options.ShowPlotBackground = false;
 
         var pixels = ReadPngRgba(chart.ToPng(), out var width, out var height);
@@ -470,18 +469,18 @@ internal static partial class SmokeTests {
     }
 
     private static void PngHeatmapsRenderCellValueLabels() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite())
-            .WithSize(720, 420)
-            .WithPadding(70, 44, 52, 72)
-            .WithDataLabels()
-            .WithHeatmapScale(ChartHeatmapScale.Semantic)
-            .WithValueFormatter(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
-            .WithXLabels("SPF", "DMARC", "DNSSEC")
+        var chart = Chart.Create().Theme(VisualTheme.Graphite())
+            .Size(720, 420)
+            .Padding(70, 44, 52, 72)
+            .DataLabels()
+            .Heatmap(h => h.Scale(ChartHeatmapScale.Semantic))
+            .FormatValuesBy(value => value.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + "%")
+            .XLabels("SPF", "DMARC", "DNSSEC")
             .AddHeatmapRow("Primary", Points(96, 0, 0))
             .AddHeatmapRow("Parked", Points(82, 0, 25));
         chart.Options.ShowCard = false;
         chart.Options.ShowHeader = false;
-        chart.Options.ShowLegend = false;
+        chart.Options.Legend.Visible = false;
         chart.Options.ShowPlotBackground = false;
 
         chart.Options.ShowAxes = false;
@@ -515,7 +514,7 @@ internal static partial class SmokeTests {
             Assert(inkPixels >= 8, $"Heatmap label {index} should have visible resolved ink within its measured native bounds. Actual pixels: {inkPixels}.");
         }
         Assert(!prepared.Scene.Nodes.Any(node => node.Role == "heatmap-scale-step"), "Explicit legend suppression should hide the continuous heatmap scale.");
-        chart.Options.ShowLegend = true;
+        chart.Options.Legend.Visible = true;
         var withScale = PreparedFamily(chart);
         var scaleRegions = withScale.Regions.Where(region => region.Role == "heatmap-scale-step").ToArray();
         var scale = scaleRegions.Select(region => withScale.Scene.Nodes.OfType<VisualSceneRectangle>()
@@ -533,17 +532,17 @@ internal static partial class SmokeTests {
 
     private static void PngTimelinesRenderReadableRasterDetails() {
         var chart = Chart.Create()
-            .WithSize(360, 220)
-            .WithPadding(70, 24, 24, 50)
-            .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
-            .WithXAxis("Schedule")
-            .WithYAxis("Workstream")
-            .WithDataLabels()
+            .Size(360, 220)
+            .Padding(70, 24, 24, 50)
+            .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
+            .XAxis(x => x.Title("Schedule"))
+            .YAxis(y => y.Title("Workstream"))
+            .DataLabels()
             .AddTimelineRange("Alpha", 10, 90, ChartColor.FromRgb(37, 99, 235))
             .AddTimelineRange("Beta", 24, 70, ChartColor.FromRgb(16, 185, 129));
         chart.Options.ShowCard = false;
         chart.Options.ShowHeader = false;
-        chart.Options.ShowLegend = false;
+        chart.Options.Legend.Visible = false;
         chart.Options.ShowPlotBackground = false;
 
         var pixels = ReadPngRgba(chart.ToPng(), out var width, out _);
@@ -562,14 +561,14 @@ internal static partial class SmokeTests {
         var output = Path.Combine(Path.GetTempPath(), "ChartForgeX-gallery-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(output);
         try {
-            var alpha = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(320, 180).WithTitle("Alpha & Beta").AddLine("Values", Points(1, 2, 3));
+            var alpha = Chart.Create().Theme(VisualTheme.Graphite()).Size(320, 180).Title("Alpha & Beta").AddLine("Values", Points(1, 2, 3));
             File.WriteAllText(Path.Combine(output, "alpha.html"), alpha.ToHtmlPage());
             File.WriteAllText(Path.Combine(output, "alpha.svg"), alpha.ToSvg());
             File.WriteAllBytes(Path.Combine(output, "alpha.png"), alpha.ToPng());
             File.WriteAllText(Path.Combine(output, "alpha 2.html"), alpha.ToHtmlPage());
             File.WriteAllText(Path.Combine(output, "alpha 2.svg"), alpha.ToSvg());
             File.WriteAllBytes(Path.Combine(output, "alpha 2.png"), alpha.ToPng());
-            var zeta = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(640, 360).WithTitle("Zeta").AddBar("Values", Points(1, 2, 3));
+            var zeta = Chart.Create().Theme(VisualTheme.Graphite()).Size(640, 360).Title("Zeta").AddBar("Values", Points(1, 2, 3));
             File.WriteAllText(Path.Combine(output, "zeta.html"), zeta.ToHtmlPage());
             File.WriteAllText(Path.Combine(output, "zeta.svg"), zeta.ToSvg());
             File.WriteAllBytes(Path.Combine(output, "zeta.png"), zeta.ToPng());
@@ -579,7 +578,7 @@ internal static partial class SmokeTests {
             File.WriteAllBytes(Path.Combine(output, "dashboard-chart-portfolio-grid.png"), alpha.ToPng());
             File.WriteAllText(Path.Combine(output, "travel-dotted-map-dark.html"), "<!doctype html><title>Travel Dotted Map</title><svg></svg>");
             File.WriteAllText(Path.Combine(output, "report.html"), "<!doctype html><title>Report</title><svg></svg>");
-            File.WriteAllText(Path.Combine(output, "alpha.csharp.txt"), "var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithTitle(\"Alpha & Beta\");");
+            File.WriteAllText(Path.Combine(output, "alpha.csharp.txt"), "var chart = Chart.Create().Theme(VisualTheme.Graphite()).Title(\"Alpha & Beta\");");
             File.WriteAllText(Path.Combine(output, "visual-baseline.json"), "{\"version\":1,\"charts\":[{\"name\":\"alpha\",\"width\":320,\"height\":180,\"svg\":{\"minVisualNodes\":2,\"maxClippedTextNodes\":0,\"maxNearEdgeTextNodes\":999},\"png\":{\"outputScale\":1,\"minVisiblePixels\":64,\"minDistinctColors\":8,\"maxEdgeInkPixels\":0}},{\"name\":\"zeta\",\"width\":640,\"height\":360,\"svg\":{\"minVisualNodes\":2,\"maxClippedTextNodes\":0,\"maxNearEdgeTextNodes\":999},\"png\":{\"outputScale\":1,\"minVisiblePixels\":64,\"minDistinctColors\":8,\"maxEdgeInkPixels\":0}}]}");
 
             GalleryWriter.Write(output);
@@ -667,7 +666,7 @@ internal static partial class SmokeTests {
             Assert(comparison.Contains(".wipe-frame>.wipe-25:checked~.media", StringComparison.Ordinal), "Comparison page should avoid flex-stretching wipe labels at wide viewport sizes.");
             Assert(comparison.Contains("SVG 25%", StringComparison.Ordinal) && comparison.Contains("SVG 75%", StringComparison.Ordinal), "Comparison page should offer fixed wipe positions without requiring JavaScript.");
             Assert(comparison.Contains("clip-path:inset(0 calc(100% - var(--wipe)) 0 0)", StringComparison.Ordinal), "Comparison page should keep SVG and PNG framed together while moving the wipe split.");
-            Assert(comparison.Contains("C# example code", StringComparison.Ordinal) && comparison.Contains("var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithTitle(&quot;Alpha &amp; Beta&quot;);", StringComparison.Ordinal), "Comparison page should carry readable C# source snippets when examples provide them.");
+            Assert(comparison.Contains("C# example code", StringComparison.Ordinal) && comparison.Contains("var chart = Chart.Create().Theme(VisualTheme.Graphite()).Title(&quot;Alpha &amp; Beta&quot;);", StringComparison.Ordinal), "Comparison page should carry readable C# source snippets when examples provide them.");
             Assert(comparison.Contains(".pair{display:grid;grid-template-columns:repeat(2", StringComparison.Ordinal), "Comparison page should avoid squeezing SVG, PNG, and wipe panes into three narrow columns.");
             Assert(comparison.Contains("href=\"catalog.html\"", StringComparison.Ordinal), "Comparison page should link the grouped catalog page.");
             Assert(comparison.Contains("href=\"quality-dashboard.html\"", StringComparison.Ordinal), "Comparison page should link the artifact quality dashboard.");

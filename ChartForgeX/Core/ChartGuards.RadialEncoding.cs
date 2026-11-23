@@ -13,7 +13,7 @@ internal static partial class ChartGuards {
             var axis = series.ValueAxis == ChartAxisSide.Secondary ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
             if (axis.Scale != ChartScaleKind.Linear)
                 throw new NotSupportedException("Area radial value encoding requires linear selected value axes.");
-            if (axis.Minimum.HasValue && axis.Minimum.Value < 0 || axis.Maximum.HasValue && axis.Maximum.Value < 0
+            if (axis.Min.HasValue && axis.Min.Value < 0 || axis.Max.HasValue && axis.Max.Value < 0
                 || series.RenderPoints.Any(point => point.Y < 0))
                 throw new InvalidOperationException("Area radial value encoding requires nonnegative selected value bounds and observations.");
         }

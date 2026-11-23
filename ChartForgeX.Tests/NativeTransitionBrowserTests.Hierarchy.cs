@@ -17,8 +17,8 @@ public sealed partial class NativeTransitionBrowserTests {
     [Trait("BrowserSuite", "Compatibility")]
     public async Task RealNativeHierarchyValueFramesKeepAcceptedIdentityExportAndInitialLifetime(bool sunburst, bool authored, int width, bool dark, bool initial) {
         if (!Enabled) return; var renderer = new HtmlInteractiveChartRenderer();
-        Chart Model(double value) => NativeHierarchyMotionBeforeControls.Model(sunburst, authored, value).WithSize(width, 420)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light);
+        Chart Model(double value) => NativeHierarchyMotionBeforeControls.Model(sunburst, authored, value).Size(width, 420)
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         HtmlChartSection Section(double value) => renderer.PrepareHierarchySection(Model(value), configure: options => {
             options.Interaction.ChartId = "native-hierarchy-values"; options.Interaction.Enable(ChartInteractionFeatures.Export);
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Adaptive; options.Adaptive.NarrowWidth = 350; options.Adaptive.NarrowHeight = 420;
@@ -53,8 +53,8 @@ public sealed partial class NativeTransitionBrowserTests {
     [InlineData(true, false, 760, true, true)] [InlineData(true, true, 390, false, true)]
     [Trait("BrowserSuite", "Compatibility")]
     public async Task ActualNativeHierarchyMembershipAndRootShareTheExistingTransportAndAbsoluteReset(bool sunburst, bool authored, int width, bool dark, bool rootChange) {
-        if (!Enabled) return; var renderer = new HtmlInteractiveChartRenderer(); var chart = NativeHierarchyMotionBeforeControls.Model(sunburst, authored, 30).WithLegend(true).WithSize(width, 420)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light); chart.Options.ShowPointLegend = !sunburst;
+        if (!Enabled) return; var renderer = new HtmlInteractiveChartRenderer(); var chart = NativeHierarchyMotionBeforeControls.Model(sunburst, authored, 30).Legend(true).Size(width, 420)
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light); chart.Options.Legend.ShowPoints = !sunburst;
         HtmlChartSection Section(ChartVisibilityView view) => renderer.PrepareVisibilitySection(chart, view, configure: options => { options.Interaction.ChartId = "native-hierarchy-reflow"; options.Interaction.Enable(ChartInteractionFeatures.Export | ChartInteractionFeatures.LegendToggles | ChartInteractionFeatures.HierarchyNavigation); });
         var from = Section(NativeHierarchyVisibilityReflowTests.View()); var to = Section(rootChange ? NativeHierarchyVisibilityReflowTests.View(root: "branch") : NativeHierarchyVisibilityReflowTests.View("leaf-a"));
         var options = new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.LegendVisibility, 5); var forward = renderer.PrepareNativeTransitionJson(from, to, options); var reverse = renderer.PrepareNativeTransitionJson(to, from, options);

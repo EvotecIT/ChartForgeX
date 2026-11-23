@@ -6,10 +6,10 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void TopologyAutoSizedGroupsEncloseExplicitMemberBounds() {
         var chart = TopologyChart.Create()
-            .WithId("auto-sized-explicit-origin")
-            .WithViewport(520, 360, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.Manual)
+            .Id("auto-sized-explicit-origin")
+            .Viewport(new TopologyViewport(520, 360, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.Manual)
             .AddGroup("region", "Region", 300, 200, 0, 0, TopologyHealthStatus.Healthy)
             .AddNode("site", "Site", 100, 80, TopologyNodeKind.Branch, TopologyHealthStatus.Healthy, "region", width: 120, height: 64);
 

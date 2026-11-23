@@ -21,7 +21,7 @@ var theme = VisualTheme.Graphite();
 var teamA = new ChartSeries(new ChartSeriesId("team-a"), "Team A", ChartSeriesKind.Slope, new[] { new ChartPoint(1, 28), new ChartPoint(2, 64) });
 var teamB = new ChartSeries(new ChartSeriesId("team-b"), "Team B", ChartSeriesKind.Slope, new[] { new ChartPoint(1, 52), new ChartPoint(2, 43) });
 var teamC = new ChartSeries(new ChartSeriesId("team-c"), "Team C", ChartSeriesKind.Slope, new[] { new ChartPoint(1, 38), new ChartPoint(2, 57) });
-var chart = Chart.Create().WithXLabels("Before", "After").AddSeries(teamA).AddSeries(teamB).AddSeries(teamC);
+var chart = Chart.Create().XLabels("Before", "After").AddSeries(teamA).AddSeries(teamB).AddSeries(teamC);
 
 #region Output
 var context = new VisualRenderContext(

@@ -55,7 +55,7 @@ public sealed class MermaidQuadrantRegionTests {
         if (points) Assert.Equal(.2, chart.Series[0].Points[0].X);
 
         // Isolate native region paint: guide lines can cross the interior sample locations.
-        chart.WithGrid(false);
+        chart.ShowGrid(false);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var regions = prepared.Regions.Where(r => r.Role == "plot-region").ToArray();
         Assert.Equal(4, regions.Length);

@@ -11,7 +11,7 @@ namespace ChartForgeX.Rendering;
 internal static partial class VisualNumericRadialCompiler {
     private static void DataLabel(Chart chart, VisualRenderContext context, VisualSceneBuilder builder, ChartRect plot, ChartSeries series,
         int point, string id, string text, RadialSeriesMark mark, ChartRect bounds, ChartColor fill, List<RadialSeriesLabel> labels) {
-        var placement = series.DataLabelPlacement ?? chart.Options.DataLabelPlacement;
+        var placement = series.DataLabelPlacement ?? chart.Options.DataLabels.Placement;
         var inside = placement is ChartDataLabelPlacement.Center or ChartDataLabelPlacement.Inside;
         var automaticOutside = placement is ChartDataLabelPlacement.Auto or ChartDataLabelPlacement.Outside;
         var colors = context.Theme.Resolve(context.ThemeMode);

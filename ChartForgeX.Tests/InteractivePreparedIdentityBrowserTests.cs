@@ -12,7 +12,7 @@ public sealed class InteractivePreparedIdentityBrowserTests {
     [InlineData(ChartForgeX.Core.ChartSeriesKind.Radar)]
     public async Task MarkerFreeSourceFocusRequiresSeriesPaintAtItsOwnNativeClipLocation(ChartSeriesKind kind) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(600, 440).WithLegend(false).WithDataLabels(false).WithLineMarkers(ChartLineMarkerMode.None);
+        var chart = Chart.Create().Size(600, 440).Legend(false).DataLabels(false).Lines(l => l.MarkerMode(ChartLineMarkerMode.None));
         var points = new[] { new ChartPoint(1, 60), new ChartPoint(2, 80), new ChartPoint(3, 50) };
         if (kind == ChartSeriesKind.Line) chart.AddLine("Observed", points);
         else { chart.AddRadar("Observed", points); chart.Series[0].MarkerRadius = 0; }
@@ -60,10 +60,10 @@ public sealed class InteractivePreparedIdentityBrowserTests {
     [InlineData(true)]
     public async Task LinkedHeatmapCellHasOneKeyboardTargetAndRetainsNativeEnterNavigation(bool dark) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(596, 338).WithTitle("Service evidence")
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithXLabels("Directory")
-            .WithStateCategories(new ChartStateCategory("pass", "Passed", ChartColor.FromHex("#1d8a52")))
+        var chart = Chart.Create().Size(596, 338).Title("Service evidence")
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .XLabels("Directory")
+            .StateCategories(new ChartStateCategory("pass", "Passed", ChartColor.FromHex("#1d8a52")))
             .AddHeatmapCategoryRow("DC01", new ChartHeatmapCell("pass", "3", href: "#evidence", tooltip: "Open evidence"));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage());
         var page = session.Page;
@@ -91,7 +91,7 @@ public sealed class InteractivePreparedIdentityBrowserTests {
     [BrowserFact]
     public async Task MarkerFreeDecimatedObservationEmitsOneOriginalSourceSelectionAndSupportsKeyboard() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(596, 338).WithLineMarkers(ChartLineMarkerMode.None)
+        var chart = Chart.Create().Size(596, 338).Lines(l => l.MarkerMode(ChartLineMarkerMode.None))
             .AddSeries(ChartSeries.CreateDecimated(new ChartSeriesId("latency-source"), "Latency", ChartSeriesKind.Line, Enumerable.Range(0, 100).Select(index => new ChartPoint(index, Math.Sin(index / 4d))), 12));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage());
         var page = session.Page;

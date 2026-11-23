@@ -27,8 +27,8 @@ public static class FindingsRecipe {
             var selected = variant == "explicit-status"
                 ? new[] { colors.Status.Pass.Fill, colors.Status.Medium.Fill, colors.Status.Critical.Fill }
                 : colors.Palette.Take(3).ToArray();
-            for (var index = 0; index < findings.Points.Count; index++) findings.WithPointColor(index, selected[index % selected.Length]);
+            for (var index = 0; index < findings.Points.Count; index++) findings.PointColor(index, selected[index % selected.Length]);
         }
-        return Chart.Create().WithXLabels(Enumerable.Range(0, count).Select(Name).ToArray()).AddSeries(findings);
+        return Chart.Create().XLabels(Enumerable.Range(0, count).Select(Name).ToArray()).AddSeries(findings);
     }
 }

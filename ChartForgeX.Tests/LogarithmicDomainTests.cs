@@ -22,9 +22,9 @@ public sealed class LogarithmicDomainTests {
     public void AuthoredBaseAndSignKeepEqualLogStepsSourceIdentityAndNativeExports(double logarithmBase, bool negative, bool reversed) {
         var values = negative ? new[] { -logarithmBase * logarithmBase, -logarithmBase, -1d } : new[] { 1d, logarithmBase, logarithmBase * logarithmBase };
         var chart = Line(values);
-        chart.Series[0].WithObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("middle"), new ChartObservationId("last") });
-        chart.Options.YAxis.WithLogarithmicScale(logarithmBase, negative ? ChartLogarithmicDomain.Negative : ChartLogarithmicDomain.Positive)
-            .WithBounds(values[0], values[2]).WithReversal(reversed);
+        chart.Series[0].ObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("middle"), new ChartObservationId("last") });
+        chart.Options.YAxis.LogarithmicScale(logarithmBase, negative ? ChartLogarithmicDomain.Negative : ChartLogarithmicDomain.Positive)
+            .Bounds(values[0], values[2]).Reversed(reversed);
         var prepared = Prepare(chart); var markers = Markers(prepared);
         Assert.Equal(3, markers.Length);
         Assert.Equal((markers[0].Cy + markers[2].Cy) / 2, markers[1].Cy, 8);
@@ -49,7 +49,7 @@ public sealed class LogarithmicDomainTests {
     [InlineData(true)]
     public void ExplicitDefaultBasePreservesExistingSvgPngAndMetadata(bool symmetric) {
         var chart = Line(symmetric ? new[] { -9d, 0, 9 } : new[] { 1d, 10, 100 });
-        chart.Options.YAxis.WithScale(symmetric ? ChartScaleKind.SymmetricLogarithmic : ChartScaleKind.Logarithmic);
+        chart.Options.YAxis.Scale(symmetric ? ChartScaleKind.SymmetricLogarithmic : ChartScaleKind.Logarithmic);
         var prior = Prepare(chart); var priorHtml = chart.ToInteractiveHtmlFragmentWithoutAssets();
         chart.Options.YAxis.LogarithmBase = 10; chart.Options.YAxis.LogarithmicDomain = ChartLogarithmicDomain.Positive;
         var current = Prepare(chart);
@@ -60,7 +60,7 @@ public sealed class LogarithmicDomainTests {
     [Fact]
     public void SymmetricLogarithmUsesTheSameAuthoredBaseAndThreshold() {
         var chart = Line(new[] { -14d, 0, 14 });
-        chart.Options.YAxis.WithScale(ChartScaleKind.SymmetricLogarithmic).WithBounds(-14, 14);
+        chart.Options.YAxis.Scale(ChartScaleKind.SymmetricLogarithmic).Bounds(-14, 14);
         chart.Options.YAxis.SymmetricLogarithmThreshold = 2; chart.Options.YAxis.LogarithmBase = 2;
         var prepared = Prepare(chart); var projection = prepared.YProjection!;
         Assert.Equal(-3, ChartScaleTransform.Forward(-14, chart.Options.YAxis), 10);
@@ -77,14 +77,14 @@ public sealed class LogarithmicDomainTests {
     [InlineData(double.NaN)]
     [InlineData(double.PositiveInfinity)]
     public void InvalidConfigurationCannotPartiallyReplaceAnAxis(double invalidBase) {
-        var axis = new ChartAxis().WithLogarithmicScale(2, ChartLogarithmicDomain.Negative).WithBounds(-16, -1);
+        var axis = new ChartAxis().LogarithmicScale(2, ChartLogarithmicDomain.Negative).Bounds(-16, -1);
         Assert.Throws<ArgumentOutOfRangeException>(() => axis.LogarithmBase = invalidBase);
-        Assert.Throws<ArgumentOutOfRangeException>(() => axis.WithLogarithmicScale(invalidBase));
+        Assert.Throws<ArgumentOutOfRangeException>(() => axis.LogarithmicScale(invalidBase));
         Assert.Throws<InvalidOperationException>(() => axis.LogarithmicDomain = ChartLogarithmicDomain.Positive);
         Assert.Throws<ArgumentOutOfRangeException>(() => axis.LogarithmicDomain = (ChartLogarithmicDomain)9);
-        Assert.Throws<ArgumentOutOfRangeException>(() => axis.Maximum = 0);
+        Assert.Throws<ArgumentOutOfRangeException>(() => axis.Max = 0);
         Assert.Equal(2, axis.LogarithmBase); Assert.Equal(ChartLogarithmicDomain.Negative, axis.LogarithmicDomain);
-        Assert.Equal(-16, axis.Minimum); Assert.Equal(-1, axis.Maximum);
+        Assert.Equal(-16, axis.Min); Assert.Equal(-1, axis.Max);
     }
 
     [Theory]
@@ -92,7 +92,7 @@ public sealed class LogarithmicDomainTests {
     [InlineData(1)]
     public void WrongSignObservationsRejectEvenOutsideExplicitPaintBounds(double wrongSign) {
         var chart = Line(new[] { -16d, -4, wrongSign });
-        chart.Options.YAxis.WithLogarithmicScale(2, ChartLogarithmicDomain.Negative).WithBounds(-16, -1);
+        chart.Options.YAxis.LogarithmicScale(2, ChartLogarithmicDomain.Negative).Bounds(-16, -1);
         Assert.Throws<InvalidOperationException>(() => Prepare(chart));
         Assert.Throws<InvalidOperationException>(() => chart.ToPng());
     }
@@ -100,13 +100,13 @@ public sealed class LogarithmicDomainTests {
     [Fact]
     public void EmptySingletonRefillAndOneSidedBoundsStayInTheNegativeDomain() {
         var chart = Line(Array.Empty<double>());
-        chart.Options.YAxis.WithLogarithmicScale(2, ChartLogarithmicDomain.Negative);
+        chart.Options.YAxis.LogarithmicScale(2, ChartLogarithmicDomain.Negative);
         Assert.Contains("no-data", Prepare(chart).ToSvg(), StringComparison.Ordinal);
         chart.Series[0].Points.Add(new ChartPoint(1, -8));
         var singleton = Prepare(chart); var projection = singleton.YProjection!;
         Assert.True(projection.FullMinimum < projection.FullMaximum && projection.FullMaximum < 0);
         Assert.Single(Markers(singleton)); Assert.NotEmpty(singleton.ToPng());
-        chart.Options.YAxis.Minimum = -.5;
+        chart.Options.YAxis.Min = -.5;
         var clipped = Prepare(chart).YProjection!;
         Assert.Equal(-.5, clipped.Minimum); Assert.True(clipped.Maximum < 0 && clipped.Maximum > clipped.Minimum);
         chart.Series[0].Points.Clear(); Assert.Contains("no-data", Prepare(chart).ToSvg(), StringComparison.Ordinal);
@@ -116,11 +116,11 @@ public sealed class LogarithmicDomainTests {
     [InlineData(false)]
     [InlineData(true)]
     public void NegativeBarBaselinesStayNearestZeroForEachPhysicalValueAxis(bool horizontal) {
-        var chart = Chart.Create().WithSize(600, 360).WithLegend(false).WithBarStyle(ChartBarStyle.Flat);
+        var chart = Chart.Create().Size(600, 360).Legend(false).Bars(b => b.Style(ChartBarStyle.Flat));
         var points = new[] { new ChartPoint(1, -4), new ChartPoint(2, -16) };
         if (horizontal) chart.AddHorizontalBar("Losses", points); else chart.AddBar("Losses", points);
         var axis = horizontal ? chart.Options.XAxis : chart.Options.YAxis;
-        axis.WithLogarithmicScale(2, ChartLogarithmicDomain.Negative).WithBounds(-32, -1);
+        axis.LogarithmicScale(2, ChartLogarithmicDomain.Negative).Bounds(-32, -1);
         var prepared = Prepare(chart);
         var bars = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == (horizontal ? "horizontal-bar" : "bar")).ToArray();
         Assert.Equal(2, bars.Length);
@@ -132,7 +132,7 @@ public sealed class LogarithmicDomainTests {
     [Fact]
     public void NegativeProjectionConfinementAndHtmlMetadataRetainTheCommittedPolicy() {
         var chart = Line(new[] { -64d, -8, -1 });
-        chart.Options.YAxis.WithLogarithmicScale(2, ChartLogarithmicDomain.Negative).WithBounds(-64, -1);
+        chart.Options.YAxis.LogarithmicScale(2, ChartLogarithmicDomain.Negative).Bounds(-64, -1);
         var projection = Prepare(chart).YProjection!;
         var window = projection.ConstrainViewport(new ChartAxisWindow(-256, -16))!;
         Assert.Equal(-64, window.Minimum, 8); Assert.Equal(-4, window.Maximum, 8);
@@ -149,10 +149,10 @@ public sealed class LogarithmicDomainTests {
 
     [Fact]
     public void NegativeXScaleAndSourceAnnotationsShareTheSelectedDomain() {
-        var chart = Chart.Create().WithSize(600, 360).WithLegend(false).WithLineMarkers(ChartLineMarkerMode.All)
+        var chart = Chart.Create().Size(600, 360).Legend(false).Lines(l => l.MarkerMode(ChartLineMarkerMode.All))
             .AddLine("Negative X", new[] { new ChartPoint(-16, -16), new ChartPoint(-4, -4), new ChartPoint(-1, -1) });
-        chart.Options.XAxis.WithLogarithmicScale(2, ChartLogarithmicDomain.Negative).WithBounds(-16, -1);
-        chart.Options.YAxis.WithLogarithmicScale(2, ChartLogarithmicDomain.Negative).WithBounds(-16, -1);
+        chart.Options.XAxis.LogarithmicScale(2, ChartLogarithmicDomain.Negative).Bounds(-16, -1);
+        chart.Options.YAxis.LogarithmicScale(2, ChartLogarithmicDomain.Negative).Bounds(-16, -1);
         chart.AddLineSegment(new ChartPoint(-16, -16), new ChartPoint(-1, -1), "Trend")
             .AddPlotRegion(new ChartPlotRegion(0, xMinimum:-8, xMaximum:-2, yMinimum:-8, yMaximum:-2));
         var prepared = Prepare(chart); var markers = Markers(prepared);
@@ -169,10 +169,10 @@ public sealed class LogarithmicDomainTests {
     [InlineData(false)]
     [InlineData(true)]
     public void RadialValueOwnersUseNegativeLogarithmsWithoutChangingSourceMagnitudes(bool radar) {
-        var chart = Chart.Create().WithSize(600, 440).WithLegend(false);
+        var chart = Chart.Create().Size(600, 440).Legend(false);
         var points = new[] { new ChartPoint(1, -16), new ChartPoint(2, -4), new ChartPoint(3, -1) };
         if (radar) chart.AddRadarLine("Losses", points); else chart.AddRadialColumn("Losses", points);
-        chart.Options.YAxis.WithLogarithmicScale(2, ChartLogarithmicDomain.Negative).WithBounds(-32, -.5);
+        chart.Options.YAxis.LogarithmicScale(2, ChartLogarithmicDomain.Negative).Bounds(-32, -.5);
         var prepared = Prepare(chart);
         Assert.Contains("-16", prepared.ToSvg(), StringComparison.Ordinal); Assert.NotEmpty(prepared.ToPng());
         chart.Options.YAxis.LogarithmicDomain = ChartLogarithmicDomain.Negative;
@@ -183,7 +183,7 @@ public sealed class LogarithmicDomainTests {
     [Fact]
     public void PolarRadiusKeepsItsExistingNonnegativeSourceConstraint() {
         var chart = Chart.Create().AddPolar("Polar", new[] { new ChartPoint(0, -8), new ChartPoint(1, -1) });
-        chart.Options.YAxis.WithLogarithmicScale(2, ChartLogarithmicDomain.Negative);
+        chart.Options.YAxis.LogarithmicScale(2, ChartLogarithmicDomain.Negative);
         Assert.Throws<InvalidOperationException>(() => Prepare(chart));
     }
 
@@ -192,7 +192,7 @@ public sealed class LogarithmicDomainTests {
     [InlineData(1.0000000000000002)]
     [InlineData(1e300)]
     public void ExtremeBaseAndMagnitudeTickWorkRemainsFiniteAndWithinTheAuthoredBudget(double logarithmBase) {
-        var axis = new ChartAxis().WithLogarithmicScale(logarithmBase, ChartLogarithmicDomain.Negative);
+        var axis = new ChartAxis().LogarithmicScale(logarithmBase, ChartLogarithmicDomain.Negative);
         axis.TickCount = 6;
         var ticks = ChartTicks.GenerateInside(axis, -1e300, -1e-300);
         Assert.InRange(ticks.Count, 1, axis.TickCount);
@@ -200,8 +200,8 @@ public sealed class LogarithmicDomainTests {
         Assert.Equal(ticks.OrderBy(value => value), ticks);
     }
 
-    private static Chart Line(IEnumerable<double> values) => Chart.Create().WithSize(600, 360).WithLegend(false)
-        .WithLineMarkers(ChartLineMarkerMode.All).WithXAxisBounds(0, 2)
+    private static Chart Line(IEnumerable<double> values) => Chart.Create().Size(600, 360).Legend(false)
+        .Lines(l => l.MarkerMode(ChartLineMarkerMode.All)).XAxis(x => x.Bounds(0, 2))
         .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("source"), "Values", values.Select((value, index) => new ChartPoint(index, value))));
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
     private static VisualSceneEllipse[] Markers(PreparedVisual prepared) => prepared.Scene.Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role == "marker").ToArray();

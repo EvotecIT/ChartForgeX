@@ -12,10 +12,10 @@ using static ChartForgeX.Tests.InteractiveChartBrowser;
 namespace ChartForgeX.Tests;
 
 public sealed class AutoThemeBrowserTests {
-    private static Chart Line(ThemeMode mode) => Chart.Create().WithSize(480, 300).WithThemeMode(mode).WithTitle("Orders")
+    private static Chart Line(ThemeMode mode) => Chart.Create().Size(480, 300).ThemeMode(mode).Title("Orders")
         .AddLine("Orders", new[] { new ChartPoint(1, 3), new ChartPoint(2, 5), new ChartPoint(3, 4) });
 
-    private static TopologyChart Topology(ThemeMode mode) => TopologyChart.Create().WithTheme(VisualTheme.Graphite(), mode).WithViewport(640, 240, 20)
+    private static TopologyChart Topology(ThemeMode mode) => TopologyChart.Create().Theme(VisualTheme.Graphite(), mode).Viewport(new TopologyViewport(640, 240, 20))
         .AddNode("a", "API", 80, 100).AddNode("b", "Worker", 340, 100).AddEdge("ab", "a", "b", "calls");
 
     private static string Page(ThemeMode mode, string head = "") =>

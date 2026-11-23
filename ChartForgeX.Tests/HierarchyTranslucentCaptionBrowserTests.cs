@@ -20,10 +20,10 @@ public sealed class HierarchyTranslucentCaptionBrowserTests {
     [MemberData(nameof(Cases))]
     public async Task AutomaticInkMatchesThePreparedSurfaceInCompactWideLightAndDarkHosts(ChartSeriesKind kind, int width, bool dark) {
         if (!InteractiveChartBrowser.Enabled) return;
-        var chart = HierarchyTranslucentCaptionCausalTests.Single(kind).WithSize(width, 460)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithTransparentBackground(false);
-        chart.ConfigureDataLabelStyle(style => style.FontFamily = BrowserProofFonts.Family);
-        chart.Series[0].WithPointColor(0, (dark ? ChartColor.White : ChartColor.Black).WithAlpha(24));
+        var chart = HierarchyTranslucentCaptionCausalTests.Single(kind).Size(width, 460)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).TransparentBackground(false);
+        chart.DataLabelStyle(style => style.FontFamily = BrowserProofFonts.Family);
+        chart.Series[0].PointColor(0, (dark ? ChartColor.White : ChartColor.Black).WithAlpha(24));
         var context = VisualExportRequest.ForChart(chart).Context;
         var prepared = chart.Prepare(context); var artifact = chart.ToVisualArtifact();
         var nativeInk = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), text => text.Role is "tree-node-label" or "treemap-label" or "sunburst-label").Color;

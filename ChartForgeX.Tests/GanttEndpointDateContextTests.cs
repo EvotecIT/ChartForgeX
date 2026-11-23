@@ -23,11 +23,11 @@ public sealed class GanttEndpointDateContextTests {
     [InlineData("windowed", ThemeMode.Dark)]
     public void DefaultDayScaleCaptionsStayOnCalendarBoundariesAndKeepExactTaskInstants(string policy, ThemeMode mode) {
         var chart = Fixture(mode); var first = Start; var last = Finish;
-        if (policy == "rejected") chart.WithGanttTickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Millisecond));
-        if (policy == "counted") chart.ConfigureXAxis(axis => axis.TickCount = 2);
+        if (policy == "rejected") chart.Gantt(g => g.TickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Millisecond)));
+        if (policy == "counted") chart.XAxis(axis => axis.TickCount = 2);
         if (policy == "windowed") {
             first = Start.AddDays(2).AddHours(3); last = Finish.AddDays(-2).AddHours(3);
-            chart.ConfigureXAxis(axis => axis.WithBounds(first.ToOADate(), last.ToOADate()));
+            chart.XAxis(axis => axis.Bounds(first.ToOADate(), last.ToOADate()));
         }
         var prepared = Prepare(chart);
         var labels = Captions(prepared);
@@ -67,11 +67,11 @@ public sealed class GanttEndpointDateContextTests {
     public void AuthoredAndSubdayClockPoliciesKeepTheirExistingNotation(string policy) {
         var chart = Fixture(ThemeMode.Light);
         Func<double, string> clock = value => DateTime.FromOADate(value).ToString("HH:mm", CultureInfo.InvariantCulture);
-        if (policy == "formatter") chart.ConfigureXAxis(axis => axis.WithLabelFormatter(clock));
-        if (policy == "value-format") chart.ConfigureXAxis(axis => axis.WithValueFormat(ChartValueFormat.Custom(clock)));
-        if (policy == "fixed") chart.WithGanttTickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Hour, 12));
-        if (policy == "all") chart.ConfigureXAxis(axis => axis.LabelDensity = ChartLabelDensity.All);
-        if (policy == "subday") chart = Chart.Create().WithSize(400, 300).WithHeader(false).WithLegend(false).WithPngFont(Font())
+        if (policy == "formatter") chart.XAxis(axis => axis.LabelBy(clock));
+        if (policy == "value-format") chart.XAxis(axis => axis.ValueFormat(ChartValueFormat.Custom(clock)));
+        if (policy == "fixed") chart.Gantt(g => g.TickInterval(new ChartTimeTickInterval(ChartTimeTickUnit.Hour, 12)));
+        if (policy == "all") chart.XAxis(axis => axis.LabelDensity = ChartLabelDensity.All);
+        if (policy == "subday") chart = Chart.Create().Size(400, 300).ShowHeader(false).Legend(false).Png(p => p.FontPath(Font()))
             .AddGanttTask("Project", Start, Start.AddHours(6));
         var prepared = Prepare(chart);
         var text = Captions(prepared).Select(label => label.Text.Lines.Single().Text).ToArray();
@@ -83,8 +83,8 @@ public sealed class GanttEndpointDateContextTests {
             Assert.Contains(prepared.Regions, region => region.Role == "schedule-tick-label" && region.Label == "12:00");
             if (policy == "all") Assert.Contains("06:00", text);
             else {
-                Assert.Equal(ChartTimeTickUnit.Hour, chart.Options.GanttTickInterval!.Unit);
-                Assert.Equal(12, chart.Options.GanttTickInterval.Count);
+                Assert.Equal(ChartTimeTickUnit.Hour, chart.Options.Gantt.TickInterval!.Unit);
+                Assert.Equal(12, chart.Options.Gantt.TickInterval.Count);
                 Assert.Equal(35, prepared.Scene.Nodes.OfType<VisualSceneLine>().Count(line => line.Role == "schedule-grid"));
             }
         }
@@ -95,16 +95,16 @@ public sealed class GanttEndpointDateContextTests {
     public void MermaidNonMidnightPlansKeepTheirExistingDefaultAndAuthoredDateContext() {
         const string source = "gantt\ndateFormat YYYY-MM-DD HH:mm\nTask :2026-03-02 06:00, 17d";
         var document = new MermaidParser().ParseGantt(source).Document!;
-        var chart = document.ToChart().WithSize(400, 300).WithPngFont(Font());
+        var chart = document.ToChart().Size(400, 300).Png(p => p.FontPath(Font()));
         Assert.All(Captions(Prepare(chart)), label => Assert.Matches("^[0-9]{4}-[0-9]{2}-[0-9]{2}$", label.Text.Lines.Single().Text));
         document.AxisFormat = "%d/%m";
-        var authored = document.ToChart().WithSize(400, 300).WithPngFont(Font());
+        var authored = document.ToChart().Size(400, 300).Png(p => p.FontPath(Font()));
         Assert.All(Captions(Prepare(authored)), label => Assert.Matches("^[0-9]{2}/03$", label.Text.Lines.Single().Text));
         Assert.Equal(Start.ToOADate(), chart.Series[0].GanttItems[0].Start);
     }
 
-    private static Chart Fixture(ThemeMode mode) => Chart.Create().WithSize(400, 300).WithHeader(false).WithLegend(false)
-        .WithPngFont(Font()).WithTheme(VisualTheme.Graphite(), mode).ConfigureGridStyle(style => style.ShowVerticalLines = true)
+    private static Chart Fixture(ThemeMode mode) => Chart.Create().Size(400, 300).ShowHeader(false).Legend(false)
+        .Png(p => p.FontPath(Font())).Theme(VisualTheme.Graphite()).ThemeMode(mode).GridLineStyle(style => style.ShowVerticalLines = true)
         .AddGanttTask("Project", Start, Finish);
     private static PreparedVisual Prepare(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context);
     private static VisualSceneText[] Captions(PreparedVisual prepared) => prepared.Scene.Nodes.OfType<VisualSceneText>()

@@ -57,14 +57,14 @@ public static class HtmlChartLifecycleExamples {
         var values = updated ? new[] { new ChartBubble(2, 9, 25), new ChartBubble(1, 17, 64) }
             : new[] { new ChartBubble(1, 5, 9), new ChartBubble(2, 8, 25) };
         var samples = ChartSeries.CreateBubble(new ChartSeriesId("samples"), "Samples", values)
-            .WithObservationId(updated ? 1 : 0, new ChartObservationId("north"))
-            .WithObservationId(updated ? 0 : 1, new ChartObservationId("south"));
+            .ObservationId(updated ? 1 : 0, new ChartObservationId("north"))
+            .ObservationId(updated ? 0 : 1, new ChartObservationId("south"));
         var reference = ChartSeries.CreateLine(new ChartSeriesId("reference"), "Reference",
             new[] { new ChartPoint(0, 20), new ChartPoint(3, 20) });
-        var chart = Chart.Create().WithSize(800, 440).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithTitle("Measurements that keep their identity")
-            .WithSubtitle("Select a bubble or mute Reference, then update the measurements")
-            .WithXAxisBounds(0, 3).WithYAxisBounds(0, 25).WithLegend().WithDataLabels(false);
+        var chart = Chart.Create().Size(800, 440).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Title("Measurements that keep their identity")
+            .Subtitle("Select a bubble or mute Reference, then update the measurements")
+            .XAxis(x => x.Bounds(0, 3)).YAxis(y => y.Bounds(0, 25)).Legend().DataLabels(false);
         return updated ? chart.AddSeries(reference).AddSeries(samples) : chart.AddSeries(samples).AddSeries(reference);
     }
 }

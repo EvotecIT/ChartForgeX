@@ -187,7 +187,7 @@ public sealed class MermaidFlowchartCompoundTests {
 
     [Fact]
     public void NativeCompoundItemsKeepSeparateGroupAndNodeIdentitySpaces() {
-        var chart = TopologyChart.Create().WithLayout(TopologyLayoutMode.Layered, TopologyLayoutDirection.LeftToRight)
+        var chart = TopologyChart.Create().LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddAutoGroup("nested", "Nested").AddAutoGroup("A", "Parent")
             .AddAutoNode("A", "Request").AddAutoNode("B", "Work", groupId: "nested")
             .AddEdge("go", "A", "B");
@@ -208,7 +208,7 @@ public sealed class MermaidFlowchartCompoundTests {
     [InlineData("missing")]
     [InlineData("depth")]
     public void NativeCompoundHierarchyRejectsUnsafeParentGraphsBeforeRecursiveLayout(string invalid) {
-        var chart = TopologyChart.Create().WithLayout(TopologyLayoutMode.Layered);
+        var chart = TopologyChart.Create().LayoutMode(TopologyLayoutMode.Layered);
         var count = invalid == "depth" ? 129 : 2;
         for (var index = 0; index < count; index++) {
             chart.AddAutoGroup("g" + index, "Group " + index);

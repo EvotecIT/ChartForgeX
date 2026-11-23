@@ -19,13 +19,13 @@ public sealed class TopologySingleGroupClearanceTests {
     [InlineData(TopologyLayoutDirection.TopToBottom, 240)]
     [InlineData(TopologyLayoutDirection.BottomToTop, 240)]
     public void PublicNativePreparationKeepsTheWholeShellAwayFromForeignRankPeers(TopologyLayoutDirection direction, int viewportHeight) {
-        var chart = TopologyChart.Create().WithViewport(960, viewportHeight, 28).WithLayout(TopologyLayoutMode.Layered, direction)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(960, viewportHeight, 28)).LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(direction)
             .AddAutoGroup("Services", "Services")
             .AddAutoNode("User", "User", groupId: "Services", width: 180, height: 138)
             .AddAutoNode("Admin", "Admin", groupId: "Services", width: 180, height: 82)
             .AddAutoNode("Session", "Session", width: 180, height: 82)
-            .AddEdge("inherits", "Admin", "User").WithEdgeLayoutHints("inherits", minimumRankSpan: 2)
-            .AddEdge("opens", "Session", "User", "opens").WithEdgeLayoutHints("opens", minimumRankSpan: 2);
+            .AddEdge("inherits", "Admin", "User").UpdateEdge("inherits", e => e.PreferredLength(null).MinimumRankSpan(2).RoutingPriority(0))
+            .AddEdge("opens", "Session", "User", "opens").UpdateEdge("opens", e => e.PreferredLength(null).MinimumRankSpan(2).RoutingPriority(0));
         foreach (var node in chart.Nodes) { node.Shape = TopologyNodeShape.Rectangle; node.PreserveDisplayModeSize = true; }
         var prepared = chart.Prepare(new TopologyRenderOptions { IncludeLegend = false });
         AssertClearance(prepared.ToInterchangeEnvelope(), direction);
@@ -73,7 +73,7 @@ public sealed class TopologySingleGroupClearanceTests {
 
     [Fact]
     public void AuthoredManualGroupAndNodeCoordinatesRemainIntact() {
-        var chart = TopologyChart.Create().WithViewport(720, 420, 24).WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(720, 420, 24)).LayoutMode(TopologyLayoutMode.Manual)
             .AddGroup("fixed", "Manual", 100, 80, 420, 260)
             .AddNode("member", "Member", 140, 170, groupId: "fixed")
             .AddNode("outside", "Outside", 580, 120, width: 80);

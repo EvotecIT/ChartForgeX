@@ -51,7 +51,7 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
     [BrowserFact]
     public async Task AVisiblePointLabelCannotReplaceItsHiddenPrimaryMarker() {
         if (!Enabled) return;
-        var chart = Frame(false).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).WithDataLabels()
+        var chart = Frame(false).XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10)).DataLabels()
             .AddScatter("Measured", new[] { new ChartPoint(5, 5) });
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             options.Tooltip.Range = HtmlChartTooltipRange.Nearest;
@@ -67,11 +67,11 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
     }
 
     private static Chart NativeOnlyChart(string family) {
-        var chart = Frame(family == "progress").WithTitle("Native " + family);
+        var chart = Frame(family == "progress").Title("Native " + family);
         return family switch {
-            "heatmap" => chart.WithSize(596, 400).WithXLabels("North", "South").WithHeatmapCellGap(20)
+            "heatmap" => chart.Size(596, 400).XLabels("North", "South").Heatmap(h => h.CellGap(20))
                 .AddHeatmapRow("Requests", new[] { 37d, 48d }).AddHeatmapRow("Previous", new[] { 61d, 54d }),
-            "map" => chart.WithMapLabels(false).ConfigureMapColorDimension(options => options.ShowLegend = false).AddRegionMap("Coverage", new ChartMapDefinition("regions", "Regions", 100, 100, new[] {
+            "map" => chart.Map(m => m.ShowLabels(false)).Map(map => map.ColorDimension(options => options.ShowLegend = false)).AddRegionMap("Coverage", new ChartMapDefinition("regions", "Regions", 100, 100, new[] {
                 new ChartMapRegion("A", "First", "M20 20H40V40H20Z"), new ChartMapRegion("B", "Second", "M60 60H80V80H60Z")
             }), new[] { new ChartRegionMapItem("A", 10), new ChartRegionMapItem("B", 20) }),
             "progress" => chart.AddProgressBars("Progress", new[] { new ChartProgressItem("Ready", 37), new ChartProgressItem("Working", 61) }),

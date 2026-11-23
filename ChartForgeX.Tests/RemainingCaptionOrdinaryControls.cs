@@ -20,7 +20,7 @@ public sealed class RemainingCaptionOrdinaryControls {
         PreparedVisual visual;
         double? sourcePadding = null;
         if (family == "native") {
-            var chart = TopologyChart.Create().WithViewport(width, 620).WithTheme(NativeTheme(), mode)
+            var chart = TopologyChart.Create().Viewport(new TopologyViewport(width, 620)).Theme(NativeTheme(), mode)
                 .AddAutoGroup("scope", "Review scope").AddAutoNode("a", "Review", groupId: "scope")
                 .AddAutoNode("b", "Ready", groupId: "scope").AddEdge("link", "a", "b", "Accept work");
             visual = chart.Prepare().Visual;

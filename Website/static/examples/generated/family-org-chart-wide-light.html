@@ -114,7 +114,7 @@ public static class OrgChartRecipe {
     public static TopologyChart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant == &quot;compact&quot;;
-        var chart = TopologyChart.Create().WithViewport(compact ? 390 : 960, compact ? 520 : 520).WithLegend(null);
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(compact ? 390 : 960, compact ? 520 : 520)).Legend((TopologyLegend?)null);
         chart.Theme = VisualTheme.Graphite(); chart.ThemeMode = mode;
         chart.DefaultRenderOptions = new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true };
         chart.AddTeam(&quot;company&quot;, &quot;Northwind Services&quot;, new[] {
@@ -169,7 +169,7 @@ public static class OrgChartRecipe {
     public static TopologyChart Create(string variant = &quot;wide&quot;, ThemeMode mode = ThemeMode.Light) {
         if (variant is not (&quot;wide&quot; or &quot;compact&quot;)) throw new ArgumentOutOfRangeException(nameof(variant));
         var compact = variant == &quot;compact&quot;;
-        var chart = TopologyChart.Create().WithViewport(compact ? 390 : 960, compact ? 520 : 520).WithLegend(null);
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(compact ? 390 : 960, compact ? 520 : 520)).Legend((TopologyLegend?)null);
         chart.Theme = VisualTheme.Graphite(); chart.ThemeMode = mode;
         chart.DefaultRenderOptions = new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true };
         chart.AddTeam(&quot;company&quot;, &quot;Northwind Services&quot;, new[] {

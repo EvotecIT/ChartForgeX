@@ -55,9 +55,9 @@ public sealed class NumericRadialAxisTextTests {
         Assert.Contains(scene.Diagnostics, diagnostic => diagnostic.Code == "numeric-radial.axis-title-overflow");
         foreach (var title in Footprints(scene).Where(item => item.Text.Role is "radial-category-axis-title" or "radial-value-axis-title"))
             Assert.True(LabelPlacementService.Contains(scene.Regions.Single(region => region.Id == title.Text.Id).Bounds, title.Bounds));
-        Assert.Contains(scene.Regions, region => region.Role == "radial-category-axis-title" && region.Label == chart.XAxisTitle.ToUpperInvariant());
-        Assert.Contains(scene.Regions, region => region.Role == "radial-value-axis-title" && region.Label == chart.YAxisTitle.ToUpperInvariant());
-        Assert.Contains(scene.Nodes.OfType<VisualSceneGroup>(), group => group.Role == "radial-value-axis-title-source" && group.Metadata["data-cfx-full-label"] == chart.SecondaryYAxisTitle);
+        Assert.Contains(scene.Regions, region => region.Role == "radial-category-axis-title" && region.Label == chart.Options.XAxis.Title.ToUpperInvariant());
+        Assert.Contains(scene.Regions, region => region.Role == "radial-value-axis-title" && region.Label == chart.Options.YAxis.Title.ToUpperInvariant());
+        Assert.Contains(scene.Nodes.OfType<VisualSceneGroup>(), group => group.Role == "radial-value-axis-title-source" && group.Metadata["data-cfx-full-label"] == chart.Options.SecondaryYAxis.Title);
         Assert.Equal("1200", Point(scene, 0, 0)["data-cfx-y"]);
         if (bars) {
             Assert.Contains(scene.Diagnostics, diagnostic => diagnostic.Code == "numeric-radial.insufficient-space");
@@ -77,12 +77,12 @@ public sealed class NumericRadialAxisTextTests {
     [InlineData(true, "all")]
     public void HiddenTitlesAndAnglesReserveNoSpaceWhileShowLineOnlyControlsRules(bool bars, string hidden) {
         var chart = Configured(bars, 800);
-        if (hidden == "all") chart.WithAxes(false);
+        if (hidden == "all") chart.Axes(false);
         else Axis(chart, hidden).Visible = false;
         var initial = Prepare(chart).ToSvg();
-        if (hidden is "category" or "all") { chart.WithXAxis(new string('W', 100)); chart.Options.XAxis.LabelAngle = 90; }
-        if (hidden is "primary" or "all") { chart.WithYAxis(new string('W', 100)); chart.Options.YAxis.LabelAngle = -90; }
-        if (hidden is "secondary" or "all") { chart.WithSecondaryYAxis(new string('W', 100)); chart.Options.SecondaryYAxis.LabelAngle = 180; }
+        if (hidden is "category" or "all") { chart.XAxis(x => x.Title(new string('W', 100))); chart.Options.XAxis.LabelAngle = 90; }
+        if (hidden is "primary" or "all") { chart.YAxis(y => y.Title(new string('W', 100))); chart.Options.YAxis.LabelAngle = -90; }
+        if (hidden is "secondary" or "all") { chart.SecondaryYAxis(s => s.Title(new string('W', 100))); chart.Options.SecondaryYAxis.LabelAngle = 180; }
         foreach (var name in new[] { "category", "primary", "secondary" }.Where(name => hidden == "all" || hidden == name)) {
             Axis(chart, name).LabelOrientation = ChartAxisLabelOrientation.Perpendicular;
             Axis(chart, name).LabelDensity = ChartLabelDensity.Relaxed;
@@ -105,14 +105,14 @@ public sealed class NumericRadialAxisTextTests {
         chart.RemoveSeries(chart.Series[1]);
         var primaryPrepared = Prepare(chart); var primary = primaryPrepared.Scene;
         Assert.DoesNotContain(primary.Nodes.OfType<VisualSceneText>(), text => text.Id == "radial-value-axis-title-secondary");
-        chart.WithSecondaryYAxis("Unused caption that must not shrink the plot"); chart.Options.SecondaryYAxis.LabelAngle = -90;
+        chart.SecondaryYAxis(s => s.Title("Unused caption that must not shrink the plot")); chart.Options.SecondaryYAxis.LabelAngle = -90;
         chart.Options.SecondaryYAxis.LabelOrientation = ChartAxisLabelOrientation.Parallel;
         chart.Options.SecondaryYAxis.LabelDensity = ChartLabelDensity.Relaxed;
         Assert.Equal(primaryPrepared.ToSvg(), Prepare(chart).ToSvg());
-        NumericRadialSeriesTests.Add(chart, bars, "Missing rate", Array.Empty<ChartPoint>()).Series[1].UseSecondaryValueAxis();
-        chart.Options.SecondaryYAxis.WithAutomaticBounds();
+        NumericRadialSeriesTests.Add(chart, bars, "Missing rate", Array.Empty<ChartPoint>()).Series[1].SecondaryAxis();
+        chart.Options.SecondaryYAxis.Min(null).Max(null);
         Assert.DoesNotContain(Prepare(chart).Scene.Nodes.OfType<VisualSceneText>(), text => text.Id == "radial-value-axis-title-secondary");
-        chart.WithSecondaryYAxis("Empty rate (%)").WithSecondaryYAxisBounds(0, 100);
+        chart.SecondaryYAxis(s => s.Title("Empty rate (%)").Bounds(0, 100));
         Assert.Contains(Prepare(chart).Scene.Nodes.OfType<VisualSceneText>(), text => text.Id == "radial-value-axis-title-secondary");
         chart.Series[0].Points.Clear();
         var empty = Prepare(chart).Scene;
@@ -123,7 +123,7 @@ public sealed class NumericRadialAxisTextTests {
     [Fact]
     public void PreparedAxisTextIsDetachedAndFormattersRunOncePerTick() {
         var calls = new Dictionary<double, int>();
-        var chart = Configured(true, 800).ConfigureYAxis(axis => axis.WithLabelFormatter(value => {
+        var chart = Configured(true, 800).YAxis(axis => axis.LabelBy(value => {
             calls[value] = calls.TryGetValue(value, out var count) ? count + 1 : 1;
             return value.ToString("0", CultureInfo.InvariantCulture) + " requests";
         }));
@@ -133,9 +133,9 @@ public sealed class NumericRadialAxisTextTests {
         chart.Options.YAxis.LabelDensity = ChartLabelDensity.Relaxed;
         var prepared = Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng();
         Assert.All(calls.Values, count => Assert.Equal(1, count));
-        chart.WithXAxis("Changed region").WithYAxis("Changed requests").WithSecondaryYAxis("Changed rate");
-        chart.Options.XAxis.LabelAngle = 90; chart.Options.YAxis.LabelAngle = -90; chart.Options.AxisTitleStyle.WithFontSize(30);
-        chart.Options.YAxis.WithLabelFormatter(_ => "Changed tick"); chart.Series[0].Points[0] = new ChartPoint(1, 1);
+        chart.XAxis(x => x.Title("Changed region")).YAxis(y => y.Title("Changed requests")).SecondaryYAxis(s => s.Title("Changed rate"));
+        chart.Options.XAxis.LabelAngle = 90; chart.Options.YAxis.LabelAngle = -90; chart.Options.AxisTitleStyle.FontSize(30);
+        chart.Options.YAxis.LabelBy(_ => "Changed tick"); chart.Series[0].Points[0] = new ChartPoint(1, 1);
         chart.Options.XAxis.LabelOrientation = chart.Options.YAxis.LabelOrientation = ChartAxisLabelOrientation.Fixed;
         chart.Options.YAxis.LabelDensity = ChartLabelDensity.All;
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
@@ -143,24 +143,24 @@ public sealed class NumericRadialAxisTextTests {
     }
 
     internal static Chart Configured(bool bars, int width, bool dark = false) {
-        var chart = Chart.Create().WithSize(width, width == 360 ? 360 : 440).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithFontFamily("Carlito").WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithXLabels("North", "South", "East").WithRadialGeometry(new(-75, 195, .2, .25, .1))
-            .WithXAxis("Region").WithYAxis("Requests").WithSecondaryYAxis("Resolved (%)")
-            .WithYAxisBounds(0, 1500).WithSecondaryYAxisBounds(0, 100)
-            .ConfigureXAxis(axis => axis.LabelAngle = -30).ConfigureYAxis(axis => { axis.LabelAngle = 30; axis.TickCount = 3; })
-            .ConfigureSecondaryYAxis(axis => { axis.LabelAngle = 90; axis.TickCount = 3; });
+        var chart = Chart.Create().Size(width, width == 360 ? 360 : 440).ShowHeader(false).Legend(false).DataLabels(false)
+            .FontFamily("Carlito").Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .XLabels("North", "South", "East").RadialGeometry(new(-75, 195, .2, .25, .1))
+            .XAxis(x => x.Title("Region")).YAxis(y => y.Title("Requests")).SecondaryYAxis(s => s.Title("Resolved (%)"))
+            .YAxis(y => y.Bounds(0, 1500)).SecondaryYAxis(s => s.Bounds(0, 100))
+            .XAxis(axis => axis.LabelAngle = -30).YAxis(axis => { axis.LabelAngle = 30; axis.TickCount = 3; })
+            .SecondaryYAxis(axis => { axis.LabelAngle = 90; axis.TickCount = 3; });
         NumericRadialSeriesTests.Add(chart, bars, new ChartSeriesId("requests"), "Requests", new(1, 1200), new(2, 900), new(3, 700));
-        NumericRadialSeriesTests.Add(chart, bars, new ChartSeriesId("resolved"), "Resolved (%)", new(1, 85), new(2, 70), new(3, 60)).Series[1].UseSecondaryValueAxis();
-        chart.Options.PngFontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
+        NumericRadialSeriesTests.Add(chart, bars, new ChartSeriesId("resolved"), "Resolved (%)", new(1, 85), new(2, 70), new(3, 60)).Series[1].SecondaryAxis();
+        chart.Options.Png.FontPath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         return chart;
     }
 
     internal static Chart LongTitles(bool bars) {
-        var chart = Configured(bars, 360).WithXAxis("Region names across the entire service area\nQuarterly reporting categories")
-            .WithYAxis("Requests received across all channels\nSource count, including follow-up work")
-            .WithSecondaryYAxis("Resolved requests as a percentage of received source counts\nIndependent percentage scale");
-        chart.Options.AxisTitleStyle.WithFontSize(28).WithWeight("650").TextCase = TextCaseTransform.Uppercase;
+        var chart = Configured(bars, 360).XAxis(x => x.Title("Region names across the entire service area\nQuarterly reporting categories"))
+            .YAxis(y => y.Title("Requests received across all channels\nSource count, including follow-up work"))
+            .SecondaryYAxis(s => s.Title("Resolved requests as a percentage of received source counts\nIndependent percentage scale"));
+        chart.Options.AxisTitleStyle.FontSize(28).FontWeight("650").TextCase = TextCaseTransform.Uppercase;
         return chart;
     }
 

@@ -1,8 +1,10 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>Controls triangular partitions without sorting or changing their source categories.</summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class ChartPyramidOptions {
     private ChartPyramidValueEncoding _valueEncoding;
     private ChartOrientation _orientation;

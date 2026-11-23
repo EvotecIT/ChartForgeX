@@ -20,9 +20,9 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
     public async Task PointerExitPositionsTheFocusedZeroOrPrecisionFactWithoutAcquiringItByPointer(HtmlChartTooltipAnchor anchor, bool bars, bool precision) {
         if (!Enabled) return;
         var placements = FocusRecoveryPlacements(anchor);
-        var chart = NumericRadialSeriesTests.Add(Chart.Create().WithSize(600, 440).WithHeader(false)
-            .WithLegend(false).WithAxes(false).WithGrid(false).WithDataLabels(false)
-            .WithTheme(VisualTheme.Graphite(), precision ? ThemeMode.Dark : ThemeMode.Light), bars, "Observed",
+        var chart = NumericRadialSeriesTests.Add(Chart.Create().Size(600, 440).ShowHeader(false)
+            .Legend(false).Axes(false).ShowGrid(false).DataLabels(false)
+            .Theme(VisualTheme.Graphite()).ThemeMode(precision ? ThemeMode.Dark : ThemeMode.Light), bars, "Observed",
             new ChartPoint(1, precision ? 1 : 0), new ChartPoint(2, 100000000));
         var fragment = chart.ToInteractiveHtmlFragment(options => {
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;

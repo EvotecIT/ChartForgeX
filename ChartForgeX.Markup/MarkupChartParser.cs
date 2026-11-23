@@ -420,27 +420,27 @@ public sealed partial class MarkupChartParser {
     private static void ApplyChartOptions(Chart chart, ChartState state) {
         ApplyFamilyOptions(chart, state);
         ApplyComparisonOptions(chart, state);
-        if (!string.IsNullOrWhiteSpace(state.XAxisTitle)) chart.WithXAxis(state.XAxisTitle!);
-        if (!string.IsNullOrWhiteSpace(state.YAxisTitle)) chart.WithYAxis(state.YAxisTitle!);
-        if (state.ShowAxes.HasValue) chart.WithAxes(state.ShowAxes.Value);
-        if (state.ShowXAxis.HasValue) chart.WithXAxisVisible(state.ShowXAxis.Value);
-        if (state.ShowYAxis.HasValue) chart.WithYAxisVisible(state.ShowYAxis.Value);
-        if (state.ShowAxisLines.HasValue) chart.WithAxisLines(state.ShowAxisLines.Value);
-        if (state.ShowGrid.HasValue) chart.WithGrid(state.ShowGrid.Value);
-        if (state.ShowLegend.HasValue) chart.WithLegend(state.ShowLegend.Value);
-        if (state.PointLegend.HasValue) chart.WithPointLegend(state.PointLegend.Value);
-        if (state.LegendPosition.HasValue) chart.WithLegendPosition(state.LegendPosition.Value);
-        if (state.ShowHeader.HasValue) chart.WithHeader(state.ShowHeader.Value);
-        if (state.ShowCard.HasValue) chart.WithCard(state.ShowCard.Value);
-        if (state.ShowPlotBackground.HasValue) chart.WithPlotBackground(state.ShowPlotBackground.Value);
-        if (state.TransparentBackground.HasValue) chart.WithTransparentBackground(state.TransparentBackground.Value);
-        if (state.DataLabels.HasValue) chart.WithDataLabels(state.DataLabels.Value);
-        if (state.TickCount.HasValue) chart.WithTickCount(state.TickCount.Value);
-        if (state.XAxisMinimum.HasValue && state.XAxisMaximum.HasValue) chart.WithXAxisBounds(state.XAxisMinimum.Value, state.XAxisMaximum.Value);
-        if (state.YAxisMinimum.HasValue && state.YAxisMaximum.HasValue) chart.WithYAxisBounds(state.YAxisMinimum.Value, state.YAxisMaximum.Value);
-        if (state.Padding.HasValue) chart.WithPadding(state.Padding.Value, state.Padding.Value, state.Padding.Value, state.Padding.Value);
-        if (state.Sparkline.HasValue) chart.WithSparkline(state.Sparkline.Value);
-        if (state.Overlay.HasValue && state.Overlay.Value) chart.WithOverlay(state.OverlayShowHeader);
+        if (!string.IsNullOrWhiteSpace(state.XAxisTitle)) chart.XAxis(x => x.Title(state.XAxisTitle!));
+        if (!string.IsNullOrWhiteSpace(state.YAxisTitle)) chart.YAxis(y => y.Title(state.YAxisTitle!));
+        if (state.ShowAxes.HasValue) chart.Axes(state.ShowAxes.Value);
+        if (state.ShowXAxis.HasValue) chart.XAxis(x => x.Visible(state.ShowXAxis.Value));
+        if (state.ShowYAxis.HasValue) chart.YAxis(y => y.Visible(state.ShowYAxis.Value));
+        if (state.ShowAxisLines.HasValue) chart.ShowAxisLines(state.ShowAxisLines.Value);
+        if (state.ShowGrid.HasValue) chart.ShowGrid(state.ShowGrid.Value);
+        if (state.ShowLegend.HasValue) chart.Legend(state.ShowLegend.Value);
+        if (state.PointLegend.HasValue) chart.Legend(l => l.ShowPoints(state.PointLegend.Value));
+        if (state.LegendPosition.HasValue) chart.Legend(l => l.Position(state.LegendPosition.Value));
+        if (state.ShowHeader.HasValue) chart.ShowHeader(state.ShowHeader.Value);
+        if (state.ShowCard.HasValue) chart.ShowCard(state.ShowCard.Value);
+        if (state.ShowPlotBackground.HasValue) chart.ShowPlotBackground(state.ShowPlotBackground.Value);
+        if (state.TransparentBackground.HasValue) chart.TransparentBackground(state.TransparentBackground.Value);
+        if (state.DataLabels.HasValue) chart.DataLabels(state.DataLabels.Value);
+        if (state.TickCount.HasValue) chart.TickCount(state.TickCount.Value);
+        if (state.XAxisMinimum.HasValue && state.XAxisMaximum.HasValue) chart.XAxis(x => x.Bounds(state.XAxisMinimum.Value, state.XAxisMaximum.Value));
+        if (state.YAxisMinimum.HasValue && state.YAxisMaximum.HasValue) chart.YAxis(y => y.Bounds(state.YAxisMinimum.Value, state.YAxisMaximum.Value));
+        if (state.Padding.HasValue) chart.Padding(state.Padding.Value, state.Padding.Value, state.Padding.Value, state.Padding.Value);
+        if (state.Sparkline.HasValue) chart.Sparkline(state.Sparkline.Value);
+        if (state.Overlay.HasValue && state.Overlay.Value) chart.Overlay(state.OverlayShowHeader);
     }
 
     private static void RequireTokenCount(List<string> tokens, int count, string command) {

@@ -15,7 +15,7 @@ internal static partial class VisualCartesianCompiler {
         VisualSceneBuilder.VisualValueBoundary first, VisualSceneBuilder.VisualValueBoundary last, ChartCartesianViewport? viewport) {
         // This is an optional finite capture, not a new ordinary-render admission rule. Unsupported charts still render normally.
         if (viewport != null || chart.Options.IsSparkline || chart.UsesAdditionalValueAxes || ChartCartesianOrientation.IsHorizontal(chart) || chart.Series.Count == 0 || NeedsCompleteCartesianValues(chart)
-            || chart.Annotations.Count != 0 || chart.PlotRegions.Count != 0 || chart.Options.ShowPointLegend
+            || chart.Annotations.Count != 0 || chart.PlotRegions.Count != 0 || chart.Options.Legend.ShowPoints
             || chart.Series.Any(series => series.Kind is not (ChartSeriesKind.Line or ChartSeriesKind.Bar or ChartSeriesKind.Scatter) || series.Id.IsAutomatic
                 || series.IsVisibilityPreparation || series.RenderPoints.Count == 0 || series.DecimationMode != null || series.HistogramBinLayout != null
                 || series.ColorScale != null || series.ColorDimension.HasOverrides
@@ -73,7 +73,7 @@ internal static partial class VisualCartesianCompiler {
         string S(string value) => value.Length.ToString(System.Globalization.CultureInfo.InvariantCulture) + ":" + value;
         string N(double value) => value.ToString("R", System.Globalization.CultureInfo.InvariantCulture);
         var scalar = axis.Scale + ":" + axis.Reversed + ":" + axis.LogarithmicDomain + ":" + N(axis.LogarithmBase) + ":" + N(axis.SymmetricLogarithmThreshold)
-            + ":" + (axis.Minimum.HasValue ? N(axis.Minimum.Value) : "null") + ":" + (axis.Maximum.HasValue ? N(axis.Maximum.Value) : "null");
+            + ":" + (axis.Min.HasValue ? N(axis.Min.Value) : "null") + ":" + (axis.Max.HasValue ? N(axis.Max.Value) : "null");
         return scalar + (format.HasValue ? S(format.Value.Notation) + S(format.Value.Format) + S(format.Value.Culture) : "default")
             + string.Concat(axis.Labels.Select(label => S(N(label.Value)) + S(label.Text) + S(string.Concat(label.Groups.Select(S)))));
     }

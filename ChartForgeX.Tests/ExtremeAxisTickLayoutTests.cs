@@ -19,9 +19,9 @@ public sealed class ExtremeAxisTickLayoutTests {
     [InlineData("horizontal-value", true)]
     public void FiniteSignedDomainsRetainUsableInteriorTicksAtTheirPaintedCoordinates(string axisRole, bool reversed) {
         const double minimum = -1e308, maximum = 1e308;
-        var chart = Chart.Create().WithSize(1000, 600).WithHeader(false).WithLegend(false)
-            .WithPadding(20, 20, 20, 20)
-            .WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
+        var chart = Chart.Create().Size(1000, 600).ShowHeader(false).Legend(false)
+            .Padding(20, 20, 20, 20)
+            .Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
         ChartAxis axis;
         var horizontal = axisRole is "x" or "horizontal-value";
         if (axisRole == "horizontal-value") {
@@ -33,10 +33,10 @@ public sealed class ExtremeAxisTickLayoutTests {
         } else {
             chart.AddLine("Values", new[] { new ChartPoint(1, minimum), new ChartPoint(2, 0), new ChartPoint(3, maximum) });
             axis = axisRole == "secondary-y" ? chart.Options.SecondaryYAxis : chart.Options.YAxis;
-            if (axisRole == "secondary-y") { chart.Series[0].UseSecondaryValueAxis(); chart.Options.YAxis.Visible = false; }
+            if (axisRole == "secondary-y") { chart.Series[0].SecondaryAxis(); chart.Options.YAxis.Visible = false; }
         }
         if (axisRole != "horizontal-value") chart.Series[0].Markers.Enabled = false;
-        axis.WithBounds(minimum, maximum); axis.TickCount = 5; axis.Reversed = reversed;
+        axis.Bounds(minimum, maximum); axis.TickCount = 5; axis.Reversed = reversed;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         ScatterBubbleColorRenderingTests.Capture(prepared, "extreme-axis-" + axisRole + (reversed ? "-reversed" : "-forward"));
         var role = horizontal ? "axis-x-label" : axisRole == "secondary-y" ? "axis-secondary-y-label" : "axis-y-label";

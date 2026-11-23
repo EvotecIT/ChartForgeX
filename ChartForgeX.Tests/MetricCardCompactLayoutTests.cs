@@ -15,7 +15,7 @@ public sealed class MetricCardCompactLayoutTests {
     [InlineData("success", true)]
     [InlineData("none", false)]
     public void ShortMetricKeepsItsLabelValueAndUnitInsideTheFixedContent(string status, bool unit) {
-        var card = Compact(55).WithMetric("Memory", 68, unit: unit ? "%" : null).WithStatus(Tone.Parse(status));
+        var card = Compact(55).Metric("Memory", 68, unit: unit ? "%" : null).Status(Tone.Parse(status));
         var text = Text(card);
         var label = Bounds(text["metric-label"]);
         var value = Bounds(text["metric-value"]);
@@ -38,7 +38,7 @@ public sealed class MetricCardCompactLayoutTests {
 
     [Fact]
     public void CompactMetricReservesTheCaptionAndTrendBelowTheRequiredFacts() {
-        var card = Compact(70).WithMetric("Memory", 68, unit: "%").WithCaption("of installed memory").WithTrend("+2%");
+        var card = Compact(70).Metric("Memory", 68, unit: "%").Caption("of installed memory").Trend("+2%");
         var text = Text(card);
         var value = Bounds(text["metric-value"]);
         var caption = Bounds(text["metric-caption"]);
@@ -53,7 +53,7 @@ public sealed class MetricCardCompactLayoutTests {
 
     [Fact]
     public void ShortInsetMetricKeepsTheValueAndUnitInsideItsTray() {
-        var card = Compact(65).WithMetric("Memory", 68, unit: "%").WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset);
+        var card = Compact(65).Metric("Memory", 68, unit: "%").MicroVisualSurface(MetricCardMicroVisualSurface.Inset);
         var document = XDocument.Parse(card.ToSvg());
         var tray = Assert.Single(document.Descendants(), element => (string?)element.Attribute("data-cfx-role") == "metric-value-surface");
         var text = Text(card);
@@ -67,7 +67,7 @@ public sealed class MetricCardCompactLayoutTests {
 
     [Fact]
     public void NormalMetricRetainsItsEstablishedLabelAndValueGeometry() {
-        var text = Text(Compact(140).WithMetric("Memory", 68, unit: "%").WithStatus(Tone.Success));
+        var text = Text(Compact(140).Metric("Memory", 68, unit: "%").Status(Tone.Success));
         Assert.Equal(17.5, Number(text["metric-label"], "y"));
         Assert.Equal(11, Number(text["metric-label"], "font-size"));
         Assert.Equal(62.3, Number(text["metric-value"], "y"));
@@ -80,8 +80,8 @@ public sealed class MetricCardCompactLayoutTests {
     [InlineData(55)]
     [InlineData(70)]
     public void CompactMetricSvgAndNativePixelsShareTheFittedRows(int height) {
-        var card = Compact(height).WithMetric("Memory", 68, unit: "%").WithTransparentBackground();
-        if (height == 70) card.WithCaption("of installed memory").WithTrend("+2%");
+        var card = Compact(height).Metric("Memory", 68, unit: "%").TransparentBackground();
+        if (height == 70) card.Caption("of installed memory").Trend("+2%");
         var raster = SvgRasterizer.Rasterize(card.ToSvg(), 281, height);
         Assert.Empty(raster.Diagnostics);
         var svgInk = InkRows(raster.Image);
@@ -93,8 +93,8 @@ public sealed class MetricCardCompactLayoutTests {
 
     [Fact]
     public void CompactMetricFitsAnExplicitlyLargerLabelAlongsideItsValue() {
-        var card = Compact(75).WithMetric("Memory", 68, unit: "%")
-            .WithTheme(VisualTheme.Graphite().WithTypography(new VisualTypography(family: "Arial", subtitleSize: 28)));
+        var card = Compact(75).Metric("Memory", 68, unit: "%")
+            .Theme(VisualTheme.Graphite().WithTypography(new VisualTypography(family: "Arial", subtitleSize: 28)));
         var text = Text(card);
         var label = Bounds(text["metric-label"]);
         var value = Bounds(text["metric-value"]);
@@ -113,13 +113,13 @@ public sealed class MetricCardCompactLayoutTests {
     [InlineData("top-right-unit-narrow")]
     public void CompactBadgeAndRequiredFactsKeepSeparateMeasuredBounds(string kind) {
         var inset = kind.StartsWith("inset", StringComparison.Ordinal);
-        var card = Compact(55).WithMetric("Memory", kind == "top-right-long" ? "MMMMMMMMMMMMMM" :
+        var card = Compact(55).Metric("Memory", kind == "top-right-long" ? "MMMMMMMMMMMMMM" :
                 kind == "top-right-unit-narrow" ? new string('i', 17) : "68", unit: "%")
-            .WithStatus(Tone.Success);
-        if (kind == "top-left") card.WithIcon(Icons.Lightning).WithBadgePlacement(MetricCardBadgePlacement.TopLeft);
-        else if (kind == "top-right-long" || kind == "top-right-unit-narrow") card.WithSymbol("RAM").WithBadgePlacement(MetricCardBadgePlacement.TopRight);
-        else if (kind == "inset-symbol") card.WithSymbol("RAM").WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset);
-        else card.WithIcon(Icons.Lightning).WithMicroVisualSurface(MetricCardMicroVisualSurface.Inset);
+            .Status(Tone.Success);
+        if (kind == "top-left") card.Icon(Icons.Lightning).BadgePlacement(MetricCardBadgePlacement.TopLeft);
+        else if (kind == "top-right-long" || kind == "top-right-unit-narrow") card.Symbol("RAM").BadgePlacement(MetricCardBadgePlacement.TopRight);
+        else if (kind == "inset-symbol") card.Symbol("RAM").MicroVisualSurface(MetricCardMicroVisualSurface.Inset);
+        else card.Icon(Icons.Lightning).MicroVisualSurface(MetricCardMicroVisualSurface.Inset);
         var elements = XDocument.Parse(card.ToSvg()).Descendants().ToArray();
         var badge = Assert.Single(elements, element => (string?)element.Attribute("data-cfx-role") ==
             (inset ? "metric-value-surface-badge" : "metric-symbol-badge"));
@@ -155,8 +155,8 @@ public sealed class MetricCardCompactLayoutTests {
         return (rows.Min(), rows.Max());
     }
 
-    private static MetricCard Compact(int height) => MetricCard.Create().WithSize(281, height).WithPadding(6.5)
-        .WithCard(false).WithPngOutputScale(1).WithTheme(VisualTheme.Graphite().WithTypography(new VisualTypography(family: "Arial", subtitleSize: 9)));
+    private static MetricCard Compact(int height) => MetricCard.Create().Size(281, height).Padding(6.5)
+        .ShowCard(false).PngOutputScale(1).Theme(VisualTheme.Graphite().WithTypography(new VisualTypography(family: "Arial", subtitleSize: 9)));
 
     private static Dictionary<string, XElement> Text(MetricCard card) => XDocument.Parse(card.ToSvg()).Descendants()
         .Where(element => element.Name.LocalName == "text" && element.Attribute("data-cfx-role") != null)

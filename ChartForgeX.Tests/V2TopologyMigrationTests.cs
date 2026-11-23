@@ -106,7 +106,7 @@ public sealed class V2TopologyMigrationTests {
 
     [Fact]
     public void PreparedFlowRetainsLaneStepConnectorSemanticsAndResolvedGeometry() {
-        var flow = FlowArtifact.Create("workflow").WithTitle("Workflow").AddLane("team", "Team")
+        var flow = FlowArtifact.Create("workflow").Title("Workflow").AddLane("team", "Team")
             .AddStep("start", "Start", FlowArtifactStepKind.Start, "team")
             .AddStep("decision", "Approve?", FlowArtifactStepKind.Decision, "team")
             .AddStep("end", "Done", FlowArtifactStepKind.End, "team")

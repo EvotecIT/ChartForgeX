@@ -128,11 +128,11 @@ public sealed partial class MarkupChartParser {
             case "chord": BuildChord(chart, state); return true;
             case "candlestick":
                 chart.AddCandlestick(state.SeriesName, state.Candles);
-                if (state.CandleDates == true) chart.WithXAxisTimeScale();
+                if (state.CandleDates == true) chart.XAxis(x => x.TimeScale());
                 return true;
             case "ohlc":
                 chart.AddOhlc(state.SeriesName, state.Candles);
-                if (state.CandleDates == true) chart.WithXAxisTimeScale();
+                if (state.CandleDates == true) chart.XAxis(x => x.TimeScale());
                 return true;
             case "treemap": chart.AddTreemap(state.SeriesName, state.Items.Select(item => item.Value)); return true;
             case "sankey": chart.AddSankey(state.SeriesName, state.ChordNodes.Select(row => row.Value), state.ChordFlows.Select(row => row.Value)); return true;

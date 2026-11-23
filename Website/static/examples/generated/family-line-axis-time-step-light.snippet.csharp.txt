@@ -1,0 +1,46 @@
+#region Setup
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using ChartForgeX;
+using ChartForgeX.Core;
+using ChartForgeX.Primitives;
+using ChartForgeX.Rendering;
+using ChartForgeX.Themes;
+using ChartForgeX.Topology;
+using ChartForgeX.Typography;
+using ChartForgeX.VisualArtifacts;
+using ChartForgeX.VisualBlocks;
+using static AxisControlRecipe;
+
+var mode = ThemeMode.Light;
+var theme = VisualTheme.Graphite();
+#endregion
+
+if (!Options.Contains("axis-time-step")) throw new ArgumentOutOfRangeException("variant");
+var chart = Weekly();
+
+#region Output
+var context = new VisualRenderContext(
+    new VisualLayoutOptions(new VisualSize(800, 440)), theme, mode,
+    new VisualFrame("Deployments on a calendar step", "A tick every second Monday, a minor line between", showLegend: true, showSurface: false));
+var prepared = chart.Prepare(context);
+File.WriteAllText("visual.svg", prepared.ToSvg());
+File.WriteAllBytes("visual.png", prepared.ToPng());
+File.WriteAllText("visual.html", prepared.ToArtifact("example", VisualArtifactKind.Chart).ToHtmlPage());
+#endregion
+
+static class AxisControlRecipe {
+    public static readonly string[] Options = { "axis-step", "axis-values", "axis-spacing", "axis-minor", "axis-grid", "axis-time-step", "axis-log-step", "axis-stacked" };
+
+    // Ninety days of daily deployments with a calendar tick on every second Monday and a minor line on the Monday between.
+    internal static Chart Weekly() {
+        var start = new DateTime(2026, 8, 3, 0, 0, 0, DateTimeKind.Utc);
+        var days = Enumerable.Range(0, 90).Select(day => new ChartPoint(start.AddDays(day).ToOADate(), 12 + day % 7 * 3 + Math.Round(8 * Math.Sin(day / 9d)))).ToArray();
+        return Chart.Create().YAxis(y => y.Title("Deployments")).AddLine("Deployments", days)
+            .XAxis(axis => axis.TimeScale().TickStep(new ChartTimeTickInterval(ChartTimeTickUnit.Week, 2))
+                .MinorTickCount(1).Grid(grid => grid.ShowLines(true).Opacity(.8)));
+    }
+}

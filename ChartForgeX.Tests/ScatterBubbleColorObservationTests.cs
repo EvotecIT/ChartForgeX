@@ -80,13 +80,13 @@ public sealed class ScatterBubbleColorObservationTests {
             : ChartSeries.CreateBubble(new ChartSeriesId("source"), "Source", new[] { new ChartBubble(1, 9, 25).WithColorValue(3) });
         var scale = ChartColorScale.Sequential(ChartColor.Black, ChartColor.White).WithValueRange(0, 10);
         Assert.Null(series.ColorScale);
-        Assert.Same(series, series.WithColorScale(scale));
+        Assert.Same(series, series.ColorScale(scale));
         Assert.Same(scale, series.ColorScale);
         series.ColorScale = null;
         Assert.Null(series.ColorScale);
         Assert.Equal(3d, kind == ChartSeriesKind.Bubble ? series.Bubbles[0].ColorValue : series.Points[0].ColorValue);
         series.ColorScale = scale;
-        Assert.Same(series, series.WithColorScale(null));
+        Assert.Same(series, series.ColorScale((ChartColorScale?)null));
         Assert.Null(series.ColorScale);
         Assert.Equal(3d, kind == ChartSeriesKind.Bubble ? series.Bubbles[0].ColorValue : series.Points[0].ColorValue);
     }
@@ -96,9 +96,9 @@ public sealed class ScatterBubbleColorObservationTests {
         var series = new ChartSeries(new ChartSeriesId("fixture-series"), "Line", ChartSeriesKind.Line, new[] { new ChartPoint(1, 2) });
         var scale = ChartColorScale.Sequential(ChartColor.Black, ChartColor.White);
         Assert.Throws<InvalidOperationException>(() => series.ColorScale = scale);
-        Assert.Throws<InvalidOperationException>(() => series.WithColorScale(scale));
+        Assert.Throws<InvalidOperationException>(() => series.ColorScale(scale));
         Assert.Null(series.ColorScale);
-        Assert.Same(series, series.WithColorScale(null));
+        Assert.Same(series, series.ColorScale((ChartColorScale?)null));
     }
 
     [Theory]

@@ -16,7 +16,7 @@ public sealed class InteractiveSourceCollectionBrowserTests {
     public async Task SummaryMarksRetainDerivedFactsAndInteractiveIdentityForLargeRawInput(ChartSeriesKind kind, int marks) {
         if (!Enabled) return;
         var observations = Enumerable.Range(0, 4096).Select(index => new ChartPoint(index % 10 + .5, index % 7 - 3)).ToArray();
-        var chart = Chart.Create().WithSize(640, 400).WithTitle("Raw observations, prepared summary");
+        var chart = Chart.Create().Size(640, 400).Title("Raw observations, prepared summary");
         if (kind == ChartSeriesKind.TrendLine) chart.AddSeries(ChartSeries.CreateTrendLine(new ChartSeriesId("summary-source"), "Regression", observations));
         else chart.AddSeries(ChartSeries.CreateBoxPlot(new ChartSeriesId("summary-source"), "Distribution", 1, observations.Select(point => point.Y)));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage());
@@ -75,14 +75,14 @@ public sealed class InteractiveSourceCollectionBrowserTests {
         if (!Enabled) return;
         var observations = new[] { new ChartPoint(0, 2), new ChartPoint(1, 5), new ChartPoint(2, 3), new ChartPoint(3, 7) };
         Chart Summary(ChartSeriesKind summaryKind) {
-            var chart = Chart.Create().WithSize(640, 360);
+            var chart = Chart.Create().Size(640, 360);
             if (summaryKind == ChartSeriesKind.TrendLine) chart.AddSeries(ChartSeries.CreateTrendLine(new ChartSeriesId("observations"), "Summary", observations));
             else chart.AddSeries(ChartSeries.CreateBoxPlot(new ChartSeriesId("observations"), "Summary", 1, observations.Select(point => point.Y)));
             return chart;
         }
-        var raw = Chart.Create().WithSize(640, 360).AddSeries(ChartSeries.CreateLine(new ChartSeriesId("observations"), "Raw", observations));
+        var raw = Chart.Create().Size(640, 360).AddSeries(ChartSeries.CreateLine(new ChartSeriesId("observations"), "Raw", observations));
         var otherKind = kind == ChartSeriesKind.TrendLine ? ChartSeriesKind.BoxPlot : ChartSeriesKind.TrendLine;
-        var bins = Chart.Create().WithSize(640, 360).AddSeries(ChartSeries.CreateHistogram(new ChartSeriesId("observations"), "Bins", observations,
+        var bins = Chart.Create().Size(640, 360).AddSeries(ChartSeries.CreateHistogram(new ChartSeriesId("observations"), "Bins", observations,
             ChartHistogramBinLayout.FromBoundaries(new[] { -.5, .5, 1.5, 2.5, 3.5 }), ChartHistogramAggregation.Count));
         var html = new[] { raw, Summary(kind), Summary(kind), Summary(otherKind), bins }.ToInteractiveHtmlDashboardPage(options => {
             options.Columns = 1;
@@ -136,9 +136,9 @@ public sealed class InteractiveSourceCollectionBrowserTests {
         var observations = new[] { new ChartPoint(.2, 10), new ChartPoint(.4, -4), new ChartPoint(1.2, 8),
             new ChartPoint(2.5, 12), new ChartPoint(6.1, -4), new ChartPoint(9, -8) };
         Chart Mean(IEnumerable<ChartPoint> source) {
-            var chart = Chart.Create().WithSize(640, 400)
-                .WithTheme(ChartForgeX.Themes.VisualTheme.Graphite(), dark ? ChartForgeX.ThemeMode.Dark : ChartForgeX.ThemeMode.Light)
-                .ConfigureLabels(labels => { labels.NoData = noData; labels.SampleCount = sampleCount; })
+            var chart = Chart.Create().Size(640, 400)
+                .Theme(ChartForgeX.Themes.VisualTheme.Graphite()).ThemeMode(dark ? ChartForgeX.ThemeMode.Dark : ChartForgeX.ThemeMode.Light)
+                .Labels(labels => { labels.NoData = noData; labels.SampleCount = sampleCount; })
                 .AddSeries(ChartSeries.CreateHistogram(new ChartSeriesId("quantity-source"), "Quantity", source, ChartHistogramBinLayout.FromBoundaries(new[] { 0d, 1, 3, 6, 10 }), ChartHistogramAggregation.Mean));
             return chart;
         }
@@ -220,11 +220,11 @@ public sealed class InteractiveSourceCollectionBrowserTests {
     [BrowserFact]
     public async Task PieOtherPointAndItsLegendShareContributorIdentityWithoutSelectingAnotherSlice() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(640, 400).WithXLabels("A", "B", "C", "D")
+        var chart = Chart.Create().Size(640, 400).XLabels("A", "B", "C", "D")
             .AddSeries(new ChartSeries(new ChartSeriesId("slice-source"), "Slices", ChartSeriesKind.Pie, new[] { new ChartPoint(0, 8), new ChartPoint(1, 4), new ChartPoint(2, 2), new ChartPoint(3, 1) }));
         for (var index = 0; index < chart.Series[0].ObservationCount; index++)
-            chart.Series[0].WithObservationId(index, new ChartObservationId("slice-" + index));
-        chart.Options.MaximumPieSlices = 2;
+            chart.Series[0].ObservationId(index, new ChartObservationId("slice-" + index));
+        chart.Options.Pie.MaxSlices = 2;
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage());
         var page = session.Page;
         await CaptureEventsAsync(page);
@@ -254,7 +254,7 @@ public sealed class InteractiveSourceCollectionBrowserTests {
     public async Task MergedTimelineRunReportsAllContributingBuckets() {
         if (!Enabled) return;
         var day = new DateTime(2026, 9, 25, 0, 0, 0, DateTimeKind.Utc);
-        var chart = Chart.Create().WithSize(640, 240)
+        var chart = Chart.Create().Size(640, 240)
             .AddSeries(ChartSeries.CreateStateTimelineLane(new ChartSeriesId("availability-source"), "Availability", Enumerable.Range(0, 4)
                 .Select(index => new ChartStateTimelineSegment(day.AddHours(index), day.AddHours(index + 1), "up"))));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage());

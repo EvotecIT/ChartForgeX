@@ -289,7 +289,7 @@ internal sealed partial class ChartRange {
         if (axis.PreparedTimeDomain is not { } domain) return;
         var min = domain.FullMinimum; var max = domain.FullMaximum;
         if (!domain.Unit && max == min) { min = Math.Max(0, min - .5); max = min + 1; }
-        if (applyAuthored) { min = axis.Minimum ?? min; max = axis.Maximum ?? max; }
+        if (applyAuthored) { min = axis.Min ?? min; max = axis.Max ?? max; }
         if (max <= min || ChartScaleTransform.Bound(max, axis, true) <= ChartScaleTransform.Bound(min, axis, false))
             throw new InvalidOperationException("Discrete time bounds must enclose at least one representable band or ordinal span.");
         if (horizontal) SetXBounds(min, max); else SetYBounds(min, max);
@@ -343,20 +343,20 @@ internal sealed partial class ChartRange {
     }
 
     private void ApplyXAxisOptions(Chart chart) {
-        if (chart.Options.XAxisMinimum.HasValue) MinX = chart.Options.XAxisMinimum.Value;
-        if (chart.Options.XAxisMaximum.HasValue) MaxX = chart.Options.XAxisMaximum.Value;
+        if (chart.Options.XAxis.Min.HasValue) MinX = chart.Options.XAxis.Min.Value;
+        if (chart.Options.XAxis.Max.HasValue) MaxX = chart.Options.XAxis.Max.Value;
         if (MaxX <= MinX) (MinX, MaxX) = ResolveClippedBounds(MinX, MaxX, chart.Options.XAxis);
     }
 
     private void ApplyYAxisOptions(Chart chart) {
-        if (chart.Options.YAxisMinimum.HasValue) MinY = chart.Options.YAxisMinimum.Value;
-        if (chart.Options.YAxisMaximum.HasValue) MaxY = chart.Options.YAxisMaximum.Value;
+        if (chart.Options.YAxis.Min.HasValue) MinY = chart.Options.YAxis.Min.Value;
+        if (chart.Options.YAxis.Max.HasValue) MaxY = chart.Options.YAxis.Max.Value;
         if (MaxY <= MinY) (MinY, MaxY) = ResolveClippedBounds(MinY, MaxY, chart.Options.YAxis);
     }
 
     private void ApplyYAxisBounds(ChartAxis axis) {
-        if (axis.Minimum.HasValue) MinY = axis.Minimum.Value;
-        if (axis.Maximum.HasValue) MaxY = axis.Maximum.Value;
+        if (axis.Min.HasValue) MinY = axis.Min.Value;
+        if (axis.Max.HasValue) MaxY = axis.Max.Value;
         if (MaxY <= MinY) (MinY, MaxY) = ResolveClippedBounds(MinY, MaxY, axis);
     }
 
@@ -482,7 +482,7 @@ internal sealed partial class ChartRange {
 
     private static (double Minimum, double Maximum) ResolveClippedBounds(double minimum, double maximum, ChartAxis axis) {
         if (axis.Scale != ChartScaleKind.Logarithmic || axis.LogarithmicDomain != ChartLogarithmicDomain.Negative) return (minimum, minimum + 1);
-        if (axis.Maximum.HasValue && !axis.Minimum.HasValue) {
+        if (axis.Max.HasValue && !axis.Min.HasValue) {
             var lower = maximum * axis.LogarithmBase;
             if (axis.IsInLogarithmicDomain(lower) && lower < maximum) return (lower, maximum);
         } else {

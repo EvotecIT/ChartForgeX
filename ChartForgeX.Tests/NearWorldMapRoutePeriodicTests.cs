@@ -52,7 +52,7 @@ public sealed class NearWorldMapRoutePeriodicTests {
         var start = narrow ? 178d : 165; var end = narrow ? -172d : -160;
         var points = new[] { new ChartMapPoint("Start", start, 0), new ChartMapPoint("End", end, 0) };
         if (reverse) Array.Reverse(points);
-        var chart = Chart.Create().WithSize(800, 360).WithLegend(false).WithMapViewport(viewport).AddDottedMap("Endpoints", points);
+        var chart = Chart.Create().Size(800, 360).Legend(false).Map(m => m.Viewport(viewport)).AddDottedMap("Endpoints", points);
         var connector = waypoints ? new ChartMapConnector("Crossing", new[] {
             points[0], new ChartMapPoint("Waypoint", narrow ? 180 : -175, 0), points[1]
         }) : new ChartMapConnector("Crossing", points[0].Longitude, 0, points[1].Longitude, 0);

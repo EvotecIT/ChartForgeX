@@ -8,7 +8,7 @@ using ChartForgeX.Rendering;
 
 internal static partial class Program {
     private static void NativeMaskContracts() {
-        var source = Chart.Create().WithSize(320, 200).AddLine("Ready", new[] { new ChartPoint(0, 1), new ChartPoint(1, 3) })
+        var source = Chart.Create().Size(320, 200).AddLine("Ready", new[] { new ChartPoint(0, 1), new ChartPoint(1, 3) })
             .Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(320, 200), 16),
                 frame: new VisualFrame(showLegend: false, transparentBackground: true)));
         var options = new VisualRenderOptions(supersampling: 1); var original = source.ToRgba(options); var before = source.ToSvg();

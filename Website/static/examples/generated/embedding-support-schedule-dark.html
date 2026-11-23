@@ -134,14 +134,14 @@ public static class ServerRenderedRecipe {
                 cssClass: publisher ? &quot;publisher-mark&quot; : &quot;activity-mark&quot;,
                 dataAttributes: new Dictionary&lt;string, string&gt; { [&quot;data-day&quot;] = day, [&quot;data-kind&quot;] = publisher ? &quot;publisher&quot; : &quot;update&quot; }));
         }
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithStackedBars().WithBarStyle(ChartBarStyle.Flat)
-            .WithLegend(false).WithXLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;)
-            .WithYAxisBounds(0, 24).ConfigureYAxis(axis =&gt; { axis.TickCount = 4; axis.IntegerTicks = true; })
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).ThemeMode(mode).Bars(b =&gt; b.Stacked().Style(ChartBarStyle.Flat))
+            .Legend(false).XLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;)
+            .YAxis(y =&gt; y.Bounds(0, 24)).YAxis(axis =&gt; { axis.TickCount = 4; axis.IntegerTicks = true; })
             .AddBar(&quot;Updates&quot;, updates.Select((value, index) =&gt; Point(index, value, false)), Color(&quot;--updates&quot;, mode))
             .AddBar(&quot;Publisher notes&quot;, notes.Select((value, index) =&gt; Point(index, value, true)), Color(&quot;--publisher-notes&quot;, mode));
-        chart.Series[0].WithMarkOptions(new ChartMarkOptions(cssClass: &quot;activity-series&quot;,
+        chart.Series[0].MarkOptions(new ChartMarkOptions(cssClass: &quot;activity-series&quot;,
             dataAttributes: new Dictionary&lt;string, string&gt; { [&quot;data-feed&quot;] = &quot;daily-updates&quot; }));
-        chart.Series[1].WithMarkOptions(new ChartMarkOptions(cssClass: &quot;publisher-series&quot;,
+        chart.Series[1].MarkOptions(new ChartMarkOptions(cssClass: &quot;publisher-series&quot;,
             dataAttributes: new Dictionary&lt;string, string&gt; { [&quot;data-feed&quot;] = &quot;publisher-notes&quot; }));
         return chart;
     }
@@ -150,7 +150,7 @@ public static class ServerRenderedRecipe {
     public static Chart SupportSchedule(ThemeMode mode = ThemeMode.Light, string summaryPage = &quot;&quot;) {
         var chart = Schedule(mode);
         for (var row = 0; row &lt; 3; row++) chart.AddSeries(SupportRow(row, mode, summaryPage));
-        return chart.WithGanttToday(new DateTime(2026, 7, 15));
+        return chart.GanttToday(new DateTime(2026, 7, 15));
     }
 
     /// &lt;summary&gt;Creates one support row for plot-only preparation; HTML owns the row label.&lt;/summary&gt;
@@ -164,13 +164,13 @@ public static class ServerRenderedRecipe {
         return new ChartStripScale(axis);
     }
 
-    private static Chart Schedule(ThemeMode mode) =&gt; Chart.Create().WithTheme(VisualTheme.Graphite(), mode)
-        .WithLegend(false).WithGanttOpenEndStyle(ChartGanttOpenEndStyle.Fade)
-        .WithXAxisBounds(new DateTime(2026, 1, 1).ToOADate(), new DateTime(2027, 1, 1).ToOADate())
-        .ConfigureXAxis(ConfigureTimeAxis);
+    private static Chart Schedule(ThemeMode mode) =&gt; Chart.Create().Theme(VisualTheme.Graphite()).ThemeMode(mode)
+        .Legend(false).Gantt(g =&gt; g.OpenEndStyle(ChartGanttOpenEndStyle.Fade))
+        .XAxis(x =&gt; x.Bounds(new DateTime(2026, 1, 1).ToOADate(), new DateTime(2027, 1, 1).ToOADate()))
+        .XAxis(ConfigureTimeAxis);
 
     private static void ConfigureTimeAxis(ChartAxis axis) {
-        axis.Minimum = new DateTime(2026, 1, 1).ToOADate(); axis.Maximum = new DateTime(2027, 1, 1).ToOADate();
+        axis.Min = new DateTime(2026, 1, 1).ToOADate(); axis.Max = new DateTime(2027, 1, 1).ToOADate();
         axis.Scale = ChartScaleKind.Time; axis.TickCount = 3;
         axis.ValueFormat = ChartValueFormat.Custom(value =&gt; DateTime.FromOADate(value).ToString(&quot;MMM yy&quot;, CultureInfo.InvariantCulture));
         axis.Labels.Clear();
@@ -195,8 +195,8 @@ public static class ServerRenderedRecipe {
             cssClass: &quot;support-mark&quot;, dataAttributes: new Dictionary&lt;string, string&gt; { [&quot;data-release&quot;] = key }));
         return ChartSeries.CreateGanttTask(new ChartSeriesId(key), name, start, end, color: Color(current ? &quot;--updates&quot; : &quot;--support&quot;, mode))
             .ReplaceGanttItems(new[] { item })
-            .WithMarkOptions(new ChartMarkOptions(cssClass: &quot;support-series&quot;, dataAttributes: new Dictionary&lt;string, string&gt; { [&quot;data-release&quot;] = key }))
-            .WithRowOptions(new ChartMarkOptions(href: summaryPage + &quot;#&quot; + key, accessibleLabel: name + (current ? &quot;, current release&quot; : &quot;, support summary&quot;),
+            .MarkOptions(new ChartMarkOptions(cssClass: &quot;support-series&quot;, dataAttributes: new Dictionary&lt;string, string&gt; { [&quot;data-release&quot;] = key }))
+            .RowOptions(new ChartMarkOptions(href: summaryPage + &quot;#&quot; + key, accessibleLabel: name + (current ? &quot;, current release&quot; : &quot;, support summary&quot;),
                 cssClass: &quot;support-row&quot;, dataAttributes: new Dictionary&lt;string, string&gt; { [&quot;data-release&quot;] = key }, current: current));
     }
 
@@ -263,14 +263,14 @@ public static class ServerRenderedRecipe {
                 cssClass: publisher ? &quot;publisher-mark&quot; : &quot;activity-mark&quot;,
                 dataAttributes: new Dictionary&lt;string, string&gt; { [&quot;data-day&quot;] = day, [&quot;data-kind&quot;] = publisher ? &quot;publisher&quot; : &quot;update&quot; }));
         }
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite(), mode).WithStackedBars().WithBarStyle(ChartBarStyle.Flat)
-            .WithLegend(false).WithXLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;)
-            .WithYAxisBounds(0, 24).ConfigureYAxis(axis =&gt; { axis.TickCount = 4; axis.IntegerTicks = true; })
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).ThemeMode(mode).Bars(b =&gt; b.Stacked().Style(ChartBarStyle.Flat))
+            .Legend(false).XLabels(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;)
+            .YAxis(y =&gt; y.Bounds(0, 24)).YAxis(axis =&gt; { axis.TickCount = 4; axis.IntegerTicks = true; })
             .AddBar(&quot;Updates&quot;, updates.Select((value, index) =&gt; Point(index, value, false)), Color(&quot;--updates&quot;, mode))
             .AddBar(&quot;Publisher notes&quot;, notes.Select((value, index) =&gt; Point(index, value, true)), Color(&quot;--publisher-notes&quot;, mode));
-        chart.Series[0].WithMarkOptions(new ChartMarkOptions(cssClass: &quot;activity-series&quot;,
+        chart.Series[0].MarkOptions(new ChartMarkOptions(cssClass: &quot;activity-series&quot;,
             dataAttributes: new Dictionary&lt;string, string&gt; { [&quot;data-feed&quot;] = &quot;daily-updates&quot; }));
-        chart.Series[1].WithMarkOptions(new ChartMarkOptions(cssClass: &quot;publisher-series&quot;,
+        chart.Series[1].MarkOptions(new ChartMarkOptions(cssClass: &quot;publisher-series&quot;,
             dataAttributes: new Dictionary&lt;string, string&gt; { [&quot;data-feed&quot;] = &quot;publisher-notes&quot; }));
         return chart;
     }
@@ -279,7 +279,7 @@ public static class ServerRenderedRecipe {
     public static Chart SupportSchedule(ThemeMode mode = ThemeMode.Light, string summaryPage = &quot;&quot;) {
         var chart = Schedule(mode);
         for (var row = 0; row &lt; 3; row++) chart.AddSeries(SupportRow(row, mode, summaryPage));
-        return chart.WithGanttToday(new DateTime(2026, 7, 15));
+        return chart.GanttToday(new DateTime(2026, 7, 15));
     }
 
     /// &lt;summary&gt;Creates one support row for plot-only preparation; HTML owns the row label.&lt;/summary&gt;
@@ -293,13 +293,13 @@ public static class ServerRenderedRecipe {
         return new ChartStripScale(axis);
     }
 
-    private static Chart Schedule(ThemeMode mode) =&gt; Chart.Create().WithTheme(VisualTheme.Graphite(), mode)
-        .WithLegend(false).WithGanttOpenEndStyle(ChartGanttOpenEndStyle.Fade)
-        .WithXAxisBounds(new DateTime(2026, 1, 1).ToOADate(), new DateTime(2027, 1, 1).ToOADate())
-        .ConfigureXAxis(ConfigureTimeAxis);
+    private static Chart Schedule(ThemeMode mode) =&gt; Chart.Create().Theme(VisualTheme.Graphite()).ThemeMode(mode)
+        .Legend(false).Gantt(g =&gt; g.OpenEndStyle(ChartGanttOpenEndStyle.Fade))
+        .XAxis(x =&gt; x.Bounds(new DateTime(2026, 1, 1).ToOADate(), new DateTime(2027, 1, 1).ToOADate()))
+        .XAxis(ConfigureTimeAxis);
 
     private static void ConfigureTimeAxis(ChartAxis axis) {
-        axis.Minimum = new DateTime(2026, 1, 1).ToOADate(); axis.Maximum = new DateTime(2027, 1, 1).ToOADate();
+        axis.Min = new DateTime(2026, 1, 1).ToOADate(); axis.Max = new DateTime(2027, 1, 1).ToOADate();
         axis.Scale = ChartScaleKind.Time; axis.TickCount = 3;
         axis.ValueFormat = ChartValueFormat.Custom(value =&gt; DateTime.FromOADate(value).ToString(&quot;MMM yy&quot;, CultureInfo.InvariantCulture));
         axis.Labels.Clear();
@@ -324,8 +324,8 @@ public static class ServerRenderedRecipe {
             cssClass: &quot;support-mark&quot;, dataAttributes: new Dictionary&lt;string, string&gt; { [&quot;data-release&quot;] = key }));
         return ChartSeries.CreateGanttTask(new ChartSeriesId(key), name, start, end, color: Color(current ? &quot;--updates&quot; : &quot;--support&quot;, mode))
             .ReplaceGanttItems(new[] { item })
-            .WithMarkOptions(new ChartMarkOptions(cssClass: &quot;support-series&quot;, dataAttributes: new Dictionary&lt;string, string&gt; { [&quot;data-release&quot;] = key }))
-            .WithRowOptions(new ChartMarkOptions(href: summaryPage + &quot;#&quot; + key, accessibleLabel: name + (current ? &quot;, current release&quot; : &quot;, support summary&quot;),
+            .MarkOptions(new ChartMarkOptions(cssClass: &quot;support-series&quot;, dataAttributes: new Dictionary&lt;string, string&gt; { [&quot;data-release&quot;] = key }))
+            .RowOptions(new ChartMarkOptions(href: summaryPage + &quot;#&quot; + key, accessibleLabel: name + (current ? &quot;, current release&quot; : &quot;, support summary&quot;),
                 cssClass: &quot;support-row&quot;, dataAttributes: new Dictionary&lt;string, string&gt; { [&quot;data-release&quot;] = key }, current: current));
     }
 

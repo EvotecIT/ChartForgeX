@@ -142,10 +142,10 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         var points = new[] { new ChartPoint(0, 2), new ChartPoint(4, 5), new ChartPoint(10, 3) };
         var ids = new[] { "first", "middle", "last" };
         var series = ChartSeries.CreateLine(new ChartSeriesId("readings"), "Readings", removeFirst ? points.Skip(1) : points)
-            .WithObservationIds((removeFirst ? ids.Skip(1) : ids).Select(id => new ChartObservationId(id)));
-        series.ConfigureMarkers(markers => { markers.Enabled = true; markers.Radius = 4; });
-        return Chart.Create().WithSize(640, 360).WithXAxisBounds(0, 10).WithYAxisBounds(0, 8)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).AddSeries(series);
+            .ObservationIds((removeFirst ? ids.Skip(1) : ids).Select(id => new ChartObservationId(id)));
+        series.Markers(markers => { markers.Enabled = true; markers.Radius = 4; });
+        return Chart.Create().Size(640, 360).XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 8))
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).AddSeries(series);
     }
 
     private static string NativeLinkedSection(Chart chart, ChartAxisWindow? viewport = null,

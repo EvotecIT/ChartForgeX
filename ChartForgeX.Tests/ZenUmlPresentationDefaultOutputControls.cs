@@ -15,7 +15,7 @@ public sealed class ZenUmlPresentationDefaultOutputControls {
     public void PlainSourceAndNativeDefaultsRetainSvgPngAndPortableBytes(string family,int width,bool dark) {
         VisualArtifact artifact;
         if(family=="native") {
-            var model=SequenceArtifact.Create("zen-ordinary").WithTitle("Ordinary sequence").WithSize(width,600)
+            var model=SequenceArtifact.Create("zen-ordinary").Title("Ordinary sequence").Width(width).Height(600)
                 .AddParticipant("a","Accept").AddParticipant("b","Build").AddMessage("a","b","Read")
                 .AddBlock(SequenceArtifactBlockKind.Loop,"repeat",0,0).AddNote(SequenceArtifactNotePlacement.Over,new[]{"a","b"},"Existing note");
             model.ThemeMode=dark?ThemeMode.Dark:ThemeMode.Light;artifact=model.ToVisualArtifact();

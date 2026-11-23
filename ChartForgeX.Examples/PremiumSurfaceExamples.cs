@@ -18,10 +18,10 @@ internal static class PremiumSurfaceExamples {
     private static void SaveDesktopWallpaper(string output, int outputScale) {
         var blue = ChartColor.FromHex("#38BDF8");
         var canvas = VisualCanvas.CreateDesktopWallpaper()
-            .WithTitle("Premium endpoint desktop wallpaper")
-            .WithBackground(ChartColor.FromHex("#020617"), ChartColor.FromHex("#0B2447"))
-            .WithBackdrop(VisualCanvasBackdropStyle.TechHorizon)
-            .WithPngOutputScale(outputScale)
+            .Title("Premium endpoint desktop wallpaper")
+            .BackgroundTop(ChartColor.FromHex("#020617")).BackgroundBottom(ChartColor.FromHex("#0B2447"))
+            .BackdropStyle(VisualCanvasBackdropStyle.TechHorizon)
+            .PngOutputScale(outputScale)
             .AddText(70, 58, 1780, "ENDPOINT OVERVIEW", 18, ChartColor.FromHex("#7DD3FC"), emphasized: true)
             .AddHeroTitle(520, 354, 880, 78, new[] {
                 new VisualCanvasTextRun("DEV-WKS-", ChartColor.FromHex("#F8FAFC")),
@@ -64,13 +64,13 @@ internal static class PremiumSurfaceExamples {
         });
 
         MetricCard Card(string label, string value, string caption, string symbol, Tone status, ChartColor color, params double[] history) => MetricCard.Create()
-            .WithSize(260, 142)
-            .WithTheme(theme)
-            .WithMetric(label, value)
-            .WithCaption(caption)
-            .WithSymbol(symbol)
-            .WithStatus(status)
-            .WithMiniSparkline(history, color: color, fillColor: color.WithAlpha(34));
+            .Size(260, 142)
+            .Theme(theme)
+            .Metric(label, value)
+            .Caption(caption)
+            .Symbol(symbol)
+            .Status(status)
+            .MiniSparkline(history, color: color, fillColor: color.WithAlpha(34));
 
         var cards = new[] {
             Card("Coverage", "98.4%", "assets reporting", "COV", Tone.Success, ChartColor.FromHex("#14B8A6"), 92, 94, 95, 97, 98.4),
@@ -80,9 +80,9 @@ internal static class PremiumSurfaceExamples {
         };
 
         var grid = VisualGrid.CreateMetricStrip("Monthly Security Summary", cards, columns: 2, panelWidth: 260, panelHeight: 142)
-            .WithSubtitle("Compact 584 px visual for email and narrow report columns.")
-            .WithTheme(theme)
-            .WithPngOutputScale(outputScale);
+            .Subtitle("Compact 584 px visual for email and narrow report columns.")
+            .Theme(theme)
+            .PngOutputScale(outputScale);
 
         grid.SaveSvg(Path.Combine(output, "premium-email-summary-grid.svg"));
         grid.SaveHtml(Path.Combine(output, "premium-email-summary-grid.html"));

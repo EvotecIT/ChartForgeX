@@ -11,7 +11,7 @@ public sealed partial class ChartSeries {
     /// <param name="configure">Configures a detached copy of the observation overrides. Explicit point colors take precedence.</param>
     /// <returns>The current series.</returns>
     /// <remarks>The installed style is copied after the callback returns. A typed item update preserves it; complete replacement clears it.</remarks>
-    public ChartSeries ConfigureFinancialValue(int index, Action<ChartFinancialItemOptions> configure) {
+    public ChartSeries FinancialValue(int index, Action<ChartFinancialItemOptions> configure) {
         RequireFinancialStyleIndex(index);
         var current = index < _financialStyles.Count ? _financialStyles[index] : null;
         var candidate = ChartOptionConfiguration.Configure(current ?? new ChartFinancialItemOptions(), configure, options => options.Clone());
@@ -27,7 +27,7 @@ public sealed partial class ChartSeries {
     /// <returns>The current series.</returns>
     /// <remarks>The callback runs once per existing observation during this call and is not retained. A failed callback or invalid OHLC style
     /// leaves all previous styles unchanged. Item updates preserve styles; complete typed replacement clears them.</remarks>
-    public ChartSeries ConfigureFinancialValues(Action<ChartCandlestick, int, ChartFinancialItemOptions> configure) {
+    internal ChartSeries SetFinancialValues(Action<ChartCandlestick, int, ChartFinancialItemOptions> configure) {
         RequireObservationKind(ChartSeriesKind.Candlestick, ChartSeriesKind.Ohlc);
         if (configure == null) throw new ArgumentNullException(nameof(configure));
         var styles = CopyFinancialStyles();
@@ -44,7 +44,7 @@ public sealed partial class ChartSeries {
     /// <summary>Removes one financial observation's overrides so it uses its rising or falling style.</summary>
     /// <param name="index">The zero-based observation index in <see cref="FinancialValues"/>.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries UseSeriesFinancialStyle(int index) {
+    public ChartSeries ResetFinancialValue(int index) {
         RequireFinancialStyleIndex(index);
         if (index >= _financialStyles.Count || _financialStyles[index] == null) return this;
         var styles = CopyFinancialStyles();

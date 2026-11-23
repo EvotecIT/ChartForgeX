@@ -1,10 +1,12 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Interactivity;
 
 /// <summary>
 /// Describes graph physics, solver tuning, and stabilization without binding callers to a browser implementation.
 /// </summary>
+[Fluent]
 public sealed class GraphPhysicsOptions {
     /// <summary>Gets or sets the solver requested from graph adapters.</summary>
     public GraphPhysicsSolver Solver { get; set; } = GraphPhysicsSolver.StaticPrepared;
@@ -63,6 +65,7 @@ public sealed class GraphPhysicsOptions {
 }
 
 /// <summary>Controls initial and reheated graph stabilization.</summary>
+[Fluent]
 public sealed class GraphPhysicsStabilizationOptions {
     /// <summary>Gets or sets whether runtime adapters should stabilize automatically on load.</summary>
     public bool Enabled { get; set; } = true;
@@ -109,6 +112,7 @@ public abstract class GraphPhysicsSolverOptions {
 }
 
 /// <summary>Configures quadtree-accelerated Barnes-Hut gravity and springs.</summary>
+[Fluent]
 public sealed class GraphBarnesHutPhysicsOptions : GraphPhysicsSolverOptions {
     /// <summary>Creates vis-network-like Barnes-Hut defaults.</summary>
     public GraphBarnesHutPhysicsOptions() {
@@ -132,6 +136,7 @@ public sealed class GraphBarnesHutPhysicsOptions : GraphPhysicsSolverOptions {
 }
 
 /// <summary>Configures a degree-weighted ForceAtlas2-style gravity and spring model.</summary>
+[Fluent]
 public sealed class GraphForceAtlas2PhysicsOptions : GraphPhysicsSolverOptions {
     /// <summary>Creates vis-network-like ForceAtlas2 defaults.</summary>
     public GraphForceAtlas2PhysicsOptions() {
@@ -155,6 +160,7 @@ public sealed class GraphForceAtlas2PhysicsOptions : GraphPhysicsSolverOptions {
 }
 
 /// <summary>Configures direct distance-limited node repulsion and edge springs.</summary>
+[Fluent]
 public sealed class GraphRepulsionPhysicsOptions : GraphPhysicsSolverOptions {
     /// <summary>Creates vis-network-like direct repulsion defaults.</summary>
     public GraphRepulsionPhysicsOptions() {
@@ -178,6 +184,7 @@ public sealed class GraphRepulsionPhysicsOptions : GraphPhysicsSolverOptions {
 }
 
 /// <summary>Configures level-aware repulsion and springs for directed hierarchical graphs.</summary>
+[Fluent]
 public sealed class GraphHierarchicalRepulsionPhysicsOptions : GraphPhysicsSolverOptions {
     /// <summary>Creates vis-network-like hierarchical repulsion defaults.</summary>
     public GraphHierarchicalRepulsionPhysicsOptions() {

@@ -14,8 +14,8 @@ public sealed class TopologyRegionPreparedFontTests {
         try {
             FontRegistry.Register(primary, OpenTypeTestFonts.NameKeyed(includePrivateUse: false));
             FontRegistry.Register(fallback, OpenTypeTestFonts.NameKeyed());
-            var chart = TopologyChart.Create().WithViewport(860, 500, 20).WithLayout(TopologyLayoutMode.Regions)
-                .WithTheme(VisualTheme.Graphite().WithFontFamily(primary + ", " + fallback))
+            var chart = TopologyChart.Create().Viewport(new TopologyViewport(860, 500, 20)).LayoutMode(TopologyLayoutMode.Regions)
+                .Theme(VisualTheme.Graphite().WithFontFamily(primary + ", " + fallback))
                 .AddAutoGroup("r", "HOx").AddAutoNode("a", "H\uEFFF", groupId: "r").AddAutoNode("b", "HO", groupId: "r").AddEdge("link", "a", "b", "HOx");
             var prepared = chart.Prepare(); var svg = prepared.ToSvg(); var png = prepared.ToPng();
             var text = prepared.Visual.Scene.Nodes.OfType<VisualSceneText>().Single(node => node.Text.Lines.Count == 1 && node.Text.Lines[0].Text == "H\uEFFF").Text;

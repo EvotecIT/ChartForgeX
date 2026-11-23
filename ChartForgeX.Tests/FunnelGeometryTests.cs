@@ -15,8 +15,8 @@ public sealed class FunnelGeometryTests {
     [InlineData(ChartStageLabelContent.Separate)]
     public void NarrowConeKeepsReadableValuesAndOmitsFirstDropOffCaption(ChartStageLabelContent content) {
         var chart = Funnel(new[] { 1000d, 410, 162.36, 14, 2 }, ChartFunnelForm.Cone, ChartOrientation.Vertical)
-            .WithSize(800, 440).WithDataLabels().WithLegend(false).WithXLabels("Visits", "Qualified", "Reviewed", "Won", "Renewed")
-            .ConfigureFunnel(options => options.LabelContent = content);
+            .Size(800, 440).DataLabels().Legend(false).XLabels("Visits", "Qualified", "Reviewed", "Won", "Renewed")
+            .Funnel(options => options.LabelContent = content);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.DoesNotContain(prepared.Scene.Nodes.OfType<VisualSceneText>(), node =>
             node.Id == "series-0-point-0-dropoff-label" || node.Text.Lines.Any(line => line.Text.Contains("No previous baseline", StringComparison.Ordinal)));
@@ -38,7 +38,7 @@ public sealed class FunnelGeometryTests {
             var leaders = prepared.Scene.Nodes.OfType<VisualScenePath>().Where(path => path.Role == "data-label-connector").ToArray();
             Assert.NotEmpty(leaders);
             Assert.All(leaders, path => Assert.Equal(2, path.Commands.Count));
-            chart.WithDataLabelConnectorStyle(ChartDataLabelConnectorStyle.Elbow);
+            chart.DataLabels(d => d.ConnectorStyle(ChartDataLabelConnectorStyle.Elbow));
             Assert.Contains(chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes.OfType<VisualScenePath>(),
                 path => path.Role == "data-label-connector" && path.Commands.Count == 4);
         }
@@ -49,13 +49,13 @@ public sealed class FunnelGeometryTests {
     [InlineData(ChartSeriesKind.Pyramid, "pyramid-label")]
     public void StageCaptionsAreShownByDefaultAndRemainAnOptOut(ChartSeriesKind kind, string role) {
         // A funnel or pyramid has no legend or axis, so its captions are what name the stages.
-        Chart Create() => Chart.Create().WithSize(640, 400).WithXLabels("Visited", "Signed up", "Activated")
+        Chart Create() => Chart.Create().Size(640, 400).XLabels("Visited", "Signed up", "Activated")
             .AddSeries(new ChartSeries(new ChartSeriesId("stages"), "Stages", kind, new[] { new ChartPoint(1, 900), new ChartPoint(2, 400), new ChartPoint(3, 120) }));
         int Captions(Chart chart) => chart.Prepare(VisualExportRequest.ForChart(chart).Context).Scene.Nodes
             .OfType<VisualSceneText>().Count(node => node.Role == role);
         Assert.Equal(3, Captions(Create()));
-        Assert.Equal(0, Captions(Create().WithDataLabels(false)));
-        var series = Create(); series.Series[0].WithDataLabels(false);
+        Assert.Equal(0, Captions(Create().DataLabels(false)));
+        var series = Create(); series.Series[0].ShowDataLabels(false);
         Assert.Equal(0, Captions(series));
     }
 
@@ -66,7 +66,7 @@ public sealed class FunnelGeometryTests {
         Assert.Equal(ChartOrientation.Vertical, chart.Options.Funnel.Orientation);
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.Funnel.Form = (ChartFunnelForm)99);
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.Funnel.Orientation = (ChartOrientation)99);
-        Assert.Throws<ArgumentNullException>(() => chart.ConfigureFunnel(null!));
+        Assert.Throws<ArgumentNullException>(() => chart.Funnel((Action<ChartFunnelOptions>)null!));
     }
 
     [Theory]
@@ -172,11 +172,11 @@ public sealed class FunnelGeometryTests {
     [InlineData(ChartFunnelForm.StageBars)]
     [InlineData(ChartFunnelForm.Cone)]
     public void ExplicitPaintPatternAndLabelStylesSurvivePreparationAndInputMutation(ChartFunnelForm form) {
-        var chart = Funnel(new[] { 100d, 30 }, form, ChartOrientation.Vertical).WithDataLabels();
+        var chart = Funnel(new[] { 100d, 30 }, form, ChartOrientation.Vertical).DataLabels();
         var authored = ChartColor.FromHex("#2468AC"); var ink = ChartColor.FromHex("#AB1234");
-        chart.Series[0].WithPointColor(0, authored).WithPointFillPattern(0, ChartFillPattern.DiagonalForward)
-            .ConfigurePointDataLabelStyle(0, style => style.WithColor(ink).WithWeight("700"));
-        chart.Series[0].WithPointLabel(0, "Complete");
+        chart.Series[0].PointColor(0, authored).PointFillPattern(0, ChartFillPattern.DiagonalForward)
+            .PointDataLabelStyle(0, style => style.Color(ink).FontWeight("700"));
+        chart.Series[0].PointLabel(0, "Complete");
         var prepared = new PreparedVisual(Compile(chart));
         var mark = prepared.Scene.Nodes.OfType<VisualScenePath>().First(path => path.Role is "funnel-stage-line" or "funnel-segment");
         Assert.Equal(authored, form == ChartFunnelForm.Cone ? mark.Stroke : mark.Fill);
@@ -198,9 +198,9 @@ public sealed class FunnelGeometryTests {
     [InlineData(ChartFunnelForm.Cone, ChartOrientation.Vertical)]
     [InlineData(ChartFunnelForm.Cone, ChartOrientation.Horizontal)]
     public void CompactLabelsKeepReadableTypeAndMeasuredBoundsAcrossForms(ChartFunnelForm form, ChartOrientation orientation) {
-        var chart = Funnel(new[] { 100d, 75, 25, 0 }, form, orientation).WithSize(360, 360).WithDataLabels()
-            .WithXLabels("Received", "Reviewed", "Qualified", "Completed")
-            .WithTitle("Requests from receipt to completion").WithSubtitle("Stage lines encode values including zero");
+        var chart = Funnel(new[] { 100d, 75, 25, 0 }, form, orientation).Size(360, 360).DataLabels()
+            .XLabels("Received", "Reviewed", "Qualified", "Completed")
+            .Title("Requests from receipt to completion").Subtitle("Stage lines encode values including zero");
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var labels = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "funnel-label").ToArray();
         var ratios = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "funnel-ratio").ToArray();
@@ -239,7 +239,7 @@ public sealed class FunnelGeometryTests {
     [InlineData(100)]
     public void LabelsThatCannotFitReadableTypeKeepCompleteDescriptionsInsteadOfTinyGlyphs(double plotHeight) {
         var chart = Funnel(new[] { 100d, 25, 0 }, ChartFunnelForm.Cone, ChartOrientation.Horizontal)
-            .WithDataLabels().WithXLabels("Received", "Qualified", "Completed");
+            .DataLabels().XLabels("Received", "Qualified", "Completed");
         var context = new VisualRenderContext(); var builder = new VisualSceneBuilder(new VisualSize(160, plotHeight), context.Font);
         VisualSpecialtyCompiler.Build(chart, context, builder, new ChartRect(0, 0, 160, plotHeight));
         var scene = builder.Build();
@@ -259,11 +259,11 @@ public sealed class FunnelGeometryTests {
     public void DenseConeKeepsUsefulRailCaptionsWithoutLosingStageValuesOrFullDescriptions(int width, double fontSize) {
         var values = Enumerable.Range(1, 16).Select(x => 105d - x * 5).ToArray();
         var names = Enumerable.Range(1, 24).Select(x => $"Region {x}: international distribution").ToArray();
-        var chart = Chart.Create().WithSize(width, 420).WithTitle("Sixteen ordered stages").WithLegend(false).WithDataLabels()
-            .ConfigureDataLabelStyle(style => style.WithFontSize(fontSize)).WithXLabels(names)
-            .ConfigureFunnel(options => options.Form = ChartFunnelForm.Cone)
+        var chart = Chart.Create().Size(width, 420).Title("Sixteen ordered stages").Legend(false).DataLabels()
+            .DataLabelStyle(style => style.FontSize(fontSize)).XLabels(names)
+            .Funnel(options => options.Form = ChartFunnelForm.Cone)
             .AddFunnel("Ordered stages", values.Select((value, i) => new ChartPoint(i + 1, value)));
-        chart.Series[0].WithObservationIds(Enumerable.Range(0, values.Length).Select(i => new ChartObservationId("stage-" + i)));
+        chart.Series[0].ObservationIds(Enumerable.Range(0, values.Length).Select(i => new ChartObservationId("stage-" + i)));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var captions = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "funnel-label").ToArray();
         Assert.NotEmpty(captions);
@@ -287,9 +287,9 @@ public sealed class FunnelGeometryTests {
     public void DenseConeKeepsCaptionsWhenTwoRatioLinesFitTheSharedRail() {
         var values = Enumerable.Range(1, 16).Select(index => 105d - index * 5).ToArray();
         var names = values.Select((_, index) => "Region " + (index + 1) + ": international distribution").ToArray();
-        var chart = Chart.Create().WithDataLabels().WithXLabels(names)
-            .ConfigureDataLabelStyle(style => style.WithFontSize(8))
-            .ConfigureFunnel(options => options.Form = ChartFunnelForm.Cone)
+        var chart = Chart.Create().DataLabels().XLabels(names)
+            .DataLabelStyle(style => style.FontSize(8))
+            .Funnel(options => options.Form = ChartFunnelForm.Cone)
             .AddFunnel("Ordered stages", values.Select((value, index) => new ChartPoint(index + 1, value)));
         RoundedRadialSeriesTests.UseFixtureFont(chart);
         var context = VisualExportRequest.ForChart(chart).Context;
@@ -336,8 +336,8 @@ public sealed class FunnelGeometryTests {
 
     private static Chart Funnel(double[] values, ChartFunnelForm form, ChartOrientation orientation) {
         // Geometry is measured without the default stage captions, which take plot space.
-        var chart = Chart.Create().WithDataLabels(false).WithXLabels(values.Select((_, index) => "Stage " + index).ToArray())
-            .ConfigureFunnel(options => { options.Form = form; options.Orientation = orientation; })
+        var chart = Chart.Create().DataLabels(false).XLabels(values.Select((_, index) => "Stage " + index).ToArray())
+            .Funnel(options => { options.Form = form; options.Orientation = orientation; })
             .AddFunnel("Stages", values.Select((value, index) => new ChartPoint(index + 1, value)), ChartColor.FromHex("#2468AC"));
         return chart;
     }

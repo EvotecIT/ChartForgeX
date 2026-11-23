@@ -21,11 +21,11 @@ public sealed partial class ColorScalePositionedNativeTests {
     public void NamedBottomMapKeysKeepMissingCaptionsReadableWithoutMovingNumericAnchors(string family, ChartColorLegendStyle legendStyle) {
         foreach (var width in new[] { 360, 800 }) foreach (var dark in new[] { false, true }) {
             var scale = Scale(); var chart = Create(family, scale, width, dark)
-                .ConfigureLabels(labels => labels.NoData = "Not sampled")
-                .ConfigureMapColorDimension(options => {
+                .Labels(labels => labels.NoData = "Not sampled")
+                .Map(map => map.ColorDimension(options => {
                     options.Name = "Temperature"; options.LegendStyle = legendStyle;
                     options.ValueFormat = ChartValueFormat.Number("0.0 '°C'", CultureInfo.GetCultureInfo("pl-PL"));
-                });
+                }));
             var prepared = PrepareNamedMapKey(chart, width, dark); var document = XDocument.Parse(prepared.ToSvg());
             var caption = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneText>(), node => node.Id == "map-scale-no-data-label");
             var missing = prepared.Regions.Single(region => region.Id == caption.Id);
@@ -52,7 +52,7 @@ public sealed partial class ColorScalePositionedNativeTests {
                 + "-" + width + "-" + (dark ? "dark" : "light"));
 
             // An unshareable heading retains the measured omission; only the optional caption placement may differ.
-            chart.Options.MapColorDimension.Name = "A complete temperature heading that cannot share its compact row with the missing caption";
+            chart.Options.Map.ColorDimension.Name = "A complete temperature heading that cannot share its compact row with the missing caption";
             var unshared = PrepareNamedMapKey(chart, width, dark);
             foreach (var region in prepared.Regions.Where(region => region.Role == family + "-region"
                 || region.Id is "map-scale-low" or "map-scale-high" or "map-scale-midpoint"))

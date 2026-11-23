@@ -40,6 +40,6 @@ public static class TreeRecipe {
             new ChartTreeLink("operations", "operations-support", 40)
         };
         var teams = ChartSeries.CreateTree(new ChartSeriesId("teams"), "Teams", nodes, links);
-        return Chart.Create().WithDataLabels().AddSeries(teams);
+        return Chart.Create().DataLabels().AddSeries(teams);
     }
 }

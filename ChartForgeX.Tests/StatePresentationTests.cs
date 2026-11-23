@@ -36,7 +36,7 @@ public sealed class StatePresentationTests {
 
     [Fact]
     public void StateTimeline_SummaryHeader_SitsInsideThePlotFrame() {
-        var svg = XDocument.Parse(Timeline().WithPlotBackground(true).ToSvg());
+        var svg = XDocument.Parse(Timeline().ShowPlotBackground(true).ToSvg());
         var header = ByRole(svg, "lane-summary-header").Single();
         var frameTop = Number(ByRole(svg, "content-surface").Single(), "y");
         var firstLane = ByRole(svg, "state-timeline-segment").Min(track => Number(track, "y"));
@@ -72,12 +72,12 @@ public sealed class StatePresentationTests {
         Assert.True(chart.ToPng().Length > 64);
 
         // A chart whose first row is empty is still categorical, and one with only empty rows still renders.
-        var emptyFirst = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(640, 380).WithLegend(true).WithStateCategories(new ChartStateCategory("pass", "Passed", Pass))
-            .WithXLabels("One", "Two")
+        var emptyFirst = Chart.Create().Theme(VisualTheme.Graphite()).Size(640, 380).Legend(true).StateCategories(new ChartStateCategory("pass", "Passed", Pass))
+            .XLabels("One", "Two")
             .AddHeatmapCategoryRow("Nothing", new ChartHeatmapCell?[] { null, null })
             .AddHeatmapCategoryRow("Something", new ChartHeatmapCell("pass"), new ChartHeatmapCell("pass"));
         Assert.Equal(new[] { "Passed", "No data" }, ByRole(XDocument.Parse(emptyFirst.ToSvg()), "legend-label").Select(text => text.Value).ToArray());
-        var onlyEmpty = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(640, 260).WithXLabels("One", "Two").AddHeatmapCategoryRow("Nothing", new ChartHeatmapCell?[] { null, null });
+        var onlyEmpty = Chart.Create().Theme(VisualTheme.Graphite()).Size(640, 260).XLabels("One", "Two").AddHeatmapCategoryRow("Nothing", new ChartHeatmapCell?[] { null, null });
         Assert.Empty(ByRole(XDocument.Parse(onlyEmpty.ToSvg()), "heatmap-cell"));
         Assert.True(onlyEmpty.ToPng().Length > 64);
     }
@@ -153,14 +153,14 @@ public sealed class StatePresentationTests {
         string[] Strokes(Chart chart) => ByRole(XDocument.Parse(chart.ToSvg()), "heatmap-cell-shape-hatch")
             .Select(line => (string)line.Attribute("stroke")!).Distinct().ToArray();
 
-        var dark = Matrix().WithTheme(VisualTheme.Graphite(), ThemeMode.Dark);
+        var dark = Matrix().Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark);
         var darkStroke = PreparedSvgTestExtensions.ParseRenderedColor(Strokes(dark).Single());
         Assert.InRange(darkStroke.A, 1, 254);
         Assert.True(darkStroke.R < 96 && darkStroke.G < 96 && darkStroke.B < 96, "On a dark theme the lines are dark.");
         Assert.NotEqual(Matrix().ToPng(), dark.ToPng());
 
         // A theme without any opaque surface still gets visible lines, and the hatched cell still differs from a solid one.
-        var overlay = Matrix().WithTheme(VisualTheme.TransparentOverlay(), ThemeMode.Dark);
+        var overlay = Matrix().Theme(VisualTheme.TransparentOverlay()).ThemeMode(ThemeMode.Dark);
         var overlayStroke = PreparedSvgTestExtensions.ParseRenderedColor(Strokes(overlay).Single());
         Assert.InRange(overlayStroke.A, 1, 254);
         var svg = XDocument.Parse(overlay.ToSvg());
@@ -178,48 +178,48 @@ public sealed class StatePresentationTests {
             return ChartColor.FromRgb(color.R, color.G, color.B).ToCss();
         }
         Chart Transparent(ChartMarkBackdrop? backdrop) {
-            var chart = Matrix().WithTransparentBackground().WithCard(false).WithPlotBackground(false);
+            var chart = Matrix().TransparentBackground().ShowCard(false).ShowPlotBackground(false);
             chart.Options.Theme = chart.Options.Theme.Configure(builder => { builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#F2F3F4"); });
             chart.Options.Theme = chart.Options.Theme.Configure(builder => { builder.Light.ElevatedSurface = builder.Dark.ElevatedSurface = ChartColor.FromHex("#FFFFFF"); });
             chart.Options.Theme = chart.Options.Theme.Configure(builder => { builder.Light.Surface = builder.Dark.Surface = ChartColor.FromHex("#F8F9FA"); });
-            if (backdrop.HasValue) chart.WithMarkBackdrop(backdrop.Value);
+            if (backdrop.HasValue) chart.MarkBackdrop(backdrop.Value);
             return chart;
         }
 
         // The default keeps the undrawn theme background: it stands for the page under a transparent chart.
-        Assert.Equal(ChartMarkBackdrop.Layered, Chart.Create().WithTheme(VisualTheme.Graphite()).Options.MarkBackdrop);
+        Assert.Equal(ChartMarkBackdrop.Layered, Chart.Create().Theme(VisualTheme.Graphite()).Options.MarkBackdrop);
         Assert.Equal("#F2F3F4", Stroke(Transparent(null)));
         Assert.Equal("#FFFFFF", Stroke(Transparent(ChartMarkBackdrop.Card)));
         Assert.Equal("#F8F9FA", Stroke(Transparent(ChartMarkBackdrop.Plot)));
         Assert.Equal("#F2F3F4", Stroke(Transparent(ChartMarkBackdrop.Background)));
-        Assert.Equal("#FFFFFF", Stroke(Transparent(null).WithCard(true)));
-        Assert.Equal("#F2F3F4", Stroke(Transparent(ChartMarkBackdrop.Background).WithCard(true)));
+        Assert.Equal("#FFFFFF", Stroke(Transparent(null).ShowCard(true)));
+        Assert.Equal("#F2F3F4", Stroke(Transparent(ChartMarkBackdrop.Background).ShowCard(true)));
         Assert.NotEqual(Transparent(null).ToPng(), Transparent(ChartMarkBackdrop.Card).ToPng());
 
         // A suppressed card is not composited.
         var bare = Matrix();
-        bare.WithCard(false).WithPlotBackground(false);
+        bare.ShowCard(false).ShowPlotBackground(false);
         bare.Options.Theme = bare.Options.Theme.Configure(builder => { builder.Light.Background = builder.Dark.Background = ChartColor.FromHex("#EEF0F2"); });
         Assert.Equal(bare.Options.Theme.Resolve(bare.Options.ThemeMode).Background.ToCss(), Stroke(bare));
-        Assert.Throws<ArgumentOutOfRangeException>(() => Chart.Create().WithTheme(VisualTheme.Graphite()).WithMarkBackdrop((ChartMarkBackdrop)42));
+        Assert.Throws<ArgumentOutOfRangeException>(() => Chart.Create().Theme(VisualTheme.Graphite()).MarkBackdrop((ChartMarkBackdrop)42));
     }
 
     [Fact]
     public void PinStateColorsInForcedColors_IsOptIn() {
         Assert.DoesNotContain("forced-color-adjust", Matrix().ToSvg(), StringComparison.Ordinal);
-        var pinned = Matrix().WithStateColorsPinnedInForcedColors().ToSvg();
+        var pinned = Matrix().StateTimeline(s => s.PinColorsInForcedColors()).ToSvg();
         Assert.All(ByRole(XDocument.Parse(pinned), "heatmap-cell"), cell => {
             Assert.Equal("true", (string?)cell.Attribute("data-cfx-pin-state-colors"));
             Assert.Equal("forced-color-adjust:none", (string?)cell.Attribute("style"));
         });
         Assert.NotNull(XDocument.Parse(pinned).Root);
-        Assert.Equal(Matrix().ToPng(), Matrix().WithStateColorsPinnedInForcedColors().ToPng());
+        Assert.Equal(Matrix().ToPng(), Matrix().StateTimeline(s => s.PinColorsInForcedColors()).ToPng());
     }
 
     [Fact]
     public void CategoricalHeatmap_ManyGroupsInAShortChart_KeepRowsInsideThePlot() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(640, 300).WithStateCategories(new ChartStateCategory("pass", "Passed", Pass)).WithXLabels("One", "Two");
-        chart.Options.ShowLegend = false;
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).Size(640, 300).StateCategories(new ChartStateCategory("pass", "Passed", Pass)).XLabels("One", "Two");
+        chart.Options.Legend.Visible = false;
         for (var row = 0; row < 24; row++) chart.AddHeatmapCategoryRow("R" + row, new ChartHeatmapCell?[] { new ChartHeatmapCell("pass"), new ChartHeatmapCell("pass") }, "Group " + (row / 2));
         var svg = XDocument.Parse(chart.ToSvg());
         var cells = ByRole(svg, "heatmap-cell");
@@ -231,10 +231,10 @@ public sealed class StatePresentationTests {
 
     [Fact]
     public void GanttLanes_SummaryHeaderAndNowLabel_SitInsideThePlotFrame() {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithPlotBackground(true).WithSize(760, 420).WithXAxisTimeScale(showTimeZone: true).WithGanttLaneNow(Day.AddHours(10))
-            .WithStateCategories(new ChartStateCategory("up", "Up", Pass))
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).ShowPlotBackground(true).Size(760, 420).XAxis(x => x.TimeScale(showTimeZone: true)).GanttLaneNow(Day.AddHours(10))
+            .StateCategories(new ChartStateCategory("up", "Up", Pass))
             .AddGanttLane("A", new[] { new ChartGanttLaneItem(Day, Day.AddHours(6), "up") }, "North", "1");
-        chart.Options.LaneSummaryHeader = "Items";
+        chart.Options.StateTimeline.SummaryHeader = "Items";
         var svg = XDocument.Parse(chart.ToSvg());
         var frameTop = Number(ByRole(svg, "content-surface").Single(), "y");
         foreach (var role in new[] { "lane-summary-header", "gantt-now-label" }) {
@@ -272,13 +272,13 @@ public sealed class StatePresentationTests {
             new ChartStateCategory("unknown", "Unknown", Neutral, ChartStatePattern.CrossHatched),
             new ChartStateCategory("skipped", "Skipped", Neutral, ChartStatePattern.Outlined)
         };
-        var timeline = XDocument.Parse(Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(720, 320).WithStateCategories(states)
+        var timeline = XDocument.Parse(Chart.Create().Theme(VisualTheme.Graphite()).Size(720, 320).StateCategories(states)
             .AddStateTimelineLane("A", new[] { new ChartStateTimelineSegment(Day, Day.AddHours(4), "up"), new ChartStateTimelineSegment(Day.AddHours(4), Day.AddHours(8), "unknown"), new ChartStateTimelineSegment(Day.AddHours(8), Day.AddHours(12), "skipped") }).ToSvg());
         Assert.Equal(new string?[] { null, "cross-hatched", "outlined" }, ByRole(timeline, "state-timeline-segment").Select(segment => (string?)segment.Attribute("data-cfx-pattern")).ToArray());
         Assert.Equal("quiet", (string?)ByRole(timeline, "state-timeline-segment")[0].Attribute("data-cfx-emphasis"));
         Assert.Equal(new string?[] { null, "cross-hatched", "outlined" }, ByRole(timeline, "state-legend-swatch").Select(swatch => (string?)swatch.Attribute("data-cfx-pattern")).ToArray());
 
-        var lanes = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(720, 320).WithStateCategories(states)
+        var lanes = Chart.Create().Theme(VisualTheme.Graphite()).Size(720, 320).StateCategories(states)
             .AddGanttLane("A", new[] { new ChartGanttLaneItem(Day, Day.AddHours(4), "up"), new ChartGanttLaneItem(Day.AddHours(5), Day.AddHours(8), "unknown"), new ChartGanttLaneItem(Day.AddHours(9), Day.AddHours(12), "skipped") });
         var gantt = XDocument.Parse(lanes.ToSvg());
         Assert.Equal(new string?[] { null, "cross-hatched", "outlined" }, ByRole(gantt, "gantt-lane-item").Select(item => (string?)item.Attribute("data-cfx-pattern")).ToArray());
@@ -303,9 +303,9 @@ public sealed class StatePresentationTests {
     }
 
     private static Chart Timeline(bool grouped = true) {
-        var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(760, 420).WithXAxisTimeScale(showTimeZone: true)
-            .WithStateCategories(new ChartStateCategory("up", "Up", Pass), new ChartStateCategory("down", "Down", Critical));
-        chart.Options.LaneSummaryHeader = "Available";
+        var chart = Chart.Create().Theme(VisualTheme.Graphite()).Size(760, 420).XAxis(x => x.TimeScale(showTimeZone: true))
+            .StateCategories(new ChartStateCategory("up", "Up", Pass), new ChartStateCategory("down", "Down", Critical));
+        chart.Options.StateTimeline.SummaryHeader = "Available";
         ChartStateTimelineSegment[] Segments() => new[] { new ChartStateTimelineSegment(Day, Day.AddHours(18), "up"), new ChartStateTimelineSegment(Day.AddHours(18), Day.AddHours(24), "down") };
         return chart
             .AddStateTimelineLane("A1", Segments(), "75%", grouped ? "North" : null)
@@ -314,14 +314,14 @@ public sealed class StatePresentationTests {
             .AddStateTimelineLane("Spare", Segments(), "75%");
     }
 
-    private static Chart Matrix(bool grouped = true) => Chart.Create().WithTheme(VisualTheme.Graphite()).WithSize(760, 440)
-        .WithStateCategories(
+    private static Chart Matrix(bool grouped = true) => Chart.Create().Theme(VisualTheme.Graphite()).Size(760, 440)
+        .StateCategories(
             new ChartStateCategory("pass", "Passed", Pass, emphasis: ChartStateEmphasis.Quiet),
             new ChartStateCategory("critical", "Critical", Critical),
             new ChartStateCategory("notEvaluated", "Not evaluated", Neutral, ChartStatePattern.Hatched),
             new ChartStateCategory("unknown", "Unknown", Neutral, ChartStatePattern.CrossHatched),
             new ChartStateCategory("couldNotEvaluate", "Could not evaluate", Neutral, ChartStatePattern.Outlined))
-        .WithXLabels("One", "Two", "Three")
+        .XLabels("One", "Two", "Three")
         .AddHeatmapCategoryRow("A1", new ChartHeatmapCell?[] { new ChartHeatmapCell("pass"), new ChartHeatmapCell("critical"), new ChartHeatmapCell("notEvaluated") }, grouped ? "North" : null)
         .AddHeatmapCategoryRow("A2", new ChartHeatmapCell?[] { new ChartHeatmapCell("unknown"), new ChartHeatmapCell("critical", tooltip: "Backup is 9 days old"), new ChartHeatmapCell("couldNotEvaluate") }, grouped ? "North" : null)
         .AddHeatmapCategoryRow("B1", new ChartHeatmapCell?[] { new ChartHeatmapCell("pass"), null, null }, grouped ? "South" : null)

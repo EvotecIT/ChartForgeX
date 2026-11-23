@@ -32,7 +32,7 @@ public sealed class V2CartesianMigrationTests {
         Assert.Equal("forecast-data", series[1].Metadata["data-cfx-series-key"]);
         var explicitColor = ChartColor.FromHex("#9E78B4");
         chart.Series[0].Color = explicitColor;
-        chart.Series[0].WithPointColor(0, ChartColor.FromHex("#175AA4"));
+        chart.Series[0].PointColor(0, ChartColor.FromHex("#175AA4"));
         var updated = Compile(chart, context);
         Assert.Equal(ChartColor.FromHex("#175AA4"), updated.Nodes.OfType<VisualSceneEllipse>().Last().Fill);
         Assert.Equal(explicitColor, VisualCartesianCompiler.LegendEntries(chart, colors)[0].Color);
@@ -44,12 +44,12 @@ public sealed class V2CartesianMigrationTests {
     [InlineData(ChartBarStyle.SegmentedCapsule)]
     public void ExplicitBarTreatments_KeepGeometryPatternsAlphaAndDetachedStyles(ChartBarStyle treatment) {
         var color = ChartColor.FromRgba(60, 120, 180, 128);
-        var chart = Chart.Create().AddBar("Observed", Points(6, -4), color).WithAxes(false);
+        var chart = Chart.Create().AddBar("Observed", Points(6, -4), color).Axes(false);
         chart.Options.ShowGrid = false;
-        chart.Options.BarStyle = treatment;
-        chart.Options.BarVisualStyle.CornerRadius = 3;
+        chart.Options.Bars.Style = treatment;
+        chart.Options.Bars.VisualStyle.CornerRadius = 3;
         chart.Series[0].FillPattern = ChartFillPattern.Crosshatch;
-        chart.Series[0].WithPointFillPattern(0, ChartFillPattern.None);
+        chart.Series[0].PointFillPattern(0, ChartFillPattern.None);
         var scene = Compile(chart);
         var bars = BarShapes(scene).ToArray();
         Assert.Equal(2, bars.Length);
@@ -69,7 +69,7 @@ public sealed class V2CartesianMigrationTests {
             Assert.All(caps, cap => Assert.InRange(cap.Stroke!.Value.A, (byte)0, (byte)128));
         }
         var svg = VisualSceneSvgRenderer.Render(scene);
-        chart.Options.BarVisualStyle.CapOpacity = .1;
+        chart.Options.Bars.VisualStyle.CapOpacity = .1;
         chart.Series[0].FillPattern = ChartFillPattern.None;
         Assert.Equal(svg, VisualSceneSvgRenderer.Render(scene));
     }
@@ -77,15 +77,15 @@ public sealed class V2CartesianMigrationTests {
     [Fact]
     public void ExplicitLineLayers_UseOnePathAndRetainAlphaAcrossThemeChanges() {
         var chart = Chart.Create().AddLine("Observed", Points(3, 8, 4), ChartColor.FromRgba(50, 100, 150, 128));
-        chart.WithTheme(VisualTheme.Graphite());
-        chart.Options.LineVisualStyle = ChartLineVisualStyle.Luminous();
+        chart.Theme(VisualTheme.Graphite());
+        chart.Options.Lines.VisualStyle = ChartLineVisualStyle.Luminous();
         chart.Series[0].StrokeWidth = 4;
         var scene = Compile(chart);
         var paths = scene.Nodes.OfType<VisualScenePath>().Where(path => path.Role?.StartsWith("line", StringComparison.Ordinal) == true).ToArray();
         Assert.Equal(new[] { "line-ambient-halo", "line-halo", "line", "line-highlight" }, paths.Select(path => path.Role));
         Assert.Equal(4, paths[2].StrokeWidth);
         Assert.All(paths, path => { Assert.Equal(paths[0].Commands.Count, path.Commands.Count); Assert.InRange(path.Stroke!.Value.A, (byte)1, (byte)128); });
-        chart.WithTheme(VisualTheme.Accessible());
+        chart.Theme(VisualTheme.Accessible());
         var updatedPaths = Compile(chart).Nodes.OfType<VisualScenePath>().Where(path => path.Role?.StartsWith("line", StringComparison.Ordinal) == true).ToArray();
         Assert.Equal(paths.Select(path => (path.Role, path.StrokeWidth, path.Stroke)), updatedPaths.Select(path => (path.Role, path.StrokeWidth, path.Stroke)));
         Assert.All(updatedPaths, path => Assert.Equal(paths[0].Commands.Count, path.Commands.Count));
@@ -93,31 +93,31 @@ public sealed class V2CartesianMigrationTests {
 
     [Fact]
     public void DirectLineStyleMutation_PreservesAuthoredHaloAcrossThemeChanges() {
-        var chart = Chart.Create().AddLine("Observed", Points(3, 8)).WithTheme(VisualTheme.Graphite());
-        chart.Options.LineVisualStyle.HaloOpacity = .4;
-        chart.Options.LineVisualStyle.HaloStrokeExtra = 5;
+        var chart = Chart.Create().AddLine("Observed", Points(3, 8)).Theme(VisualTheme.Graphite());
+        chart.Options.Lines.VisualStyle.HaloOpacity = .4;
+        chart.Options.Lines.VisualStyle.HaloStrokeExtra = 5;
         var scene = Compile(chart);
         var halo = Assert.Single(scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "line-halo");
         var line = Assert.Single(scene.Nodes.OfType<VisualScenePath>(), path => path.Role == "line");
         Assert.Equal(line.StrokeWidth + 5, halo.StrokeWidth);
         Assert.Equal((byte)102, halo.Stroke!.Value.A);
-        chart.WithTheme(VisualTheme.Graphite());
+        chart.Theme(VisualTheme.Graphite());
         var updated = Compile(chart);
         var updatedHalo = Assert.Single(updated.Nodes.OfType<VisualScenePath>(), path => path.Role == "line-halo");
         Assert.Equal(halo.StrokeWidth, updatedHalo.StrokeWidth);
         Assert.Equal((byte)102, updatedHalo.Stroke!.Value.A);
-        Assert.Equal(.4, chart.Options.LineVisualStyle.HaloOpacity);
-        Assert.Equal(5, chart.Options.LineVisualStyle.HaloStrokeExtra);
+        Assert.Equal(.4, chart.Options.Lines.VisualStyle.HaloOpacity);
+        Assert.Equal(5, chart.Options.Lines.VisualStyle.HaloStrokeExtra);
     }
 
     [Fact]
     public void SecondaryBarStacks_KeepSeparateRangesBaselinesAndFormattedTotals() {
         var chart = Chart.Create().AddBar("Primary A", Points(4, -3)).AddBar("Secondary A", Points(20, -15))
-            .AddBar("Primary B", Points(6, -7)).AddBar("Secondary B", Points(30, -35)).WithAxes(false);
-        chart.Series[1].UseSecondaryValueAxis(); chart.Series[3].UseSecondaryValueAxis();
+            .AddBar("Primary B", Points(6, -7)).AddBar("Secondary B", Points(30, -35)).Axes(false);
+        chart.Series[1].SecondaryAxis(); chart.Series[3].SecondaryAxis();
         chart.Options.ShowGrid = false;
-        chart.Options.BarMode = ChartBarMode.Stacked;
-        chart.Options.ShowStackTotals = true;
+        chart.Options.Bars.Mode = ChartBarMode.Stacked;
+        chart.Options.Bars.ShowTotals = true;
         chart.Options.ValueFormatter = value => "total/value " + value.ToString(CultureInfo.InvariantCulture);
         var coordinates = ChartBarCoordinateMap.Create(chart);
         var stacks = ChartStackLayout.Create(chart, coordinates);
@@ -145,8 +145,8 @@ public sealed class V2CartesianMigrationTests {
     [Fact]
     public void SecondaryStackedAreas_StackOnlyTheirOwnAxis_AndPreserveDisconnectedSegments() {
         var chart = Chart.Create().AddStackedArea("Primary", Points(100, 200)).AddStackedArea("Secondary A", Points(2, -3))
-            .AddStackedArea("Secondary B", new[] { new ChartPoint(1, 4), new ChartPoint(2, -5, true), new ChartPoint(3, -2) }).WithAxes(false);
-        chart.Series[1].UseSecondaryValueAxis(); chart.Series[2].UseSecondaryValueAxis();
+            .AddStackedArea("Secondary B", new[] { new ChartPoint(1, 4), new ChartPoint(2, -5, true), new ChartPoint(3, -2) }).Axes(false);
+        chart.Series[1].SecondaryAxis(); chart.Series[2].SecondaryAxis();
         chart.Options.ShowGrid = false;
         var primary = ChartRange.FromChart(chart);
         var secondary = ChartRange.FromSecondaryValueAxis(chart, primary);
@@ -169,7 +169,7 @@ public sealed class V2CartesianMigrationTests {
     public void RotatedExplicitTicks_UseMeasuredSharedSceneTransforms_AndAllKeepsEveryLabel(double angle) {
         var chart = Chart.Create().AddScatter("Observed", new[] { new ChartPoint(0, 1), new ChartPoint(2, 3) });
         chart.Options.YAxis.Visible = false;
-        chart.Options.XAxis.WithBounds(0, 2);
+        chart.Options.XAxis.Bounds(0, 2);
         chart.Options.XAxis.Labels.AddRange(new[] { new ChartAxisLabel(0, "Zero"), new ChartAxisLabel(1, "One"), new ChartAxisLabel(2, "Two") });
         chart.Options.XAxis.LabelDensity = ChartLabelDensity.All;
         chart.Options.XAxis.LabelAngle = angle;
@@ -188,7 +188,7 @@ public sealed class V2CartesianMigrationTests {
     public void AllDensity_AllowsExplicitLabelOverlaps_WhileAutomaticDensityReducesThem() {
         var chart = Chart.Create().AddScatter("Observed", new[] { new ChartPoint(0, 1), new ChartPoint(11, 3) });
         chart.Options.YAxis.Visible = false;
-        chart.Options.XAxis.WithBounds(0, 11);
+        chart.Options.XAxis.Bounds(0, 11);
         chart.Options.XAxis.Labels.AddRange(Enumerable.Range(0, 12).Select(index => new ChartAxisLabel(index, "A" + index)));
         chart.Options.XAxis.LabelDensity = ChartLabelDensity.All;
         var plot = new ChartRect(70, 40, 35, 200);
@@ -205,9 +205,9 @@ public sealed class V2CartesianMigrationTests {
             ? ChartSeries.CreateBar(new ChartSeriesId("observed-data"), "Observed", Points(3, 5))
             : ChartSeries.CreateScatter(new ChartSeriesId("observed-data"), "Observed", Points(3, 5));
         var chart = Chart.Create().AddSeries(series);
-        chart.Options.ShowPointLegend = true;
+        chart.Options.Legend.ShowPoints = true;
         chart.Options.XAxis.Labels.Add(new ChartAxisLabel(1, "First observation"));
-        chart.Series[0].WithPointColor(0, ChartColor.FromHex("#AD376A")).WithPointFillPattern(0, ChartFillPattern.Crosshatch);
+        chart.Series[0].PointColor(0, ChartColor.FromHex("#AD376A")).PointFillPattern(0, ChartFillPattern.Crosshatch);
         chart.Series[0].StateRole = ChartSeriesState.Info;
         var colors = VisualTheme.Graphite().Resolve(ThemeMode.Light);
         var entries = VisualCartesianCompiler.LegendEntries(chart, colors);
@@ -225,7 +225,7 @@ public sealed class V2CartesianMigrationTests {
         var chart = Chart.Create().AddBar("Observed", Points(3, 6));
         var highlight = ChartColor.FromHex("#AF356A");
         chart.Options.XAxis.Labels.AddRange(new[] { new ChartAxisLabel(1, "First"), new ChartAxisLabel(2, "Second") });
-        chart.WithHighlightedXAxisLabel(1, highlight).WithHighlightedXAxisRange(1, 2, highlight, label: "Full selected interval description");
+        chart.HighlightXAxisLabel(1, highlight).HighlightXAxisRange(1, 2, highlight, label: "Full selected interval description");
         chart.AddAnnotation(new ChartAnnotation(ChartAnnotationKind.HorizontalLine, 4, null, "Complete target description", highlight, 1));
         var scene = Compile(chart, measured: true);
         Assert.Contains(scene.Nodes.OfType<VisualSceneText>(), text => text.Role == "axis-x-label" && text.Color.Equals(highlight));
@@ -243,13 +243,13 @@ public sealed class V2CartesianMigrationTests {
         var chart = Chart.Create().AddLine("Observed", Points(3, 8, 4));
         // No lone last-point dot unless that point is labelled (design rule 5).
         Assert.Empty(Compile(chart).Nodes.OfType<VisualSceneEllipse>());
-        chart.Options.LineMarkerMode = ChartLineMarkerMode.All;
+        chart.Options.Lines.MarkerMode = ChartLineMarkerMode.All;
         Assert.Equal(3, Compile(chart).Nodes.OfType<VisualSceneEllipse>().Count(node => node.Role == "marker"));
-        chart.Options.LineMarkerMode = ChartLineMarkerMode.None;
+        chart.Options.Lines.MarkerMode = ChartLineMarkerMode.None;
         var hidden = Compile(chart);
         Assert.Empty(hidden.Nodes.OfType<VisualSceneEllipse>());
         Assert.Equal(3, hidden.Regions.Count(region => region.Role == "point"));
-        chart.Options.LineMarkerMode = ChartLineMarkerMode.All;
+        chart.Options.Lines.MarkerMode = ChartLineMarkerMode.All;
         chart.Options.IsSparkline = true;
         Assert.Empty(Compile(chart).Nodes.OfType<VisualSceneEllipse>());
         chart.Options.IsSparkline = false;

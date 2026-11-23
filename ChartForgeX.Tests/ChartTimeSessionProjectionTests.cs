@@ -24,7 +24,7 @@ public sealed class ChartTimeSessionProjectionTests {
         Assert.Throws<ArgumentException>(() => new ChartTimeSessionDomain(Array.Empty<ChartTimeSession>()));
         Assert.Throws<ArgumentException>(() => new ChartTimeSessionDomain(new[] { new ChartTimeSession(Monday, Monday.AddHours(8)), new ChartTimeSession(Friday, Friday.AddHours(8)) }));
         Assert.Throws<ArgumentOutOfRangeException>(() => new ChartTimeSession(-2, -1));
-        var continuous = Chart.Create().WithXAxisScale(ChartScaleKind.Time).AddLine("Historic numeric time", new[] { new ChartPoint(-2, 4), new ChartPoint(-1, 8) });
+        var continuous = Chart.Create().XAxis(x => x.Scale(ChartScaleKind.Time)).AddLine("Historic numeric time", new[] { new ChartPoint(-2, 4), new ChartPoint(-1, 8) });
         Assert.NotEmpty(continuous.Prepare(Context()).ToPng());
     }
 
@@ -109,11 +109,11 @@ public sealed class ChartTimeSessionProjectionTests {
 
     private static Chart Mixed() {
         var x = new[] { Friday, Friday.AddHours(8), Monday, Monday.AddHours(8) };
-        var chart = Chart.Create().WithLegend(false).WithXAxisBounds(Oa(Friday), Oa(Monday.AddHours(8))).WithYAxisBounds(0, 100)
+        var chart = Chart.Create().Legend(false).XAxis(xAxis => xAxis.Bounds(Oa(Friday), Oa(Monday.AddHours(8)))).YAxis(y => y.Bounds(0, 100))
             .AddSeries(ChartSeries.CreateCandlestick(new ChartSeriesId("prices"), "Prices", x.Select((time, index) => new ChartCandlestick(time, 30 + index, 50 + index, 20 + index, 40 + index))))
             .AddSeries(new ChartSeries(new ChartSeriesId("reference"), "Reference", ChartSeriesKind.Line, x.Select((time, index) => new ChartPoint(Oa(time), 60 + index))))
             .AddSeries(ChartSeries.CreateRangeArea(new ChartSeriesId("range"), "Range", x.Select((time, index) => new ChartRangeBand(time, 65 + index, 75 + index))));
-        chart.ConfigureXAxis(axis => axis.WithTimeSessions(Domain()));
+        chart.XAxis(axis => axis.TimeSessions(Domain()));
         return chart;
     }
     private static string?[] AxisText(PreparedVisual prepared, string role) => prepared.Regions.Where(region => region.Role == role).Select(region => region.Label).ToArray();

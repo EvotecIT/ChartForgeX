@@ -18,7 +18,7 @@ public sealed class HtmlXNavigationTests {
 
     [Fact]
     public void NavigatorIsOptInAndContainsAnIsolatedNativeFullDomainImage() {
-        var chart = Chart.Create().WithXAxisBounds(0, 10).AddLine("Readings", new[] { new ChartPoint(0, 2), new ChartPoint(5, 8), new ChartPoint(10, 3) });
+        var chart = Chart.Create().XAxis(x => x.Bounds(0, 10)).AddLine("Readings", new[] { new ChartPoint(0, 2), new ChartPoint(5, 8), new ChartPoint(10, 3) });
         var renderer = new HtmlInteractiveChartRenderer();
         Assert.DoesNotContain("data-cfx-x-navigation", renderer.PrepareSection(chart).Html);
         var full = renderer.PrepareSection(chart, configure: Configure);

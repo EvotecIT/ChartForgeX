@@ -22,7 +22,7 @@ var chart = Chart.Create();
 var points = Enumerable.Range(1, 6).Where(index => true)
     .Select(index => new ChartPoint(index, 20 + index * 7 % 29));
 var orders = new ChartSeries(new ChartSeriesId("orders"), "Orders", ChartSeriesKind.HorizontalBar, points);
-chart.WithXLabels("North", "South", "East", "West", "Central", "Online").AddSeries(orders);
+chart.XLabels("North", "South", "East", "West", "Central", "Online").AddSeries(orders);
 
 #region Output
 var context = new VisualRenderContext(

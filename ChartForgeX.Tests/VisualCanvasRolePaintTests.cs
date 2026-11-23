@@ -15,7 +15,7 @@ public sealed class VisualCanvasRolePaintTests {
     public void IndependentTileAndBadgePaintsReachSvgAndNativePngWithoutChangingSharedText(ThemeMode mode) {
         var canvas = CreateCanvas(mode);
         var colors = new[] { ChartColor.FromHex("#D01327"), ChartColor.FromHex("#19A64E"), ChartColor.FromHex("#2163D8"), ChartColor.FromHex("#A21FC3") };
-        canvas.ConfigureStyle(style => {
+        canvas.Style(style => {
             style.TileLabelColor = colors[0];
             style.TileValueColor = colors[1];
             style.TileDetailColor = colors[2];
@@ -23,11 +23,11 @@ public sealed class VisualCanvasRolePaintTests {
         });
 
         AssertRolePaints(canvas, colors);
-        canvas.WithThemeMode(mode == ThemeMode.Light ? ThemeMode.Dark : ThemeMode.Light);
+        canvas.ThemeMode(mode == ThemeMode.Light ? ThemeMode.Dark : ThemeMode.Light);
         AssertRolePaints(canvas, colors);
         Assert.Equal(canvas.Theme.Resolve(canvas.ThemeMode).Foreground.ToCss(), TextPaint(canvas.ToSvg(), "Shared text"));
 
-        canvas.ConfigureStyle(style => {
+        canvas.Style(style => {
             style.TileLabelColor = null;
             style.TileValueColor = null;
             style.TileDetailColor = null;
@@ -41,7 +41,7 @@ public sealed class VisualCanvasRolePaintTests {
     public void ConfiguredRolePaintsAreDetachedFromRetainedCallbackValuesAndFailedEdits() {
         var canvas = CreateCanvas(ThemeMode.Dark);
         VisualCanvasStyleOptions? retained = null;
-        canvas.ConfigureStyle(style => {
+        canvas.Style(style => {
             retained = style;
             style.TileLabelColor = ChartColors.Red;
             style.TileValueColor = ChartColors.Green;
@@ -53,7 +53,7 @@ public sealed class VisualCanvasRolePaintTests {
         var png = artifact.ToPng();
 
         retained!.TileLabelColor = retained.TileValueColor = retained.TileDetailColor = retained.HeroBadgeTextColor = ChartColors.Yellow;
-        Assert.Throws<InvalidOperationException>(() => canvas.ConfigureStyle(style => {
+        Assert.Throws<InvalidOperationException>(() => canvas.Style(style => {
             style.TileLabelColor = style.TileValueColor = style.TileDetailColor = style.HeroBadgeTextColor = ChartColors.Cyan;
             throw new InvalidOperationException("Rejected edit");
         }));
@@ -64,8 +64,8 @@ public sealed class VisualCanvasRolePaintTests {
     }
 
     private static VisualCanvas CreateCanvas(ThemeMode mode) => VisualCanvas.Create(620, 220)
-        .WithTheme(VisualTheme.Graphite(), mode)
-        .WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+        .Theme(VisualTheme.Graphite()).ThemeMode(mode)
+        .BackdropStyle(VisualCanvasBackdropStyle.Transparent)
         .AddInfoTile(12, 12, 360, 150, "", "Capacity label", "256 GB", "Calibrated detail")
         .AddHeroBadge(410, 20, 150, 110, "PB")
         .AddText(12, 180, 590, "Shared text", 24);

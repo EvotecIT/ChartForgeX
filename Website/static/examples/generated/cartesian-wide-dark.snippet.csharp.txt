@@ -25,7 +25,7 @@ var names = new[] { "Observed", "Expected", "Capacity" };
 var capacity = ChartSeries.CreateBar(new ChartSeriesId("capacity"), names[2], Points(count, 2, false));
 var expected = ChartSeries.CreateArea(new ChartSeriesId("expected"), names[1], Points(count, 1));
 var observed = ChartSeries.CreateLine(new ChartSeriesId("observed"), names[0], Points(count, 0));
-var chart = Chart.Create().WithXLabels(Enumerable.Range(1, count).Select(index => "Day " + index).ToArray())
+var chart = Chart.Create().XLabels(Enumerable.Range(1, count).Select(index => "Day " + index).ToArray())
     .AddSeries(capacity).AddSeries(expected).AddSeries(observed);
 
 #region Output

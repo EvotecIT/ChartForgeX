@@ -12,15 +12,15 @@ public sealed class CartesianStyledAnnotationTests {
     [InlineData(false)]
     [InlineData(true)]
     public async Task MarkersAndReferenceStrokesShareTheSameAutomaticBounds(bool horizontal) {
-        var chart = Chart.Create().WithSize(640, 640).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false)
-            .WithDataLabels(false).WithLineMarkers(ChartLineMarkerMode.All)
+        var chart = Chart.Create().Size(640, 640).ShowHeader(false).Legend(false).Axes(false).ShowGrid(false)
+            .DataLabels(false).Lines(l => l.MarkerMode(ChartLineMarkerMode.All))
             .AddLine("Observed", new[] { new ChartPoint(0, 0), new ChartPoint(10, 10) });
-        chart.Series[0].ConfigureMarkers(markers => markers.Radius = 0);
+        chart.Series[0].Markers(markers => markers.Radius = 0);
         if (horizontal) chart.AddHorizontalLine(10, ""); else chart.AddVerticalLine(10, "");
         chart.Annotations[0].StrokeStyle = new ChartStrokeStyle(width: 0);
         var plot = Plot(chart.Prepare(VisualExportRequest.ForChart(chart).Context));
         var pixels = horizontal ? plot.Height : plot.Width;
-        chart.Series[0].ConfigureMarkers(markers => markers.Radius = pixels * .3);
+        chart.Series[0].Markers(markers => markers.Radius = pixels * .3);
         chart.Annotations[0].StrokeStyle = new ChartStrokeStyle(ChartColor.FromHex("#FF00FF"), pixels * .8, .15);
         var actual = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         foreach (var marker in actual.Scene.Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role == "marker")) {
@@ -41,9 +41,9 @@ public sealed class CartesianStyledAnnotationTests {
     [InlineData(false)]
     [InlineData(true)]
     public async Task AnOversizedGuideDoesNotCancelBoundsForAContainableGuide(bool horizontal) {
-        var chart = Chart.Create().WithSize(640, 360).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false)
-            .WithDataLabels(false).AddLine("Observed", new[] { new ChartPoint(0, 0), new ChartPoint(10, 10) });
-        chart.Series[0].ConfigureMarkers(markers => markers.Radius = 0);
+        var chart = Chart.Create().Size(640, 360).ShowHeader(false).Legend(false).Axes(false).ShowGrid(false)
+            .DataLabels(false).AddLine("Observed", new[] { new ChartPoint(0, 0), new ChartPoint(10, 10) });
+        chart.Series[0].Markers(markers => markers.Radius = 0);
         if (horizontal) { chart.AddHorizontalLine(0, ""); chart.AddHorizontalLine(5, ""); }
         else { chart.AddVerticalLine(0, ""); chart.AddVerticalLine(5, ""); }
         chart.Annotations[0].StrokeStyle = new ChartStrokeStyle(width: 40);
@@ -59,9 +59,9 @@ public sealed class CartesianStyledAnnotationTests {
 
     [Fact]
     public void MinimumAcceptedReferenceDashesRenderThroughBothPublicRasterPathsOnAWideCanvas() {
-        var chart = Chart.Create().WithSize(30000, 100).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false)
-            .WithDataLabels(false).AddLine("Observed", new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) }).AddHorizontalLine(5, "");
-        chart.Series[0].ConfigureMarkers(markers => markers.Radius = 0);
+        var chart = Chart.Create().Size(30000, 100).ShowHeader(false).Legend(false).Axes(false).ShowGrid(false)
+            .DataLabels(false).AddLine("Observed", new[] { new ChartPoint(0, 2), new ChartPoint(10, 8) }).AddHorizontalLine(5, "");
+        chart.Series[0].Markers(markers => markers.Radius = 0);
         chart.Annotations[0].StrokeStyle = new ChartStrokeStyle(width: 1, dash: new[] { .25, .25 });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.NotEmpty(prepared.ToPng());
@@ -75,9 +75,9 @@ public sealed class CartesianStyledAnnotationTests {
     [InlineData(false)]
     [InlineData(true)]
     public void CenteredWideGuideDoesNotAssignItsWidthToTheNarrowEdgeGuide(bool horizontal) {
-        var chart = Chart.Create().WithSize(640, 360).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false)
-            .WithDataLabels(false).AddLine("Observed", new[] { new ChartPoint(0, 0), new ChartPoint(10, 10) });
-        chart.Series[0].ConfigureMarkers(markers => markers.Radius = 0);
+        var chart = Chart.Create().Size(640, 360).ShowHeader(false).Legend(false).Axes(false).ShowGrid(false)
+            .DataLabels(false).AddLine("Observed", new[] { new ChartPoint(0, 0), new ChartPoint(10, 10) });
+        chart.Series[0].Markers(markers => markers.Radius = 0);
         if (horizontal) { chart.AddHorizontalLine(0, ""); chart.AddHorizontalLine(5, ""); }
         else { chart.AddVerticalLine(0, ""); chart.AddVerticalLine(5, ""); }
         chart.Annotations[0].StrokeStyle = new ChartStrokeStyle(width: 2);
@@ -140,7 +140,7 @@ public sealed class CartesianStyledAnnotationTests {
     [InlineData(true, true)]
     public void AuthoredAxisEndsRetainTheirExplicitClippingBoundary(bool horizontal, bool maximum) {
         var chart = Create(horizontal, maximum, ChartScaleKind.Linear);
-        if (horizontal) chart.WithYAxisBounds(1, 10); else chart.WithXAxisBounds(1, 10);
+        if (horizontal) chart.YAxis(y => y.Bounds(1, 10)); else chart.XAxis(x => x.Bounds(1, 10));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var line = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), item => item.Role == "annotation-line");
         var plot = Plot(prepared);
@@ -156,7 +156,7 @@ public sealed class CartesianStyledAnnotationTests {
     public void OneAuthoredEndLeavesTheOtherEndAvailableForTheStroke(bool horizontal, bool maximum) {
         var chart = Create(horizontal, maximum, ChartScaleKind.Linear);
         var axis = horizontal ? chart.Options.YAxis : chart.Options.XAxis;
-        if (maximum) axis.Minimum = 1; else axis.Maximum = 10;
+        if (maximum) axis.Min = 1; else axis.Max = 10;
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var line = Assert.Single(prepared.Scene.Nodes.OfType<VisualScenePath>(), item => item.Role == "annotation-line");
         var plot = Plot(prepared);
@@ -210,9 +210,9 @@ public sealed class CartesianStyledAnnotationTests {
     }
 
     private static Chart Create(bool horizontal, bool maximum, ChartScaleKind scale) {
-        var chart = Chart.Create().WithSize(640, 360).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false).WithDataLabels(false)
+        var chart = Chart.Create().Size(640, 360).ShowHeader(false).Legend(false).Axes(false).ShowGrid(false).DataLabels(false)
             .AddLine("Observed", new[] { new ChartPoint(2, 2), new ChartPoint(8, 8) });
-        chart.Series[0].ConfigureMarkers(markers => markers.Radius = 0);
+        chart.Series[0].Markers(markers => markers.Radius = 0);
         (horizontal ? chart.Options.YAxis : chart.Options.XAxis).Scale = scale;
         if (horizontal) chart.AddHorizontalLine(maximum ? 10 : 1, ""); else chart.AddVerticalLine(maximum ? 10 : 1, "");
         chart.Annotations[0].StrokeStyle = new ChartStrokeStyle(ChartColor.FromHex("#FF00FF"), 40, dash: Array.Empty<double>());

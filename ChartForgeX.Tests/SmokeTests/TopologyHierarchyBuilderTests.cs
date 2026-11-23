@@ -9,9 +9,9 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void TopologyHierarchyBuilderCreatesLevelFilteredDiagrams() {
         var chart = TopologyChart.Create()
-            .WithId("hierarchy-builder")
-            .WithViewport(640, 420, 24)
-            .WithLegend(null)
+            .Id("hierarchy-builder")
+            .Viewport(new TopologyViewport(640, 420, 24))
+            .Legend((TopologyLegend?)null)
             .AddHierarchy(new[] {
                 new TopologyHierarchyItem("forest", "evotec.xyz") { Kind = TopologyNodeKind.Namespace, IconId = "forest", Symbol = "FOR" },
                 new TopologyHierarchyItem("domain", "ad.evotec.xyz", "forest") { Kind = TopologyNodeKind.Namespace, IconId = "domain", Symbol = "DOM" },
@@ -25,14 +25,14 @@ internal static partial class SmokeTests {
         Assert(chart.Edges.Count == 2, "Hierarchy builders should only create edges between visible parent-child nodes.");
         Assert(chart.Edges.All(edge => edge.SourcePort == TopologyEdgePort.Bottom && edge.TargetPort == TopologyEdgePort.Top), "Top-to-bottom hierarchy edges should attach from parent bottom to child top.");
         Assert(chart.Nodes.Single(node => node.Id == "admins").Metadata["hierarchy.level"] == "2", "Hierarchy builders should expose resolved levels as reusable metadata.");
-        Assert(chart.ToPng(new TopologyRenderOptions { IncludeLegend = false }.WithMonitoringDashboardStyle()).Length > 64, "Level-filtered hierarchy diagrams should render as PNG.");
+        Assert(chart.ToPng(new TopologyRenderOptions { IncludeLegend = false }.MonitoringDashboardStyle()).Length > 64, "Level-filtered hierarchy diagrams should render as PNG.");
     }
 
     private static void TopologyHierarchyBuilderCopiesBackgroundColors() {
         var chart = TopologyChart.Create()
-            .WithId("hierarchy-background")
-            .WithViewport(480, 300, 24)
-            .WithLegend(null)
+            .Id("hierarchy-background")
+            .Viewport(new TopologyViewport(480, 300, 24))
+            .Legend((TopologyLegend?)null)
             .AddHierarchy(new[] {
                 new TopologyHierarchyItem("root", "Root") { Kind = TopologyNodeKind.Team, BackgroundColor = "#F5F3FF" },
                 new TopologyHierarchyItem("child", "Child", "root") { Kind = TopologyNodeKind.Person, BackgroundColor = "#DCFCE7" }
@@ -76,9 +76,9 @@ internal static partial class SmokeTests {
         var items = new List<TopologyHierarchyItem> { new("root", "Root") { Kind = TopologyNodeKind.Team, IconId = "team" } };
         for (var i = 0; i < 18; i++) items.Add(new TopologyHierarchyItem("member-" + i.ToString("00", CultureInfo.InvariantCulture), "Member " + i.ToString("00", CultureInfo.InvariantCulture), "root") { Kind = TopologyNodeKind.Person, IconId = "person" });
         var chart = TopologyChart.Create()
-            .WithId("crowded-level")
-            .WithViewport(520, 360, 24)
-            .WithLegend(null)
+            .Id("crowded-level")
+            .Viewport(new TopologyViewport(520, 360, 24))
+            .Legend((TopologyLegend?)null)
             .AddHierarchy(items, new TopologyHierarchyOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile, NodeWidth = 72, NodeHeight = 54 });
 
         var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { IncludeLegend = false });
@@ -86,7 +86,7 @@ internal static partial class SmokeTests {
         Assert(children.Select(node => node.Metadata["layout.row"]).Distinct(StringComparer.Ordinal).Count() > 1, "Crowded hierarchy levels should wrap into multiple rows.");
         Assert(children.All(node => node.Metadata["layout.hierarchyPolicy"] == TopologyHierarchyLayoutPolicy.Compact.ToString()), "Auto hierarchy layout should resolve crowded sibling bands to compact packing.");
         Assert(!AnyOverlap(children), "Wrapped hierarchy levels should not place sibling nodes on top of each other.");
-        Assert(chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false }.WithMonitoringDashboardStyle()).Contains("data-layout-mode=\"Layered\"", StringComparison.Ordinal), "Wrapped hierarchy diagrams should render with layered metadata.");
+        Assert(chart.ToSvg(new TopologyRenderOptions { IncludeLegend = false }.MonitoringDashboardStyle()).Contains("data-layout-mode=\"Layered\"", StringComparison.Ordinal), "Wrapped hierarchy diagrams should render with layered metadata.");
     }
 
     private static void TopologyHierarchyLayoutPoliciesInheritPerSubtree() {
@@ -104,9 +104,9 @@ internal static partial class SmokeTests {
         }
 
         var chart = TopologyChart.Create()
-            .WithId("hierarchy-layout-policies")
-            .WithViewport(1800, 900, 24)
-            .WithLegend(null)
+            .Id("hierarchy-layout-policies")
+            .Viewport(new TopologyViewport(1800, 900, 24))
+            .Legend((TopologyLegend?)null)
             .AddHierarchy(items, new TopologyHierarchyOptions { NodeDisplayMode = TopologyNodeDisplayMode.Tile, NodeWidth = 88, NodeHeight = 48 });
         var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { IncludeLegend = false });
         var standard = ChildrenOf(prepared, "standard");
@@ -125,9 +125,9 @@ internal static partial class SmokeTests {
 
     private static void TopologyHierarchyAutoPolicyKeepsSmallSiblingBandsStandard() {
         var chart = TopologyChart.Create()
-            .WithId("hierarchy-auto-standard")
-            .WithViewport(720, 360, 24)
-            .WithLegend(null)
+            .Id("hierarchy-auto-standard")
+            .Viewport(new TopologyViewport(720, 360, 24))
+            .Legend((TopologyLegend?)null)
             .AddHierarchy(new[] {
                 new TopologyHierarchyItem("root", "Root") { Kind = TopologyNodeKind.Team },
                 new TopologyHierarchyItem("one", "One", "root") { Kind = TopologyNodeKind.Person },
@@ -150,9 +150,9 @@ internal static partial class SmokeTests {
             for (var i = 0; i < 7; i++) items.Add(new TopologyHierarchyItem("child-" + i, "Child " + i, "root") { Kind = TopologyNodeKind.Person });
 
             var chart = TopologyChart.Create()
-                .WithId("hierarchy-direction-" + direction)
-                .WithViewport(900, 700, 24)
-                .WithLegend(null)
+                .Id("hierarchy-direction-" + direction)
+                .Viewport(new TopologyViewport(900, 700, 24))
+                .Legend((TopologyLegend?)null)
                 .AddHierarchy(items, new TopologyHierarchyOptions { LayoutDirection = direction, NodeDisplayMode = TopologyNodeDisplayMode.Tile, NodeWidth = 88, NodeHeight = 48 });
             var prepared = TopologyLayoutEngine.Prepare(chart, options: new TopologyRenderOptions { IncludeLegend = false });
             var children = ChildrenOf(prepared, "root");
@@ -167,9 +167,9 @@ internal static partial class SmokeTests {
 
     private static void TopologyTeamBuilderCreatesOrgDiagrams() {
         var chart = TopologyChart.Create()
-            .WithId("team-builder")
-            .WithViewport(540, 380, 24)
-            .WithLegend(null)
+            .Id("team-builder")
+            .Viewport(new TopologyViewport(540, 380, 24))
+            .Legend((TopologyLegend?)null)
             .AddTeam("team", "Team", new[] {
                 new TopologyTeamMember("lead", "Marcel", "Founder"),
                 new TopologyTeamMember("pm", "Deniz", "Project Manager") { ParentId = "lead" },
@@ -181,14 +181,14 @@ internal static partial class SmokeTests {
         Assert(chart.Nodes.All(node => node.DisplayMode == TopologyNodeDisplayMode.Card), "Team builders should default to self-contained cards so hierarchy connectors do not cross external tile labels.");
         Assert(chart.Edges.Any(edge => edge.SourceNodeId == "lead" && edge.TargetNodeId == "pm"), "Team builders should preserve member reporting lines.");
         Assert(chart.Nodes.Single(node => node.Id == "pm").Metadata["hierarchy.level"] == "2", "Nested team members should inherit hierarchy levels.");
-        Assert(chart.ToPng(new TopologyRenderOptions { IncludeLegend = false }.WithMonitoringDashboardStyle()).Length > 64, "Team diagrams should render as PNG.");
+        Assert(chart.ToPng(new TopologyRenderOptions { IncludeLegend = false }.MonitoringDashboardStyle()).Length > 64, "Team diagrams should render as PNG.");
     }
 
     private static void TopologyHierarchyBuilderSupportsLevelWindowsWithAncestors() {
         var chart = TopologyChart.Create()
-            .WithId("hierarchy-window")
-            .WithViewport(720, 440, 24)
-            .WithLegend(null)
+            .Id("hierarchy-window")
+            .Viewport(new TopologyViewport(720, 440, 24))
+            .Legend((TopologyLegend?)null)
             .AddHierarchy(SampleDirectoryHierarchy(), new TopologyHierarchyOptions { MinLevel = 2, MaxLevel = 3, IncludeAncestorContext = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile });
 
         Assert(chart.Nodes.Any(node => node.Id == "forest" && node.Metadata["hierarchy.context"] == "ancestor"), "Level windows should keep root ancestors as context when requested.");
@@ -197,14 +197,14 @@ internal static partial class SmokeTests {
         Assert(chart.Nodes.Any(node => node.Id == "owner" && node.Metadata["hierarchy.context"] == "primary"), "Level windows should include descendants inside the selected range.");
         Assert(!chart.Nodes.Any(node => node.Id == "device"), "Level windows should exclude nodes deeper than MaxLevel.");
         Assert(chart.Edges.Any(edge => edge.SourceNodeId == "forest" && edge.TargetNodeId == "domain"), "Ancestor context should preserve breadcrumb edges.");
-        Assert(chart.ToPng(new TopologyRenderOptions { IncludeLegend = false }.WithMonitoringDashboardStyle()).Length > 64, "Level-windowed hierarchy diagrams should render as PNG.");
+        Assert(chart.ToPng(new TopologyRenderOptions { IncludeLegend = false }.MonitoringDashboardStyle()).Length > 64, "Level-windowed hierarchy diagrams should render as PNG.");
     }
 
     private static void TopologyHierarchyBuilderCanRenderExactLevelRanges() {
         var chart = TopologyChart.Create()
-            .WithId("hierarchy-exact-window")
-            .WithViewport(600, 320, 24)
-            .WithLegend(null)
+            .Id("hierarchy-exact-window")
+            .Viewport(new TopologyViewport(600, 320, 24))
+            .Legend((TopologyLegend?)null)
             .AddHierarchy(SampleDirectoryHierarchy(), new TopologyHierarchyOptions { MinLevel = 2, MaxLevel = 2, IncludeAncestorContext = false, NodeDisplayMode = TopologyNodeDisplayMode.Pill });
 
         Assert(chart.Nodes.Select(node => node.Id).OrderBy(id => id, StringComparer.Ordinal).SequenceEqual(new[] { "admins", "operators" }, StringComparer.Ordinal), "Exact level windows should render only the requested levels when ancestor context is disabled.");
@@ -214,9 +214,9 @@ internal static partial class SmokeTests {
 
     private static void TopologyLayeredLayoutKeepsChildrenNearParents() {
         var chart = TopologyChart.Create()
-            .WithId("parent-child-order")
-            .WithViewport(560, 360, 24)
-            .WithLegend(null)
+            .Id("parent-child-order")
+            .Viewport(new TopologyViewport(560, 360, 24))
+            .Legend((TopologyLegend?)null)
             .AddHierarchy(new[] {
                 new TopologyHierarchyItem("root", "Root") { Kind = TopologyNodeKind.Team },
                 new TopologyHierarchyItem("parent-a", "Parent A", "root") { Kind = TopologyNodeKind.Team },
@@ -238,9 +238,9 @@ internal static partial class SmokeTests {
 
     private static void TopologyLayeredLayoutCentersHierarchyBuckets() {
         var chart = TopologyChart.Create()
-            .WithId("parent-child-buckets")
-            .WithViewport(760, 420, 24)
-            .WithLegend(null)
+            .Id("parent-child-buckets")
+            .Viewport(new TopologyViewport(760, 420, 24))
+            .Legend((TopologyLegend?)null)
             .AddHierarchy(new[] {
                 new TopologyHierarchyItem("root", "Root") { Kind = TopologyNodeKind.Team },
                 new TopologyHierarchyItem("parent-a", "Parent A", "root") { Kind = TopologyNodeKind.Team },
@@ -266,9 +266,9 @@ internal static partial class SmokeTests {
 
     private static void TopologyLayeredHierarchyRoutesUseSharedBuses() {
         var chart = TopologyChart.Create()
-            .WithId("shared-hierarchy-bus")
-            .WithViewport(720, 420, 24)
-            .WithLegend(null)
+            .Id("shared-hierarchy-bus")
+            .Viewport(new TopologyViewport(720, 420, 24))
+            .Legend((TopologyLegend?)null)
             .AddTeam("team", "Team", new[] {
                 new TopologyTeamMember("lead", "Lead", "Manager"),
                 new TopologyTeamMember("a", "A", "Engineer") { ParentId = "lead" },

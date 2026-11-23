@@ -16,12 +16,12 @@ public sealed class CartesianReversalTests {
     [InlineData(true, false, -1)]
     [InlineData(true, true, -1)]
     public void SegmentedCapsAndMinimumInkFollowTheMappedValueEnd(bool horizontal, bool reversed, int sign) {
-        var chart = Chart.Create().WithSize(300, 220).WithAxes(false).WithGrid(false).WithHeader(false)
-            .WithLegend(false).WithDataLabels(false).WithBarStyle(ChartBarStyle.SegmentedCapsule);
+        var chart = Chart.Create().Size(300, 220).Axes(false).ShowGrid(false).ShowHeader(false)
+            .Legend(false).DataLabels(false).Bars(b => b.Style(ChartBarStyle.SegmentedCapsule));
         var points = new[] { new ChartPoint(1, 10 * sign), new ChartPoint(2, .0001 * sign), new ChartPoint(3, 100 * sign) };
         if (horizontal) chart.AddHorizontalBar("Values", points); else chart.AddBar("Values", points);
         var axis = horizontal ? chart.Options.XAxis : chart.Options.YAxis;
-        axis.WithBounds(sign > 0 ? 0 : -100, sign > 0 ? 100 : 0).WithReversal(reversed);
+        axis.Bounds(sign > 0 ? 0 : -100, sign > 0 ? 100 : 0).Reversed(reversed);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var role = horizontal ? "horizontal-bar" : "bar";
         var bodies = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == role).ToArray();
@@ -49,9 +49,9 @@ public sealed class CartesianReversalTests {
     [InlineData(false)]
     [InlineData(true)]
     public void WaterfallConnectorsJoinFacingEdgesInMappedCategoryOrder(bool reversed) {
-        var chart = Chart.Create().WithSize(600, 360).WithLegend(false).WithDataLabels(false).WithBarStyle(ChartBarStyle.Flat)
+        var chart = Chart.Create().Size(600, 360).Legend(false).DataLabels(false).Bars(b => b.Style(ChartBarStyle.Flat))
             .AddWaterfall("Changes", new[] { new ChartPoint(1, 10), new ChartPoint(2, 5), new ChartPoint(3, -3) });
-        chart.Options.XAxis.WithReversal(reversed);
+        chart.Options.XAxis.Reversed(reversed);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var bodies = prepared.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "waterfall-bar").ToArray();
         var connectors = prepared.Scene.Nodes.OfType<VisualSceneLine>().Where(node => node.Role == "waterfall-connector").ToArray();

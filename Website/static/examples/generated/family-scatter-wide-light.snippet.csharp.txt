@@ -36,7 +36,7 @@ static class ScatterRecipe {
         // Processing time grows with batch size; priority jobs run on reserved capacity and finish faster.
         var standard = ChartSeries.CreateScatter(new ChartSeriesId("standard"), "Standard queue", Batches(count, 0, 9, .42));
         var priority = ChartSeries.CreateScatter(new ChartSeriesId("priority"), "Priority queue", Batches(count, 3, 4, .24));
-        return Chart.Create().WithXAxis("Batch size (items)").WithYAxis("Processing time (minutes)")
+        return Chart.Create().XAxis(x => x.Title("Batch size (items)")).YAxis(y => y.Title("Processing time (minutes)"))
             .AddSeries(standard).AddSeries(priority);
     }
 

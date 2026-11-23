@@ -20,10 +20,10 @@ public sealed class NativeEffectExtensionBeforeControlsTests {
     public void OrdinarySourceZeroBlurNonzeroBlurAndImperativeShadowProvideDetachedBeforeArtifacts(int width, ThemeMode mode, int density) {
         var series = new ChartSeries(new ChartSeriesId("completed"), "Completed", ChartSeriesKind.Line,
             new[] { new ChartPoint(1, 7), new ChartPoint(2, 19), new ChartPoint(3, 11), new ChartPoint(4, 24) })
-            .WithObservationId(1, new ChartObservationId("cycle-2"));
+            .ObservationId(1, new ChartObservationId("cycle-2"));
         var theme = VisualTheme.Graphite();
-        var chart = Chart.Create().WithSize(width, 260).WithTitle("Service completions").WithSubtitle("Four retained cycles")
-            .WithTheme(theme, mode).WithXAxis("Cycle").WithYAxis("Finished").WithDataLabels(false).AddSeries(series);
+        var chart = Chart.Create().Size(width, 260).Title("Service completions").Subtitle("Four retained cycles")
+            .Theme(theme).ThemeMode(mode).XAxis(x => x.Title("Cycle")).YAxis(y => y.Title("Finished")).DataLabels(false).AddSeries(series);
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, 260), 24), theme, mode,
             new VisualFrame(showLegend: false, transparentBackground: true));
         var source = chart.Prepare(context); var options = new VisualRenderOptions(scale: density, supersampling: 1);

@@ -24,13 +24,13 @@ public sealed class GaugeTargetsBrowserTests {
         var culture = CultureInfo.GetCultureInfo("fr-FR");
         var reading = new ChartGaugeValue(81.75, targets: new[] { new ChartGaugeTarget(72.5, "Minimum <safe>"), new ChartGaugeTarget(91.25) });
         var series = ChartSeries.CreateGauge(new ChartSeriesId("readiness"), "Readiness", reading)
-            .WithObservationId(0, new ChartObservationId("reading"));
-        var chart = Chart.Create().WithSize(customFormatter ? 340 : 640, 360).WithLegend(false)
-            .WithTheme(VisualTheme.Graphite(), customFormatter ? ThemeMode.Dark : ThemeMode.Light)
-            .WithTitle("Measured readiness").AddSeries(series).ConfigureGauge(options => options.Form = form);
-        if (customFormatter) chart.WithValueFormatter(value => "Reading " + value.ToString("0.00", culture));
-        else chart.WithValueFormat(ChartValueFormat.Number("0.00", culture));
-        if (customFormatter) chart.ConfigureLabels(labels => labels.Target = "Objectif");
+            .ObservationId(0, new ChartObservationId("reading"));
+        var chart = Chart.Create().Size(customFormatter ? 340 : 640, 360).Legend(false)
+            .Theme(VisualTheme.Graphite()).ThemeMode(customFormatter ? ThemeMode.Dark : ThemeMode.Light)
+            .Title("Measured readiness").AddSeries(series).Gauge(options => options.Form = form);
+        if (customFormatter) chart.FormatValuesBy(value => "Reading " + value.ToString("0.00", culture));
+        else chart.ValueFormat(ChartValueFormat.Number("0.00", culture));
+        if (customFormatter) chart.Labels(labels => labels.Target = "Objectif");
         var expected = customFormatter ? new[] { "Reading 72,50", "Reading 91,25" } : new[] { "72,50", "91,25" };
         var html = chart.ToInteractiveHtmlPage(options => {
             options.Tooltip.Mode = HtmlChartTooltipMode.Single;

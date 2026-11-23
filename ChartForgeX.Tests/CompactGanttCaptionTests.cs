@@ -12,7 +12,7 @@ public sealed class CompactGanttCaptionTests {
     [InlineData(320, ThemeMode.Dark)]
     [InlineData(360, ThemeMode.Light)]
     public void CompactGanttDatesKeepOneEmApartAndTaskNamesNeverSplitAWord(int width, ThemeMode mode) {
-        var chart = GanttRecipe.Create("compact", mode).WithSize(width, 300).WithTitle("Delivery plan");
+        var chart = GanttRecipe.Create("compact", mode).Size(width, 300).Title("Delivery plan");
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var captions = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "schedule-tick-label").OrderBy(node => node.X).ToArray();
         Assert.True(captions.Length >= 2);

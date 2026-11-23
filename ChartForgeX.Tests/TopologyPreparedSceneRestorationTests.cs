@@ -72,7 +72,7 @@ public sealed class TopologyPreparedSceneRestorationTests {
 
     [Fact]
     public void RawHierarchyImportRemainsAuthoredCoordinatesWhenTheCallerChoosesManualLayout() {
-        var source = TopologyChart.Create().WithTitle("Raw hierarchy title").WithViewport(900, 650, 24).WithLegend(null)
+        var source = TopologyChart.Create().Title("Raw hierarchy title").Viewport(new TopologyViewport(900, 650, 24)).Legend((TopologyLegend?)null)
             .AddHierarchy(new[] { new TopologyHierarchyItem("root", "Root"), new TopologyHierarchyItem("child", "Child", "root") });
         var envelope = source.Prepare(new TopologyRenderOptions { HierarchyView = new TopologyHierarchyView(), IncludeLegend = false }).ToInterchangeEnvelope();
         var raw = VisualArtifactInterchangeEnvelope.FromJson(envelope.ToJson()).ToTopologyHierarchySource(); raw.LayoutMode = TopologyLayoutMode.Manual;

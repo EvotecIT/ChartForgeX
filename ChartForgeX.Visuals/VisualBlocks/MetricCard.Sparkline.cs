@@ -15,7 +15,7 @@ public sealed partial class MetricCard {
     internal SparklineData GetSecondarySparklineData() => SecondarySparklineData ?? Core.SparklineData.FromValues(SecondaryMiniSparkline);
 
     /// <summary>Sets shared sparkline samples, retaining missing slots, zeroes and the requested domain.</summary>
-    public MetricCard WithSparkline(SparklineData data, ChartColor? color = null, ChartColor? fillColor = null) {
+    public MetricCard Sparkline(SparklineData data, ChartColor? color = null, ChartColor? fillColor = null) {
         if (data == null) throw new ArgumentNullException(nameof(data));
         if (data.Values.Count < 2) throw new ArgumentException("Metric card sparklines require at least two sample slots.", nameof(data));
         if (SecondarySparklineCount > 0 && SecondarySparklineCount != data.Values.Count)
@@ -24,11 +24,11 @@ public sealed partial class MetricCard {
         foreach (var value in data.Values) if (value.HasValue) _miniSparkline.Add(value.Value);
         MiniSparklineMinimum = data.RequestedMinimum; MiniSparklineMaximum = data.RequestedMaximum;
         MiniSparklineColor = color; MiniSparklineFillColor = fillColor;
-        WithoutMiniBars(); return this;
+        ClearMiniBars(); return this;
     }
 
     /// <summary>Sets secondary samples. Bounds belong to the primary sparkline and are shared by both series.</summary>
-    public MetricCard WithSecondarySparkline(SparklineData data, ChartColor? color = null) {
+    public MetricCard SecondarySparkline(SparklineData data, ChartColor? color = null) {
         if (data == null) throw new ArgumentNullException(nameof(data));
         if (data.Values.Count < 2) throw new ArgumentException("Secondary sparklines require at least two sample slots.", nameof(data));
         if (SparklineCount > 0 && data.Values.Count != SparklineCount) throw new InvalidOperationException("Secondary sparkline sample slots must match the primary count.");

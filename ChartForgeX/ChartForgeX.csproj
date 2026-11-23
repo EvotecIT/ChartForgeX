@@ -22,7 +22,7 @@
     <Authors>Evotec</Authors>
     <Description>Dependency-free charts and diagrams with shared SVG, HTML, native raster rendering and GIF/APNG animation, typography, theme/frame contracts and semantic artifact handoff.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReleaseNotes>Optional browser data charts with native layout policy, responsive updates, keyboard selection and deterministic disposal. Coordinated ChartForgeX 5.0.0 release: the shared ThemeMode replaces VisualThemeMode (breaking), strict-CSP output with live widths, built-in region maps, graph explorer cards, faster responsive rendering and value lookups, and crosshair tick caption fixes.</PackageReleaseNotes>
+    <PackageReleaseNotes>Optional browser data charts with native layout policy, responsive updates, keyboard selection and deterministic disposal. Coordinated ChartForgeX 5.0.0 release: fluent methods generated from model properties replace the With*, Use* and Configure* setters, and chart options are grouped into settings objects (breaking; see docs/v2/migration.md), the shared ThemeMode replaces VisualThemeMode (breaking), strict-CSP output with live widths, built-in region maps, graph explorer cards, faster responsive rendering and value lookups, and crosshair tick caption fixes.</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>ChartForgeX.png</PackageIcon>
     <PackageIconUrl>https://raw.githubusercontent.com/EvotecIT/ChartForgeX/main/assets/ChartForgeX.png</PackageIconUrl>

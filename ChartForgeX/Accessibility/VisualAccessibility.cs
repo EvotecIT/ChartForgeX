@@ -1,10 +1,12 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Accessibility;
 
 /// <summary>
 /// Defines the renderer-independent text alternative and language metadata for a visual.
 /// </summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class VisualAccessibility {
     private string? _name;
     private string? _description;
@@ -31,18 +33,12 @@ public sealed class VisualAccessibility {
     };
 
     /// <summary>Sets the accessible name and optional description and language.</summary>
-    public VisualAccessibility WithTextAlternative(string name, string? description = null, string? language = null) {
+    public VisualAccessibility TextAlternative(string name, string? description = null, string? language = null) {
         if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Accessible name must not be empty.", nameof(name));
         Name = name;
         Description = description;
         Language = language;
         IsDecorative = false;
-        return this;
-    }
-
-    /// <summary>Marks the visual as decorative.</summary>
-    public VisualAccessibility AsDecorative(bool decorative = true) {
-        IsDecorative = decorative;
         return this;
     }
 

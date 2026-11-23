@@ -24,11 +24,11 @@ public sealed class InteractivePositionedColorScaleBrowserTests {
         if (!Enabled) return;
         var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var chart = V2GalleryModels.Create(kind, width == 360 ? "compact-positioned-color-scale" : "positioned-color-scale", mode)
-            .WithSize(width, width == 360 ? 360 : 440).WithTitle(V2GalleryModels.Title(kind))
-            .WithSubtitle("Absolute color anchors use uneven numeric intervals")
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
-        var scale = kind == ChartSeriesKind.TileMap ? chart.Options.MapColorScale!
-            : kind == ChartSeriesKind.Heatmap ? chart.Options.HeatmapColorScale! : chart.Series[0].ColorScale!;
+            .Size(width, width == 360 ? 360 : 440).Title(V2GalleryModels.Title(kind))
+            .Subtitle("Absolute color anchors use uneven numeric intervals")
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
+        var scale = kind == ChartSeriesKind.TileMap ? chart.Options.Map.ColorScale!
+            : kind == ChartSeriesKind.Heatmap ? chart.Options.Heatmap.ColorScale! : chart.Series[0].ColorScale!;
         var prefix = kind == ChartSeriesKind.TileMap ? "map-scale" : kind == ChartSeriesKind.Heatmap ? "heatmap-scale" : "color-scale-0";
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = HtmlChartTooltipMode.Single), width + 24, 600);

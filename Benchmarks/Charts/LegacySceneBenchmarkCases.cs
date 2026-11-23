@@ -32,25 +32,25 @@ public static partial class LegacySceneBenchmarkCases {
 #else
         var theme = CurrentTheme();
 #endif
-        var chart = Chart.Create().WithSize(Width, Height).WithTheme(theme).WithTitle(Title)
-            .WithSubtitle("One prepared scene for SVG and native PNG").WithLegend().WithPadding(24, 24, 24, 24).WithPngOutputScale(1)
-            .WithXLabels(Enumerable.Range(1, fixture.EndsWith("bars", StringComparison.Ordinal) ? 24 : 7).Select(index => "Day " + index).ToArray());
+        var chart = Chart.Create().Size(Width, Height).Theme(theme).Title(Title)
+            .Subtitle("One prepared scene for SVG and native PNG").Legend().Padding(24, 24, 24, 24).Png(p => p.OutputScale(1))
+            .XLabels(Enumerable.Range(1, fixture.EndsWith("bars", StringComparison.Ordinal) ? 24 : 7).Select(index => "Day " + index).ToArray());
         // Explicit marker density keeps the same marks visible in the two rendering paths.
-        chart.Options.LineMarkerMode = ChartLineMarkerMode.All;
+        chart.Options.Lines.MarkerMode = ChartLineMarkerMode.All;
         switch (fixture) {
             case "donut": chart.AddDonut("Findings", Points(0)); break;
             case "cartesian": chart.AddLine("Observed", Points(0)).AddArea("Expected", Points(1)).AddBar("Capacity", Points(2)); break;
             case "grouped-bars": case "stacked-bars":
                 for (var series = 0; series < 3; series++) chart.AddBar("Measure " + (series + 1), Enumerable.Range(0, 24)
                     .Select(index => new ChartPoint(index + 1, index % 6 == 0 ? 0 : (index * 7 + series * 11) % 61 - 30)));
-                if (fixture == "stacked-bars") chart.WithStackedBars();
+                if (fixture == "stacked-bars") chart.Bars(b => b.Stacked());
                 break;
             case "scatter": chart.AddScatter("Samples", Enumerable.Range(0, 500)
                 .Select(index => new ChartPoint(index / 5d, 50 + 30 * Math.Sin(index * .37) + index % 17))); break;
             case "dense-line": chart.AddLine("Signal", Enumerable.Range(0, 1000)
                 .Select(index => new ChartPoint(index / 10d, 50 + 30 * Math.Sin(index * .03) + index % 11, index > 0 && index % 200 == 0))); break;
         }
-        if (fixture == "scatter" || fixture == "dense-line") chart.Options.XAxisLabels.Clear();
+        if (fixture == "scatter" || fixture == "dense-line") chart.Options.XAxis.Labels.Clear();
         return chart;
     }
 

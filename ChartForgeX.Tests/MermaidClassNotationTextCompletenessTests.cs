@@ -43,7 +43,7 @@ public sealed class MermaidClassNotationTextCompletenessTests {
         var chart = Chart(); chart.AddEdge("rows", "a", "b", "Primary\ncontinued");
         chart.Edges[0].SecondaryLabel = "Secondary\ncontinued two"; chart.Edges[0].TertiaryLabel = "Tertiary\ncontinued three";
         var options = new TopologyRenderOptions { IncludeLegend = false, IncludeTitle = false };
-        if (monitoring) options.WithMonitoringDashboardStyle();
+        if (monitoring) options.MonitoringDashboardStyle();
         var prepared = chart.Prepare(Context(), options); var svg = prepared.ToSvg();
         var edge = Assert.Single(XDocument.Parse(svg).Descendants(), element => Role(element) == "topology-edge-label");
         Assert.Equal("6", (string?)edge.Attribute("data-label-line-count"));
@@ -55,7 +55,7 @@ public sealed class MermaidClassNotationTextCompletenessTests {
     [Theory]
     [InlineData(false)] [InlineData(true)]
     public void StyledMultilineDetailsReserveCompleteRowsInOrdinaryAndEnclosedCards(bool enclosed) {
-        var chart = TopologyChart.Create().WithViewport(780, 480, 20).WithLegend(null);
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(780, 480, 20)).Legend((TopologyLegend?)null);
         chart.Nodes.Add(new TopologyNode { Id = "a", Label = "Service", X = 40, Y = 40, Width = 220, Height = 70,
             Shape = enclosed ? TopologyNodeShape.Diamond : null, FitLabelToContent = enclosed, ShowStatusBadge = false });
         chart.Nodes[0].Details.Add(new TopologyNodeDetail { Text = "first\nsecond", TextStyle = new TextStyleOverride { Italic = true, Underline = true } });
@@ -113,7 +113,7 @@ public sealed class MermaidClassNotationTextCompletenessTests {
     private static string? Role(XElement element) => (string?)element.Attribute("data-cfx-role");
     private static string[] Text(XElement element) => element.Descendants().Where(item => item.Name.LocalName == "text").Select(item => item.Value).ToArray();
     private static TopologyChart Chart() {
-        var chart = TopologyChart.Create().WithViewport(780, 480, 20).WithLegend(null);
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(780, 480, 20)).Legend((TopologyLegend?)null);
         chart.Nodes.Add(new TopologyNode { Id = "a", Label = "A", X = 40, Y = 50, Width = 100, Height = 70, ShowStatusBadge = false });
         chart.Nodes.Add(new TopologyNode { Id = "b", Label = "B", X = 570, Y = 330, Width = 100, Height = 70, ShowStatusBadge = false }); return chart;
     }

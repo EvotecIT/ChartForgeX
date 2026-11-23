@@ -33,21 +33,10 @@ public static class ChartInteractionScenarioExtensions {
     /// <param name="options">The interaction options.</param>
     /// <param name="scenarioId">The active scenario id.</param>
     /// <returns>The current interaction options.</returns>
-    public static ChartInteractionOptions WithActiveScenario(this ChartInteractionOptions options, string scenarioId) {
+    public static ChartInteractionOptions ActiveScenario(this ChartInteractionOptions options, string scenarioId) {
         if (options == null) throw new ArgumentNullException(nameof(options));
         options.ActiveScenarioId = scenarioId;
         options.Enable(ChartInteractionFeatures.Scenarios);
-        return options;
-    }
-
-    /// <summary>
-    /// Clears the active scenario id.
-    /// </summary>
-    /// <param name="options">The interaction options.</param>
-    /// <returns>The current interaction options.</returns>
-    public static ChartInteractionOptions WithoutActiveScenario(this ChartInteractionOptions options) {
-        if (options == null) throw new ArgumentNullException(nameof(options));
-        options.ActiveScenarioId = null;
         return options;
     }
 
@@ -57,53 +46,12 @@ public static class ChartInteractionScenarioExtensions {
     /// <param name="options">The interaction options.</param>
     /// <param name="enabled">Whether deep-link state is enabled.</param>
     /// <returns>The current interaction options.</returns>
-    public static ChartInteractionOptions WithDeepLinkState(this ChartInteractionOptions options, bool enabled = true) {
+    public static ChartInteractionOptions DeepLinkState(this ChartInteractionOptions options, bool enabled = true) {
         if (options == null) throw new ArgumentNullException(nameof(options));
         options.EnableDeepLinkState = enabled;
         if (enabled) options.Enable(ChartInteractionFeatures.DeepLinks);
         else options.Disable(ChartInteractionFeatures.DeepLinks);
         return options;
-    }
-
-    /// <summary>
-    /// Sets an optional scenario accent color.
-    /// </summary>
-    /// <param name="scenario">The interaction scenario.</param>
-    /// <param name="color">The scenario color.</param>
-    /// <returns>The current scenario.</returns>
-    public static ChartInteractionScenario WithColor(this ChartInteractionScenario scenario, string? color) {
-        if (scenario == null) throw new ArgumentNullException(nameof(scenario));
-        scenario.Color = color;
-        return scenario;
-    }
-
-    /// <summary>
-    /// Sets an optional scenario description.
-    /// </summary>
-    /// <param name="scenario">The interaction scenario.</param>
-    /// <param name="description">The scenario description.</param>
-    /// <returns>The current scenario.</returns>
-    public static ChartInteractionScenario WithDescription(this ChartInteractionScenario scenario, string? description) {
-        if (scenario == null) throw new ArgumentNullException(nameof(scenario));
-        scenario.Description = description;
-        return scenario;
-    }
-
-    /// <summary>Configures scenario timeline playback without enabling automatic playback by default.</summary>
-    public static ChartInteractionScenario WithPlayback(this ChartInteractionScenario scenario, int stepDurationMilliseconds = 900, bool loop = false, bool autoPlay = false) {
-        if (scenario == null) throw new ArgumentNullException(nameof(scenario));
-        scenario.PlaybackDelayMilliseconds = stepDurationMilliseconds;
-        scenario.LoopPlayback = loop;
-        scenario.AutoPlay = autoPlay;
-        return scenario;
-    }
-
-    /// <summary>Controls whether the route highlights targets or spotlights them by dimming other data marks.</summary>
-    public static ChartInteractionScenario WithFocusMode(this ChartInteractionScenario scenario, ChartInteractionScenarioFocusMode focusMode) {
-        if (scenario == null) throw new ArgumentNullException(nameof(scenario));
-        if (!Enum.IsDefined(typeof(ChartInteractionScenarioFocusMode), focusMode)) throw new ArgumentOutOfRangeException(nameof(focusMode));
-        scenario.FocusMode = focusMode;
-        return scenario;
     }
 
     /// <summary>
@@ -113,7 +61,7 @@ public static class ChartInteractionScenarioExtensions {
     /// <param name="key">The metadata key.</param>
     /// <param name="value">The metadata value.</param>
     /// <returns>The current scenario.</returns>
-    public static ChartInteractionScenario WithMetadata(this ChartInteractionScenario scenario, string key, string? value) {
+    public static ChartInteractionScenario Metadata(this ChartInteractionScenario scenario, string key, string? value) {
         if (scenario == null) throw new ArgumentNullException(nameof(scenario));
         scenario.Metadata[ChartInteractionText.RequiredText(key, nameof(key), "Interaction scenario metadata keys")] = value ?? string.Empty;
         return scenario;
@@ -235,16 +183,9 @@ public static class ChartInteractionScenarioExtensions {
     /// <param name="key">The metadata key.</param>
     /// <param name="value">The metadata value.</param>
     /// <returns>The current scenario step.</returns>
-    public static ChartInteractionScenarioStep WithMetadata(this ChartInteractionScenarioStep step, string key, string? value) {
+    public static ChartInteractionScenarioStep Metadata(this ChartInteractionScenarioStep step, string key, string? value) {
         if (step == null) throw new ArgumentNullException(nameof(step));
         step.Metadata[ChartInteractionText.RequiredText(key, nameof(key), "Interaction scenario step metadata keys")] = value ?? string.Empty;
-        return step;
-    }
-
-    /// <summary>Overrides how long this step remains visible during timeline playback.</summary>
-    public static ChartInteractionScenarioStep WithDuration(this ChartInteractionScenarioStep step, int durationMilliseconds) {
-        if (step == null) throw new ArgumentNullException(nameof(step));
-        step.DurationMilliseconds = durationMilliseconds;
         return step;
     }
 }

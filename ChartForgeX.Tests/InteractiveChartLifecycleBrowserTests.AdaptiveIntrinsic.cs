@@ -17,7 +17,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
             options.Adaptive.NarrowWidth = 360;
             options.Interaction.ChartId = "adaptive-auto-host";
         }
-        await using var session = await OpenAsync(Readings(dark).WithSize(800, 420).ToInteractiveHtmlPage(Configure), 950, 720);
+        await using var session = await OpenAsync(Readings(dark).Size(800, 420).ToInteractiveHtmlPage(Configure), 950, 720);
         var page = session.Page;
         await BindControllerAsync(page);
         await page.EvaluateAsync("""
@@ -60,7 +60,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
             await CaptureAsync(page, "hosting-intrinsic-" + shadow + "-" + transition, state);
         }
         Assert.Equal(0, await page.EvaluateAsync<int>("()=>intrinsicSelectionEvents"));
-        await UpdateAsync(page, Readings(dark).WithSize(720, 420).ToInteractiveHtmlFragmentWithoutAssets(Configure));
+        await UpdateAsync(page, Readings(dark).Size(720, 420).ToInteractiveHtmlFragmentWithoutAssets(Configure));
         await page.WaitForFunctionAsync("()=>chartController.root.getBoundingClientRect().width>=719");
         var replaced = await IntrinsicAdaptiveHostStateAsync(page);
         Assert.Equal("wide", replaced.GetProperty("drawing").GetString());

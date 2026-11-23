@@ -2,6 +2,7 @@ using ChartForgeX.Interactivity.Html;
 using Microsoft.Playwright;
 using Xunit;
 using static ChartForgeX.Tests.InteractiveChartBrowser;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.Tests;
 
@@ -24,7 +25,7 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
         await using var session = await OpenAsync("<html><body></body></html>", 950, 760);
         var page = session.Page;
         await InstallListenerProbeAsync(page);
-        await page.SetContentAsync("<html><body style='margin:20px'>" + Observations(true).WithLegend().ToInteractiveHtmlFragment(options => {
+        await page.SetContentAsync("<html><body style='margin:20px'>" + Observations(true).Legend().ToInteractiveHtmlFragment(options => {
             options.Tooltip.Position.Anchor = anchor;
             options.Tooltip.Position.Placements = new[] { HtmlChartTooltipPlacement.BottomRight };
         }) + "</body></html>");

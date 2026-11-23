@@ -10,7 +10,7 @@ namespace ChartForgeX.Tests;
 public sealed class StoryTranscriptBoundaryTests {
     [Fact]
     public void AuthoredLanguageIsNotGuessedForStoriesOrTheirPlayer() {
-        var story = VisualStory.Create("Napraw skrypt").WithSize(480, 320);
+        var story = VisualStory.Create("Napraw skrypt").Size(480, 320);
         story.Scene("result", "Wynik", 1).Panel("result", new VisualStoryTextSurface("Witaj świecie"));
         story.Outcome("ready", "Gotowe", "result");
         var prepared = story.Prepare();
@@ -29,10 +29,10 @@ public sealed class StoryTranscriptBoundaryTests {
 
     [Fact]
     public void TerminalTranscriptRetainsTabsPromptsBlankLinesAndCompleteTableCells() {
-        var terminal = TerminalStory.Create().WithTitle("Main").WithDialect(TerminalDialect.Custom, "> ")
+        var terminal = TerminalStory.Create().Title("Main").Dialect(TerminalDialect.Custom, "> ")
             .DeclareTab("build", "Build", TerminalDialect.Custom, ".", VisualTheme.Graphite(), customPrompt: "$ ")
             .Command("echo hello", .05).Output("hello\r\n").Blank().Pause(.05)
-            .SelectTab("build", 0).Table(TerminalTable.Create().WithColumns("Name", "Value").AddRow("long complete value", "42"))
+            .SelectTab("build", 0).Table(TerminalTable.Create().Columns("Name", "Value").AddRow("long complete value", "42"))
             .OpenTab("result", "Result", TerminalDialect.Custom, ".", VisualTheme.Graphite(), customPrompt: "# ", transitionSeconds: 0)
             .Output("ready");
         var expected = string.Join(Environment.NewLine, new[] {
@@ -46,8 +46,8 @@ public sealed class StoryTranscriptBoundaryTests {
 
     [Fact]
     public void AuthoredTerminalTranscriptBoundsRepeatedPromptsBeforeJoiningLines() {
-        var terminal = TerminalStory.Create().WithFinalPrompt(false).WithTiming(0, 42, 0)
-            .WithDialect(TerminalDialect.Custom, new string('>', 170000));
+        var terminal = TerminalStory.Create().ShowFinalPrompt(false).InitialDelaySeconds(0).CharactersPerSecond(42).LineDelaySeconds(0)
+            .Dialect(TerminalDialect.Custom, new string('>', 170000));
         for (var index = 0; index < 100; index++) terminal.Command("A", .05);
         var error = Assert.Throws<InvalidOperationException>(() => terminal.ToTranscript());
         Assert.Contains("transcript", error.Message, StringComparison.OrdinalIgnoreCase);

@@ -140,16 +140,16 @@ internal static partial class ChartTimeScale {
     public static string DecorateTitle(Chart chart) {
         // Classic schedules store wall-clock dates and do not apply the instant-axis display zone.
         foreach (var series in chart.Series) {
-            if (series.Kind == ChartSeriesKind.Timeline || series.Kind == ChartSeriesKind.Gantt) return chart.XAxisTitle;
+            if (series.Kind == ChartSeriesKind.Timeline || series.Kind == ChartSeriesKind.Gantt) return chart.Options.XAxis.Title;
         }
-        return DecorateTitle(chart.Options.XAxis, chart.XAxisTitle);
+        return DecorateTitle(chart.Options.XAxis, chart.Options.XAxis.Title);
     }
 
     /// <summary>Preserves numeric time-tick fallbacks, including sub-second and out-of-range values.</summary>
     public static string? FormatFallbackTick(Chart chart, IReadOnlyList<double> ticks, double value, bool valueAxisOnly) {
-        if (!ChartTicks.IsNumericTimeFallback(ticks) || chart.Options.XAxisValueFormatter != null) return null;
+        if (!ChartTicks.IsNumericTimeFallback(ticks) || chart.Options.XAxis.LabelFormatter != null) return null;
         if (!valueAxisOnly) {
-            if (ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxisLabels, value) is { } label) return label;
+            if (ChartAxisValueFormatter.FindExplicitLabel(chart.Options.XAxis.Labels, value) is { } label) return label;
         }
         return value.ToString("G17", CultureInfo.InvariantCulture);
     }

@@ -101,8 +101,8 @@ public sealed class LetterSpacingReviewRegressionTests : IDisposable {
 
     [Theory] [InlineData(false)] [InlineData(true)]
     public void CapturedCardSubtitleAndDetailRolesReuseTheSameOriginalUnitConversion(bool enlarge) {
-        var chart = Detail("color", 1.2); chart.WithViewport(enlarge ? 1000 : 220, enlarge ? 700 : 140, 24);
-        if (enlarge) chart.WithLayout(TopologyLayoutMode.Layered);
+        var chart = Detail("color", 1.2); chart.Viewport(new TopologyViewport(enlarge ? 1000 : 220, enlarge ? 700 : 140, 24));
+        if (enlarge) chart.LayoutMode(TopologyLayoutMode.Layered);
         chart.Nodes[0].Subtitle = "HOO"; chart.Nodes[0].SubtitleTextStyle = new TextStyleOverride { FontFamily = Family, FontSize = 12, FontWeight = "400", LetterSpacing = .6 };
         var options = chart.ResolveRenderOptions(null); options.FitContentToViewport = true;
         var before = chart.Prepare(options); CaptureNative("card-roles-" + enlarge + "-before-portable", before.Visual); var saved = before.ToInterchangeEnvelope(); var restored = VisualArtifactInterchangeEnvelope.FromJson(saved.ToJson()).ToTopologyChart(); var after = restored.Prepare();
@@ -125,8 +125,8 @@ public sealed class LetterSpacingReviewRegressionTests : IDisposable {
     }
 
     private static TopologyChart External(TopologyNodeDisplayMode mode, bool? enlarge) {
-        var chart = TopologyChart.Create().WithId("tracking-external").WithTitle("").WithLegend(null).WithViewport(enlarge.HasValue ? enlarge.Value ? 1000 : 180 : 640, enlarge.HasValue ? enlarge.Value ? 700 : 140 : 400, 24)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(Family)).WithLayout(enlarge.HasValue ? TopologyLayoutMode.Layered : TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().Id("tracking-external").Title("").Legend((TopologyLegend?)null).Viewport(new TopologyViewport(enlarge.HasValue ? enlarge.Value ? 1000 : 180 : 640, enlarge.HasValue ? enlarge.Value ? 700 : 140 : 400, 24))
+            .Theme(VisualTheme.Graphite().WithFontFamily(Family)).LayoutMode(enlarge.HasValue ? TopologyLayoutMode.Layered : TopologyLayoutMode.Manual)
             .AddNode("node", "HOO HOO", 210, 150, width: 180, height: 90);
         var node = chart.Nodes[0]; node.DisplayMode = mode; node.Shape = TopologyNodeShape.Rectangle; node.IconShape = TopologyIconShape.Router; node.PreserveDisplayModeSize = true; node.ShowStatusBadge = false; node.Color = "#2563eb";
         node.TextStyle = new TextStyleOverride { FontFamily = Family, FontSize = 20, FontWeight = "400", LetterSpacing = .8 };
@@ -134,17 +134,17 @@ public sealed class LetterSpacingReviewRegressionTests : IDisposable {
         node.CaptionPlacement = TopologyCaptionPlacement.Top; node.CaptionGap = 8; node.CaptionSurface = TopologyCaptionSurface.Plate;
         node.CaptionTextStyle = new TextStyleOverride { FontFamily = Family, FontSize = 14, FontWeight = "400", LetterSpacing = 1.2 };
         if (mode == TopologyNodeDisplayMode.Artwork) node.Artwork = TopologyIconArtwork.Portrait(new RgbaImage(2, 1, new byte[] { 255, 0, 0, 255, 0, 255, 0, 128 }));
-        chart.WithRenderOptions(new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, IncludeIconLabels = true, IncludeTileSubtitles = true, FitContentToViewport = false, MaxNodeLabelLines = 4, WrapNodeLabels = true }); return chart;
+        chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, IncludeIconLabels = true, IncludeTileSubtitles = true, FitContentToViewport = false, MaxNodeLabelLines = 4, WrapNodeLabels = true }); return chart;
     }
     private static TopologyChart Detail(string kind, double? spacing, double nodeSpacing = 1.2) {
-        var chart = TopologyChart.Create().WithId("tracking-detail").WithTitle("").WithLegend(null).WithViewport(480, 300, 24).WithTheme(VisualTheme.Graphite().WithFontFamily(Family)).WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().Id("tracking-detail").Title("").Legend((TopologyLegend?)null).Viewport(new TopologyViewport(480, 300, 24)).Theme(VisualTheme.Graphite().WithFontFamily(Family)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("node", "H", 70, 60, width: 300, height: 180);
         var node = chart.Nodes[0]; node.ShowLabel = true; node.ShowStatusBadge = false; node.PreserveDisplayModeSize = true; node.Shape = TopologyNodeShape.Rectangle; node.TextStyle = new TextStyleOverride { FontFamily = Family, FontSize = 20, LetterSpacing = nodeSpacing };
         node.Details.Add(new TopologyNodeDetail { Text = "HOO", TextStyle = kind == "color" ? new TextStyleOverride { Color = chart.Theme.Resolve(chart.ThemeMode).Foreground, LetterSpacing = spacing } : new TextStyleOverride { FontWeight = "400", LetterSpacing = spacing } });
-        chart.WithRenderOptions(new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, FitContentToViewport = false }); return chart;
+        chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeTitle = false, IncludeLegend = false, FitContentToViewport = false }); return chart;
     }
     private static TopologyChart Edge(bool structured) {
-        var chart = TopologyChart.Create().WithId("tracking-baseline").WithTitle("").WithLegend(null).WithViewport(760, 440, 24).WithTheme(VisualTheme.Graphite().WithFontFamily(Family)).WithLayout(TopologyLayoutMode.Manual)
+        var chart = TopologyChart.Create().Id("tracking-baseline").Title("").Legend((TopologyLegend?)null).Viewport(new TopologyViewport(760, 440, 24)).Theme(VisualTheme.Graphite().WithFontFamily(Family)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("a", "HOO", 50, 160, width: 150, height: 70).AddNode("b", "HOO", 540, 160, width: 150, height: 70).AddEdge("edge", "a", "b", "HOO HOO HOO\nHOO");
         foreach (var node in chart.Nodes) node.ShowStatusBadge = false;
         var edge = chart.Edges[0]; edge.PathGeometry = new TopologyPathGeometry("M 200 195 C 300 25 440 25 540 195"); edge.LabelPosition = new TopologyLabelPosition(new ChartPoint(370, 70), TopologyLabelVerticalAnchor.TextBaseline);

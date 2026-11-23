@@ -10,11 +10,11 @@ public sealed class NumericObservationMutationTests {
     [Fact]
     public void StructuralEditsMoveIdentityAndEveryPointOverrideWithTheOriginalObservation() {
         var series = ChartSeries.CreateScatter(new ChartSeriesId("orders"), "Orders", Points())
-            .WithObservationIds(new[] { Id("a"), Id("b"), Id("c") })
-            .WithPointColor(1, ChartColor.FromHex("#123456")).WithPointLabel(1, "Second")
-            .WithPointFillPattern(1, ChartFillPattern.Crosshatch)
-            .ConfigurePointDataLabelStyle(1, style => style.FontSize = 13);
-        var chart = Chart.Create().WithDataLabels(false).AddSeries(series);
+            .ObservationIds(new[] { Id("a"), Id("b"), Id("c") })
+            .PointColor(1, ChartColor.FromHex("#123456")).PointLabel(1, "Second")
+            .PointFillPattern(1, ChartFillPattern.Crosshatch)
+            .PointDataLabelStyle(1, style => style.FontSize = 13);
+        var chart = Chart.Create().DataLabels(false).AddSeries(series);
         var prepared = Prepare(chart); var svg = prepared.ToSvg(); var png = prepared.ToPng();
         series.Points.Insert(0, new ChartPoint(0, 5));
         Assert.Equal(4, series.SourcePointCount);
@@ -50,7 +50,7 @@ public sealed class NumericObservationMutationTests {
     [Fact]
     public void PieOffsetsFollowTheirObservationAndInvalidEditsLeaveMetadataUntouched() {
         var series = new ChartSeries(new ChartSeriesId("parts"), "Parts", ChartSeriesKind.Pie, Points())
-            .WithObservationId(1, Id("second")).WithPointSliceOffset(1, .2);
+            .ObservationId(1, Id("second")).PointSliceOffset(1, .2);
         series.Points.Insert(0, new ChartPoint(0, 5));
         Assert.Equal(.2, series.PointSliceOffsets[2]); Assert.Equal(0, series.PointSliceOffsets[0]);
         series.Points.RemoveAt(0);
@@ -76,7 +76,7 @@ public sealed class NumericObservationMutationTests {
             "histogram" => ChartSeries.CreateHistogram(new ChartSeriesId("derived"), "Derived", source, ChartHistogramBinLayout.FromCount(0, 20, 4), ChartHistogramAggregation.Sum),
             _ => ChartSeries.CreateTrendLine(new ChartSeriesId("derived"), "Derived", source)
         };
-        series.WithObservationId(10, Id("raw-eleven"));
+        series.ObservationId(10, Id("raw-eleven"));
         var before = series.Points.ToArray(); var indices = series.SourcePointIndices.ToArray();
         Assert.True(series.Points.IsReadOnly);
         Assert.Throws<NotSupportedException>(() => series.Points.Add(new ChartPoint(30, 30)));

@@ -6,14 +6,14 @@ using ChartForgeX.Themes;
 namespace ChartForgeX.Rendering;
 
 internal static partial class VisualRadialCompiler {
-    private static ChartColor SlicePaintColor(Chart chart, ChartColor source) => chart.Options.PieSliceOpacity.HasValue
-        ? ChartColorMath.WithOpacity(source, chart.Options.PieSliceOpacity.Value) : source;
+    private static ChartColor SlicePaintColor(Chart chart, ChartColor source) => chart.Options.Pie.SliceOpacity.HasValue
+        ? ChartColorMath.WithOpacity(source, chart.Options.Pie.SliceOpacity.Value) : source;
 
     /// <summary>Keeps ordinary sharp paint exact; authored dash lengths reuse the existing shared path painter.</summary>
     private static void PaintSlice(Chart chart, VisualSceneBuilder builder, ChartSeries series, RadialSlice slice,
         double cx, double cy, double outer, double inner, double start, double sweep, string role, VisualThemeColors colors) {
-        var policy = chart.Options.PieSliceOutline;
-        if (policy == null && !chart.Options.PieSliceOpacity.HasValue) {
+        var policy = chart.Options.Pie.SliceOutline;
+        if (policy == null && !chart.Options.Pie.SliceOpacity.HasValue) {
             builder.Slice(cx, cy, outer, inner, start, sweep, slice.Color, colors.Surface, 2, role, SliceId(slice),
                 paint: new VisualScenePaintBinding(SlicePaint(chart, slice), SvgPaint.Of(colors.Surface, SvgColorRole.Surface)));
             return;
@@ -22,8 +22,8 @@ internal static partial class VisualRadialCompiler {
         var color = SlicePaintColor(chart, sourceStroke); var fillColor = SlicePaintColor(chart, slice.Color);
         var width = VisualReferenceStroke.PaintedWidth(policy, colors.Surface, 2);
         var fill = SlicePaint(chart, slice);
-        if (chart.Options.PieSliceOpacity.HasValue) {
-            var opacity = chart.Options.PieSliceOpacity.Value;
+        if (chart.Options.Pie.SliceOpacity.HasValue) {
+            var opacity = chart.Options.Pie.SliceOpacity.Value;
             fill = fill.WithOpacity(fillColor, opacity);
             stroke = new VisualScenePaintBinding(stroke: stroke.Stroke?.WithOpacity(color, opacity));
         }
@@ -41,7 +41,7 @@ internal static partial class VisualRadialCompiler {
 
     private static void PaintOuterOutline(Chart chart, VisualSceneBuilder builder, double cx, double cy,
         double radius, VisualThemeColors colors) {
-        var policy = chart.Options.PieOuterOutline;
+        var policy = chart.Options.Pie.OuterOutline;
         if (policy == null) return;
         var paint = VisualReferenceStroke.Paint(policy, colors.Surface, SvgColorRole.Surface, out var color);
         var width = VisualReferenceStroke.PaintedWidth(policy, colors.Surface, 2);

@@ -12,7 +12,7 @@ using ChartForgeX.VisualArtifacts;
 internal static class Program {
     private static void Main() {
         Directory.CreateDirectory("ordered-filter-output");
-        var model = Chart.Create().WithSize(160, 120).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false).WithPlotClipping(false).WithDataLabels(false)
+        var model = Chart.Create().Size(160, 120).ShowHeader(false).Legend(false).Axes(false).ShowGrid(false).ClipMarksToPlot(false).DataLabels(false)
             .AddLine("Source", new[] { new ChartPoint(0, 2), new ChartPoint(1, 5) });
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(160, 120), 12), frame: new VisualFrame(showLegend: false, transparentBackground: true));
         var source = model.Prepare(context);

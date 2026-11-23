@@ -26,7 +26,7 @@ annotation hBand 4 6 color=#F59E0B opacity=0.25
         Assert(chart.Series.Count == 2, "Multi-series chart tables should create one series per numeric value column.");
         Assert(chart.Series[0].Name == "Revenue" && chart.Series[1].Name == "Cost", "Multi-series chart tables should preserve value column names as series names.");
         Assert(chart.Series[0].Kind == ChartSeriesKind.Line && chart.Series[1].Kind == ChartSeriesKind.Line, "Multi-series chart tables should inherit the requested chart kind.");
-        Assert(chart.Options.XAxisLabels.Count == 3 && chart.Options.XAxisLabels[2].Text == "Mar", "Multi-series chart tables should use the label column as x-axis labels.");
+        Assert(chart.Options.XAxis.Labels.Count == 3 && chart.Options.XAxis.Labels[2].Text == "Mar", "Multi-series chart tables should use the label column as x-axis labels.");
         Assert(chart.Annotations.Count == 2 && chart.Annotations[0].Kind == ChartAnnotationKind.HorizontalLine, "Chart markup should parse reusable annotation commands.");
         Assert(chart.Annotations[1].Kind == ChartAnnotationKind.HorizontalBand && chart.Annotations[1].Color.ToHex() == "#F59E0B" && IsClose(chart.Annotations[1].Opacity, 0.25), "Chart markup annotations should accept documented key=value attributes.");
         Assert(chart.ToSvg().Contains("data-cfx-role=\"annotation-line\"", StringComparison.Ordinal), "Chart markup annotations should render through the shared SVG annotation layer.");

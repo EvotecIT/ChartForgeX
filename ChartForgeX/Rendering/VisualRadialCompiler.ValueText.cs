@@ -29,13 +29,13 @@ internal static partial class VisualRadialCompiler {
     }
     private static IEnumerable<(string Owner, string Text)> RadialValueTextRepertoire(Chart chart, VisualRenderContext context, VisualSceneTextCapture capture) {
         foreach (var row in RadialValueTextRepertoire()) yield return row;
-        if (!capture.HasContextCaseRequests || chart.Options.PieSliceLabelContent != ChartPieSliceLabelContent.LabelAndValue
+        if (!capture.HasContextCaseRequests || chart.Options.Pie.SliceLabelContent != ChartPieSliceLabelContent.LabelAndValue
             || !chart.Options.ValueFormat.TryGetNativeTextRepertoire(out _, out var values)) yield break;
         // The admitted LabelAndValue branch ignores percentage; the captured native label and actual formatter result compose the text.
         for (var series = 0; series < chart.Series.Count; series++)
         foreach (var slice in context.CaptureNativeValueSource ? GetSourceSlices(chart, context.Theme.Resolve(context.ThemeMode), series) : GetSlices(chart, context.Theme.Resolve(context.ThemeMode), series)) foreach (var value in values)
             yield return ("native-radial-label-value-context", FormatLabel(chart, slice, 0, value));
         if (context.CaptureNativeValueSource) foreach (var value in values)
-            yield return ("native-radial-label-value-context", FormatLabelContent(chart.Options.PieSliceLabelContent, OtherSliceLabel, FormatPercentage(chart, 0), value));
+            yield return ("native-radial-label-value-context", FormatLabelContent(chart.Options.Pie.SliceLabelContent, OtherSliceLabel, FormatPercentage(chart, 0), value));
     }
 }

@@ -14,11 +14,11 @@ internal static class ReplicationTopologyFixture {
     /// <summary>Creates a fixture with the given branch sites per region and domain controllers per hub site.</summary>
     public static TopologyChart Create(int branchSitesPerRegion, int hubDomainControllers, double width = 1600, double height = 1000) {
         var chart = TopologyChart.Create()
-            .WithId("replication-" + branchSitesPerRegion.ToString(CultureInfo.InvariantCulture) + "-" + hubDomainControllers.ToString(CultureInfo.InvariantCulture))
-            .WithTitle("Replication topology")
-            .WithViewport(width, height, 24)
-            .WithLegend(null)
-            .WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.LeftToRight);
+            .Id("replication-" + branchSitesPerRegion.ToString(CultureInfo.InvariantCulture) + "-" + hubDomainControllers.ToString(CultureInfo.InvariantCulture))
+            .Title("Replication topology")
+            .Viewport(new TopologyViewport(width, height, 24))
+            .Legend((TopologyLegend?)null)
+            .LayoutMode(TopologyLayoutMode.DenseGrouped).LayoutDirection(TopologyLayoutDirection.LeftToRight);
         for (var regionIndex = 0; regionIndex < Regions.Length; regionIndex++) {
             var region = Regions[regionIndex];
             var hubSite = SiteId(region, 0);

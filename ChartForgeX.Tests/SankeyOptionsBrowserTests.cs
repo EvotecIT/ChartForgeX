@@ -19,10 +19,10 @@ public sealed class SankeyOptionsBrowserTests {
     public async Task ConfiguredGeometryKeepsPointerAndKeyboardSelectionOnAuthoredTargets(bool dark, int width) {
         if (!Enabled) return;
         string variant = width < 500 ? "compact-options" : "options";
-        var chart = V2GalleryModels.Create(ChartSeriesKind.Sankey, variant).WithSize(width, width < 500 ? 360 : 440)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithTitle("Requests across processing stages").WithSubtitle("Aligned and ordered weighted flows");
-        chart.WithPngFont(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf"));
+        var chart = V2GalleryModels.Create(ChartSeriesKind.Sankey, variant).Size(width, width < 500 ? 360 : 440)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Title("Requests across processing stages").Subtitle("Aligned and ordered weighted flows");
+        chart.Png(p => p.FontPath(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var html = chart.ToInteractiveHtmlPage(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit);
         await using var session = await OpenAsync(html, width + 24, width < 500 ? 630 : 640);

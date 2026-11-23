@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Interactivity.Html;
 
@@ -7,6 +8,7 @@ namespace ChartForgeX.Interactivity.Html;
 /// <remarks>The controls remain hidden until a native viewport connection is installed. They retain the
 /// full-data Y domain. A navigator uses the ordinary native full-domain preparation, adding one preparation
 /// when rendering a windowed section; it does not implement a separate chart projection.</remarks>
+[Fluent]
 public sealed class HtmlChartXNavigationOptions {
     /// <summary>Gets or sets whether supported connected charts show native X navigation. The default is false.</summary>
     public bool Enabled { get; set; }

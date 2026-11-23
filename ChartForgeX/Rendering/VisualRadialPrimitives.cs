@@ -73,7 +73,7 @@ internal static class VisualRadialPrimitives {
     }
 
     internal static string Label(Chart chart, ChartPoint point, int index) {
-        foreach (var label in chart.Options.XAxisLabels) if (ChartMath.SameCoordinate(label.Value, point.X)) return label.Text;
+        foreach (var label in chart.Options.XAxis.Labels) if (ChartMath.SameCoordinate(label.Value, point.X)) return label.Text;
         return "Ring " + (index + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
     }
 }

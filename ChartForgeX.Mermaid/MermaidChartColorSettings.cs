@@ -49,7 +49,7 @@ internal sealed class MermaidChartColorSettings {
     }
 
     internal void Apply(Chart chart) {
-        if (_title.HasValue) chart.ConfigureTitleStyle(style => style.Color = _title.Value);
+        if (_title.HasValue) chart.TitleStyle(style => style.Color = _title.Value);
         if (_slices) {
             // Pie slices are the points of one series, so the source colours apply per slice, cycling like Mermaid.
             foreach (var series in chart.Series) {

@@ -42,33 +42,33 @@ internal static partial class SmokeTests {
 
         var scenarioOptions = ChartInteractionOptions.ReportReview()
             .AddScenario("ops.route", "Operations route", scenario => scenario
-                .WithColor("#2563EB")
-                .WithDescription("Operator review flow")
-                .WithPlayback(1200, loop: true)
-                .WithFocusMode(ChartInteractionScenarioFocusMode.Spotlight)
-                .WithMetadata("owner", "noc")
-                .AddSeriesStep("latency", "Latency", configure: step => step.WithDuration(1800).WithMetadata("unit", "ms"))
+                .Color("#2563EB")
+                .Description("Operator review flow")
+                .PlaybackDelayMilliseconds(1200).LoopPlayback().AutoPlay(false)
+                .FocusMode(ChartInteractionScenarioFocusMode.Spotlight)
+                .Metadata("owner", "noc")
+                .AddSeriesStep("latency", "Latency", configure: step => step.DurationMilliseconds(1800).Metadata("unit", "ms"))
                 .AddAnnotationStep("failover-window", "Failover"))
-            .WithActiveScenario("ops.route")
-            .WithDeepLinkState();
+            .ActiveScenario("ops.route")
+            .DeepLinkState();
         Assert(scenarioOptions.HasFeature(ChartInteractionFeatures.Scenarios), "Adding a scenario should enable reusable scenario interactivity.");
         Assert(scenarioOptions.HasFeature(ChartInteractionFeatures.StepPlayback), "Adding ordered scenario steps should enable reusable step playback.");
         Assert(scenarioOptions.HasFeature(ChartInteractionFeatures.DeepLinks) && scenarioOptions.EnableDeepLinkState, "Deep-link state should be a reusable opt-in interaction contract.");
-        scenarioOptions.WithDeepLinkState(false);
+        scenarioOptions.DeepLinkState(false);
         Assert(!scenarioOptions.HasFeature(ChartInteractionFeatures.DeepLinks) && !scenarioOptions.EnableDeepLinkState, "Disabling deep-link state should clear the reusable deep-link feature flag.");
-        scenarioOptions.WithDeepLinkState();
+        scenarioOptions.DeepLinkState();
         Assert(scenarioOptions.ActiveScenarioId == "ops.route" && scenarioOptions.Scenarios.Count == 1, "Interactivity options should preserve active scenario state and scenario definitions.");
         Assert(scenarioOptions.Scenarios[0].Steps.Count == 2 && scenarioOptions.Scenarios[0].Steps[0].TargetKind == ChartInteractionTargetKinds.Series, "Reusable scenarios should target adapter-defined chart elements.");
         Assert(scenarioOptions.Scenarios[0].Metadata["owner"] == "noc" && scenarioOptions.Scenarios[0].Steps[0].Metadata["unit"] == "ms", "Reusable scenarios should carry host metadata on scenarios and steps.");
         Assert(scenarioOptions.Scenarios[0].PlaybackDelayMilliseconds == 1200 && scenarioOptions.Scenarios[0].LoopPlayback && scenarioOptions.Scenarios[0].FocusMode == ChartInteractionScenarioFocusMode.Spotlight, "Reusable scenarios should own timeline playback and focus intent without adapter-specific configuration.");
         Assert(scenarioOptions.Scenarios[0].Steps[0].DurationMilliseconds == 1800, "Reusable scenario steps should support intentional per-step pacing.");
-        Assert(scenarioOptions.WithoutActiveScenario().ActiveScenarioId == null, "Interactivity options should expose a fluent active scenario clear helper.");
+        Assert(scenarioOptions.ActiveScenarioId(null).ActiveScenarioId == null, "Interactivity options should expose a fluent active scenario clear helper.");
         AssertThrows<ArgumentException>(() => ChartInteractionOptions.ReportReview().AddScenario("bad id", "Route"), "Reusable scenario ids should reject tokens that cannot round-trip through host adapters.");
         AssertThrows<ArgumentException>(() => ChartInteractionOptions.ReportReview().AddScenario("route", " "), "Reusable scenario labels should reject empty labels.");
         AssertThrows<ArgumentException>(() => new ChartInteractionScenario { Id = "route", Label = "Route" }.AddStep("bad kind", "target"), "Reusable scenario target kinds should stay token-shaped for adapter attributes.");
         AssertThrows<ArgumentException>(() => new ChartInteractionScenario { Id = "route", Label = "Route" }.AddSeriesStep(" "), "Reusable scenario target ids should reject empty values.");
-        AssertThrows<ArgumentOutOfRangeException>(() => new ChartInteractionScenario { Id = "route", Label = "Route" }.WithPlayback(100), "Reusable scenario timelines should reject unreadable playback delays.");
-        AssertThrows<ArgumentOutOfRangeException>(() => new ChartInteractionScenario { Id = "route", Label = "Route" }.WithFocusMode((ChartInteractionScenarioFocusMode)99), "Reusable scenario timelines should reject unknown focus modes.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new ChartInteractionScenario { Id = "route", Label = "Route" }.PlaybackDelayMilliseconds(100).LoopPlayback(false).AutoPlay(false), "Reusable scenario timelines should reject unreadable playback delays.");
+        AssertThrows<ArgumentOutOfRangeException>(() => new ChartInteractionScenario { Id = "route", Label = "Route" }.FocusMode((ChartInteractionScenarioFocusMode)99), "Reusable scenario timelines should reject unknown focus modes.");
         AssertThrows<ArgumentOutOfRangeException>(() => new ChartInteractionScenario { Id = "route", Label = "Route", FocusMode = (ChartInteractionScenarioFocusMode)99 }, "Direct scenario focus-mode assignment should reject unknown values.");
     }
 
@@ -83,17 +83,17 @@ internal static partial class SmokeTests {
             options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts | ChartInteractionFeatures.FocusTrail | ChartInteractionFeatures.RevealLabels | ChartInteractionFeatures.StateBookmarks);
             options.Interaction
                 .AddScenario("ops-route", "Ops route", scenario => scenario
-                    .WithColor("#2563EB")
-                    .WithDescription("Operations review path")
-                    .WithPlayback(1100, loop: true)
-                    .WithMetadata("owner", "noc")
-                    .AddSeriesStep(chart.Series[0].Id, "Passed", configure: step => step.WithDuration(1400).WithMetadata("unit", "checks"))
+                    .Color("#2563EB")
+                    .Description("Operations review path")
+                    .PlaybackDelayMilliseconds(1100).LoopPlayback().AutoPlay(false)
+                    .Metadata("owner", "noc")
+                    .AddSeriesStep(chart.Series[0].Id, "Passed", configure: step => step.DurationMilliseconds(1400).Metadata("unit", "checks"))
                     .AddSeriesStep(chart.Series[1].Id, "Failed")
                     .AddPointStep("1:2", "Failed Friday")
                     .AddAnnotationStep("horizontal-line", "Threshold")
                     .AddElementStep("authored-mark-detail", "Mark detail"))
-                .WithActiveScenario("ops-route")
-                .WithDeepLinkState();
+                .ActiveScenario("ops-route")
+                .DeepLinkState();
         });
 
         Assert(html.Contains("<title>Interactive security posture</title>", StringComparison.Ordinal), "Interactive HTML should use the configured page title.");
@@ -141,15 +141,15 @@ internal static partial class SmokeTests {
         AssertThrows<ArgumentException>(() => new ChartSeriesId("cfx:auto:1"), "The deterministic automatic identity namespace is reserved.");
         var keyedHtml = keyedChart.ToInteractiveHtmlFragmentWithoutAssets();
         Assert(keyedHtml.Contains("&quot;name&quot;:&quot;Passed&quot;", StringComparison.Ordinal) && keyedHtml.Contains("&quot;key&quot;:&quot;result.passed&quot;", StringComparison.Ordinal), "Interactive series should support stable keys that are independent from display names.");
-        keyedChart.WithLegend(false);
+        keyedChart.Legend(false);
         var legendFreeKeyedHtml = keyedChart.ToInteractiveHtmlFragmentWithoutAssets();
         Assert(legendFreeKeyedHtml.Contains("&quot;key&quot;:&quot;result.passed&quot;", StringComparison.Ordinal) && legendFreeKeyedHtml.Contains("&quot;name&quot;:&quot;Passed&quot;", StringComparison.Ordinal), "Legend-free charts should preserve semantic series identity in host metadata.");
-        keyedSeries.WithName("Localized passed");
+        keyedSeries.Name("Localized passed");
         Assert(keyedChart.ToSvg().Contains("data-cfx-series-key=\"result.passed\"", StringComparison.Ordinal), "Renaming a retained series must preserve its explicit identity.");
-        var numericNameChart = Chart.Create().WithSize(320, 220).AddLine("0", ChartPoints.FromValues(1, 2));
+        var numericNameChart = Chart.Create().Size(320, 220).AddLine("0", ChartPoints.FromValues(1, 2));
         Assert(numericNameChart.ToSvg().Contains("data-cfx-series-key=\"cfx:auto:1\"", StringComparison.Ordinal), "Automatic semantic identity should be independent of numeric display names.");
-        var linkedHtml = Chart.Create().WithXLabels("API")
-            .WithStateCategories(new ChartStateCategory("pass", "Passed", ChartColor.FromHex("#1d8a52")))
+        var linkedHtml = Chart.Create().XLabels("API")
+            .StateCategories(new ChartStateCategory("pass", "Passed", ChartColor.FromHex("#1d8a52")))
             .AddHeatmapCategoryRow("Service", new ChartHeatmapCell("pass", "1", href: "#evidence"))
             .ToInteractiveHtmlFragmentWithoutAssets();
         var link = ReadEmbeddedSvgs(linkedHtml).Single().Descendants().Single(element => element.Name.LocalName == "a"
@@ -242,9 +242,9 @@ internal static partial class SmokeTests {
 
         var escapedScenario = SampleChart().ToInteractiveHtmlPage(options => {
             options.Interaction.AddScenario("escaped", "Escaped", scenario => scenario
-                .WithDescription("Line\tTab")
-                .WithMetadata("z", "last")
-                .WithMetadata("a", "first")
+                .Description("Line\tTab")
+                .Metadata("z", "last")
+                .Metadata("a", "first")
                 .AddElementStep("target-id", "Line\tTab"));
         });
         Assert(escapedScenario.Contains("Line\\tTab", StringComparison.Ordinal), "Scenario JSON payloads should escape tabs and other control characters.");
@@ -272,8 +272,8 @@ internal static partial class SmokeTests {
 
     private static void InteractiveHtmlDashboardSynchronizesMultipleCharts() {
         var charts = new[] {
-            SampleChart().WithTitle("Service availability"),
-            SampleChart().WithTitle("Response latency")
+            SampleChart().Title("Service availability"),
+            SampleChart().Title("Response latency")
         };
         var html = charts.ToInteractiveHtmlDashboardPage(options => {
             options.PageTitle = "Executive interactive dashboard";
@@ -285,14 +285,14 @@ internal static partial class SmokeTests {
             options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts);
             options.Interaction
                 .AddScenario("ops-route", "Ops route", scenario => scenario
-                    .WithColor("#2563EB")
-                    .WithDescription("Operations review path")
-                    .WithPlayback(1200, loop: true, autoPlay: true)
-                    .WithFocusMode(ChartInteractionScenarioFocusMode.Spotlight)
-                    .AddSeriesStep(charts[0].Series[0].Id, "Passed", configure: step => step.WithDuration(1600))
+                    .Color("#2563EB")
+                    .Description("Operations review path")
+                    .PlaybackDelayMilliseconds(1200).LoopPlayback().AutoPlay()
+                    .FocusMode(ChartInteractionScenarioFocusMode.Spotlight)
+                    .AddSeriesStep(charts[0].Series[0].Id, "Passed", configure: step => step.DurationMilliseconds(1600))
                     .AddSeriesStep(charts[0].Series[1].Id, "Failed"))
-                .WithActiveScenario("ops-route")
-                .WithDeepLinkState();
+                .ActiveScenario("ops-route")
+                .DeepLinkState();
         });
 
         Assert(html.Contains("<title>Executive interactive dashboard</title>", StringComparison.Ordinal), "Interactive dashboards should use the configured page title.");

@@ -3,6 +3,7 @@ using System.Xml.Linq;
 using ChartForgeX.Rendering;
 using ChartForgeX.Topology;
 using Xunit;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.Tests;
 
@@ -214,6 +215,6 @@ public sealed class SvgMarkupDocumentTests {
         return XDocument.Load(reader, LoadOptions.PreserveWhitespace);
     }
 
-    private static ChartForgeX.Core.Chart Chart() => ChartForgeX.Core.Chart.Create().WithSize(400, 240).WithTitle("Markup & plain <xml>")
-        .WithLegend().AddBar("Series \"one\"", new[] { new ChartPoint(1, 2), new ChartPoint(2, 3), new ChartPoint(3, 1) }, ChartColor.FromHex("#1E40AF"));
+    private static ChartForgeX.Core.Chart Chart() => ChartForgeX.Core.Chart.Create().Size(400, 240).Title("Markup & plain <xml>")
+        .Legend().AddBar("Series \"one\"", new[] { new ChartPoint(1, 2), new ChartPoint(2, 3), new ChartPoint(3, 1) }, ChartColor.FromHex("#1E40AF"));
 }

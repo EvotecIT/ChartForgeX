@@ -12,7 +12,7 @@ public sealed partial class ChartSeries {
     /// <param name="first">Lower/First policy, or null to inherit the series interpolation and step position.</param>
     /// <param name="second">Upper/Second policy, or null to inherit the series interpolation and step position.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries WithBoundaryInterpolation(ChartBoundaryInterpolation? first, ChartBoundaryInterpolation? second) {
+    public ChartSeries BoundaryInterpolation(ChartBoundaryInterpolation? first, ChartBoundaryInterpolation? second) {
         RequirePairedBoundaryKind();
         FirstBoundaryInterpolation = first; SecondBoundaryInterpolation = second; return this;
     }

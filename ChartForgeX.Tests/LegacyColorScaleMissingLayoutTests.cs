@@ -38,7 +38,7 @@ public sealed class LegacyColorScaleMissingLayoutTests {
         const string missing = "Keine Messung vorhanden";
         const string variant = "compact-gradient-color-legend";
         var chart = V2GalleryModels.Create(ChartSeriesKind.Heatmap, variant)
-            .ConfigureHeatmapColorDimension(options => options.Name = heading).ConfigureLabels(labels => labels.NoData = missing);
+            .Heatmap(heatmap => heatmap.ColorDimension(options => options.Name = heading)).Labels(labels => labels.NoData = missing);
         var prepared = Prepare(chart, variant, false, 360);
         AssertKey(prepared, variant, missingInHeading: true, heading: heading, missing: missing);
         var title = prepared.Scene.Nodes.OfType<VisualSceneText>().Single(node => node.Role == "heatmap-scale-title");
@@ -62,7 +62,7 @@ public sealed class LegacyColorScaleMissingLayoutTests {
     public void CompleteLocalizedMissingEntryKeepsASeparateRowWhenVerticalSpaceIsAvailable() {
         const string missing = "Keine Messung für diese Region";
         var chart = V2GalleryModels.Create(ChartSeriesKind.HexbinHeatmap, "compact-color-scale")
-            .ConfigureLabels(labels => labels.NoData = missing);
+            .Labels(labels => labels.NoData = missing);
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(360, 500)),
             VisualTheme.Graphite(), ThemeMode.Light,
             new VisualFrame("Service coverage in hexagonal cells", "Named numeric intervals keep their exact boundaries"), GalleryFont()));

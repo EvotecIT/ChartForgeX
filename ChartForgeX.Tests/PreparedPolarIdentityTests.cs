@@ -16,7 +16,7 @@ public sealed class PreparedPolarIdentityTests {
         var chart = Bare();
         var observed = new ChartSeries(new ChartSeriesId("observed-source"), "Observed", kind, first);
         var target = new ChartSeries(new ChartSeriesId("target-source"), "Target", kind, second);
-        if (kind == ChartSeriesKind.Radar) target.ConfigureRadar(options => options.Form = ChartLineAreaForm.Line);
+        if (kind == ChartSeriesKind.Radar) target.Radar(options => options.Form = ChartLineAreaForm.Line);
         chart.AddSeries(observed).AddSeries(target);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var groups = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == role).ToArray();
@@ -52,7 +52,7 @@ public sealed class PreparedPolarIdentityTests {
 
     [Fact]
     public void MissingRadarCategoriesHaveDistinctDerivedFactsWithoutClaimingAnAuthoredZero() {
-        var chart = Bare().WithXLabels("North", "East", "South", "West")
+        var chart = Bare().XLabels("North", "East", "South", "West")
             .AddRadarArea("Observed", new[] { new ChartPoint(1, 0), new ChartPoint(2, 20), new ChartPoint(3, 30), new ChartPoint(4, 40) })
             .AddRadarLine("Target", new[] { new ChartPoint(1, 0), new ChartPoint(4, 80) });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
@@ -87,5 +87,5 @@ public sealed class PreparedPolarIdentityTests {
         Assert.Equal(series.ToString(), (string?)element.Attribute("data-cfx-series"));
     }
 
-    private static Chart Bare() => Chart.Create().WithSize(400, 360).WithHeader(false).WithLegend(false).WithYAxisBounds(0, 100);
+    private static Chart Bare() => Chart.Create().Size(400, 360).ShowHeader(false).Legend(false).YAxis(y => y.Bounds(0, 100));
 }

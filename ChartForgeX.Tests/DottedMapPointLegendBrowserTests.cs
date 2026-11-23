@@ -128,9 +128,9 @@ public sealed class DottedMapPointLegendBrowserTests {
         if (!Enabled) return;
         var series = ChartSeries.CreateDottedMap(new ChartSeriesId("locations"), "Locations", new[] {
             new ChartMapPoint("North", 21, 52), new ChartMapPoint("South", -3.7, 40.4, 0)
-        }).WithObservationId(0, new ChartObservationId("north")).WithObservationId(1, new ChartObservationId("south"));
-        var chart = Chart.Create().WithSize(380, 420).WithMapViewport(ChartMapViewport.Europe())
-            .WithPointLegend().WithDataLabels(false).AddSeries(series);
+        }).ObservationId(0, new ChartObservationId("north")).ObservationId(1, new ChartObservationId("south"));
+        var chart = Chart.Create().Size(380, 420).Map(m => m.Viewport(ChartMapViewport.Europe()))
+            .Legend(l => l.ShowPoints()).DataLabels(false).AddSeries(series);
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(Fit), 404, 650);
         var page = session.Page;
         var pageErrors = new List<string>();

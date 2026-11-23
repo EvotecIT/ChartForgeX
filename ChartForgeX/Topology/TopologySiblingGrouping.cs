@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Topology;
 
@@ -10,6 +11,7 @@ namespace ChartForgeX.Topology;
 /// </summary>
 /// <remarks>A leaf is a node whose edges all connect to one other node. Leaves are grouped when they share their
 /// parent, kind and group. Nodes named by scenarios, alignments, annotations or label anchors stay as they are.</remarks>
+[Fluent(Copy = nameof(Clone))]
 public sealed class TopologySiblingGrouping {
     private int _minimumCount = 3;
     private int _staggerCount = 9;
@@ -42,7 +44,8 @@ public sealed class TopologySiblingGrouping {
     }
 
     /// <summary>Gets or sets an optional card title. It receives the shared kind and the members; null uses the shared symbol or the kind name.</summary>
-    public Func<TopologyNodeKind, IReadOnlyList<TopologyNode>, string>? TitleFormatter { get; set; }
+    [PowerForge.Fluent.Fluent("TitleBy")]
+public Func<TopologyNodeKind, IReadOnlyList<TopologyNode>, string>? TitleFormatter { get; set; }
 
     internal TopologySiblingGrouping Clone() => new() { MinimumCount = MinimumCount, StaggerCount = StaggerCount, MaximumRows = MaximumRows, CollapseCount = CollapseCount, TitleFormatter = TitleFormatter };
 }

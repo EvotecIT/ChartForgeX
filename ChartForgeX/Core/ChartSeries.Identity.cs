@@ -28,21 +28,9 @@ public sealed partial class ChartSeries {
         _id = id; _hasId = true;
     }
 
-    /// <summary>Changes display text without changing series or observation identity.</summary>
-    public ChartSeries WithName(string name) {
-        Name = name ?? throw new ArgumentNullException(nameof(name));
-        return this;
-    }
-
-    /// <summary>Sets this series' semantic visual state independently of its display name and chart position.</summary>
-    public ChartSeries WithState(ChartSeriesState state) {
-        StateRole = state;
-        return this;
-    }
-
     /// <summary>Assigns an identity to an existing source observation, including a decimated source that is not currently drawn.</summary>
     /// <remarks>IDs are unique within the series. Updating a value preserves its ID; replacing the entire source clears IDs.</remarks>
-    public ChartSeries WithObservationId(int sourceIndex, ChartObservationId id) {
+    public ChartSeries ObservationId(int sourceIndex, ChartObservationId id) {
         _ = id.Value;
         var count = IdentityObservationCount;
         if (sourceIndex < 0 || sourceIndex >= count) throw new ArgumentOutOfRangeException(nameof(sourceIndex), "Source index must refer to an existing observation.");
@@ -56,7 +44,7 @@ public sealed partial class ChartSeries {
     /// <remarks>The sequence is captured and validated before any existing identity changes. Decimated series accept the complete source sequence.</remarks>
     /// <param name="ids">Unique identities in source observation order.</param>
     /// <returns>The current series.</returns>
-    public ChartSeries WithObservationIds(IEnumerable<ChartObservationId> ids) {
+    internal ChartSeries SetObservationIds(IEnumerable<ChartObservationId> ids) {
         if (ids == null) throw new ArgumentNullException(nameof(ids));
         var count = IdentityObservationCount;
         var candidate = new List<ChartObservationId>();

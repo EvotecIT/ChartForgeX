@@ -16,10 +16,7 @@ public sealed class TopologyScenarioPlaybackBrowserTests {
     [BrowserFact]
     public async Task DownloadedSvg_ExcludesPayloadButKeepsRouteAndLivePlayer() {
         var chart = TopologyScenarioPlaybackTests.ReplicationChart();
-        var options = new TopologyRenderOptions {
-            ActiveScenarioId = "replicate", EnableHtmlExportControls = true,
-            EnableHtmlScenarioPanel = true, EnableHtmlScenarioControls = true
-        };
+        var options = new TopologyRenderOptions { ActiveScenarioId = "replicate", Html = { ExportControls = true, ScenarioPanel = true, ScenarioControls = true } };
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options), 1024, 800);
         var page = session.Page;
         var metadata = page.Locator("svg [data-cfx-scenarios], svg[data-cfx-scenarios]").First;
@@ -47,15 +44,15 @@ public sealed class TopologyScenarioPlaybackBrowserTests {
     // the step's interaction is named by the host's localized catalog.
     [BrowserFact]
     public async Task ResponseStep_PointsTheActiveArrowBackAndNamesItsInteractionInTheLocalizedCatalog() {
-        var chart = TopologyChart.Create().WithId("notes").WithTitle("Save a note")
-            .WithLayout(TopologyLayoutMode.Layered, TopologyLayoutDirection.LeftToRight)
+        var chart = TopologyChart.Create().Id("notes").Title("Save a note")
+            .LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(TopologyLayoutDirection.LeftToRight)
             .AddNode("app", "Notes app", 0, 0, TopologyNodeKind.Person)
             .AddNode("api", "Notes API", 0, 0, TopologyNodeKind.Server)
             .AddEdge("http", "app", "api", "HTTPS", direction: VisualLinkDirection.Forward)
             .AddScenario("save", "Save a note", scenario => scenario
                 .AddMessageStep("http", TopologyScenarioInteraction.Request, "POST /notes")
                 .AddMessageStep("http", TopologyScenarioInteraction.Response, "201 Created", reverse: true));
-        var html = chart.ToInteractiveHtmlPage(new TopologyRenderOptions { ActiveScenarioId = "save" }.WithHtmlScenarioPanel(),
+        var html = chart.ToInteractiveHtmlPage(new TopologyRenderOptions { ActiveScenarioId = "save" }.HtmlScenarioPanel(),
             configureLocalization: ui => { ui.Language = "pl"; ui[HtmlChartText.ScenarioRequest] = "żądanie"; ui[HtmlChartText.ScenarioResponse] = "odpowiedź"; });
         await using var session = await OpenAsync(html, 1024, 800);
         var page = session.Page;
@@ -103,10 +100,10 @@ public sealed class TopologyScenarioPlaybackBrowserTests {
     [InlineData(true, null)]
     public async Task ScenarioControls_WithAccentFills_RetainTextAndBadgeContrast(bool dark, string? color) {
         var chart = TopologyScenarioPlaybackTests.ReplicationChart()
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+            .Theme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
         chart.Scenarios[0].Color = color;
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(
-            new TopologyRenderOptions { ActiveScenarioId = "replicate" }.WithHtmlScenarioPanel()), 390, 900);
+            new TopologyRenderOptions { ActiveScenarioId = "replicate" }.HtmlScenarioPanel()), 390, 900);
         var page = session.Page;
         await page.Locator("[data-cfx-topology-scenario='']").ClickAsync();
         await page.Locator("[data-cfx-topology-scenario=replicate]").ClickAsync();
@@ -143,13 +140,13 @@ public sealed class TopologyScenarioPlaybackBrowserTests {
 
     [BrowserFact]
     public async Task OverflowedTopologyAndSequence_ArrowKeyScrollsFocusedRegion() {
-        var chart = TopologyScenarioPlaybackTests.ReplicationChart().WithViewport(1600, 600, 24);
+        var chart = TopologyScenarioPlaybackTests.ReplicationChart().Viewport(new TopologyViewport(1600, 600, 24));
         chart.Nodes[0].Label = "Administrative control plane";
         chart.Nodes[1].Label = "Primary directory service";
         chart.Nodes[2].Label = "Secondary directory service";
         chart.Title = "   ";
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(
-            new TopologyRenderOptions { ActiveScenarioId = "replicate" }.WithHtmlScenarioPanel().WithHtmlScenarioSequence()), 390, 1000);
+            new TopologyRenderOptions { ActiveScenarioId = "replicate" }.HtmlScenarioPanel().HtmlScenarioSequence()), 390, 1000);
         foreach (var selector in new[] { ".cfx-topology-viewport", "[data-cfx-scenario-sequence=replicate]" }) {
             var region = session.Page.Locator(selector);
             Assert.True(await region.EvaluateAsync<bool>("node => node.scrollWidth > node.clientWidth"));

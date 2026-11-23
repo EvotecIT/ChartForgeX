@@ -119,27 +119,27 @@ public static class GeographicDatasetsRecipe {
             new ChartMapGeoJsonOptions { Projection = projection });
         var coverage = ChartSeries.CreateRegionMap(new ChartSeriesId(&quot;coverage&quot;), &quot;Service coverage&quot;, definition, new[] {
             new ChartRegionMapItem(&quot;west&quot;, 92), new ChartRegionMapItem(&quot;central&quot;, 74), new ChartRegionMapItem(&quot;north&quot;, 88)
-        }).WithColorScale(ChartColorScale.Sequential(ChartColor.FromHex(&quot;#DBEAFE&quot;), ChartColor.FromHex(&quot;#1D4ED8&quot;)).WithValueRange(0, 100));
-        coverage.ConfigureColorDimension(options =&gt; {
+        }).ColorScale(ChartColorScale.Sequential(ChartColor.FromHex(&quot;#DBEAFE&quot;), ChartColor.FromHex(&quot;#1D4ED8&quot;)).WithValueRange(0, 100));
+        coverage.ColorDimension(options =&gt; {
             options.Name = &quot;Coverage&quot;; options.ValueFormat = ChartValueFormat.Number(&quot;0 &#39;%&#39;&quot;, CultureInfo.InvariantCulture);
         });
         var depots = ChartSeries.CreateDottedMap(new ChartSeriesId(&quot;depots&quot;), &quot;Depot delays&quot;, ChartMapGeoJson.ToMapPoints(GeoJson,
             new ChartMapGeoJsonOptions { WeightPropertyName = &quot;traffic&quot;, ColorValuePropertyName = &quot;delay&quot; }))
-            .WithObservationIds(new[] { new ChartObservationId(&quot;madrid&quot;), new ChartObservationId(&quot;warsaw&quot;), new ChartObservationId(&quot;oslo&quot;) })
-            .WithColorScale(ChartColorScale.Diverging(ChartColor.FromHex(&quot;#0D9488&quot;), ChartColor.FromHex(&quot;#E2E8F0&quot;), ChartColor.FromHex(&quot;#EA580C&quot;), 0).WithValueRange(-10, 30))
+            .ObservationIds(new[] { new ChartObservationId(&quot;madrid&quot;), new ChartObservationId(&quot;warsaw&quot;), new ChartObservationId(&quot;oslo&quot;) })
+            .ColorScale(ChartColorScale.Diverging(ChartColor.FromHex(&quot;#0D9488&quot;), ChartColor.FromHex(&quot;#E2E8F0&quot;), ChartColor.FromHex(&quot;#EA580C&quot;), 0).WithValueRange(-10, 30))
             .ReplaceMapConnectors(ChartMapGeoJson.ToMapConnectors(GeoJson));
-        depots.ConfigureColorDimension(options =&gt; {
+        depots.ColorDimension(options =&gt; {
             options.Name = &quot;Delay&quot;; options.ValueFormat = ChartValueFormat.Number(&quot;0 &#39;min&#39;&quot;, CultureInfo.InvariantCulture);
         });
-        depots.ConfigureMapPointSize(options =&gt; {
-            options.WithSizeDomain(0, 100); options.MinimumRadius = 3; options.MaximumRadius = 10;
+        depots.MapPointSize(options =&gt; {
+            options.SizeDomain(0, 100); options.MinimumRadius = 3; options.MaximumRadius = 10;
             options.SizeDimension.Name = &quot;Traffic&quot;; options.SizeDimension.ShowLegend = true;
             options.SizeDimension.ValueFormat = ChartValueFormat.Number(&quot;0 &#39;routes&#39;&quot;, CultureInfo.InvariantCulture);
         });
-        return Chart.Create().WithSize(variant.StartsWith(&quot;compact&quot;, StringComparison.Ordinal) ? 390 : 800, 600)
-            .WithTheme(VisualTheme.Graphite(), mode).WithTitle(&quot;Coverage and delivery routes&quot;)
-            .WithSubtitle(&quot;Regions show coverage; depot color shows delay and size shows traffic&quot;)
-            .WithLegend().WithMapLabels(false).WithDataLabels().AddSeries(coverage).AddSeries(depots);
+        return Chart.Create().Size(variant.StartsWith(&quot;compact&quot;, StringComparison.Ordinal) ? 390 : 800, 600)
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Title(&quot;Coverage and delivery routes&quot;)
+            .Subtitle(&quot;Regions show coverage; depot color shows delay and size shows traffic&quot;)
+            .Legend().Map(m =&gt; m.ShowLabels(false)).DataLabels().AddSeries(coverage).AddSeries(depots);
     }
 
     // The rectangles are authored service zones rather than administrative borders. Every importer reads the same source facts.
@@ -194,27 +194,27 @@ public static class GeographicDatasetsRecipe {
             new ChartMapGeoJsonOptions { Projection = projection });
         var coverage = ChartSeries.CreateRegionMap(new ChartSeriesId(&quot;coverage&quot;), &quot;Service coverage&quot;, definition, new[] {
             new ChartRegionMapItem(&quot;west&quot;, 92), new ChartRegionMapItem(&quot;central&quot;, 74), new ChartRegionMapItem(&quot;north&quot;, 88)
-        }).WithColorScale(ChartColorScale.Sequential(ChartColor.FromHex(&quot;#DBEAFE&quot;), ChartColor.FromHex(&quot;#1D4ED8&quot;)).WithValueRange(0, 100));
-        coverage.ConfigureColorDimension(options =&gt; {
+        }).ColorScale(ChartColorScale.Sequential(ChartColor.FromHex(&quot;#DBEAFE&quot;), ChartColor.FromHex(&quot;#1D4ED8&quot;)).WithValueRange(0, 100));
+        coverage.ColorDimension(options =&gt; {
             options.Name = &quot;Coverage&quot;; options.ValueFormat = ChartValueFormat.Number(&quot;0 &#39;%&#39;&quot;, CultureInfo.InvariantCulture);
         });
         var depots = ChartSeries.CreateDottedMap(new ChartSeriesId(&quot;depots&quot;), &quot;Depot delays&quot;, ChartMapGeoJson.ToMapPoints(GeoJson,
             new ChartMapGeoJsonOptions { WeightPropertyName = &quot;traffic&quot;, ColorValuePropertyName = &quot;delay&quot; }))
-            .WithObservationIds(new[] { new ChartObservationId(&quot;madrid&quot;), new ChartObservationId(&quot;warsaw&quot;), new ChartObservationId(&quot;oslo&quot;) })
-            .WithColorScale(ChartColorScale.Diverging(ChartColor.FromHex(&quot;#0D9488&quot;), ChartColor.FromHex(&quot;#E2E8F0&quot;), ChartColor.FromHex(&quot;#EA580C&quot;), 0).WithValueRange(-10, 30))
+            .ObservationIds(new[] { new ChartObservationId(&quot;madrid&quot;), new ChartObservationId(&quot;warsaw&quot;), new ChartObservationId(&quot;oslo&quot;) })
+            .ColorScale(ChartColorScale.Diverging(ChartColor.FromHex(&quot;#0D9488&quot;), ChartColor.FromHex(&quot;#E2E8F0&quot;), ChartColor.FromHex(&quot;#EA580C&quot;), 0).WithValueRange(-10, 30))
             .ReplaceMapConnectors(ChartMapGeoJson.ToMapConnectors(GeoJson));
-        depots.ConfigureColorDimension(options =&gt; {
+        depots.ColorDimension(options =&gt; {
             options.Name = &quot;Delay&quot;; options.ValueFormat = ChartValueFormat.Number(&quot;0 &#39;min&#39;&quot;, CultureInfo.InvariantCulture);
         });
-        depots.ConfigureMapPointSize(options =&gt; {
-            options.WithSizeDomain(0, 100); options.MinimumRadius = 3; options.MaximumRadius = 10;
+        depots.MapPointSize(options =&gt; {
+            options.SizeDomain(0, 100); options.MinimumRadius = 3; options.MaximumRadius = 10;
             options.SizeDimension.Name = &quot;Traffic&quot;; options.SizeDimension.ShowLegend = true;
             options.SizeDimension.ValueFormat = ChartValueFormat.Number(&quot;0 &#39;routes&#39;&quot;, CultureInfo.InvariantCulture);
         });
-        return Chart.Create().WithSize(variant.StartsWith(&quot;compact&quot;, StringComparison.Ordinal) ? 390 : 800, 600)
-            .WithTheme(VisualTheme.Graphite(), mode).WithTitle(&quot;Coverage and delivery routes&quot;)
-            .WithSubtitle(&quot;Regions show coverage; depot color shows delay and size shows traffic&quot;)
-            .WithLegend().WithMapLabels(false).WithDataLabels().AddSeries(coverage).AddSeries(depots);
+        return Chart.Create().Size(variant.StartsWith(&quot;compact&quot;, StringComparison.Ordinal) ? 390 : 800, 600)
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Title(&quot;Coverage and delivery routes&quot;)
+            .Subtitle(&quot;Regions show coverage; depot color shows delay and size shows traffic&quot;)
+            .Legend().Map(m =&gt; m.ShowLabels(false)).DataLabels().AddSeries(coverage).AddSeries(depots);
     }
 
     // The rectangles are authored service zones rather than administrative borders. Every importer reads the same source facts.

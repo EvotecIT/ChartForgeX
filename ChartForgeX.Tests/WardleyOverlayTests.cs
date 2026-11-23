@@ -14,7 +14,7 @@ public sealed class WardleyOverlayTests {
     [Theory]
     [InlineData("build")] [InlineData("buy")] [InlineData("outsource")] [InlineData("market")]
     public void SourcingStrategiesHaveDistinctNativeMarksAndInertiaClearsTheirOuterFootprint(string strategy) {
-        var map = WardleyMapBlock.Create().WithSize(600, 400); var node = map.AddNode("api", "API", .6, .4); node.Strategy = strategy; node.Inertia = true;
+        var map = WardleyMapBlock.Create().Size(600, 400); var node = map.AddNode("api", "API", .6, .4); node.Strategy = strategy; node.Inertia = true;
         var svg = map.ToSvg(); var png = map.ToPng(); Capture(map, "wardley-strategy-" + strategy); var xml = XDocument.Parse(svg);
         Assert.Single(Roles(xml, "wardley-sourcing-" + strategy));
         Assert.Equal(strategy == "market" ? 3 : 0, Roles(xml, "wardley-market-member").Length);
@@ -27,7 +27,7 @@ public sealed class WardleyOverlayTests {
 
     [Fact]
     public void AnnotationBoxKeepsEveryRecordAndStableNumericOrderWithoutTinyFontOrClippedText() {
-        var map = WardleyMapBlock.Create().WithSize(640, 480).WithAnnotationsBox(0, 1);
+        var map = WardleyMapBlock.Create().Size(640, 480).AnnotationsBox(0, 1);
         map.AddNode("api", "API", .8, .2);
         map.AddAnnotation(7, "Second authored fact", .8, .6); map.AddAnnotation(2, "First authored fact", .6, .3); map.AddAnnotation(7, "Third authored fact", .7, .7);
         var svg = map.ToSvg(); var png = map.ToPng(); Capture(map, "wardley-box-order"); var xml = XDocument.Parse(svg);
@@ -45,19 +45,19 @@ public sealed class WardleyOverlayTests {
 
     [Fact]
     public void AnnotationOverflowFailsExplicitlyAndClearingOptionsRestoresOrdinaryBytes() {
-        var map = WardleyMapBlock.Create().WithSize(500, 320); map.AddNode("api", "API", .8, .2); map.AddAnnotation(1, "Ordinary note", .5, .5);
+        var map = WardleyMapBlock.Create().Size(500, 320); map.AddNode("api", "API", .8, .2); map.AddAnnotation(1, "Ordinary note", .5, .5);
         var svg = map.ToSvg(); var png = map.ToPng();
-        map.WithStyle(new WardleyMapStyle(annotationFill: ChartColor.Parse("#D1FAE5"))).WithAnnotationsBox(.2, .2);
-        Assert.NotEqual(svg, map.ToSvg()); map.WithoutAnnotationsBox().WithStyle(null);
+        map.Style(new WardleyMapStyle(annotationFill: ChartColor.Parse("#D1FAE5"))).AnnotationsBox(.2, .2);
+        Assert.NotEqual(svg, map.ToSvg()); map.AnnotationsBox((WardleyMapAnnotationBox?)null).Style((WardleyMapStyle?)null);
         Assert.Equal(svg, map.ToSvg()); Assert.Equal(png, map.ToPng());
         for (var index = 0; index < 50; index++) map.AddAnnotation(index + 2, "A complete retained annotation requires space", .5, .5);
-        map.WithAnnotationsBox(.2, .2); Assert.Contains("increase", Assert.Throws<InvalidOperationException>(() => map.ToSvg()).Message, StringComparison.Ordinal);
+        map.AnnotationsBox(.2, .2); Assert.Contains("increase", Assert.Throws<InvalidOperationException>(() => map.ToSvg()).Message, StringComparison.Ordinal);
         Assert.Equal(51, map.Annotations.Count);
     }
 
     [Fact]
     public void PipelineOutlineUsesExistingImmutableStrokeAndOffsetsWithoutChangingLegacyDashes() {
-        var map = WardleyMapBlock.Create().WithSize(640, 480); map.AddNode("parent", "Parent", .7, .4);
+        var map = WardleyMapBlock.Create().Size(640, 480); map.AddNode("parent", "Parent", .7, .4);
         var pipeline = map.AddPipeline("parent"); pipeline.AddComponent("First", .2); pipeline.AddComponent("Second", .6);
         var old = map.ToSvg(); Assert.Equal("4 4", (string?)Assert.Single(Roles(XDocument.Parse(old), "wardley-pipeline")).Attribute("stroke-dasharray"));
         var dash = new[] { 6d, 2d }; pipeline.Outline = new ChartStrokeStyle(ChartColor.Parse("#7C3AED"), 2, dash: dash); dash[0] = 99;
@@ -76,13 +76,13 @@ public sealed class WardleyOverlayTests {
 
     [Fact]
     public void StageBoundaryInputDetachesAtomicallyAndSourceLabelsUseAuthoredDomains() {
-        var map = WardleyMapBlock.Create().WithSize(900, 600); map.AddNode("api", "API", .5, .5);
-        map.SetStages(new[] { "Genesis / Concept", "Product" }); var edges = new[] { .3, 1d }; map.WithStageBoundaries(edges); edges[0] = .8;
+        var map = WardleyMapBlock.Create().Size(900, 600); map.AddNode("api", "API", .5, .5);
+        map.SetStages(new[] { "Genesis / Concept", "Product" }); var edges = new[] { .3, 1d }; map.StageBoundaries(edges); edges[0] = .8;
         var xml = XDocument.Parse(map.ToSvg()); var plot = Assert.Single(Roles(xml, "wardley-plot")); var boundary = Assert.Single(Roles(xml, "wardley-stage-boundary"));
         Assert.Equal(Math.Round(N(plot, "x") + N(plot, "width") * .3, 3), N(boundary, "x1"));
         Assert.Equal(.3, map.StageBoundaries[0]); var old = map.ToSvg();
-        Assert.Throws<ArgumentOutOfRangeException>(() => map.WithStageBoundaries(new[] { .7, .6 })); Assert.Equal(old, map.ToSvg());
-        map.WithStageBoundaries(null); Assert.Equal(3, Roles(XDocument.Parse(map.ToSvg()), "wardley-stage-boundary").Length);
+        Assert.Throws<ArgumentOutOfRangeException>(() => map.StageBoundaries(new[] { .7, .6 })); Assert.Equal(old, map.ToSvg());
+        map.StageBoundaries(null); Assert.Equal(3, Roles(XDocument.Parse(map.ToSvg()), "wardley-stage-boundary").Length);
     }
 
     internal static XElement[] Roles(XDocument xml, string role) => xml.Descendants().Where(e => (string?)e.Attribute("data-cfx-role") == role).ToArray();

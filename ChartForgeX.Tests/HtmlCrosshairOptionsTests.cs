@@ -120,6 +120,6 @@ public sealed class HtmlCrosshairOptionsTests {
         return roots;
     }
 
-    private static Chart Chart() => ChartForgeX.Core.Chart.Create().WithSize(520, 320)
+    private static Chart Chart() => ChartForgeX.Core.Chart.Create().Size(520, 320)
         .AddScatter("Reading", new[] { new ChartPoint(1, 3), new ChartPoint(2, 2) });
 }

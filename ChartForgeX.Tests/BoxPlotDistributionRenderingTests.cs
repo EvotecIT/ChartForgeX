@@ -16,9 +16,9 @@ public sealed class BoxPlotDistributionRenderingTests {
     public void AccessibleSummaryDistinguishesInterpolatedWhiskersFromMeasuredExtrema(ChartBoxPlotWhiskerPolicy policy, bool noInliers, bool localized) {
         var samples = noInliers ? new[] { 0d, 100 } : new[] { 0d, 100, 101, 102 };
         var series = ChartSeries.CreateBoxPlot(new ChartSeriesId("sparse"), "Latency", 1, samples)
-            .ConfigureBoxPlotStatistics(options => { options.WhiskerPolicy = policy; options.IqrMultiplier = noInliers ? .0001 : 1.5; });
-        var chart = Chart.Create().WithSize(520, 320).WithHeader(false).WithLegend(false).WithDataLabels(false).WithXLabels("Service B").AddSeries(series);
-        if (localized) chart.ConfigureLabels(labels => {
+            .BoxPlotStatistics(options => { options.WhiskerPolicy = policy; options.IqrMultiplier = noInliers ? .0001 : 1.5; });
+        var chart = Chart.Create().Size(520, 320).ShowHeader(false).Legend(false).DataLabels(false).XLabels("Service B").AddSeries(series);
+        if (localized) chart.Labels(labels => {
             labels.LowerWhisker = "Dolny wąs"; labels.UpperWhisker = "Górny wąs";
             labels.SourceMinimum = "Minimum próbek"; labels.SourceMaximum = "Maksimum próbek";
             labels.InlierMinimum = "Minimum wewnątrz"; labels.InlierMaximum = "Maksimum wewnątrz";
@@ -54,10 +54,10 @@ public sealed class BoxPlotDistributionRenderingTests {
     public void AutomaticBoundsContainCompleteOutlierPaintAtBothSourceExtrema(bool horizontal, bool reverse) {
         var series = ChartSeries.CreateBoxPlot(new ChartSeriesId("edges"), "Measurements", 1,
             new[] { -100d, 0, 1, 2, 3, 4, 5, 6, 7, 8, 100 })
-            .ConfigureBoxPlotStatistics(options => options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr);
-        var chart = Chart.Create().WithSize(360, 300).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .ConfigureBoxPlot(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical).AddSeries(series);
-        (horizontal ? chart.Options.XAxis : chart.Options.YAxis).WithReversal(reverse);
+            .BoxPlotStatistics(options => options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr);
+        var chart = Chart.Create().Size(360, 300).ShowHeader(false).Legend(false).DataLabels(false)
+            .BoxPlot(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical).AddSeries(series);
+        (horizontal ? chart.Options.XAxis : chart.Options.YAxis).Reversed(reverse);
         var doc = XDocument.Parse(chart.Prepare(VisualExportRequest.ForChart(chart).Context).ToSvg());
         var outliers = doc.Descendants().Where(element => (string?)element.Attribute("data-cfx-role") == "boxplot-outlier").ToArray();
         Assert.Equal(2, outliers.Length);
@@ -78,9 +78,9 @@ public sealed class BoxPlotDistributionRenderingTests {
     [InlineData(true, false, 800, ThemeMode.Dark)]
     [InlineData(true, true, 360, ThemeMode.Light)]
     public void RawOutliersShareNativeGeometryAndKeepIndependentSummaryAndSampleFacts(bool horizontal, bool reversed, int width, ThemeMode mode) {
-        var chart = Create(width, mode).ConfigureBoxPlot(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
+        var chart = Create(width, mode).BoxPlot(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
         var valueAxis = horizontal ? chart.Options.XAxis : chart.Options.YAxis;
-        valueAxis.WithReversal(reversed);
+        valueAxis.Reversed(reversed);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var points = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "point").ToArray();
         Assert.Equal(4, points.Length);
@@ -114,14 +114,14 @@ public sealed class BoxPlotDistributionRenderingTests {
 
     [Fact]
     public void PreparedDistributionExportsRemainDetachedFromPolicySourcesIdentitiesAndLocalizedWords() {
-        var chart = Create(800, ThemeMode.Light).ConfigureLabels(labels => {
+        var chart = Create(800, ThemeMode.Light).Labels(labels => {
             labels.LowerWhisker = "Dolny wąs"; labels.SourceMinimum = "Minimum pomiarów"; labels.Outlier = "Pomiar odstający";
         });
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
-        chart.Series[0].ConfigureBoxPlotStatistics(options => options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.MinMax)
-            .ReplaceBoxPlotSampleGroups(new[] { new ChartBoxPlotSampleGroup(3, new[] { 4d, 5 }) }).WithBoxPlotGroupId(0, new ChartObservationId("changed"));
-        chart.ConfigureLabels(labels => labels.LowerWhisker = "Changed"); chart.ClearSeries();
+        chart.Series[0].BoxPlotStatistics(options => options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.MinMax)
+            .ReplaceBoxPlotSampleGroups(new[] { new ChartBoxPlotSampleGroup(3, new[] { 4d, 5 }) }).BoxPlotGroupId(0, new ChartObservationId("changed"));
+        chart.Labels(labels => labels.LowerWhisker = "Changed"); chart.ClearSeries();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
         Assert.Contains("Dolny wąs", svg); Assert.Contains("Minimum pomiarów", svg); Assert.Contains("Pomiar odstający", svg);
         Assert.Contains("group-&quot;a", svg); Assert.DoesNotContain("changed", svg);
@@ -129,7 +129,7 @@ public sealed class BoxPlotDistributionRenderingTests {
 
     [Fact]
     public void PointLegendsUseGroupIdentityAndNeverBorrowAnOriginalSampleIdentity() {
-        var prepared = Create(800, ThemeMode.Light).WithLegend(true).WithPointLegend().Prepare(new VisualRenderContext());
+        var prepared = Create(800, ThemeMode.Light).Legend(true).Legend(l => l.ShowPoints()).Prepare(new VisualRenderContext());
         var legends = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "legend-entry").ToArray();
         Assert.Equal(2, legends.Length);
         Assert.Equal(new[] { "group-\"a", "group-b" }, legends.Select(group => group.Metadata["data-cfx-group-id"]));
@@ -143,9 +143,9 @@ public sealed class BoxPlotDistributionRenderingTests {
     [Fact]
     public void EmptyInliersRemainAbsentAndExplicitValueBoundsKeepOutliersClipped() {
         var series = ChartSeries.CreateBoxPlot(new ChartSeriesId("none"), "None", new[] { new ChartBoxPlotSampleGroup(1, new[] { 0d, 10 }) })
-            .ConfigureBoxPlotStatistics(options => { options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr; options.IqrMultiplier = double.Epsilon; });
-        var chart = Chart.Create().WithLegend(false).WithHeader(false).AddSeries(series);
-        chart.Options.YAxis.WithBounds(2, 8);
+            .BoxPlotStatistics(options => { options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr; options.IqrMultiplier = double.Epsilon; });
+        var chart = Chart.Create().Legend(false).ShowHeader(false).AddSeries(series);
+        chart.Options.YAxis.Bounds(2, 8);
         var prepared = chart.Prepare(new VisualRenderContext()); var document = XDocument.Parse(prepared.ToSvg());
         var summary = Assert.Single(prepared.Scene.Nodes.OfType<VisualSceneGroup>(), group => group.Metadata.ContainsKey("data-cfx-derived") && group.Role == "point");
         Assert.False(summary.Metadata.ContainsKey("data-cfx-inlier-minimum")); Assert.False(summary.Metadata.ContainsKey("data-cfx-inlier-maximum"));
@@ -163,7 +163,7 @@ public sealed class BoxPlotDistributionRenderingTests {
         var prepared = chart.Prepare(new VisualRenderContext());
         var points = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Where(group => group.Role == "point" && group.Metadata.TryGetValue("data-cfx-kind", out var kind) && kind == "BoxPlotOutlier");
         Assert.All(points, group => Assert.Equal("secondary", group.Metadata["data-cfx-axis"]));
-        chart.ConfigureBoxPlot(options => options.Orientation = ChartOrientation.Horizontal);
+        chart.BoxPlot(options => options.Orientation = ChartOrientation.Horizontal);
         Assert.Throws<NotSupportedException>(() => chart.Prepare(new VisualRenderContext()));
     }
 
@@ -171,11 +171,11 @@ public sealed class BoxPlotDistributionRenderingTests {
         var series = ChartSeries.CreateBoxPlot(new ChartSeriesId("raw-distribution"), "Latency", new[] {
             new ChartBoxPlotSampleGroup(1, new[] { 0d, 1, 2, 3, 4, 5, 6, 7, 8, 100 }),
             new ChartBoxPlotSampleGroup(2, new[] { 0d, 100, 101, 102 })
-        }).ConfigureBoxPlotStatistics(options => options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr)
-            .WithBoxPlotGroupIds(new[] { new ChartObservationId("group-\"a"), new ChartObservationId("group-b") })
-            .WithObservationIds(Enumerable.Range(0, 14).Select(index => new ChartObservationId("sample-" + index)));
-        return Chart.Create().WithSize(width, 420).WithTitle("Measurement distributions").WithXLabels("Service A", "Service B")
-            .WithTheme(VisualTheme.Graphite(), mode).WithDataLabels(false).WithLegend(false).AddSeries(series);
+        }).BoxPlotStatistics(options => options.WhiskerPolicy = ChartBoxPlotWhiskerPolicy.Iqr)
+            .BoxPlotGroupIds(new[] { new ChartObservationId("group-\"a"), new ChartObservationId("group-b") })
+            .ObservationIds(Enumerable.Range(0, 14).Select(index => new ChartObservationId("sample-" + index)));
+        return Chart.Create().Size(width, 420).Title("Measurement distributions").XLabels("Service A", "Service B")
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).DataLabels(false).Legend(false).AddSeries(series);
     }
 
     private static void Capture(PreparedVisual prepared, string name) {

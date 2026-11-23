@@ -9,27 +9,27 @@ public static class GeographicDatasetsRecipe {
             new ChartMapGeoJsonOptions { Projection = projection });
         var coverage = ChartSeries.CreateRegionMap(new ChartSeriesId("coverage"), "Service coverage", definition, new[] {
             new ChartRegionMapItem("west", 92), new ChartRegionMapItem("central", 74), new ChartRegionMapItem("north", 88)
-        }).WithColorScale(ChartColorScale.Sequential(ChartColor.FromHex("#DBEAFE"), ChartColor.FromHex("#1D4ED8")).WithValueRange(0, 100));
-        coverage.ConfigureColorDimension(options => {
+        }).ColorScale(ChartColorScale.Sequential(ChartColor.FromHex("#DBEAFE"), ChartColor.FromHex("#1D4ED8")).WithValueRange(0, 100));
+        coverage.ColorDimension(options => {
             options.Name = "Coverage"; options.ValueFormat = ChartValueFormat.Number("0 '%'", CultureInfo.InvariantCulture);
         });
         var depots = ChartSeries.CreateDottedMap(new ChartSeriesId("depots"), "Depot delays", ChartMapGeoJson.ToMapPoints(GeoJson,
             new ChartMapGeoJsonOptions { WeightPropertyName = "traffic", ColorValuePropertyName = "delay" }))
-            .WithObservationIds(new[] { new ChartObservationId("madrid"), new ChartObservationId("warsaw"), new ChartObservationId("oslo") })
-            .WithColorScale(ChartColorScale.Diverging(ChartColor.FromHex("#0D9488"), ChartColor.FromHex("#E2E8F0"), ChartColor.FromHex("#EA580C"), 0).WithValueRange(-10, 30))
+            .ObservationIds(new[] { new ChartObservationId("madrid"), new ChartObservationId("warsaw"), new ChartObservationId("oslo") })
+            .ColorScale(ChartColorScale.Diverging(ChartColor.FromHex("#0D9488"), ChartColor.FromHex("#E2E8F0"), ChartColor.FromHex("#EA580C"), 0).WithValueRange(-10, 30))
             .ReplaceMapConnectors(ChartMapGeoJson.ToMapConnectors(GeoJson));
-        depots.ConfigureColorDimension(options => {
+        depots.ColorDimension(options => {
             options.Name = "Delay"; options.ValueFormat = ChartValueFormat.Number("0 'min'", CultureInfo.InvariantCulture);
         });
-        depots.ConfigureMapPointSize(options => {
-            options.WithSizeDomain(0, 100); options.MinimumRadius = 3; options.MaximumRadius = 10;
+        depots.MapPointSize(options => {
+            options.SizeDomain(0, 100); options.MinimumRadius = 3; options.MaximumRadius = 10;
             options.SizeDimension.Name = "Traffic"; options.SizeDimension.ShowLegend = true;
             options.SizeDimension.ValueFormat = ChartValueFormat.Number("0 'routes'", CultureInfo.InvariantCulture);
         });
-        return Chart.Create().WithSize(variant.StartsWith("compact", StringComparison.Ordinal) ? 390 : 800, 600)
-            .WithTheme(VisualTheme.Graphite(), mode).WithTitle("Coverage and delivery routes")
-            .WithSubtitle("Regions show coverage; depot color shows delay and size shows traffic")
-            .WithLegend().WithMapLabels(false).WithDataLabels().AddSeries(coverage).AddSeries(depots);
+        return Chart.Create().Size(variant.StartsWith("compact", StringComparison.Ordinal) ? 390 : 800, 600)
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Title("Coverage and delivery routes")
+            .Subtitle("Regions show coverage; depot color shows delay and size shows traffic")
+            .Legend().Map(m => m.ShowLabels(false)).DataLabels().AddSeries(coverage).AddSeries(depots);
     }
 
     // The rectangles are authored service zones rather than administrative borders. Every importer reads the same source facts.

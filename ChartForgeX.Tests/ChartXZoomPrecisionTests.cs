@@ -65,13 +65,13 @@ public sealed class ChartXZoomPrecisionTests {
     [InlineData(-1, true, false)]
     public void RepresentedPanBoundsOwnNativePaintProjectionAndRawBoundaryAdmission(int sign, bool reversed, bool step) {
         var minimum = sign * 1e15;
-        var chart = Bare(minimum, minimum + 1).WithDataLabels(); chart.Options.XAxis.Reversed = reversed;
+        var chart = Bare(minimum, minimum + 1).DataLabels(); chart.Options.XAxis.Reversed = reversed;
         var offsets = new[] { 0d, .125, .25, .375, .5, 1 };
         for (var i = 0; i < offsets.Length; i++) {
             var point = new ChartPoint(minimum + offsets[i], 1 + i);
             if (step) chart.AddStepLine("Point " + i, new[] { point }); else chart.AddLine("Point " + i, new[] { point });
-            chart.Series[i].ConfigureMarkers(marker => { marker.Enabled = true; marker.Radius = 4; });
-            chart.Series[i].WithPointLabel(0, i == 1 ? "L" : i == 3 ? "R" : "");
+            chart.Series[i].Markers(marker => { marker.Enabled = true; marker.Radius = 4; });
+            chart.Series[i].PointLabel(0, i == 1 ? "L" : i == 3 ? "R" : "");
             chart.Series[i].DataLabelPlacement = (i < 3) != reversed ? ChartDataLabelPlacement.Right : ChartDataLabelPlacement.Left;
         }
         chart.AddVerticalLine(minimum).AddVerticalLine(minimum + .125).AddVerticalLine(minimum + .375).AddVerticalLine(minimum + .5)
@@ -102,7 +102,7 @@ public sealed class ChartXZoomPrecisionTests {
         Assert.Equal(bank.FullViewport.Minimum, bank.At(1, 0).XProjection!.Minimum);
         Assert.Equal(bank.FullViewport.Maximum, bank.At(1, 1).XProjection!.Maximum);
         Assert.Equal(6, XDocument.Parse(view.ToSvg()).Descendants().Count(node => (string?)node.Attribute("data-cfx-role") == "point"));
-        chart.WithDataLabels(false);
+        chart.DataLabels(false);
         Assert.Equal(chart.Prepare(Context(), new ChartCartesianViewport(x: new ChartAxisWindow(projection.Minimum, projection.Maximum))).ToPng(),
             chart.PrepareXZoom(Context(), new ChartXZoomLevels(1, 4)).At(1, .173).ToPng());
     }
@@ -145,8 +145,8 @@ public sealed class ChartXZoomPrecisionTests {
         }
     }
 
-    private static Chart Bare(double minimum, double maximum) => Chart.Create().WithAxes(false).WithGrid(false).WithLegend(false)
-        .WithXAxisBounds(minimum, maximum).WithYAxisBounds(0, 10);
+    private static Chart Bare(double minimum, double maximum) => Chart.Create().Axes(false).ShowGrid(false).Legend(false)
+        .XAxis(x => x.Bounds(minimum, maximum)).YAxis(y => y.Bounds(0, 10));
     private static VisualRenderContext Context(double width = 420) => new(new VisualLayoutOptions(new VisualSize(width, 280)), VisualTheme.Graphite(),
         frame: new VisualFrame(showLegend: false), font: FontSpec.FromFile(Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf")));
 }

@@ -13,7 +13,7 @@ internal static partial class VisualArtifactInterchangeJson {
         if (axis.HasExplicitScale) String(writer, "scale", axis.Scale.ToString());
         Number(writer, "logarithmBase", axis.LogarithmBase); String(writer, "logarithmicDomain", axis.LogarithmicDomain.ToString());
         Number(writer, "symmetricLogarithmThreshold", axis.SymmetricLogarithmThreshold);
-        OptionalNumber(writer, "minimum", axis.Minimum); OptionalNumber(writer, "maximum", axis.Maximum);
+        OptionalNumber(writer, "minimum", axis.Min); OptionalNumber(writer, "maximum", axis.Max);
         if (axis.HasExplicitTickCount) Number(writer, "tickCount", axis.TickCount);
         Boolean(writer, "integerTicks", axis.IntegerTicks); String(writer, "labelDensity", axis.LabelDensity.ToString());
         if (axis.HasExplicitLabelAngle) Number(writer, "labelAngle", axis.LabelAngle);
@@ -131,7 +131,7 @@ internal static partial class VisualArtifactInterchangeJson {
         };
         if (OptionalString(fields, "culture") is string culture) axis.Culture = ReadCulture(fields, culture);
         if (OptionalEnum<ChartScaleKind>(fields, "scale") is ChartScaleKind scale) axis.Scale = scale;
-        axis.Minimum = OptionalNumber(fields, "minimum"); axis.Maximum = OptionalNumber(fields, "maximum");
+        axis.Min = OptionalNumber(fields, "minimum"); axis.Max = OptionalNumber(fields, "maximum");
         if (OptionalInt(fields, "tickCount") is int ticks) axis.TickCount = ticks;
         if (OptionalNumber(fields, "labelAngle") is double angle) axis.LabelAngle = angle;
         if (OptionalBool(fields, "showLine") is bool line) axis.ShowLine = line;

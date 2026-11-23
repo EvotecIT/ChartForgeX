@@ -23,7 +23,7 @@ public sealed class V2GanttDependencyRoutingTests {
                 : ChartSeries.CreateGanttTask(new ChartSeriesId("source"), "Source", 1, finish);
             var target = targetMilestone ? ChartSeries.CreateGanttMilestone(new ChartSeriesId("target"), "Target", start)
                 : ChartSeries.CreateGanttTask(new ChartSeriesId("target"), "Target", start, start + 2);
-            var chart = Chart.Create().WithSize(width, 240).WithHeader(false).WithLegend(false).WithDataLabels(false);
+            var chart = Chart.Create().Size(width, 240).ShowHeader(false).Legend(false).DataLabels(false);
             if (upward) chart.AddSeries(target).AddSeries(source); else chart.AddSeries(source).AddSeries(target);
             chart.AddGanttDependency(source, target);
             var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, 240)))); var scene = prepared.Scene;
@@ -92,7 +92,7 @@ public sealed class V2GanttDependencyRoutingTests {
                 : ChartSeries.CreateGanttTask(new ChartSeriesId("target"), "Target", start, start + 2);
             var middle = milestone == "middle" ? ChartSeries.CreateGanttMilestone(new ChartSeriesId("middle"), "Middle", overlapping ? 3 : 3.5)
                 : ChartSeries.CreateGanttTask(new ChartSeriesId("middle"), "Middle", 2.5, milestone == "long-middle" ? 10 : 4);
-            var chart = Chart.Create().WithHeader(false).WithLegend(false).WithDataLabels(false);
+            var chart = Chart.Create().ShowHeader(false).Legend(false).DataLabels(false);
             chart.AddSeries(upward ? target : source).AddSeries(middle).AddSeries(upward ? source : target).AddGanttDependency(source, target);
             var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(width, 240)),
                 VisualTheme.Graphite(), upward ? ThemeMode.Dark : ThemeMode.Light, new VisualFrame("", "", showLegend: false), FontSpec.FromFile(font)));
@@ -129,9 +129,9 @@ public sealed class V2GanttDependencyRoutingTests {
 
     [Fact]
     public void ExplicitWindowsKeepAuthoredDatesAndClipConnectorsAtThePlot() {
-        var chart = Chart.Create().WithSize(400, 240).WithHeader(false).WithLegend(false)
+        var chart = Chart.Create().Size(400, 240).ShowHeader(false).Legend(false)
             .AddGanttTask("Source", 1, 5).AddGanttTask("Target", 3, 7);
-        chart.AddGanttDependency(chart.Series[0], chart.Series[1]).WithXAxisBounds(2, 4);
+        chart.AddGanttDependency(chart.Series[0], chart.Series[1]).XAxis(x => x.Bounds(2, 4));
         var scene = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(400, 240)))).Scene;
         var schedule = Assert.Single(scene.Nodes.OfType<VisualSceneGroup>(), group => group.Role == "gantt-chart");
         Assert.Equal("2", schedule.Metadata["data-cfx-min"]); Assert.Equal("4", schedule.Metadata["data-cfx-max"]);
@@ -217,7 +217,7 @@ public sealed class V2GanttDependencyRoutingTests {
     public void ClearInteriorRowsRetainADeclaredStrokeWiderThanOneRow() {
         var source = ChartSeries.CreateGanttTask(new ChartSeriesId("source"), "Source", 1, 2);
         var target = ChartSeries.CreateGanttTask(new ChartSeriesId("target"), "Target", 5, 6);
-        var chart = Chart.Create().WithAxes(false).WithHeader(false).WithLegend(false).WithGrid(false).WithDataLabels(false)
+        var chart = Chart.Create().Axes(false).ShowHeader(false).Legend(false).ShowGrid(false).DataLabels(false)
             .AddGanttTask("Other", 1, 1.5).AddSeries(source).AddGanttTask("Other", 1, 1.5).AddSeries(target).AddGanttTask("Other", 1, 1.5)
             .AddGanttDependency(source, target);
         var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
@@ -245,8 +245,8 @@ public sealed class V2GanttDependencyRoutingTests {
     public void DependenciesStraddlingAnEmptyAuthoredWindowRetainFactsAndPaintOnlyWhenTheyFit(int height, bool paints) {
         var source = ChartSeries.CreateGanttTask(new ChartSeriesId("source"), "Source", 1, 2);
         var target = ChartSeries.CreateGanttTask(new ChartSeriesId("target"), "Target", 5, 6);
-        var chart = Chart.Create().WithAxes(false).WithHeader(false).WithLegend(false).WithGrid(false).WithDataLabels(false)
-            .AddSeries(source).AddSeries(target).AddGanttDependency(source, target).WithXAxisBounds(3, 4);
+        var chart = Chart.Create().Axes(false).ShowHeader(false).Legend(false).ShowGrid(false).DataLabels(false)
+            .AddSeries(source).AddSeries(target).AddGanttDependency(source, target).XAxis(x => x.Bounds(3, 4));
         var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(font));
         var prepared = chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(500, height), 0),
@@ -282,9 +282,9 @@ public sealed class V2GanttDependencyRoutingTests {
             : ChartSeries.CreateGanttTask(new ChartSeriesId("target"), "Target", 3, 5);
         var middle = milestones ? ChartSeries.CreateGanttMilestone(new ChartSeriesId("middle"), "Middle", 3.5)
             : ChartSeries.CreateGanttTask(new ChartSeriesId("middle"), "Middle", 2.5, 4);
-        var chart = Chart.Create().WithAxes(false).WithHeader(false).WithLegend(false).WithGrid(false).WithDataLabels(false);
+        var chart = Chart.Create().Axes(false).ShowHeader(false).Legend(false).ShowGrid(false).DataLabels(false);
         chart.AddSeries(upward ? target : source).AddSeries(middle).AddSeries(upward ? source : target).AddGanttDependency(source, target);
-        if (explicitWindow) chart.WithXAxisBounds(1, 5);
+        if (explicitWindow) chart.XAxis(x => x.Bounds(1, 5));
         var font = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Fonts", "Carlito", "Carlito-Regular.ttf");
         Assert.True(File.Exists(font));
         return chart.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(500, height), 0),

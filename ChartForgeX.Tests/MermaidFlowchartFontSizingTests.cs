@@ -51,7 +51,7 @@ public sealed class MermaidFlowchartFontSizingTests {
     [InlineData(TopologyNodeShape.Cloud)]
     public void OptedInNativeNodesFitMultilineFontMetricsInsideTheirShapeAndKeepMinimums(TopologyNodeShape? shape) {
         const string label = "Page the service owner\nVerify recovery";
-        var chart = TopologyChart.Create().WithViewport(1200, 500);
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(1200, 500));
         var node = new TopologyNode { Id = "owner", Label = label, Shape = shape, Width = 90, Height = 24,
             FitLabelToContent = true, PreserveDisplayModeSize = true, ShowStatusBadge = false };
         chart.Nodes.Add(node);
@@ -128,7 +128,7 @@ public sealed class MermaidFlowchartFontSizingTests {
             using (var input = typeof(MermaidFlowchartFontSizingTests).Assembly.GetManifestResourceStream("ChartForgeX.Tests.Fixtures.OpenType.bitmap-1-1-1.ttf")!)
             using (var output = File.Create(fontPath)) input.CopyTo(output);
             var label = new string('A', 100);
-            var chart = TopologyChart.Create().WithViewport(1200, 400);
+            var chart = TopologyChart.Create().Viewport(new TopologyViewport(1200, 400));
             chart.Nodes.Add(new TopologyNode { Id = "owner", Label = label, Shape = TopologyNodeShape.Rectangle,
                 X = 24, Y = 24, Width = 40, Height = 60, FitLabelToContent = true, PreserveDisplayModeSize = true, ShowStatusBadge = showStatus });
             var theme = VisualTheme.Graphite().WithTypography(new VisualTypography(dataLabelSize: 18));

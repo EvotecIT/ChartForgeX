@@ -42,15 +42,15 @@ public static class ScatterPartialColorRangeRecipe {
         var completion = new double?[] { 55, 82, null, 68, 95 };
         var recorded = ChartSeries.CreateScatter(new ChartSeriesId("recorded-batches"), "Recorded batches", completion.Select((value, index) =>
             new ChartPoint((index + 1) * 16, duration[index]).WithColorValue(value)));
-        recorded.WithColorScale(ChartColorScale.Sequential(colors.Palette[0], colors.Status.Pass.Fill)
+        recorded.ColorScale(ChartColorScale.Sequential(colors.Palette[0], colors.Status.Pass.Fill)
                 .WithValueRange(null, 100).WithLabels("Observed minimum", null, "Goal").WithNoDataColor(colors.Border))
-            .ConfigureColorDimension(options => {
+            .ColorDimension(options => {
                 options.Name = "Completion"; options.ValueFormat = ChartValueFormat.Number("0'%'", CultureInfo.InvariantCulture);
                 options.LegendStyle = ChartColorLegendStyle.Swatches;
             });
-        return NumericAxes().ConfigureLabels(labels => labels.NoData = "Not reported").AddSeries(recorded);
+        return NumericAxes().Labels(labels => labels.NoData = "Not reported").AddSeries(recorded);
     }
 
-    private static Chart NumericAxes() => Chart.Create().WithXAxis("Batch size (items)").WithYAxis("Processing time (minutes)")
-        .WithXAxisBounds(0, 100).WithYAxisBounds(0, 60).WithDataLabels(false);
+    private static Chart NumericAxes() => Chart.Create().XAxis(x => x.Title("Batch size (items)")).YAxis(y => y.Title("Processing time (minutes)"))
+        .XAxis(x => x.Bounds(0, 100)).YAxis(y => y.Bounds(0, 60)).DataLabels(false);
 }

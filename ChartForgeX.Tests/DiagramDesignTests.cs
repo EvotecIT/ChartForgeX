@@ -7,6 +7,7 @@ using ChartForgeX.Themes;
 using ChartForgeX.Topology;
 using ChartForgeX.VisualArtifacts;
 using Xunit;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.Tests;
 
@@ -113,7 +114,7 @@ public sealed class DiagramDesignTests {
         Assert.DoesNotContain(prepared.Scene.Nodes, node => node.Role == "legend-entry");
         Assert.Contains(prepared.Scene.Nodes, node => node.Role == "gantt-section-band");
         Assert.NotEmpty(prepared.ToPng());
-        chart.WithAxes(false).WithLegend(true);
+        chart.Axes(false).Legend(true);
         var withoutRows = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.DoesNotContain(withoutRows.Scene.Nodes, node => node.Role == "schedule-row-label");
         Assert.Equal(2, withoutRows.Scene.Nodes.Count(node => node.Role == "legend-entry"));

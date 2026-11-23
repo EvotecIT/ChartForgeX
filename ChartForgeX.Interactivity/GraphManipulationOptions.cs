@@ -1,8 +1,10 @@
+using PowerForge.Fluent;
 namespace ChartForgeX.Interactivity;
 
 /// <summary>
 /// Describes opt-in editing capabilities for graph adapters without making static rendering mutable by default.
 /// </summary>
+[Fluent]
 public sealed class GraphManipulationOptions {
     private int _maximumHistoryEntries = 40;
 

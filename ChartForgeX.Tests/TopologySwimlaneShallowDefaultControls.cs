@@ -9,7 +9,7 @@ public sealed class TopologySwimlaneShallowDefaultControls {
     [InlineData(TopologyLayoutDirection.LeftToRight)] [InlineData(TopologyLayoutDirection.RightToLeft)]
     [InlineData(TopologyLayoutDirection.TopToBottom)] [InlineData(TopologyLayoutDirection.BottomToTop)]
     public void ShallowExistingPublicApiCapturesExactSvgPngAndPortableDefaults(TopologyLayoutDirection direction) {
-        var chart = TopologyChart.Create().WithTitle("").WithViewport(800, 500, 24).WithLayout(TopologyLayoutMode.Swimlane, direction)
+        var chart = TopologyChart.Create().Title("").Viewport(new TopologyViewport(800, 500, 24)).LayoutMode(TopologyLayoutMode.Swimlane).LayoutDirection(direction)
             .AddAutoGroup("first", "First", subtitle: "Direct lane", iconId: "common:server").AddAutoGroup("second", "Second")
             .AddAutoNode("free", "External", groupId: null, width: 108, height: 48)
             .AddAutoNode("a", "Accept", groupId: "first", width: 144, height: 64)

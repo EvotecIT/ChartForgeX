@@ -24,27 +24,27 @@ public sealed class InteractiveScatterBubbleColorScaleBrowserTests {
     [InlineData(ChartSeriesKind.Bubble, 800, true)]
     public async Task PointerKeyboardAndSelectionRetainColorYSizeAndSourceIdentity(ChartSeriesKind kind, int width, bool dark) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(width, 400).WithLegend().WithDataLabels(false)
-            .WithTitle("Independent measured color").WithXAxis("Batch").WithYAxis("Energy (kWh)")
-            .WithXAxisBounds(0, 4).WithYAxisBounds(0, 50)
-            .WithValueFormat(ChartValueFormat.Number("0.0 'kWh'", CultureInfo.InvariantCulture))
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .ConfigureLabels(labels => { labels.Color = "Temperature (°C)"; labels.Size = "Volume (m³)"; labels.NoData = "Not sampled"; });
+        var chart = Chart.Create().Size(width, 400).Legend().DataLabels(false)
+            .Title("Independent measured color").XAxis(xAxis => xAxis.Title("Batch")).YAxis(yAxis => yAxis.Title("Energy (kWh)"))
+            .XAxis(xAxis => xAxis.Bounds(0, 4)).YAxis(yAxis => yAxis.Bounds(0, 50))
+            .ValueFormat(ChartValueFormat.Number("0.0 'kWh'", CultureInfo.InvariantCulture))
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Labels(labels => { labels.Color = "Temperature (°C)"; labels.Size = "Volume (m³)"; labels.NoData = "Not sampled"; });
         var x = new[] { 1d, 2, 3 }; var y = new[] { 18d, 30, 24 }; var sizes = new[] { 9d, 36, 81 };
         var colors = new double?[] { -12, 0, null };
         if (kind == ChartSeriesKind.Bubble) chart.AddSeries(ChartSeries.CreateBubble(new ChartSeriesId("thermal-source"), "Samples", Enumerable.Range(0, 3)
             .Select(index => new ChartBubble(x[index], y[index], sizes[index]).WithColorValue(colors[index]))))
-            .ConfigureBubble(bubble => {
-                bubble.WithSizeDomain(0, 100); bubble.MinimumRadius = 4; bubble.MaximumRadius = 20;
+            .Bubble(bubble => {
+                bubble.SizeDomain(0, 100); bubble.MinimumRadius = 4; bubble.MaximumRadius = 20;
                 bubble.SizeDimension.ValueFormat = ChartValueFormat.Number("0", CultureInfo.InvariantCulture);
             });
         else chart.AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("thermal-source"), "Samples", Enumerable.Range(0, 3)
             .Select(index => new ChartPoint(x[index], y[index]).WithColorValue(colors[index]))));
-        chart.Series[0].WithColorScale(ChartColorScale.Sequential(
+        chart.Series[0].ColorScale(ChartColorScale.Sequential(
             ChartColor.FromHex("#2166AC"), ChartColor.FromHex("#B2182B"))
             .WithValueRange(-10, 10).WithNoDataColor(ChartColor.FromHex("#9CA3AF")));
         chart.AddSeries(ChartSeries.CreateLine(new ChartSeriesId("reference-source"), "Reference", new[] { new ChartPoint(.5, 42), new ChartPoint(3.5, 42) }));
-        chart.Series[1].ConfigureMarkers(markers => markers.Enabled = false);
+        chart.Series[1].Markers(markers => markers.Enabled = false);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var html = chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = HtmlChartTooltipMode.Single);
         await using var session = await OpenAsync(html, width + 24, 560);

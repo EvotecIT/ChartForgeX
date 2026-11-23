@@ -126,18 +126,18 @@ public sealed class GroupedCategoryAxisBrowserTests {
         var points = new[] { new ChartPoint(1.5, 4), new ChartPoint(4.25, 7), new ChartPoint(6.5, 3) };
         var series = new ChartSeries(new ChartSeriesId("grouped-readings"), "Readings",
             line ? ChartSeriesKind.Line : horizontal ? ChartSeriesKind.HorizontalBar : ChartSeriesKind.Bar, points)
-            .WithObservationIds(new[] { "first", "middle", "last" }.Select(id => new ChartObservationId(id)));
-        if (line) series.ConfigureMarkers(markers => { markers.Enabled = true; markers.Radius = 4; });
-        var chart = Chart.Create().WithSize(760, 460).WithHeader(false).WithLegend(false).AddSeries(series)
-            .WithXAxisBounds(0, horizontal ? 10 : 8).WithYAxisBounds(0, horizontal ? 8 : 10);
+            .ObservationIds(new[] { "first", "middle", "last" }.Select(id => new ChartObservationId(id)));
+        if (line) series.Markers(markers => { markers.Enabled = true; markers.Radius = 4; });
+        var chart = Chart.Create().Size(760, 460).ShowHeader(false).Legend(false).AddSeries(series)
+            .XAxis(x => x.Bounds(0, horizontal ? 10 : 8)).YAxis(y => y.Bounds(0, horizontal ? 8 : 10));
         var labels = new[] {
             new ChartAxisLabel(1.5, "Central", grouped ? new[] { north, "Operations" } : Array.Empty<string>()),
             new ChartAxisLabel(2.75, "Planned", grouped ? new[] { north, "Operations" } : Array.Empty<string>()),
             new ChartAxisLabel(4.25, "Central", grouped ? new[] { "South", "Operations" } : Array.Empty<string>()),
             new ChartAxisLabel(6.5, "Remote", grouped ? new[] { "South", "Support" } : Array.Empty<string>())
         };
-        if (horizontal) chart.ConfigureYAxis(axis => { foreach (var label in labels) axis.Labels.Add(label); });
-        else chart.WithXLabels(labels);
+        if (horizontal) chart.YAxis(axis => { foreach (var label in labels) axis.Labels.Add(label); });
+        else chart.XLabels(labels);
         return chart;
     }
 

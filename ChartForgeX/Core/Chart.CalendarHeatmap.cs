@@ -5,13 +5,6 @@ using ChartForgeX.Primitives;
 namespace ChartForgeX.Core;
 
 public sealed partial class Chart {
-    /// <summary>Configures the shared week layout, localized names, and cell sizing of calendar heatmaps.</summary>
-    /// <param name="configure">The configuration callback. Changes are installed together when the callback succeeds.</param>
-    /// <returns>The current chart.</returns>
-    public Chart ConfigureCalendar(Action<ChartCalendarOptions> configure) {
-        Options.Calendar = ChartOptionConfiguration.Configure(Options.Calendar, configure, options => options.Clone());
-        return this;
-    }
 
     /// <summary>Adds a contribution-style calendar heatmap chart.</summary>
     /// <param name="name">The series name.</param>

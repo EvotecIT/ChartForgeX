@@ -9,7 +9,7 @@ using ChartForgeX.VisualArtifacts;
 internal static partial class Program {
     private static void SequenceLayoutContracts() {
         var role=new TextStyleOverride{FontSize=18,FontWeight="700"};var model=SequenceArtifact.Create("package-sequence")
-            .WithSize(640,480).AddParticipant("a","Review").AddParticipant("b","Store").AddMessage("a","b","Save");
+            .Width(640).Height(480).AddParticipant("a","Review").AddParticipant("b","Store").AddMessage("a","b","Save");
         model.Layout=new SequenceLayoutPolicy(participantMinimumWidth:100,participantSpacing:24,messageSpacing:30,canvasPadding:new ChartPadding(8,12,16,20));
         model.Typography=new SequenceTypography(participant:role,message:new TextStyleOverride{FontSize=20});role.FontSize=99;
         var theme=VisualTheme.Graphite().Configure(builder=>{builder.Spacing=19;builder.SeriesStrokeWidth=3;builder.AxisStrokeWidth=2;});

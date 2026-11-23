@@ -23,7 +23,7 @@ var completion = ChartSeries.CreateLayeredRadial(new ChartSeriesId("completion")
     new ChartRadialLayer("Verified", 58) { RadiusRatio = .7, StrokeRatio = .13, SweepAngleDegrees = 240, StartAngleDegrees = -30, SeparatorCount = 8 },
     new ChartRadialLayer("Complete", 42) { RadiusRatio = .4, StrokeRatio = .13, SweepAngleDegrees = 360 }
 });
-var chart = Chart.Create().WithXLabels("North", "South", "East", "West", "Central", "Online").AddSeries(completion);
+var chart = Chart.Create().XLabels("North", "South", "East", "West", "Central", "Online").AddSeries(completion);
 
 #region Output
 var context = new VisualRenderContext(

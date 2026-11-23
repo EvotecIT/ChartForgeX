@@ -32,8 +32,8 @@ public static class CertificatesByIssuerRecipe {
     public static Chart Create(string variant = "issuers", ThemeMode mode = ThemeMode.Light) {
         if (variant is not ("issuers" or "compact-issuers")) throw new ArgumentOutOfRangeException(nameof(variant));
         var months = Enumerable.Range(0, 12).Select(month => new DateTime(2025, 11, 1).AddMonths(month).ToString("MMM", CultureInfo.InvariantCulture)).ToArray();
-        var chart = Chart.Create().WithXLabels(months).WithStackedBars().WithYAxis("Certificates")
-            .WithValueFormat(ChartValueFormat.Number("0", CultureInfo.InvariantCulture));
+        var chart = Chart.Create().XLabels(months).Bars(b => b.Stacked()).YAxis(y => y.Title("Certificates"))
+            .ValueFormat(ChartValueFormat.Number("0", CultureInfo.InvariantCulture));
         var issuers = new[] { ("lets-encrypt", "Let's Encrypt", 64), ("digicert", "DigiCert", 18), ("sectigo", "Sectigo", 11), ("internal-ca", "Internal CA", 7) };
         foreach (var (id, name, typical) in issuers) {
             // Renewals cluster every third month; the values are deterministic so the gallery stays reproducible.

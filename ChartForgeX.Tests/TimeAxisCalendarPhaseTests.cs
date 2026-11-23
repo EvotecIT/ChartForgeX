@@ -11,7 +11,7 @@ public sealed class TimeAxisCalendarPhaseTests {
     [InlineData(4)]
     public void MultiDayCalendarTicksKeepOneDisplayDayPhaseAcrossOverlappingWindows(int step) {
         var zone = TimeZoneInfo.CreateCustomTimeZone("Phase/Plus5", TimeSpan.FromHours(5), "Phase +05", "Phase +05");
-        var axis = new ChartAxis().WithTimeScale(zone);
+        var axis = new ChartAxis().TimeScale(zone);
         axis.TickCount = 5;
         var start = new DateTime(2026, 1, 29, 0, 0, 0).AddHours(-5).ToOADate();
         var shiftedStart = new DateTime(2026, 2, 1, 0, 0, 0).AddHours(-5).ToOADate();

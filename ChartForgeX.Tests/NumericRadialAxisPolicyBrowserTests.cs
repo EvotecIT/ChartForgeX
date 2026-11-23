@@ -23,13 +23,13 @@ public sealed class NumericRadialAxisPolicyBrowserTests {
         if (!Enabled) return;
         var width = compact ? 360 : 800; var height = compact ? 360 : 440;
         var chart = all ? NumericRadialLabelDensityTests.CrowdedChart(bars) : NumericRadialAxisPolicyTests.RelativeChart(bars, compact);
-        chart.WithSize(width, height).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
-        if (fullTurn) chart.WithRadialGeometry(new(30, 390, .2, .25, .1));
-        if (all) chart.WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Left);
+        chart.Size(width, height).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
+        if (fullTurn) chart.RadialGeometry(new(30, 390, .2, .25, .1));
+        if (all) chart.DataLabels().DataLabels(d => d.Placement(ChartDataLabelPlacement.Left));
         else {
             chart.Options.XAxis.LabelDensity = ChartLabelDensity.Relaxed;
             chart.Options.YAxis.LabelDensity = chart.Options.SecondaryYAxis.LabelDensity = ChartLabelDensity.Dense;
-            chart.WithDataLabels().WithDataLabelPlacement(ChartDataLabelPlacement.Inside);
+            chart.DataLabels().DataLabels(d => d.Placement(ChartDataLabelPlacement.Inside));
         }
         NumericRadialAxisTextBrowserTests.UseProofFonts(chart);
         var prepared = NumericRadialAxisPolicyTests.Prepare(chart);

@@ -32,7 +32,7 @@ public static class ProgressBarRecipe {
         var chart = Chart.Create().AddProgressBars("Delivery", new[] {
             new ChartProgressItem("Reviewed", 76), new ChartProgressItem("Verified", 58), new ChartProgressItem("Complete", 42)
         });
-        if (variant == "options") chart.WithProgressMaximum(120).WithProgressBarThickness(.42).WithProgressTrackOpacity(.3);
+        if (variant == "options") chart.Progress(p => p.Max(120).BarThicknessRatio(.42).TrackOpacity(.3));
         return chart;
     }
 }

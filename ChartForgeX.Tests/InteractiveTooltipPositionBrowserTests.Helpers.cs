@@ -11,8 +11,8 @@ namespace ChartForgeX.Tests;
 
 public sealed partial class InteractiveTooltipPositionBrowserTests {
     private const string Reading = PointTarget + "[data-cfx-series=\"0\"][data-cfx-point=\"0\"]";
-    private static Chart Observations(bool dark) => Chart.Create().WithSize(800, 440).WithTitle("Tooltip screen placement")
-        .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+    private static Chart Observations(bool dark) => Chart.Create().Size(800, 440).Title("Tooltip screen placement")
+        .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
         .AddScatter("Reading", new[] { new ChartPoint(3, 5), new ChartPoint(7, 6), new ChartPoint(9.5, 2) });
 
     private static async Task<double[]> PointerAsync(IPage page, string selector = Reading, double offsetX = 0, double offsetY = 0) {

@@ -26,7 +26,7 @@ internal sealed partial class VisualTopologyCompiler {
         var countSize = ChipSize + 1;
         var countWidth = MeasureRoleText(count, countSize * _scale, 700, null).Width + 12 * _scale;
         var right = node.X + node.Width - (_options.IncludeStatusBadges && node.ShowStatusBadge ? 22 : 10);
-        var toggle = _options.EnableHtmlInteractions;
+        var toggle = _options.Html.Interactions;
         if (toggle) right -= 16;
         using (_builder.PushGroup(node.Id + "-sibling-header", "topology-sibling-header", new Dictionary<string, string> { ["data-node-id"] = node.Id })) {
             BuildGlyph(node, node.X + 18, node.Y + TopologySiblingCard.HeaderHeight / 2, accent, .72, accentRole);

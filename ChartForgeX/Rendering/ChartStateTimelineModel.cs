@@ -38,7 +38,7 @@ internal sealed class ChartStateTimelineModel {
         Ticks = ticks;
         Legend = legend;
         foreach (var lane in lanes) HasSummary |= !string.IsNullOrWhiteSpace(lane.Summary);
-        HasSummary |= !string.IsNullOrWhiteSpace(chart.Options.LaneSummaryHeader) && lanes.Count > 0;
+        HasSummary |= !string.IsNullOrWhiteSpace(chart.Options.StateTimeline.SummaryHeader) && lanes.Count > 0;
 
         // A header row precedes the first lane of each group; a smaller gap closes a group when ungrouped lanes follow.
         var offsets = new double[lanes.Count];
@@ -87,7 +87,7 @@ internal sealed class ChartStateTimelineModel {
 
     public bool HasSummary { get; }
 
-    public string? SummaryHeader => Chart.Options.LaneSummaryHeader;
+    public string? SummaryHeader => Chart.Options.StateTimeline.SummaryHeader;
 
     public static ChartStateTimelineModel Build(Chart chart, ChartColor? fallback = null, (double Min, double Max)? sharedWindow = null) {
         var legend = new ChartStateCategoryLegend(chart, fallback);
@@ -125,9 +125,9 @@ internal sealed class ChartStateTimelineModel {
 
         if (sharedWindow.HasValue) { min = sharedWindow.Value.Min; max = sharedWindow.Value.Max; }
         var axis = chart.Options.XAxis;
-        if (axis.Minimum.HasValue) min = axis.Minimum.Value;
-        if (axis.Maximum.HasValue) max = axis.Maximum.Value;
-        (min, max) = ChartMath.ResolveFiniteLaneWindow(min, max, axis.Minimum.HasValue, axis.Maximum.HasValue);
+        if (axis.Min.HasValue) min = axis.Min.Value;
+        if (axis.Max.HasValue) max = axis.Max.Value;
+        (min, max) = ChartMath.ResolveFiniteLaneWindow(min, max, axis.Min.HasValue, axis.Max.HasValue);
         // Timeline segments are UTC instants even when callers leave the default linear axis.
         IReadOnlyList<double> ticks = axis.Labels.Count > 0
             ? axis.Labels.Where(label => label.Value >= min && label.Value <= max).Select(label => label.Value).Distinct().OrderBy(value => value).ToArray()
@@ -142,9 +142,9 @@ internal sealed class ChartStateTimelineModel {
     /// <summary>Shared lane-chart layout: label column, summary column, time axis, legend, and an optional top reserve.</summary>
     public static ChartRect LanePlotArea(Chart chart, ChartRect bounds, bool hasSummary, string? summaryHeader, double laneLabelWidth, double summaryWidth, double summaryHeaderHeight, double legendHeight, double topLabelHeight, double axisLabelReserve = AxisReserve, double axisTitleReserve = AxisTitleReserve, double labelShare = LabelColumnShare) {
         var options = chart.Options;
-        var labelReserve = options.ShowAxes && options.ShowYAxis ? Math.Min(laneLabelWidth + ColumnGap, bounds.Width * labelShare) : 0;
+        var labelReserve = options.ShowAxes && options.YAxis.Visible ? Math.Min(laneLabelWidth + ColumnGap, bounds.Width * labelShare) : 0;
         var summaryReserve = hasSummary ? SummaryColumnWidth(bounds, summaryWidth) + ColumnGap : 0;
-        var axisReserve = options.ShowAxes && options.ShowXAxis ? axisLabelReserve + (string.IsNullOrWhiteSpace(ChartTimeScale.DecorateTitle(options.XAxis, chart.XAxisTitle)) ? 0 : axisTitleReserve) : 0;
+        var axisReserve = options.ShowAxes && options.XAxis.Visible ? axisLabelReserve + (string.IsNullOrWhiteSpace(ChartTimeScale.DecorateTitle(options.XAxis, chart.Options.XAxis.Title)) ? 0 : axisTitleReserve) : 0;
         var topReserve = Math.Max(hasSummary && !string.IsNullOrWhiteSpace(summaryHeader) ? summaryHeaderHeight + TopLabelGap : 0, topLabelHeight);
         var width = Math.Max(1, bounds.Width - labelReserve - summaryReserve);
         var height = Math.Max(1, bounds.Height - axisReserve - legendHeight - topReserve);

@@ -26,7 +26,7 @@ internal static partial class SmokeTests {
         topology.Nodes.Add(new TopologyNode { Id = "dc2", Label = "DC 2", Kind = TopologyNodeKind.Server, GroupId = "site", X = 280, Y = 100, Width = 120, Height = 64, Href = "javascript:alert(1)" });
         topology.Nodes[1].Metadata["topology.artwork.imageHref"] = "javascript:spoof()";
         topology.Nodes[1].Metadata["topology.longitude"] = "999";
-        topology.WithNodeDisplay("dc1", TopologyNodeDisplayMode.Pill);
+        topology.UpdateNode("dc1", n => n.DisplayMode(TopologyNodeDisplayMode.Pill).Badge(null));
         topology.Edges.Add(new TopologyEdge {
             Id = "replication", SourceNodeId = "dc1", TargetNodeId = "dc2", Kind = TopologyEdgeKind.Replication,
             Direction = VisualLinkDirection.Bidirectional, SourcePort = TopologyEdgePort.Right, TargetPort = TopologyEdgePort.Left,
@@ -38,10 +38,10 @@ internal static partial class SmokeTests {
         topology.Edges[0].Metadata["topology.routing"] = "untrusted-override";
         topology.Edges[0].Metadata["topology.preferredLength"] = "999";
         topology.Edges[0].Metadata["topology.minimumRankSpan"] = "99";
-        topology.WithEdgeStroke("replication", 2.5, 0.4, 6, 2);
-        topology.WithEdgeWaypoints("replication", new ChartPoint(180, 120), new ChartPoint(220, 120));
-        topology.WithEdgeLayoutHints("replication", preferredLength: 260, minimumRankSpan: 2);
-        topology.WithEdgeRouteLane("replication", 0);
+        topology.EdgeStroke("replication", 2.5, 0.4, 6, 2);
+        topology.EdgeWaypoints("replication", new ChartPoint(180, 120), new ChartPoint(220, 120));
+        topology.UpdateEdge("replication", e => e.PreferredLength(260).MinimumRankSpan(2).RoutingPriority(0));
+        topology.EdgeRouteLane("replication", 0);
         var scenario = new TopologyScenario {
             Id = "replication-review", Label = "Replication review", Description = "Inspect the primary route", Color = "#336699",
             PlaybackDelayMilliseconds = 1200, LoopPlayback = true, Spotlight = true
@@ -65,7 +65,7 @@ internal static partial class SmokeTests {
         var artifact = topology.ToVisualArtifact();
         artifact.Metadata["owner"] = "directory-team";
         artifact.Metadata["Owner"] = "Platform";
-        artifact.Accessibility.WithTextAlternative("Directory topology", "Two domain controllers replicate in Site A.", "en-US");
+        artifact.Accessibility.TextAlternative("Directory topology", "Two domain controllers replicate in Site A.", "en-US");
         var envelope = artifact.ToInterchangeEnvelope();
         string json = envelope.ToJson();
         var roundTrip = VisualArtifactInterchangeEnvelope.FromUtf8Json(envelope.ToUtf8Json());
@@ -129,10 +129,10 @@ internal static partial class SmokeTests {
         Assert(artifact.SupportsExport(VisualArtifactExportFormat.Json), "Topology artifacts should declare their implemented semantic JSON export.");
 
         var mutableAccessibilityTopology = TopologyChart.Create()
-            .ConfigureAccessibility(accessibility => accessibility.WithTextAlternative("Initial name", "Initial description", "en"));
+            .Accessibility(accessibility => accessibility.TextAlternative("Initial name", "Initial description", "en"));
         mutableAccessibilityTopology.Nodes.Add(new TopologyNode { Id = "current", Label = "Current" });
         VisualArtifact mutableAccessibilityArtifact = mutableAccessibilityTopology.ToVisualArtifact();
-        mutableAccessibilityTopology.Accessibility.WithTextAlternative("Current name", "Current description", "pl-PL");
+        mutableAccessibilityTopology.Accessibility.TextAlternative("Current name", "Current description", "pl-PL");
         mutableAccessibilityTopology.Accessibility.IsDecorative = true;
         VisualArtifactInterchangeEnvelope currentAccessibility = mutableAccessibilityArtifact.ToInterchangeEnvelope();
         Assert(currentAccessibility.AccessibleName == "Current name" && currentAccessibility.AccessibleDescription == "Current description" &&
@@ -349,12 +349,12 @@ internal static partial class SmokeTests {
 
     private static void VisualArtifactInterchangePreservesFlowAndSequenceSemantics() {
         var flow = FlowArtifact.Create("approval")
-            .WithTitle("Approval")
+            .Title("Approval")
             .AddLane("requester", "Requester", Tone.Success)
             .AddStep("submit", "Submit", FlowArtifactStepKind.Start, "requester")
             .AddStep("approve", "Approve?", FlowArtifactStepKind.Decision, "requester")
             .AddConnector("submit", "approve", "Review", FlowArtifactConnectorKind.Flow);
-        flow.ConfigureStep("submit", step => step.Metadata["owner"] = "requester");
+        flow.UpdateStep("submit", step => step.Metadata["owner"] = "requester");
         flow.Metadata["scope"] = "model";
         flow.Metadata["model-only"] = "preserved";
         var flowArtifact = flow.ToVisualArtifact();
@@ -429,7 +429,7 @@ internal static partial class SmokeTests {
             "Flow interchange should reject missing lane references consistently with the static topology fallback.");
 
         var sequence = SequenceArtifact.Create("authentication")
-            .WithTitle("Authentication")
+            .Title("Authentication")
             .AddParticipant("user", "User", SequenceArtifactParticipantKind.Actor)
             .AddParticipant("api", "API", SequenceArtifactParticipantKind.Control)
             .AddMessage("user", "api", "Sign in", kind: SequenceArtifactMessageKind.Async)
@@ -499,7 +499,7 @@ internal static partial class SmokeTests {
         Assert(danglingSequenceEnvelope.Annotations.Single().TargetIds.Count == 0 && danglingSequenceEnvelope.ToJson().Length > 0,
             "Sequence interchange should retain notes while omitting participant targets that no longer resolve, matching static note placement behavior.");
 
-        var wideSequence = SequenceArtifact.Create("wide").WithTitle("Initial").WithSize(320, 240).AddParticipant("participant-0", "Participant 0");
+        var wideSequence = SequenceArtifact.Create("wide").Title("Initial").Width(320).Height(240).AddParticipant("participant-0", "Participant 0");
         var wideArtifact = wideSequence.ToVisualArtifact();
         VisualArtifactSize initialNaturalSize = wideArtifact.NaturalSize.GetValueOrDefault();
         var initialPreparedSize = SequencePreparedCompiler.PrepareDefault(wideSequence).Size;
@@ -522,7 +522,7 @@ internal static partial class SmokeTests {
         Assert(wideEnvelope.Nodes.Count == 10 && wideEnvelope.Annotations.Count(annotation => annotation.Role == VisualArtifactInterchangeAnnotationRole.SequenceNote) == 1,
             "Sequence interchange should expose current typed entities after wrapper creation.");
 
-        var annotationSizedSequence = SequenceArtifact.Create("annotation-sized").WithSize(320, 240).AddParticipant("worker", "Worker");
+        var annotationSizedSequence = SequenceArtifact.Create("annotation-sized").Width(320).Height(240).AddParticipant("worker", "Worker");
         annotationSizedSequence.AddActivation("worker", true, 100);
         annotationSizedSequence.AddBlock(SequenceArtifactBlockKind.Opt, "Late block", 95, 99);
         annotationSizedSequence.AddBranch(SequenceArtifactBlockKind.Alt, "Else", "Late branch", 90, 98);

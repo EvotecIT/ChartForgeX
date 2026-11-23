@@ -60,9 +60,9 @@ public sealed class ArtifactHtmlSizingTests {
     public async Task HostCanPreserveAnotherFamilyWithoutChangingItsAutomaticSizing(string family, bool trustedWatermarkedSvg) {
         if (!InteractiveChartBrowser.Enabled) return;
         var artifact = family == "topology"
-            ? TopologyChart.Create().WithViewport(960, 560).WithTitle("Service path")
+            ? TopologyChart.Create().Viewport(new TopologyViewport(960, 560)).Title("Service path")
                 .AddAutoNode("A", "Receive").AddAutoNode("B", "Store").AddEdge("link", "A", "B").ToVisualArtifact()
-            : Chart.Create().WithSize(960, 560).WithTitle("Results")
+            : Chart.Create().Size(960, 560).Title("Results")
                 .AddBar("Counts", new[] { new ChartPoint(1, 2), new ChartPoint(2, 3) }).ToVisualArtifact();
         var defaultHtml = artifact.ToHtmlPage();
         var options = new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize };
@@ -87,7 +87,7 @@ public sealed class ArtifactHtmlSizingTests {
     [InlineData(VisualArtifactHtmlSizing.FitToWidth)]
     public async Task HostSizingLeavesNestedSvgConstraintsIntact(VisualArtifactHtmlSizing sizing) {
         if (!InteractiveChartBrowser.Enabled) return;
-        var artifact = Chart.Create().WithSize(960, 560).AddBar("Counts", new[] { new ChartPoint(1, 2) }).ToVisualArtifact();
+        var artifact = Chart.Create().Size(960, 560).AddBar("Counts", new[] { new ChartPoint(1, 2) }).ToVisualArtifact();
         const string svg = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"960\" height=\"560\" viewBox=\"0 0 960 560\" style=\"max-width:100%\"><svg id=\"nested\" x=\"20\" y=\"20\" width=\"200\" height=\"100\" style=\"max-width:60px\"><rect width=\"200\" height=\"100\" fill=\"#2563eb\"/></svg></svg>";
         var html = artifact.ToWatermarkedHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = sizing }, svg, VisualWatermark.FromText("REVIEW"));
         await using var session = await InteractiveChartBrowser.OpenAsync(html, 320, 620);

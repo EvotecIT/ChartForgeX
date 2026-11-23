@@ -76,7 +76,7 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
     [InlineData(true)]
     public async Task NativeTextAndLegendMovementKeepOneDelayedSemanticTarget(bool legend) {
         if (!Enabled) return;
-        var chart = legend ? Observations(false) : Chart.Create().WithSize(800, 540).WithTitle("Text readout pacing")
+        var chart = legend ? Observations(false) : Chart.Create().Size(800, 540).Title("Text readout pacing")
             .AddWordCloud("Topics", new[] { new ChartWordCloudItem("Visible", 100) });
         var selector = legend ? Legend(0) : "[data-cfx-role=word-cloud-term]";
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
@@ -106,6 +106,6 @@ public sealed partial class InteractiveTooltipDelayBrowserTests {
         AssertNoConsoleErrors(session);
     }
 
-    private static Chart NativeLine(string name, ChartPoint[] points) => Chart.Create().WithSize(800, 540)
-        .WithLineMarkers(ChartLineMarkerMode.None).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10).AddSeries(ChartSeries.CreateLine(new ChartSeriesId("readings"), name, points));
+    private static Chart NativeLine(string name, ChartPoint[] points) => Chart.Create().Size(800, 540)
+        .Lines(l => l.MarkerMode(ChartLineMarkerMode.None)).XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10)).AddSeries(ChartSeries.CreateLine(new ChartSeriesId("readings"), name, points));
 }

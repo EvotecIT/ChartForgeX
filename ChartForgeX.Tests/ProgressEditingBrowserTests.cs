@@ -102,10 +102,10 @@ public sealed class ProgressEditingBrowserTests {
     private static Chart ChartFor(int width, bool dark, double fraction, bool reorder) {
         var first = new ChartProgressItem("Fraction", fraction, 0, 1); var second = new ChartProgressItem("Jobs", 500, 0, 2000);
         var series = ChartSeries.CreateProgressBars(new ChartSeriesId("delivery"), "Delivery", reorder ? new[] { second, first } : new[] { first, second })
-            .WithObservationId(reorder ? 1 : 0, new ChartObservationId("fraction"))
-            .WithObservationId(reorder ? 0 : 1, new ChartObservationId("jobs"));
-        return Chart.Create().WithSize(width, 340).WithTitle("Edit independent progress rows").WithLegend(false)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).AddSeries(series);
+            .ObservationId(reorder ? 1 : 0, new ChartObservationId("fraction"))
+            .ObservationId(reorder ? 0 : 1, new ChartObservationId("jobs"));
+        return Chart.Create().Size(width, 340).Title("Edit independent progress rows").Legend(false)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).AddSeries(series);
     }
     private static void Options(HtmlChartInteractionOptions options) {
         options.ProgressEditing.Enabled = true; options.ProgressEditing.StepRatio = .125;

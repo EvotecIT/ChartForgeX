@@ -7,14 +7,14 @@ namespace ChartForgeX.Tests;
 internal static partial class SmokeTests {
     private static void TopologyEdgesCanAvoidGroupHeaders() {
         var chart = TopologyChart.Create()
-            .WithId("group-header-route")
-            .WithViewport(620, 320, 20)
-            .WithLegend(null)
+            .Id("group-header-route")
+            .Viewport(new TopologyViewport(620, 320, 20))
+            .Legend((TopologyLegend?)null)
             .AddGroup("middle", "Bridgehead Region", 225, 95, 170, 120, TopologyHealthStatus.Warning)
             .AddNode("left", "Left Hub", 40, 80, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 100, height: 60)
             .AddNode("right", "Right Hub", 420, 80, TopologyNodeKind.Hub, TopologyHealthStatus.Healthy, width: 100, height: 60)
             .AddEdge("hub-link", "left", "right", "64 ms", TopologyEdgeKind.Link, TopologyHealthStatus.Healthy, VisualLinkDirection.Bidirectional, TopologyEdgeRouting.ObstacleAvoidingOrthogonal)
-            .WithEdgePorts("hub-link", TopologyEdgePort.Right, TopologyEdgePort.Left);
+            .UpdateEdge("hub-link", e => e.SourcePort(TopologyEdgePort.Right).TargetPort(TopologyEdgePort.Left));
 
         var prepared = chart.Prepare(new TopologyRenderOptions { IncludeLegend = false });
         var svg = prepared.ToSvg();

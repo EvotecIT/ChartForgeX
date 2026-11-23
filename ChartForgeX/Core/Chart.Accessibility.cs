@@ -5,18 +5,9 @@ namespace ChartForgeX.Core;
 
 public sealed partial class Chart {
     /// <summary>Gets accessibility metadata shared by capable renderers and hosts.</summary>
-    public VisualAccessibility Accessibility { get; private set; } = new();
-
-    /// <summary>Configures the chart text alternative and language metadata.</summary>
-    public Chart ConfigureAccessibility(Action<VisualAccessibility> configure) {
-        if (configure == null) throw new ArgumentNullException(nameof(configure));
-        Accessibility = ChartOptionConfiguration.Configure(Accessibility, configure, options => options.Clone());
-        return this;
+    public VisualAccessibility Accessibility {
+        get => _accessibility;
+        set => _accessibility = value ?? throw new ArgumentNullException(nameof(value));
     }
-
-    /// <summary>Marks the chart as decorative for capable renderers.</summary>
-    public Chart AsDecorative(bool decorative = true) {
-        Accessibility.IsDecorative = decorative;
-        return this;
-    }
+    private VisualAccessibility _accessibility = new();
 }

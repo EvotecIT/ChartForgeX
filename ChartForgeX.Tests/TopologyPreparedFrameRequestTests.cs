@@ -51,7 +51,7 @@ public sealed class TopologyPreparedFrameRequestTests {
     }
     [Fact]
     public void CanonicalDefaultFrameRequestsStayOmittedAndNativeSnapshotsStayDetached() {
-        var chart=Source();chart.Theme=VisualTheme.Graphite();chart.Title="";chart.Subtitle="";var options=new TopologyRenderOptions{IncludeTitle=false,IncludeLegend=false,FitContentToViewport=false};chart.WithRenderOptions(options);
+        var chart=Source();chart.Theme=VisualTheme.Graphite();chart.Title="";chart.Subtitle="";var options=new TopologyRenderOptions{IncludeTitle=false,IncludeLegend=false,FitContentToViewport=false};chart.DefaultRenderOptions(options);
         var before=chart.Prepare();var direct=chart.Prepare(VisualExportRequest.ForTopology(chart,options).Context,options);Capture("default-before",before.Visual);Capture("default-explicit",direct);
         Assert.Null(before.ToInterchangeEnvelope().Presentation!.Frame);Assert.Null(direct.ToArtifact().ToInterchangeEnvelope().Presentation!.Frame);
         Assert.DoesNotContain("\"frame\"",before.ToInterchangeEnvelope().ToJson(),StringComparison.Ordinal);Assert.Equal(1,before.ToInterchangeEnvelope().Version);Assert.Equal(before.ToPng(),direct.ToPng());
@@ -84,7 +84,7 @@ public sealed class TopologyPreparedFrameRequestTests {
         } finally {File.Delete(path);}
     }
     private static TopologyChart Source() {
-        var chart=TopologyChart.Create().WithId("finite-frame-request").WithTitle("Model heading").WithSubtitle("Model subtitle").WithViewport(760,520,24).WithLayout(TopologyLayoutMode.Manual)
+        var chart=TopologyChart.Create().Id("finite-frame-request").Title("Model heading").Subtitle("Model subtitle").Viewport(new TopologyViewport(760, 520, 24)).LayoutMode(TopologyLayoutMode.Manual)
             .AddNode("from","From",80,140,width:100,height:60).AddNode("to","To",420,210,width:100,height:60);
         chart.Theme=VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family);foreach(var node in chart.Nodes){node.Shape=TopologyNodeShape.Rectangle;node.ShowStatusBadge=false;node.PreserveDisplayModeSize=true;}return chart;
     }

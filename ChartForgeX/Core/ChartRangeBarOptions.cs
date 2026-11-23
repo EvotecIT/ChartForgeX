@@ -1,8 +1,10 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>Controls range-bar direction and captions without changing category coordinates or authored endpoints.</summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class ChartRangeBarOptions {
     private ChartOrientation _orientation;
     private ChartRangeBarLabelContent _labelContent;
@@ -18,7 +20,8 @@ public sealed class ChartRangeBarOptions {
 
     /// <summary>Gets or sets the optional formatter for separate Start and End captions. Null uses the chart's numeric value format.</summary>
     /// <remarks>Used only with Endpoints content. Evaluated once for Start then End per authored observation during preparation, including hidden or omitted captions. Null, empty or whitespace output suppresses that endpoint. Complete captions remain in source metadata. Exceptions propagate; prepared exports never invoke the formatter again. Custom point labels remain observation headings.</remarks>
-    public Func<ChartRangeBarEndpointLabelContext, string?>? EndpointLabelFormatter { get; set; }
+    [PowerForge.Fluent.Fluent("EndpointLabelBy")]
+public Func<ChartRangeBarEndpointLabelContext, string?>? EndpointLabelFormatter { get; set; }
 
     /// <summary>Gets independent visibility, typography and physical placement for the authored Start caption in Endpoints mode.</summary>
     public ChartValueLabelOptions StartLabel { get; private set; } = new();

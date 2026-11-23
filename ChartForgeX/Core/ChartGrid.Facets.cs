@@ -16,7 +16,7 @@ public sealed partial class ChartGrid {
         if (facet == null) throw new ArgumentNullException(nameof(facet));
         if (chartFactory == null) throw new ArgumentNullException(nameof(chartFactory));
 
-        var grid = Create().WithColumns(columns);
+        var grid = Create().Columns(columns);
         foreach (var group in dataset.GroupBy(facet, comparer)) {
             var chart = chartFactory(group.Key, group.Dataset);
             if (chart == null) throw new InvalidOperationException("Facet chart factories must return a chart.");

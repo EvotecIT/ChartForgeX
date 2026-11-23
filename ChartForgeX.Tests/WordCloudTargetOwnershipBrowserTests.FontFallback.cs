@@ -14,7 +14,7 @@ public sealed partial class WordCloudTargetOwnershipBrowserTests {
     [InlineData("rejected")]
     public async Task LoadedAndFallbackGlyphsKeepSelectionPaintPointerKeyboardAndAvailability(string delivery) {
         if (!Enabled) return;
-        var chart = Frame().WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), ThemeMode.Dark)
+        var chart = Frame().Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(ThemeMode.Dark)
             .AddWordCloud("Topics", new[] { new ChartWordCloudItem("Visible", 100), new ChartWordCloudItem("Companion", 50) });
         var html = chart.ToInteractiveHtmlPage(options => Options(options, false));
         await using var session = await OpenAsync(html, 800, 600, configurePageAsync: async page => {

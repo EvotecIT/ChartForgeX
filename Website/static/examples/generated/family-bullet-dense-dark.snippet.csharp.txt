@@ -19,7 +19,7 @@ var theme = VisualTheme.Graphite();
 #endregion
 
 var values = new[] { 0d, 2611.111, 3722.222, 4833.333, 5944.444, 7055.555, 8166.666, 12345.6789 };
-var chart = Chart.Create().WithTitle("Service completion against target").WithDataLabels();
+var chart = Chart.Create().Title("Service completion against target").DataLabels();
 for (var index = 0; index < values.Length; index++) chart.AddBullet("Regional service " + (index + 1), values[index], 9500.125,
     0, 10000, new[] { 4000d, 8000 });
 

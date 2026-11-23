@@ -36,7 +36,7 @@ public sealed class TopologyActorPreparedBasisCausalTests {
     [InlineData(TopologyIconShape.Database)]
     public void OrdinaryManualScaleOneRetainsExistingNativeGeometryAndPortableBytes(TopologyIconShape glyph) {
         var chart = Chart(glyph, false); chart.LayoutMode = TopologyLayoutMode.Manual;
-        chart.WithRenderOptions(new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = false });
+        chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = false });
         var name = "actor-basis-" + glyph + "-unit-control"; CaptureRequest(chart, name);
         var direct = chart.Prepare(); var svg = direct.ToSvg(); var png = direct.ToPng(); var json = direct.ToInterchangeEnvelope().ToJson();
         Capture(svg, png, json, name + "-direct");
@@ -48,14 +48,14 @@ public sealed class TopologyActorPreparedBasisCausalTests {
 
     internal static TopologyChart Chart(TopologyIconShape glyph, bool shrink,
         TopologyNodeShape shape = TopologyNodeShape.ActorIcon, TopologyNodeDisplayMode mode = TopologyNodeDisplayMode.Card) {
-        var chart = TopologyChart.Create().WithTheme(ChartForgeX.Themes.VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).WithId("actor-prepared-basis").WithViewport(shrink ? 320 : 640, shrink ? 240 : 360, 0)
-            .WithLayout(TopologyLayoutMode.Layered).AddNode("actor", "Native participant", 40, 30, width: shrink ? 920 : 220, height: shrink ? 720 : 140);
+        var chart = TopologyChart.Create().Theme(ChartForgeX.Themes.VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).Id("actor-prepared-basis").Viewport(new TopologyViewport(shrink ? 320 : 640, shrink ? 240 : 360, 0))
+            .LayoutMode(TopologyLayoutMode.Layered).AddNode("actor", "Native participant", 40, 30, width: shrink ? 920 : 220, height: shrink ? 720 : 140);
         var node = chart.Nodes[0]; node.Shape = shape; node.IconShape = shape == TopologyNodeShape.ActorIcon ? glyph : null;
         node.Kind = TopologyNodeKind.Generic; node.DisplayMode = mode; node.PreserveDisplayModeSize = true; node.ShowStatusBadge = false;
         node.Color = "#2563EB"; node.Subtitle = "A native caption";
         node.TextStyle = new TextStyleOverride { FontFamily = BrowserProofFonts.Family };
         node.SubtitleTextStyle = new TextStyleOverride { FontFamily = BrowserProofFonts.Family, FontSize = 13, FontWeight = "500" };
-        chart.WithRenderOptions(new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true, WrapNodeLabels = true, MaxNodeLabelLines = 4, MaxNodeSubtitleLines = 4 });
+        chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true, WrapNodeLabels = true, MaxNodeLabelLines = 4, MaxNodeSubtitleLines = 4 });
         return chart;
     }
 

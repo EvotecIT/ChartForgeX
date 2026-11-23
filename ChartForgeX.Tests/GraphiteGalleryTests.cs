@@ -17,9 +17,9 @@ public sealed class GraphiteGalleryTests {
         var output = Path.Combine(Path.GetTempPath(), "ChartForgeX-host-gallery-test-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(output);
         try {
-            var chart = Chart.Create().WithSize(596, 338).WithTitle("Host frame").WithHostFrame()
-                .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).WithPngOutputScale(scale)
-                .WithXLabels("One", "Two", "Three").AddBar("Counts", new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20) });
+            var chart = Chart.Create().Size(596, 338).Title("Host frame").HostOwnsFrame()
+                .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Png(p => p.OutputScale(scale))
+                .XLabels("One", "Two", "Three").AddBar("Counts", new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20) });
             foreach (var name in new[] { "normal", "edge-mark" }) {
                 File.WriteAllText(Path.Combine(output, name + ".svg"), chart.ToSvg());
                 File.WriteAllText(Path.Combine(output, name + ".html"), chart.ToHtmlPage());
@@ -51,10 +51,10 @@ public sealed class GraphiteGalleryTests {
         var output=Path.Combine(Path.GetTempPath(),"ChartForgeX-graphite-gallery-test-"+Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(output);
         try {
-            var chart=Chart.Create().WithSize(320,220).WithTitle("Graphite frame").WithPngOutputScale(scale)
-                .WithTheme(translucent ? TranslucentBorderTheme() : VisualTheme.Graphite())
+            var chart=Chart.Create().Size(320,220).Title("Graphite frame").Png(p => p.OutputScale(scale))
+                .Theme(translucent ? TranslucentBorderTheme() : VisualTheme.Graphite())
                 .AddBar("Counts",new[]{new ChartPoint(1,20),new ChartPoint(2,50)});
-            if(framed) chart.ConfigureTheme(builder => builder.CardRadius = 8);
+            if(framed) chart.Theme(builder => builder.CardRadius = 8);
             var names=new List<string>{"normal","edge-mark"};
             if(translucent) names.Add(framed?"edge-border-color":"edge-translucent-mark");
             foreach(var name in names) {

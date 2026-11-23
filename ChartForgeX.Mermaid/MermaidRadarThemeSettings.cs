@@ -57,21 +57,21 @@ internal sealed class MermaidRadarThemeSettings {
 
     internal void Apply(Chart chart) {
         if (_axisColor.HasValue || _axisWidth.HasValue)
-            chart.Options.PolarAxisStroke = new ChartStrokeStyle(_axisColor, _axisWidth);
+            chart.Options.Polar.AxisStroke = new ChartStrokeStyle(_axisColor, _axisWidth);
         if (_gridColor.HasValue || _gridWidth.HasValue)
-            chart.Options.PolarGridStroke = new ChartStrokeStyle(_gridColor, _gridWidth);
+            chart.Options.Polar.GridStroke = new ChartStrokeStyle(_gridColor, _gridWidth);
         if (_gridOpacity.HasValue) {
-            chart.Options.PolarGridFill = _gridColor;
-            chart.Options.PolarGridFillOpacity = _gridOpacity.Value;
+            chart.Options.Polar.GridFill = _gridColor;
+            chart.Options.Polar.GridFillOpacity = _gridOpacity.Value;
         }
-        if (_axisColor.HasValue || _axisFontSize.HasValue) chart.ConfigureTickLabelStyle(style => {
+        if (_axisColor.HasValue || _axisFontSize.HasValue) chart.TickLabelStyle(style => {
             if (_axisColor.HasValue) style.Color = _axisColor.Value;
             if (_axisFontSize.HasValue) style.FontSize = _axisFontSize.Value;
         });
-        if (_legendFontSize.HasValue) chart.ConfigureLegendStyle(style => style.FontSize = _legendFontSize.Value);
+        if (_legendFontSize.HasValue) chart.LegendStyle(style => style.FontSize = _legendFontSize.Value);
         foreach (var series in chart.Series) {
             if (series.Kind != ChartSeriesKind.Radar) continue;
-            series.ConfigureRadar(options => {
+            series.Radar(options => {
                 if (_curveOpacity.HasValue) options.FillOpacity = _curveOpacity.Value;
                 if (_curveWidth.HasValue) options.OutlineStroke = new ChartStrokeStyle(width: _curveWidth.Value);
             });

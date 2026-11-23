@@ -23,8 +23,8 @@ public sealed class TopologyLargeNavigationBrowserTests {
     [InlineData(375, true)]
     public async Task DenseTopologyOpensReadableAndFindFocusesMatches(int width, bool dark) {
         if (!InteractiveChartBrowser.Enabled) return;
-        var chart = DenseEstate().WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
-        var options = new TopologyRenderOptions { ReadableDenseLayout = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile, EnableHtmlSelectionPanel = true }.WithHtmlFindControls();
+        var chart = DenseEstate().Theme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+        var options = new TopologyRenderOptions { ReadableDenseLayout = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile, Html = { SelectionPanel = true } }.HtmlFindControls();
         var html = new HtmlInteractiveTopologyRenderer().RenderPage(chart, options);
         await using var session = await InteractiveChartBrowser.OpenAsync(html, width, 820);
         var page = session.Page;
@@ -104,8 +104,8 @@ public sealed class TopologyLargeNavigationBrowserTests {
     [BrowserFact]
     public async Task FitOpeningViewKeepsTheWholeDenseDrawingInView() {
         if (!InteractiveChartBrowser.Enabled) return;
-        var options = new TopologyRenderOptions { ReadableDenseLayout = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile, EnableHtmlViewportControls = true }
-            .WithHtmlOpeningView(TopologyHtmlOpeningView.Fit);
+        var options = new TopologyRenderOptions { ReadableDenseLayout = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile, Html = { ViewportControls = true } }
+            .Html(h => h.OpeningView(TopologyHtmlOpeningView.Fit));
         var html = new HtmlInteractiveTopologyRenderer().RenderPage(DenseEstate(), options);
         await using var session = await InteractiveChartBrowser.OpenAsync(html, 375, 820);
         var page = session.Page;
@@ -126,9 +126,8 @@ public sealed class TopologyLargeNavigationBrowserTests {
     [BrowserFact]
     public async Task ModifierWheelZoomLetsAPlainWheelScrollThePage() {
         if (!InteractiveChartBrowser.Enabled) return;
-        var options = new TopologyRenderOptions { ReadableDenseLayout = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile, EnableHtmlViewportControls = true }
-            .WithHtmlOpeningView(TopologyHtmlOpeningView.Fit)
-            .WithHtmlWheelZoom(TopologyHtmlWheelZoom.WithModifier);
+        var options = new TopologyRenderOptions { ReadableDenseLayout = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile, Html = { ViewportControls = true } }
+            .Html(h => h.OpeningView(TopologyHtmlOpeningView.Fit).WheelZoom(TopologyHtmlWheelZoom.WithModifier));
         // A diagram in the middle of a long page: reading past it must not get stuck zooming it.
         var html = "<!doctype html><html><body><div style=\"height:600px\"></div>" + new HtmlInteractiveTopologyRenderer().RenderFragment(DenseEstate(), options)
             + "<div style=\"height:2000px\"></div></body></html>";
@@ -159,8 +158,7 @@ public sealed class TopologyLargeNavigationBrowserTests {
     public async Task ThemeAdaptiveCardLeavesTheSurfaceToItsHost() {
         if (!InteractiveChartBrowser.Enabled) return;
         // A host that supplies the colour roles owns the surface; the card must not paint the drawing's literal canvas.
-        var options = new TopologyRenderOptions { ReadableDenseLayout = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile,
-            EnableHtmlViewportControls = true, SvgColorVariables = SvgColorVariables.SharedRoles() };
+        var options = new TopologyRenderOptions { ReadableDenseLayout = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile, Html = { ViewportControls = true }, SvgColorVariables = SvgColorVariables.SharedRoles() };
         var html = new HtmlInteractiveTopologyRenderer().RenderPage(DenseEstate(), options);
         await using var session = await InteractiveChartBrowser.OpenAsync(html, 375, 820);
         var page = session.Page;
@@ -175,8 +173,8 @@ public sealed class TopologyLargeNavigationBrowserTests {
     private static TopologyChart DenseEstate() {
         var roles = new[] { ("Gateway", TopologyNodeKind.Gateway), ("API", TopologyNodeKind.Service), ("Worker", TopologyNodeKind.Process),
             ("Queue", TopologyNodeKind.Queue), ("Database", TopologyNodeKind.Database), ("Cache", TopologyNodeKind.Storage) };
-        var chart = TopologyChart.Create().WithId("dense-estate").WithTitle("Service estate")
-            .WithViewport(1600, 900, 24).WithLayout(TopologyLayoutMode.DenseGrouped, TopologyLayoutDirection.LeftToRight);
+        var chart = TopologyChart.Create().Id("dense-estate").Title("Service estate")
+            .Viewport(new TopologyViewport(1600, 900, 24)).LayoutMode(TopologyLayoutMode.DenseGrouped).LayoutDirection(TopologyLayoutDirection.LeftToRight);
         for (var site = 1; site <= 12; site++) {
             var group = "site-" + site.ToString("00", CultureInfo.InvariantCulture);
             chart.AddAutoGroup(group, "Site " + site.ToString(CultureInfo.InvariantCulture), TopologyHealthStatus.Healthy);

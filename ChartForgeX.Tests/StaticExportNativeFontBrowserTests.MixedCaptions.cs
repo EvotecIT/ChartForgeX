@@ -15,10 +15,10 @@ public sealed partial class StaticExportNativeFontBrowserTests {
     [InlineData(1100, ThemeMode.Dark)]
     public async Task StructuredCaptionVectorAndPngRetainPermanentInkResources(int width, ThemeMode mode) {
         if (!Enabled) return;
-        var chart = TopologyChart.Create().WithViewport(width, 420).WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), mode);
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(width, 420)).Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), mode);
         chart.Nodes.Add(new TopologyNode { Id = "caption", X = 30, Y = 50, Width = width - 70, Height = 260, ShowStatusBadge = false,
             LabelContent = TextContent.FromRuns(new[] { new TextContentRun("Regular "), new TextContentRun("bold", TextInlineEmphasis.Bold), new TextContentRun(" italic", TextInlineEmphasis.Italic), new TextContentRun("\nComplete native caption") }) });
-        var options = new TopologyRenderOptions { EnableHtmlExportControls = true, WrapNodeLabels = true, AllowMultilineNodeLabels = true, MaxNodeLabelLines = 6 };
+        var options = new TopologyRenderOptions { Html = { ExportControls = true }, WrapNodeLabels = true, AllowMultilineNodeLabels = true, MaxNodeLabelLines = 6 };
         var html = new HtmlInteractiveTopologyRenderer().RenderPresentationFragment(chart, prepared => prepared.ToSvg(), options);
         await using var session = await BrowserProofFonts.OpenAsync(html, width + 24, 650);
         var root = session.Page.Locator(".cfx-topology-viewport > svg[role=img]"); var before = await root.EvaluateAsync<string>("node=>node.outerHTML");

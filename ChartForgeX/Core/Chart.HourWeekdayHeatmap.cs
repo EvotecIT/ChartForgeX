@@ -28,7 +28,7 @@ public sealed partial class Chart {
     /// <summary>
     /// Adds an hour-of-day by weekday heatmap: seven weekday rows by 24 hour columns, each cell aggregating the values
     /// observed in that hour of that weekday. Buckets use wall-clock time in <paramref name="timeZone"/> (UTC when null),
-    /// and cell intensity is relative to the observed range (<see cref="ChartOptions.HeatmapRelativeScale"/>).
+    /// and cell intensity is relative to the observed range (<see cref="ChartHeatmapOptions.RelativeScale"/>).
     /// </summary>
     /// <param name="values">The timed values, for example one value of 1 per event.</param>
     /// <param name="aggregation">How values in one bucket are combined. Count and sum show empty buckets as zero; mean
@@ -43,7 +43,7 @@ public sealed partial class Chart {
     /// IANA systems, so pass a label when output must match across platforms.</param>
     /// <returns>The current chart.</returns>
     /// <remarks>The heatmap owns the whole chart: it sets the <c>00</c>–<c>23</c> column labels and
-    /// <see cref="ChartOptions.HeatmapRelativeScale"/>, and it cannot be combined with other series. When the x-axis
+    /// <see cref="ChartHeatmapOptions.RelativeScale"/>, and it cannot be combined with other series. When the x-axis
     /// title is empty it becomes <see cref="ChartLabels.HourOfDay"/> (default <c>Hour of day</c>) followed by the zone
     /// designator in parentheses.</remarks>
     public Chart AddHourWeekdayHeatmap(IEnumerable<ChartTimedValue> values, ChartTimeAggregation aggregation = ChartTimeAggregation.Count, TimeZoneInfo? timeZone = null, DayOfWeek firstDayOfWeek = DayOfWeek.Monday, ChartColor? color = null, IReadOnlyList<string>? dayNames = null, string? timeZoneLabel = null) {
@@ -104,11 +104,11 @@ public sealed partial class Chart {
 
         var labels = new string[HoursPerDay];
         for (var hour = 0; hour < HoursPerDay; hour++) labels[hour] = hour.ToString("00", CultureInfo.InvariantCulture);
-        WithXLabels(labels);
-        Options.HeatmapRelativeScale = true;
-        if (string.IsNullOrWhiteSpace(XAxisTitle)) {
+        XLabels(labels);
+        Options.Heatmap.RelativeScale = true;
+        if (string.IsNullOrWhiteSpace(Options.XAxis.Title)) {
             var label = !string.IsNullOrWhiteSpace(timeZoneLabel) ? timeZoneLabel!.Trim() : timeZone == null ? "UTC" : timeZone.Id;
-            XAxisTitle = Options.Labels.HourOfDay + " (" + label + ")";
+            Options.XAxis.Title = Options.Labels.HourOfDay + " (" + label + ")";
         }
 
         _hourWeekdayHeatmapRows = Series.ToArray();

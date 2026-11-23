@@ -9,9 +9,9 @@ namespace ChartForgeX.Tests;
 /// <summary>Protects the request-flow playback model shared by topology frames, sequence diagrams, HTML and terminals.</summary>
 public sealed class TopologyScenarioPlaybackTests {
     internal static TopologyChart ReplicationChart() => TopologyChart.Create()
-        .WithId("replication")
-        .WithTitle("Replicate a change")
-        .WithLayout(TopologyLayoutMode.Layered, TopologyLayoutDirection.LeftToRight)
+        .Id("replication")
+        .Title("Replicate a change")
+        .LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(TopologyLayoutDirection.LeftToRight)
         .AddGroup("hq", "HQ site", 0, 0, 0, 0)
         .AddNode("admin", "Admin", 0, 0, TopologyNodeKind.Person)
         .AddNode("dc01", "DC01", 0, 0, TopologyNodeKind.Server, TopologyHealthStatus.Healthy, "hq", "PDC emulator")
@@ -19,8 +19,8 @@ public sealed class TopologyScenarioPlaybackTests {
         .AddEdge("ldap", "admin", "dc01", "LDAP", direction: VisualLinkDirection.Forward)
         .AddEdge("rpc", "dc01", "dc02", "RPC", direction: VisualLinkDirection.Forward)
         .AddScenario("replicate", "Replicate a change", scenario => scenario
-            .WithDescription("A title change reaches DC02")
-            .AddMessageStep("ldap", TopologyScenarioInteraction.Request, "Modify user", configure: step => step.WithPayload("{\n  \"title\": \"Site manager\"\n}", TopologyScenarioPayloadFormat.Json))
+            .Description("A title change reaches DC02")
+            .AddMessageStep("ldap", TopologyScenarioInteraction.Request, "Modify user", configure: step => step.Payload("{\n  \"title\": \"Site manager\"\n}").PayloadFormat(TopologyScenarioPayloadFormat.Json))
             .AddNodeStep("dc01", "Commit locally")
             .AddMessageStep("rpc", TopologyScenarioInteraction.Message, "Change notification")
             .AddMessageStep("rpc", TopologyScenarioInteraction.Request, "GetNCChanges", reverse: true)
@@ -67,8 +67,8 @@ public sealed class TopologyScenarioPlaybackTests {
 
     [Fact]
     public void InteractiveHtml_NonAsciiChartId_RendersSequenceFigures() {
-        var chart = ReplicationChart().WithId("zamówienia-łódź");
-        var html = chart.ToInteractiveHtmlPage(new TopologyRenderOptions().WithHtmlScenarioPanel().WithHtmlScenarioSequence());
+        var chart = ReplicationChart().Id("zamówienia-łódź");
+        var html = chart.ToInteractiveHtmlPage(new TopologyRenderOptions().HtmlScenarioPanel().HtmlScenarioSequence());
 
         Assert.Contains("data-cfx-scenario-sequence=\"replicate\"", html, StringComparison.Ordinal);
     }
@@ -203,7 +203,7 @@ public sealed class TopologyScenarioPlaybackTests {
 
     [Fact]
     public void InteractiveHtml_ScenarioSequence_RendersPayloadPanelSequenceFiguresAndStepData() {
-        var options = new TopologyRenderOptions { ActiveScenarioId = "replicate" }.WithHtmlScenarioPanel().WithHtmlScenarioSequence();
+        var options = new TopologyRenderOptions { ActiveScenarioId = "replicate" }.HtmlScenarioPanel().HtmlScenarioSequence();
         var html = ReplicationChart().ToInteractiveHtmlPage(options);
 
         Assert.Contains("data-cfx-scenario-payload=\"true\"", html, StringComparison.Ordinal);
@@ -221,7 +221,7 @@ public sealed class TopologyScenarioPlaybackTests {
     [Fact]
     public void InteractiveHtml_ScenarioSequence_KeepsTheTopologyAndSequenceTypeScale() {
         var chart = ReplicationChart();
-        var options = new TopologyRenderOptions { ActiveScenarioId = "replicate" }.WithHtmlScenarioPanel().WithHtmlScenarioSequence();
+        var options = new TopologyRenderOptions { ActiveScenarioId = "replicate" }.HtmlScenarioPanel().HtmlScenarioSequence();
         var html = chart.ToInteractiveHtmlPage(options);
         var topologyWidth = chart.Prepare().Width;
         var sequenceWidth = VisualArtifacts.SequencePreparedCompiler.PrepareDefault(chart.ToSequenceArtifact("replicate")).Size.Width;
@@ -233,7 +233,7 @@ public sealed class TopologyScenarioPlaybackTests {
         Assert.Equal(sequenceWidth * 0.875, Minimum("cfx-sequence-min-width"), 1);
         Assert.Contains("max-width:" + Math.Max(topologyWidth, sequenceWidth).ToString("0.###", System.Globalization.CultureInfo.InvariantCulture) + "px", html, StringComparison.Ordinal);
         Assert.Contains("[data-cfx-text-size='kept'] .cfx-topology-viewport{overflow-x:auto", html, StringComparison.Ordinal);
-        Assert.DoesNotContain("data-cfx-text-size=\"", chart.ToInteractiveHtmlPage(new TopologyRenderOptions().WithHtmlScenarioPanel()), StringComparison.Ordinal);
+        Assert.DoesNotContain("data-cfx-text-size=\"", chart.ToInteractiveHtmlPage(new TopologyRenderOptions().HtmlScenarioPanel()), StringComparison.Ordinal);
     }
     [Fact]
     public void ScenarioStory_OneScenePerStep_RendersEveryChapter() {

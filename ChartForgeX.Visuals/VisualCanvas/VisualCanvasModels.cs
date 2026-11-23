@@ -4,6 +4,7 @@ using System.Globalization;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 using ChartForgeX.Typography;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Composition;
 
@@ -194,6 +195,7 @@ public enum VisualCanvasInfoTileMiniChartKind {
 /// <summary>
 /// A fixed-size layered visual surface for wallpapers, social images, report covers, and hero graphics.
 /// </summary>
+[Fluent]
 public sealed partial class VisualCanvas {
     private readonly List<VisualCanvasLayer> _layers = new();
     private VisualTheme _theme = CreateDefaultTheme();
@@ -239,7 +241,8 @@ public sealed partial class VisualCanvas {
     public ChartColor BackgroundBottom { get => _backgroundBottom ?? Theme.Resolve(ThemeMode).Surface; set => _backgroundBottom = value; }
 
     /// <summary>Gets or sets the optional backdrop decoration style.</summary>
-    public VisualCanvasBackdropStyle BackdropStyle { get; set; } = VisualCanvasBackdropStyle.Plain;
+    public VisualCanvasBackdropStyle BackdropStyle { get => _backdropStyle; set { ValidateEnum(value, nameof(value)); _backdropStyle = value; } }
+    private VisualCanvasBackdropStyle _backdropStyle = VisualCanvasBackdropStyle.Plain;
 
     /// <summary>Gets or sets the theme used by built-in visual canvas layers.</summary>
     public VisualTheme Theme { get => _theme; set => _theme = value ?? throw new ArgumentNullException(nameof(value)); }
@@ -264,24 +267,6 @@ public sealed partial class VisualCanvas {
 
     /// <summary>Creates a 1920 by 1080 desktop wallpaper canvas.</summary>
     public static VisualCanvas CreateDesktopWallpaper() => new(1920, 1080);
-
-    /// <summary>Sets the accessibility title used by SVG output.</summary>
-    public VisualCanvas WithTitle(string title) { Title = title ?? throw new ArgumentNullException(nameof(title)); return this; }
-
-    /// <summary>Sets a solid background color.</summary>
-    public VisualCanvas WithBackground(ChartColor color) { BackgroundTop = color; BackgroundBottom = color; return this; }
-
-    /// <summary>Sets a vertical background gradient.</summary>
-    public VisualCanvas WithBackground(ChartColor top, ChartColor bottom) { BackgroundTop = top; BackgroundBottom = bottom; return this; }
-
-    /// <summary>Sets the built-in backdrop decoration style.</summary>
-    public VisualCanvas WithBackdrop(VisualCanvasBackdropStyle style) { ValidateEnum(style, nameof(style)); BackdropStyle = style; return this; }
-
-    /// <summary>Sets the theme used by built-in visual canvas layers.</summary>
-    public VisualCanvas WithTheme(VisualTheme theme, ThemeMode? mode = null) { Theme = theme; if (mode.HasValue) ThemeMode = mode.Value; return this; }
-
-    /// <summary>Sets the PNG output pixel multiplier.</summary>
-    public VisualCanvas WithPngOutputScale(int scale) { PngOutputScale = scale; return this; }
 
     /// <summary>Adds a layer to the canvas.</summary>
     public VisualCanvas AddLayer(VisualCanvasLayer layer) {
@@ -395,7 +380,7 @@ public sealed partial class VisualCanvas {
             LabelFontSize = textOptions?.LabelFontSize,
             ValueFontSize = textOptions?.ValueFontSize,
             DetailFontSize = textOptions?.DetailFontSize
-        }.WithMiniChart(miniChartKind, miniChartValues, miniChartMaximum));
+        }.MiniChart(miniChartKind, miniChartValues, miniChartMaximum));
     }
 
     /// <summary>Adds a central icon or logo badge.</summary>
@@ -579,6 +564,7 @@ public sealed class VisualCanvasHeroTitleLayer : VisualCanvasLayer {
 }
 
 /// <summary>Reusable information tile layer.</summary>
+[Fluent]
 public sealed partial class VisualCanvasInfoTileLayer : VisualCanvasLayer {
     private readonly List<double> _miniChartValues = new();
     private string _icon;
@@ -621,7 +607,8 @@ public sealed partial class VisualCanvasInfoTileLayer : VisualCanvasLayer {
     /// <summary>Gets or sets the compact chart kind rendered inside the tile.</summary>
     public VisualCanvasInfoTileMiniChartKind MiniChartKind { get; set; }
     /// <summary>Gets or sets how label, value, and detail text should be fitted inside this tile.</summary>
-    public VisualCanvasTextFitPolicy TextFitPolicy { get; set; }
+    public VisualCanvasTextFitPolicy TextFitPolicy { get => _textFitPolicy; set { VisualCanvas.ValidateEnum(value, nameof(value)); _textFitPolicy = value; } }
+    private VisualCanvasTextFitPolicy _textFitPolicy;
     /// <summary>Scales all tile text and its supporting layout; null inherits the canvas style.</summary>
     public double? TextScale { get => _textScale; set { ValidateOptionalPositive(value, nameof(value)); _textScale = value; } }
     private double? _textScale;
@@ -655,7 +642,7 @@ public sealed partial class VisualCanvasInfoTileLayer : VisualCanvasLayer {
     }
 
     /// <summary>Sets the compact chart rendered inside the tile.</summary>
-    public VisualCanvasInfoTileLayer WithMiniChart(VisualCanvasInfoTileMiniChartKind kind, IEnumerable<double>? values, double? maximum = null) {
+    public VisualCanvasInfoTileLayer MiniChart(VisualCanvasInfoTileMiniChartKind kind, IEnumerable<double>? values, double? maximum = null) {
         SparklineData = null;
         VisualCanvas.ValidateEnum(kind, nameof(kind));
         _miniChartValues.Clear();
@@ -668,13 +655,6 @@ public sealed partial class VisualCanvasInfoTileLayer : VisualCanvasLayer {
 
         MiniChartKind = _miniChartValues.Count == 0 ? VisualCanvasInfoTileMiniChartKind.None : kind;
         MiniChartMaximum = maximum;
-        return this;
-    }
-
-    /// <summary>Sets the text fit policy used by renderers for this information tile.</summary>
-    public VisualCanvasInfoTileLayer WithTextFitPolicy(VisualCanvasTextFitPolicy policy) {
-        VisualCanvas.ValidateEnum(policy, nameof(policy));
-        TextFitPolicy = policy;
         return this;
     }
 

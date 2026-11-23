@@ -15,11 +15,11 @@ public sealed class ShadowHostEventsBrowserTests {
     [InlineData("closed")]
     public async Task NativeCommandsBrushAndUpdateReachOuterShadowHosts(string mode) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(660, 360).WithHeader(false)
-            .WithXAxisBounds(0, 2).WithYAxisBounds(0, 30)
+        var chart = Chart.Create().Size(660, 360).ShowHeader(false)
+            .XAxis(x => x.Bounds(0, 2)).YAxis(y => y.Bounds(0, 30))
             .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("readings"), "Readings",
                 new[] { new ChartPoint(0, 10), new ChartPoint(1, 20), new ChartPoint(2, 15) })
-                .WithObservationIds(new[] { new ChartObservationId("north"), new ChartObservationId("central"), new ChartObservationId("south") }));
+                .ObservationIds(new[] { new ChartObservationId("north"), new ChartObservationId("central"), new ChartObservationId("south") }));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             options.Interaction.ChartId = "shadow-native";
             options.Interaction.Features = ChartInteractionFeatures.Selection | ChartInteractionFeatures.Brush

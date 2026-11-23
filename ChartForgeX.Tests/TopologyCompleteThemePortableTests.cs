@@ -52,11 +52,11 @@ public sealed class TopologyCompleteThemePortableTests {
     }
 
     internal static TopologyChart Source() {
-        var chart=TopologyChart.Create().WithId("complete-theme").WithTitle("").WithViewport(640,400,24).WithLayout(TopologyLayoutMode.Manual)
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).AddNode("node","Review request",210,150,width:180,height:90);
+        var chart=TopologyChart.Create().Id("complete-theme").Title("").Viewport(new TopologyViewport(640, 400, 24)).LayoutMode(TopologyLayoutMode.Manual)
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).AddNode("node","Review request",210,150,width:180,height:90);
         var node=chart.Nodes[0];node.DisplayMode=TopologyNodeDisplayMode.Icon;node.Shape=TopologyNodeShape.Rectangle;node.IconShape=TopologyIconShape.Router;
         node.PreserveDisplayModeSize=true;node.ShowStatusBadge=false;node.Color="#2563eb";
-        chart.WithRenderOptions(new TopologyRenderOptions{IncludeLegend=false,IncludeTitle=false,IncludeIconLabels=false,FitContentToViewport=false});return chart;
+        chart.DefaultRenderOptions(new TopologyRenderOptions{IncludeLegend=false,IncludeTitle=false,IncludeIconLabels=false,FitContentToViewport=false});return chart;
     }
     private static VisualTheme Complete()=>VisualTheme.Graphite().Configure(theme=>{
         theme.Spacing=17;theme.SeriesStrokeWidth=2.25;theme.MarkerRadius=4;theme.AreaOpacity=.27;theme.BarRadius=11;theme.MaximumBarWidth=79;

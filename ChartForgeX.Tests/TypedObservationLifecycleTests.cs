@@ -24,7 +24,7 @@ public sealed class TypedObservationLifecycleTests {
         Assert.DoesNotContain(empty.Scene.Nodes, node => node.Role == "point");
         Assert.Contains(empty.Diagnostics, item => item.Code == "cartesian.no-data");
         Refill(series);
-        series.WithObservationId(0, new ChartObservationId("arrived"));
+        series.ObservationId(0, new ChartObservationId("arrived"));
         var filled = chart.Prepare(Context());
         var point = Assert.Single(filled.Scene.Nodes.OfType<VisualSceneGroup>(), node => node.Role == "point");
         Assert.Equal("arrived", point.Metadata["data-cfx-observation-id"]);
@@ -70,9 +70,9 @@ public sealed class TypedObservationLifecycleTests {
     [Theory]
     [MemberData(nameof(Families))]
     public void SingleUpdatesRetainIdentityAndPresentationWhileReplacementClearsObservationOverrides(ChartSeriesKind kind) {
-        var series = Create(kind).WithObservationId(0, new ChartObservationId("row-a"))
-            .WithPointLabel(0, "Original label").WithPointColor(0, ChartColor.FromHex("#B34C89"));
-        series.WithPointFillPattern(0, ChartFillPattern.Crosshatch);
+        var series = Create(kind).ObservationId(0, new ChartObservationId("row-a"))
+            .PointLabel(0, "Original label").PointColor(0, ChartColor.FromHex("#B34C89"));
+        series.PointFillPattern(0, ChartFillPattern.Crosshatch);
         var chart = Chart.Create().AddSeries(series);
         var prepared = chart.Prepare(Context()); var svg = prepared.ToSvg(); var png = prepared.ToPng(new VisualRenderOptions(supersampling: 1));
         var id = series.Id;
@@ -91,7 +91,7 @@ public sealed class TypedObservationLifecycleTests {
     [Fact]
     public void TypedInputIsSnapshottedAndFailedReplacementDoesNotDiscardValuesOrKeys() {
         var input = new[] { new ChartBubble(1, 2, 3).WithColorValue(4) };
-        var series = ChartSeries.CreateBubble(new ChartSeriesId("bubble"), "Bubble", input).WithObservationId(0, new ChartObservationId("a"));
+        var series = ChartSeries.CreateBubble(new ChartSeriesId("bubble"), "Bubble", input).ObservationId(0, new ChartObservationId("a"));
         input[0] = new ChartBubble(9, 8, 7);
         Assert.Equal(2, series.Bubbles[0].Y); Assert.Equal(4, series.Bubbles[0].ColorValue);
         Assert.Throws<NotSupportedException>(() => ((IList<ChartBubble>)series.Bubbles)[0] = input[0]);

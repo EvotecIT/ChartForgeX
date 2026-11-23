@@ -148,12 +148,12 @@ public sealed partial class InteractiveTooltipPositionBrowserTests {
     [BrowserFact]
     public async Task PairedNativeExtentDismissesEvenWhileTransparentHitAreaStillOverlaps() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(596, 338).WithTheme(VisualTheme.Graphite()).WithHeader(false).WithLegend(false)
-            .WithDataLabels(false).WithXAxisBounds(0, 2).WithYAxisBounds(0, 10).AddDifferenceArea("Envelope", new[] {
+        var chart = Chart.Create().Size(596, 338).Theme(VisualTheme.Graphite()).ShowHeader(false).Legend(false)
+            .DataLabels(false).XAxis(x => x.Bounds(0, 2)).YAxis(y => y.Bounds(0, 10)).AddDifferenceArea("Envelope", new[] {
                 new ChartDifferencePoint(0, 8, 8.01), new ChartDifferencePoint(1, 8, 8.01), new ChartDifferencePoint(2, 8, 8.01)
             });
-        chart.Series[0].WithColor(ChartColor.Transparent).ConfigureMarkers(markers => markers.Enabled = false)
-            .ConfigureDifferenceArea(options => { options.NegativeFill = ChartColor.FromHex("#3578D4"); options.NegativeFillOpacity = .8; });
+        chart.Series[0].Color(ChartColor.Transparent).Markers(markers => markers.Enabled = false)
+            .DifferenceArea(options => { options.NegativeFill = ChartColor.FromHex("#3578D4"); options.NegativeFillOpacity = .8; });
         var html = "<html><body style='margin:0'><div id='scroll-host' style='width:650px;height:160px;overflow:auto;border:3px solid #777'><div style='padding-bottom:500px'>"
             + chart.ToInteractiveHtmlFragment(options => options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit) + "</div></div></body></html>";
         await using var session = await OpenAsync(html, 950, 760);

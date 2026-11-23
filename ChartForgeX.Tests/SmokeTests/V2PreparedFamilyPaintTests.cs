@@ -54,7 +54,7 @@ public sealed partial class V2PreparedFamilyPaintTests {
     public void DottedDefaultsAreStatusesAndExplicitPointOverridesRetainSeriesRole() {
         var chart = Chart.Create().AddDottedMap("Locations", new[] { new ChartMapPoint("First", 0, 20), new ChartMapPoint("Second", 10, 30) })
             .AddMapRouteBetweenPoints("Connection", "First", "Second");
-        chart.Series[0].WithPointColor(0, Shared);
+        chart.Series[0].PointColor(0, Shared);
         var prepared = chart.Prepare(Context()); var variables = Variables();
         var points = Paints(prepared, variables, "dotted-map-point", "fill");
         // Unstated points and routes are data, not a status (design rule 10).
@@ -68,14 +68,14 @@ public sealed partial class V2PreparedFamilyPaintTests {
     [Fact]
     public void SankeyNodeStateOverridesAndFunnelContrastInkUseTheirAuthoredRoles() {
         var sankey = V2GalleryModels.Create(ChartSeriesKind.Sankey, "sparse");
-        sankey.Series[0].WithNodeState(sankey.Series[0].Nodes[0].Id, ChartSeriesState.Danger);
+        sankey.Series[0].NodeState(sankey.Series[0].Nodes[0].Id, ChartSeriesState.Danger);
         var nodePaints = Paints(sankey.Prepare(Context()), Variables(), "sankey-node-mark", "fill");
         // Only the node with a declared state wears a status role; neutral nodes are secondary ink.
         Assert.Contains("var(--status,", nodePaints[0]); Assert.All(nodePaints.Skip(1), paint => Assert.DoesNotContain("var(--status,", paint));
-        sankey.Series[0].WithPointColor(1, Shared);
+        sankey.Series[0].PointColor(1, Shared);
         nodePaints = Paints(sankey.Prepare(Context()), Variables(), "sankey-node-mark", "fill");
         Assert.Contains("var(--status,", nodePaints[0]); Assert.Contains("var(--series,", nodePaints[1]);
-        var funnel = V2GalleryModels.Create(ChartSeriesKind.Funnel).WithDataLabels(); funnel.Series[0].Color = Shared;
+        var funnel = V2GalleryModels.Create(ChartSeriesKind.Funnel).DataLabels(); funnel.Series[0].Color = Shared;
         var variables = Variables().AddInk("--series-ink", Shared, ChartColor.White, SvgColorRole.Series);
         Assert.All(Paints(funnel.Prepare(Context()), variables, "funnel-label", "fill"), paint => Assert.Contains("var(--series-ink,", paint));
         funnel.Options.DataLabelStyle.Color = Shared;
@@ -87,7 +87,7 @@ public sealed partial class V2PreparedFamilyPaintTests {
     [InlineData(ChartSeriesKind.TileMap, "tile-map-region")]
     public void MapScalesRetainStateBlendOperandsAndExplicitPointColors(ChartSeriesKind kind, string role) {
         var chart = V2GalleryModels.Create(kind); chart.Series[0].StateRole = ChartSeriesState.Danger;
-        chart.Series[0].WithPointColor(0, Shared);
+        chart.Series[0].PointColor(0, Shared);
         var prepared = chart.Prepare(Context(showLegend: true));
         var document = XDocument.Parse(prepared.ToSvg(new VisualSvgOptions(colorVariables: Variables())));
         string PointFill(string point) => document.Descendants().Single(element =>

@@ -15,7 +15,7 @@ public sealed class ScheduleScalarObservationTests {
     [InlineData(ChartSeriesKind.Bullet, "bullet-row")]
     [InlineData(ChartSeriesKind.LayeredRadial, "layered-radial-point")]
     public void TypedScheduleAndScalarFactsHaveOneLogicalObservationAndStableExportIdentity(ChartSeriesKind kind, string role) {
-        var series = Create(kind).WithObservationId(0, new ChartObservationId("reading"));
+        var series = Create(kind).ObservationId(0, new ChartObservationId("reading"));
         Assert.Equal(1, series.ObservationCount); Assert.Equal(1, series.SourcePointCount);
         Assert.Empty(series.Points); Assert.True(series.Points.IsReadOnly);
         Assert.Throws<NotSupportedException>(() => series.Points.Add(new ChartPoint(1, 2)));
@@ -32,7 +32,7 @@ public sealed class ScheduleScalarObservationTests {
         Assert.Equal("typed", envelope.Extensions["chart.series.0.id"]);
         Assert.NotEmpty(prepared.ToPng(new VisualRenderOptions(supersampling: 1)));
         var svg = prepared.ToSvg(); var png = prepared.ToPng(new VisualRenderOptions(supersampling: 1));
-        series.WithPointLabel(0, "Custom").WithPointColor(0, ChartColor.FromHex("#B34C89"));
+        series.PointLabel(0, "Custom").PointColor(0, ChartColor.FromHex("#B34C89"));
         Update(series);
         Assert.Equal("reading", series.ObservationIds[0].Value); Assert.Equal("Custom", series.PointLabels[0]); Assert.NotNull(series.PointColors[0]);
         Assert.NotEqual(svg, chart.Prepare(Context()).ToSvg());
@@ -66,7 +66,7 @@ public sealed class ScheduleScalarObservationTests {
 
     [Fact]
     public void InvalidReplacementIsAtomicAndGanttPreservesAuthoredSchedulingFacts() {
-        var series = Create(ChartSeriesKind.Gauge).WithObservationId(0, new ChartObservationId("stable"));
+        var series = Create(ChartSeriesKind.Gauge).ObservationId(0, new ChartObservationId("stable"));
         Assert.Throws<ArgumentException>(() => series.ReplaceGaugeValues(new[] { new ChartGaugeValue(1), new ChartGaugeValue(2) }));
         Assert.Throws<ArgumentOutOfRangeException>(() => series.ReplaceGaugeValues(new[] { default(ChartGaugeValue) }));
         Assert.Equal(40, series.GaugeValues[0].Value); Assert.Equal("stable", series.ObservationIds[0].Value);

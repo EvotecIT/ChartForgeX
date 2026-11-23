@@ -13,7 +13,7 @@ public sealed class MapObservationIdentityTests {
     [InlineData(ChartSeriesKind.TileMap)]
     public void DirectObservationsCaptureIdsAndPreparedOutputKeepsItsOriginalIdentity(ChartSeriesKind kind) {
         var chart = Sample(kind);
-        var series = Assert.Single(chart.Series).WithObservationId(0, new ChartObservationId("first"));
+        var series = Assert.Single(chart.Series).ObservationId(0, new ChartObservationId("first"));
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var svg = prepared.ToSvg();
         var mark = Assert.Single(Marks(svg, kind), element => (string?)element.Attribute("data-cfx-observation-id") == "first");
@@ -28,17 +28,17 @@ public sealed class MapObservationIdentityTests {
         if (kind != ChartSeriesKind.DottedMap)
             Assert.Contains(Marks(svg, kind), element => (string?)element.Attribute("data-cfx-empty") == "true");
 
-        series.WithObservationId(0, new ChartObservationId("changed"));
+        series.ObservationId(0, new ChartObservationId("changed"));
         Assert.Equal(svg, prepared.ToSvg());
         Assert.Contains(Marks(chart.ToSvg(), kind), element => (string?)element.Attribute("data-cfx-observation-id") == "changed");
     }
 
     [Fact]
     public void DottedObservationOutsideTheViewportKeepsItsAuthoredIdentity() {
-        var chart = Chart.Create().WithMapViewport(ChartMapViewport.Europe()).AddDottedMap("Locations", new[] {
+        var chart = Chart.Create().Map(m => m.Viewport(ChartMapViewport.Europe())).AddDottedMap("Locations", new[] {
             new ChartMapPoint("New York", -74, 41, 7)
         });
-        chart.Series[0].WithObservationId(0, new ChartObservationId("new-york"));
+        chart.Series[0].ObservationId(0, new ChartObservationId("new-york"));
 
         var mark = Assert.Single(Marks(chart.ToSvg(), ChartSeriesKind.DottedMap));
         Assert.Equal("false", (string?)mark.Attribute("data-cfx-visible"));
@@ -46,7 +46,7 @@ public sealed class MapObservationIdentityTests {
     }
 
     private static Chart Sample(ChartSeriesKind kind) {
-        var chart = Chart.Create().WithSize(640, 360);
+        var chart = Chart.Create().Size(640, 360);
         var id = new ChartSeriesId("source");
         var regions = new[] { new ChartRegionMapItem("A", 3), new ChartRegionMapItem("Alpha", 4) };
         return kind switch {

@@ -173,8 +173,8 @@ public sealed partial class SourceAnnotationBrowserTests {
             var chart = Model(_width, _mode, false);
             if (_references) chart.AddHorizontalLine(new ChartAnnotationId("reference-line"), 60, "Reference line")
                 .AddHorizontalBand(new ChartAnnotationId("reference-band"), 70, 80, "Reference band");
-            if (_secondary) chart.WithSecondaryYAxisBounds(1000, 2000).AddSeries(ChartSeries.CreateLine(new ChartSeriesId("secondary"), "Secondary",
-                new[] { new ChartPoint(0, 1000), new ChartPoint(10, 2000) }).UseSecondaryValueAxis());
+            if (_secondary) chart.SecondaryYAxis(s => s.Bounds(1000, 2000)).AddSeries(ChartSeries.CreateLine(new ChartSeriesId("secondary"), "Secondary",
+                new[] { new ChartPoint(0, 1000), new ChartPoint(10, 2000) }).SecondaryAxis());
             return chart;
         }
         internal object Prepare(JsonElement request) {

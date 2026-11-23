@@ -31,9 +31,9 @@ public sealed class GeoJsonObservationImportTests {
         Assert.Equal(59.9139, routes[0].ToLatitude);
         Assert.Throws<NotSupportedException>(() => ((IList<ChartMapPoint>)points)[0] = new ChartMapPoint("Changed", 0, 0));
         Assert.Throws<NotSupportedException>(() => ((IList<ChartMapConnector>)routes).Clear());
-        var chart = Chart.Create().WithSize(560, 340).WithLegend(false).WithDataLabels()
-            .WithMapViewport(ChartMapViewport.Europe()).AddDottedMap("Imported ports", points);
-        chart.Options.MapConnectors.AddRange(routes);
+        var chart = Chart.Create().Size(560, 340).Legend(false).DataLabels()
+            .Map(m => m.Viewport(ChartMapViewport.Europe())).AddDottedMap("Imported ports", points);
+        chart.Options.Map.Connectors.AddRange(routes);
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         Assert.Equal(3, prepared.Scene.Nodes.OfType<VisualSceneGroup>().Count(node => node.Role == "dotted-map-point-source"));
         Assert.Equal(2, prepared.Scene.Nodes.OfType<VisualSceneGroup>().Count(node => node.Role == "dotted-map-connector-source"));
@@ -52,7 +52,7 @@ public sealed class GeoJsonObservationImportTests {
             ]}
             """;
         var options = new ChartMapGeoJsonOptions { WeightPropertyName = "load" };
-        options.WithCoordinateBounds(0, 10, 0, 10);
+        options.MinimumLongitude(0).MaximumLongitude(10).MinimumLatitude(0).MaximumLatitude(10).IncludeFeaturesIntersectingCoordinateBounds();
         var point = Assert.Single(ChartMapGeoJson.ToMapPoints(input, options));
         Assert.Equal("site", point.Label); Assert.Null(point.Weight);
         var route = Assert.Single(ChartMapGeoJson.ToMapConnectors(input, options));

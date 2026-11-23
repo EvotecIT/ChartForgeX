@@ -1,8 +1,10 @@
+using PowerForge.Fluent;
 namespace ChartForgeX.Interactivity.Html;
 
 /// <summary>
 /// Controls how a static <see cref="ChartForgeX.Topology.TopologyChart"/> is projected into a reusable graph exploration scene.
 /// </summary>
+[Fluent]
 public sealed class TopologyGraphSceneOptions {
     /// <summary>Gets or sets the accent source. Status leaves node colors semantic so the explorer theme toggle can repaint them.</summary>
     public ChartForgeX.Topology.TopologyAccentSource AccentSource { get; set; }

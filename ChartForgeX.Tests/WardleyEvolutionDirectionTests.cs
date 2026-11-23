@@ -11,7 +11,7 @@ public sealed class WardleyEvolutionDirectionTests {
     [Theory]
     [InlineData(.7, .2)] [InlineData(.2, .7)]
     public void EvolutionHeadPointsAtTheAuthoredTargetFromEitherDirection(double source, double target) {
-        var map = WardleyMapBlock.Create().WithSize(600, 400); map.AddNode("api", "API", .6, source); map.AddEvolution("api", target);
+        var map = WardleyMapBlock.Create().Size(600, 400); map.AddNode("api", "API", .6, source); map.AddEvolution("api", target);
         var svg = map.ToSvg(); var png = map.ToPng();
         if (Environment.GetEnvironmentVariable("CFX_BROWSER_CAPTURE_DIRECTORY") is { Length: > 0 } output) {
             Directory.CreateDirectory(output); var stem = Path.Combine(output, target < source ? "wardley-left-evolution" : "wardley-right-evolution");

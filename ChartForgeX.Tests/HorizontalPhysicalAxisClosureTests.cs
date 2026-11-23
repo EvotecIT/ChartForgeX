@@ -15,12 +15,12 @@ public sealed class HorizontalPhysicalAxisClosureTests {
     [InlineData(true, 20)]
     [InlineData(true, 1000)]
     public void PartialValueCaptionsRetainGeneratedTicksFormattingAndDetachedSemantics(bool step, double position) {
-        var chart = Model(step ? ChartSeriesKind.StepLine : ChartSeriesKind.Line).WithXAxisBounds(0, 40);
+        var chart = Model(step ? ChartSeriesKind.StepLine : ChartSeriesKind.Line).XAxis(x => x.Bounds(0, 40));
         chart.Options.XAxis.TickCount = 3;
-        chart.ConfigureGridStyle(style => style.ShowVerticalLines = true);
+        chart.GridLineStyle(style => style.ShowVerticalLines = true);
         chart.Options.XAxis.Labels.Add(new ChartAxisLabel(position, "Target"));
         var calls = new Dictionary<double, int>();
-        chart.Options.XAxis.WithLabelFormatter(value => {
+        chart.Options.XAxis.LabelBy(value => {
             calls[value] = calls.TryGetValue(value, out var count) ? count + 1 : 1;
             return value.ToString("0", CultureInfo.InvariantCulture) + " ms";
         });
@@ -33,7 +33,7 @@ public sealed class HorizontalPhysicalAxisClosureTests {
         var svg = prepared.ToSvg(); var png = prepared.ToPng();
         var grids = XDocument.Parse(svg).Descendants().Count(element => (string?)element.Attribute("data-cfx-role") == "grid-x");
         Assert.Equal(ChartTicks.ForValueAxis(chart.Options.XAxis, 0, 40).Count, grids);
-        chart.Options.XAxis.WithLabelFormatter(_ => throw new InvalidOperationException("Changed formatter"));
+        chart.Options.XAxis.LabelBy(_ => throw new InvalidOperationException("Changed formatter"));
         chart.Options.XAxis.Labels.Clear();
         Assert.Equal(svg, prepared.ToSvg()); Assert.Equal(png, prepared.ToPng());
     }
@@ -81,13 +81,13 @@ public sealed class HorizontalPhysicalAxisClosureTests {
     }
 
     private static Chart Model(ChartSeriesKind kind) {
-        var chart = Chart.Create().WithSize(700, 450).WithHeader(false).WithLegend(false).WithLineMarkers(ChartLineMarkerMode.None);
+        var chart = Chart.Create().Size(700, 450).ShowHeader(false).Legend(false).Lines(l => l.MarkerMode(ChartLineMarkerMode.None));
         var points = new[] { new ChartPoint(1, 10), new ChartPoint(2, 20), new ChartPoint(3, 30), new ChartPoint(4, 40) };
         if (kind == ChartSeriesKind.HorizontalBar) chart.AddHorizontalBar("Readings", points);
-        else if (kind == ChartSeriesKind.Waterfall) chart.AddWaterfall("Readings", points).ConfigureWaterfall(options => options.Orientation = ChartOrientation.Horizontal);
+        else if (kind == ChartSeriesKind.Waterfall) chart.AddWaterfall("Readings", points).Waterfall(options => options.Orientation = ChartOrientation.Horizontal);
         else if (kind == ChartSeriesKind.StepLine) chart.AddStepLine("Readings", points);
         else chart.AddLine("Readings", points);
-        chart.Options.LineOrientation = ChartOrientation.Horizontal;
+        chart.Options.Lines.Orientation = ChartOrientation.Horizontal;
         return chart;
     }
 }

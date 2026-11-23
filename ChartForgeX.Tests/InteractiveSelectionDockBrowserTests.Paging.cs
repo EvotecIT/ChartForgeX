@@ -92,11 +92,11 @@ public sealed partial class InteractiveSelectionDockBrowserTests {
     private static Chart PagedReadings(bool dark, int count = 15, bool updated = false) {
         var series = ChartSeries.CreateLine(new ChartSeriesId("paged-readings"), "Readings",
             Enumerable.Range(0, count).Select(index => new ChartPoint(index + 1, (index % 4 + 1) * (updated ? 3 : 2))).ToArray());
-        for (var index = 0; index < count; index++) series.WithObservationId(index, new ChartObservationId("reading-" + index));
-        return Chart.Create().WithSize(680, 380).WithTitle("Selected observations")
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithXLabels(Enumerable.Range(1, count).Select(index => "Observation " + index.ToString("00")).ToArray())
-            .WithLegend(false).AddSeries(series);
+        for (var index = 0; index < count; index++) series.ObservationId(index, new ChartObservationId("reading-" + index));
+        return Chart.Create().Size(680, 380).Title("Selected observations")
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .XLabels(Enumerable.Range(1, count).Select(index => "Observation " + index.ToString("00")).ToArray())
+            .Legend(false).AddSeries(series);
     }
 
     private static async Task<string> DownloadPagedSvgAsync(IPage page) {

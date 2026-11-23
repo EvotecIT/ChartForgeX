@@ -20,9 +20,9 @@ public sealed class PictorialArtworkBrowserTests {
     [InlineData(900, ThemeMode.Dark)]
     public async Task CapturedArtworkAndPartialDirectionSurviveNativeReplacementSelectionAndExports(int width, ThemeMode mode) {
         if (!Enabled) return;
-        var chart = PictorialArtworkRecipe.Create("wide", mode).WithSize(width, 460).WithFontFamily(BrowserProofFonts.Family);
+        var chart = PictorialArtworkRecipe.Create("wide", mode).Size(width, 460).FontFamily(BrowserProofFonts.Family);
         var renderer = new HtmlInteractiveChartRenderer(); var first = renderer.PrepareSection(chart, configure: Options);
-        chart.WithPictorialFillDirection(ChartPictorialFillDirection.BottomToTop); chart.Series[0].Points[0] = new(1, 1.25);
+        chart.Pictorial(p => p.FillDirection(ChartPictorialFillDirection.BottomToTop)); chart.Series[0].Points[0] = new(1, 1.25);
         var next = renderer.PrepareSection(chart, configure: Options);
         await using var session = await BrowserProofFonts.OpenAsync("<style>" + HtmlInteractiveChartRenderer.BuildFragmentStyle() + "</style>"
             + first.Html + "<script>" + HtmlInteractiveChartRenderer.BuildInteractionScript() + "</script>", width + 24, 700);

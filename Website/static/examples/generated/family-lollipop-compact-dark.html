@@ -117,7 +117,7 @@ public static class LollipopRecipe {
         var points = Enumerable.Range(1, 6).Where(index =&gt; variant != &quot;sparse&quot; || index is 1 or 3 or 6)
             .Select(index =&gt; new ChartPoint(index, 20 + index * 7 % 29));
         var orders = new ChartSeries(new ChartSeriesId(&quot;orders&quot;), &quot;Orders&quot;, ChartSeriesKind.Lollipop, points);
-        return Chart.Create().WithXLabels(&quot;Received&quot;, &quot;Packed&quot;, &quot;Shipped&quot;, &quot;In transit&quot;, &quot;Delivered&quot;, &quot;Reviewed&quot;).AddSeries(orders);
+        return Chart.Create().XLabels(&quot;Received&quot;, &quot;Packed&quot;, &quot;Shipped&quot;, &quot;In transit&quot;, &quot;Delivered&quot;, &quot;Reviewed&quot;).AddSeries(orders);
     }
 }
 </code></pre><pre data-visual-theme="dark"><code data-example-source>#region Setup
@@ -157,7 +157,7 @@ public static class LollipopRecipe {
         var points = Enumerable.Range(1, 6).Where(index =&gt; variant != &quot;sparse&quot; || index is 1 or 3 or 6)
             .Select(index =&gt; new ChartPoint(index, 20 + index * 7 % 29));
         var orders = new ChartSeries(new ChartSeriesId(&quot;orders&quot;), &quot;Orders&quot;, ChartSeriesKind.Lollipop, points);
-        return Chart.Create().WithXLabels(&quot;Received&quot;, &quot;Packed&quot;, &quot;Shipped&quot;, &quot;In transit&quot;, &quot;Delivered&quot;, &quot;Reviewed&quot;).AddSeries(orders);
+        return Chart.Create().XLabels(&quot;Received&quot;, &quot;Packed&quot;, &quot;Shipped&quot;, &quot;In transit&quot;, &quot;Delivered&quot;, &quot;Reviewed&quot;).AddSeries(orders);
     }
 }
 </code></pre></section></main><footer><a href="catalog.html">Explore more examples</a><a href="fonts/OFL.txt">Font license</a></footer><script data-gallery-script>(() => {

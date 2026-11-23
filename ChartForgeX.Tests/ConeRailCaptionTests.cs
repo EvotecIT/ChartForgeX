@@ -11,9 +11,9 @@ public sealed class ConeRailCaptionTests {
     [Theory]
     [InlineData(ThemeMode.Light)] [InlineData(ThemeMode.Dark)]
     public void EachStageShowsNameAndValueThenBothRatiosInTheSecondaryColour(ThemeMode mode) {
-        var chart = Chart.Create().WithSize(800, 480).WithTheme(VisualTheme.Graphite(), mode).WithDataLabels(true)
-            .WithXLabels("Visitors", "Sign-ups", "Trials", "Paid", "Renewed")
-            .ConfigureFunnel(options => { options.Form = ChartFunnelForm.Cone; options.Orientation = ChartOrientation.Vertical; options.LabelContent = ChartStageLabelContent.Separate; })
+        var chart = Chart.Create().Size(800, 480).Theme(VisualTheme.Graphite()).ThemeMode(mode).DataLabels(true)
+            .XLabels("Visitors", "Sign-ups", "Trials", "Paid", "Renewed")
+            .Funnel(options => { options.Form = ChartFunnelForm.Cone; options.Orientation = ChartOrientation.Vertical; options.LabelContent = ChartStageLabelContent.Separate; })
             .AddFunnel("Customers", new[] { 12400d, 5270, 2130, 860, 610 }.Select((value, index) => new ChartPoint(index + 1, value)));
         var colors = chart.Options.Theme.Resolve(mode);
         var svg = XDocument.Parse(chart.ToSvg());

@@ -19,7 +19,7 @@ public sealed class VisualCanvasFontTests {
     [InlineData("No Such Family")]
     public void DefaultCanvasFittingKeepsPortableTextAcrossHostFamilies(string family) {
         var theme = VisualTheme.Graphite().WithFontFamily(family);
-        var canvas = VisualCanvas.Create(120, 80).WithTheme(theme)
+        var canvas = VisualCanvas.Create(120, 80).Theme(theme)
             .AddText(10, 10, 80, "iiiiiiiiiiiiiiii", 20, ChartColors.White);
         var text = XDocument.Parse(canvas.ToSvg()).Descendants()
             .Single(element => (string?)element.Attribute("data-cfx-role") == "visual-canvas-text");
@@ -78,7 +78,7 @@ public sealed class VisualCanvasFontTests {
 
     [Fact]
     public void PortableHeroRunsKeepTheDrawnGlyphAdvances() {
-        var canvas = VisualCanvas.Create(600, 130).WithBackdrop(VisualCanvasBackdropStyle.Transparent)
+        var canvas = VisualCanvas.Create(600, 130).BackdropStyle(VisualCanvasBackdropStyle.Transparent)
             .AddHeroTitle(20, 10, 560, 40, new[] { new VisualCanvasTextRun("iiiiii", ChartColors.White), new VisualCanvasTextRun("MMMMMM", ChartColors.White) });
         var png = InkBounds(Png(canvas), 0, 130);
         var svg = InkBounds(SvgRasterizer.ToImage(canvas.ToSvg()), 0, 130);
@@ -88,8 +88,8 @@ public sealed class VisualCanvasFontTests {
     [Fact]
     public void HeroTitlesShrinkToTheirWidthInBothOutputs() {
         const double left = 100, width = 300;
-        var canvas = VisualCanvas.Create(600, 130).WithBackdrop(VisualCanvasBackdropStyle.Transparent)
-            .ConfigureStyle(style => style.TextMeasurementMode = TextMeasurementMode.InstalledFonts)
+        var canvas = VisualCanvas.Create(600, 130).BackdropStyle(VisualCanvasBackdropStyle.Transparent)
+            .Style(style => style.TextMeasurementMode = TextMeasurementMode.InstalledFonts)
             .AddHeroTitle(left, 10, width, 82, new[] { new VisualCanvasTextRun("Power", ChartColors.White), new VisualCanvasTextRun("BGInfo", ChartColors.White) });
         foreach (var image in new[] { Png(canvas), SvgRasterizer.ToImage(canvas.ToSvg()) }) {
             var bounds = InkBounds(image, 0, image.Height);
@@ -115,7 +115,7 @@ public sealed class VisualCanvasFontTests {
     }
 
     private static VisualCanvas Canvas(string family) =>
-        VisualCanvas.Create(600, 130).WithBackdrop(VisualCanvasBackdropStyle.Transparent).WithTheme(VisualTheme.Graphite().WithFontFamily(family)).ConfigureStyle(style => style.TextMeasurementMode = TextMeasurementMode.InstalledFonts);
+        VisualCanvas.Create(600, 130).BackdropStyle(VisualCanvasBackdropStyle.Transparent).Theme(VisualTheme.Graphite().WithFontFamily(family)).Style(style => style.TextMeasurementMode = TextMeasurementMode.InstalledFonts);
 
     private static RgbaImage Png(VisualCanvas canvas) => new PngVisualCanvasRenderer().RenderImage(canvas);
 

@@ -14,11 +14,4 @@ public sealed partial class Chart {
         AppendSeries(series);
         return this;
     }
-
-    /// <summary>Configures Sunburst parent-size interpretation and independent numeric color.</summary>
-    public Chart ConfigureSunburst(Action<ChartSunburstOptions> configure) {
-        if (configure == null) throw new ArgumentNullException(nameof(configure));
-        Options.Sunburst = ChartOptionConfiguration.Configure(Options.Sunburst, configure, options => options.Clone());
-        return this;
-    }
 }

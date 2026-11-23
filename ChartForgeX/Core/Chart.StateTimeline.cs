@@ -11,7 +11,7 @@ public sealed partial class Chart {
     /// </summary>
     /// <param name="states">The states in legend order. Keys must be unique.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithStateCategories(IEnumerable<ChartStateCategory> states) {
+    public Chart StateCategories(IEnumerable<ChartStateCategory> states) {
         if (states == null) throw new ArgumentNullException(nameof(states));
         var materialized = new List<ChartStateCategory>();
         var keys = new HashSet<string>(StringComparer.Ordinal);
@@ -21,15 +21,15 @@ public sealed partial class Chart {
             materialized.Add(state);
         }
 
-        Options.StateCategories.Clear();
-        Options.StateCategories.AddRange(materialized);
+        Options.StateTimeline.Categories.Clear();
+        Options.StateTimeline.Categories.AddRange(materialized);
         return this;
     }
 
     /// <summary>Registers the categorical states used by state timelines and categorical heatmaps, in legend order.</summary>
     /// <param name="states">The states in legend order. Keys must be unique.</param>
     /// <returns>The current chart.</returns>
-    public Chart WithStateCategories(params ChartStateCategory[] states) => WithStateCategories((IEnumerable<ChartStateCategory>)states);
+    public Chart StateCategories(params ChartStateCategory[] states) => StateCategories((IEnumerable<ChartStateCategory>)states);
 
     /// <summary>
     /// Adds one state timeline lane: an entity such as a server or service with its state intervals over time.

@@ -81,7 +81,7 @@ public sealed class TopologyInterchangeRestorationTests {
         var chart = envelope.ToTopologyChart();
         Assert.Equal(authoredWaypoints, chart.Edges[0].Waypoints.Select(point => (point.X, point.Y)));
         Assert.DoesNotContain(chart.Edges[0].Waypoints, point => point.X == -123456);
-        chart.WithEdgeRouteLane(chart.Edges[0].Id, 17);
+        chart.EdgeRouteLane(chart.Edges[0].Id, 17);
         var edited = chart.ToVisualArtifact().ToInterchangeEnvelope();
         Assert.Equal(17, edited.Edges[0].Topology!.RouteLane); Assert.Equal(0, envelope.Edges[0].Topology!.RouteLane);
         Assert.Equal(-123456, envelope.Edges[0].ResolvedRoute[0].X);
@@ -105,7 +105,7 @@ public sealed class TopologyInterchangeRestorationTests {
 
     [Fact]
     public void NestedCompartmentPresentationAndGroupEdgeEndpointsRestoreWithoutFlatteningTheirIdentities() {
-        var source = TopologyChart.Create().WithViewport(1000, 500);
+        var source = TopologyChart.Create().Viewport(new TopologyViewport(1000, 500));
         source.Groups.Add(new TopologyGroup { Id = "outer", Label = "Transaction", X = 20, Y = 20, Width = 700, Height = 280 });
         source.Groups.Add(new TopologyGroup { Id = "before", Label = "Before", ParentGroupId = "outer", Presentation = TopologyGroupPresentation.Compartment,
             LayoutDirection = TopologyLayoutDirection.LeftToRight, X = 25, Y = 60, Width = 340, Height = 230, BackgroundColor = "#EEF2FF", BorderColor = "#2563EB" });
@@ -127,9 +127,9 @@ public sealed class TopologyInterchangeRestorationTests {
     }
 
     internal static TopologyChart Source(bool dark, int width) {
-        var chart = TopologyChart.Create().WithId("portable-topology").WithTitle("Editable request route")
-            .WithTheme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithViewport(width, 520).WithRenderOptions(new TopologyRenderOptions { IncludeLegend = true, WrapNodeLabels = true });
+        var chart = TopologyChart.Create().Id("portable-topology").Title("Editable request route")
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Viewport(new TopologyViewport(width, 520)).DefaultRenderOptions(new TopologyRenderOptions { IncludeLegend = true, WrapNodeLabels = true });
         chart.Accessibility.Name = "Imported request graph"; chart.Accessibility.Language = "en";
         chart.Groups.Add(new TopologyGroup { Id = "region", Label = "Service region", X = 24, Y = 30, Width = 640, Height = 240,
             Color = "#2563EB", Status = TopologyHealthStatus.Healthy });
@@ -150,7 +150,7 @@ public sealed class TopologyInterchangeRestorationTests {
             Label = "Dispatch", StrokeWidth = 2.5, Opacity = .8, SourceMarker = TopologyMarkerKind.Circle, TargetMarker = TopologyMarkerKind.Arrow,
             LabelAnchorNodeId = "source", LabelAnchorX = 290, LabelAnchorY = 150, HasLabelAnchorOverride = true };
         edge.DashPattern.AddRange(new[] { 6d, 2d }); edge.Waypoints.Add(new ChartPoint(310, 125)); edge.Waypoints.Add(new ChartPoint(350, 125));
-        edge.Metadata["route.fact"] = "opaque"; edge.Metrics["latency"] = "41"; chart.Edges.Add(edge); chart.WithEdgeRouteLane("request", 0);
+        edge.Metadata["route.fact"] = "opaque"; edge.Metrics["latency"] = "41"; chart.Edges.Add(edge); chart.EdgeRouteLane("request", 0);
         chart.Legend = TopologyLegend.Create("Route key").AddNodeKind("Service", TopologyNodeKind.Server).AddEdgeKind("Request", TopologyEdgeKind.Generic);
         var scenario = new TopologyScenario { Id = "delivery", Label = "Delivery path", LoopPlayback = true, AutoPlay = false, Spotlight = true };
         scenario.Metadata["kind"] = "path"; scenario.Steps.Add(new TopologyScenarioStep { Id = "source", Kind = TopologyScenarioStepKind.Node });

@@ -42,8 +42,8 @@ public sealed partial class StandaloneViewportBrowserTests {
     [InlineData(ChartSeriesKind.Area)]
     public async Task CategoryAcquisitionUsesHorizontalDistanceAcrossTheWholePlot(ChartSeriesKind kind) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(800, 440).WithTheme(VisualTheme.Graphite(), ThemeMode.Light)
-            .WithXLabels("Monday", "Tuesday", "Wednesday").WithDataLabels(false)
+        var chart = Chart.Create().Size(800, 440).Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Light)
+            .XLabels("Monday", "Tuesday", "Wednesday").DataLabels(false)
             .AddSeries(new ChartSeries(new ChartSeriesId("week"), "Requests", kind, ChartPoints.FromValues(0, 100, 0)));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => options.Tooltip.Mode = HtmlChartTooltipMode.Single), 980, 800);
         var page = session.Page;
@@ -63,8 +63,8 @@ public sealed partial class StandaloneViewportBrowserTests {
     [InlineData(false)]
     public async Task PaintedBarInteriorWinsOverAnOverlaidLine(bool tooltips) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(800, 440).WithTheme(VisualTheme.Graphite(), ThemeMode.Light)
-            .WithXLabels("Monday", "Tuesday", "Wednesday").WithDataLabels(false)
+        var chart = Chart.Create().Size(800, 440).Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Light)
+            .XLabels("Monday", "Tuesday", "Wednesday").DataLabels(false)
             .AddBar("Capacity", ChartPoints.FromValues(90, 90, 90))
             .AddLine("Requests", ChartPoints.FromValues(88, 88, 88));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
@@ -84,7 +84,7 @@ public sealed partial class StandaloneViewportBrowserTests {
     [BrowserFact]
     public async Task HorizontalCrosshairPutsTheValueOnXAndCategoryOnY() {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(640, 360).WithXAxisBounds(0, 10).WithYAxisBounds(.5, 3.5)
+        var chart = Chart.Create().Size(640, 360).XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(.5, 3.5))
             .AddSeries(new ChartSeries(new ChartSeriesId("requests"), "Requests", ChartSeriesKind.HorizontalBar, ChartPoints.FromValues(2, 7, 4)));
         chart.Options.YAxis.Labels.AddRange(new[] { new ChartAxisLabel(1, "Monday"), new ChartAxisLabel(2, "Tuesday"), new ChartAxisLabel(3, "Wednesday") });
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), 980, 800);
@@ -100,8 +100,8 @@ public sealed partial class StandaloneViewportBrowserTests {
     [InlineData(true, 375)]
     public async Task RadarFillResolvesASpokeAndShowsEveryVisibleSeriesValue(bool dark, int width) {
         if (!Enabled) return;
-        var chart = Chart.Create().WithSize(800, 440).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithXLabels("Speed", "Coverage", "Capacity", "Quality", "Recovery", "Support").WithDataLabels(false)
+        var chart = Chart.Create().Size(800, 440).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .XLabels("Speed", "Coverage", "Capacity", "Quality", "Recovery", "Support").DataLabels(false)
             .AddSeries(new ChartSeries(new ChartSeriesId("observed"), "Observed", ChartSeriesKind.Radar, ChartPoints.FromValues(27, 34, 41, 48, 26, 33)))
             .AddSeries(new ChartSeries(new ChartSeriesId("expected"), "Expected", ChartSeriesKind.Radar, ChartPoints.FromValues(39, 48, 55, 61, 40, 46)));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(), width, 812);

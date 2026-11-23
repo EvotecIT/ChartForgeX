@@ -11,7 +11,7 @@ public sealed class NativeReflowPreserveBeforeControls {
     [Theory]
     [InlineData("line", false, false)] [InlineData("bar", true, false)] [InlineData("line", false, true)] [InlineData("bar", true, true)]
     public void IncumbentWholeSeriesVisibilityAndGroupedLabelBytesRemainExact(string kind, bool hidden, bool labels) {
-        var chart = NativeReflowVisibilityBeforeControls.Model(kind).WithLegend(true).WithDataLabels(labels);
+        var chart = NativeReflowVisibilityBeforeControls.Model(kind).Legend(true).DataLabels(labels);
         var renderer = new HtmlInteractiveChartRenderer(); var view = new ChartVisibilityView(hidden ? new[] { new ChartSeriesId("delivery") } : null,
             labels ? ChartVisibilityLabelLayering.GroupWithSeries : ChartVisibilityLabelLayering.PreserveOverlay);
         var first = renderer.PrepareVisibilitySection(chart, view); var second = renderer.PrepareVisibilitySection(chart, view);

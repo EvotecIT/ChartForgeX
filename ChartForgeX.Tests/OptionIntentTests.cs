@@ -14,13 +14,13 @@ public sealed class OptionIntentTests {
     [Fact]
     public void CanonicalStyleGettersDescribeTheActualPreparedDefaultsAndApplyDirectAssignments() {
         var chart = Chart.Create().AddBar("Counts", Values);
-        Assert.Equal(ChartBarStyle.Flat, chart.Options.BarVisualStyle.Kind);
+        Assert.Equal(ChartBarStyle.Flat, chart.Options.Bars.VisualStyle.Kind);
         Assert.False(chart.Options.GridLineStyle.ShowVerticalLines);
-        Assert.Equal(0, chart.Options.LineVisualStyle.HaloOpacity);
-        Assert.Equal(chart.Options.BarVisualStyle.Kind, new ChartBarVisualStyle().Kind);
+        Assert.Equal(0, chart.Options.Lines.VisualStyle.HaloOpacity);
+        Assert.Equal(chart.Options.Bars.VisualStyle.Kind, new ChartBarVisualStyle().Kind);
         Assert.Equal(chart.Options.GridLineStyle.ShowVerticalLines, new ChartGridLineStyle().ShowVerticalLines);
-        Assert.Equal(chart.Options.LineVisualStyle.HaloOpacity, new ChartLineVisualStyle().HaloOpacity);
-        chart.Options.BarVisualStyle.Kind = ChartBarStyle.Solid;
+        Assert.Equal(chart.Options.Lines.VisualStyle.HaloOpacity, new ChartLineVisualStyle().HaloOpacity);
+        chart.Options.Bars.VisualStyle.Kind = ChartBarStyle.Solid;
         chart.Options.GridLineStyle.ShowVerticalLines = true;
         var prepared = chart.Prepare(new VisualRenderContext());
         Assert.Contains(prepared.Scene.Nodes.OfType<VisualSceneGradient>(), node => node.Role == "bar");
@@ -40,13 +40,13 @@ public sealed class OptionIntentTests {
         var inherited = chart.Prepare(context);
         Assert.All(inherited.Scene.Nodes.OfType<VisualSceneRectangle>().Where(node => node.Role == "bar"), node => Assert.Equal(7, node.Radius));
         Assert.All(inherited.Scene.Nodes.OfType<VisualSceneLine>().Where(node => node.Role == "grid-y"), node => Assert.Equal(3, node.StrokeWidth));
-        chart.ConfigureBarVisualStyle(_ => { }); chart.ConfigureGridStyle(_ => { });
+        chart.Bars(bars => bars.VisualStyle(_ => { })); chart.GridLineStyle(_ => { });
         Assert.Equal(inherited.ToSvg(), chart.Prepare(context).ToSvg());
         if (callback) {
-            chart.ConfigureBarVisualStyle(style => style.CornerRadius = 0);
-            chart.ConfigureGridStyle(style => style.StrokeWidth = 1);
+            chart.Bars(bars => bars.VisualStyle(style => style.CornerRadius = 0));
+            chart.GridLineStyle(style => style.StrokeWidth = 1);
         } else {
-            chart.Options.BarVisualStyle.CornerRadius = 0;
+            chart.Options.Bars.VisualStyle.CornerRadius = 0;
             chart.Options.GridLineStyle.StrokeWidth = 1;
         }
         var explicitDefaults = chart.Prepare(context);
@@ -77,22 +77,34 @@ public sealed class OptionIntentTests {
     }
 
     [Fact]
+    public void ClearingADecorationStyleRestoresTheInheritedDecoration() {
+        var inherited = new TextStyle { UnderlineStyle = TextDecorationStyle.Double, StrikethroughStyle = TextDecorationStyle.Dotted };
+        var cleared = new TextStyleOverride { Underline = true, Strikethrough = false };
+        cleared.UnderlineStyle = null;
+        cleared.StrikethroughStyle = null;
+        var resolved = cleared.Resolve(inherited);
+        Assert.Equal(TextDecorationStyle.Double, resolved.UnderlineStyle);
+        Assert.Equal(TextDecorationStyle.Dotted, resolved.StrikethroughStyle);
+        Assert.False(cleared.HasOverrides);
+    }
+
+    [Fact]
     public void DefaultValuedFamilyAssignmentsRemainAuthoredForCompatibilityValidation() {
         var mapOptionsOnLine = Chart.Create().AddLine("Trend", Values);
-        mapOptionsOnLine.ConfigureMapColorDimension(options => options.ShowLegend = true);
+        mapOptionsOnLine.Map(map => map.ColorDimension(options => options.ShowLegend = true));
         Assert.Throws<InvalidOperationException>(() => mapOptionsOnLine.Prepare(new VisualRenderContext()));
         var colorOptionsOnLine = Chart.Create().AddLine("Trend", Values);
         colorOptionsOnLine.Series[0].ColorDimension.ValueFormat = null;
         Assert.Throws<InvalidOperationException>(() => colorOptionsOnLine.Prepare(new VisualRenderContext()));
         var financialOptionsOnLine = Chart.Create().AddLine("Trend", Values);
-        financialOptionsOnLine.Series[0].ConfigureFinancial(options => options.Rising.Stroke = null);
+        financialOptionsOnLine.Series[0].Financial(options => options.Rising.Stroke = null);
         Assert.Throws<InvalidOperationException>(() => financialOptionsOnLine.Prepare(new VisualRenderContext()));
     }
 
     [Fact]
     public void PaginationPreservesUnspecifiedAndExplicitFalseTypography() {
         var grid = ChartGrid.Create().Add(Chart.Create().AddLine("Trend", Values));
-        grid.ConfigureSubtitleStyle(style => style.Italic = false);
+        grid.SubtitleStyle(style => style.Italic = false);
         var page = Assert.Single(grid.Paginate()).Grid;
         Assert.False(page.TitleStyle.HasOverrides);
         Assert.True(page.SubtitleStyle.HasOverrides);

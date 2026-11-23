@@ -60,8 +60,8 @@ internal static partial class Program {
         var values = ChartSeries.CreateLine(new ChartSeriesId("package-values"), "Values",
             new[] { new ChartPoint(1, 2), new ChartPoint(2, 3) });
         var bubble = ChartSeries.CreateBubble(new ChartSeriesId("0"), "Values", new[] { new ChartBubble(1.5, 2.5, 7) })
-            .WithObservationId(0, new ChartObservationId("package-bubble"));
-        var chart = Chart.Create().WithTitle("Package smoke").WithSize(320, 180)
+            .ObservationId(0, new ChartObservationId("package-bubble"));
+        var chart = Chart.Create().Title("Package smoke").Size(320, 180)
             .AddSeries(values).AddSeries(bubble);
         PackageAssertions.Require(ReferenceEquals(chart.Series[0], values) && ReferenceEquals(chart.Series[1], bubble),
             "Packed chart attachment did not retain the authored series handles.");
@@ -85,7 +85,7 @@ internal static partial class Program {
             options.Localization[HtmlChartText.Pinned] = "Przypięte";
             options.Interaction.Enable(ChartInteractionFeatures.Zoom | ChartInteractionFeatures.Pan | ChartInteractionFeatures.Brush | ChartInteractionFeatures.Export | ChartInteractionFeatures.SynchronizedCharts);
             options.Interaction.AddScenario("package-series", "Selected series", scenario => scenario.AddSeriesStep(bubble.Id, "Bubble observation"));
-            options.Interaction.WithActiveScenario("package-series");
+            options.Interaction.ActiveScenario("package-series");
         });
         PackageAssertions.Require(html.Contains("lang=\"pl-PL\"", StringComparison.Ordinal)
             && html.Contains("data-cfx-pinned-label=\"Przypięte\"", StringComparison.Ordinal),
@@ -237,8 +237,8 @@ internal static partial class Program {
     private static void NativeViewportSection() {
         var observations = ChartSeries.CreateLine(new ChartSeriesId("native-values"), "Native values",
             new[] { new ChartPoint(0, -100), new ChartPoint(5, 4), new ChartPoint(10, 100) })
-            .WithObservationId(1, new ChartObservationId("native-middle"));
-        var chart = Chart.Create().WithSize(520, 320).WithLegend(false).WithXAxisBounds(0, 10).AddSeries(observations);
+            .ObservationId(1, new ChartObservationId("native-middle"));
+        var chart = Chart.Create().Size(520, 320).Legend(false).XAxis(x => x.Bounds(0, 10)).AddSeries(observations);
         var renderer = new HtmlInteractiveChartRenderer();
         var full = renderer.PrepareSection(chart, null);
         var projection = full.PreparedVisual.XProjection ?? throw new InvalidOperationException("Packed HTML section omitted its native X projection.");
@@ -256,15 +256,15 @@ internal static partial class Program {
             .SequenceEqual(narrowed.PreparedVisual.Regions.Where(region => region.Role == "axis-y-label").Select(region => region.Label)),
             "Packed viewport changed the full-data Y domain.");
         PackageAssertions.Png(narrowed.PreparedVisual.ToPng());
-        PackageAssertions.Require(renderer.PrepareSection(chart, null).Html == full.Html && chart.Options.XAxis.Minimum == 0 && chart.Options.XAxis.Maximum == 10,
+        PackageAssertions.Require(renderer.PrepareSection(chart, null).Html == full.Html && chart.Options.XAxis.Min == 0 && chart.Options.XAxis.Max == 10,
             "Packed native reset did not recover the full section or mutated authored bounds.");
     }
     private static void NativeCartesianAndDrawingSection() {
-        var chart = Chart.Create().WithSize(800, 480).WithTitle("Packed native exploration")
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 100).WithLegend(false)
+        var chart = Chart.Create().Size(800, 480).Title("Packed native exploration")
+            .XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 100)).Legend(false)
             .AddSeries(ChartSeries.CreateLine(new ChartSeriesId("measurements"), "Measurements",
                 new[] { new ChartPoint(0, 10), new ChartPoint(5, 40), new ChartPoint(10, 90) })
-                .WithObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("middle"), new ChartObservationId("last") }))
+                .ObservationIds(new[] { new ChartObservationId("first"), new ChartObservationId("middle"), new ChartObservationId("last") }))
             .AddNote(new ChartPoint(5, 40), "Review", id: new ChartAnnotationId("review"));
         void Configure(HtmlChartInteractionOptions options) {
             options.Interaction.ChartId = "packed-depth";
@@ -277,7 +277,7 @@ internal static partial class Program {
         var full = renderer.PrepareSection(chart, null, Configure);
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 480), chart.Options.Padding),
             chart.Options.Theme, chart.Options.ThemeMode, new VisualFrame(chart.Title, chart.Subtitle, showLegend: false,
-                legendPosition: chart.Options.LegendPosition, showSurface: chart.Options.ShowPlotBackground,
+                legendPosition: chart.Options.Legend.Position, showSurface: chart.Options.ShowPlotBackground,
                 transparentBackground: chart.Options.TransparentBackground, showCard: chart.Options.ShowCard));
         var nativeFull = chart.Prepare(context, null);
         PackageAssertions.Require(full.PreparedVisual.ToSvg() == nativeFull.ToSvg()
@@ -318,7 +318,7 @@ internal static partial class Program {
         var edited = renderer.PrepareSection(chart, requested, Configure);
         var reset = renderer.PrepareSection(chart, null, Configure);
         PackageAssertions.Require(full.PreparedVisual.YProjection?.Minimum == 0 && reset.PreparedVisual.YProjection?.Maximum == 100
-            && chart.Options.XAxis.Minimum == 0 && chart.Options.YAxis.Maximum == 100,
+            && chart.Options.XAxis.Min == 0 && chart.Options.YAxis.Max == 100,
             "Packed native exploration mutated authored bounds or lost the full reset domain.");
         chart.RemoveAnnotation(new ChartAnnotationId("review"));
         PackageAssertions.Require(annotations.Count == 0 && window.PreparedVisual.ToSvg() == windowSvg
@@ -337,7 +337,7 @@ internal static partial class Program {
         PackageAssertions.Require(!parsed.HasErrors && parsed.Diagnostics.Count == 0, "Packed radar style parser failed.");
         var chart = parsed.Document!.ToChart();
         PackageAssertions.Require(chart.Series[0].Color?.Equals(ChartColor.FromHex("#2563EB")) == true
-            && chart.Series[0].Radar.OutlineStroke!.Width == 0 && chart.Options.PolarAxisStroke!.Width == 3,
+            && chart.Series[0].Radar.OutlineStroke!.Width == 0 && chart.Options.Polar.AxisStroke!.Width == 3,
             "Packed radar theme settings did not reach native owners.");
         var markup = CreateFixtureParser().Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(!markup.HasErrors && markup.Artifacts.Count == 1

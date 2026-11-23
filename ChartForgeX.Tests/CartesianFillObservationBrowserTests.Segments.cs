@@ -42,7 +42,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
     public async Task DisconnectedScalarObservationCannotBorrowAnotherSegmentsNativeFill(ChartSeriesKind kind, bool terminal, bool patternOnly) {
         if (!Enabled) return;
         var chart = BrokenScalarChart(kind, terminal);
-        if (patternOnly) chart.Series[0].WithFillPattern(ChartFillPattern.Crosshatch);
+        if (patternOnly) chart.Series[0].FillPattern(ChartFillPattern.Crosshatch);
         await AssertAvailabilityAsync(chart, 4, false,
             $"scalar-disconnected-{kind}-{terminal}-{patternOnly}", patternOnly, captureScalarInk: true);
     }
@@ -67,7 +67,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
     public async Task DisconnectedPairedObservationCannotBorrowAnotherSegmentsNativeFill(ChartSeriesKind kind, bool patternOnly) {
         if (!Enabled) return;
         var chart = BrokenPairedChart(kind);
-        if (patternOnly) chart.Series[0].WithFillPattern(ChartFillPattern.Crosshatch);
+        if (patternOnly) chart.Series[0].FillPattern(ChartFillPattern.Crosshatch);
         await AssertAvailabilityAsync(chart, 4, false, $"paired-disconnected-{kind}-{patternOnly}", patternOnly);
     }
 
@@ -97,7 +97,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
             chart.Series[0].UpdateRange(4, new ChartRangeBand(point.X, point.Lower, point.Upper, true));
         }
         Configure(chart, ChartStepPosition.Start);
-        if (kind == ChartSeriesKind.DifferenceArea) chart.Series[0].WithColor(ChartColor.Transparent).ConfigureDifferenceArea(options => {
+        if (kind == ChartSeriesKind.DifferenceArea) chart.Series[0].Color(ChartColor.Transparent).DifferenceArea(options => {
             options.PositiveFill = ChartColor.FromHex("#DF3040"); options.NegativeFill = ChartColor.FromHex("#305CDF");
             options.PositiveFillOpacity = .8; options.NegativeFillOpacity = .8;
         });
@@ -111,7 +111,7 @@ public sealed partial class CartesianFillObservationBrowserTests {
         if (terminal) { points.Add(new ChartPoint(1, 2)); points.Add(new ChartPoint(2, 2)); }
         var chart = Frame().AddSeries(new ChartSeries(new ChartSeriesId("observed"), "Observed", kind, points));
         Configure(chart, ChartStepPosition.Start);
-        if (!terminal && kind != ChartSeriesKind.StepArea) chart.Series[0].WithInterpolation(ChartInterpolation.Linear);
+        if (!terminal && kind != ChartSeriesKind.StepArea) chart.Series[0].Interpolation(ChartInterpolation.Linear);
         return chart;
     }
 }

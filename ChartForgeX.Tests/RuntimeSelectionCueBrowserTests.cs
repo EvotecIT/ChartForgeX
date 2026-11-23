@@ -96,12 +96,12 @@ public sealed partial class RuntimeSelectionCueBrowserTests {
         var values = reordered ? new[] { 4d, 6d, 9d } : new[] { 7d, 3d, zero ? 0d : 2d };
         var series = new ChartSeries(new ChartSeriesId("parts"), "Parts", kind,
             values.Select((value, index) => new ChartPoint(index + 1, horizontal ? 3 : value)))
-            .WithObservationIds(ids.Select(id => new ChartObservationId(id)).ToArray())
-            .WithPointColor(1, ChartColor.FromRgb(40, 120, 200).WithOpacity(.65));
-        var chart = Chart.Create().WithSize(640, 360).WithTitle("Persistent observation cues")
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithXLabels(reordered ? new[] { "C", "B", "A" } : new[] { "A", "B", "C" }).AddSeries(series);
-        return kind == ChartSeriesKind.Bar ? chart.WithBarStyle(ChartBarStyle.Flat) : chart;
+            .ObservationIds(ids.Select(id => new ChartObservationId(id)).ToArray())
+            .PointColor(1, ChartColor.FromRgb(40, 120, 200).WithOpacity(.65));
+        var chart = Chart.Create().Size(640, 360).Title("Persistent observation cues")
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .XLabels(reordered ? new[] { "C", "B", "A" } : new[] { "A", "B", "C" }).AddSeries(series);
+        return kind == ChartSeriesKind.Bar ? chart.Bars(b => b.Style(ChartBarStyle.Flat)) : chart;
     }
 
     private static void Options(HtmlChartInteractionOptions options, bool dim, bool keyboard) {

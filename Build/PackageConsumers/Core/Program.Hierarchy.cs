@@ -7,12 +7,12 @@ using ChartForgeX.Rendering;
 internal static partial class Program {
     private static void HierarchySubtreeContracts() {
         foreach (var kind in new[] { ChartSeriesKind.Treemap, ChartSeriesKind.Sunburst }) {
-            var chart = Chart.Create().WithSize(520, 360).WithLegend(false).WithDataLabels(false);
+            var chart = Chart.Create().Size(520, 360).Legend(false).DataLabels(false);
             var items = new[] { new ChartHierarchyItem("root", "All"), new ChartHierarchyItem("team", "Team", "root"),
                 new ChartHierarchyItem("api", "API", "team", 4), new ChartHierarchyItem("worker", "Worker", "team", 6),
                 new ChartHierarchyItem("other", "Other", "root", 10) };
             if (kind == ChartSeriesKind.Treemap) chart.AddTreemap("Work", items);
-            else chart.AddSunburst("Work", items).ConfigureSunburst(options => { options.SectorGap = 6; options.MinimumLabelFontSize = 9; options.CornerRadius = 4; });
+            else chart.AddSunburst("Work", items).Sunburst(options => { options.SectorGap = 6; options.MinimumLabelFontSize = 9; options.CornerRadius = 4; });
             var context = DepthContext(chart, showLegend: false);
             var original = chart.Prepare(context); var view = chart.PrepareHierarchy(context, new ChartHierarchyView("team"));
             var xml = XDocument.Parse(view.ToSvg());

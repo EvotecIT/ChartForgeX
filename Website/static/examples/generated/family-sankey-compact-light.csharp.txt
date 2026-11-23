@@ -51,10 +51,10 @@ public static class SankeyRecipe {
         if (variant != "sparse") {
             // Channels and processing paths take series colours; outcomes take the theme's status colours.
             var colors = VisualTheme.Graphite().Resolve(mode);
-            for (var index = 0; index < 5; index++) requests.WithPointColor(index, colors.Palette[index]);
-            requests.WithNodeState("completed", ChartSeriesState.Success)
-                .WithNodeState("review", ChartSeriesState.Warning)
-                .WithNodeState("rejected", ChartSeriesState.Danger);
+            for (var index = 0; index < 5; index++) requests.PointColor(index, colors.Palette[index]);
+            requests.NodeState("completed", ChartSeriesState.Success)
+                .NodeState("review", ChartSeriesState.Warning)
+                .NodeState("rejected", ChartSeriesState.Danger);
         }
         return Chart.Create().AddSeries(requests);
     }

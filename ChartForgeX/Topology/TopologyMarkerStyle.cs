@@ -1,5 +1,6 @@
 using System;
 using ChartForgeX.Primitives;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Topology;
 
@@ -8,6 +9,7 @@ namespace ChartForgeX.Topology;
 /// endpoint tangent in topology units. StrokeWidth uses topology units independently of Scale; null inherits
 /// the axis stroke. Viewport fitting applies once to geometry, offset and stroke. A captured prepared style
 /// stores that fitted presentation. Null style retains ordinary marker geometry and paint.</remarks>
+[Fluent(Copy = nameof(Clone))]
 public sealed class TopologyMarkerStyle {
     private double _scale = 1, _offset;
     private double? _strokeWidth;

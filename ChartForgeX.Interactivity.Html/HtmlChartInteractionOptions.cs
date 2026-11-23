@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using ChartForgeX.Interactivity;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Interactivity.Html;
 
 /// <summary>
 /// Holds settings used by the self-contained HTML interaction adapter.
 /// </summary>
+[Fluent]
 public sealed class HtmlChartInteractionOptions {
     private string? _pageTitle;
     private string? _idScope;

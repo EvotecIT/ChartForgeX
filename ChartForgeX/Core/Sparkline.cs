@@ -1,6 +1,7 @@
 using System;
 using ChartForgeX.Primitives;
 using ChartForgeX.Rendering;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
@@ -15,6 +16,7 @@ public enum SparklineStyle {
 }
 
 /// <summary>A compact chart over the shared Cartesian compiler, with explicit missing-observation semantics.</summary>
+[Fluent]
 public sealed class Sparkline : IVisualRenderable {
     private SparklineStyle _style;
 
@@ -39,26 +41,19 @@ public sealed class Sparkline : IVisualRenderable {
     public ChartValueFormat ValueFormat { get => _valueFormat; set => _valueFormat = value ?? throw new ArgumentNullException(nameof(value)); }
     private ChartValueFormat _valueFormat = ChartValueFormat.Compact();
 
-    /// <summary>Sets the mark style and optional curve interpolation.</summary>
-    public Sparkline WithStyle(SparklineStyle style, bool smooth = false) { Style = style; Smooth = smooth; return this; }
-    /// <summary>Sets the optional series colour.</summary>
-    public Sparkline WithColor(ChartColor? color) { Color = color; return this; }
-    /// <summary>Sets the shared numeric display policy.</summary>
-    public Sparkline WithValueFormat(ChartValueFormat format) { ValueFormat = format; return this; }
-
     /// <summary>Prepares compact marks through the same compiler and frame contract as a full Cartesian chart.</summary>
     public PreparedVisual Prepare(VisualRenderContext context) {
         if (context == null) throw new ArgumentNullException(nameof(context));
         if (Style == SparklineStyle.Bars && Smooth) throw new InvalidOperationException("Bar sparklines do not use curve interpolation.");
-        var chart = Chart.Create().WithSparkline().WithValueFormat(ValueFormat);
+        var chart = Chart.Create().Sparkline().ValueFormat(ValueFormat);
         if (Style == SparklineStyle.Bars) {
             // Sample coordinates are one-based centres. Reserve a complete slot on both ends,
             // and keep the original slot count even when missing observations produce no points.
-            chart.Options.XAxis.WithBounds(.5, Data.Values.Count + .5);
+            chart.Options.XAxis.Bounds(.5, Data.Values.Count + .5);
             chart.Options.SparklineSampleCount = Data.Values.Count;
-        } else chart.Options.XAxis.WithBounds(Data.Values.Count == 1 ? 0 : 1, Data.Values.Count == 1 ? 2 : Data.Values.Count);
-        chart.Options.YAxis.WithBounds(Data.Minimum, Data.Maximum);
-        chart.Options.LineMarkerMode = Data.Values[Data.Values.Count - 1].HasValue ? ChartLineMarkerMode.Last : ChartLineMarkerMode.None;
+        } else chart.Options.XAxis.Bounds(Data.Values.Count == 1 ? 0 : 1, Data.Values.Count == 1 ? 2 : Data.Values.Count);
+        chart.Options.YAxis.Bounds(Data.Minimum, Data.Maximum);
+        chart.Options.Lines.MarkerMode = Data.Values[Data.Values.Count - 1].HasValue ? ChartLineMarkerMode.Last : ChartLineMarkerMode.None;
         var kind = Style == SparklineStyle.Bars ? ChartSeriesKind.Bar : Style == SparklineStyle.Area ? ChartSeriesKind.Area : ChartSeriesKind.Line;
         var points = Data.ToPoints();
         if (Style == SparklineStyle.Bars) {

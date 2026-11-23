@@ -66,15 +66,15 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
 
     private static GraphScene GraphIconFixture() {
         // The existing relationship-overview fixture supplies prepared cards and retained long-label facts.
-        var topology = TopologyChart.Create().WithId("relationship-overview").WithTitle("Relationship overview")
-            .WithLayout(TopologyLayoutMode.RelationshipRadial)
+        var topology = TopologyChart.Create().Id("relationship-overview").Title("Relationship overview")
+            .LayoutMode(TopologyLayoutMode.RelationshipRadial)
             .AddAutoIconNode("a", "alpha.example", "microsoft-ad:domain", TopologyHealthStatus.Healthy, subtitle: "Domain", width: 180, height: 72)
             .AddAutoIconNode("b", "beta.example", "microsoft-ad:domain", TopologyHealthStatus.Warning, subtitle: "Domain", width: 180, height: 72)
             .AddAutoNode("c", "gamma.example", TopologyNodeKind.Namespace, TopologyHealthStatus.Critical, subtitle: "Domain", width: 180, height: 72, symbol: "AD")
             .AddAutoNode("d", "KERBEROS.MICROSOFTONLINE.COM😀", TopologyNodeKind.Namespace, TopologyHealthStatus.Unknown, subtitle: "Domain", width: 180, height: 72, symbol: "AD")
             .AddEdge("a-b", "a", "b", "Forest · Bidirectional", TopologyEdgeKind.Trust, TopologyHealthStatus.Warning, VisualLinkDirection.Bidirectional)
             .AddEdge("a-c", "a", "c", "External · Outbound", TopologyEdgeKind.Trust, TopologyHealthStatus.Critical, VisualLinkDirection.Forward);
-        topology.WithNodeDisplay("a", TopologyNodeDisplayMode.Card).WithNodeDisplay("b", TopologyNodeDisplayMode.Card).WithNodeBadge("d", "+1234567890");
+        topology.UpdateNode("a", n => n.DisplayMode(TopologyNodeDisplayMode.Card).Badge(null)).UpdateNode("b", n => n.DisplayMode(TopologyNodeDisplayMode.Card).Badge(null)).UpdateNode("d", n => n.Badge("+1234567890"));
         var graph = topology.ToGraphScene();
         for (var index = 0; index < graph.Nodes.Count; index++) graph.Nodes[index].Style.BackgroundColor = index < 2 ? "#ffffff" : "#0f172a";
         return graph;

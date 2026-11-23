@@ -33,7 +33,7 @@ public sealed class RetainedAppearanceFrameContracts {
     [InlineData(false)] [InlineData(true)]
     public void VisibilityBindsActualSourceViewAndPolicyThroughTheCanonicalPreserveAndReflowOwners(bool reflow) {
         var chart = reflow ? NativeReflowVisibilityBeforeControls.Model("line") : NativeSeriesVisibilityDefaultControls.Model("line");
-        chart.WithDataLabels(false);
+        chart.DataLabels(false);
         var context = VisualExportRequest.ForChart(chart).Context;
         ChartVisibilityView View(bool hide) => reflow
             ? new ChartVisibilityView(hide ? new[] { ChartVisibilityTarget.Observation(chart.Series[0].Id, new ChartObservationId("current")) }

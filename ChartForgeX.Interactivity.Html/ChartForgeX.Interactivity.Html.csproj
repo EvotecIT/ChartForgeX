@@ -20,7 +20,7 @@
     <Version>$(ChartForgeXProductVersion)</Version>
     <Authors>Evotec</Authors>
     <Description>Self-contained HTML, SVG, and graph explorer interaction adapter for ChartForgeX charts and graph scenes.</Description>
-    <PackageReleaseNotes>Optional browser data charts with native layout policy, responsive updates, keyboard selection and deterministic disposal. Coordinated ChartForgeX 5.0.0 release: the shared ThemeMode replaces VisualThemeMode (breaking), strict-CSP output with live widths, built-in region maps, graph explorer cards, faster responsive rendering and value lookups, and crosshair tick caption fixes.</PackageReleaseNotes>
+    <PackageReleaseNotes>Optional browser data charts with native layout policy, responsive updates, keyboard selection and deterministic disposal. Coordinated ChartForgeX 5.0.0 release: fluent methods generated from model properties replace the With*, Use* and Configure* setters, and chart options are grouped into settings objects (breaking; see docs/v2/migration.md), the shared ThemeMode replaces VisualThemeMode (breaking), strict-CSP output with live widths, built-in region maps, graph explorer cards, faster responsive rendering and value lookups, and crosshair tick caption fixes.</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>ChartForgeX.png</PackageIcon>
@@ -133,5 +133,8 @@
     <EmbeddedResource Include="Assets\graph-explorer.37-hover-tip.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.37-hover-tip.js" />
     <EmbeddedResource Include="Assets\graph-explorer.39-patch-validation.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.39-patch-validation.js" />
     <EmbeddedResource Include="Assets\graph-explorer.40-api.js" LogicalName="ChartForgeX.Interactivity.Html.Assets.graph-explorer.40-api.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="PowerForge.Generators" Version="$(PowerForgeGeneratorsVersion)" PrivateAssets="all" />
   </ItemGroup>
 </Project>

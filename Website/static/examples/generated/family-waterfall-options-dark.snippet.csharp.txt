@@ -23,15 +23,15 @@ var movement = ChartSeries.CreateWaterfall(new ChartSeriesId("movement"), "Movem
     ChartWaterfallItem.OpeningBalance(1, 120), ChartWaterfallItem.Delta(2, -30), ChartWaterfallItem.Subtotal(3),
     ChartWaterfallItem.Delta(4, -130), ChartWaterfallItem.Subtotal(5), ChartWaterfallItem.Delta(6, 70),
     ChartWaterfallItem.Total(7)
-}).WithObservationId(3, new ChartObservationId("cost-change"))
-    .WithObservationId(4, new ChartObservationId("cost-checkpoint"))
-    .WithPointColor(4, "#A5358A");
-chart.WithXLabels("Open", "Adjust", "Stage", "Costs", "Cost sum", "Recover", "Balance").AddSeries(movement)
-    .ConfigureWaterfall(options => options.Orientation = ChartOrientation.Vertical);
-chart.WithYAxis("Running balance");
-chart.Options.XAxis.WithReversal(true);
-chart.Options.YAxis.WithReversal();
-chart.WithDataLabels();
+}).ObservationId(3, new ChartObservationId("cost-change"))
+    .ObservationId(4, new ChartObservationId("cost-checkpoint"))
+    .PointColor(4, "#A5358A");
+chart.XLabels("Open", "Adjust", "Stage", "Costs", "Cost sum", "Recover", "Balance").AddSeries(movement)
+    .Waterfall(options => options.Orientation = ChartOrientation.Vertical);
+chart.YAxis(y => y.Title("Running balance"));
+chart.Options.XAxis.Reversed(true);
+chart.Options.YAxis.Reversed();
+chart.DataLabels();
 
 #region Output
 var context = new VisualRenderContext(

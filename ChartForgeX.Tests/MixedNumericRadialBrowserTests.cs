@@ -5,6 +5,7 @@ using ChartForgeX.Themes;
 using Microsoft.Playwright;
 using Xunit;
 using static ChartForgeX.Tests.InteractiveChartBrowser;
+using ChartForgeX.Core;
 
 namespace ChartForgeX.Tests;
 
@@ -17,9 +18,9 @@ public sealed class MixedNumericRadialBrowserTests {
     public async Task ColumnsAndRadarRetainDistinctPointerKeyboardAndLegendTargets(bool compact, bool dark) {
         if (!Enabled) return;
         var chart = V2GalleryModels.CreateMixedRadial()
-            .WithSize(compact ? 360 : 800, compact ? 360 : 440)
-            .WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
-            .WithTitle("Regional counts and targets").WithLegend();
+            .Size(compact ? 360 : 800, compact ? 360 : 440)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Title("Regional counts and targets").Legend();
         var prepared = chart.Prepare(VisualExportRequest.ForChart(chart).Context);
         var owner = prepared.Scene.Nodes.OfType<VisualSceneGroup>().Single(group => group.Id == "series-1-point-0");
         double Fact(string key) => double.Parse(owner.Metadata[key], CultureInfo.InvariantCulture);

@@ -21,9 +21,9 @@ public sealed class MermaidRadarThemeTests {
         Assert.Equal(ChartColor.FromHex("#7C3AED"), chart.Options.TitleStyle.Color);
         Assert.Equal(ChartColor.FromHex("#2563EB"), chart.Series[0].Color);
         Assert.Equal(ChartColor.FromHex("#EA580C"), chart.Series[1].Color);
-        Assert.Equal(3, chart.Options.PolarAxisStroke!.Width);
-        Assert.Equal(1.5, chart.Options.PolarGridStroke!.Width);
-        Assert.Equal(.12, chart.Options.PolarGridFillOpacity);
+        Assert.Equal(3, chart.Options.Polar.AxisStroke!.Width);
+        Assert.Equal(1.5, chart.Options.Polar.GridStroke!.Width);
+        Assert.Equal(.12, chart.Options.Polar.GridFillOpacity);
         Assert.Equal(15, chart.Options.TickLabelStyle.FontSize); Assert.Equal(16, chart.Options.LegendStyle.FontSize);
         Assert.All(chart.Series, series => { Assert.Equal(.25, series.Radar.FillOpacity); Assert.Equal(4, series.Radar.OutlineStroke!.Width); });
         var artifact = parsed.Document!.ToVisualArtifact();

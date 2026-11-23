@@ -12,11 +12,11 @@ namespace ChartForgeX.Tests;
 
 internal static partial class SmokeTests {
     internal static void VisualStoriesRejectUnrevealedOutcomesAndInvalidSyntaxSpans() {
-        var noOutcome = VisualStory.Create("Missing outcome").WithSize(480, 320);
+        var noOutcome = VisualStory.Create("Missing outcome").Size(480, 320);
         noOutcome.Scene("only", "Only scene").Panel("text", new VisualStoryTextSurface("Nothing promised"));
         AssertThrows<InvalidOperationException>(() => noOutcome.ToSvg(), "Visual stories should require a declared outcome.");
 
-        var hiddenOutcome = VisualStory.Create("Hidden outcome").WithSize(480, 320);
+        var hiddenOutcome = VisualStory.Create("Hidden outcome").Size(480, 320);
         hiddenOutcome.Scene("start", "Start").Panel("result", new VisualStoryTextSurface("visible early"));
         hiddenOutcome.Scene("end", "End").Panel("summary", new VisualStoryTextSurface("missing result"));
         hiddenOutcome.Outcome("result", "Visible result", "result");
@@ -46,14 +46,14 @@ internal static partial class SmokeTests {
                 "Language: text" + Environment.NewLine + whitespaceSource.Text,
                 StringComparison.Ordinal),
             "Captionless source accessibility text should declare its language and preserve exact source whitespace.");
-        whitespaceSource.WithLanguage("powershell");
+        whitespaceSource.Language("powershell");
         Assert(whitespaceSurface.AccessibleText.StartsWith("Language: powershell" + Environment.NewLine, StringComparison.Ordinal),
             "Source accessibility text should reflect language metadata mutations visible in the retained source presentation.");
 
         AssertThrows<ArgumentException>(
             () => VisualStory.Create("First line\nSecond line"),
             "Story titles should reject line breaks because renderers present them as one-line headings.");
-        var headingStory = VisualStory.Create("Single-line headings").WithSize(480, 320);
+        var headingStory = VisualStory.Create("Single-line headings").Size(480, 320);
         AssertThrows<ArgumentException>(
             () => headingStory.Scene("invalid", "First line\nSecond line"),
             "Scene titles should reject line breaks because renderers present them as one-line headings.");
@@ -65,7 +65,7 @@ internal static partial class SmokeTests {
             () => headingStory.Outcome("invalid", "First line\nSecond line", "valid"),
             "Outcome labels should reject line breaks because renderers present them as one-line badges.");
         var accessibleTerminal = TerminalStory.Create()
-            .WithFinalPrompt(false)
+            .ShowFinalPrompt(false)
             .Command("Get-Widget")
             .Output("Widget is ready");
         var terminalSurface = new VisualStoryTerminalSurface(accessibleTerminal, "Console output");
@@ -185,7 +185,7 @@ internal static partial class SmokeTests {
                tabColumn == 12,
             "Raster source layout should expand tabs to deterministic four-column stops.");
 
-        var invalidXmlStory = VisualStory.Create("XML-safe transcript").WithSize(480, 320);
+        var invalidXmlStory = VisualStory.Create("XML-safe transcript").Size(480, 320);
         invalidXmlStory.Scene("result", "Completed")
             .Panel("result", new VisualStorySourceSurface(StorySourceText.Create("before\u000Cafter", "text")));
         invalidXmlStory.Outcome("safe", "The source remains available", "result");
@@ -194,7 +194,7 @@ internal static partial class SmokeTests {
         Assert(invalidXmlSvg.Contains("before\uFFFDafter", StringComparison.Ordinal),
             "SVG text should replace XML-invalid controls while retaining the surrounding accessible transcript.");
 
-        var normalizedIdentifiers = VisualStory.Create("Normalized identifiers").WithSize(480, 320);
+        var normalizedIdentifiers = VisualStory.Create("Normalized identifiers").Size(480, 320);
         normalizedIdentifiers.Scene("result", "Completed")
             .Panel("output", new VisualStoryTextSurface("ready"));
         AssertThrows<ArgumentException>(
@@ -208,7 +208,7 @@ internal static partial class SmokeTests {
             () => normalizedIdentifiers.Outcome(" ready ", "Duplicate", "output"),
             "Whitespace-equivalent outcome identifiers should be rejected.");
 
-        var unicodeStory = VisualStory.Create("Unicode clipping").WithSize(480, 320);
+        var unicodeStory = VisualStory.Create("Unicode clipping").Size(480, 320);
         unicodeStory.Scene("result", "Completed")
             .Panel("result", new VisualStorySourceSurface(
                 StorySourceText.Create("😀😀😀😀😀😀😀😀😀😀 result", "text"),
@@ -218,7 +218,7 @@ internal static partial class SmokeTests {
         Assert(unicodePng.Length > 8 && unicodePng[0] == 137,
             "Source clipping should preserve complete Unicode text elements.");
 
-        var crowded = VisualStory.Create("Crowded stack").WithSize(480, 320);
+        var crowded = VisualStory.Create("Crowded stack").Size(480, 320);
         var crowdedScene = crowded.Scene("result", "Completed", 0.25, VisualStorySceneLayout.Stacked);
         for (var index = 0; index < 4; index++) {
             crowdedScene.Panel(
@@ -231,7 +231,7 @@ internal static partial class SmokeTests {
             () => crowded.ToPng(),
             "Stories should reject stacked layouts that cannot provide a positive panel content area.");
 
-        var sourceTooShort = VisualStory.Create("Crowded source stack").WithSize(480, 480);
+        var sourceTooShort = VisualStory.Create("Crowded source stack").Size(480, 480);
         var sourceScene = sourceTooShort.Scene("result", "Completed", 0.25, VisualStorySceneLayout.Stacked);
         for (var index = 0; index < 4; index++) {
             sourceScene.Panel(
@@ -245,8 +245,8 @@ internal static partial class SmokeTests {
             "Stories should reject positive source-panel content areas that are too short to render one source line.");
 
         var lightStory = VisualStory.Create("Light documentation")
-            .WithSize(480, 320)
-            .WithTheme(VisualStoryThemes.Premium(), ThemeMode.Light);
+            .Size(480, 320)
+            .Theme(VisualStoryThemes.Premium()).ThemeMode(ThemeMode.Light);
         lightStory.Scene("result", "Completed", 0.25)
             .Panel("result", new VisualStoryTextSurface("ready", emphasized: true));
         lightStory.Outcome("ready", "The result is visible", "result");
@@ -260,22 +260,22 @@ internal static partial class SmokeTests {
                lightHtml.Contains("width:min(480px,100%)", StringComparison.Ordinal),
             "Complete visual-story pages should honor light themes and the configured story width.");
 
-        var retainedScenes = VisualStory.Create("Retained-scene memory").WithSize(1500, 1000);
+        var retainedScenes = VisualStory.Create("Retained-scene memory").Size(1500, 1000);
         for (var index = 0; index < 24; index++) {
             retainedScenes.Scene("scene-" + index, "Scene " + index, 0.25)
                 .Panel("result", new VisualStoryTextSurface("ready"));
         }
         retainedScenes.Outcome("ready", "Ready", "result");
         var constrainedAnimation = VisualStoryAnimationOptions.Create()
-            .WithFramesPerSecond(4)
-            .WithEndHold(0)
-            .WithMaximumFrames(30);
+            .FramesPerSecond(4)
+            .EndHoldSeconds(0)
+            .MaximumFrames(30);
         var streamingScenes = retainedScenes.Prepare(new VisualStoryPlaybackOptions(TimeSpan.Zero));
         var producer = streamingScenes.FrameSource(new VisualStoryFrameOptions(4, maximumFrames: 30));
         Assert(producer.FrameCount == 24 && producer.AdditionalWorkingBytes < 1500L * 1000 * 4 * 24,
             "Story export should reserve bounded producer memory rather than retaining an RGBA frame for every scene.");
 
-        var encoderBuffers = VisualStory.Create("Encoder memory").WithSize(3840, 2160);
+        var encoderBuffers = VisualStory.Create("Encoder memory").Size(3840, 2160);
         encoderBuffers.Scene("first", "First", 2.8)
             .Panel("result", new VisualStoryTextSurface("first"));
         encoderBuffers.Scene("second", "Second", 2.8)
@@ -284,9 +284,9 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(
             () => encoderBuffers.ToApng(
                 VisualStoryAnimationOptions.Create()
-                    .WithFramesPerSecond(4)
-                    .WithEndHold(0)
-                    .WithMaximumFrames(30)),
+                    .FramesPerSecond(4)
+                    .EndHoldSeconds(0)
+                    .MaximumFrames(30)),
             "Animated visual-story memory limits should include concurrent streamed APNG working buffers before scenes are allocated.");
         var oneFrameApngBudget = AnimatedRasterMemoryBudget.EncoderRetainedBytes(
             480,
@@ -330,7 +330,7 @@ internal static partial class SmokeTests {
 
         var sharedTranscriptSource = new VisualStorySourceSurface(
             StorySourceText.Create(new string('x', 1024 * 1024), "text"));
-        var oversizedTranscript = VisualStory.Create("Bounded transcript").WithSize(480, 320);
+        var oversizedTranscript = VisualStory.Create("Bounded transcript").Size(480, 320);
         for (var index = 0; index < 24; index++) {
             oversizedTranscript.Scene("scene-" + index, "Scene " + index, 0.25)
                 .Panel("source", sharedTranscriptSource);
@@ -340,17 +340,17 @@ internal static partial class SmokeTests {
             () => oversizedTranscript.ToTranscript(),
             "Visual-story transcripts should reject aggregate accessible content before allocating the output builder.");
 
-        var skippedScene = VisualStory.Create("Every scene sampled").WithSize(480, 320);
+        var skippedScene = VisualStory.Create("Every scene sampled").Size(480, 320);
         for (var index = 0; index < 3; index++) {
             skippedScene.Scene("scene-" + index, "Scene " + index, 0.25)
                 .Panel("result", new VisualStoryTextSurface("state " + index));
         }
         skippedScene.Outcome("ready", "Ready", "result");
         AssertThrows<InvalidOperationException>(
-            () => skippedScene.ToGif(VisualStoryAnimationOptions.Create().WithFramesPerSecond(2)),
+            () => skippedScene.ToGif(VisualStoryAnimationOptions.Create().FramesPerSecond(2)),
             "Raster visual stories should reject a frame interval that can skip valid scenes.");
 
-        var nearlyHiddenScene = VisualStory.Create("Every scene visible").WithSize(480, 320);
+        var nearlyHiddenScene = VisualStory.Create("Every scene visible").Size(480, 320);
         nearlyHiddenScene.Scene("first", "First", 0.251)
             .Panel("result", new VisualStoryTextSurface("first"));
         nearlyHiddenScene.Scene("middle", "Middle", 0.25)
@@ -361,19 +361,19 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(
             () => nearlyHiddenScene.ToGif(
                 VisualStoryAnimationOptions.Create()
-                    .WithFramesPerSecond(2)
-                    .WithEndHold(0)),
+                    .FramesPerSecond(2)
+                    .EndHoldSeconds(0)),
             "Raster visual stories should reject scenes sampled only at effectively invisible transition opacity.");
 
-        var singleShortScene = VisualStory.Create("One short scene").WithSize(480, 320);
+        var singleShortScene = VisualStory.Create("One short scene").Size(480, 320);
         singleShortScene.Scene("only", "Only", 0.25)
             .Panel("result", new VisualStoryTextSurface("ready"));
         singleShortScene.Outcome("ready", "Ready", "result");
         Assert(singleShortScene.ToGif(
                 VisualStoryAnimationOptions.Create()
-                    .WithFramesPerSecond(2)
-                    .WithEndHold(0)
-                    .WithMaximumFrames(2)).Length > 8,
+                    .FramesPerSecond(2)
+                    .EndHoldSeconds(0)
+                    .MaximumFrames(2)).Length > 8,
             "A single short scene should be sampled at both timeline endpoints.");
 
         var embeddedCharacters = 0L;
@@ -393,14 +393,14 @@ internal static partial class SmokeTests {
         for (var index = 0; index < 4096; index++) {
             denseSource.AddSpan(index * 2, 1, index % 2 == 0 ? StorySyntaxKind.Keyword : StorySyntaxKind.Variable);
         }
-        var denseStory = VisualStory.Create("Dense syntax").WithSize(480, 320);
+        var denseStory = VisualStory.Create("Dense syntax").Size(480, 320);
         denseStory.Scene("result", "Completed")
             .Panel("result", new VisualStorySourceSurface(denseSource));
         denseStory.Outcome("ready", "Ready", "result");
         Assert(denseStory.ToPng().Length > 8,
             "Source rendering should remain bounded for the maximum supported syntax-span count.");
 
-        var narrowSource = VisualStory.Create("Narrow source").WithSize(480, 320);
+        var narrowSource = VisualStory.Create("Narrow source").Size(480, 320);
         var narrowScene = narrowSource.Scene("result", "Completed", layout: VisualStorySceneLayout.Split);
         narrowScene.Panel("source", new VisualStorySourceSurface(StorySourceText.Create("x", "text")), weight: 0.12);
         narrowScene.Panel("result", new VisualStoryTextSurface("ready"), weight: 1);
@@ -409,7 +409,7 @@ internal static partial class SmokeTests {
             () => narrowSource.ToPng(),
             "Source panels should reject positive but too-narrow content areas that cannot draw a source line.");
 
-        var narrowText = VisualStory.Create("Narrow text").WithSize(480, 320);
+        var narrowText = VisualStory.Create("Narrow text").Size(480, 320);
         var narrowTextScene = narrowText.Scene("result", "Completed", layout: VisualStorySceneLayout.Split);
         narrowTextScene.Panel("text", new VisualStoryTextSurface("W", emphasized: true), weight: 0.2);
         narrowTextScene.Panel("result", new VisualStoryTextSurface("ready"), weight: 1);
@@ -418,7 +418,7 @@ internal static partial class SmokeTests {
             () => narrowText.ToPng(),
             "Text panels should reject positive but too-narrow content areas that cannot contain a rendered glyph.");
 
-        var narrowTerminal = VisualStory.Create("Narrow terminal").WithSize(480, 320);
+        var narrowTerminal = VisualStory.Create("Narrow terminal").Size(480, 320);
         var narrowTerminalScene = narrowTerminal.Scene("result", "Completed", layout: VisualStorySceneLayout.Split);
         narrowTerminalScene.Panel(
             "result",
@@ -428,7 +428,7 @@ internal static partial class SmokeTests {
             "terminal",
             new VisualStoryTerminalSurface(
                 TerminalStory.Create()
-                    .WithFinalPrompt(false)
+                    .ShowFinalPrompt(false)
                     .Command("Get-Widget")
                     .Output("ready")),
             weight: 1.2);
@@ -437,7 +437,7 @@ internal static partial class SmokeTests {
             () => narrowTerminal.ToPng(),
             "Terminal panels should reject positive but unreadably narrow content areas.");
 
-        var narrowMedia = VisualStory.Create("Narrow media").WithSize(480, 320);
+        var narrowMedia = VisualStory.Create("Narrow media").Size(480, 320);
         var narrowMediaScene = narrowMedia.Scene("result", "Completed", layout: VisualStorySceneLayout.Split);
         narrowMediaScene.Panel(
             "text",
@@ -457,8 +457,8 @@ internal static partial class SmokeTests {
         var truncatedTheme = VisualStoryThemes.Premium();
         var truncatedStyle = new VisualStoryStyleOptions { Syntax = new StorySyntaxPalette { Plain = ChartColor.FromRgb(255, 0, 128) } };
         var truncatedStory = VisualStory.Create("Visible truncation")
-            .WithSize(480, 320)
-            .WithTheme(truncatedTheme).WithStyle(truncatedStyle);
+            .Size(480, 320)
+            .Theme(truncatedTheme).Style(truncatedStyle);
         truncatedStory.Scene("result", "Completed")
             .Panel(
                 "result",
@@ -480,8 +480,8 @@ internal static partial class SmokeTests {
             "Vertically clipped source should retain readable text and indicate continuation in the fixed viewport.");
 
         var denseLinesStory = VisualStory.Create("Bounded source lines")
-            .WithSize(480, 320)
-            .WithTheme(truncatedTheme).WithStyle(truncatedStyle);
+            .Size(480, 320)
+            .Theme(truncatedTheme).Style(truncatedStyle);
         denseLinesStory.Scene("result", "Completed")
             .Panel(
                 "result",
@@ -499,8 +499,8 @@ internal static partial class SmokeTests {
             .AddSpan(0, 37, StorySyntaxKind.Keyword)
             .AddSpan(37, 4, StorySyntaxKind.Type);
         var horizontalStory = VisualStory.Create("Run-boundary truncation")
-            .WithSize(480, 320)
-            .WithTheme(horizontalTheme).WithStyle(horizontalStyle);
+            .Size(480, 320)
+            .Theme(horizontalTheme).Style(horizontalStyle);
         horizontalStory.Scene("result", "Completed")
             .Panel("result", new VisualStorySourceSurface(horizontalSource));
         horizontalStory.Outcome("ready", "Ready", "result");

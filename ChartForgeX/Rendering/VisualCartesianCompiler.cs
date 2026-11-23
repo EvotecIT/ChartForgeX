@@ -15,7 +15,7 @@ internal static partial class VisualCartesianCompiler {
         ChartAxisValueFormatter.Cache? axisLabels = null, ChartBubbleSizeScale? bubbleScale = null, ChartColorPresentationSet? colorScales = null) {
         colorScales ??= new ChartColorPresentationSet(chart);
         var entries = new List<VisualLegendEntry>();
-        if (chart.Options.ShowPointLegend && chart.Series.Count == 1 && chart.Series[0].ShowInLegend
+        if (chart.Options.Legend.ShowPoints && chart.Series.Count == 1 && chart.Series[0].ShowInLegend
             && ChartSeriesKindTraits.SupportsPointLegend(chart.Series[0].Kind) && chart.Series[0].AuthoredObservationCount > 0) {
             var series = chart.Series[0];
             if (series.Kind == ChartSeriesKind.Waterfall) return WaterfallLegendEntries(chart, series, colors, axisLabels ?? new ChartAxisValueFormatter.Cache());
@@ -211,7 +211,7 @@ internal static partial class VisualCartesianCompiler {
             DrawAnnotations(chart, context, builder, plot, map, colors, false, obstacles, constrainXToPlot: xViewport != null,
                 xViewport: xViewport, yViewport: yViewport, secondaryYViewport: sourceViewport?.SecondaryY, labelBounds: annotationBounds, clipGeometry: clipMarks, secondaryMap: secondaryMap);
         }
-        if (chart.Options.ShowStackTotals && stacks.HasBarStacks) {
+        if (chart.Options.Bars.ShowTotals && stacks.HasBarStacks) {
             if (horizontal) AddHorizontalTotals(chart, horizontalTotals, context, builder, plot, map, secondaryMap, stacks, labels);
             else AddStackTotals(chart, context, builder, plot, coordinates, stacks, map, secondaryMap, labels, verticalTotals!);
         }
@@ -300,7 +300,7 @@ internal static partial class VisualCartesianCompiler {
                     ["data-cfx-coordinate-system"] = "cartesian",
                     ["data-cfx-series"] = Number(index), ["data-cfx-series-key"] = series.InteractionIdentityKey,
                     ["data-cfx-series-name"] = series.Name, ["data-cfx-state"] = series.StateRole.ToString().ToLowerInvariant(),
-                    ["data-cfx-pin-state-colors"] = chart.Options.PinStateColorsInForcedColors && series.StateRole != ChartSeriesState.None ? "true" : "false",
+                    ["data-cfx-pin-state-colors"] = chart.Options.StateTimeline.PinColorsInForcedColors && series.StateRole != ChartSeriesState.None ? "true" : "false",
                     ["data-cfx-kind"] = series.Kind.ToString(), ["data-cfx-semantic-role"] = series.SemanticRole ?? string.Empty,
                     ["data-cfx-source-points"] = Number(series.SourcePointCount),
                     ["data-cfx-rendered-points"] = Number(series.RenderedPointCount),

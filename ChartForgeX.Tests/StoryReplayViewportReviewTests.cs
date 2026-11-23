@@ -29,7 +29,7 @@ public sealed class StoryReplayViewportReviewTests {
             builder.Dark.ElevatedSurface = builder.Dark.ElevatedSurface.WithAlpha(64);
             builder.Dark.Border = builder.Dark.Border.WithAlpha(128);
         });
-        var terminal = TerminalStory.Create().WithTheme(theme).WithFinalPrompt(false).Output("Ready");
+        var terminal = TerminalStory.Create().Theme(theme).ShowFinalPrompt(false).Output("Ready");
         var viewport = XDocument.Parse(Story(terminal, 600, 400).Prepare().ToSvg()).Descendants()
             .Single(element => (string?)element.Attribute("data-cfx-role") == "terminal-viewport");
         Assert.Equal(theme.Resolve(ThemeMode.Dark).ElevatedSurface.ToCss(), (string?)viewport.Attribute("fill"));
@@ -54,7 +54,7 @@ public sealed class StoryReplayViewportReviewTests {
 
     [Fact]
     public void AuthoredHistoryLimitAppliesBeforePixelViewportClipping() {
-        var terminal = TerminalStory.Create().WithFinalPrompt(false).WithTiming(0, 42, .01)
+        var terminal = TerminalStory.Create().ShowFinalPrompt(false).InitialDelaySeconds(0).CharactersPerSecond(42).LineDelaySeconds(.01)
             .Output(string.Join("\n", Enumerable.Range(1, 30).Select(index => "line" + index.ToString("000"))));
         var prepared = Story(terminal, 600, 1000, new VisualStoryTerminalOptions(fontSize: 14, historyLines: 20)).Prepare();
         var svg = prepared.ToSvg();
@@ -111,7 +111,7 @@ public sealed class StoryReplayViewportReviewTests {
         var replay = StoryReplay.Create(TimeSpan.FromSeconds(2), TerminalDialect.Custom, customPrompt: new string('>', 2048));
         for (var index = 0; index < 1000; index++) replay.Command(TimeSpan.FromTicks(index), "A");
         var surface = new VisualStoryReplaySurface(replay);
-        var story = VisualStory.Create("Transcript working memory").WithSize(480, 320);
+        var story = VisualStory.Create("Transcript working memory").Size(480, 320);
         for (var index = 0; index < scenes; index++) story.Scene("run" + index, "Run", 2).Panel("terminal", surface);
         story.Outcome("ready", "Ready", "terminal");
         var prepared = story.Prepare(new VisualStoryPlaybackOptions(TimeSpan.Zero, TimeSpan.Zero, 1));
@@ -125,7 +125,7 @@ public sealed class StoryReplayViewportReviewTests {
         theme = theme.Configure(builder => { builder.Dark.ElevatedSurface = ChartColor.Black;
             builder.Dark.Status.Pass = new VisualTokenColor(ChartColor.FromHex("#00FF00"), ChartColor.FromHex("#00FF00"));
             builder.Dark.Status.Critical = new VisualTokenColor(ChartColor.FromHex("#FF0000"), ChartColor.FromHex("#FF0000")); });
-        return TerminalStory.Create().WithTheme(theme).WithFinalPrompt(false).WithTiming(0, 42, 0).WithTabHold(0)
+        return TerminalStory.Create().Theme(theme).ShowFinalPrompt(false).InitialDelaySeconds(0).CharactersPerSecond(42).LineDelaySeconds(0).TabHoldSeconds(0)
             .Output("FIRST", TerminalTextTone.Success).OpenTab("other", "Other", TerminalDialect.Bash, "~/src", theme, transitionSeconds: 0)
             .Blank().Output("SECOND", TerminalTextTone.Error).SelectTab("main", 1);
     }
@@ -147,7 +147,7 @@ public sealed class StoryReplayViewportReviewTests {
     }
 
     private static VisualStory Story(TerminalStory terminal, int width, int height, VisualStoryTerminalOptions? options = null) {
-        var story = VisualStory.Create("Authored terminal viewport").WithSize(width, height);
+        var story = VisualStory.Create("Authored terminal viewport").Size(width, height);
         story.Scene("run", "Run", 3).Panel("terminal", new VisualStoryTerminalSurface(terminal, options: options ?? new VisualStoryTerminalOptions()));
         story.Outcome("ready", "Ready", "terminal"); return story;
     }

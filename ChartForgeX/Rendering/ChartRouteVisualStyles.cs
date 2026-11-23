@@ -7,29 +7,29 @@ namespace ChartForgeX.Rendering;
 
 internal static class ChartRouteVisualStyles {
     public static ChartLineVisualStyle TreeLink() => ChartLineVisualStyle.Premium()
-        .WithAmbientHalo(0.018, 2.6)
-        .WithHalo(0.070, 1.4)
-        .WithHighlight(0.040, 0.18);
+        .AmbientHaloOpacity(0.018).AmbientHaloStrokeExtra(2.6)
+        .HaloOpacity(0.070).HaloStrokeExtra(1.4)
+        .HighlightOpacity(0.040).HighlightStrokeRatio(0.18);
 
     public static ChartLineVisualStyle TopologyEdge(bool monitoringStyle, bool muted, bool selected) {
         if (!monitoringStyle) return ChartLineVisualStyle.Premium()
-            .WithAmbientHalo(selected ? 0.035 : muted ? 0.006 : 0.014, selected ? 4.0 : muted ? 1.6 : 2.4)
-            .WithHalo(selected ? 0.11 : muted ? 0.025 : 0.055, selected ? 2.4 : muted ? 0.8 : 1.2)
-            .WithHighlight(selected ? 0.080 : muted ? 0.018 : 0.035, 0.18);
+            .AmbientHaloOpacity(selected ? 0.035 : muted ? 0.006 : 0.014).AmbientHaloStrokeExtra(selected ? 4.0 : muted ? 1.6 : 2.4)
+            .HaloOpacity(selected ? 0.11 : muted ? 0.025 : 0.055).HaloStrokeExtra(selected ? 2.4 : muted ? 0.8 : 1.2)
+            .HighlightOpacity(selected ? 0.080 : muted ? 0.018 : 0.035).HighlightStrokeRatio(0.18);
         if (muted && !selected) return ChartLineVisualStyle.Premium()
-            .WithAmbientHalo(0, 0)
-            .WithHalo(0.030, 0.8)
-            .WithHighlight(0.015, 0.18);
+            .AmbientHaloOpacity(0).AmbientHaloStrokeExtra(0)
+            .HaloOpacity(0.030).HaloStrokeExtra(0.8)
+            .HighlightOpacity(0.015).HighlightStrokeRatio(0.18);
         return ChartLineVisualStyle.Premium()
-            .WithAmbientHalo(selected ? 0.040 : 0.014, selected ? 4.2 : 2.2)
-            .WithHalo(selected ? 0.12 : 0.052, selected ? 2.4 : 1.1)
-            .WithHighlight(selected ? 0.085 : 0.034, 0.18);
+            .AmbientHaloOpacity(selected ? 0.040 : 0.014).AmbientHaloStrokeExtra(selected ? 4.2 : 2.2)
+            .HaloOpacity(selected ? 0.12 : 0.052).HaloStrokeExtra(selected ? 2.4 : 1.1)
+            .HighlightOpacity(selected ? 0.085 : 0.034).HighlightStrokeRatio(0.18);
     }
 
     public static ChartLineVisualStyle DottedMapLeader() => ChartLineVisualStyle.Premium()
-        .WithAmbientHalo(0.012, 1.8)
-        .WithHalo(0.052, 1.0)
-        .WithHighlight(0.030, 0.18);
+        .AmbientHaloOpacity(0.012).AmbientHaloStrokeExtra(1.8)
+        .HaloOpacity(0.052).HaloStrokeExtra(1.0)
+        .HighlightOpacity(0.030).HighlightStrokeRatio(0.18);
 
     public static ChartLeaderVisualStyle TopologyEdgeLabelLeader(bool monitoringStyle) => monitoringStyle
         ? new ChartLeaderVisualStyle(0.90, 4.0, 0.48, 1.35, 3.0, 4.0)

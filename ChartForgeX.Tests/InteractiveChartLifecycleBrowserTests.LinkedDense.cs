@@ -13,7 +13,7 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
     public async Task DenseLassoPublishesOneCompleteSelectionWithoutRebuildingTheSceneOrThousandsOfReadouts() {
         if (!Enabled) return;
         var points = Enumerable.Range(0, 5000).Select(index => new ChartPoint(index % 100 + 1, index / 100 + 1));
-        var chart = Chart.Create().WithSize(800, 500).WithXAxisBounds(0, 101).WithYAxisBounds(0, 51)
+        var chart = Chart.Create().Size(800, 500).XAxis(x => x.Bounds(0, 101)).YAxis(y => y.Bounds(0, 51))
             .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("dense"), "Readings", points));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => {
             Fit(options); options.Interaction.Enable(ChartInteractionFeatures.Brush); options.Tooltip.PinOnSelect = false;
@@ -61,9 +61,9 @@ public sealed partial class InteractiveChartLifecycleBrowserTests {
         var observations = Enumerable.Range(0, 5000).Select(index => (point: new ChartPoint(index % 100 + 1, index / 100 + 1), id: new ChartObservationId("dense-" + index))).ToArray();
         Chart Create(bool reverse) {
             var ordered = reverse ? observations.AsEnumerable().Reverse().ToArray() : observations;
-            return Chart.Create().WithSize(800, 500).WithXAxisBounds(0, 101).WithYAxisBounds(0, 51).WithLegend(false)
+            return Chart.Create().Size(800, 500).XAxis(x => x.Bounds(0, 101)).YAxis(y => y.Bounds(0, 51)).Legend(false)
                 .AddSeries(ChartSeries.CreateScatter(new ChartSeriesId("dense"), "Readings", ordered.Select(item => item.point))
-                    .WithObservationIds(ordered.Select(item => item.id)));
+                    .ObservationIds(ordered.Select(item => item.id)));
         }
         var html = new[] { Create(false), Create(true) }.ToInteractiveHtmlDashboardPage(options => {
             options.Columns = 1; options.ResponsiveLayout = HtmlChartResponsiveLayout.Fit;

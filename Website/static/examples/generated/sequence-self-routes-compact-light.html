@@ -113,7 +113,7 @@ public static class SequenceSelfRoutesRecipe {
     /// &lt;summary&gt;Creates a compact or wide native sequence; omitted self routing remains the ordinary 56/24 law.&lt;/summary&gt;
     public static SequenceArtifact Create(string variant=&quot;wide&quot;,ThemeMode mode=ThemeMode.Light) {
         if(variant is not (&quot;compact&quot; or &quot;wide&quot;))throw new ArgumentOutOfRangeException(nameof(variant));
-        var model=SequenceArtifact.Create(&quot;sequence-self-routes&quot;).WithSize(variant==&quot;compact&quot;?390:1000,820).WithTitle(&quot;Self routes&quot;)
+        var model=SequenceArtifact.Create(&quot;sequence-self-routes&quot;).Width(variant==&quot;compact&quot;?390:1000).Height(820).Title(&quot;Self routes&quot;)
             .AddParticipant(&quot;A&quot;,&quot;Review&quot;).AddMessage(&quot;A&quot;,&quot;A&quot;,&quot;Check&quot;).AddMessage(&quot;A&quot;,&quot;A&quot;,&quot;Save&quot;);
         model.Layout=new SequenceLayoutPolicy(participantMinimumWidth:64,participantMinimumHeight:60,participantSpacing:8,wrapPadding:8,selfMessageRouting:SequenceSelfMessageRouting.Curved);
         model.Typography=new SequenceTypography(participant:new TextStyleOverride{FontSize=14},message:new TextStyleOverride{FontSize=12});model.Theme=VisualTheme.Graphite();model.ThemeMode=mode;return model;
@@ -152,7 +152,7 @@ public static class SequenceSelfRoutesRecipe {
     /// &lt;summary&gt;Creates a compact or wide native sequence; omitted self routing remains the ordinary 56/24 law.&lt;/summary&gt;
     public static SequenceArtifact Create(string variant=&quot;wide&quot;,ThemeMode mode=ThemeMode.Light) {
         if(variant is not (&quot;compact&quot; or &quot;wide&quot;))throw new ArgumentOutOfRangeException(nameof(variant));
-        var model=SequenceArtifact.Create(&quot;sequence-self-routes&quot;).WithSize(variant==&quot;compact&quot;?390:1000,820).WithTitle(&quot;Self routes&quot;)
+        var model=SequenceArtifact.Create(&quot;sequence-self-routes&quot;).Width(variant==&quot;compact&quot;?390:1000).Height(820).Title(&quot;Self routes&quot;)
             .AddParticipant(&quot;A&quot;,&quot;Review&quot;).AddMessage(&quot;A&quot;,&quot;A&quot;,&quot;Check&quot;).AddMessage(&quot;A&quot;,&quot;A&quot;,&quot;Save&quot;);
         model.Layout=new SequenceLayoutPolicy(participantMinimumWidth:64,participantMinimumHeight:60,participantSpacing:8,wrapPadding:8,selfMessageRouting:SequenceSelfMessageRouting.Curved);
         model.Typography=new SequenceTypography(participant:new TextStyleOverride{FontSize=14},message:new TextStyleOverride{FontSize=12});model.Theme=VisualTheme.Graphite();model.ThemeMode=mode;return model;

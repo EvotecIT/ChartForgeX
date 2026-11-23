@@ -19,7 +19,7 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
     [InlineData(true, 340)]
     public async Task VisibleWordCloudTextRetainsNativePointerSelectionFocusAndPins(bool dark, int width) {
         if (!Enabled) return;
-        var chart = Frame(dark).WithTitle("Visible text terms").AddWordCloud("Topics", new[] {
+        var chart = Frame(dark).Title("Visible text terms").AddWordCloud("Topics", new[] {
             new ChartWordCloudItem("Visible", 100), new ChartWordCloudItem("Companion", 50)
         });
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(ExactFeatures), width, 720);
@@ -68,7 +68,7 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
     [BrowserFact]
     public async Task TouchTapSelectsAndPinsPartlyVisibleWordCloudTextWithoutScrolling() {
         if (!Enabled) return;
-        var chart = Frame(true).WithTitle("Native touch terms").AddWordCloud("Topics", new[] {
+        var chart = Frame(true).Title("Native touch terms").AddWordCloud("Topics", new[] {
             new ChartWordCloudItem("Visible", 100), new ChartWordCloudItem("Companion", 50)
         });
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(ExactFeatures), 340, 720, touch: true);
@@ -169,7 +169,7 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
     [InlineData(HtmlChartResponsiveLayout.Readable)]
     public async Task AnnotationCaptionAndLegendCaptionRemainRealNativeTargetsWithoutShapePaint(HtmlChartResponsiveLayout layout) {
         if (!Enabled) return;
-        var chart = AnnotationChart(true).WithLegend(true);
+        var chart = AnnotationChart(true).Legend(true);
         chart.AddAnnotation(new ChartAnnotation(ChartAnnotationKind.HorizontalBand, 6, 8, "Caption", ChartColor.FromHex("#ef4444"), 0));
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(options => { ExactFeatures(options); options.ResponsiveLayout = layout; options.Interaction.Enable(ChartInteractionFeatures.LegendToggles); }), 340, 720);
         var page = session.Page;
@@ -242,8 +242,8 @@ public sealed partial class InteractiveTooltipPaintBrowserTests {
         options.Tooltip.Range = HtmlChartTooltipRange.Exact;
     }
 
-    private static Chart Frame(bool dark) => Chart.Create().WithSize(800, 540).WithTheme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
-    private static Chart AnnotationChart(bool dark) => Frame(dark).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+    private static Chart Frame(bool dark) => Chart.Create().Size(800, 540).Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
+    private static Chart AnnotationChart(bool dark) => Frame(dark).XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
         .AddLine("Measured", new[] { new ChartPoint(2, 2), new ChartPoint(8, 2) });
 
     private static async Task TabToNativeTargetAsync(IPage page, ILocator target) {

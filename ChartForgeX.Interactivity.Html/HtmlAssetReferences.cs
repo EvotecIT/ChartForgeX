@@ -1,4 +1,5 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Interactivity.Html;
 
@@ -6,6 +7,7 @@ namespace ChartForgeX.Interactivity.Html;
 /// Makes generated pages reference the interactive runtimes as shared asset files instead of inlining them, so a
 /// bundle of many reports ships one copy of each runtime. Write the files with <see cref="HtmlInteractiveAssetFiles"/>.
 /// </summary>
+[Fluent]
 public sealed class HtmlAssetReferences {
     /// <summary>Initializes asset references rooted at <paramref name="basePath"/>.</summary>
     /// <param name="basePath">The folder or URL the pages load assets from, for example <c>assets/</c>,

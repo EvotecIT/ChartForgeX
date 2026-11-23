@@ -20,13 +20,13 @@ public sealed class ComparisonOrientationTests {
         if (dumbbell) chart.AddDumbbell("Comparison", new[] { new ChartDumbbell(1, -10, 20), new ChartDumbbell(3, 25, -15) });
         else chart.AddLollipop("Comparison", new[] { new ChartPoint(1, 20), new ChartPoint(3, -15) });
         chart.Options.LollipopOrientation = chart.Options.DumbbellOrientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
-        var series = chart.Series[0]; series.WithObservationIds(new[] { new ChartObservationId("north"), new ChartObservationId("south") });
-        if (secondary) series.UseSecondaryValueAxis();
+        var series = chart.Series[0]; series.ObservationIds(new[] { new ChartObservationId("north"), new ChartObservationId("south") });
+        if (secondary) series.SecondaryAxis();
         var category = horizontal ? chart.Options.YAxis : chart.Options.XAxis;
         var primary = horizontal ? chart.Options.XAxis : chart.Options.YAxis;
         var alternate = horizontal ? chart.Options.SecondaryXAxis : chart.Options.SecondaryYAxis;
-        category.WithBounds(0, 4).WithReversal(!reversed); primary.WithBounds(-40, 40).WithReversal(reversed);
-        alternate.WithBounds(-80, 80).WithReversal(reversed);
+        category.Bounds(0, 4).Reversed(!reversed); primary.Bounds(-40, 40).Reversed(reversed);
+        alternate.Bounds(-80, 80).Reversed(reversed);
         var scene = Scene(chart); var lines = scene.Nodes.OfType<VisualSceneLine>().Where(node => node.Role == (dumbbell ? "dumbbell-connector" : "lollipop-stem")).ToArray();
         var ends = scene.Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role == (dumbbell ? "dumbbell-end" : "lollipop-marker")).ToArray();
         Assert.Equal(2, lines.Length); Assert.Equal(2, ends.Length);
@@ -52,14 +52,14 @@ public sealed class ComparisonOrientationTests {
     public void EndpointOverridesInheritSharedMarkersAndCaptureCallbackAndPreparedState() {
         var chart = Bare().AddDumbbell("Comparison", new[] { new ChartDumbbell(1, 10, 30) });
         var series = chart.Series[0]; var red = ChartColor.FromHex("#D02030"); var blue = ChartColor.FromHex("#2040C0");
-        series.ConfigureMarkers(marker => { marker.Shape = ChartMarkerShape.Triangle; marker.Radius = 9; marker.StrokeWidth = 2; });
+        series.Markers(marker => { marker.Shape = ChartMarkerShape.Triangle; marker.Radius = 9; marker.StrokeWidth = 2; });
         ChartDumbbellOptions? captured = null;
-        series.ConfigureDumbbell(options => { captured = options; options.StartMarker.Fill = red; options.EndMarker.Shape = ChartMarkerShape.Circle; options.EndMarker.Fill = blue; });
+        series.Dumbbell(options => { captured = options; options.StartMarker.Fill = red; options.EndMarker.Shape = ChartMarkerShape.Circle; options.EndMarker.Fill = blue; });
         captured!.StartMarker.Radius = 50;
         var scene = Scene(chart); var start = Assert.Single(scene.Nodes.OfType<VisualScenePath>(), node => node.Role == "dumbbell-start");
         var end = Assert.Single(scene.Nodes.OfType<VisualSceneEllipse>(), node => node.Role == "dumbbell-end");
         Assert.Equal(red, start.Fill); Assert.Equal(blue, end.Fill); Assert.Equal(9, end.Rx); Assert.Equal(2, start.StrokeWidth);
-        Assert.Throws<InvalidOperationException>(() => series.ConfigureDumbbell(options => { options.StartMarker.Radius = 30; throw new InvalidOperationException("Do not install."); }));
+        Assert.Throws<InvalidOperationException>(() => series.Dumbbell(options => { options.StartMarker.Radius = 30; throw new InvalidOperationException("Do not install."); }));
         Assert.Null(series.Dumbbell.StartMarker.Radius);
         chart.Options.DumbbellOrientation = ChartOrientation.Horizontal;
         var prepared = chart.Prepare(Context()); var svg = prepared.ToSvg("captured-comparison"); var png = prepared.ToPng();
@@ -72,10 +72,10 @@ public sealed class ComparisonOrientationTests {
     [InlineData(false, 390)]
     [InlineData(true, 1200)]
     public void UnequalEndpointGeometryPaintAndVisibilityRemainIndependentAndContained(bool dark, int width) {
-        var chart = Bare().WithLegend().AddDumbbell("Comparison", new[] { new ChartDumbbell(1, 10, 30), new ChartDumbbell(2, 25, 15) });
+        var chart = Bare().Legend().AddDumbbell("Comparison", new[] { new ChartDumbbell(1, 10, 30), new ChartDumbbell(2, 25, 15) });
         chart.Options.DumbbellOrientation = ChartOrientation.Horizontal;
         var series = chart.Series[0]; var red = ChartColor.FromHex("#D02030"); var blue = ChartColor.FromHex("#2040C0");
-        series.ConfigureDumbbell(options => {
+        series.Dumbbell(options => {
             options.StartMarker.Shape = ChartMarkerShape.Circle; options.StartMarker.Radius = 4; options.StartMarker.Fill = red;
             options.EndMarker.Shape = ChartMarkerShape.Square; options.EndMarker.Radius = 17; options.EndMarker.Fill = blue;
             options.EndMarker.Stroke = ChartColor.Black; options.EndMarker.StrokeWidth = 4;
@@ -106,11 +106,11 @@ public sealed class ComparisonOrientationTests {
     [InlineData(true, false)]
     [InlineData(true, true)]
     public void HorizontalLollipopCaptionsStayBeyondTheirOwnMappedValueEndpoints(bool reversed, bool secondary) {
-        var chart = Bare().WithDataLabels().AddLollipop("Changes", new[] { new ChartPoint(1, 40), new ChartPoint(2, -60) });
+        var chart = Bare().DataLabels().AddLollipop("Changes", new[] { new ChartPoint(1, 40), new ChartPoint(2, -60) });
         chart.Options.LollipopOrientation = ChartOrientation.Horizontal;
-        if (secondary) chart.Series[0].UseSecondaryValueAxis();
-        chart.Options.XAxis.WithBounds(-100, 100).WithReversal(reversed);
-        chart.Options.SecondaryXAxis.WithBounds(-100, 100).WithReversal(reversed);
+        if (secondary) chart.Series[0].SecondaryAxis();
+        chart.Options.XAxis.Bounds(-100, 100).Reversed(reversed);
+        chart.Options.SecondaryXAxis.Bounds(-100, 100).Reversed(reversed);
         var prepared = chart.Prepare(Context());
         var marks = prepared.Scene.Nodes.OfType<VisualSceneEllipse>().Where(node => node.Role == "lollipop-marker").ToArray();
         var captions = prepared.Scene.Nodes.OfType<VisualSceneText>().Where(node => node.Role == "data-label").ToArray();
@@ -129,7 +129,7 @@ public sealed class ComparisonOrientationTests {
         var chart = Bare();
         if (dumbbell) chart.AddDumbbell("Comparison", new[] { new ChartDumbbell(1, 10, 30), new ChartDumbbell(2, 40, 70), new ChartDumbbell(3, 80, 90) });
         else chart.AddLollipop("Comparison", new[] { new ChartPoint(1, 20), new ChartPoint(2, 50), new ChartPoint(3, 85) });
-        chart.Options.LollipopOrientation = chart.Options.DumbbellOrientation = ChartOrientation.Horizontal; chart.Series[0].UseSecondaryValueAxis();
+        chart.Options.LollipopOrientation = chart.Options.DumbbellOrientation = ChartOrientation.Horizontal; chart.Series[0].SecondaryAxis();
         var full = chart.Prepare(Context()); var window = new ChartCartesianViewport(y: new ChartAxisWindow(1.5, 2.5), secondaryX: new ChartAxisWindow(35, 75));
         var view = chart.Prepare(Context(), window); Assert.Equal(ChartOrientation.Horizontal, view.CartesianOrientation);
         Assert.NotNull(view.SecondaryXProjection); Assert.Null(view.SecondaryYProjection);
@@ -157,7 +157,7 @@ public sealed class ComparisonOrientationTests {
         if (dumbbell) chart.AddDumbbell("Comparison", new[] { new ChartDumbbell(1, -100, -10), new ChartDumbbell(2, -5, -50) });
         else chart.AddLollipop("Comparison", new[] { new ChartPoint(1, -100), new ChartPoint(2, -10) });
         chart.Options.LollipopOrientation = chart.Options.DumbbellOrientation = ChartOrientation.Horizontal;
-        chart.Options.XAxis.WithLogarithmicScale(domain: ChartLogarithmicDomain.Negative).WithReversal(reversed);
+        chart.Options.XAxis.LogarithmicScale(domain: ChartLogarithmicDomain.Negative).Reversed(reversed);
         var prepared = chart.Prepare(Context()); Assert.True(prepared.XProjection!.FullMaximum < 0); Assert.True(prepared.XProjection.FullMinimum < 0);
         var lines = prepared.Scene.Nodes.OfType<VisualSceneLine>().Where(node => node.Role == (dumbbell ? "dumbbell-connector" : "lollipop-stem")).ToArray();
         Assert.Equal(2, lines.Length);
@@ -176,15 +176,15 @@ public sealed class ComparisonOrientationTests {
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.DumbbellOrientation = (ChartOrientation)42);
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Options.LollipopOrientation = (ChartOrientation)42);
         Assert.Throws<ArgumentOutOfRangeException>(() => chart.Series[0].Dumbbell.StartMarker.Radius = -1);
-        Assert.Throws<ArgumentNullException>(() => chart.Series[0].ConfigureDumbbell(null!));
-        Assert.Throws<InvalidOperationException>(() => Chart.Create().AddLollipop("Single", new[] { new ChartPoint(1, 1) }).Series[0].ConfigureDumbbell(_ => { }));
+        Assert.Throws<ArgumentNullException>(() => chart.Series[0].Dumbbell(null!));
+        Assert.Throws<InvalidOperationException>(() => Chart.Create().AddLollipop("Single", new[] { new ChartPoint(1, 1) }).Series[0].Dumbbell(_ => { }));
         chart.Options.DumbbellOrientation = ChartOrientation.Horizontal; chart.AddLine("Vertical", new[] { new ChartPoint(1, 2) });
         Assert.Throws<NotSupportedException>(() => chart.Prepare(Context()));
-        chart.RemoveSeries(chart.Series[1]); chart.Options.YAxis.WithScale(ChartScaleKind.Logarithmic);
+        chart.RemoveSeries(chart.Series[1]); chart.Options.YAxis.Scale(ChartScaleKind.Logarithmic);
         Assert.Throws<NotSupportedException>(() => chart.Prepare(Context()));
     }
 
-    private static Chart Bare() => Chart.Create().WithSize(800, 400).WithHeader(false).WithLegend(false).WithAxes(false).WithGrid(false);
+    private static Chart Bare() => Chart.Create().Size(800, 400).ShowHeader(false).Legend(false).Axes(false).ShowGrid(false);
     private static VisualRenderContext Context(int width = 800, bool dark = false) => new(layout: new VisualLayoutOptions(new VisualSize(width, 400)),
         theme: VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), themeMode: dark ? ThemeMode.Dark : ThemeMode.Light);
     private static VisualScene Scene(Chart chart) {

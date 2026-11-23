@@ -22,9 +22,9 @@ public static partial class MermaidSequenceRendering {
         options ??= new MermaidSequenceRenderOptions();
         var artifactId = string.IsNullOrWhiteSpace(options.Id) ? "mermaid-sequence" : options.Id!.Trim();
         var sequence = SequenceArtifact.Create(artifactId)
-            .WithTitle(ResolveTitle(document, options))
-            .WithSubtitle(MermaidHeading.Subtitle(options.Subtitle))
-            .WithSize(options.Width, options.Height);
+            .Title(ResolveTitle(document, options))
+            .Subtitle(MermaidHeading.Subtitle(options.Subtitle))
+            .Width(options.Width).Height(options.Height);
         sequence.Padding = options.Padding;
         sequence.Metadata["mermaid.kind"] = document.Kind.ToString();
         sequence.Metadata["mermaid.header"] = document.Header;
