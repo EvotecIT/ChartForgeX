@@ -30,10 +30,10 @@ public sealed class TopologyAccentBrowserTests {
         var graph = chart.ToGraphScene(o => { o.AccentSource = source; o.IconCatalog = render.IconCatalog; });
         graph.Options.Enable(GraphSceneFeatures.LevelOfDetail);
         if (backend == HtmlGraphRenderBackend.Canvas) graph.Options.LevelOfDetail.CanvasPreferredNodeThreshold = 1;
-        string Html(HtmlGraphExplorerTheme theme) => graph.ToGraphExplorerHtmlPage(o => {
-            o.RenderBackend = backend; o.AllowCanvasFallback = true; o.Theme = theme; o.PersistThemePreference = false;
+        string Html(ThemeMode theme) => graph.ToGraphExplorerHtmlPage(o => {
+            o.RenderBackend = backend; o.AllowCanvasFallback = true; o.ThemeMode = theme; o.PersistThemePreference = false;
         });
-        await using var session = await OpenAsync(Html(HtmlGraphExplorerTheme.Light), 1100, 720);
+        await using var session = await OpenAsync(Html(ThemeMode.Light), 1100, 720);
         var page = session.Page;
         var root = page.Locator(".cfx-graph-explorer");
         async Task Capture(IPage capturePage, string phase, string mode) {
@@ -42,7 +42,7 @@ public sealed class TopologyAccentBrowserTests {
             Directory.CreateDirectory(folder);
             var name = "topology-surfaces-" + backend + "-" + source + "-" + phase + "-" + mode;
             var htmlPath = Path.Combine(folder, name + ".html");
-            await File.WriteAllTextAsync(htmlPath, Html(mode == "dark" ? HtmlGraphExplorerTheme.Dark : HtmlGraphExplorerTheme.Light));
+            await File.WriteAllTextAsync(htmlPath, Html(mode == "dark" ? ThemeMode.Dark : ThemeMode.Light));
             var originalViewport = capturePage.ViewportSize!;
             try {
                 foreach (var width in new[] { 1440, 390 }) {
@@ -107,7 +107,7 @@ public sealed class TopologyAccentBrowserTests {
             var previousNodes = graph.Nodes.Where(node => node.Id.StartsWith("implicit-", StringComparison.Ordinal) && !node.Metadata.ContainsKey("topology.card")).ToArray();
             try {
                 foreach (var node in previousNodes) node.Style.BackgroundColor = previousFill;
-                await using var beforeSession = await OpenAsync(Html(HtmlGraphExplorerTheme.Light), 1100, 720);
+                await using var beforeSession = await OpenAsync(Html(ThemeMode.Light), 1100, 720);
                 var beforePage = beforeSession.Page;
                 await beforePage.WaitForFunctionAsync("()=>!!document.querySelector('.cfx-graph-explorer').__cfxGraphState");
                 await Capture(beforePage, "before", "light");
@@ -136,7 +136,7 @@ public sealed class TopologyAccentBrowserTests {
         graph.Options.LevelOfDetail.CanvasPreferredNodeThreshold = 1;
         await using var session = await OpenAsync(graph.ToGraphExplorerHtmlPage(o => {
             o.RenderBackend = HtmlGraphRenderBackend.Canvas; o.AllowCanvasFallback = true;
-            o.Theme = HtmlGraphExplorerTheme.Light; o.PersistThemePreference = false;
+            o.ThemeMode = ThemeMode.Light; o.PersistThemePreference = false;
         }), 390, 700);
         await session.Page.WaitForFunctionAsync("()=>!!document.querySelector('.cfx-graph-explorer').__cfxGraphState");
         var root = session.Page.Locator(".cfx-graph-explorer");
@@ -160,7 +160,7 @@ public sealed class TopologyAccentBrowserTests {
         var graph = chart.ToGraphScene(options => { options.AccentSource = render.AccentSource; options.IconCatalog = render.IconCatalog; });
         Assert.Contains("var(--cfx-topology-status-accent,", graph.Nodes[0].Style.BorderColor);
         await using var session = await OpenAsync(graph.ToGraphExplorerHtmlPage(options => {
-            options.RenderBackend = backend; options.PersistThemePreference = false; options.Theme = HtmlGraphExplorerTheme.Light;
+            options.RenderBackend = backend; options.PersistThemePreference = false; options.ThemeMode = ThemeMode.Light;
         }), width, 700);
         var page = session.Page;
         var root = page.Locator(".cfx-graph-explorer");

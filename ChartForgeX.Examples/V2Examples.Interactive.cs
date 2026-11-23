@@ -49,7 +49,7 @@ public static partial class V2Examples {
 
     /// <summary>Writes a diagram's live page: pan, zoom and node details with its runtime inlined (topology has no shared-asset option).</summary>
     private static void WriteInteractiveTopology(string output, ChartForgeX.Topology.TopologyChart chart, string id, string title, string subtitle, ThemeMode mode) {
-        chart.Title(title).Subtitle(subtitle).Theme(VisualTheme.Graphite(), mode);
+        chart.Title(title).Subtitle(subtitle).Theme(VisualTheme.Graphite()).ThemeMode(mode);
         ExampleArtifactWriter.WriteText(Path.Combine(output, id + ".interactive.html"), chart.ToInteractiveHtmlPage(chart.DefaultRenderOptions));
     }
 

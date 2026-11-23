@@ -7,7 +7,7 @@ public static class UseCaseAdvancedActorsRecipe {
         var compact = variant == "compact";
         var chart = TopologyChart.Create().Id("native-usecase-advanced-actors").Title("Participants in a request")
             .Subtitle("Plain, hollow, business, silhouette and finite native icon actors")
-            .Theme(VisualTheme.Graphite(), mode).Viewport(new TopologyViewport(compact ? 390 : 1100, compact ? 1160 : 680, 28))
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Viewport(new TopologyViewport(compact ? 390 : 1100, compact ? 1160 : 680, 28))
             .LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(compact ? TopologyLayoutDirection.LeftToRight : TopologyLayoutDirection.TopToBottom);
         chart.DefaultRenderOptions = new TopologyRenderOptions { FitContentToViewport = false, IncludeLegend = false,
             WrapNodeLabels = true, AllowMultilineNodeLabels = true, MaxNodeLabelLines = 6, MaxNodeSubtitleLines = 6 };

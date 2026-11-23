@@ -7,7 +7,7 @@ public static class UseCaseSourceDepthRecipe {
         var compact = variant == "compact";
         var chart = TopologyChart.Create().Id("native-usecase-depth").Title("Publish prepared documents")
             .Subtitle("Actors, stereotypes, approval notes and named associations")
-            .Theme(VisualTheme.Graphite(), mode).Viewport(new TopologyViewport(compact ? 390 : 900, compact ? 620 : 520, 28))
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Viewport(new TopologyViewport(compact ? 390 : 900, compact ? 620 : 520, 28))
             .LayoutMode(TopologyLayoutMode.Swimlane).LayoutDirection(compact ? TopologyLayoutDirection.TopToBottom : TopologyLayoutDirection.LeftToRight);
         chart.DefaultRenderOptions = new TopologyRenderOptions { FitContentToViewport = true,
             MaxNodeLabelLines = 8, MaxNodeSubtitleLines = 8, WrapNodeLabels = true, AllowMultilineNodeLabels = true };

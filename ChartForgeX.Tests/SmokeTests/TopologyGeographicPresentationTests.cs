@@ -55,7 +55,7 @@ internal static partial class SmokeTests {
 
         var options = new TopologyRenderOptions { IncludeLegend = false, IncludeGroups = false, Geography = { IncludeCallouts = true, CalloutMaxItems = 2 } }
             .MonitoringDashboardStyle()
-            .SelectGroup("APAC");
+            .SelectedGroupId("APAC");
         var svg = chart.ToSvg(options);
         var callouts = System.Xml.Linq.XDocument.Parse(svg).Descendants().Where(element => (string?)element.Attribute("data-cfx-visual-role") == "topology-geographic-callout").ToArray();
         Assert(callouts.Length == 2 && callouts.Any(element => (string?)element.Attribute("data-group-id") == "APAC"), "Selected geographic groups should be prioritized when callout count is capped.");

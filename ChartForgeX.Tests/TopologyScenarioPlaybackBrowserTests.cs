@@ -52,7 +52,7 @@ public sealed class TopologyScenarioPlaybackBrowserTests {
             .AddScenario("save", "Save a note", scenario => scenario
                 .AddMessageStep("http", TopologyScenarioInteraction.Request, "POST /notes")
                 .AddMessageStep("http", TopologyScenarioInteraction.Response, "201 Created", reverse: true));
-        var html = chart.ToInteractiveHtmlPage(new TopologyRenderOptions { ActiveScenarioId = "save" }.HtmlScenarioPanel(),
+        var html = chart.ToInteractiveHtmlPage(new TopologyRenderOptions { ActiveScenarioId = "save" }.Html(html => html.ScenarioPanel()),
             configureLocalization: ui => { ui.Language = "pl"; ui[HtmlChartText.ScenarioRequest] = "żądanie"; ui[HtmlChartText.ScenarioResponse] = "odpowiedź"; });
         await using var session = await OpenAsync(html, 1024, 800);
         var page = session.Page;
@@ -100,10 +100,10 @@ public sealed class TopologyScenarioPlaybackBrowserTests {
     [InlineData(true, null)]
     public async Task ScenarioControls_WithAccentFills_RetainTextAndBadgeContrast(bool dark, string? color) {
         var chart = TopologyScenarioPlaybackTests.ReplicationChart()
-            .Theme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         chart.Scenarios[0].Color = color;
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(
-            new TopologyRenderOptions { ActiveScenarioId = "replicate" }.HtmlScenarioPanel()), 390, 900);
+            new TopologyRenderOptions { ActiveScenarioId = "replicate" }.Html(html => html.ScenarioPanel())), 390, 900);
         var page = session.Page;
         await page.Locator("[data-cfx-topology-scenario='']").ClickAsync();
         await page.Locator("[data-cfx-topology-scenario=replicate]").ClickAsync();
@@ -146,7 +146,7 @@ public sealed class TopologyScenarioPlaybackBrowserTests {
         chart.Nodes[2].Label = "Secondary directory service";
         chart.Title = "   ";
         await using var session = await OpenAsync(chart.ToInteractiveHtmlPage(
-            new TopologyRenderOptions { ActiveScenarioId = "replicate" }.HtmlScenarioPanel().HtmlScenarioSequence()), 390, 1000);
+            new TopologyRenderOptions { ActiveScenarioId = "replicate" }.Html(html => html.ScenarioPanel()).Html(html => html.ScenarioSequence())), 390, 1000);
         foreach (var selector in new[] { ".cfx-topology-viewport", "[data-cfx-scenario-sequence=replicate]" }) {
             var region = session.Page.Locator(selector);
             Assert.True(await region.EvaluateAsync<bool>("node => node.scrollWidth > node.clientWidth"));

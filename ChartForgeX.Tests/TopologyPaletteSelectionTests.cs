@@ -106,7 +106,7 @@ public sealed partial class TopologyPaletteSelectionTests {
     public void MermaidDepthSectionsReachCustomThemePaintAndPermitHostOverrides(ThemeMode mode) {
         var parsed = new MermaidParser().ParseMindMap("%%{init: {'mindmap': {'colorBy': 'depth'}}}%%\nmindmap\n Root\n   Owner\n       Child");
         Assert.Empty(parsed.Diagnostics);
-        var chart = parsed.Document!.ToTopologyChart().Theme(Theme(), mode);
+        var chart = parsed.Document!.ToTopologyChart().Theme(Theme()).ThemeMode(mode);
         var colors = chart.Theme.Resolve(mode);
         var options = Options();
         var svg = XDocument.Parse(chart.ToSvg(options));
@@ -139,7 +139,7 @@ public sealed partial class TopologyPaletteSelectionTests {
     });
 
     private static TopologyChart Diagram(ThemeMode mode) => TopologyChart.Create().Id("palette-selection")
-        .Theme(Theme(), mode).Viewport(new TopologyViewport(500, 240, 20)).Legend((TopologyLegend?)null).LayoutMode(TopologyLayoutMode.Manual)
+        .Theme(Theme()).ThemeMode(mode).Viewport(new TopologyViewport(500, 240, 20)).Legend((TopologyLegend?)null).LayoutMode(TopologyLayoutMode.Manual)
         .AddNode("first", "First", 40, 80, width: 130, height: 60)
         .AddNode("second", "Second", 320, 80, width: 130, height: 60)
         .AddEdge("route", "first", "second", routing: TopologyEdgeRouting.Straight);

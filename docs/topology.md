@@ -52,7 +52,7 @@ var theme = VisualTheme.Graphite();
 var mode = ThemeMode.Dark;
 var trend = Chart.Create().Theme(theme).ThemeMode(mode)
     .AddLine("Requests", new[] { new ChartPoint(1, 12), new ChartPoint(2, 18) });
-var topology = TopologyChart.Create().Theme(theme, mode)
+var topology = TopologyChart.Create().Theme(theme).ThemeMode(mode)
     .AddNode("api", "API", 100, 100, status: TopologyHealthStatus.Healthy);
 
 var variables = new SvgColorVariables()
@@ -90,7 +90,7 @@ Set `node.ShowHealthRing = true` or call `chart.UpdateNode(id, n => n.ShowHealth
 
 ```csharp
 var hierarchy = TopologyChart.Create().Viewport(new TopologyViewport(800, 520))
-    .Theme(VisualTheme.Graphite(), ThemeMode.Light)
+    .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Light)
     .AddHierarchy(new[] {
         new TopologyHierarchyItem("reference", "Reference clock") {
             Status = TopologyHealthStatus.Healthy, Badge = "REF"
@@ -172,8 +172,8 @@ chart.AddScenario("client-request-europe", "Europe request", scenario => scenari
 
 var options = new TopologyRenderOptions()
     .ActiveScenarioId("client-request-europe")
-    .HtmlScenarioControls()
-    .HtmlScenarioUrlState();
+    .Html(html => html.ScenarioControls())
+    .Html(html => html.ScenarioUrlState());
 
 var html = chart.ToInteractiveHtmlPage(options);
 ```
@@ -531,11 +531,11 @@ With viewport controls on, a topology whose node captions would render below 10 
 
 The viewport is a keyboard target: `+` and `-` zoom, `0` fits, and the arrow keys pan (Shift pans further). Arrow keys on a focused node still move between related elements.
 
-`.HtmlFindControls()` adds a find row inside the diagram card, above the plot, for layouts without force graph controls (which already carry their own search). It matches node labels, ids, kinds and group names as you type, narrows by group and by node kind (named as the legend's node-kind entries name them, otherwise by the kind value), highlights the matches with the edges between them while the rest dims, and moves the viewport to them without dropping below the readable zoom. Enter selects and focuses the first match; Escape clears the find. Hosts can drive it with `cfx-topology-set-find` (`query`, `group`, `kind`, optional `reveal: false`) and listen for `cfx-topology-find`. The gallery's `visual-dense-service-estate-navigator.html` shows twelve sites and 93 services this way.
+`.Html(html => html.FindControls())` adds a find row inside the diagram card, above the plot, for layouts without force graph controls (which already carry their own search). It matches node labels, ids, kinds and group names as you type, narrows by group and by node kind (named as the legend's node-kind entries name them, otherwise by the kind value), highlights the matches with the edges between them while the rest dims, and moves the viewport to them without dropping below the readable zoom. Enter selects and focuses the first match; Escape clears the find. Hosts can drive it with `cfx-topology-set-find` (`query`, `group`, `kind`, optional `reveal: false`) and listen for `cfx-topology-find`. The gallery's `visual-dense-service-estate-navigator.html` shows twelve sites and 93 services this way.
 
 ```csharp
 var options = new TopologyRenderOptions { ReadableDenseLayout = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile }
-    .HtmlFindControls();
+    .Html(html => html.FindControls());
 chart.SaveInteractiveHtml("estate.html", options);
 ```
 
@@ -569,7 +569,7 @@ A chart can carry the options it was designed for: `.DefaultRenderOptions(option
 - Groups can carry a short `Symbol`; the built-in `region` / `globe` symbol renders a small geographic mark in the group header.
 - Groups can set `.UpdateGroup("group-id", g => g.Color("#8B5CF6"))` to keep region or product identity color independent from health status; the health remains in `data-cfx-status`.
 - Nodes can set `.UpdateNode("node-id", n => n.Color("#2563EB"))` for the same identity/status split on hubs, selected sites, collapsed clusters, or service nodes.
-- Render options can set `.SelectGroup("region-id")`, `.SelectNode("node-id")`, and `.SelectEdge("edge-id")` when a static export should show the currently selected site, region, or path without filtering or dimming other elements. SVG emits `data-cfx-selected` and selected classes; PNG renders matching selected outlines.
+- Render options can set `.SelectedGroupId("region-id")`, `.SelectedNodeId("node-id")`, and `.SelectedEdgeId("edge-id")` when a static export should show the currently selected site, region, or path without filtering or dimming other elements. SVG emits `data-cfx-selected` and selected classes; PNG renders matching selected outlines.
 - `NodeSurfaceStyle` can render neutral cards, subtle tinted cards, or accent-band cards. Nodes can also set `BackgroundColor`, for example with `.UpdateNode(id, n => n.BackgroundColor(...))`, when a host needs a particular relationship card fill while keeping icons, labels, and exports deterministic.
 - Node kinds can be styled in one reusable pass with `.UpdateNodes(TopologyNodeKind.Certificate, n => n.Color("#2563EB").BackgroundColor("#EFF6FF"))`. Use `.NodesOfKindStyle(..., color: "#2563EB", backgroundColor: "#EFF6FF", iconId: "common:certificate")` when a host wants accent, fill, and icon assignment to be applied together without caring about helper call order. This is useful for relationship cards where certificates, owners, endpoints, services, organizations, or other host-mapped concepts need stable visual identity across several topology diagrams.
 - Edges can set `.UpdateEdge("edge-id", e => e.LineStyle(TopologyEdgeLineStyle.Dashed))` or `Dotted` when relationship type should control line style separately from health status. Use `.UpdateEdge(id, e => e.Color(...))` or the `color` argument on `AddEdge(...)` when relationship type should control route color independently from health status.

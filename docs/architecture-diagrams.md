@@ -149,8 +149,8 @@ var frame = chart.PrepareScenarioStep("create", 1);      // step 2 highlighted, 
 File.WriteAllBytes("step-2.png", frame.ToPng());
 
 var page = chart.ToInteractiveHtmlPage(new TopologyRenderOptions { ActiveScenarioId = "create" }
-    .HtmlScenarioPanel()
-    .HtmlScenarioSequence());
+    .Html(html => html.ScenarioPanel())
+    .Html(html => html.ScenarioSequence()));
 
 var story = chart.ToScenarioStory("create");             // ChartForgeX.Stories: one scene per step
 File.WriteAllBytes("create.gif", story.Prepare().ToGif());

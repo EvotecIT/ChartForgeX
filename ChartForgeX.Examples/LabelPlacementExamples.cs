@@ -47,7 +47,7 @@ public static class LabelPlacementExamples {
 
     /// <summary>Creates a topology with close captions, multiline nodes and labelled routes.</summary>
     public static TopologyChart Topology(bool dark) => TopologyChart.Create().Viewport(new TopologyViewport(1000, 500))
-        .Theme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light).Title("Measured service topology")
+        .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light).Title("Measured service topology")
         .AddNode("gateway", "Regional gateway", 70, 170, width: 180, height: 96, subtitle: "Traffic and routing")
         .AddNode("identity", "Identity service", 380, 120, width: 190, height: 96, subtitle: "Authentication")
         .AddNode("policy", "Policy evaluation", 380, 290, width: 190, height: 96, subtitle: "Control checks")

@@ -68,7 +68,7 @@ public sealed class TopologyScenarioPlaybackTests {
     [Fact]
     public void InteractiveHtml_NonAsciiChartId_RendersSequenceFigures() {
         var chart = ReplicationChart().Id("zamówienia-łódź");
-        var html = chart.ToInteractiveHtmlPage(new TopologyRenderOptions().HtmlScenarioPanel().HtmlScenarioSequence());
+        var html = chart.ToInteractiveHtmlPage(new TopologyRenderOptions().Html(html => html.ScenarioPanel()).Html(html => html.ScenarioSequence()));
 
         Assert.Contains("data-cfx-scenario-sequence=\"replicate\"", html, StringComparison.Ordinal);
     }
@@ -203,7 +203,7 @@ public sealed class TopologyScenarioPlaybackTests {
 
     [Fact]
     public void InteractiveHtml_ScenarioSequence_RendersPayloadPanelSequenceFiguresAndStepData() {
-        var options = new TopologyRenderOptions { ActiveScenarioId = "replicate" }.HtmlScenarioPanel().HtmlScenarioSequence();
+        var options = new TopologyRenderOptions { ActiveScenarioId = "replicate" }.Html(html => html.ScenarioPanel()).Html(html => html.ScenarioSequence());
         var html = ReplicationChart().ToInteractiveHtmlPage(options);
 
         Assert.Contains("data-cfx-scenario-payload=\"true\"", html, StringComparison.Ordinal);
@@ -221,7 +221,7 @@ public sealed class TopologyScenarioPlaybackTests {
     [Fact]
     public void InteractiveHtml_ScenarioSequence_KeepsTheTopologyAndSequenceTypeScale() {
         var chart = ReplicationChart();
-        var options = new TopologyRenderOptions { ActiveScenarioId = "replicate" }.HtmlScenarioPanel().HtmlScenarioSequence();
+        var options = new TopologyRenderOptions { ActiveScenarioId = "replicate" }.Html(html => html.ScenarioPanel()).Html(html => html.ScenarioSequence());
         var html = chart.ToInteractiveHtmlPage(options);
         var topologyWidth = chart.Prepare().Width;
         var sequenceWidth = VisualArtifacts.SequencePreparedCompiler.PrepareDefault(chart.ToSequenceArtifact("replicate")).Size.Width;
@@ -233,7 +233,7 @@ public sealed class TopologyScenarioPlaybackTests {
         Assert.Equal(sequenceWidth * 0.875, Minimum("cfx-sequence-min-width"), 1);
         Assert.Contains("max-width:" + Math.Max(topologyWidth, sequenceWidth).ToString("0.###", System.Globalization.CultureInfo.InvariantCulture) + "px", html, StringComparison.Ordinal);
         Assert.Contains("[data-cfx-text-size='kept'] .cfx-topology-viewport{overflow-x:auto", html, StringComparison.Ordinal);
-        Assert.DoesNotContain("data-cfx-text-size=\"", chart.ToInteractiveHtmlPage(new TopologyRenderOptions().HtmlScenarioPanel()), StringComparison.Ordinal);
+        Assert.DoesNotContain("data-cfx-text-size=\"", chart.ToInteractiveHtmlPage(new TopologyRenderOptions().Html(html => html.ScenarioPanel())), StringComparison.Ordinal);
     }
     [Fact]
     public void ScenarioStory_OneScenePerStep_RendersEveryChapter() {

@@ -21,7 +21,7 @@ public sealed class GraphSelectionPolicyBrowserTests {
         graph.Options.Features = GraphSceneFeatures.Selection;
         await using var session = await OpenAsync(graph.ToGraphExplorerHtmlPage(options => {
             options.RenderBackend = backend;
-            options.Theme = dark ? HtmlGraphExplorerTheme.Dark : HtmlGraphExplorerTheme.Light;
+            options.ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light;
             options.PersistThemePreference = false;
         }), width, 680);
         var page = session.Page;

@@ -11,7 +11,7 @@ public static class TopologySiteLinksRecipe {
         if (variant is not ("sites" or "wide")) throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = TopologyChart.Create().Id("ad-site-links").Title("Contoso replication sites")
             .Subtitle("Domain controllers grouped per site; links show transports, cost and evidence")
-            .Theme(VisualTheme.Graphite(), mode).Viewport(new TopologyViewport(1360, 720, 24))
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Viewport(new TopologyViewport(1360, 720, 24))
             .LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(TopologyLayoutDirection.TopToBottom)
             .SiblingGrouping(new TopologySiblingGrouping { TitleFormatter = (kind, members) => "Domain controllers" });
         chart.DefaultRenderOptions(new TopologyRenderOptions { FitContentToViewport = true, NodeDisplayMode = TopologyNodeDisplayMode.Card });

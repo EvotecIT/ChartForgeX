@@ -27,7 +27,7 @@ public sealed partial class ExplorerLocalizationBrowserTests {
             graph.Options.LevelOfDetail.CanvasPreferredNodeThreshold = 1;
         }
         var html = graph.ToGraphExplorerHtmlPage(options => {
-            options.RenderBackend = backend; options.Theme = HtmlGraphExplorerTheme.Light;
+            options.RenderBackend = backend; options.ThemeMode = ThemeMode.Light;
             options.PersistThemePreference = false; Arabic(options.Localization);
             if (external) options.ExternalAssets = new HtmlAssetReferences("https://assets.example.test/");
         });
@@ -36,7 +36,7 @@ public sealed partial class ExplorerLocalizationBrowserTests {
         await ObserveNativeCanvasPaintAsync(page);
         if (external) foreach (var asset in HtmlInteractiveAssetFiles.GraphExplorer())
             await page.RouteAsync("https://assets.example.test/" + asset.FileName, route => route.FulfillAsync(new() { ContentType = asset.ContentType, Body = asset.Content }));
-        var baseline = graph.ToGraphExplorerHtmlPage(options => { options.RenderBackend = backend; options.Theme = HtmlGraphExplorerTheme.Light; options.PersistThemePreference = false; });
+        var baseline = graph.ToGraphExplorerHtmlPage(options => { options.RenderBackend = backend; options.ThemeMode = ThemeMode.Light; options.PersistThemePreference = false; });
         await page.SetContentAsync(baseline);
         await AssertGraphChromeContrastAsync(page);
         var native = await NativeSnapshotAsync(page, ".cfx-graph-explorer");

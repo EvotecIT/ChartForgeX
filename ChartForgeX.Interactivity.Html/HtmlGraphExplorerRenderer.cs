@@ -36,7 +36,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         if (options.ExternalAssets == null) writer.Append("<style>").Append(StyleSheet).Append("</style>");
         else writer.Append(ExternalAssetMarkup(markup => HtmlInteractiveAssetFiles.WriteStylesheet(markup, options.ExternalAssets, HtmlInteractiveAssetFiles.GraphExplorerStyle, graphExplorer: true)));
         writer.Append("</head><body class=\"cfx-graph-shell");
-        if (options.Theme == HtmlGraphExplorerTheme.Dark) writer.Append(" cfx-graph-page-dark");
+        if (options.ThemeMode == ThemeMode.Dark) writer.Append(" cfx-graph-page-dark");
         if (options.FillAvailableHeight) writer.Append(" cfx-graph-shell-embedded");
         writer.Append("\">");
         writer.Append(RenderGraph(scene, options));
@@ -113,7 +113,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         Attribute(writer, "data-cfx-metadata", MetadataJson(scene.Metadata));
         Attribute(writer, "data-cfx-graph-renderer", Backend(options.RenderBackend));
         Attribute(writer, "data-cfx-graph-canvas-fallback", options.AllowCanvasFallback ? "true" : "false");
-        Attribute(writer, "data-cfx-graph-theme", Theme(options.Theme));
+        Attribute(writer, "data-cfx-graph-theme", Theme(options.ThemeMode));
         Attribute(writer, "data-cfx-graph-theme-persist", options.PersistThemePreference ? "true" : "false");
         Attribute(writer, "data-cfx-graph-state-persist", options.PersistInteractionState ? "true" : "false");
         Attribute(writer, "data-cfx-graph-state-key", string.IsNullOrWhiteSpace(options.InteractionStateStorageKey) ? "cfx-graph-state:" + scene.Id : options.InteractionStateStorageKey!.Trim());

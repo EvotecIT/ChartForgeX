@@ -175,7 +175,7 @@ public sealed class NativeTopologyThemePaintTests {
     }
 
     private static TopologyChart Diagram(VisualTheme theme, ThemeMode mode = ThemeMode.Light) {
-        var chart = TopologyChart.Create().Id("theme-paints").Theme(theme, mode).Title("Network").Subtitle("Host theme")
+        var chart = TopologyChart.Create().Id("theme-paints").Theme(theme).ThemeMode(mode).Title("Network").Subtitle("Host theme")
             .Viewport(new TopologyViewport(820, 240, 20)).Legend((TopologyLegend?)null);
         var statuses = new[] { TopologyHealthStatus.Healthy, TopologyHealthStatus.Warning, TopologyHealthStatus.Critical, TopologyHealthStatus.Unknown, TopologyHealthStatus.Disabled };
         for (var i = 0; i < statuses.Length; i++) chart.AddNode("node-" + i, statuses[i].ToString(), 30 + i * 150, 60, kind: TopologyNodeKind.Server, status: statuses[i], subtitle: "Status", width: 120, height: 85);

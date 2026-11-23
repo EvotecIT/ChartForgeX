@@ -4,8 +4,8 @@ public static class MixedCaptionRecipe {
     public static VisualArtifact Create(string variant = "wide", ThemeMode mode = ThemeMode.Light, string? fontFamily = null) {
         if (variant is not ("wide" or "compact")) throw new ArgumentOutOfRangeException(nameof(variant));
         var width = variant == "compact" ? 390 : 1100;
-        var chart = TopologyChart.Create().Viewport(new TopologyViewport(width, 420)).Theme(VisualTheme.Graphite(), mode);
-        if (fontFamily != null) chart.Theme(chart.Theme.WithFontFamily(fontFamily), mode);
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(width, 420)).Theme(VisualTheme.Graphite()).ThemeMode(mode);
+        if (fontFamily != null) chart.Theme(chart.Theme.WithFontFamily(fontFamily)).ThemeMode(mode);
         var node = new TopologyNode { Id = "review", X = 30, Y = 40, Width = width - 70, Height = 280, ShowStatusBadge = false, FitLabelToContent = true,
             LabelContent = TextContent.FromRuns(new[] { new TextContentRun("Review "), new TextContentRun("carefully", TextInlineEmphasis.Bold), new TextContentRun(" and "), new TextContentRun("record", TextInlineEmphasis.Italic), new TextContentRun("\naccepted work") }) };
         node.Details.Add(new TopologyNodeDetail { Label = "Status:", ValueContent = TextContent.FromRuns(new[] { new TextContentRun("Ready "), new TextContentRun("for approval", TextInlineEmphasis.Bold | TextInlineEmphasis.Italic) }) });

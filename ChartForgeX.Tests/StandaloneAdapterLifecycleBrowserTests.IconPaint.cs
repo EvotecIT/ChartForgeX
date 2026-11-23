@@ -23,7 +23,7 @@ public sealed partial class StandaloneAdapterLifecycleBrowserTests {
             graph.Options.LevelOfDetail.CanvasPreferredNodeThreshold = 1;
         }
         var html = Instrument(graph.ToGraphExplorerHtmlPage(options => {
-            options.RenderBackend = backend; options.Theme = HtmlGraphExplorerTheme.Light;
+            options.RenderBackend = backend; options.ThemeMode = ThemeMode.Light;
             options.PersistThemePreference = false; options.PersistInteractionState = false;
         })).Replace("<head>", "<head><script>" + GraphIconPaintProbe + "</script>", StringComparison.Ordinal);
         await using var session = await OpenAsync(html, width, 900);

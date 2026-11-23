@@ -37,7 +37,7 @@ public sealed class GraphEndpointCaptionBrowserTests {
             graph.Options.LevelOfDetail.CanvasPreferredNodeThreshold = 1;
         }
         await using var session = await OpenAsync(graph.ToGraphExplorerHtmlPage(options => {
-            options.RenderBackend = backend; options.Theme = dark ? HtmlGraphExplorerTheme.Dark : HtmlGraphExplorerTheme.Light;
+            options.RenderBackend = backend; options.ThemeMode = dark ? ThemeMode.Dark : ThemeMode.Light;
             options.PersistThemePreference = false; options.FillAvailableHeight = true;
         }), width, 800);
         var page = session.Page;

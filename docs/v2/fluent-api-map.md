@@ -1015,18 +1015,18 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | `WithForceGraphStyle` | `.ForceGraphStyle(...)` |
 | `WithForceLayout` | `.ForceLayoutProfile(profile).ForceLayoutIterations(iterations)` |
 | `WithHtmlControlPlacement` | `.Html(h => h.ControlPlacement(placement))` |
-| `WithHtmlFindControls` | `.HtmlFindControls(...)` |
-| `WithHtmlForceGraphControls` | `.HtmlForceGraphControls(...)` |
-| `WithHtmlFullscreenControl` | `.HtmlFullscreenControl(...)` |
+| `WithHtmlFindControls` | `.Html(html => html.FindControls(...))` |
+| `WithHtmlForceGraphControls` | `.Html(html => html.ForceGraphControls(...))` |
+| `WithHtmlFullscreenControl` | `.Html(html => html.FullscreenControl(...))` |
 | `WithHtmlNarrowMinimumHeight(TopologyRenderOptions, Double)` | `.Html(h => h.NarrowMinimumHeight(height))` |
 | `WithHtmlOpeningView` | `.Html(h => h.OpeningView(view))` |
-| `WithHtmlScenarioCheckboxes` | `.HtmlScenarioControlMode(TopologyHtmlScenarioControlMode.Checkboxes)` |
-| `WithHtmlScenarioControlMode` | `.HtmlScenarioControlMode(...)` |
-| `WithHtmlScenarioControls` | `.HtmlScenarioControls(...)` |
-| `WithHtmlScenarioPanel` | `.HtmlScenarioPanel(...)` |
-| `WithHtmlScenarioSequence` | `.HtmlScenarioSequence(...)` |
-| `WithHtmlScenarioUrlState` | `.HtmlScenarioUrlState(...)` |
-| `WithHtmlSelectionPanel` | `.HtmlSelectionPanel(...)` |
+| `WithHtmlScenarioCheckboxes` | `.Html(html => html.ScenarioControlMode(TopologyHtmlScenarioControlMode.Checkboxes))` |
+| `WithHtmlScenarioControlMode` | `.Html(html => html.ScenarioControlMode(...))` |
+| `WithHtmlScenarioControls` | `.Html(html => html.ScenarioControls(...))` |
+| `WithHtmlScenarioPanel` | `.Html(html => html.ScenarioPanel(...))` |
+| `WithHtmlScenarioSequence` | `.Html(html => html.ScenarioSequence(...))` |
+| `WithHtmlScenarioUrlState` | `.Html(html => html.ScenarioUrlState(...))` |
+| `WithHtmlSelectionPanel` | `.Html(html => html.SelectionPanel(...))` |
 | `WithHtmlWheelZoom` | `.Html(h => h.WheelZoom(wheelZoom))` |
 | `WithLuminousTopologyEdges` | `.LuminousEdges(...)` |
 | `WithMindMapStyle` | `.MindMapStyle(...)` |
@@ -1037,9 +1037,9 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | `WithRelationshipOverviewStyle` | `.RelationshipOverviewStyle(...)` |
 | `WithRelationshipRadialFocus` | `.RelationshipRadialFocus(...)` |
 | `WithRequiredIcons(TopologyRenderOptions, Boolean)` | `.RequireResolvedIcons(required)` |
-| `WithSelectedEdge` | `.SelectEdge(...)` |
-| `WithSelectedGroup` | `.SelectGroup(...)` |
-| `WithSelectedNode` | `.SelectNode(...)` |
+| `WithSelectedEdge` | `.SelectedEdgeId(...)` |
+| `WithSelectedGroup` | `.SelectedGroupId(...)` |
+| `WithSelectedNode` | `.SelectedNodeId(...)` |
 | `WithStateColorsPinnedInForcedColors(TopologyRenderOptions, Boolean)` | `.PinStateColorsInForcedColors(pin)` |
 | `WithTopologyEdgeVisualStyle(TopologyRenderOptions, ChartLineVisualStyle)` | `.EdgeVisualStyle(style)` |
 | `WithoutActiveScenario(TopologyRenderOptions)` | `.ActiveScenarioId(null)` |

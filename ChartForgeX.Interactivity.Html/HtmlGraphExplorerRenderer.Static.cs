@@ -26,7 +26,7 @@ public sealed partial class HtmlGraphExplorerRenderer {
         // A raster has no viewer whose color preference could apply, so System renders light.
         var body = RenderStaticSvgBody(projected, options, stage, rasterTheme: true);
         if (!SvgRasterRenderer.TryRenderFragment(body, "0 0 960 560", "xMidYMid meet", options.Width, options.Height, out var rgba)) throw new InvalidOperationException("Static graph SVG could not be rasterized.");
-        if (options.Theme == HtmlGraphExplorerTheme.Dark) CompositeTransparentPixels(rgba, 0x0b, 0x12, 0x20);
+        if (options.ThemeMode == ThemeMode.Dark) CompositeTransparentPixels(rgba, 0x0b, 0x12, 0x20);
         else CompositeTransparentPixels(rgba, 255, 255, 255);
         return PngWriter.WriteRgba(options.Width, options.Height, rgba);
     }
@@ -47,9 +47,9 @@ public sealed partial class HtmlGraphExplorerRenderer {
         writer.Append("<style>");
         writer.Append(Text(HtmlGraphExplorerAssets.StaticStyle));
         writer.Append("</style><g class=\"cfx-graph-explorer cfx-graph-svg cfx-graph-static-export");
-        if (options.Theme == HtmlGraphExplorerTheme.Dark) writer.Append(" cfx-graph-theme-dark");
+        if (options.ThemeMode == ThemeMode.Dark) writer.Append(" cfx-graph-theme-dark");
         writer.Append("\"");
-        Attribute(writer, "data-cfx-graph-theme", StaticThemeName(options.Theme, rasterTheme));
+        Attribute(writer, "data-cfx-graph-theme", StaticThemeName(options.ThemeMode, rasterTheme));
         writer.Append("><title>");
         writer.Append(Text(scene.Title));
         writer.Append("</title>");
@@ -76,9 +76,9 @@ public sealed partial class HtmlGraphExplorerRenderer {
         return writer.ToString();
     }
 
-    private static string StaticThemeName(HtmlGraphExplorerTheme theme, bool rasterTheme) => theme switch {
-        HtmlGraphExplorerTheme.Dark => "dark",
-        HtmlGraphExplorerTheme.System when !rasterTheme => "system",
+    private static string StaticThemeName(ThemeMode theme, bool rasterTheme) => theme switch {
+        ThemeMode.Dark => "dark",
+        ThemeMode.Auto when !rasterTheme => "system",
         _ => "light"
     };
 

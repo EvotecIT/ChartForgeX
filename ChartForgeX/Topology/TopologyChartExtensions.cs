@@ -16,20 +16,6 @@ namespace ChartForgeX.Topology;
 public static partial class TopologyChartExtensions {
 
     /// <summary>
-    /// Sets the topology theme.
-    /// </summary>
-    /// <param name="chart">The topology chart.</param>
-    /// <param name="theme">The theme to use.</param>
-    /// <returns>The current topology chart.</returns>
-    /// <param name="mode">An explicit mode, or null to retain the current mode.</param>
-    public static TopologyChart Theme(this TopologyChart chart, VisualTheme theme, ThemeMode? mode = null) {
-        if (chart == null) throw new ArgumentNullException(nameof(chart));
-        chart.Theme = theme ?? throw new ArgumentNullException(nameof(theme));
-        if (mode.HasValue) chart.ThemeMode = mode.Value;
-        return chart;
-    }
-
-    /// <summary>
     /// Adds an auto-placed group to the topology chart. Deterministic layout modes assign the coordinates and size.
     /// </summary>
     /// <param name="chart">The topology chart.</param>

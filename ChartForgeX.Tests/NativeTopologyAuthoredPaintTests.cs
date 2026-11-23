@@ -15,7 +15,7 @@ public sealed class NativeTopologyAuthoredPaintTests {
     [InlineData(TopologyNodeDisplayMode.Tile, false, true)]
     public void AuthoredNodeTextPaintIncludesSubtitlesAcrossCardsShapesAndChips(TopologyNodeDisplayMode display, bool shape, bool chip) {
         foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark }) {
-            var chart = TopologyChart.Create().Theme(VisualTheme.Graphite(), mode).Viewport(new TopologyViewport(720, 400, 20)).Legend((TopologyLegend?)null)
+            var chart = TopologyChart.Create().Theme(VisualTheme.Graphite()).ThemeMode(mode).Viewport(new TopologyViewport(720, 400, 20)).Legend((TopologyLegend?)null)
                 .AddNode("styled", "Title", 70, 80, subtitle: "Subcaption", width: 240, height: 160)
                 .AddNode("focus", "Focus", 470, 80);
             var node = chart.Nodes[0];
@@ -139,7 +139,7 @@ public sealed class NativeTopologyAuthoredPaintTests {
 
     private static TopologyChart Diagram(ThemeMode mode, bool variables) {
         string Paint(string name, string fallback) => variables ? "var(--" + name + ", " + fallback + ")" : fallback;
-        var chart = TopologyChart.Create().Theme(VisualTheme.Graphite(), mode).Viewport(new TopologyViewport(780, 380, 20)).Legend((TopologyLegend?)null)
+        var chart = TopologyChart.Create().Theme(VisualTheme.Graphite()).ThemeMode(mode).Viewport(new TopologyViewport(780, 380, 20)).Legend((TopologyLegend?)null)
             .AddGroup("domain", "Domain", 20, 20, 520, 310, subtitle: "Native paints", color: "#a855f7")
             .AddNode("member", "Member", 80, 130, groupId: "domain")
             .AddNode("focus", "Focus", 590, 130);

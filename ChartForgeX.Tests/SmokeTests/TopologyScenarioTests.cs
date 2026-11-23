@@ -295,9 +295,9 @@ internal static partial class SmokeTests {
         Assert(scenario.PlaybackDelayMilliseconds == 1200 && scenario.LoopPlayback && scenario.Spotlight && scenario.Steps[0].DurationMilliseconds == 1800, "Topology scenarios should own the same paced timeline and explicit focus intent as chart scenarios.");
 
         var options = new TopologyRenderOptions()
-            .HtmlScenarioControls(false)
-            .HtmlScenarioPanel(false)
-            .HtmlScenarioUrlState()
+            .Html(html => html.ScenarioControls(false))
+            .Html(html => html.ScenarioPanel(false))
+            .Html(html => html.ScenarioUrlState())
             .ActiveScenarioId("scenario");
         Assert(options.ActiveScenarioId == "scenario", "Topology render options should expose a fluent active scenario helper.");
         Assert(!options.Html.ScenarioControls, "Topology render options should expose a fluent scenario control toggle.");

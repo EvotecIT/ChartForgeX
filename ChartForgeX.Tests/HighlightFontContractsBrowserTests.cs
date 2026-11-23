@@ -72,7 +72,7 @@ public sealed class HighlightFontContractsBrowserTests {
     public async Task TopologyUnknownIdsDoNotAddHighlightMutingOrClearSelection(bool dark) {
         if (!Enabled) return;
         var chart = TopologyChart.Create().Viewport(new TopologyViewport(800, 320, 12)).Legend((TopologyLegend?)null)
-            .Theme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddNode("a", "API", 80, 100).AddNode("b", "Worker", 480, 100).AddEdge("ab", "a", "b", "Dispatch");
         await using var session = await OpenAsync(new HtmlInteractiveTopologyRenderer().RenderPage(chart,
             new TopologyRenderOptions { Html = { SelectionPanel = false } }), dark ? 390 : 1440, 680);
@@ -106,7 +106,7 @@ public sealed class HighlightFontContractsBrowserTests {
             .AddNode("c", "Queue", node => { node.Fixed = true; node.X = 680; node.Y = 340; }).AddEdge("ac", "a", "c", "Dispatch");
         graph.Options.Features = GraphSceneFeatures.Selection | GraphSceneFeatures.MultiSelection | GraphSceneFeatures.Viewport | GraphSceneFeatures.IncrementalUpdates;
         await using var session = await OpenAsync(new HtmlGraphExplorerRenderer().RenderPage(graph, options => {
-            options.RenderBackend = backend; options.Theme = HtmlGraphExplorerTheme.Dark; options.PersistThemePreference = false;
+            options.RenderBackend = backend; options.ThemeMode = ThemeMode.Dark; options.PersistThemePreference = false;
         }), 960, 680);
         var page = session.Page;
         await page.EvaluateAsync("()=>ChartForgeXGraphExplorer.highlight('availability-graph',[{role:'graph-node',id:'missing'}],{dim:true})");

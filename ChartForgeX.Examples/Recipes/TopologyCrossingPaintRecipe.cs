@@ -11,7 +11,7 @@ public static class TopologyCrossingPaintRecipe {
         if (variant is not ("wide-arc" or "compact-arc" or "wide-gap" or "compact-gap" or "wide-none" or "compact-none")) throw new ArgumentOutOfRangeException(nameof(variant));
         var chart = TopologyChart.Create().Id("native-crossing-handoff").Title("Independent handoffs")
             .Viewport(new TopologyViewport(variant.StartsWith("compact", StringComparison.Ordinal) ? 390 : 760, 460, 24)).LayoutMode(TopologyLayoutMode.Manual)
-            .Theme(VisualTheme.Graphite(), mode).Legend((TopologyLegend?)null);
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Legend((TopologyLegend?)null);
         chart.AddNode("receive", "Receive", 60, 200, width: 110, height: 50).AddNode("send", "Send", 590, 200, width: 110, height: 50)
             .AddNode("check", "Check", 330, 50, width: 110, height: 50).AddNode("finish", "Finish", 330, 350, width: 110, height: 50);
         foreach (var node in chart.Nodes) { node.Kind = TopologyNodeKind.Generic; node.ShowStatusBadge = false; }

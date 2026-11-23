@@ -160,7 +160,7 @@ public sealed class SharedDesignRoleTests {
         var theme = VisualTheme.Graphite();
         var variables = SvgColorVariables.SharedRoles(theme, mode);
         if (family == "topology")
-            return TopologyChart.Create().Id("roles").Viewport(new TopologyViewport(640, 360)).Theme(theme, mode)
+            return TopologyChart.Create().Id("roles").Viewport(new TopologyViewport(640, 360)).Theme(theme).ThemeMode(mode)
                 .AddAutoGroup("waw", "Warsaw", TopologyHealthStatus.Healthy)
                 .AddAutoNode("dc1", "DC01", TopologyNodeKind.Server, TopologyHealthStatus.Healthy, groupId: "waw")
                 .AddAutoNode("dc2", "DC02", TopologyNodeKind.Server, TopologyHealthStatus.Warning, groupId: "waw")

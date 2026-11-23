@@ -30,7 +30,7 @@ internal static class PreparedPipelineSmoke {
             AssertPrepared(donut.Prepare(context), "donut-slice");
             AssertXZoom(context);
 
-            var topology = CreateTopology().Theme(theme, mode);
+            var topology = CreateTopology().Theme(theme).ThemeMode(mode);
             var preparedTopology = topology.Prepare(context);
             AssertPrepared(preparedTopology, "topology-node");
             AssertSemanticHandoff(preparedTopology, topology.ToVisualArtifact().ToInterchangeEnvelope(),

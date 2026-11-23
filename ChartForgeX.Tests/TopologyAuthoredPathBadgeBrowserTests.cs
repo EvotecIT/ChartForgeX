@@ -12,7 +12,7 @@ public sealed class TopologyAuthoredPathBadgeBrowserTests {
     [BrowserTheory]
     [InlineData(false, 390)] [InlineData(true, 1200)]
     public async Task PortableOrdinaryWorkflowKeepsNativeCurveBadgesAndEditableFactsInScriptFreeHtml(bool dark, int width) {
-        var source = TopologyAuthoredPathBadgeRecipe.Create().Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light);
+        var source = TopologyAuthoredPathBadgeRecipe.Create().Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         var saved = source.ToVisualArtifact().ToInterchangeEnvelope();
         var restored = VisualArtifactInterchangeEnvelope.FromJson(saved.ToJson()).ToTopologyChart();
         restored.Nodes.Single(node => node.Id == "gateway").Details[0].Text = "Pending review";
@@ -58,7 +58,7 @@ public sealed class TopologyAuthoredPathBadgeBrowserTests {
             .Replace("\\u1234", "abcd", StringComparison.Ordinal).Replace("\\t", " ", StringComparison.Ordinal);
         var document = new ChartForgeX.Mermaid.MermaidParser().ParseCynefin(source).Document!;
         var chart = ChartForgeX.Mermaid.MermaidCynefinRendering.ToTopologyChart(document)
-            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family), dark ? ThemeMode.Dark : ThemeMode.Light);
+            .Theme(VisualTheme.Graphite().WithFontFamily(BrowserProofFonts.Family)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         var saved = chart.ToVisualArtifact().ToInterchangeEnvelope(); var restored = VisualArtifactInterchangeEnvelope.FromJson(saved.ToJson()).ToTopologyChart();
         var artifact = restored.ToVisualArtifact();
         await using var session = await BrowserProofFonts.OpenAsync(artifact.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }), width, 900);

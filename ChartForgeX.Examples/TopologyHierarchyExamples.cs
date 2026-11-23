@@ -20,7 +20,7 @@ public static class TopologyHierarchyExamples {
     public static TopologyChart CreateTopology(int width, bool dark) {
         TopologyRegionTypography.Register();
         var chart = Frame("service-regions", "Service topology", "Two regions · five services · six links", width, dark)
-            .Theme(RegionTheme(), dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Theme(RegionTheme()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
             .Viewport(new TopologyViewport(width - 48, 500, 20)).LayoutMode(TopologyLayoutMode.Regions)
             .AddAutoGroup("north", "North region", TopologyHealthStatus.Healthy, "Primary processing · zone A")
             .AddAutoGroup("south", "South region", TopologyHealthStatus.Warning, "Recovery processing · zone B")
@@ -66,7 +66,7 @@ public static class TopologyHierarchyExamples {
 
     private static TopologyChart Frame(string id, string title, string subtitle, int width, bool dark) =>
         TopologyChart.Create().Id(id).Title(title).Subtitle(subtitle)
-            .Theme(VisualTheme.Graphite().WithFontFamily(ExampleTypography.FontFamily), dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Theme(VisualTheme.Graphite().WithFontFamily(ExampleTypography.FontFamily)).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
             .Legend(TopologyLegend.Create("Health and relationships")
                 .AddStatus("Healthy", TopologyHealthStatus.Healthy)
                 .AddStatus("Needs attention", TopologyHealthStatus.Warning)

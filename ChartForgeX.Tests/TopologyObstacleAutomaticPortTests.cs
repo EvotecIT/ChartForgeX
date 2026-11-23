@@ -117,7 +117,7 @@ public sealed class TopologyObstacleAutomaticPortTests {
 
     private static TopologyRenderOptions Options() {
         var options = TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview)
-            .SelectNode("domain").SelectEdge("finding-domain");
+            .SelectedNodeId("domain").SelectedEdgeId("finding-domain");
         options.ArrowMarkerStyle = TopologyArrowMarkerStyle.Diamond;
         return options;
     }

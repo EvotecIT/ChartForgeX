@@ -237,11 +237,11 @@ public sealed partial class HtmlGraphExplorerRenderer {
         }
     }
 
-    private static string Theme(HtmlGraphExplorerTheme theme) {
+    private static string Theme(ThemeMode theme) {
         switch (theme) {
-            case HtmlGraphExplorerTheme.System: return "system";
-            case HtmlGraphExplorerTheme.Light: return "light";
-            case HtmlGraphExplorerTheme.Dark: return "dark";
+            case ThemeMode.Auto: return "system";
+            case ThemeMode.Light: return "light";
+            case ThemeMode.Dark: return "dark";
             default: throw new InvalidOperationException("Graph explorer theme is unsupported: " + theme);
         }
     }

@@ -612,8 +612,8 @@ internal static partial class SmokeTests {
             HighlightStatuses = { TopologyHealthStatus.Critical }
         }
         .IncludeEdgeLabels().EdgeLabelMetricKey("queue").EdgeSecondaryLabelMetricKey(null).EdgeTertiaryLabelMetricKey("transport")
-        .SelectNode("tr-branch")
-        .SelectEdge("emea-tr");
+        .SelectedNodeId("tr-branch")
+        .SelectedEdgeId("emea-tr");
 
         var svg = chart.ToSvg(options);
 

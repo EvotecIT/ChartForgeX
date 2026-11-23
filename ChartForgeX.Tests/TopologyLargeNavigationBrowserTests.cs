@@ -23,8 +23,8 @@ public sealed class TopologyLargeNavigationBrowserTests {
     [InlineData(375, true)]
     public async Task DenseTopologyOpensReadableAndFindFocusesMatches(int width, bool dark) {
         if (!InteractiveChartBrowser.Enabled) return;
-        var chart = DenseEstate().Theme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
-        var options = new TopologyRenderOptions { ReadableDenseLayout = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile, Html = { SelectionPanel = true } }.HtmlFindControls();
+        var chart = DenseEstate().Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
+        var options = new TopologyRenderOptions { ReadableDenseLayout = true, NodeDisplayMode = TopologyNodeDisplayMode.Tile, Html = { SelectionPanel = true } }.Html(html => html.FindControls());
         var html = new HtmlInteractiveTopologyRenderer().RenderPage(chart, options);
         await using var session = await InteractiveChartBrowser.OpenAsync(html, width, 820);
         var page = session.Page;

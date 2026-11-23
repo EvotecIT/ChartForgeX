@@ -22,7 +22,7 @@ internal static partial class SmokeTests {
             .UpdateEdge("domain-finding", e => e.LineStyle(TopologyEdgeLineStyle.Dotted))
             .UpdateEdge("domain-finding", e => e.Color("#DC2626"));
 
-        var options = TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview).SelectNode("domain");
+        var options = TopologyRenderOptions.FromPreset(TopologyViewPreset.RelationshipOverview).SelectedNodeId("domain");
         var svg = chart.ToSvg(options);
         Assert(svg.Contains("data-canvas-surface-style=\"PanelGrid\"", StringComparison.Ordinal), "Relationship overview topology should render a dashboard-style canvas surface.");
         Assert(svg.Contains("data-node-surface-style=\"AccentBand\"", StringComparison.Ordinal), "Relationship overview topology should render premium tinted node surfaces.");

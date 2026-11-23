@@ -17,14 +17,14 @@ public sealed class GraphSceneStaticRenderOptions {
     public int MaximumNodeLabels { get; set; } = 240;
 
     /// <summary>
-    /// Gets or sets the color theme of the static image. <see cref="HtmlGraphExplorerTheme.Light"/> is the default.
-    /// <see cref="HtmlGraphExplorerTheme.System"/> lets SVG follow the viewer's color preference; PNG output, which has no
+    /// Gets or sets the color theme of the static image. <see cref="ThemeMode.Light"/> is the default.
+    /// <see cref="ThemeMode.Auto"/> lets SVG follow the viewer's color preference; PNG output, which has no
     /// viewer, renders it light.
     /// </summary>
-    public HtmlGraphExplorerTheme Theme { get; set; } = HtmlGraphExplorerTheme.Light;
+    public ThemeMode ThemeMode { get; set; } = ThemeMode.Light;
 
     internal void Validate() {
-        if (!Enum.IsDefined(typeof(HtmlGraphExplorerTheme), Theme)) throw new InvalidOperationException("Static graph theme must be System, Light or Dark.");
+        if (!Enum.IsDefined(typeof(ThemeMode), ThemeMode)) throw new InvalidOperationException("Static graph theme mode must be Auto, Light or Dark.");
         if (Width < 64 || Width > 16384) throw new InvalidOperationException("Static graph width must be between 64 and 16384 pixels.");
         if (Height < 64 || Height > 16384) throw new InvalidOperationException("Static graph height must be between 64 and 16384 pixels.");
         if (MaximumNodeLabels < 0 || MaximumNodeLabels > 10000) throw new InvalidOperationException("Static graph maximum node labels must be between 0 and 10000.");

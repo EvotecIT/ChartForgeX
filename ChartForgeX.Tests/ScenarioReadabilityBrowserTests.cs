@@ -27,7 +27,7 @@ public sealed class ScenarioReadabilityBrowserTests {
             options.Interaction.AddScenario("route", "Review route", scenario => scenario
                 .AddSeriesStep("counts", "Observe").AddSeriesStep("counts", "Confirm"));
         });
-        var topology = TopologyChart.Create().Theme(VisualTheme.Graphite(), mode).Viewport(new TopologyViewport(640, 240, 20))
+        var topology = TopologyChart.Create().Theme(VisualTheme.Graphite()).ThemeMode(mode).Viewport(new TopologyViewport(640, 240, 20))
             .AddNode("a", "API", 80, 100).AddNode("b", "Worker", 340, 100)
             .AddScenario("route", "Topology route", scenario => scenario.AddNodeStep("a").AddNodeStep("b"));
         var topologyHtml = new HtmlInteractiveTopologyRenderer().RenderFragment(topology,

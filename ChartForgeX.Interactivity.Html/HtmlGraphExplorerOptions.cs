@@ -61,7 +61,7 @@ public sealed class HtmlGraphExplorerOptions {
     public bool IncludeManipulationControls { get; set; } = true;
 
     /// <summary>Gets or sets the explorer color theme used when the document first opens.</summary>
-    public HtmlGraphExplorerTheme Theme { get; set; } = HtmlGraphExplorerTheme.System;
+    public ThemeMode ThemeMode { get; set; } = ThemeMode.Auto;
 
     /// <summary>Gets or sets whether the built-in appearance control should let people choose system, light, or dark mode.</summary>
     public bool IncludeThemeToggle { get; set; } = true;
@@ -86,20 +86,6 @@ public sealed class HtmlGraphExplorerOptions {
 
     /// <summary>Gets or sets the smallest number of nodes that shows the layout progress bar. Smaller graphs settle too quickly for it to help. Default: 150.</summary>
     public int LayoutProgressMinimumNodes { get; set; } = 150;
-}
-
-/// <summary>
-/// Names the initial color theme of a browser graph explorer.
-/// </summary>
-public enum HtmlGraphExplorerTheme {
-    /// <summary>Follow the browser or operating-system color preference until the user chooses another theme.</summary>
-    System,
-
-    /// <summary>Use the light color theme.</summary>
-    Light,
-
-    /// <summary>Use the dark color theme.</summary>
-    Dark
 }
 
 /// <summary>

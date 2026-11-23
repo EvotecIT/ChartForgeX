@@ -28,7 +28,7 @@ public sealed class TopologyAccentSourceTests {
         var native = prepared.ToPng();
         options.SvgColorVariables = null;
         Assert.Equal(native, chart.ToPng(options));
-        var reference = Chart().Theme(theme, mode);
+        var reference = Chart().Theme(theme).ThemeMode(mode);
         reference.Nodes[0].IconId = null;
         reference.Nodes[0].Color = null;
         Assert.Equal(Surface(reference.ToSvg(options)), Surface(chart.ToSvg(options)));

@@ -8,18 +8,18 @@ internal static partial class TopologyVisualExamples {
         var artifacts = new List<VisualArtifact>();
         var options = new TopologyRenderOptions { IncludeLegend = true }
             .ForceGraphStyle()
-            .HtmlForceGraphControls();
+            .Html(html => html.ForceGraphControls());
         WriteForceGraphArtifact(target, artifacts, "visual-force-relationship-graph", "Force Relationship Graph", "Moderately dense force-directed relationship graph with low-ink SVG/PNG defaults, HTML search, status/group filtering, zoom, pan, and on-demand edge labels.", BuildForceRelationshipGraph(), options);
         WriteForceGraphArtifact(target, artifacts, "visual-force-busy-relationship-graph", "Busy Force Relationship Graph", "Busy force-directed relationship graph using the relationship solver profile for degree-weighted hub mass, linear repulsion, overlap avoidance, HTML filtering, zoom, pan, and on-demand edge labels.", BuildBusyForceRelationshipGraph(), options);
         var radialOptions = new TopologyRenderOptions { IncludeLegend = false, IncludeEdgeLabels = true }
             .ForceGraphStyle()
-            .HtmlForceGraphControls()
+            .Html(html => html.ForceGraphControls())
             .RelationshipRadialFocus("application-03", maxDepth: 2, maxFanout: 9);
         radialOptions.IncludeEdgeLabels = true;
         WriteForceGraphArtifact(target, artifacts, "visual-relationship-radial-ego-graph", "Relationship Radial Ego Graph", "Selected application relationship graph with the root in the center, direct conversations around it, second-hop conversations farther out, and capped expansion for large networks.", BuildRelationshipRadialEgoGraph(), radialOptions);
         var largeRadialOptions = new TopologyRenderOptions { IncludeLegend = false }
             .ForceGraphStyle()
-            .HtmlForceGraphControls()
+            .Html(html => html.ForceGraphControls())
             .RelationshipRadialFocus("app-root", maxDepth: 2, maxFanout: 40);
         WriteForceGraphArtifact(target, artifacts, "visual-relationship-radial-500-ego-graph", "Relationship Radial 500 Ego Graph", "Large 500-node relationship ego graph: all nodes remain present as dots, first-hop conversations spread around the root, second-hop conversations fan out farther, and HTML focus reveals labels on demand.", BuildLargeRelationshipRadialEgoGraph(), largeRadialOptions);
         WriteManifest(target, artifacts);

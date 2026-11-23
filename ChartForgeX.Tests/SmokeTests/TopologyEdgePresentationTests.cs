@@ -86,7 +86,7 @@ internal static partial class SmokeTests {
 
         var options = new TopologyRenderOptions { IncludeLegend = false, IncludeEdgeLabelBackplates = false }
             .MonitoringDashboardStyle()
-            .SelectEdge("selected-healthy");
+            .SelectedEdgeId("selected-healthy");
         var svg = chart.ToSvg(options);
         var dependencyIndex = svg.IndexOf("data-edge-id=\"dependency-context\"", StringComparison.Ordinal);
         var criticalIndex = svg.IndexOf("data-edge-id=\"critical-route\"", StringComparison.Ordinal);

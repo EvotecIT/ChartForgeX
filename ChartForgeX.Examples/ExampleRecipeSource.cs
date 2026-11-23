@@ -30,7 +30,7 @@ public static partial class ExampleRecipeSource {
             ["{{NATURAL}}"] = recipe.Create(variant, mode) is TopologyChart { DefaultRenderOptions.FitContentToViewport: false }
                 ? "if ((object)model is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {\n" +
                     "    var natural = topology.Title(" + JsonSerializer.Serialize(title) + ").Subtitle(" + JsonSerializer.Serialize(subtitle) + ")" +
-                    ".Theme(theme" + (galleryTypography ? ".WithFontFamily(ChartFontStacks.ProductSans)" : "") + ", mode).ToVisualArtifact();\n" +
+                    ".Theme(theme" + (galleryTypography ? ".WithFontFamily(ChartFontStacks.ProductSans)" : "") + ").ThemeMode(mode).ToVisualArtifact();\n" +
                     "    natural.SaveSvg(\"visual.svg\");\n" +
                     "    File.WriteAllBytes(\"visual.png\", natural.ToPng());\n" +
                     "    File.WriteAllText(\"visual.html\", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));\n" +

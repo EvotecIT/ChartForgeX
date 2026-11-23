@@ -12,6 +12,7 @@ public sealed class InteractiveTopologyPresentationTests {
     public void MotionPageUsesOnePreparedTopologyAndKeepsScenariosReversible() {
         var chart = CreateTopology();
         var options = Options();
+        var interactions = options.Html.Interactions;
         var motion = TopologyMotionOptions.RoutePulseForScenario("delivery");
         string? svg = null;
         PreparedTopology? basis = null;
@@ -48,7 +49,7 @@ public sealed class InteractiveTopologyPresentationTests {
             Assert.Contains(((string)reference.Attribute("href")!)[1..], ids);
         }
         Assert.Contains(ids, id => id.Contains("motion-embed", StringComparison.Ordinal));
-        Assert.False(options.Html.Interactions);
+        Assert.Equal(interactions, options.Html.Interactions);
         Assert.Equal("delivery", options.ActiveScenarioId);
         Assert.Equal(480, chart.Viewport.Width);
         Assert.Equal(260, chart.Viewport.Height);
@@ -83,7 +84,7 @@ public sealed class InteractiveTopologyPresentationTests {
     public async Task TopologyPresentationKeepsSelectionAndViewportControlsWorking(int width, bool dark, bool animate) {
         if (!InteractiveChartBrowser.Enabled) return;
         var chart = CreateTopology();
-        chart.Theme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light);
+        chart.Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light);
         var renderer = new HtmlInteractiveTopologyRenderer();
         var html = animate
             ? renderer.RenderPresentationPage(chart,

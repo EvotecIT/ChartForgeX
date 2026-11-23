@@ -61,7 +61,7 @@ public static class EstateExplorerWebsiteRecipe {
 #region save
         var html = graph.ToGraphExplorerHtmlPage(options => {
             options.RenderBackend = HtmlGraphRenderBackend.Svg;
-            options.Theme = HtmlGraphExplorerTheme.System;
+            options.ThemeMode = ThemeMode.Auto;
             options.IncludeThemeToggle = true;
         });
 

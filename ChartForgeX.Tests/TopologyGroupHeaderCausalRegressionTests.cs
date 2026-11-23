@@ -57,7 +57,7 @@ public sealed class TopologyGroupHeaderCausalRegressionTests {
     [InlineData(true)]
     public void ExplicitInkAndOrdinarySingleLineDefaultInkKeepTheirAuthoredAndThemeContracts(bool dark) {
         var chart = TopologyChart.Create().Viewport(new TopologyViewport(640, 280, 16)).Legend((TopologyLegend?)null)
-            .Theme(VisualTheme.Graphite(), dark ? ThemeMode.Dark : ThemeMode.Light)
+            .Theme(VisualTheme.Graphite()).ThemeMode(dark ? ThemeMode.Dark : ThemeMode.Light)
             .AddGroup("plain", "Plain control", 24, 40, 280, 180)
             .AddGroup("explicit", "Explicit control", 328, 40, 280, 180);
         chart.Groups[1].BackgroundColor = "#DCFCE7"; chart.Groups[1].LabelColor = "#7C3AED";
