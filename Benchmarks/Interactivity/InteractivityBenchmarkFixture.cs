@@ -18,7 +18,7 @@ public sealed class InteractivityBenchmarkFixture : IDisposable {
     /// <summary>Prepares the chart and persistent browser outside PowerForge's measured operation.</summary>
     public InteractivityBenchmarkFixture(int count, int queries) {
         _count = count; _queries = queries;
-        var chart = Chart.Create().WithSize(1000, 600).WithHeader(false).WithLegend(false).WithDataLabels(false)
+        var chart = Chart.Create().Size(1000, 600).ShowHeader(false).Legend(false).DataLabels(false)
             .AddScatter("Measurements", Enumerable.Range(0, count).Select(index => new ChartPoint(index, Math.Sin(index * .19) * 10 + index % 37)));
         var html = chart.ToInteractiveHtmlPage(options => {
             options.Interaction.Features = ChartInteractionFeatures.Tooltips;

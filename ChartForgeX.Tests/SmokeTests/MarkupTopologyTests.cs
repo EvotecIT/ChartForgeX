@@ -54,7 +54,8 @@ edges:
         Assert(code.StartsWith("using ChartForgeX.Primitives;", System.StringComparison.Ordinal), "C# emitter should import the shared link-direction primitives it emits.");
         Assert(code.Contains("TopologyChart.Create()", System.StringComparison.Ordinal), "C# emitter should create a topology chart.");
         Assert(code.Contains(".AddGroup(\"emea\", \"EMEA\", 0, 0, 260, 160, TopologyHealthStatus.Warning", System.StringComparison.Ordinal), "C# emitter should include parsed groups.");
-        Assert(code.Contains(".WithNodeBadge(\"dc-emea\", \"GC\")", System.StringComparison.Ordinal), "C# emitter should include node badge helpers.");
+        Assert(code.Contains(".UpdateNode(\"dc-emea\", n => n.Badge(\"GC\"))", System.StringComparison.Ordinal), "C# emitter should include node badges.");
+        Assert(SnippetCompiler.Errors(code) is null, "Emitted topology C# should compile: " + SnippetCompiler.Errors(code));
     }
 
     private static void MarkupTopologyReportsMissingNodes() {

@@ -12,12 +12,12 @@ internal static partial class Program {
         PackageAssertions.Require(captured.FirstPoints.Count == 4 && captured.Points.Count == 3 && captured.Points[1].BreakBefore,
             "Packed exact-X alignment fabricated pairs or lost a missing union gap.");
         var series = ChartSeries.CreateAlignedDifferenceArea(new ChartSeriesId("comparison"), "Comparison", captured);
-        var chart = Chart.Create().WithSize(640, 420).AddSeries(series); chart.Options.YAxis.WithLogarithmicScale();
+        var chart = Chart.Create().Size(640, 420).AddSeries(series); chart.Options.YAxis.LogarithmicScale();
         var prepared = chart.Prepare(DepthContext(chart, showLegend: false)); var svg = prepared.ToSvg();
         PackageAssertions.Require(PackageAssertions.Contains(svg, "data-cfx-first-source-series-id=\"actual\"")
             && PackageAssertions.Contains(svg, "difference-positive") && PackageAssertions.Contains(svg, "difference-negative"),
             "Packed nonlinear alignment lost source provenance or crossing fills.");
-        var png = prepared.ToPng(); actual.Points.Clear(); forecast.WithName("Changed");
+        var png = prepared.ToPng(); actual.Points.Clear(); forecast.Name("Changed");
         PackageAssertions.Require(svg == prepared.ToSvg() && png.SequenceEqual(prepared.ToPng()), "Packed aligned preparation is not detached.");
         PackageAssertions.Png(png);
     }

@@ -5,7 +5,7 @@ using ChartForgeX.Topology;
 
 internal static partial class Program {
     private static void NativeOrganizationHierarchySection() {
-        var source = TopologyChart.Create().WithId("package-organization").WithViewport(720, 420).WithLegend(null).AddHierarchy(new[] {
+        var source = TopologyChart.Create().Id("package-organization").Viewport(new TopologyViewport(720, 420)).Legend((TopologyLegend?)null).AddHierarchy(new[] {
             new TopologyHierarchyItem("lead", "Avery Quinn"), new TopologyHierarchyItem("engineering", "Engineering", "lead"),
             new TopologyHierarchyItem("platform", "Platform", "engineering"), new TopologyHierarchyItem("operations", "Operations", "lead")
         }, new TopologyHierarchyOptions { NodeDisplayMode = TopologyNodeDisplayMode.Card });

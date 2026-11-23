@@ -16,10 +16,10 @@ internal static partial class Program {
             new ChartCandlestick(friday.AddHours(1), 102, 106, 100, 105),
             new ChartCandlestick(friday.AddHours(3), 105, 108, 102, 104),
             new ChartCandlestick(monday.AddHours(1), 108, 112, 106, 110)
-        }).WithObservationIds(new[] { DepthId("1001"), DepthId("1002"), DepthId("1003") });
+        }).ObservationIds(new[] { DepthId("1001"), DepthId("1002"), DepthId("1003") });
         var retainedInk = ChartColor.FromHex("#3987E5");
         ChartFinancialItemOptions? escaped = null;
-        prices.ConfigureFinancialValue(1, options => {
+        prices.FinancialValue(1, options => {
             escaped = options; options.Stroke = retainedInk; options.StrokeWidth = 2.5;
         });
         escaped!.Stroke = ChartColor.FromHex("#FF0000");
@@ -27,10 +27,9 @@ internal static partial class Program {
             prices.FinancialValues.Select(value => new ChartRangeBand(value.X, 98, 118)));
         var reference = ChartSeries.CreateLine(new ChartSeriesId("103"), "Reference",
             prices.FinancialValues.Select(value => new ChartPoint(value.X, value.Close)));
-        var chart = Chart.Create().WithSize(520, 340).WithHeader(false).WithLegend()
-            .WithYAxisBounds(95, 125).WithXAxisTimeScale(TimeZoneInfo.Utc)
-            .WithXAxisBounds(friday.ToOADate(), monday.AddHours(8).ToOADate())
-            .ConfigureXAxis(axis => axis.WithTimeSessions(new ChartTimeSessionDomain(new[] {
+        var chart = Chart.Create().Size(520, 340).ShowHeader(false).Legend()
+            .YAxis(y => y.Bounds(95, 125)).XAxis(x => x.TimeScale(timeZone: TimeZoneInfo.Utc).Bounds(friday.ToOADate(), monday.AddHours(8).ToOADate()))
+            .XAxis(axis => axis.TimeSessions(new ChartTimeSessionDomain(new[] {
                 new ChartTimeSession(friday, friday.AddHours(8)), new ChartTimeSession(monday, monday.AddHours(8))
             }))).AddSeries(range).AddSeries(prices).AddSeries(reference);
         var prepared = chart.Prepare(DepthContext(chart, showLegend: true));
@@ -59,12 +58,12 @@ internal static partial class Program {
     }
 
     private static void NativeCoordinateDrawings() {
-        var chart = Chart.Create().WithSize(520, 340).WithHeader(false).WithLegend(false)
-            .WithXAxisBounds(0, 10).WithYAxisBounds(0, 100)
+        var chart = Chart.Create().Size(520, 340).ShowHeader(false).Legend(false)
+            .XAxis(xAxis => xAxis.Bounds(0, 10)).YAxis(yAxis => yAxis.Bounds(0, 100))
             .AddLine("Measurements", new[] { new ChartPoint(0, 10), new ChartPoint(3, 40), new ChartPoint(6, 60), new ChartPoint(10, 90) });
-        var readings = chart.Series[0].WithObservationIds(new[] { DepthId("first"), DepthId("middle"), DepthId("later"), DepthId("last") })
-            .WithPointLabel(1, "Retained measurement").WithPointColor(1, ChartColor.FromHex("#3987E5"));
-        readings.ConfigureMarkers(options => options.Enabled = true);
+        var readings = chart.Series[0].ObservationIds(new[] { DepthId("first"), DepthId("middle"), DepthId("later"), DepthId("last") })
+            .PointLabel(1, "Retained measurement").PointColor(1, ChartColor.FromHex("#3987E5"));
+        readings.Markers(options => options.Enabled = true);
         chart.AddNote(new ChartPoint(3, 40), "Review", id: new ChartAnnotationId("review"))
             .AddLineSegment(new ChartPoint(3, 40), new ChartPoint(6, 60), "Plan", id: new ChartAnnotationId("plan"))
             .AddParallelChannel(new ChartPoint(2, 50), new ChartPoint(7, 65), 8, "Target", id: new ChartAnnotationId("target"));
@@ -111,7 +110,7 @@ internal static partial class Program {
             && Math.Abs(y.Unproject(y.Project(40)) - 40) < 1e-7,
             "Packed source drawings lost authored channel/line facts or the detached inverse projection.");
         PackageAssertions.Require(chart.Prepare(context, null).ToSvg() == full.ToSvg()
-            && chart.Options.XAxis.Minimum == 0 && chart.Options.XAxis.Maximum == 10 && chart.Options.YAxis.Minimum == 0 && chart.Options.YAxis.Maximum == 100,
+            && chart.Options.XAxis.Min == 0 && chart.Options.XAxis.Max == 10 && chart.Options.YAxis.Min == 0 && chart.Options.YAxis.Max == 100,
             "Packed null reset failed to recover the full scene or changed authored axis policy.");
         NumericDepthTransaction(readings);
         OwnedDepthAnnotations(chart, anonymous);
@@ -206,18 +205,18 @@ internal static partial class Program {
             "Packed route snapshots expose mutation or lost independent waypoint color facts.");
         var coverage = ChartSeries.CreateRegionMap(new ChartSeriesId("coverage"), "Coverage", definition,
             new[] { new ChartRegionMapItem("zone", 75) })
-            .WithColorScale(ChartColorScale.Sequential(ChartColor.FromHex("#DBEAFE"), ChartColor.FromHex("#1D4ED8")).WithValueRange(0, 100));
-        coverage.ConfigureColorDimension(dimension => { dimension.Name = "Coverage"; dimension.ValueFormat = ChartValueFormat.Number("0 '%'", CultureInfo.InvariantCulture); });
+            .ColorScale(ChartColorScale.Sequential(ChartColor.FromHex("#DBEAFE"), ChartColor.FromHex("#1D4ED8")).WithValueRange(0, 100));
+        coverage.ColorDimension(dimension => { dimension.Name = "Coverage"; dimension.ValueFormat = ChartValueFormat.Number("0 '%'", CultureInfo.InvariantCulture); });
         var depots = ChartSeries.CreateDottedMap(new ChartSeriesId("depots"), "Depot delays", imported)
-            .WithObservationIds(new[] { DepthId("madrid"), DepthId("warsaw") })
-            .WithColorScale(ChartColorScale.Diverging(ChartColor.FromHex("#0D9488"), ChartColor.FromHex("#E2E8F0"), ChartColor.FromHex("#EA580C"), 0).WithValueRange(-10, 30))
+            .ObservationIds(new[] { DepthId("madrid"), DepthId("warsaw") })
+            .ColorScale(ChartColorScale.Diverging(ChartColor.FromHex("#0D9488"), ChartColor.FromHex("#E2E8F0"), ChartColor.FromHex("#EA580C"), 0).WithValueRange(-10, 30))
             .ReplaceMapConnectors(routes);
-        depots.ConfigureColorDimension(dimension => { dimension.Name = "Delay"; dimension.ValueFormat = ChartValueFormat.Number("0 'min'", CultureInfo.InvariantCulture); });
-        depots.ConfigureMapPointSize(size => {
-            size.WithSizeDomain(0, 50); size.MinimumRadius = 3; size.MaximumRadius = 9;
+        depots.ColorDimension(dimension => { dimension.Name = "Delay"; dimension.ValueFormat = ChartValueFormat.Number("0 'min'", CultureInfo.InvariantCulture); });
+        depots.MapPointSize(size => {
+            size.SizeDomain(0, 50); size.MinimumRadius = 3; size.MaximumRadius = 9;
             size.SizeDimension.Name = "Traffic"; size.SizeDimension.ShowLegend = true;
         });
-        var chart = Chart.Create().WithSize(640, 500).WithHeader(false).WithLegend().WithMapLabels(false).WithDataLabels()
+        var chart = Chart.Create().Size(640, 500).ShowHeader(false).Legend().Map(m => m.ShowLabels(false)).DataLabels()
             .AddSeries(coverage).AddSeries(depots);
         var prepared = chart.Prepare(DepthContext(chart, showLegend: true));
         var svg = prepared.ToSvg(); var png = prepared.ToPng(); var xml = XDocument.Parse(svg);

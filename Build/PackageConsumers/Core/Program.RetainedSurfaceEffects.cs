@@ -7,7 +7,7 @@ using ChartForgeX.VisualArtifacts;
 
 internal static partial class Program {
     private static void RetainedSurfaceEffectsContracts() {
-        var model = SequenceArtifact.Create("package-surfaces").WithSize(800, 600)
+        var model = SequenceArtifact.Create("package-surfaces").Width(800).Height(600)
             .AddParticipant("A", "Review").AddParticipant("B", "Archive").AddMessage("A", "B", "Save");
         model.Participants[0].Href = "#guide";
         model.Participants[1].SurfaceShadow = new VisualDropShadow(ChartColor.Black, 4, 4, 0,

@@ -6,11 +6,11 @@ using ChartForgeX.VisualBlocks;
 
 internal static partial class Program {
     private static void CategoricalInterchangeContracts() {
-        var journey = JourneyDiagramBlock.Create().WithTitle("Review journey").WithSize(800, 500)
+        var journey = JourneyDiagramBlock.Create().Title("Review journey").Size(800, 500)
             .AddSection("first", "Review").AddSection("second", "Review")
             .AddTask("read", "Read", 2, new[] { "Author", "Reviewer" }, "first")
             .AddTask("accept", "Accept", 5, new[] { "Reviewer" }, "second");
-        var timeline = TimelineDiagramBlock.Create().WithTitle("Release history").WithSize(800, 500)
+        var timeline = TimelineDiagramBlock.Create().Title("Release history").Size(800, 500)
             .AddSection("first", "Delivery").AddSection("second", "Delivery")
             .AddPeriod("before", "Before launch", new[] { "Review", "Document" }, "first")
             .AddPeriod("after", "After launch", new[] { "Observe" }, "second");

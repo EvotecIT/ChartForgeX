@@ -122,8 +122,7 @@ public sealed class GroupedCategoryAxisLayoutTests {
         var flatLabels = flatAxis.Labels.Select(label => new ChartAxisLabel(label.Value, label.Text)).ToArray();
         flatAxis.Labels.Clear(); flatAxis.Labels.AddRange(flatLabels);
         // Match the explicitly chosen domain so automatic grouped catalog inclusion is not part of this comparison.
-        if (horizontal) { grouped.YAxis(y => y.Bounds(0, 16)); flat.YAxis(y => y.Bounds(0, 16)); }
-        else { grouped.XAxis(x => x.Bounds(0, 16)); flat.XAxis(x => x.Bounds(0, 16)); }
+        axis.Bounds(0, 16); flatAxis.Bounds(0, 16);
         if (policy == "axes") { grouped.Axes(false); flat.Axes(false); }
         else if (policy == "axis") { axis.Visible = false; flatAxis.Visible = false; }
         else { axis.ShowLine = false; flatAxis.ShowLine = false; }

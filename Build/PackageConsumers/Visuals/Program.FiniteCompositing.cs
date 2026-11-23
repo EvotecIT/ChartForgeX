@@ -10,7 +10,7 @@ using ChartForgeX.VisualArtifacts;
 
 internal static partial class Program {
     private static void FiniteCompositeContracts() {
-        var model = SequenceArtifact.Create("package-composite").WithSize(320, 360)
+        var model = SequenceArtifact.Create("package-composite").Width(320).Height(360)
             .AddParticipant("A", "Review").AddParticipant("B", "Archive").AddMessage("A", "B", "Save");
         var prepared = model.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(320, 360), 20)));
         var layer = prepared.CaptureLayer(new VisualLayerBlur(0), new VisualRenderOptions(supersampling: 1));

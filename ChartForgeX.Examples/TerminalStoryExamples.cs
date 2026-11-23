@@ -39,8 +39,8 @@ internal static class TerminalStoryExamples {
             .WindowStyle(TerminalWindowStyle.WindowsTerminal)
             .Width(1000)
             .Command("using ChartForgeX; using ChartForgeX.Core; using System.Linq;", 0.65)
-            .Command("var chart = Chart.Create().WithTitle(\"Weekly builds\");", 0.65)
-            .Command("chart.WithXLabels(\"Mon\", \"Tue\", \"Wed\", \"Thu\", \"Fri\");", 0.65)
+            .Command("var chart = Chart.Create().Title(\"Weekly builds\");", 0.65)
+            .Command("chart.XLabels(\"Mon\", \"Tue\", \"Wed\", \"Thu\", \"Fri\");", 0.65)
             .Command("chart.AddLine(\"Builds\", new[] { 12d, 18d, 15d, 24d, 31d }.Select((y, x) => new ChartPoint(x + 1, y)));", 1.1)
             .Command("chart.SavePng(\"weekly-builds.png\");", 0.65)
             .Output("Saved weekly-builds.png (1000 x 560)", TerminalTextTone.Success);

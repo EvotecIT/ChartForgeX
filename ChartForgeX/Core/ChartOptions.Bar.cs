@@ -10,6 +10,7 @@ public sealed partial class ChartOptions {
     /// <summary>
     /// Gets or sets reusable visual tokens for cartesian grid and guide lines.
     /// </summary>
+    [NoFluent]
     public ChartGridLineStyle GridLineStyle {
         get => _gridLineStyle;
         set { _gridLineStyle = (value ?? throw new ArgumentNullException(nameof(value))).Clone(); _hasExplicitGridStyle = true; }

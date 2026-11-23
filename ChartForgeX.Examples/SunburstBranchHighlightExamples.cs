@@ -55,9 +55,9 @@ using ChartForgeX.Interactivity.Html;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 
-var chart = Chart.Create().WithSize(800, 460).WithTitle("Work allocation").WithDataLabels()
-    .WithSubtitle("Hover or focus a team to follow its branch; click to pin a reading")
-    .WithTheme(VisualTheme.Graphite(), MODE)
+var chart = Chart.Create().Size(800, 460).Title("Work allocation").DataLabels()
+    .Subtitle("Hover or focus a team to follow its branch; click to pin a reading")
+    .Theme(VisualTheme.Graphite()).ThemeMode(MODE)
     .AddSunburst("Allocated work", new[] {
         new ChartHierarchyItem("all", "All teams"),
         new ChartHierarchyItem("engineering", "Engineering", "all", colorValue: 12),
@@ -67,11 +67,11 @@ var chart = Chart.Create().WithSize(800, 460).WithTitle("Work allocation").WithD
         new ChartHierarchyItem("operations-support", "Support", "operations", 40),
         new ChartHierarchyItem("reserve", "Reserve", "operations", 0)
     });
-chart.ConfigureSunburst(options => {
+chart.Sunburst(options => {
     options.ColorDimension.Name = "Change (%)";
     options.ColorScale = ChartColorScale.Diverging(ChartColor.FromHex("#8b7bd4"), ChartColor.FromHex("#b8b8b8"), ChartColor.FromHex("#dd8e59"), 0).WithValueRange(-10, 15);
 });
-chart.Series[0].WithNodeState("engineering-support", ChartSeriesState.Warning).WithPointFillPattern(4, ChartFillPattern.DiagonalForward);
+chart.Series[0].NodeState("engineering-support", ChartSeriesState.Warning).PointFillPattern(4, ChartFillPattern.DiagonalForward);
 chart.SaveInteractiveHtml("work-allocation.html", options => {
     options.Highlight.Mode = HtmlChartHighlightMode.RootBranch;
     options.Highlight.HighlightedItem.Stroke = ChartColor.FromHex("#38bdf8");

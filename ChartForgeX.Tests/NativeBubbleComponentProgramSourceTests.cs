@@ -9,7 +9,7 @@ public sealed class NativeBubbleComponentProgramSourceTests {
         var program = ExampleRecipeSource.EmitNativeBubbleComponents(initial, area, width == 760, width, width == 390 ? ThemeMode.Light : ThemeMode.Dark);
         NativeRadialMotionBeforeControls.Save("bubble-program-" + initial + "-" + area + "-" + width + ".cs", program);
         Assert.DoesNotContain("{{", program, StringComparison.Ordinal); Assert.Contains("ChartSeries.CreateBubble", program, StringComparison.Ordinal);
-        Assert.Contains("WithSizeDomain(0, 100)", program, StringComparison.Ordinal); Assert.Contains("CaptureNativeValueSource = true", program, StringComparison.Ordinal);
+        Assert.Contains("SizeDomain(0, 100)", program, StringComparison.Ordinal); Assert.Contains("CaptureNativeValueSource = true", program, StringComparison.Ordinal);
         Assert.Contains("PrepareNativeTransitionJson", program, StringComparison.Ordinal); Assert.Contains("FontRegistry.Register", program, StringComparison.Ordinal);
         Assert.DoesNotContain("requestAnimationFrame", program, StringComparison.Ordinal);
     }

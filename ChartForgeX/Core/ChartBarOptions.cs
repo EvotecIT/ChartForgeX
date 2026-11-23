@@ -53,6 +53,7 @@ public sealed class ChartBarOptions {
     /// <summary>
     /// Gets or sets reusable visual tokens for bar and horizontal-bar renderers.
     /// </summary>
+    [NoFluent]
     public ChartBarVisualStyle VisualStyle {
         get => _barVisualStyle;
         set { _barVisualStyle = (value ?? throw new ArgumentNullException(nameof(value))).Clone(); _hasExplicitBarStyle = true; }

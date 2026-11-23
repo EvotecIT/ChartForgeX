@@ -10,10 +10,10 @@ internal static partial class Program {
     private static void NativeAxisAndUncertaintyContracts() {
         foreach (var negative in new[] { false, true }) {
             var values = negative ? new[] { -16d, -4, -1 } : new[] { 1d, 4, 16 };
-            var chart = Chart.Create().WithSize(600, 360).WithLegend(false).WithLineMarkers(ChartLineMarkerMode.All)
+            var chart = Chart.Create().Size(600, 360).Legend(false).Lines(l => l.MarkerMode(ChartLineMarkerMode.All))
                 .AddLine("Magnitude", values.Select((value, index) => new ChartPoint(index, value)));
-            chart.Options.YAxis.WithLogarithmicScale(4, negative ? ChartLogarithmicDomain.Negative : ChartLogarithmicDomain.Positive)
-                .WithBounds(values[0], values[2]);
+            chart.Options.YAxis.LogarithmicScale(4, negative ? ChartLogarithmicDomain.Negative : ChartLogarithmicDomain.Positive)
+                .Bounds(values[0], values[2]);
             var prepared = chart.Prepare(DepthContext(chart, showLegend: false)); var axis = prepared.YProjection!;
             PackageAssertions.Require(axis.LogarithmBase == 4 && axis.LogarithmicDomain == (negative ? ChartLogarithmicDomain.Negative : ChartLogarithmicDomain.Positive)
                 && Math.Abs(axis.Project(values[1]) - (axis.Project(values[0]) + axis.Project(values[2])) / 2) < 1e-7
@@ -27,11 +27,11 @@ internal static partial class Program {
         foreach (var ordinal in new[] { false, true }) {
             var dates = ordinal ? new[] { january, january.AddDays(1), january.AddDays(11) }
                 : new[] { january.AddDays(9), january.AddMonths(2).AddDays(29) };
-            var chart = Chart.Create().WithSize(600, 360).WithLegend(false)
+            var chart = Chart.Create().Size(600, 360).Legend(false)
                 .AddLine("Instants", dates.Select((date, index) => new ChartPoint(date, index + 1)));
-            chart.Options.XAxis.WithTimeSpacing(ordinal ? ChartTimeSpacing.Ordinal
+            chart.Options.XAxis.TimeSpacing(ordinal ? ChartTimeSpacing.Ordinal
                 : ChartTimeSpacing.Unit(new ChartTimeTickInterval(ChartTimeTickUnit.Month)));
-            if (!ordinal) chart.Options.XAxis.WithLabelFormatter(value => DateTime.FromOADate(value).ToString("yyyy-MM", CultureInfo.InvariantCulture));
+            if (!ordinal) chart.Options.XAxis.LabelBy(value => DateTime.FromOADate(value).ToString("yyyy-MM", CultureInfo.InvariantCulture));
             var prepared = chart.Prepare(DepthContext(chart, showLegend: false)); var axis = prepared.XProjection!;
             if (ordinal) {
                 var positions = dates.Select(date => axis.Project(date.ToOADate())).ToArray();
@@ -52,11 +52,11 @@ internal static partial class Program {
             PackageAssertions.Require(before.SequenceEqual(dates.Select(date => date.ToOADate())), "Packed time spacing rewrote authored instants.");
             PackageAssertions.Png(prepared.ToPng());
         }
-        var mixed = Chart.Create().WithSize(600, 360).WithLegend(false)
+        var mixed = Chart.Create().Size(600, 360).Legend(false)
             .AddHorizontalBar("Counts", new[] { new ChartPoint(1, 10), new ChartPoint(2, 20), new ChartPoint(3, 30) })
             .AddLine("Duration", new[] { new ChartPoint(1, 100), new ChartPoint(2, 300), new ChartPoint(3, 500) });
-        mixed.Options.LineOrientation = ChartOrientation.Horizontal; mixed.Series[1].UseSecondaryValueAxis();
-        mixed.WithXAxisBounds(0, 40).WithYAxisBounds(0, 4).WithSecondaryXAxisBounds(100, 500);
+        mixed.Options.Lines.Orientation = ChartOrientation.Horizontal; mixed.Series[1].SecondaryAxis();
+        mixed.XAxis(x => x.Bounds(0, 40)).YAxis(y => y.Bounds(0, 4)).SecondaryXAxis(s => s.Bounds(100, 500));
         var context = DepthContext(mixed, showLegend: false);
         var full = mixed.Prepare(context);
         var window = mixed.Prepare(context, new ChartCartesianViewport(y: new ChartAxisWindow(1.25, 2.75), secondaryX: new ChartAxisWindow(200, 400)));
@@ -66,10 +66,10 @@ internal static partial class Program {
             && Math.Abs(window.SecondaryXProjection.Unproject(window.SecondaryXProjection.Project(300)) - 300) < 1e-7
             && mixed.Prepare(context, null).ToSvg() == full.ToSvg(), "Packed horizontal mixture confused physical secondary X with vertical Y or reset domains.");
         PackageAssertions.Png(window.ToPng());
-        var fitted = Chart.Create().WithSize(600, 360).WithLegend(false)
+        var fitted = Chart.Create().Size(600, 360).Legend(false)
             .AddLine("Counts", new[] { new ChartPoint(0, 0), new ChartPoint(10, 100) })
             .AddLine("Duration", new[] { new ChartPoint(0, 100), new ChartPoint(10, 200) });
-        fitted.Series[1].UseSecondaryValueAxis();
+        fitted.Series[1].SecondaryAxis();
         var fittedContext = DepthContext(fitted, showLegend: false); var fullFit = fitted.Prepare(fittedContext);
         var visibleFit = fitted.Prepare(fittedContext, new ChartCartesianViewport(x: new ChartAxisWindow(4, 6), valueDomain: ChartValueDomain.VisibleCategories));
         PackageAssertions.Require(visibleFit.YProjection!.Minimum > fullFit.YProjection!.Minimum
@@ -80,10 +80,10 @@ internal static partial class Program {
             && fitted.Series.All(series => series.SourcePointCount == 2),
             "Packed visible-category preparation lost crossing-segment extents, independent secondary auto-domains or full source facts.");
         PackageAssertions.Png(visibleFit.ToPng());
-        var uncertainty = Chart.Create().WithSize(600, 360).WithLegend(false).WithXAxisBounds(0, 10).WithYAxisBounds(0, 10)
+        var uncertainty = Chart.Create().Size(600, 360).Legend(false).XAxis(x => x.Bounds(0, 10)).YAxis(y => y.Bounds(0, 10))
             .AddSeries(ChartSeries.CreateErrorBar(new ChartSeriesId("estimate"), "Estimate", new[] {
                 new ChartErrorBar(5, 5, new ChartErrorBounds(1, 9), new ChartErrorBounds(2, 8))
-            }).WithObservationId(0, new ChartObservationId("sample")));
+            }).ObservationId(0, new ChartObservationId("sample")));
         var errors = uncertainty.Prepare(DepthContext(uncertainty, showLegend: false));
         var errorSvg = XDocument.Parse(errors.ToSvg());
         var xRange = errorSvg.Descendants().Single(node => (string?)node.Attribute("data-cfx-role") == "error-range-x");
@@ -105,9 +105,9 @@ internal static partial class Program {
     private static void PackedCalendarWindowBoundary() {
         var start = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         var instants = new[] { start, start.AddMonths(1), start.AddMonths(2) };
-        var chart = Chart.Create().WithSize(600, 360).WithLegend(false)
+        var chart = Chart.Create().Size(600, 360).Legend(false)
             .AddLine("Calendar", instants.Select((date, index) => new ChartPoint(date, index + 1)));
-        chart.Options.XAxis.WithTimeSpacing(ChartTimeSpacing.Unit(new ChartTimeTickInterval(ChartTimeTickUnit.Month)));
+        chart.Options.XAxis.TimeSpacing(ChartTimeSpacing.Unit(new ChartTimeTickInterval(ChartTimeTickUnit.Month)));
         var context = DepthContext(chart, showLegend: false);
         var full = chart.Prepare(context); var axis = full.XProjection!;
         var first = axis.Project(instants[0].ToOADate());

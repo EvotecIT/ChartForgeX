@@ -49,13 +49,13 @@ public sealed class TopologyChartPresentationTests {
     }
 
     [Fact]
-    public void WithRenderOptions_KeepsItsOwnCopy() {
+    public void DefaultRenderOptions_StoresTheGivenOptions() {
         var options = Tiles.Clone();
         var chart = Chart().DefaultRenderOptions(options);
+        Assert.Same(options, chart.DefaultRenderOptions);
         var before = chart.ToSvg();
         options.NodeDisplayMode = TopologyNodeDisplayMode.Card;
-        options.ReadableDenseLayout = false;
-        Assert.Equal(before, chart.ToSvg());
+        Assert.NotEqual(before, chart.ToSvg());
         Assert.Equal(Chart().ToSvg(), chart.DefaultRenderOptions((TopologyRenderOptions?)null).ToSvg());
     }
 

@@ -19,7 +19,7 @@ internal static partial class Program {
         PackageAssertions.Require(!rendered.HasErrors && rendered.Artifact != null && rendered.Diagnostics.Count == 0 && !fenced.HasErrors && fenced.Artifacts.Count == 1,
             "Packed XY captions/configuration did not reach one native artifact.");
         var chart = (Chart)rendered.Artifact!.Model!;
-        PackageAssertions.Require(chart.Options.ShowLegend && chart.Options.Size.Width == 390 && chart.Options.LineOrientation == ChartOrientation.Horizontal
+        PackageAssertions.Require(chart.Options.Legend.Visible && chart.Options.Size.Width == 390 && chart.Options.Lines.Orientation == ChartOrientation.Horizontal
             && chart.Series[1].PointLabels.SequenceEqual(new[] { "Opened", "", "Reviewed, ready", "Released" }) && chart.Series[0].ShowDataLabels == false,
             "Packed XY source labels or independent bar-value policy were lost.");
         PackageAssertions.Require(rendered.Artifact.ToSvg() == fenced.Artifacts[0].ToSvg() && rendered.Artifact.ToPng().SequenceEqual(fenced.Artifacts[0].ToPng()),

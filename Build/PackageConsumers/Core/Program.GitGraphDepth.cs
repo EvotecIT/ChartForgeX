@@ -8,7 +8,7 @@ using ChartForgeX.VisualBlocks;
 internal static partial class Program {
     private static void GitGraphDepthContracts() {
         foreach (var direction in new[] { GitGraphDirection.LeftToRight, GitGraphDirection.TopToBottom, GitGraphDirection.BottomToTop }) {
-            var graph = GitGraphBlock.Create().WithSize(390, 460).WithDirection(direction).WithParallelCommits()
+            var graph = GitGraphBlock.Create().Size(390, 460).Direction(direction).ParallelCommits()
                 .AddBranch("main").AddBranch("work").AddCommit("base", "main")
                 .AddCommit("work", "work", new[] { "base" }).AddCommit("next", "main", new[] { "base" })
                 .AddCommit("joined", "main", new[] { "next", "work" }, GitGraphCommitType.Merge, tag: "v2");
@@ -18,7 +18,7 @@ internal static partial class Program {
                 "Packed Git graph lost physical direction or furthest-parent placement.");
             PackageAssertions.Require(graph.Commits[3].ParentIds.SequenceEqual(new[] { "next", "work" }) && graph.Commits.Count == 4,
                 "Packed Git graph rewrote source ancestry.");
-            graph.WithRotatedCommitLabels(); PackageAssertions.Require(PackageAssertions.Contains(graph.ToSvg(), "rotate(-45"), "Packed Git graph caption policy is absent.");
+            graph.RotateCommitLabels(); PackageAssertions.Require(PackageAssertions.Contains(graph.ToSvg(), "rotate(-45"), "Packed Git graph caption policy is absent.");
             PackageAssertions.Png(graph.ToPng());
         }
         Console.WriteLine("Packed native Git graph direction, parent-depth placement and static SVG/PNG passed.");

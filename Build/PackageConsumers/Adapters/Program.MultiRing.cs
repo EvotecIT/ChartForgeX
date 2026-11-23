@@ -7,13 +7,13 @@ using ChartForgeX.Primitives;
 
 internal static partial class Program {
     private static void MultiRingCalloutAdapterContract() {
-        var chart = Chart.Create().WithSize(700, 500).WithHeader(false).WithLegend(false).WithDataLabels()
-            .WithDonutCenterLabel(false).WithXLabels("Alpha", "Beta").WithPieSliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent)
-            .WithAutomaticRadialBands(new ChartRadialBandAllocation(.2, .1));
+        var chart = Chart.Create().Size(700, 500).ShowHeader(false).Legend(false).DataLabels()
+            .Pie(p => p.ShowCenterLabel(false)).XLabels("Alpha", "Beta").Pie(p => p.SliceLabelContent(ChartPieSliceLabelContent.LabelAndPercent))
+            .RadialBandAllocation(new ChartRadialBandAllocation(.2, .1));
         for (var index = 0; index < 2; index++) {
             var series = new ChartSeries(new ChartSeriesId("ring-" + index), "Period " + index, ChartSeriesKind.Donut,
-                new[] { new ChartPoint(1, 2 + index), new ChartPoint(2, 1) }).WithPointSliceOffset(0, .12)
-                .WithObservationIds(new[] { new ChartObservationId("alpha"), new ChartObservationId("beta") });
+                new[] { new ChartPoint(1, 2 + index), new ChartPoint(2, 1) }).PointSliceOffset(0, .12)
+                .ObservationIds(new[] { new ChartObservationId("alpha"), new ChartObservationId("beta") });
             series.DataLabelPlacement = ChartDataLabelPlacement.Outside; chart.AddSeries(series);
         }
         var html = chart.ToInteractiveHtmlFragment(options => options.Interaction.Enable(ChartInteractionFeatures.Export));

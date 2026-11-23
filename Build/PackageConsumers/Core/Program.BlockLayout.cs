@@ -8,7 +8,7 @@ using ChartForgeX.VisualBlocks;
 
 internal static partial class Program {
     private static void NativeBlockHierarchyContracts() {
-        var block = BlockLayoutBlock.Create().WithSize(700, 460).WithColumns(3)
+        var block = BlockLayoutBlock.Create().Size(700, 460).Columns(3)
             .AddComposite("outer", "Outer", 2, 2).AddItem("a", "A", "outer", shape: BlockLayoutShape.Hexagon)
             .AddComposite("inner", "Inner", parentId: "outer", columns: 1).AddItem("b", "B", "inner", shape: BlockLayoutShape.Stadium)
             .AddItem("outside", "Outside", shape: BlockLayoutShape.Diamond).AddEdge("b", "outside", "Across");

@@ -12,7 +12,7 @@ using ChartForgeX.Interactivity.Html;
 
 if(args.Length!=1)throw new ArgumentException("Pass a font file licensed for this output.");FontRegistry.Register("Native joint font",File.ReadAllBytes(args[0]));
 var variant={{KIND}};var renderer=new HtmlInteractiveChartRenderer();
-Chart Model(double value){var chart=NativeCompleteCartesianValueRecipe.Create(variant=="default-stacked"?"stacked-bar":variant,value,{{WIDTH}},ThemeMode.{{MODE}},"Native joint font");if(variant=="default-stacked"){foreach(var series in chart.Series)series.WithStackGroup(null);chart.WithBarMode(ChartBarMode.Stacked);}return chart;}
+Chart Model(double value){var chart=NativeCompleteCartesianValueRecipe.Create(variant=="default-stacked"?"stacked-bar":variant,value,{{WIDTH}},ThemeMode.{{MODE}},"Native joint font");if(variant=="default-stacked"){foreach(var series in chart.Series)series.StackGroup(null);chart.Bars(b => b.Stacked());}return chart;}
 ChartVisibilityView View(bool hidden)=>new(hidden?new[]{new ChartSeriesId("delivery")}:Array.Empty<ChartSeriesId>(),ChartVisibilityLabelLayering.GroupWithSeries);
 var from=renderer.PrepareVisibilitySection(Model(30),View(false));var to=renderer.PrepareVisibilitySection(Model(40),View(true));
 var payload=renderer.PrepareNativeTransitionJson(from,to,new HtmlNativeTransitionOptions(HtmlNativeTransitionEffect.ValuesAndVisibility,5));

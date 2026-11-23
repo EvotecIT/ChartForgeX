@@ -11,8 +11,8 @@ public static class MermaidXYChartDepthRecipe {
         chart.Options.Lines.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical;
         var categoryAxis = horizontal ? chart.Options.YAxis : chart.Options.XAxis;
         var valueAxis = horizontal ? chart.Options.XAxis : chart.Options.YAxis;
-        if (horizontal) chart.YAxis(y => y.Title("Month")).XAxis(x => x.Title("Requests"));
-        else chart.XAxis(x => x.Title("Month")).YAxis(y => y.Title("Requests"));
+        categoryAxis.Title = "Month";
+        valueAxis.Title = "Requests";
         var categories = new[] { "Jan", "Feb", "Mar", "Apr" };
         for (var index = 0; index < categories.Length; index++) categoryAxis.Labels.Add(new ChartAxisLabel(index + 1, categories[index]));
         valueAxis.Min = 0; valueAxis.Max = 100;

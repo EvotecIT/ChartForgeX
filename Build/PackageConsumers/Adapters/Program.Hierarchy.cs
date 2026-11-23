@@ -5,7 +5,7 @@ using ChartForgeX.Interactivity.Html;
 
 internal static partial class Program {
     private static void NativeHierarchySection() {
-        var chart = Chart.Create().WithSize(520, 360).WithLegend(false).AddTreemap("Work", new[] {
+        var chart = Chart.Create().Size(520, 360).Legend(false).AddTreemap("Work", new[] {
             new ChartHierarchyItem("root", "All"), new ChartHierarchyItem("team", "Team", "root"),
             new ChartHierarchyItem("api", "API", "team", 4), new ChartHierarchyItem("other", "Other", "root", 6)
         });
@@ -20,8 +20,8 @@ internal static partial class Program {
             && HtmlInteractiveChartRenderer.BuildInteractionScript().Contains("setHierarchyView", StringComparison.Ordinal),
             "Packed HTML hierarchy section lost its native view or managed navigation capability.");
         PackageAssertions.Png(section.PreparedVisual.ToPng());
-        var sunburst = Chart.Create().WithSize(520, 360).WithLegend(false).AddSunburst("Work", chart.Series[0].HierarchyItems)
-            .ConfigureSunburst(options => { options.SectorGap = 6; options.MinimumLabelFontSize = 9; });
+        var sunburst = Chart.Create().Size(520, 360).Legend(false).AddSunburst("Work", chart.Series[0].HierarchyItems)
+            .Sunburst(options => { options.SectorGap = 6; options.MinimumLabelFontSize = 9; });
         var spaced = renderer.PrepareHierarchySection(sunburst, new ChartHierarchyView("team"), options => {
             options.Interaction.Enable(ChartInteractionFeatures.HierarchyNavigation);
             options.ResponsiveLayout = HtmlChartResponsiveLayout.Adaptive;

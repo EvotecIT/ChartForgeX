@@ -7,7 +7,7 @@ using ChartForgeX.VisualArtifacts;
 
 internal static partial class Program {
     private static void TopologyPathCaptureContracts() {
-        var chart = TopologyChart.Create().WithId("maintenance-plan").WithViewport(740, 420).WithLegend(null)
+        var chart = TopologyChart.Create().Id("maintenance-plan").Viewport(new TopologyViewport(740, 420)).Legend((TopologyLegend?)null)
             .AddNode("gateway", "Gateway", 60, 100, width: 220, height: 150).AddNode("worker", "Worker", 440, 100, width: 220, height: 150)
             .AddEdge("dispatch", "gateway", "worker", "Dispatch");
         chart.Nodes[0].Subtitle = "Healthy service";

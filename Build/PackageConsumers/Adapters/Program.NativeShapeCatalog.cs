@@ -10,7 +10,7 @@ internal static partial class Program {
     private static void NativeShapeCatalogContracts() {
         foreach(var name in Enum.GetNames(typeof(TopologyNodeShape))) {
             var shape=(TopologyNodeShape)Enum.Parse(typeof(TopologyNodeShape),name);if((int)shape<27)continue;
-            var chart=TopologyChart.Create().WithTheme(ChartForgeX.Themes.VisualTheme.Graphite().WithFontFamily(PackageAssertions.OutlineFontFamily)).WithTitle("").WithViewport(380,230,12).WithLegend(null);
+            var chart=TopologyChart.Create().Theme(ChartForgeX.Themes.VisualTheme.Graphite().WithFontFamily(PackageAssertions.OutlineFontFamily)).Title("").Viewport(new TopologyViewport(380, 230, 12)).Legend((TopologyLegend?)null);
             chart.Nodes.Add(new TopologyNode {Id="node",Label="Native caption",X=30,Y=25,Width=180,Height=110,Shape=shape,ShowStatusBadge=false,PreserveDisplayModeSize=true});
             var artifact=chart.ToVisualArtifact();var facts=artifact.ToInterchangeEnvelope();
             PackageAssertions.Require(facts.Version==2&&facts.Nodes.Single().Topology!.Shape==shape,"Packed native surface identity/version was lost: "+name);

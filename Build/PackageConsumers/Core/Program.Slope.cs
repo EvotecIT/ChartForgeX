@@ -9,13 +9,13 @@ using ChartForgeX.Rendering;
 internal static partial class Program {
     private static void SlopeStageContracts() {
         var source = new[] { new ChartPoint(1, 20), new ChartPoint(2, 45), new ChartPoint(3, 35, true), new ChartPoint(4, 70) };
-        var chart = Chart.Create().WithSize(640, 360).WithLegend(false).WithXLabels("First", "Second", "Third", "Fourth")
+        var chart = Chart.Create().Size(640, 360).Legend(false).XLabels("First", "Second", "Third", "Fourth")
             .AddSlope("Recorded", source);
-        var series = chart.Series[0].UseSecondaryValueAxis().WithObservationIds(new[] {
+        var series = chart.Series[0].SecondaryAxis().ObservationIds(new[] {
             new ChartObservationId("first"), new ChartObservationId("second"), new ChartObservationId("third"), new ChartObservationId("fourth")
         });
         chart.Options.SlopeOrientation = ChartOrientation.Horizontal;
-        chart.WithXAxisBounds(0, 100).WithYAxisBounds(0, 5).WithSecondaryXAxisBounds(0, 100);
+        chart.XAxis(x => x.Bounds(0, 100)).YAxis(y => y.Bounds(0, 5)).SecondaryXAxis(s => s.Bounds(0, 100));
         source[1] = new ChartPoint(2, 999);
         var context = new VisualRenderContext(new VisualLayoutOptions(new VisualSize(640, 360)));
         var prepared = chart.Prepare(context, new ChartCartesianViewport(y: new ChartAxisWindow(1.5, 3.5)));

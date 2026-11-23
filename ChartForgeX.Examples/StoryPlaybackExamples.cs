@@ -25,7 +25,7 @@ internal static class StoryPlaybackExamples {
     }
 
     internal static VisualStory Create(VisualStoryFormat format) {
-        const string wrong = "var chart = Chart.Create()\n    .WithTitle(\"Build results\")\n    .WithXLabels(\"Mon\", \"Tue\", \"Wed\")\n    .AddBars(\"Passed\", new[] {\n        new ChartPoint(1, 12),\n        new ChartPoint(2, 18),\n        new ChartPoint(3, 24)\n    });\nchart.SavePng(\"builds.png\");";
+        const string wrong = "var chart = Chart.Create()\n    .Title(\"Build results\")\n    .XLabels(\"Mon\", \"Tue\", \"Wed\")\n    .AddBars(\"Passed\", new[] {\n        new ChartPoint(1, 12),\n        new ChartPoint(2, 18),\n        new ChartPoint(3, 24)\n    });\nchart.SavePng(\"builds.png\");";
         var offset = wrong.IndexOf("AddBars", StringComparison.Ordinal);
         var correct = wrong.Replace("AddBars", "AddBar", StringComparison.Ordinal);
         var fontSize = format == VisualStoryFormat.Portrait ? 14 : 18;

@@ -127,8 +127,8 @@ internal static partial class SmokeTests {
         AssertThrows<InvalidOperationException>(() => VisualMotionPresentation.Create(
             VisualGrid.Create().Title("Empty").Add(MetricCard.Create().Metric("One", 1)),
             VisualMotionTimeline.Create()).ToSvg(), "Visual motion timelines should require at least one cue.");
-        var atomicTiming = new VisualMotionCue("atomic", VisualMotionEffect.Fade).DelaySeconds(1).DurationSeconds(2);
-        AssertThrows<ArgumentOutOfRangeException>(() => atomicTiming.DelaySeconds(5).DurationSeconds(-1), "Visual motion timing should reject an invalid prospective duration.");
+        var atomicTiming = new VisualMotionCue("atomic", VisualMotionEffect.Fade).Timing(1, 2);
+        AssertThrows<ArgumentOutOfRangeException>(() => atomicTiming.Timing(5, -1), "Visual motion timing should reject an invalid prospective duration.");
         Assert(Math.Abs(atomicTiming.DelaySeconds - 1) < 0.001 && Math.Abs(atomicTiming.DurationSeconds - 2) < 0.001,
             "A rejected visual motion timing update should leave both existing values unchanged.");
         AssertThrows<ArgumentOutOfRangeException>(() => new VisualMotionCue("valid", (VisualMotionEffect)999), "Visual motion cues should reject unknown effects.");

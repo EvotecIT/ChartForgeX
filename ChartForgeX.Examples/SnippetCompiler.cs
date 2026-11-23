@@ -1,8 +1,8 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-/// <summary>Compiles a website snippet against the loaded ChartForgeX assemblies, so a specialized snippet is only published when it builds.</summary>
-internal static class SnippetCompiler {
+/// <summary>Compiles a website snippet or emitted program against the loaded ChartForgeX assemblies, so generated C# is only published when it builds.</summary>
+public static class SnippetCompiler {
     private static readonly Lazy<MetadataReference[]> References = new(() => {
         var platform = ((string?)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") ?? string.Empty).Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
         var product = AppDomain.CurrentDomain.GetAssemblies()

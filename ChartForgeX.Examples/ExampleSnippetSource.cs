@@ -99,7 +99,7 @@ public static class ExampleSnippetSource {
         return (Regex.Replace(text.ToString(), @"\n{3,}", "\n\n").Trim('\n') + "\n", Helpers(type.Identifier.Text, members, body), name, declared);
     }
 
-    // The local a fluent call chain starts from (chart in chart.AddSeries(a).WithTitle(b)), or null.
+    // The local a fluent call chain starts from (chart in chart.AddSeries(a).Title(b)), or null.
     private static string? Root(ExpressionSyntax expression) {
         if (expression is not InvocationExpressionSyntax) return null;
         while (true) {

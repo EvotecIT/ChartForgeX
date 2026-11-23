@@ -44,17 +44,17 @@ internal static class PackageAssertions {
         Require(Contains(System.Text.Encoding.ASCII.GetString(bytes), "acTL"), "APNG has no animation control.");
     }
 
-    internal static Chart Chart() => ChartForgeX.Core.Chart.Create().WithSize(320, 200).WithTitle("Packed chart")
+    internal static Chart Chart() => ChartForgeX.Core.Chart.Create().Size(320, 200).Title("Packed chart")
         .AddLine("Values", new[] { new ChartPoint(0, 2), new ChartPoint(1, 5), new ChartPoint(2, 3) });
 
-    internal static TopologyChart Topology() => TopologyChart.Create().WithId("packed-topology").WithViewport(420, 260, 20)
+    internal static TopologyChart Topology() => TopologyChart.Create().Id("packed-topology").Viewport(new TopologyViewport(420, 260, 20))
         .AddNode("api", "API", 80, 110, TopologyNodeKind.Service)
         .AddNode("db", "Database", 290, 110, TopologyNodeKind.Database)
         .AddEdge("api-db", "api", "db", "queries", TopologyEdgeKind.Dependency);
 
     internal static void CoreFixtures() {
-        var packet = PacketLayoutBlock.Create().WithSize(320, 200).WithBitsPerRow(16)
-            .WithBitOrder(PacketBitOrder.Descending).WithBitWidth(12).WithRowHeight(28).WithFieldGap(3).WithRowGap(7)
+        var packet = PacketLayoutBlock.Create().Size(320, 200).BitsPerRow(16)
+            .BitOrder(PacketBitOrder.Descending).BitWidth(12).RowHeight(28).FieldGap(3).RowGap(7)
             .AddField(0, 3, "Flags").AddField(4, 17, "Payload");
         Require(packet.BitOrder == PacketBitOrder.Descending && Contains(packet.ToSvg(), "data-bit-start=\"16\""),
             "Native descending packet API or row splitting is missing.");
@@ -72,10 +72,10 @@ internal static class PackageAssertions {
             frame: new VisualFrame(title: "Packed chart"), theme: theme));
         Require(Contains(prepared.ToSvg(), "<svg"), "Prepared SVG failed.");
         Png(prepared.ToPng());
-        var bubbles = ChartForgeX.Core.Chart.Create().WithSize(320, 200)
+        var bubbles = ChartForgeX.Core.Chart.Create().Size(320, 200)
             .AddBubble("First", new[] { new ChartBubble(1, 20, 100) })
             .AddBubble("Second", new[] { new ChartBubble(2, 30, 100), new ChartBubble(3, 40, 1000) })
-            .ConfigureBubble(bubble => { bubble.WithSizeDomain(0, 100); bubble.MinimumRadius = 2; bubble.MaximumRadius = 14; });
+            .Bubble(bubble => { bubble.SizeDomain(0, 100); bubble.MinimumRadius = 2; bubble.MaximumRadius = 14; });
         var bubbleSvg = XDocument.Parse(bubbles.ToSvg());
         var bubbleMarks = bubbleSvg.Descendants().Where(mark => (string?)mark.Attribute("data-cfx-role") == "bubble").ToArray();
         Require(bubbleMarks.Length == 3 && bubbleMarks.All(mark => double.Parse(mark.Attribute("rx")!.Value, CultureInfo.InvariantCulture) == 14),

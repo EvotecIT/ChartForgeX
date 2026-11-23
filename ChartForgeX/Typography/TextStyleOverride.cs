@@ -65,8 +65,8 @@ public sealed class TextStyleOverride {
     /// <summary>Gets or sets a value indicating whether text is italic.</summary>
     public bool Italic { get => _italic; set { _italic = value; _hasItalic = true; } }
 
-    /// <summary>Gets or sets a value indicating whether text is underlined. Setting it also selects a single underline, or none.</summary>
-    public bool Underline { get => _underline; set { _underline = value; _hasUnderline = true; _underlineStyle = value ? TextDecorationStyle.Single : TextDecorationStyle.None; } }
+    /// <summary>Gets or sets a value indicating whether text is underlined. Turning it on selects a single underline unless a style is already set; turning it off selects none.</summary>
+    public bool Underline { get => _underline; set { _underline = value; _hasUnderline = true; if (!value) _underlineStyle = TextDecorationStyle.None; else if (_underlineStyle is null or TextDecorationStyle.None) _underlineStyle = TextDecorationStyle.Single; } }
 
     /// <summary>Gets or sets an optional underline pattern. None explicitly disables a fallback underline.</summary>
     public TextDecorationStyle? UnderlineStyle {
@@ -78,8 +78,8 @@ public sealed class TextStyleOverride {
         }
     }
 
-    /// <summary>Gets or sets whether text is struck through. Setting it also selects a single strikethrough, or none.</summary>
-    public bool Strikethrough { get => _strikethrough; set { _strikethrough = value; _hasStrikethrough = true; _strikethroughStyle = value ? TextDecorationStyle.Single : TextDecorationStyle.None; } }
+    /// <summary>Gets or sets whether text is struck through. Turning it on selects a single strikethrough unless a style is already set; turning it off selects none.</summary>
+    public bool Strikethrough { get => _strikethrough; set { _strikethrough = value; _hasStrikethrough = true; if (!value) _strikethroughStyle = TextDecorationStyle.None; else if (_strikethroughStyle is null or TextDecorationStyle.None) _strikethroughStyle = TextDecorationStyle.Single; } }
 
     /// <summary>Gets or sets an optional strikethrough pattern. None explicitly disables a fallback strike.</summary>
     public TextDecorationStyle? StrikethroughStyle {

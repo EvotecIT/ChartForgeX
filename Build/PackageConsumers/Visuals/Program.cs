@@ -26,13 +26,13 @@ internal static partial class Program {
             .DrawText(12, 12, 150, "Packed composition", 12, ChartColors.DarkGreen);
         PackageAssertions.Png(composition.ToPng());
         PackageAssertions.Require(composition.ToImage().Pixels[3] == 0, "Composition lost its transparent edge.");
-        var canvas = VisualCanvas.Create(340, 220).WithBackground(ChartColor.Transparent)
+        var canvas = VisualCanvas.Create(340, 220).BackgroundTop(ChartColor.Transparent).BackgroundBottom(ChartColor.Transparent)
             .AddText(12, 14, 300, "Packed canvas", 20, ChartColors.DarkGreen);
         PackageAssertions.Require(PackageAssertions.Contains(canvas.ToSvg(), "Packed canvas"), "Canvas text is missing.");
         PackageAssertions.Png(canvas.ToPng());
         var shared = VisualTheme.Graphite().Configure(builder => builder.Dark.Foreground = ChartColor.FromHex("#00FE7F"));
-        var themedCanvas = VisualCanvas.Create(340, 120).WithTheme(shared, ThemeMode.Dark)
-            .WithBackdrop(VisualCanvasBackdropStyle.Transparent).AddText(12, 14, 300, "Shared theme", 24);
+        var themedCanvas = VisualCanvas.Create(340, 120).Theme(shared).ThemeMode(ThemeMode.Dark)
+            .BackdropStyle(VisualCanvasBackdropStyle.Transparent).AddText(12, 14, 300, "Shared theme", 24);
         PackageAssertions.Require(ReferenceEquals(shared, themedCanvas.Theme)
             && PackageAssertions.Contains(themedCanvas.ToSvg(), "#00FE7F"), "Canvas lost its shared dark foreground.");
         var darkPixels = themedCanvas.RenderRgba().Pixels;
@@ -40,9 +40,9 @@ internal static partial class Program {
         for (var offset = 0; offset < darkPixels.Length; offset += 4)
             if (darkPixels[offset] == 0 && darkPixels[offset + 1] == 254 && darkPixels[offset + 2] == 127 && darkPixels[offset + 3] == 255) foundForeground = true;
         PackageAssertions.Require(foundForeground, "Canvas native text did not paint the shared foreground.");
-        themedCanvas.WithThemeMode(ThemeMode.Light);
+        themedCanvas.ThemeMode(ThemeMode.Light);
         PackageAssertions.Require(!PackageAssertions.Contains(themedCanvas.ToSvg(), "#00FE7F"), "Canvas did not switch to the explicit light mode.");
-        var metric = MetricCard.Create().WithMetric("Ready", 98, "P0").WithSize(320, 170);
+        var metric = MetricCard.Create().Metric("Ready", 98, "P0").Size(320, 170);
         PackageAssertions.Png(metric.ToPng());
         var list = ChartList.Create().AddItem("Ready");
         PackageAssertions.Png(list.ToPng());
@@ -50,7 +50,7 @@ internal static partial class Program {
         var artifact = table.ToVisualArtifact();
         var text = VisualWatermark.FromText("First");
         var artwork = VisualWatermark.FromImage(new RgbaImage(1, 1, new byte[] { 20, 80, 120, 128 }).ToPng(), "image/png");
-        artifact.WithWatermarks(text, artwork);
+        artifact.AddWatermarks(text, artwork);
         var svg = artifact.ToSvg();
         PackageAssertions.Require(PackageAssertions.Contains(svg, "First"), "Text watermark is missing.");
         PackageAssertions.Require(PackageAssertions.Contains(svg, "data:image/png"), "Image watermark is missing.");

@@ -5,7 +5,7 @@ using ChartForgeX.VisualArtifacts;
 
 internal static partial class Program {
     private static void NativeSurfacePaintContracts() {
-        var chart=TopologyChart.Create().WithTitle("").WithViewport(400,280,12).WithLegend(null);
+        var chart=TopologyChart.Create().Title("").Viewport(new TopologyViewport(400, 280, 12)).Legend((TopologyLegend?)null);
         chart.Groups.Add(new TopologyGroup{Id="scope",Label="Scope",X=12,Y=12,Width=360,Height=240,Opacity=.5,SurfaceOpacity=.8,StrokeWidth=4});chart.Groups[0].DashPattern.AddRange(new double[]{7,3});
         chart.Nodes.Add(new TopologyNode{Id="node",Label="Node",X=60,Y=70,Width=180,Height=100,Shape=TopologyNodeShape.Rectangle,GroupId="scope",Opacity=.6,SurfaceOpacity=.7,StrokeWidth=3});chart.Nodes[0].DashPattern.AddRange(new double[]{9,4});
         var artifact=chart.ToVisualArtifact();var facts=artifact.ToInterchangeEnvelope();var restored=VisualArtifactInterchangeEnvelope.FromJson(facts.ToJson()).ToTopologyChart();

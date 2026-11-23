@@ -74,8 +74,8 @@ internal sealed partial class MermaidXYChartSettings {
     internal void Apply(Chart chart, bool horizontal, MermaidPresentationOptions? host) {
         var x = horizontal ? chart.Options.YAxis : chart.Options.XAxis;
         var y = horizontal ? chart.Options.XAxis : chart.Options.YAxis;
-        if (_xTitle == false) { if (horizontal) chart.YAxis(yAxis => yAxis.Title(string.Empty)); else chart.XAxis(xAxis => xAxis.Title(string.Empty)); }
-        if (_yTitle == false) { if (horizontal) chart.XAxis(xAxis => xAxis.Title(string.Empty)); else chart.YAxis(yAxis => yAxis.Title(string.Empty)); }
+        if (_xTitle == false) x.Title = string.Empty;
+        if (_yTitle == false) y.Title = string.Empty;
         if (_xLine.HasValue) x.ShowLine = _xLine.Value;
         if (_yLine.HasValue) y.ShowLine = _yLine.Value;
         if (_xRotation.HasValue) x.LabelAngle = _xRotation.Value;

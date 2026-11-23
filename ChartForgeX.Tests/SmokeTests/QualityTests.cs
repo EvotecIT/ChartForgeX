@@ -578,7 +578,7 @@ internal static partial class SmokeTests {
             File.WriteAllBytes(Path.Combine(output, "dashboard-chart-portfolio-grid.png"), alpha.ToPng());
             File.WriteAllText(Path.Combine(output, "travel-dotted-map-dark.html"), "<!doctype html><title>Travel Dotted Map</title><svg></svg>");
             File.WriteAllText(Path.Combine(output, "report.html"), "<!doctype html><title>Report</title><svg></svg>");
-            File.WriteAllText(Path.Combine(output, "alpha.csharp.txt"), "var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithTitle(\"Alpha & Beta\");");
+            File.WriteAllText(Path.Combine(output, "alpha.csharp.txt"), "var chart = Chart.Create().Theme(VisualTheme.Graphite()).Title(\"Alpha & Beta\");");
             File.WriteAllText(Path.Combine(output, "visual-baseline.json"), "{\"version\":1,\"charts\":[{\"name\":\"alpha\",\"width\":320,\"height\":180,\"svg\":{\"minVisualNodes\":2,\"maxClippedTextNodes\":0,\"maxNearEdgeTextNodes\":999},\"png\":{\"outputScale\":1,\"minVisiblePixels\":64,\"minDistinctColors\":8,\"maxEdgeInkPixels\":0}},{\"name\":\"zeta\",\"width\":640,\"height\":360,\"svg\":{\"minVisualNodes\":2,\"maxClippedTextNodes\":0,\"maxNearEdgeTextNodes\":999},\"png\":{\"outputScale\":1,\"minVisiblePixels\":64,\"minDistinctColors\":8,\"maxEdgeInkPixels\":0}}]}");
 
             GalleryWriter.Write(output);
@@ -666,7 +666,7 @@ internal static partial class SmokeTests {
             Assert(comparison.Contains(".wipe-frame>.wipe-25:checked~.media", StringComparison.Ordinal), "Comparison page should avoid flex-stretching wipe labels at wide viewport sizes.");
             Assert(comparison.Contains("SVG 25%", StringComparison.Ordinal) && comparison.Contains("SVG 75%", StringComparison.Ordinal), "Comparison page should offer fixed wipe positions without requiring JavaScript.");
             Assert(comparison.Contains("clip-path:inset(0 calc(100% - var(--wipe)) 0 0)", StringComparison.Ordinal), "Comparison page should keep SVG and PNG framed together while moving the wipe split.");
-            Assert(comparison.Contains("C# example code", StringComparison.Ordinal) && comparison.Contains("var chart = Chart.Create().WithTheme(VisualTheme.Graphite()).WithTitle(&quot;Alpha &amp; Beta&quot;);", StringComparison.Ordinal), "Comparison page should carry readable C# source snippets when examples provide them.");
+            Assert(comparison.Contains("C# example code", StringComparison.Ordinal) && comparison.Contains("var chart = Chart.Create().Theme(VisualTheme.Graphite()).Title(&quot;Alpha &amp; Beta&quot;);", StringComparison.Ordinal), "Comparison page should carry readable C# source snippets when examples provide them.");
             Assert(comparison.Contains(".pair{display:grid;grid-template-columns:repeat(2", StringComparison.Ordinal), "Comparison page should avoid squeezing SVG, PNG, and wipe panes into three narrow columns.");
             Assert(comparison.Contains("href=\"catalog.html\"", StringComparison.Ordinal), "Comparison page should link the grouped catalog page.");
             Assert(comparison.Contains("href=\"quality-dashboard.html\"", StringComparison.Ordinal), "Comparison page should link the artifact quality dashboard.");

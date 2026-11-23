@@ -17,10 +17,10 @@ internal static class Program {
         var output = Path.Combine(selectedOutput ?? AppContext.BaseDirectory, "net" + Environment.Version.Major);
         Directory.CreateDirectory(output);
         var names = Enumerable.Range(1, 16).Select(index => "Regional service " + index).ToArray();
-        var chart = Chart.Create().WithSize(390, 280).WithTitle("Allocation by service").WithDataLabels()
-            .WithXLabels(names).AddPyramid("Allocation", Enumerable.Range(1, 16).Select(index => new ChartPoint(index, 17 - index)));
+        var chart = Chart.Create().Size(390, 280).Title("Allocation by service").DataLabels()
+            .XLabels(names).AddPyramid("Allocation", Enumerable.Range(1, 16).Select(index => new ChartPoint(index, 17 - index)));
         var artifact = chart.ToVisualArtifact("allocation");
-        artifact.Accessibility.WithTextAlternative("Service allocation", "Sixteen service allocations with complete source facts.");
+        artifact.Accessibility.TextAlternative("Service allocation", "Sixteen service allocations with complete source facts.");
         var visual = artifact.ToOfficeVisual(new OfficeVisualConversionOptions {
             WidthPoints = 390, SvgPolicy = OfficeVisualSvgPolicy.RasterizeWhenNeeded
         });

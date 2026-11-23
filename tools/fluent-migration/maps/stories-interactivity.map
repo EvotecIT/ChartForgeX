@@ -10,7 +10,7 @@ call VisualStory.WithTheme -> Theme({theme}) ; [ThemeMode({mode:value})]
 call StorySourceText.WithLanguage -> Language({language})
 
 # --- VisualMotionCue ------------------------------------------------------------------------------
-call VisualMotionCue.WithTiming -> DelaySeconds({delaySeconds}) ; DurationSeconds({durationSeconds})
+keep VisualMotionCue.WithTiming -> Timing  # checks delay and duration before changing either
 
 # --- TerminalStory --------------------------------------------------------------------------------
 call TerminalStory.WithTiming -> InitialDelaySeconds({initialDelaySeconds}) ; CharactersPerSecond({charactersPerSecond}) ; LineDelaySeconds({lineDelaySeconds})

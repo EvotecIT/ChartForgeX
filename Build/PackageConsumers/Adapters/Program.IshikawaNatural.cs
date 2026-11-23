@@ -20,8 +20,8 @@ internal static partial class Program {
         PackageAssertions.Png(artifact.ToPng()); PackageAssertions.Require(artifact.HtmlSizing == VisualArtifactHtmlSizing.PreserveSize, "Packed Ishikawa changed native host sizing.");
         var fenced = CreateFixtureParser().Parse("```mermaid\n" + source + "\n```");
         PackageAssertions.Require(!fenced.HasErrors && fenced.Artifacts.Single().ToSvg() == svg, "Packed Ishikawa direct/fence geometry differed.");
-        var native = FishboneDiagramBlock.Create("Outcome").WithTheme(VisualTheme.Graphite()); native.AddCause("Cause").AddChild("Nested").AddChild("Deep fact");
-        native.WithNaturalSize(); PackageAssertions.Png(native.ToPng()); PackageAssertions.Require(native.ToSvg().Contains("Deep fact", StringComparison.Ordinal), "Packed native cause tree failed.");
+        var native = FishboneDiagramBlock.Create("Outcome").Theme(VisualTheme.Graphite()); native.AddCause("Cause").AddChild("Nested").AddChild("Deep fact");
+        native.NaturalSize(); PackageAssertions.Png(native.ToPng()); PackageAssertions.Require(native.ToSvg().Contains("Deep fact", StringComparison.Ordinal), "Packed native cause tree failed.");
         var portable = VisualArtifactInterchangeEnvelope.FromJson(artifact.ToInterchangeJson());
         PackageAssertions.Require(portable.Width == block.Options.Size.Width && portable.Extensions["mermaid.nodes"] == "7", "Packed Ishikawa envelope dimensions or source count changed.");
     }

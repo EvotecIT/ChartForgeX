@@ -10,7 +10,7 @@ internal static partial class Program {
         var bytes = new byte[8 * 4 * 4];
         for (var index = 0; index < 32; index++) { bytes[index * 4] = 32; bytes[index * 4 + 1] = 160; bytes[index * 4 + 2] = 96; bytes[index * 4 + 3] = 255; }
         var artwork = TopologyIconArtwork.Portrait(new RgbaImage(8, 4, bytes), TopologyPortraitFit.Slice);
-        var chart = TopologyChart.Create().WithViewport(600, 320).WithLegend(null).AddTeam("team", "Example team", new[] {
+        var chart = TopologyChart.Create().Viewport(new TopologyViewport(600, 320)).Legend((TopologyLegend?)null).AddTeam("team", "Example team", new[] {
             new TopologyTeamMember("person", "Avery Quinn", "Example role") { Artwork = artwork }
         }, new TopologyTeamOptions { IncludeTeamNode = false });
         var captured = chart.Nodes[0].Artwork!.ImageHref; Array.Clear(bytes, 0, bytes.Length); artwork.ImageHref = null;

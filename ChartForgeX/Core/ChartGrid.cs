@@ -136,12 +136,20 @@ public sealed partial class ChartGrid {
     /// <summary>
     /// Gets the text style used for the grid title.
     /// </summary>
-    public TextStyleOverride TitleStyle { get; private set; } = new();
+    public TextStyleOverride TitleStyle {
+        get => _titleStyle;
+        set => _titleStyle = value ?? throw new ArgumentNullException(nameof(value));
+    }
+    private TextStyleOverride _titleStyle = new();
 
     /// <summary>
     /// Gets the text style used for the grid subtitle.
     /// </summary>
-    public TextStyleOverride SubtitleStyle { get; private set; } = new();
+    public TextStyleOverride SubtitleStyle {
+        get => _subtitleStyle;
+        set => _subtitleStyle = value ?? throw new ArgumentNullException(nameof(value));
+    }
+    private TextStyleOverride _subtitleStyle = new();
 
     /// <summary>
     /// Gets the charts included in the grid.

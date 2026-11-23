@@ -8,8 +8,8 @@ using ChartForgeX.Typography;
 
 internal static partial class Program {
     private static void NativeActorSubtitleContracts() {
-        var chart = TopologyChart.Create().WithTheme(VisualTheme.Graphite().WithFontFamily(PackageAssertions.OutlineFontFamily)).WithId("package-actor-caption").WithViewport(700, 520, 24)
-            .WithLayout(TopologyLayoutMode.Layered)
+        var chart = TopologyChart.Create().Theme(VisualTheme.Graphite().WithFontFamily(PackageAssertions.OutlineFontFamily)).Id("package-actor-caption").Viewport(new TopologyViewport(700, 520, 24))
+            .LayoutMode(TopologyLayoutMode.Layered)
             .AddAutoNode("author", "Release coordinator", width: 180, height: 110, subtitle: "primary actor")
             .AddAutoNode("publish", "Publish documents", width: 180, height: 80)
             .AddEdge("request", "author", "publish", "requests", routing: TopologyEdgeRouting.Straight);

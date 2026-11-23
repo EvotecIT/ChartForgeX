@@ -142,7 +142,7 @@ internal static partial class DocVisuals {
     // A three-scene story: type a chart program, run it in an authored terminal, show the chart it describes.
     // The terminal transcript is authored; stories present a session, they never execute it.
     private static string StoryFrame(bool dark, TimeSpan at) {
-        const string program = "var chart = Chart.Create()\n    .WithTitle(\"Sign-ins by method\")\n    .AddStackedArea(\"Passkey\", passkey)\n    .AddStackedArea(\"Password\", password);\nchart.SaveSvg(\"sign-ins.svg\");";
+        const string program = "var chart = Chart.Create()\n    .Title(\"Sign-ins by method\")\n    .AddStackedArea(\"Passkey\", passkey)\n    .AddStackedArea(\"Password\", password);\nchart.SaveSvg(\"sign-ins.svg\");";
         var mode = dark ? ThemeMode.Dark : ThemeMode.Light;
         var editor = StorySourceTimeline.Create(StorySourceText.Create("", "csharp"))
             .Type(program, TimeSpan.FromSeconds(3))

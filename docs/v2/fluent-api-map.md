@@ -250,8 +250,8 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | `WithTickStep` | `.TickStep(...)` |
 | `WithTickValues` | `.TickValues(...)` |
 | `WithTimeScale` | `.TimeScale(...)` |
-| `WithTimeSessions` | `.Scale(ChartScaleKind.Time).TimeSessions(domain)` |
-| `WithTimeSpacing` | `.Scale(ChartScaleKind.Time).TimeSpacing(spacing)` |
+| `WithTimeSessions` | `.TimeSessions(...)` |
+| `WithTimeSpacing` | `.TimeSpacing(...)` |
 | `WithValueFormat(ChartValueFormat)` | `.ValueFormat(format)` |
 | `WithVisibility(Boolean)` | `.Visible(visible)` |
 
@@ -1129,7 +1129,7 @@ ChartForgeX 5.0 generates fluent methods named after the model properties. This 
 | --- | --- |
 | `WithDistance(Double)` | `.DistancePixels(pixels)` |
 | `WithEasing(VisualMotionEasing)` | `.Easing(easing)` |
-| `WithTiming` | `.DelaySeconds(delaySeconds).DurationSeconds(durationSeconds)` |
+| `WithTiming` | `.Timing(...)` |
 
 ## VisualSeriesDefaults
 

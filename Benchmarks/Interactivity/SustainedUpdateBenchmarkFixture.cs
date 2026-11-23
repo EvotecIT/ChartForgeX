@@ -68,18 +68,18 @@ public sealed partial class SustainedUpdateBenchmarkFixture : IDisposable {
     /// <summary>Recreates source/input plans and installs the untimed starting scene; the browser remains owned by HtmlTinkerX.</summary>
     public void Reset() {
         _last = null; _lastBrowserSvg = null; _committed = 0; _validated = false;
-        var source = Chart.Create().WithSize(900, 500).WithHeader(false).WithLegend(false).WithDataLabels(false)
-            .WithPadding(24, 24, 24, 24).WithTheme(_theme, ThemeMode.Light).WithYAxisBounds(0, 60);
-        _source = source; source.Options.PngFontPath = _font;
+        var source = Chart.Create().Size(900, 500).ShowHeader(false).Legend(false).DataLabels(false)
+            .Padding(24, 24, 24, 24).Theme(_theme).ThemeMode(ThemeMode.Light).YAxis(y => y.Bounds(0, 60));
+        _source = source; source.Options.Png.FontPath = _font;
         _series = Enumerable.Range(0, _secondary ? 2 : 1).Select(series => {
             var data = ChartSeries.CreateLine(new ChartSeriesId(Key(series)), series == 0 ? "Measurements" : "Companion",
                 Enumerable.Range(0, _count).Select(index => Point(index, series)))
-                .WithObservationIds(Enumerable.Range(0, _count).Select(Id)).WithPointColor(_count / 2, "#7c3aed");
-            data.ConfigureMarkers(markers => { markers.Enabled = true; markers.Radius = _count == 32 ? 3 : 2; });
-            if (series > 0) data.UseSecondaryValueAxis();
+                .ObservationIds(Enumerable.Range(0, _count).Select(Id)).PointColor(_count / 2, "#7c3aed");
+            data.Markers(markers => { markers.Enabled = true; markers.Radius = _count == 32 ? 3 : 2; });
+            if (series > 0) data.SecondaryAxis();
             source.AddSeries(data); return data;
         }).ToArray();
-        if (_secondary) source.WithSecondaryYAxisBounds(0, 500);
+        if (_secondary) source.SecondaryYAxis(s => s.Bounds(0, 500));
         _plans = Enumerable.Range(0, _updates).Select(step => Enumerable.Range(0, _series.Length).Select(series => new[] {
             ChartObservationChange<ChartPoint>.Remove(Id(step)),
             ChartObservationChange<ChartPoint>.Replace(Id(_count / 2), Point(_count / 2, series, step + 1)),

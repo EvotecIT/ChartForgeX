@@ -48,6 +48,18 @@ public sealed class VisualMotionCue {
     private double _delaySeconds;
     private double _durationSeconds = 0.7;
     private double _distancePixels = 12;
+    /// <summary>Sets the delay and duration together; both are checked before either changes.</summary>
+    /// <param name="delaySeconds">The non-negative delay before the cue starts.</param>
+    /// <param name="durationSeconds">The positive cue duration.</param>
+    /// <returns>The same cue.</returns>
+    public VisualMotionCue Timing(double delaySeconds, double durationSeconds) {
+        var validatedDelay = VisualMotionGuards.NonNegativeFinite(delaySeconds, nameof(delaySeconds));
+        var validatedDuration = VisualMotionGuards.PositiveFinite(durationSeconds, nameof(durationSeconds));
+        _delaySeconds = validatedDelay;
+        _durationSeconds = validatedDuration;
+        return this;
+    }
+
 
     /// <summary>Creates a motion cue for a named target.</summary>
     public VisualMotionCue(string targetId, VisualMotionEffect effect) {
@@ -134,7 +146,7 @@ public sealed class VisualMotionTimeline {
     /// <summary>Adds a motion cue using explicit timing.</summary>
     public VisualMotionTimeline Add(string targetId, VisualMotionEffect effect, double delaySeconds = 0, double durationSeconds = 0.7, VisualMotionEasing easing = VisualMotionEasing.Emphasized, double distancePixels = 12) =>
         Add(new VisualMotionCue(targetId, effect)
-            .DelaySeconds(delaySeconds).DurationSeconds(durationSeconds)
+            .Timing(delaySeconds, durationSeconds)
             .Easing(easing)
             .DistancePixels(distancePixels));
 
@@ -174,7 +186,7 @@ public sealed class VisualMotionTimeline {
             if (_cues.Count + prepared.Count >= 64) {
                 throw new InvalidOperationException("Visual motion timelines support at most 64 cues.");
             }
-            var cue = new VisualMotionCue(targetId, effect).DelaySeconds(delay).DurationSeconds(durationSeconds);
+            var cue = new VisualMotionCue(targetId, effect).Timing(delay, durationSeconds);
             if (!targets.Add(cue.TargetId)) {
                 throw new ArgumentException("A visual motion timeline can target each id only once.", nameof(targetIds));
             }

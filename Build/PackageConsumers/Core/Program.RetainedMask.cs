@@ -7,7 +7,7 @@ using ChartForgeX.VisualArtifacts;
 
 internal static partial class Program {
     private static void RetainedMaskContracts() {
-        var model = SequenceArtifact.Create("package-retained-mask").WithSize(320, 500)
+        var model = SequenceArtifact.Create("package-retained-mask").Width(320).Height(500)
             .AddParticipant("A", "Review").AddParticipant("B", "Archive").AddMessage("A", "B", "Save");
         model.Participants[0].Href = "#guide";
         var source = model.Prepare(new VisualRenderContext(new VisualLayoutOptions(new VisualSize(320, 500), 20)));

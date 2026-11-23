@@ -28,14 +28,8 @@ public static class MermaidXYChartRendering {
         chart.Options.Lines.Orientation = orientation;
         var categoryAxis = horizontal ? chart.Options.YAxis : chart.Options.XAxis;
         var valueAxis = horizontal ? chart.Options.XAxis : chart.Options.YAxis;
-        if (!string.IsNullOrWhiteSpace(document.XAxis.Title)) {
-            if (horizontal) chart.YAxis(y => y.Title(document.XAxis.Title!));
-            else chart.XAxis(x => x.Title(document.XAxis.Title!));
-        }
-        if (!string.IsNullOrWhiteSpace(document.YAxis.Title)) {
-            if (horizontal) chart.XAxis(x => x.Title(document.YAxis.Title!));
-            else chart.YAxis(y => y.Title(document.YAxis.Title!));
-        }
+        if (!string.IsNullOrWhiteSpace(document.XAxis.Title)) categoryAxis.Title = document.XAxis.Title!;
+        if (!string.IsNullOrWhiteSpace(document.YAxis.Title)) valueAxis.Title = document.YAxis.Title!;
         for (var index = 0; index < document.XAxis.Labels.Count; index++)
             categoryAxis.Labels.Add(new ChartAxisLabel(index + 1, document.XAxis.Labels[index]));
         if (document.XAxis.HasRange) { categoryAxis.Min = document.XAxis.Minimum; categoryAxis.Max = document.XAxis.Maximum; }
