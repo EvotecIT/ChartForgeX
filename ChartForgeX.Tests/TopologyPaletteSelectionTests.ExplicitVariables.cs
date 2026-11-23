@@ -13,7 +13,7 @@ public sealed partial class TopologyPaletteSelectionTests {
     [BrowserTheory]
     [InlineData("node")]
     [InlineData("icon")]
-    public async Task ExplicitVariablesWithoutFallbackKeepStatusPixelsAndResolveInTheHost(string source) {
+    public async Task ExplicitVariablesKeepStatusFallbackPixelsAndResolveInTheHost(string source) {
         if (!Enabled) return;
         var (chart, options) = VariableNode(source, true);
         var prepared = chart.Prepare(options); var status = chart.Theme.Resolve(ThemeMode.Light).Status.Pass.Fill;
@@ -74,10 +74,12 @@ public sealed partial class TopologyPaletteSelectionTests {
         var chart = Diagram(ThemeMode.Light); var options = Options();
         chart.Nodes[0].Kind = TopologyNodeKind.Service; chart.Nodes[0].Status = TopologyHealthStatus.Healthy;
         chart.Nodes[0].PaletteIndex = palette ? 1 : null;
-        if (source == "node") chart.Nodes[0].Color = ChartColorText.Parse("var(--custom)");
+        // A variable colour always carries a fallback; the status colour keeps undefined variables painting as status.
+        var custom = chart.Theme.Resolve(ThemeMode.Light).Status.Pass.Fill.WithCssVariable("--custom");
+        if (source == "node") chart.Nodes[0].Color = custom;
         else {
             options.IconCatalog = TopologyIconCatalog.Default().AddPack(new TopologyIconPack("variable", "Variable")
-                .AddIcon(new TopologyIconDefinition("variable", "owner", "Owner", TopologyNodeKind.Service, TopologyIconShape.Application) { Color = ChartColorText.Parse("var(--custom)") }));
+                .AddIcon(new TopologyIconDefinition("variable", "owner", "Owner", TopologyNodeKind.Service, TopologyIconShape.Application) { Color = custom }));
             chart.Nodes[0].IconId = "variable:owner";
         }
         return (chart, options);

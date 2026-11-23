@@ -86,7 +86,7 @@ public sealed class TopologyAccentBrowserTests {
                     Assert.Equal(expected, actual);
                 }
             }
-            Assert.Equal("#ffffff", await root.EvaluateAsync<string>("root=>root.__cfxGraphState.byId.get('explicit').backgroundColor"));
+            Assert.Equal("#FFFFFF", await root.EvaluateAsync<string>("root=>root.__cfxGraphState.byId.get('explicit').backgroundColor"));
             if (backend == HtmlGraphRenderBackend.Svg)
                 Assert.Equal("rgb(255, 255, 255)", await root.Locator("[data-node-id=explicit] > :is(rect,circle,path,polygon,ellipse)").First.EvaluateAsync<string>("node=>getComputedStyle(node).fill"));
         }
