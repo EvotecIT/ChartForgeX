@@ -6,7 +6,7 @@ namespace ChartForgeX.Core;
 /// <summary>
 /// Defines reusable visual tokens for line, area boundary, trend, and slope strokes.
 /// </summary>
-[Fluent]
+[Fluent(Copy = nameof(Clone))]
 public sealed class ChartLineVisualStyle {
     private double _ambientHaloOpacity;
     private double _ambientHaloStrokeExtra;

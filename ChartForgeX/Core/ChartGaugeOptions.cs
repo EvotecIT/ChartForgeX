@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
@@ -38,6 +39,7 @@ public sealed class ChartGaugeBand {
 }
 
 /// <summary>Controls arc, needle and linear gauges without introducing host behaviour.</summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class ChartGaugeOptions {
     private ChartGaugeForm _form;
     private ChartOrientation _orientation = ChartOrientation.Horizontal;
@@ -115,7 +117,11 @@ public sealed class ChartGaugeOptions {
 
 public sealed partial class ChartOptions {
     /// <summary>Gets gauge anatomy, scale captions and band settings.</summary>
-    public ChartGaugeOptions Gauge { get; internal set; } = new();
+    public ChartGaugeOptions Gauge {
+        get => _gauge;
+        set => _gauge = value ?? throw new ArgumentNullException(nameof(value));
+    }
+    private ChartGaugeOptions _gauge = new();
 }
 
 public sealed partial class Chart {

@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using ChartForgeX.Core;
 using ChartForgeX.Typography;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Topology;
 
 /// <summary>
 /// Defines topology rendering options.
 /// </summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class TopologyRenderOptions {
     // Retains prepared caption fitting without requesting a second viewport transform.
     internal bool? CapturedSingleLineFitting { get; set; }

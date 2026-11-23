@@ -40,7 +40,7 @@ With `StateBookmarks`, interaction snapshots include an optional `nativeHierarch
 Both options are opt-in and use the same native drawing for Core, HTML, SVG and PNG:
 
 ```csharp
-chart.ConfigureSunburst(options => {
+chart.Sunburst(options => {
     options.MinimumLabelFontSize = 10;
     options.SectorGap = 6;
     options.CornerRadius = 4;
@@ -61,7 +61,7 @@ An explicit gap can exhaust a thin sector or even a small root disk. Such a posi
 Sunburst can opt into circular primary captions without changing its source allocation:
 
 ```csharp
-chart.ConfigureSunburst(options => {
+chart.Sunburst(options => {
     options.CurvedLabels = true;
     options.MinimumLabelFontSize = 11;
 });
@@ -74,7 +74,7 @@ The curved path currently supports bounded single-line, nonjoining text with mon
 Treemap provides a separate opt-in policy for difficult names:
 
 ```csharp
-chart.ConfigureTreemap(options => {
+chart.Treemap(options => {
     options.MinimumLabelFontSize = 11;
     options.LabelTrimming = TextTrimming.Ellipsis;
 });

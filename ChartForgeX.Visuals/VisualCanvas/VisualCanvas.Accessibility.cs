@@ -6,7 +6,11 @@ namespace ChartForgeX.Composition;
 
 public sealed partial class VisualCanvas {
     /// <summary>Gets accessibility metadata shared by capable renderers and hosts.</summary>
-    public VisualAccessibility Accessibility { get; private set; } = new();
+    public VisualAccessibility Accessibility {
+        get => _accessibility;
+        set => _accessibility = value ?? throw new ArgumentNullException(nameof(value));
+    }
+    private VisualAccessibility _accessibility = new();
 
     /// <summary>Installs an independent canvas text alternative after successful configuration.</summary>
     /// <remarks>Callback exceptions preserve the owner. Previous metadata and retained callback values remain independent of the installed result.</remarks>

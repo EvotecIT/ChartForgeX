@@ -1,4 +1,5 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
@@ -12,6 +13,8 @@ public sealed partial class ChartOptions {
     /// <summary>
     /// Gets or sets how multiple bar series are arranged within each category.
     /// </summary>
+    [FluentPreset("Grouped", ChartBarMode.Grouped, Summary = "Places bars of one category side by side.")]
+    [FluentPreset("Stacked", ChartBarMode.Stacked, Summary = "Stacks bars of one category.")]
     public ChartBarMode BarMode {
         get => _barMode;
         set {

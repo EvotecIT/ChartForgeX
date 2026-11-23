@@ -37,8 +37,8 @@ using ChartForgeX.Core;
 using ChartForgeX.VisualArtifacts;
 
 var chart = Chart.Create()
-    .WithTitle("Result Mix")
-    .WithXLabels("Passed", "Warnings", "Failed")
+    .Title("Result Mix")
+    .XLabels("Passed", "Warnings", "Failed")
     .AddPie("Checks", ChartPoints.FromValues(1260, 68, 10));
 
 var artifact = chart.ToVisualArtifact(
@@ -105,14 +105,14 @@ Topology and flow are intentionally separate artifact contracts. Native topology
 
 ```csharp
 var flow = FlowArtifact.Create("review")
-    .WithTitle("Request review")
+    .Title("Request review")
     .AddStep("receive", "Receive request", FlowArtifactStepKind.Start)
     .AddStep("publish", "Publish result", FlowArtifactStepKind.End)
     .AddConnector("receive", "publish", "Approved");
 
 string json = flow.ToVisualArtifact().ToInterchangeJson();
 FlowArtifact editable = VisualArtifactInterchangeEnvelope.FromJson(json).ToFlowArtifact();
-editable.ConfigureStep("publish", step => step.Label = "Publish approved request");
+editable.UpdateStep("publish", step => step.Label = "Publish approved request");
 byte[] png = editable.ToPng();
 ```
 
@@ -173,9 +173,8 @@ using ChartForgeX.VisualBlocks;
 using ChartForgeX.Typography;
 
 var table = TableArtifact.Create("alerts")
-    .WithTitle("Open Alerts")
-    .WithCapabilities(
-        TableArtifactCapabilities.Search |
+    .Title("Open Alerts")
+    .Capabilities(TableArtifactCapabilities.Search |
         TableArtifactCapabilities.Sort |
         TableArtifactCapabilities.Filter |
         TableArtifactCapabilities.MultiSelection |
@@ -265,9 +264,9 @@ The markup parser should stay a thin authoring layer. Reusable behavior belongs 
 using ChartForgeX.VisualArtifacts;
 
 var sequence = SequenceArtifact.Create("incident")
-    .WithTitle("Incident Flow")
-    .WithSubtitle("Native sequence preview")
-    .WithSize(760, 420)
+    .Title("Incident Flow")
+    .Subtitle("Native sequence preview")
+    .Width(760).Height(420)
     .AddParticipant("user", "User", SequenceArtifactParticipantKind.Actor)
     .AddParticipant("api", "API")
     .AddParticipant("db", "Database", SequenceArtifactParticipantKind.Database)
@@ -325,7 +324,7 @@ Journey and Timeline use typed version-2 families independently from the broad a
 using ChartForgeX.VisualArtifacts;
 using ChartForgeX.VisualBlocks;
 
-var journey = JourneyDiagramBlock.Create().WithTitle("Review journey")
+var journey = JourneyDiagramBlock.Create().Title("Review journey")
     .AddSection("draft", "Review")
     .AddTask("read", "Read proposal", 3, new[] { "Reviewer" }, "draft");
 var json = VisualArtifact.Create("review", VisualArtifactKind.VisualBlock, journey)

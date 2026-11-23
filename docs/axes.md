@@ -2,7 +2,7 @@
 
 Axes choose readable "nice" ticks on their own. These options fix or steer the ticks, add minor
 grid lines and style each axis's grid. Configure them on the axis, usually through
-`ConfigureXAxis`, `ConfigureYAxis` or `Options.SecondaryYAxis`. Every option paints the same
+`chart.XAxis(...)`, `chart.YAxis(...)` or `chart.SecondaryYAxis(...)`. Every option paints the same
 geometry in SVG, HTML and native PNG, and an axis without them keeps its automatic ticks unchanged.
 
 The gallery's Line page shows each option in both themes and at compact width; the examples come
@@ -11,18 +11,18 @@ from [AxisControlRecipe](../ChartForgeX.Examples/Recipes/AxisControlRecipe.cs).
 ## Fixed step
 
 ```csharp
-chart.ConfigureXAxis(axis => axis.WithTickStep(6))     // 0, 6, 12, 18, 24
-     .ConfigureYAxis(axis => axis.WithTickStep(15));   // 0, 15, 30, …
+chart.XAxis(axis => axis.TickStep(6))     // 0, 6, 12, 18, 24
+     .YAxis(axis => axis.TickStep(15));   // 0, 15, 30, …
 ```
 
 Linear ticks sit on whole multiples of the step. An automatic value axis ends on the next multiple
 beyond its data, as it does for automatic steps. On a logarithmic axis the step counts whole powers
-of the base, so `WithTickStep(2)` marks 1, 100, 10,000, and an automatic range ends on the stepped
+of the base, so `TickStep(2)` marks 1, 100, 10,000, and an automatic range ends on the stepped
 powers around the data (0.01 and 1,000,000 for data from 0.8 to 72,000), so both plot edges carry a tick. Time axes take a calendar interval:
 
 ```csharp
-chart.ConfigureXAxis(axis => axis.WithTimeScale()
-    .WithTickStep(new ChartTimeTickInterval(ChartTimeTickUnit.Week, 2)));
+chart.XAxis(axis => axis.TimeScale()
+    .TickStep(new ChartTimeTickInterval(ChartTimeTickUnit.Week, 2)));
 ```
 
 A time axis rejects a numeric step, other axes reject a calendar step, and a symmetric logarithmic
@@ -32,21 +32,21 @@ prepared. A step that would place more than 1,000 ticks across the axis also thr
 ## Explicit values
 
 ```csharp
-chart.ConfigureYAxis(axis => axis.WithTickValues(0, 20, 50, 80));
+chart.YAxis(axis => axis.TickValues(0, 20, 50, 80));
 ```
 
 Only these values get ticks, captions and grid lines inside the visible domain. Captions still come
 from the axis formatter. An automatic range keeps its zero baseline, drawn as the axis rule without a
 caption unless 0 is listed, and ends on the nearest listed value beyond the data, without extra padding. Use `Labels` instead when each position needs its own authored text; labels take
 precedence over tick values. An axis accepts up to 1,000 values. Duplicates are merged, and
-non-finite values throw. A step and explicit values cannot be combined: call `WithAutomaticTicks()`
+non-finite values throw. A step and explicit values cannot be combined: call `AutomaticTicks()`
 to clear one before setting the other.
 
 ## Tick spacing
 
 ```csharp
-chart.ConfigureXAxis(axis => axis.WithTickSpacing(minimum: null, maximum: 45))
-     .ConfigureYAxis(axis => axis.WithTickSpacing(minimum: 90, maximum: null));
+chart.XAxis(axis => axis.TickSpacing(minimum: null, maximum: 45))
+     .YAxis(axis => axis.TickSpacing(minimum: 90, maximum: null));
 ```
 
 Spacing bounds steer the automatic search, in drawing units, on Cartesian axes. The minimum rejects
@@ -57,7 +57,7 @@ only steer automatic ticks, so they cannot be combined with a fixed step or expl
 ## Minor ticks
 
 ```csharp
-chart.ConfigureYAxis(axis => axis.WithTickStep(20).WithMinorTicks(4));
+chart.YAxis(axis => axis.TickStep(20).MinorTickCount(4));
 ```
 
 Each major interval is divided evenly in data units, including the partial intervals at both ends of
@@ -66,21 +66,21 @@ line's lightness step from the background; a pale light-theme grid keeps a just-
 so minor lines read in both themes. `ChartAxisGridStyle.MinorOpacity` sets an exact opacity. ChartForgeX axes draw no tick
 marks, so minor ticks appear as lighter grid lines (`grid-y-minor`, `grid-x-minor`) wherever the
 axis draws grid lines. The X axis draws no grid lines by default; call
-`ConfigureGrid(grid => grid.WithLines(true))` to show them.
+`Grid(grid => grid.ShowLines(true))` to show them.
 
 ## Axis grid style
 
 ```csharp
 var teal = ChartColor.FromHex("#2E8B8B");
-chart.ConfigureYAxis(axis => axis.ConfigureGrid(grid => grid
-    .WithColor(teal).WithOpacity(.55).WithStrokeWidth(1).WithDash(5, 4)
-    .WithBands()));                       // neutral bands; WithBands(color, opacity) tints them
+chart.YAxis(axis => axis.Grid(grid => grid
+    .Color(teal).Opacity(.55).StrokeWidth(1).Dash(5, 4)
+    .ShowBands()));                       // neutral bands; BandColor(color) tints them
 ```
 
 `ChartAxisGridStyle` overrides the chart's `ChartGridLineStyle` for one Cartesian axis: line
 visibility, colour, opacity, width, dash and minor-line opacity. Unset values inherit the chart style.
-`WithBands()` fills every other interval between adjacent major ticks, starting with the first, with a
-neutral tint of the theme grid colour; `WithBands(color, opacity)` uses an authored colour instead. The chart's `ShowGrid` switch still hides every grid.
+`ShowBands()` fills every other interval between adjacent major ticks, starting with the first, with a
+neutral tint of the theme grid colour; `BandColor(color)` and `BandOpacity(opacity)` use an authored colour instead. The chart's `ShowGrid` switch still hides every grid.
 
 ## More value axes on one side
 
@@ -88,27 +88,27 @@ A vertical chart has a primary value axis on the left and a secondary one on the
 needs more scales than that, add value axes that stack outward on either side:
 
 ```csharp
-var chart = Chart.Create().WithYAxis("IT load (kW)").WithSecondaryYAxis("Supply air (°C)")
+var chart = Chart.Create().YAxis(y => y.Title("IT load (kW)")).SecondaryYAxis(s => s.Title("Supply air (°C)"))
     .AddArea("IT load", load)
     .AddLine("Supply air", temperature);
-chart.Series[1].UseSecondaryValueAxis();
+chart.Series[1].SecondaryAxis();
 
 var humidity = chart.AddValueAxis(ChartAxisPlacement.End, "Humidity (%)",
-    axis => axis.WithBounds(30, 70).WithTickStep(10));
+    axis => axis.Bounds(30, 70).TickStep(10));
 chart.AddLine("Humidity", readings);
-chart.Series[2].UseValueAxis(humidity);
+chart.Series[2].ValueAxis(humidity);
 ```
 
 `AddValueAxis` returns a `ChartAdditionalValueAxis`, the typed reference series bind to with
-`UseValueAxis`. `ChartAxisPlacement.Start` stacks the axis outside the primary axis, `End` outside
+`ValueAxis`. `ChartAxisPlacement.Start` stacks the axis outside the primary axis, `End` outside
 the secondary one. Axes on one side stack in the order they were added, each in its own column with
 the same gap, rule and caption spacing. An axis that no series uses draws nothing.
 
-Each axis has its own `ChartAxis` (`Axis`, or `Configure`) and takes the same controls as any other
-value axis: bounds, scale, formatter, `WithTickStep`, `WithTickValues`, `WithTickSpacing`, minor
-ticks and `ConfigureGrid`. Only the primary axis draws grid lines by default; an additional axis
+Each axis has its own `ChartAxis` (`Axis`, or `Axis(a => ...)`) and takes the same controls as any other
+value axis: bounds, scale, formatter, `TickStep`, `TickValues`, `TickSpacing`, minor
+ticks and `Grid`. Only the primary axis draws grid lines by default; an additional axis
 draws its own grid, minor lines included, when its grid style asks for lines with
-`ConfigureGrid(grid => grid.WithLines(true))`. Captions, rule and title take the axis `Color`, or the
+`Grid(grid => grid.ShowLines(true))`. Captions, rule and title take the axis `Color`, or the
 colour of the first series bound to it, so a reader can match the axis to its line. On a side that
 carries an added axis, the primary or secondary axis there takes its first series colour the same way,
 so every column on that side reads alike; a side without added axes stays neutral. Titles share the

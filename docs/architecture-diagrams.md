@@ -149,8 +149,8 @@ var frame = chart.PrepareScenarioStep("create", 1);      // step 2 highlighted, 
 File.WriteAllBytes("step-2.png", frame.ToPng());
 
 var page = chart.ToInteractiveHtmlPage(new TopologyRenderOptions { ActiveScenarioId = "create" }
-    .WithHtmlScenarioPanel()
-    .WithHtmlScenarioSequence());
+    .HtmlScenarioPanel()
+    .HtmlScenarioSequence());
 
 var story = chart.ToScenarioStory("create");             // ChartForgeX.Stories: one scene per step
 File.WriteAllBytes("create.gif", story.Prepare().ToGif());
@@ -162,10 +162,10 @@ Console.WriteLine(scenario.ToText(1));
 
 Sequence interchange preserves participant cards, their subtitle and icon/status colours, and message-caption pill paint when exported to JSON and restored with `ToSequenceArtifact()`.
 
-On the `ToInteractiveHtmlPage` page with `WithHtmlScenarioSequence()`, the topology and the sequence diagrams share one type scale. Each fits the column while that costs at most an eighth of its size; past that it keeps its text size and scrolls inside its own frame, so a phone shows readable text instead of a thumbnail. Pages with zoom, export or fullscreen controls, or the selection panel, keep the fitted view.
+On the `ToInteractiveHtmlPage` page with `HtmlScenarioSequence()`, the topology and the sequence diagrams share one type scale. Each fits the column while that costs at most an eighth of its size; past that it keeps its text size and scrolls inside its own frame, so a phone shows readable text instead of a thumbnail. Pages with zoom, export or fullscreen controls, or the selection panel, keep the fitted view.
 
 Scenarios built in code use the same model: `AddMessageStep(edgeId, TopologyScenarioInteraction.Response, "201", reverse: true)`
-and `WithPayload(json, TopologyScenarioPayloadFormat.Json)` on a step.
+and `Payload(json).PayloadFormat(TopologyScenarioPayloadFormat.Json)` on a step.
 
 While a step plays on the interactive page, its edge's arrow points the way the step travels: a response, or any step
 sent from the edge's target, shows the arrowhead at the caller's end, and the next step or a reset restores the drawn

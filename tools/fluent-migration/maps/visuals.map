@@ -1,0 +1,90 @@
+# ChartForgeX visuals: visual blocks, visual artifacts, ChartForgeX.Visuals (VisualGrid, VisualCanvas and layers,
+# VisualsExtensions, VisualWatermarkDecoration), ChartGrid, PreparedVisual and VisualSvgOptions.
+
+# Blocks expose their options directly, like Chart does.
+inline VisualBlock.Options
+
+# --- VisualBlock<TSelf> -------------------------------------------------------------------------------
+keep VisualBlock.WithSize -> Size  # two numbers read better than new ChartSize(w, h); matches Chart.Size
+keep VisualBlock.WithPadding -> Padding  # uniform or four-sided padding in one call; matches Chart.Padding
+call VisualBlock.WithTheme -> Theme({theme}) ; [ThemeMode({mode:value})]
+keep VisualBlock.ConfigureTheme -> Theme  # VisualTheme is immutable; the builder produces a new theme
+call ChartExtensions.WithPngOutputScale(ChartPngOutputScale) -> PngOutputScale((int){scale})
+
+# --- Natural sizing (measures the content, then sets the frame) ----------------------------------------
+keep FishboneDiagramBlock.WithNaturalSize -> NaturalSize  # measures cause lanes and sets the frame
+keep RailroadDiagramBlock.WithNaturalSize -> NaturalSize  # measures rules and sets the frame
+keep TreeViewBlock.WithNaturalSize -> NaturalSize  # measures rows and sets the frame
+keep GitGraphBlock.WithNaturalSize -> NaturalSize  # measures branches and commits and sets the frame
+
+# --- Wardley map ----------------------------------------------------------------------------------------
+keep WardleyMapBlock.WithStageBoundaries -> StageBoundaries  # validates increasing edges against the stage count
+keep WardleyMapBlock.WithAnnotationsBox -> AnnotationsBox  # builds the box from two normalized coordinates
+
+# --- Metric cards ---------------------------------------------------------------------------------------
+keep MetricCard.WithMetric -> Metric  # sets label and formatted value (and unit) together
+keep MetricCard.WithMiniBars -> MiniBars  # validates values, sets the bar family and clears the sparkline
+keep MetricCard.WithoutMiniBars -> ClearMiniBars  # clears values and every mini-bar setting
+keep MetricCard.WithMiniSparkline -> MiniSparkline  # validates values against the secondary series and clears bars
+keep MetricCard.WithoutMiniSparkline -> ClearMiniSparkline  # clears both sparklines and their settings
+keep MetricCard.WithSecondaryMiniSparkline -> SecondaryMiniSparkline  # validates the sample count against the primary series
+keep MetricCard.WithSparkline -> Sparkline  # copies sample slots and requested bounds, clears bars
+keep MetricCard.WithSecondarySparkline -> SecondarySparkline  # validates slots and rejects secondary bounds
+keep RadialMetricCard.WithMetric -> Metric  # sets label and formatted value together
+keep RadialMetricCard.WithLayers -> Layers  # replaces the layer list with validation, or builds it from a builder
+keep SegmentedMetricBlock.WithMetric -> Metric  # sets label, formatted value, unit and caption together
+keep SegmentedMetricItem.WithDisplayValue -> DisplayValue  # formats any value with an optional format string
+call HeatmapInsightCard.WithColorKey -> Minimum({minimum}) ; Maximum({maximum}) ; [LowColor({lowColor})] ; [HighColor({highColor})] ; [ColorKeyLabel({label})]
+keep HeatmapInsightCard.WithColumns -> Columns  # replaces the column labels, rejecting null labels
+
+# --- Chart table ----------------------------------------------------------------------------------------
+keep ChartTable.WithColumns -> Columns  # replaces the column set, checked against existing rows
+keep ChartTable.ConfigureRow -> UpdateRow  # keyed copy-then-commit edit of one row
+keep ChartTable.WithStatusColumn -> StatusColumn  # resolves a header or validates an index
+keep ChartTableCell.WithMiniBars -> MiniBars  # sets the microvisual kind with validated values and bounds
+keep ChartTableCell.WithSparkline -> Sparkline  # sets the microvisual kind with validated values or sample slots
+keep ChartTableCell.WithBadge -> Badge  # sets badge text, tone, colour and style as one unit, resetting omitted parts
+
+# --- Visual artifacts -----------------------------------------------------------------------------------
+call FlowArtifact.WithSize -> Width({width}) ; Height({height}) ; Padding({padding})
+keep FlowArtifact.ConfigureStep -> UpdateStep  # keyed copy-then-commit edit of the step with this id
+keep FlowArtifact.ConfigureConnector -> UpdateConnector  # keyed copy-then-commit edit of one connector
+call TableArtifact.WithCapabilities -> Capabilities({capabilities})
+keep TableArtifact.ConfigureRow -> UpdateRow  # keyed copy-then-commit edit of one row
+keep VisualWatermarkDecoration.WithWatermarks -> AddWatermarks  # appends watermark snapshots to the artifact presentation
+
+# --- Visual grid ----------------------------------------------------------------------------------------
+call VisualGrid.WithTheme -> Theme({theme}) ; [ThemeMode({mode:value})]
+keep VisualGrid.WithPanelSize -> PanelSize  # two numbers read better than new ChartSize(w, h)
+keep VisualsExtensions.ConfigureTheme -> Theme  # VisualTheme is immutable; the builder produces a new theme
+call VisualsExtensions.WithPngOutputScale -> PngOutputScale((int){scale})
+
+# --- Chart grid -----------------------------------------------------------------------------------------
+call ChartGrid.WithTheme -> Theme({theme}) ; [ThemeMode({mode:value})]
+call ChartGrid.WithPngOutputScale(ChartPngOutputScale) -> PngOutputScale((int){scale})
+keep ChartGrid.WithPanelSize -> PanelSize  # two numbers read better than new ChartSize(w, h)
+keep ChartGrid.WithPanelSpan -> PanelSpan  # indexed edit of an existing chart's span
+keep ChartGrid.WithSharedXAxis -> ShareXAxis  # computes one x range across compatible charts and applies it
+keep ChartGrid.WithSharedYAxis -> ShareYAxis  # computes primary and secondary y ranges and applies them
+keep ChartGrid.WithSharedAxes -> ShareAxes  # shares both axis ranges
+
+# --- Visual canvas --------------------------------------------------------------------------------------
+call VisualCanvas.WithTheme -> Theme({theme}) ; [ThemeMode({mode:value})]
+keep VisualCanvas.WithResponsiveLayout -> ResponsiveLayout  # sets the design space and fit together with validation
+keep VisualCanvas.WithFixedLayout -> FixedLayout  # clears the design space and resets the fit
+keep VisualCanvasInfoTileLayer.WithMiniChart -> MiniChart  # validates values and derives the effective kind
+keep VisualCanvasInfoTileLayer.WithSparkline -> Sparkline  # copies sample slots and selects the sparkline kind
+
+# --- Immutable or detached results keep the .NET With idiom ---------------------------------------------
+stay PreparedVisual.WithBloom  # returns a new retained presentation
+stay PreparedVisual.WithDropShadow  # returns a new retained presentation
+stay PreparedVisual.WithInnerShadow  # returns a new retained presentation
+stay PreparedVisual.WithMask  # returns a new retained presentation
+stay PreparedVisual.WithOutline  # returns a new retained presentation
+stay VisualSvgOptions.WithEnhanceHooks  # returns a modified copy
+stay VisualSvgOptions.WithFluidWidth  # returns a modified copy
+stay VisualSvgOptions.WithFontVariables  # returns a modified copy
+stay VisualSvgOptions.WithInheritedFonts  # returns a modified copy
+stay VisualSvgOptions.WithPatternTiles  # returns a modified copy
+stay VisualSvgOptions.WithSharedDesignRoles  # returns a modified copy
+stay VisualSvgOptions.WithoutProductFonts  # returns a modified copy

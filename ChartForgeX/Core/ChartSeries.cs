@@ -19,9 +19,13 @@ public sealed partial class ChartSeries {
     internal bool PreserveInteractionTargetsWhenMarkersHidden { get; private set; }
 
     /// <summary>
-    /// Gets the display name shown in legends.
+    /// Gets or sets the display name shown in legends.
     /// </summary>
-    public string Name { get; private set; }
+    public string Name {
+        get => _name;
+        set => _name = value ?? throw new ArgumentNullException(nameof(value));
+    }
+    private string _name = string.Empty;
 
     /// <summary>
     /// Gets the series rendering kind.
@@ -56,6 +60,7 @@ public sealed partial class ChartSeries {
     /// <summary>
     /// Gets or sets the series color. When null, the chart theme palette is used.
     /// </summary>
+    [FluentPreset("ThemeColor", null, Summary = "Uses the theme palette colour.")]
     public ChartColor? Color { get; set; }
 
     /// <summary>Gets or sets the semantic colour role; explicit colours still take precedence.</summary>
@@ -71,6 +76,7 @@ public sealed partial class ChartSeries {
     /// <summary>
     /// Gets or sets the texture overlay applied to filled marks in this series.
     /// </summary>
+    [FluentPreset("SolidFill", ChartFillPattern.None, Summary = "Uses a solid fill without a pattern.")]
     public ChartFillPattern FillPattern {
         get => _fillPattern;
         set {
@@ -169,6 +175,8 @@ public sealed partial class ChartSeries {
     /// Gets or sets the primary or secondary value axis. Horizontal charts use the X axis; vertical and radial charts use the Y axis.
     /// Setting it releases any <see cref="AdditionalValueAxis"/> binding.
     /// </summary>
+    [FluentPreset("PrimaryAxis", ChartAxisSide.Primary, Summary = "Plots the series against the primary value axis.")]
+    [FluentPreset("SecondaryAxis", ChartAxisSide.Secondary, Summary = "Plots the series against the secondary value axis.")]
     public ChartAxisSide ValueAxis {
         get => _valueAxis;
         set {

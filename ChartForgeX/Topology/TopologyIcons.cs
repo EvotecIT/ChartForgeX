@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Topology;
 
@@ -161,6 +162,7 @@ public sealed partial class TopologyIconCatalog {
 /// <summary>
 /// Represents a named set of reusable topology icons.
 /// </summary>
+[Fluent]
 public sealed class TopologyIconPack {
     private readonly List<TopologyIconDefinition> _icons = new();
     private string _id;
@@ -291,6 +293,7 @@ public sealed class TopologyIconPack {
 /// <summary>
 /// Describes one topology icon that can be referenced by nodes and groups.
 /// </summary>
+[Fluent]
 public sealed class TopologyIconDefinition {
     private string _packId;
     private string _id;

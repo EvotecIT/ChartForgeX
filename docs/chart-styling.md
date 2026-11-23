@@ -1,25 +1,25 @@
 # Chart paint and formatters
 
-Style series with `WithFill` and `WithStrokeStyle`. Use `WithItemStyler<TDatum>`
+Style series with `Fill` and `StrokeStyle`. Use `ItemStyleBy<TDatum>`
 when paint depends on a complete observation. Labels and tooltip text use
-`WithDataLabelFormatter` and `WithTooltipFormatter` on the same series handle.
+`DataLabelBy` and `TooltipBy` on the same series handle.
 All callbacks run during `Prepare`; SVG and native PNG exports reuse the captured
 scene without invoking application code or performing external I/O.
 
 ```csharp
 var sales = ChartSeries.CreateBar(new ChartSeriesId("sales"), "Sales",
     ChartPoints.FromValues(62, 78, 71, 91));
-sales.WithFill(ChartFill.LinearGradient(new ChartPoint(0, 0), new ChartPoint(0, 1),
+sales.Fill(ChartFill.LinearGradient(new ChartPoint(0, 0), new ChartPoint(0, 1),
     new ChartGradientStop(0, ChartColor.FromHex("#8DC7F3")),
     new ChartGradientStop(1, ChartColor.FromHex("#3979C6"))));
-sales.WithItemStyler<ChartPoint>(item => item.Datum.Y >= 90
+sales.ItemStyleBy<ChartPoint>(item => item.Datum.Y >= 90
     ? new ChartItemStyle(color: ChartColor.FromHex("#CC7850"),
         stroke: new ChartStrokeStyle(width: 2, dash: new[] { 6d, 3d }))
     : null);
-sales.WithDataLabelFormatter(item => item.Value?.ToString("0"));
-sales.WithTooltipFormatter(item => $"{item.Category}: {item.Value:0} orders");
-var chart = Chart.Create().WithXLabels("Jan", "Feb", "Mar", "Apr")
-    .WithDataLabels(true).AddSeries(sales);
+sales.DataLabelBy(item => item.Value?.ToString("0"));
+sales.TooltipBy(item => $"{item.Category}: {item.Value:0} orders");
+var chart = Chart.Create().XLabels("Jan", "Feb", "Mar", "Apr")
+    .DataLabels(d => d.Visible(true)).AddSeries(sales);
 ```
 
 ## Observation contexts and precedence
@@ -44,7 +44,7 @@ they do not borrow an arbitrary contributor's callback result.
 `IsCurrent`, `IsSelected` and `IsHighlighted` describe static `ChartMarkOptions`
 state. Interactive hover stays in the optional HTML adapter.
 
-The family/theme default feeds series configuration, ordinal `WithPoint*`
+The family/theme default feeds series configuration, ordinal `Point*`
 overrides, then the datum callback. Null callback fields inherit the previous
 level. `ChartItemStyle.Color` chooses a solid base color; `Fill` chooses an
 authored fill. Per-item fill overrides the series fill. Marker settings are
@@ -68,7 +68,7 @@ No image URL, file access or browser installation is required at render time.
 
 `ChartStrokeStyle` supplies color, width, opacity and dash lengths for connected
 lines, area edges, comparison stems, error bars and box outlines. For example,
-`forecast.WithStrokeStyle(new ChartStrokeStyle(width: 2.5, dash: new[] { 7d, 4d }))`
+`forecast.StrokeStyle(new ChartStrokeStyle(width: 2.5, dash: new[] { 7d, 4d }))`
 creates a dashed forecast. Stroke style width overrides `StrokeWidth`, then the
 family/theme width. Radar and polar family outlines retain their more specific
 precedence. Marker outlines remain independent.
@@ -77,7 +77,7 @@ A series that holds actuals and forecast in one line changes its stroke from a
 source X onward:
 
 ```csharp
-demand.WithStrokeStyleFrom(lastActualX, new ChartStrokeStyle(dash: new[] { 6d, 5d }));
+demand.StrokeStyleFrom(lastActualX, new ChartStrokeStyle(dash: new[] { 6d, 5d }));
 ```
 
 Each `ChartStrokeSegment` in `StrokeSegments` runs from its `FromX` (numeric or
@@ -98,7 +98,7 @@ adds a widening interval band after the last actual.
 ## Theme defaults per series kind
 
 A theme can style every series of one kind, the way AG Charts `theme.overrides`
-does. Set them in code with `VisualThemeBuilder.ConfigureSeries` inside
+does. Set them in code with `VisualThemeBuilder.Series` inside
 `VisualTheme.Configure`, or in the optional `series` object of a
 `schemaVersion: 1` theme file loaded with `VisualTheme.FromJson`.
 `theme.SeriesDefaults` returns independent copies keyed by kind:
@@ -117,10 +117,10 @@ does. Set them in code with `VisualThemeBuilder.ConfigureSeries` inside
 ```
 
 ```csharp
-var theme = VisualTheme.Graphite().Configure(builder => builder.ConfigureSeries(ChartSeriesKind.Line, line => {
+var theme = VisualTheme.Graphite().Configure(builder => builder.Series(ChartSeriesKind.Line, line => {
     line.StrokeWidth = 3;
     line.Interpolation = ChartInterpolation.Smooth;
-    line.ConfigureMarkers(markers => { markers.Shape = ChartMarkerShape.Diamond; markers.Enabled = true; });
+    line.Markers(markers => { markers.Shape = ChartMarkerShape.Diamond; markers.Enabled = true; });
 }));
 ```
 

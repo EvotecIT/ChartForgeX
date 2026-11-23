@@ -1,4 +1,5 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
@@ -17,6 +18,7 @@ public enum ChartBoxPlotWhiskerPolicy {
 }
 
 /// <summary>Configures calculation of raw box-plot groups.</summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class ChartBoxPlotStatisticsOptions {
     private ChartBoxPlotWhiskerPolicy _whiskerPolicy;
     private double _iqrMultiplier = 1.5;

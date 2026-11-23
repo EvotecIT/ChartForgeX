@@ -11,7 +11,7 @@ namespace ChartForgeX.Core;
 /// their largest possible half-extent, while Area retains these reference-circle bounds and normalizes their
 /// even-odd fill, so a custom silhouette can extend beyond the reference radius. Stroke width is independent.
 /// </remarks>
-[Fluent]
+[Fluent(Copy = nameof(Clone))]
 public sealed class ChartBubbleOptions {
     private double _minimumRadius = 6;
     private double? _maximumRadius;

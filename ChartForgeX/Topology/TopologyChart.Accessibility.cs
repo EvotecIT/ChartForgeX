@@ -6,7 +6,11 @@ namespace ChartForgeX.Topology;
 
 public sealed partial class TopologyChart {
     /// <summary>Gets accessibility metadata shared by capable renderers and hosts.</summary>
-    public VisualAccessibility Accessibility { get; private set; } = new();
+    public VisualAccessibility Accessibility {
+        get => _accessibility;
+        set => _accessibility = value ?? throw new ArgumentNullException(nameof(value));
+    }
+    private VisualAccessibility _accessibility = new();
 
     /// <summary>Installs an independent accessibility snapshot after successful configuration.</summary>
     /// <remarks>Callback exceptions preserve the owner. Previous values and retained callback values remain independent of the installed result.</remarks>
@@ -17,7 +21,11 @@ public sealed partial class TopologyChart {
     }
 
     /// <summary>Gets the words the renderers write on their own: the name of an untitled diagram and its automatic description.</summary>
-    public TopologyLabels Labels { get; internal set; } = new();
+    public TopologyLabels Labels {
+        get => _labels;
+        set => _labels = value ?? throw new ArgumentNullException(nameof(value));
+    }
+    private TopologyLabels _labels = new();
 
     /// <summary>Installs an independent label snapshot after successful configuration (see <see cref="TopologyLabels"/>).</summary>
     /// <remarks>Callback exceptions preserve the owner. Previous values and retained callback values remain independent of the installed result.</remarks>

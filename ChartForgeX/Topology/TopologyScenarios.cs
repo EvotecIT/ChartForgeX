@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Topology;
 
 /// <summary>
 /// Describes an interactive path or story through a topology chart.
 /// </summary>
+[Fluent]
 public sealed class TopologyScenario {
     private string _id = string.Empty;
     private string _label = string.Empty;
@@ -71,6 +73,7 @@ public sealed class TopologyScenario {
 /// <summary>
 /// Describes one node or edge reference inside a topology scenario.
 /// </summary>
+[Fluent]
 public sealed class TopologyScenarioStep {
     private string _id = string.Empty;
     private TopologyScenarioStepKind _kind;

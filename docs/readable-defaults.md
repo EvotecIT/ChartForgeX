@@ -10,7 +10,7 @@ Numeric ticks keep the precision their step needs. When compact rounding would m
 
 Shares always carry `%`. Pie/donut shares, funnel ratios, pyramid shares and Gantt completion use one percentage precision per chart. Default progress rings show their 0–100 readings and average as percentages.
 
-`WithValueFormat(ChartValueFormat.Number("0.0000", culture))` deliberately selects fixed precision and a culture; it remains authoritative. Custom callbacks and explicit point labels also keep their authored output. Use a percentage format such as `"0.00%"` to choose derived-share precision. An authored raw-value format keeps its own unit while derived shares retain `%` and use the same culture.
+`ValueFormat(ChartValueFormat.Number("0.0000", culture))` deliberately selects fixed precision and a culture; it remains authoritative. Custom callbacks and explicit point labels also keep their authored output. Use a percentage format such as `"0.00%"` to choose derived-share precision. An authored raw-value format keeps its own unit while derived shares retain `%` and use the same culture.
 
 ## Tick density
 
@@ -41,17 +41,17 @@ Lane labels, lane summaries, group headers and heatmap row labels share one poli
 - They may use the row spacing around a thin band, so a label isn't dropped because the painted band is thinner than a line of text.
 - When even 10 px text does not fit the row pitch, heatmaps thin visible row labels and report `matrix.row-label-density`; every row name remains in semantic regions. Other row-based charts hide labels that cannot fit.
 
-Heatmap cells keep theme rounding to at most 20% of the shorter side, so small cells read as squares rather than dots. `WithHeatmapCellRadius` still sets an exact radius.
+Heatmap cells keep theme rounding to at most 20% of the shorter side, so small cells read as squares rather than dots. `Heatmap(h => h.CellRadius(radius))` still sets an exact radius.
 
-A caller that can accommodate a taller static frame can use `WithHeatmapNaturalHeight()` to grow a rectangular heatmap until its rows fit readable cells. Fixed-height frames retain every row and their authored size, report `matrix.cell-density` for cells shorter than 12 px, and report `matrix.row-label-density` when labels must be thinned. Responsive HTML fits the card to its content and follows cell width with readable row pitches capped at 32 px.
+A caller that can accommodate a taller static frame can use `Heatmap(h => h.NaturalHeight())` to grow a rectangular heatmap until its rows fit readable cells. Fixed-height frames retain every row and their authored size, report `matrix.cell-density` for cells shorter than 12 px, and report `matrix.row-label-density` when labels must be thinned. Responsive HTML fits the card to its content and follows cell width with readable row pitches capped at 32 px.
 
-Rectangular heatmaps use a latest-column window by default when a fixed frame cannot fit every cell at 14 px. Earlier columns are omitted and counted by `matrix.cell-density` and the `matrix-column-window` semantic region. Use `WithHeatmapColumnWindow(ChartHeatmapColumnWindow.Squeeze)` to show all columns in a fixed frame, including narrow cells. Responsive HTML retains all columns for its interactive layout.
+Rectangular heatmaps use a latest-column window by default when a fixed frame cannot fit every cell at 14 px. Earlier columns are omitted and counted by `matrix.cell-density` and the `matrix-column-window` semantic region. Use `Heatmap(h => h.ColumnWindow(ChartHeatmapColumnWindow.Squeeze))` to show all columns in a fixed frame, including narrow cells. Responsive HTML retains all columns for its interactive layout.
 
 Heatmap column captions that don't fit their columns behave according to what they name:
 
 - Dates and numbers stay horizontal and thin out at a regular stride, always keeping the first and last column.
 - Named columns, such as check or service names, wrap to two lines and rotate only as a last resort, because skipping a name would hide that column.
-- `WithXAxisLabelAngle` still sets an exact angle.
+- `XAxis(x => x.LabelAngle(degrees))` still sets an exact angle.
 
 ## Series colours
 
@@ -60,10 +60,10 @@ Palette-driven series (those without an explicit colour or a state role) take th
 Linked dashboards that need a series to keep its colour when others are added, removed or filtered can opt in to identity colours:
 
 ```csharp
-chart.WithSeriesColorAssignment(ChartSeriesColorAssignment.Identity);
+chart.SeriesColorAssignment(ChartSeriesColorAssignment.Identity);
 ```
 
-Each series with an explicit `ChartSeriesId` then derives its palette slot from that identifier. Two series can share a colour in that mode; `WithColor` sets an exact colour when it matters.
+Each series with an explicit `ChartSeriesId` then derives its palette slot from that identifier. Two series can share a colour in that mode; `series.Color(color)` sets an exact colour when it matters.
 
 Waterfall changes carry a direction: increases use the positive status colour and decreases the negative one. Opening balances, subtotals and totals are levels rather than changes, so they take the series colour (the accent for the first series) instead of a warning colour.
 
@@ -79,7 +79,7 @@ A discrete colour scale reads as a key.
 ## Units
 
 ```csharp
-chart.WithValueUnit("ms");
+chart.ValueUnit("ms");
 ```
 
 The unit follows values in tooltips, readouts and accessible names ("52.7 ms"). Single symbols such as `%` attach directly ("99.8%"). A value format that already writes the unit keeps a single copy. Axis tick labels stay unit-free; put the unit in the axis title instead.
@@ -96,14 +96,14 @@ Schedules and pie, gauge, radial, map and hierarchy readouts don't add the unit 
 Charts default to invariant output: ISO dates (`2026-10-27`, `14:00`) and `.` as the decimal separator. To localise dates and times:
 
 ```csharp
-chart.WithCulture(CultureInfo.GetCultureInfo("pl-PL"));
+chart.Culture(CultureInfo.GetCultureInfo("pl-PL"));
 ```
 
 - Day labels use the culture's short month-day form ("27 paź", "27. Okt.", "Oct 27"). The first day of a year and ranges that cross years include the year.
 - Times use the culture's short time pattern; full instants in tooltips and accessible names use its short date and time.
-- `WithCulture(CultureInfo.InvariantCulture)` restores ISO dates.
+- `Culture(CultureInfo.InvariantCulture)` restores ISO dates.
 
-Numbers keep their value format. Pass the culture there too, for example `WithValueFormat(ChartValueFormat.Number("0.#", culture))`. A single axis can also be localised with `ChartAxis.Culture`.
+Numbers keep their value format. Pass the culture there too, for example `ValueFormat(ChartValueFormat.Number("0.#", culture))`. A single axis can also be localised with `ChartAxis.Culture`.
 
 ## Accessible names
 

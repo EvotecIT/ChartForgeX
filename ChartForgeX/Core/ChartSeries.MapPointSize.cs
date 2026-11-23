@@ -1,9 +1,11 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 public sealed partial class ChartSeries {
     /// <summary>Gets this dotted-map dataset's weight domain, radius and size-key policy. Explicit <see cref="MarkerRadius"/> takes precedence.</summary>
+    [NoFluent]
     public ChartMapPointSizeOptions MapPointSize { get; private set; } = new();
 
     /// <summary>Configures one dotted-map dataset's marker sizes atomically, independently of its geographic coordinates and numeric color.</summary>

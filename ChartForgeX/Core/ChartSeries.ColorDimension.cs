@@ -1,9 +1,11 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 public sealed partial class ChartSeries {
     /// <summary>Gets the independent color measurement's name and number display policy for Scatter, Bubble and map datasets (TileMap overrides require an inset).</summary>
+    [NoFluent]
     public ChartColorDimensionOptions ColorDimension { get; private set; } = new();
 
     /// <summary>Configures this numeric color dataset's existing presentation options.</summary>

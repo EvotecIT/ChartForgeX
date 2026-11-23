@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ChartForgeX.Primitives;
+using ChartForgeX.Themes;
 using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;

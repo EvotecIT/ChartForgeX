@@ -1,8 +1,10 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>Controls native weighted chord geometry. Source facts retain authored order independently of display permutations.</summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class ChartChordOptions {
     private double _startAngleDegrees = -90;
     private double _sweepAngleDegrees = 360;

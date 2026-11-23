@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Topology;
 
 /// <summary>
 /// Defines deterministic, script-free topology motion for SVG and sampled raster exports.
 /// </summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class TopologyMotionOptions {
     private string? _scenarioId;
     private string? _markerColor;

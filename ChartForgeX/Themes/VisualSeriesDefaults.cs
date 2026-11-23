@@ -15,7 +15,7 @@ namespace ChartForgeX.Themes;
 /// Chart-level data-label styling and an authored bar corner radius also take precedence over these defaults.
 /// A theme snapshots its defaults, so later edits to this instance do not change an existing theme.
 /// </remarks>
-[Fluent]
+[Fluent(Copy = nameof(Clone))]
 public sealed class VisualSeriesDefaults {
     private double? _strokeWidth, _cornerRadius;
     private ChartInterpolation? _interpolation;

@@ -27,7 +27,7 @@ public enum ChartScaleKind {
 /// <summary>
 /// Defines renderer-neutral bounds, scale, ticks, labels, and visibility for one chart axis.
 /// </summary>
-[Fluent]
+[Fluent(Copy = nameof(Clone))]
 public sealed partial class ChartAxis {
     private string _title = string.Empty;
 

@@ -24,8 +24,8 @@ var editor = StorySourceTimeline.Create(StorySourceText.Create("", "csharp"))
     .Pause(TimeSpan.FromSeconds(2));
 
 var story = VisualStory.Create("Write and run")
-    .WithTheme(VisualTheme.Graphite(), ThemeMode.Dark)
-    .WithFormat(VisualStoryFormat.Widescreen);
+    .Theme(VisualTheme.Graphite()).ThemeMode(ThemeMode.Dark)
+    .Format(VisualStoryFormat.Widescreen);
 story.Scene("write", "Write the source", 4)
     .Panel("source", new VisualStorySourceSurface(editor,
         options: new VisualStorySourceOptions("demo.cs", fontSize: 18)));
@@ -84,7 +84,7 @@ var replay = recorded.Trim(TimeSpan.Zero, TimeSpan.FromSeconds(40))
     .CompressPauses(TimeSpan.FromSeconds(2))
     .Explain(TimeSpan.FromSeconds(1), "The recorded wait is shortened.");
 
-var demonstration = VisualStory.Create("Validation replay").WithFormat(VisualStoryFormat.Widescreen);
+var demonstration = VisualStory.Create("Validation replay").Format(VisualStoryFormat.Widescreen);
 demonstration.Scene("run", "Run the validation", replay.Duration.TotalSeconds)
     .Panel("terminal", new VisualStoryReplaySurface(replay));
 demonstration.Outcome("result", "24 checks passed", "terminal");
@@ -97,7 +97,7 @@ Events must be ordered and fit the declared duration. A replay supports 4,096 ev
 
 Run `dotnet run --project ChartForgeX.Examples -- --story-replay-only --output ./replay-output` for landscape, square and portrait demonstrations. These examples use authored resolved events so their timing and output remain reproducible.
 
-`WithFormat` supplies landscape, square and portrait sizes and stacks split panels in portrait. `WithSize` supplies exact dimensions. `WithPanelReflow` controls whether a tall viewport changes a split into a stack. Font size remains explicit, so choose a smaller readable size for a narrow source panel instead of relying on whole-image scaling.
+`Format` supplies landscape, square and portrait sizes and stacks split panels in portrait. `Size` supplies exact dimensions. `ReflowPanels` controls whether a tall viewport changes a split into a stack. Font size remains explicit, so choose a smaller readable size for a narrow source panel instead of relying on whole-image scaling.
 
 ## Streaming and browser controls
 

@@ -48,11 +48,11 @@ var theme = VisualTheme.Graphite().Configure(builder => {
 });
 
 var cpuChart = Chart.Create()
-    .WithSize(220, 120)
-    .WithTheme(theme, ThemeMode.Dark)
-    .WithTransparentBackground()
-    .WithHeader(false)
-    .WithCard(false)
+    .Size(220, 120)
+    .Theme(theme).ThemeMode(ThemeMode.Dark)
+    .TransparentBackground()
+    .ShowHeader(false)
+    .ShowCard(false)
     .AddLine("CPU", new[] {
         new ChartPoint(1, 18),
         new ChartPoint(2, 31),
@@ -62,18 +62,18 @@ var cpuChart = Chart.Create()
     });
 
 var ramCard = MetricCard.Create()
-    .WithSize(180, 104)
-    .WithTheme(theme, ThemeMode.Dark)
-    .WithTransparentBackground()
-    .WithCard(false)
-    .WithMetric("RAM", "41%")
-    .WithMiniSparkline(new[] { 32d, 36d, 41d, 38d, 43d });
+    .Size(180, 104)
+    .Theme(theme).ThemeMode(ThemeMode.Dark)
+    .TransparentBackground()
+    .ShowCard(false)
+    .Metric("RAM", "41%")
+    .MiniSparkline(new[] { 32d, 36d, 41d, 38d, 43d });
 
 var canvas = VisualCanvas.CreateSocialPreview()
-    .WithTitle("PowerBGInfo social preview")
-    .WithTheme(theme, ThemeMode.Dark)
-    .WithBackground(ChartColor.FromHex("#020713"), ChartColor.FromHex("#071A35"))
-    .WithBackdrop(VisualCanvasBackdropStyle.TechHorizon)
+    .Title("PowerBGInfo social preview")
+    .Theme(theme).ThemeMode(ThemeMode.Dark)
+    .BackgroundTop(ChartColor.FromHex("#020713")).BackgroundBottom(ChartColor.FromHex("#071A35"))
+    .BackdropStyle(VisualCanvasBackdropStyle.TechHorizon)
     .AddInfoTile(58, 92, 250, 82, "PC", "HOSTNAME", "DEV-Workstation", accent: ChartColor.FromHex("#2F80FF"), iconKind: VisualCanvasInfoTileIconKind.Computer)
     .AddInfoTile(892, 70, 250, 96, "CPU", "CPU", "Intel Core i7-12700K", "23%", ChartColor.FromHex("#60A5FA"), 0.23, VisualCanvasInfoTileSurfaceStyle.Raised, VisualCanvasInfoTileIconKind.Cpu, VisualCanvasInfoTileMiniChartKind.Area, new[] { 18d, 26d, 22d, 37d, 48d, 43d }, 100)
     .AddKeyValueBlock(
@@ -106,12 +106,12 @@ canvas.SaveBmp("powerbginfo-social-preview.bmp");
 
 ## Responsive output
 
-Keep layer coordinates in one design space while producing multiple target sizes with `WithResponsiveLayout(...)` and `WithOutputSize(...)`:
+Keep layer coordinates in one design space while producing multiple target sizes with `ResponsiveLayout(...)` and `Width(...)`/`Height(...)`:
 
 ```csharp
 canvas
-    .WithResponsiveLayout(1200, 630, VisualCanvasImageFit.Cover)
-    .WithOutputSize(1920, 1080)
+    .ResponsiveLayout(1200, 630, VisualCanvasImageFit.Cover)
+    .Width(1920).Height(1080)
     .SavePng("powerbginfo-wallpaper.png");
 ```
 
@@ -119,10 +119,10 @@ canvas
 
 The generated example gallery includes a native 1920x1080 endpoint wallpaper and a 1200x630 social preview, each as SVG, static HTML and 2x-density PNG. Use these examples to inspect composition at the dimensions your host consumes. SVG display uses the browser's fonts and rasterization; PNG uses ChartForgeX's renderer, so matching geometry does not imply identical pixels.
 
-`VisualCanvas` starts in dark mode. Share one immutable theme with its chart and block layers and pass the mode explicitly, as above. `WithThemeMode(ThemeMode.Light)` selects the other palette. Explicit layer colors and `WithBackground` remain authored overrides. To customize canvas chrome without creating another theme type, use local style options:
+`VisualCanvas` starts in dark mode. Share one immutable theme with its chart and block layers and pass the mode explicitly, as above. `ThemeMode(ThemeMode.Light)` selects the other palette. Explicit layer colors and `BackgroundTop`/`BackgroundBottom` remain authored overrides. To customize canvas chrome without creating another theme type, use local style options:
 
 ```csharp
-canvas.ConfigureStyle(style => {
+canvas.Style(style => {
     style.TileGlassTop = ChartColor.FromHex("#243247");
     style.ImagePlaceholderStroke = ChartColor.FromHex("#60A5FA");
 });
@@ -137,8 +137,8 @@ defaults in `VisualTypography`, scale every tile on a canvas with
 var theme = VisualTheme.Graphite().WithTypography(
     new VisualTypography(tileLabelSize: 16, tileValueSize: 25,
         tileDetailSize: 14));
-var canvas = VisualCanvas.Create(1200, 630).WithTheme(theme)
-    .ConfigureStyle(style => style.TileTextScale = 1.15)
+var canvas = VisualCanvas.Create(1200, 630).Theme(theme)
+    .Style(style => style.TileTextScale = 1.15)
     .AddInfoTileWithTextOptions(48, 80, 520, 150, "PC", "HOST", "DEV-WKS-01",
         new VisualCanvasInfoTileTextOptions(textScale: 1.25,
             valueFontSize: 28));
@@ -320,7 +320,7 @@ Text drawn from a `FontSpec` (`ImageComposition.DrawText` and `TextLayoutEngine`
 
 When no real bold or italic face exists, bold is synthesized by emboldening and italic by shearing the regular face. An explicit supported `wght` axis uses the font's weight outline instead of synthetic bold; `ital` or `slnt` similarly replaces synthetic italic. A variable face with a `wght` axis selects the requested weight. Explicit variation settings override that inferred weight; other axes retain their default values unless requested.
 
-Set `FontSpec.Variations` to immutable `FontVariationSettings`, or build a selection with `FontSpec.FromFile(path).WithVariation("wght", 650).WithVariation("wdth", 85)`. Chart text-role overrides expose the same `WithVariation` method. Null on an override inherits; `FontVariationSettings.Default` clears authored axes while retaining ordinary weight selection. Tags are case-sensitive four-character ASCII letters or digits. Values must be finite; each face clamps recognized values to its `fvar` range and ignores axes it does not provide. A fallback face receives the same requested axes and applies its own ranges.
+Set `FontSpec.Variations` to immutable `FontVariationSettings`, or build a selection with `FontSpec.FromFile(path).Variation("wght", 650).Variation("wdth", 85)`. Chart text-role overrides expose the same `Variation` method. Null on an override inherits; `FontVariationSettings.Default` clears authored axes while retaining ordinary weight selection. Tags are case-sensitive four-character ASCII letters or digits. Values must be finite; each face clamps recognized values to its `fvar` range and ignores axes it does not provide. A fallback face receives the same requested axes and applies its own ranges.
 
 The canonical font reader applies `avar` version 1 mapping, TrueType `gvar` contour/composite deltas, phantom metrics, `HVAR`/`MVAR`, CFF2 blends, variation feature substitutions and GDEF-backed GPOS `VariationIndex` adjustments. Measurement, direct drawing, fitted and rotated buffers use the same instance. SVG and HTML write `font-variation-settings`; SVG rasterization inherits the CSS value through groups and spans, including `normal` resets. Native SVG relies on the browser's font engine and available font files. `FontSpec.Weight` selects the variable `wght` axis when available. `TextStyle.FontSize` does not infer an optical-size axis.
 
@@ -328,7 +328,7 @@ The canonical font reader applies `avar` version 1 mapping, TrueType `gvar` cont
 
 SVG `<text>` rasterized by `SvgRasterizer` picks its face the same way from its computed `font-family` stack, `font-weight` (numbers from 1 to 1000, `normal`, `bold`, and `bolder`/`lighter` relative to the parent), and `font-style` (`italic` or `oblique`), whether they come from attributes, `style="..."`, a stylesheet, an ancestor `<g>`, or a `<tspan>`. Text without a `font-family` uses the sans-serif fallback. Each run is placed so its face's own baseline sits on the `y` coordinate, as a browser places it.
 
-`VisualCanvas` defaults to `canvas.Style.TextMeasurementMode = TextMeasurementMode.PortableEstimate`. Its fitting uses portable estimates or explicitly registered faces, independently of installed fonts. Call `canvas.ConfigureStyle(style => style.TextMeasurementMode = TextMeasurementMode.InstalledFonts)` to opt into host-dependent metrics. Register the application's font files when layout must remain identical across generating hosts; unresolved fonts retain the portable fallback.
+`VisualCanvas` defaults to `canvas.Style.TextMeasurementMode = TextMeasurementMode.PortableEstimate`. Its fitting uses portable estimates or explicitly registered faces, independently of installed fonts. Call `canvas.Style(style => style.TextMeasurementMode = TextMeasurementMode.InstalledFonts)` to opt into host-dependent metrics. Register the application's font files when layout must remain identical across generating hosts; unresolved fonts retain the portable fallback.
 
 `canvas.Theme.Typography.Family`, a key/value block's `FontFamilyName`, and `canvas.Theme.Typography.MonospaceFamily` for hero badge symbols are resolved at the weights the SVG output writes: 500 for plain text and values, 800 for emphasized text, tile icons, and feature icons, 850 for hero titles and badges, and 700, 650, and 500 for tile labels, values, and details. Set shared fonts with `theme.WithFontFamily(...)` or a new `VisualTypography` in `theme.Configure(...)`, then assign the returned snapshot. PNG draws the matching registered, bundled or installed face. Only a family without a bold face is emboldened. Call `block.MeasureHeight(canvas)` to measure a key/value block with the canvas's theme, mode and measurement settings.
 
@@ -347,13 +347,13 @@ Lines are reordered for display with the Unicode Bidirectional Algorithm (UAX #9
 
 The shared glyph layout reads the font's selected language system for each script. It applies composition, localization, required and standard ligature features, contextual substitutions, and the Arabic joining features. GPOS supplies pair and class kerning, mark-to-base, mark-to-ligature, mark-to-mark, and cursive attachment. Measurement and painting use the same positioned glyphs, including fallback-face metrics. SVG text buffers reserve the ink bounds of stacked marks rather than clipping them to the ordinary line height. Different SVG paint spans retain their own glyphs and colours; ligatures do not combine characters from different paint owners. Optional malformed layout lookups are bounded and skipped while the face's usable outlines remain available.
 
-`TextStyle.OpenTypeLanguageTag` selects a case-sensitive font language tag, such as `SRB` or `TRK`, without changing the text's casing or direction. Null selects the default language system; an absent tag in a font also falls back to its default. Tags are one to four ASCII letters or digits, padded to four characters, and are not BCP 47 culture names. Selection applies independently to each script and fallback face, and cached default runs remain separate from localized runs. Chart and grid role styles expose the same setting through `TextStyleOverride.WithOpenTypeLanguage`; an override of `normal` restores the default. SVG uses CSS `font-language-override`, inherited by nested spans; native display requires a browser implementing that property and a font providing those forms.
+`TextStyle.OpenTypeLanguageTag` selects a case-sensitive font language tag, such as `SRB` or `TRK`, without changing the text's casing or direction. Null selects the default language system; an absent tag in a font also falls back to its default. Tags are one to four ASCII letters or digits, padded to four characters, and are not BCP 47 culture names. Selection applies independently to each script and fallback face, and cached default runs remain separate from localized runs. Chart and grid role styles expose the same setting through `TextStyleOverride.OpenTypeLanguageTag`; an override of `normal` restores the default. SVG uses CSS `font-language-override`, inherited by nested spans; native display requires a browser implementing that property and a font providing those forms.
 
 GPOS device tables supply size-specific kerning, placement and anchor corrections. The renderer selects the nearest whole logical font size (half sizes round up), converts the font's signed pixel deltas to design units, and uses the corrected run for measurement and painting. Fractional sizes scale that run normally. PNG output scaling and dependency-free SVG rasterization magnify the same layout rather than selecting another correction size, so increasing export resolution preserves fitting and wrapping. Mixed-size SVG spans and fallback faces retain their own sizes and font metrics. Invalid optional correction data is ignored without losing usable design-unit positioning. GDEF-backed variation adjustments follow the selected axis coordinates. Native SVG display uses the browser's font engine and size policy. Contour-point anchor hinting remains separate work.
 
 Emoji use the selected face's colour data when available. COLR v0 layers use the selected CPAL palette, with the foreground palette index taking the text colour. COLR v1 adds linear, radial and sweep gradients, affine transforms, clipping and composite modes; gradient interpolation and composition use linear-light colour values. Detailed vector glyphs reduce internal antialias sampling when necessary to retain colour within bounded rendering work. CBDT/CBLC and sbix faces use the nearest available bitmap strike at the output pixel size, preferring the larger strike for ties. PNG, JPEG and uncompressed RGB TIFF bitmap data use the existing image codecs. Fitted and rotated buffers retain colour ink bounds and output pixel density. Colour glyphs receive text opacity once after composition and do not receive synthetic bold copies.
 
-A cluster with U+FE0F, or a pictograph that defaults to emoji presentation, tries emoji fallback faces before ordinary text faces. An explicitly selected colour face that covers the cluster takes precedence. Register colour-only fonts through the same `FontRegistry` methods as text fonts; font files remain application assets and are not bundled with ChartForgeX. Fonts without usable colour data retain their monochrome outlines in the text colour. Unsupported, cyclic or excessive optional paint and bitmap data fall back to usable outlines. `FontSpec.ColorPaletteIndex` selects a zero-based CPAL palette for COLR layers and gradients without changing advances. Zero selects the default; an absent or unusable alternate palette also uses zero. `FontSpec.WithColorPalette(index)` and `TextStyleOverride.WithColorPalette(index)` expose the same selection. A null role override inherits and zero explicitly resets; clones, fallback clusters, fitted text and rotated text retain the selection. Bitmap strikes and the special foreground entry are unaffected. Native SVG and HTML emit CSS `font-palette` and matching `@font-palette-values` rules for named families in the requested stack; those fonts must be available to the browser. Imported SVG supports named base-palette rules and inherited normal resets, but not CSS palette overrides, interpolation, or automatic light/dark selection. COLR v1 paint variation retains base-instance values. Native browser colour interpolation and bitmap rounding can differ from the deterministic raster output.
+A cluster with U+FE0F, or a pictograph that defaults to emoji presentation, tries emoji fallback faces before ordinary text faces. An explicitly selected colour face that covers the cluster takes precedence. Register colour-only fonts through the same `FontRegistry` methods as text fonts; font files remain application assets and are not bundled with ChartForgeX. Fonts without usable colour data retain their monochrome outlines in the text colour. Unsupported, cyclic or excessive optional paint and bitmap data fall back to usable outlines. `FontSpec.ColorPaletteIndex` selects a zero-based CPAL palette for COLR layers and gradients without changing advances. Zero selects the default; an absent or unusable alternate palette also uses zero. `FontSpec.ColorPaletteIndex(index)` and `TextStyleOverride.ColorPaletteIndex(index)` expose the same selection. A null role override inherits and zero explicitly resets; clones, fallback clusters, fitted text and rotated text retain the selection. Bitmap strikes and the special foreground entry are unaffected. Native SVG and HTML emit CSS `font-palette` and matching `@font-palette-values` rules for named families in the requested stack; those fonts must be available to the browser. Imported SVG supports named base-palette rules and inherited normal resets, but not CSS palette overrides, interpolation, or automatic light/dark selection. COLR v1 paint variation retains base-instance values. Native browser colour interpolation and bitmap rounding can differ from the deterministic raster output.
 
 Script-specific shaping groups virama-connected consonants into one fallback syllable. Devanagari, Bengali, Gurmukhi, Gujarati, Odia, Tamil, Telugu, Kannada and Malayalam use font-selected consonant forms, ordered Indic feature stages and vowel/reph reordering. Modern Indic tags are preferred when the font declares them; older tags use their consonant-plus-halant convention. Thai and Lao AM vowels decompose and reorder their ring before tone marks. Khmer coeng forms, split vowels and register shifters use their own feature stages. The selected font supplies the substitutions and attachment anchors; a font without those forms cannot produce the same result.
 
@@ -377,8 +377,7 @@ FontRegistry.Register("Inter", Path.Combine(fonts, "Inter-Bold.ttf"), weight: 70
 FontRegistry.RegisterDirectory(Path.Combine(fonts, "brand")); // each file under its own family, weight, and slant
 FontRegistry.Register("sans-serif", Path.Combine(fonts, "Inter-Regular.ttf")); // fallback for stacks ending in sans-serif, and for hosts with no fonts
 
-var chart = Chart.Create().WithTheme(
-    VisualTheme.Graphite().WithFontFamily("Inter, sans-serif"), ThemeMode.Dark);
+var chart = Chart.Create().Theme(VisualTheme.Graphite().WithFontFamily("Inter, sans-serif")).ThemeMode(ThemeMode.Dark);
 ```
 
 Hosts without filesystem font assets can register the same faces from bytes or embedded resource streams:

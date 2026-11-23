@@ -1,9 +1,11 @@
 using System;
 using ChartForgeX.Typography;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>Controls Sunburst geometry, parent sizes, captions and its independent numeric color scale.</summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class ChartSunburstOptions {
     private ChartHierarchyValuePolicy _parentValuePolicy;
     private double _cornerRadius;

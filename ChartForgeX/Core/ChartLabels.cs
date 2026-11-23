@@ -1,4 +1,5 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
@@ -6,6 +7,7 @@ namespace ChartForgeX.Core;
 /// Holds the words ChartForgeX writes into rendered charts on its own (markers, tooltips, and default titles), so hosts
 /// can localize them. Defaults are English; set values before rendering, or before calling builders that use them.
 /// </summary>
+[Fluent(Copy = nameof(Capture))]
 public sealed class ChartLabels {
     private string _now = "Now";
     private string _ongoing = "ongoing";

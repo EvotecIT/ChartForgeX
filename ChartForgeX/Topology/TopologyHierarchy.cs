@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Topology;
 
 /// <summary>
 /// Describes one reusable hierarchy item that can be promoted into topology nodes and parent-child edges.
 /// </summary>
+[Fluent]
 public sealed class TopologyHierarchyItem {
     /// <summary>Creates a hierarchy item.</summary>
     public TopologyHierarchyItem(string id, string label, string? parentId = null) {

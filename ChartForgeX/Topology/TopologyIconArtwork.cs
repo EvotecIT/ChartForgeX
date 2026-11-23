@@ -2,12 +2,14 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Topology;
 
 /// <summary>
 /// Describes optional external artwork for a topology icon.
 /// </summary>
+[Fluent]
 public sealed partial class TopologyIconArtwork {
     internal TopologyIconArtwork Clone() => (TopologyIconArtwork)MemberwiseClone();
 

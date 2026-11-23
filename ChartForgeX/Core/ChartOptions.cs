@@ -629,6 +629,7 @@ public sealed partial class ChartOptions {
     /// <summary>
     /// Gets or sets a value indicating whether the chart is rendered as a compact sparkline.
     /// </summary>
+    [NoFluent]
     public bool IsSparkline { get; set; }
 
     // Original compact sample slots determine bar spacing independently of retained observations.
@@ -650,11 +651,11 @@ public sealed partial class ChartOptions {
         PictorialPngFallbackShape = pngFallbackShape;
     }
 
-    private static void ValidateNullableFinite(double? value, string parameterName) {
+    internal static void ValidateNullableFinite(double? value, string parameterName) {
         if (value.HasValue) ChartGuards.Finite(value.Value, parameterName);
     }
 
-    private static void ValidateSvgPathData(string value, string parameterName) {
+    internal static void ValidateSvgPathData(string value, string parameterName) {
         if (value.Length == 0) throw new ArgumentException("Pictorial SVG path data must not be empty.", parameterName);
         if (value.Length > 4096) throw new ArgumentException("Pictorial SVG path data must be 4096 characters or fewer.", parameterName);
         for (var i = 0; i < value.Length; i++) {

@@ -1,4 +1,5 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
@@ -23,6 +24,8 @@ public sealed partial class ChartOptions {
     /// <summary>
     /// Gets or sets reusable visual tokens for line, area boundary, trend, and slope strokes.
     /// </summary>
+    [FluentPreset("PlainStyle", typeof(ChartLineVisualStyle), nameof(ChartLineVisualStyle.Plain), Summary = "Uses plain lines without glow.")]
+    [FluentPreset("LuminousStyle", typeof(ChartLineVisualStyle), nameof(ChartLineVisualStyle.Luminous), Summary = "Uses luminous lines with a soft glow.")]
     public ChartLineVisualStyle LineVisualStyle {
         get => _lineVisualStyle;
         set => _lineVisualStyle = (value ?? throw new ArgumentNullException(nameof(value))).Clone();

@@ -1,8 +1,10 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>Controls range-bar direction and captions without changing category coordinates or authored endpoints.</summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class ChartRangeBarOptions {
     private ChartOrientation _orientation;
     private ChartRangeBarLabelContent _labelContent;

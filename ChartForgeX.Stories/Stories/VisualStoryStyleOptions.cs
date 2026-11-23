@@ -3,10 +3,12 @@ using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
 using ChartForgeX.Terminal;
 using ChartForgeX.Rendering;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Stories;
 
 /// <summary>Story-specific window, desktop and syntax controls. Shared colors and fonts remain in <see cref="VisualTheme"/>.</summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class VisualStoryStyleOptions {
     private TerminalWindowStyle _windowStyle = TerminalWindowStyle.Minimal;
     /// <summary>Chooses source/replay window chrome without changing the common palette.</summary>

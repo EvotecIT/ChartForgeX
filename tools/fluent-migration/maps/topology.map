@@ -1,0 +1,134 @@
+# ChartForgeX topology: TopologyChart, TopologyRenderOptions, item models, icons, scenarios and motion.
+
+# --- TopologyRenderOptions: interactive HTML group --------------------------------------------------
+move TopologyRenderOptions.EnableHtmlInteractions -> Html.Interactions
+move TopologyRenderOptions.EnableHtmlViewportControls -> Html.ViewportControls
+move TopologyRenderOptions.HtmlNarrowMinimumHeight -> Html.NarrowMinimumHeight
+move TopologyRenderOptions.EnableHtmlExportControls -> Html.ExportControls
+move TopologyRenderOptions.EnableHtmlForceGraphControls -> Html.ForceGraphControls
+move TopologyRenderOptions.EnableHtmlFindControls -> Html.FindControls
+move TopologyRenderOptions.EnableHtmlSynchronizedState -> Html.SynchronizedState
+move TopologyRenderOptions.EnableHtmlScenarioControls -> Html.ScenarioControls
+move TopologyRenderOptions.HtmlScenarioControlMode -> Html.ScenarioControlMode
+move TopologyRenderOptions.EnableHtmlScenarioPanel -> Html.ScenarioPanel
+move TopologyRenderOptions.EnableHtmlScenarioSequence -> Html.ScenarioSequence
+move TopologyRenderOptions.EnableHtmlSelectionPanel -> Html.SelectionPanel
+move TopologyRenderOptions.EnableHtmlFullscreenControl -> Html.FullscreenControl
+move TopologyRenderOptions.HtmlControlPlacement -> Html.ControlPlacement
+move TopologyRenderOptions.HtmlOpeningView -> Html.OpeningView
+move TopologyRenderOptions.HtmlWheelZoom -> Html.WheelZoom
+move TopologyRenderOptions.EnableHtmlScenarioUrlState -> Html.ScenarioUrlState
+move TopologyRenderOptions.HtmlSyncGroupName -> Html.SyncGroupName
+move TopologyRenderOptions.HtmlNonce -> Html.Nonce
+
+# --- TopologyRenderOptions: geographic group --------------------------------------------------------
+move TopologyRenderOptions.IncludeGeographicCallouts -> Geography.IncludeCallouts
+move TopologyRenderOptions.IncludeGeographicRegionHulls -> Geography.IncludeRegionHulls
+move TopologyRenderOptions.PreferGeographicCalloutMapEdges -> Geography.PreferCalloutMapEdges
+move TopologyRenderOptions.GeographicCalloutMaxItems -> Geography.CalloutMaxItems
+move TopologyRenderOptions.GeographicRegionHullPadding -> Geography.RegionHullPadding
+move TopologyRenderOptions.GeographicRegionHullMinRadius -> Geography.RegionHullMinRadius
+move TopologyRenderOptions.GeographicRegionHullMaxRadius -> Geography.RegionHullMaxRadius
+
+# --- TopologyRenderOptions methods -----------------------------------------------------------------
+keep TopologyRenderOptionsExtensions.WithHtmlScenarioControls -> HtmlScenarioControls  # also turns on HTML interactions when enabling
+keep TopologyRenderOptionsExtensions.WithHtmlScenarioControlMode -> HtmlScenarioControlMode  # sets the mode and turns on interactions and scenario controls
+call TopologyRenderOptionsExtensions.WithHtmlScenarioCheckboxes -> HtmlScenarioControlMode(TopologyHtmlScenarioControlMode.Checkboxes)
+keep TopologyRenderOptionsExtensions.WithHtmlScenarioPanel -> HtmlScenarioPanel  # also turns on HTML interactions when enabling
+keep TopologyRenderOptionsExtensions.WithHtmlScenarioSequence -> HtmlScenarioSequence  # also turns on HTML interactions when enabling
+keep TopologyRenderOptionsExtensions.WithHtmlSelectionPanel -> HtmlSelectionPanel  # also turns on HTML interactions when enabling
+keep TopologyRenderOptionsExtensions.WithHtmlFullscreenControl -> HtmlFullscreenControl  # also turns on HTML interactions when enabling
+keep TopologyRenderOptionsExtensions.WithHtmlScenarioUrlState -> HtmlScenarioUrlState  # also turns on HTML interactions when enabling
+keep TopologyRenderOptionsExtensions.WithHtmlForceGraphControls -> HtmlForceGraphControls  # also turns on interactions and viewport controls when enabling
+keep TopologyRenderOptionsExtensions.WithHtmlFindControls -> HtmlFindControls  # also turns on interactions and viewport controls when enabling
+call TopologyRenderOptionsExtensions.WithHtmlControlPlacement -> Html.ControlPlacement({placement})
+call TopologyRenderOptionsExtensions.WithHtmlOpeningView -> Html.OpeningView({view})
+call TopologyRenderOptionsExtensions.WithHtmlWheelZoom -> Html.WheelZoom({wheelZoom})
+call TopologyRenderOptionsExtensions.WithActiveScenario -> ActiveScenarioId({scenarioId})
+call TopologyRenderOptionsExtensions.WithPlainTopologyEdges -> EdgeVisualStyle(ChartLineVisualStyle.Plain())
+keep TopologyRenderOptionsExtensions.WithLuminousTopologyEdges -> LuminousEdges  # tuned luminous edge preset (halo, ambient halo and highlight together)
+keep TopologyRenderOptionsExtensions.WithMonitoringDashboardStyle -> MonitoringDashboardStyle  # coordinated preset across surfaces, geography, badges and legend mode
+keep TopologyRenderOptionsExtensions.WithRelationshipOverviewStyle -> RelationshipOverviewStyle  # coordinated preset built on the monitoring dashboard style
+keep TopologyRenderOptionsExtensions.WithMindMapStyle -> MindMapStyle  # coordinated preset touching sixteen presentation settings
+keep TopologyRenderOptionsExtensions.WithForceGraphStyle -> ForceGraphStyle  # coordinated force-graph preset across layout, surfaces and labels
+call TopologyRenderOptionsExtensions.WithForceLayout -> ForceLayoutProfile({profile}) ; ForceLayoutIterations({iterations})
+keep TopologyRenderOptionsExtensions.WithRelationshipRadialFocus -> RelationshipRadialFocus  # sets root, depth and fanout with checks and selects the root node
+call TopologyRenderOptionsExtensions.WithMultilineNodeLabels -> AllowMultilineNodeLabels(true) ; WrapNodeLabels([{wrap}]) ; MaxNodeLabelLines({maxLabelLines}) ; MaxNodeSubtitleLines({maxSubtitleLines})
+keep TopologyRenderOptionsExtensions.WithSelectedNode -> SelectNode  # validates the id and adds it once
+keep TopologyRenderOptionsExtensions.WithSelectedEdge -> SelectEdge  # validates the id and adds it once
+keep TopologyRenderOptionsExtensions.WithSelectedGroup -> SelectGroup  # validates the id and adds it once
+
+# --- TopologyChart: chart-level settings ------------------------------------------------------------
+call TopologyChartExtensions.WithId -> Id({id})
+call TopologyChartExtensions.WithLayout(TopologyLayoutMode) -> LayoutMode({layoutMode})
+call TopologyChartExtensions.WithLayout(TopologyLayoutMode,TopologyLayoutDirection) -> LayoutMode({layoutMode}) ; LayoutDirection({layoutDirection})
+call TopologyChartExtensions.WithLayoutDirection -> LayoutDirection({layoutDirection})
+call TopologyChartExtensions.WithViewport -> Viewport(new TopologyViewport({width}, {height}[, {padding}]))
+call TopologyChartExtensions.WithRenderOptions -> DefaultRenderOptions({options})
+keep TopologyChartExtensions.WithTheme -> Theme  # sets the theme and, when given, its mode in one call
+keep TopologyChartExtensions.ConfigureTheme -> Theme  # VisualTheme is immutable; the builder produces a new theme
+call TopologyChartExtensions.WithSiblingGrouping -> SiblingGrouping(new TopologySiblingGrouping { [MinimumCount = {minimumCount}, ][StaggerCount = {staggerCount}, ][MaximumRows = {maximumRows}, ][CollapseCount = {collapseCount}, ][TitleFormatter = {titleFormatter}] })
+verb TopologySiblingGrouping.TitleFormatter -> TitleBy
+
+# --- TopologyChart: keyed node edits ----------------------------------------------------------------
+call TopologyChartExtensions.WithNodeDisplay -> !UpdateNode({nodeId}, n => n.DisplayMode({displayMode}).Badge({badge}))
+call TopologyChartExtensions.WithNodeBadge -> !UpdateNode({nodeId}, n => n.Badge({badge}))
+call TopologyChartExtensions.WithNodeCoordinates -> !UpdateNode({nodeId}, n => n.Longitude({longitude}).Latitude({latitude}))
+call TopologyChartExtensions.WithNodeColor -> !UpdateNode({nodeId}, n => n.Color({color}))
+call TopologyChartExtensions.WithNodeBackground -> !UpdateNode({nodeId}, n => n.BackgroundColor({backgroundColor}))
+call TopologyChartExtensions.WithNodeHealthRing -> !UpdateNode({nodeId}, n => n.ShowHealthRing([{show}]))
+call TopologyChartExtensions.WithNodesDisplay -> !UpdateNodes({kind}, n => n.DisplayMode({displayMode})[.Badge({badge})])
+call TopologyChartExtensions.WithNodesOfKind -> !UpdateNodes({kind}, n => n[.Color({color})][.BackgroundColor({backgroundColor})])
+keep TopologyChartExtensions.WithNodeArtwork -> NodeArtwork  # checks the artwork is safe and switches the display mode with it
+keep TopologyChartExtensions.WithoutNodeArtwork -> ClearNodeArtwork  # removes artwork and resets an artwork display mode
+keep TopologyChartExtensions.WithNodeIcon -> NodeIcon  # resolves the icon through a catalog and applies its kind, symbol and display mode
+keep TopologyChartExtensions.WithNodesOfKindIcon -> NodesOfKindIcon  # resolves the icon once and applies it to every node of a kind
+keep TopologyChartExtensions.WithNodesOfKindStyle -> NodesOfKindStyle  # resolves the icon once and applies colours and icon to every node of a kind
+
+# --- TopologyChart: keyed group edits ---------------------------------------------------------------
+call TopologyChartExtensions.WithGroupSymbol -> !UpdateGroup({groupId}, g => g.Symbol({symbol}))
+call TopologyChartExtensions.WithGroupColor -> !UpdateGroup({groupId}, g => g.Color({color}))
+call TopologyChartExtensions.WithGroupLayout -> !UpdateGroup({groupId}, g => g.LayoutPolicy({layoutPolicy}))
+call TopologyChartExtensions.WithGroupCoordinates -> !UpdateGroup({groupId}, g => g.Longitude({longitude}).Latitude({latitude}))
+call TopologyChartExtensions.WithGroupPosition -> !UpdateGroup({groupId}, g => g.X({x}).Y({y}))
+keep TopologyChartExtensions.WithGroupIcon -> GroupIcon  # resolves the icon through a catalog and fills symbol and colour only when unset
+
+# --- TopologyChart: keyed edge edits ----------------------------------------------------------------
+call TopologyChartExtensions.WithEdgeLabelOffset -> !UpdateEdge({edgeId}, e => e.LabelOffsetX({x}).LabelOffsetY({y}))
+call TopologyChartExtensions.WithEdgePorts -> !UpdateEdge({edgeId}, e => e.SourcePort({sourcePort}).TargetPort({targetPort}))
+call TopologyChartExtensions.WithEdgeLineStyle -> !UpdateEdge({edgeId}, e => e.LineStyle({lineStyle}))
+call TopologyChartExtensions.WithEdgeEmphasis -> !UpdateEdge({edgeId}, e => e.Emphasis({emphasis}))
+call TopologyChartExtensions.WithEdgeMuted -> !UpdateEdge({edgeId}, e => e.Muted([{isMuted}]))
+call TopologyChartExtensions.WithEdgeColor -> !UpdateEdge({edgeId}, e => e.Color({color}))
+call TopologyChartExtensions.WithEdgeNamedPorts -> !UpdateEdge({edgeId}, e => e.SourcePortId({sourcePortId}).TargetPortId({targetPortId}))
+call TopologyChartExtensions.WithEdgeMarkers -> !UpdateEdge({edgeId}, e => e.SourceMarker({source}).TargetMarker({target}))
+call TopologyChartExtensions.WithEdgeEndpointLabels -> !UpdateEdge({edgeId}, e => e.SourceLabel({sourceLabel}).TargetLabel({targetLabel}))
+call TopologyChartExtensions.WithEdgeLayoutHints -> !UpdateEdge({edgeId}, e => e.PreferredLength({preferredLength}).MinimumRankSpan({minimumRankSpan}).RoutingPriority({routingPriority}))
+call TopologyChartExtensions.WithEdgeEvidence -> !UpdateEdge({edgeId}, e => e.Evidence({evidence}).EvidenceText({text}))
+call TopologyChartExtensions.WithEdgeUplink -> !UpdateEdge({edgeId}, e => e.UplinkEnd({childEnd}))
+call TopologyChartExtensions.WithEdgesOfKind -> !UpdateEdges({kind}, e => e[.LineStyle({lineStyle})][.Emphasis({emphasis})][.Muted({isMuted})][.Color({color})])
+keep TopologyChartExtensions.WithEdgeWaypoints -> EdgeWaypoints  # replaces the waypoint list (the generated method appends)
+keep TopologyChartExtensions.WithEdgeStroke -> EdgeStroke  # sets width and opacity and replaces the dash pattern
+keep TopologyChartExtensions.WithEdgeRouteLane -> EdgeRouteLane  # sets the lane and marks it as an authored override
+keep TopologyChartExtensions.WithEdgeRouteBundle -> EdgeRouteBundle  # spreads lanes evenly across several edges
+keep TopologyChartExtensions.WithReciprocalEdgeRouteBundles -> ReciprocalEdgeRouteBundles  # finds reciprocal edge pairs and spreads their lanes
+keep TopologyChartExtensions.WithEdgeLabelAnnotationOffset -> EdgeLabelAnnotationOffset  # sets the label offset and clears any label anchor together
+keep TopologyChartExtensions.WithEdgeLabelAnchor -> EdgeLabelAnchor  # pins the label point, marks the override and clears a node anchor
+keep TopologyChartExtensions.WithEdgeLabelAnchorNode -> EdgeLabelAnchorNode  # checks the node exists and clears a point anchor
+
+# --- Scenarios, hierarchy, icons, artwork ----------------------------------------------------------
+keep TopologyChartExtensions.WithMetadata -> Metadata  # keyed dictionary entry with a validated key
+keep TopologyHierarchyItem.WithMetadata -> Metadata  # keyed dictionary entry with a validated key
+keep TopologyIconPack.WithMetadata -> Metadata  # keyed dictionary entry with a validated key
+keep TopologyIconDefinition.WithMetadata -> Metadata  # keyed dictionary entry with a validated key
+keep TopologyIconPack.WithTags -> AddTags  # trims, skips blanks and de-duplicates case-insensitively
+keep TopologyIconDefinition.WithTags -> AddTags  # trims, skips blanks and de-duplicates case-insensitively
+keep TopologyIconPack.WithIconTags -> AddIconTags  # looks up a pack icon by id and adds normalized tags to it
+call TopologyIconArtwork.WithPreserveAspectRatio -> PreserveAspectRatio({preserveAspectRatio})
+
+# --- Motion ----------------------------------------------------------------------------------------
+call TopologyMotionOptions.WithDuration -> DurationSeconds({seconds})
+call TopologyMotionOptions.WithFrameRate -> FramesPerSecond({framesPerSecond})
+call TopologyMotionOptions.WithFrameLimit -> MaximumRasterFrames({maximumFrames})
+call TopologyMotionOptions.WithMarker -> MarkerRadius({radius}) ; MarkerColor({color})
+verb TopologyLabels.AccessibleTextFormatter -> AccessibleTextBy

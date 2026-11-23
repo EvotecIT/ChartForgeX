@@ -9,20 +9,19 @@ using ChartForgeX;
 using ChartForgeX.Core;
 
 var chart = Chart.Create()
-    .WithTitle("Items by queue")
-    .WithXLabels("Ready", "Running", "Complete")
-    .WithYAxisIntegerTicks()
+    .Title("Items by queue")
+    .XLabels("Ready", "Running", "Complete")
+    .YAxis(y => y.IntegerTicks())
     .AddBar("Items", ChartPoints.FromValues(1, 2, 1));
 
 chart.SaveSvg("queue-counts.svg");
 chart.SavePng("queue-counts.png");
 ```
 
-For horizontal bars, use `WithXAxisIntegerTicks()` because the value axis is
-physically horizontal. `WithSecondaryYAxisIntegerTicks()` configures a secondary
-value axis. The same policy is available through
-`ConfigureYAxis(axis => axis.WithIntegerTicks())` or `ChartAxis.IntegerTicks`.
-Pass `false` to any of these fluent methods to restore ordinary numeric ticks.
+For horizontal bars, use `XAxis(x => x.IntegerTicks())` because the value axis is
+physically horizontal. `SecondaryYAxis(s => s.IntegerTicks())` configures a secondary
+value axis. The same policy is available as the `ChartAxis.IntegerTicks` property.
+Pass `false` to `IntegerTicks` to restore ordinary numeric ticks.
 
 Generated linear ticks have whole-number positions and steps of at least one.
 Large ranges use coarser steps, such as 200,000 across a million-item range; the
@@ -54,14 +53,14 @@ same token to their thickness; histograms retain their bin widths and sparklines
 retain their compact sampling policy.
 
 ```csharp
-var sparse = Chart.Create().WithSize(1120, 280)
-    .WithXLabels("January", "February")
-    .WithYAxisIntegerTicks()
-    .WithMaximumBarWidth(48)
+var sparse = Chart.Create().Size(1120, 280)
+    .XLabels("January", "February")
+    .YAxis(y => y.IntegerTicks())
+    .Bars(b => b.MaxWidth(48))
     .AddBar("Items", ChartPoints.FromValues(1, 3));
 var theme = VisualTheme.Graphite().Configure(tokens => tokens.MaximumBarWidth = 56);
 ```
 
-`WithMaximumBarWidth(null)` restores the theme token. Widths must be positive
+`Bars(b => b.MaxWidth(null))` restores the theme token. Widths must be positive
 and finite. The token survives theme configuration, typography changes and JSON
 round trips (`geometry.maximumBarWidth`); older theme JSON uses the default.

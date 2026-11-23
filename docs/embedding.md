@@ -41,7 +41,7 @@ svg a:focus-visible {
 
 Choose a focus colour that contrasts with both page themes, and check the links using Tab. Keep this focus treatment distinct from the chart's current or selected state.
 
-`series.WithMarkOptions(options)` supplies series hooks and defaults for its marks. An item's non-null options replace those defaults. `series.WithRowOptions(options)` independently decorates the schedule label/summary row or matrix row. Put row navigation on that row, or keep the label link in HTML when using strips. The renderer avoids nested SVG links.
+`series.MarkOptions(options)` supplies series hooks and defaults for its marks. An item's non-null options replace those defaults. `series.RowOptions(options)` independently decorates the schedule label/summary row or matrix row. Put row navigation on that row, or keep the label link in HTML when using strips. The renderer avoids nested SVG links.
 
 State-timeline items with authored mark options retain their interval boundaries. Unadorned adjacent intervals may still merge into one run; a series default then applies to the run without assigning it one contributor's observation ID. Plot-only strips omit the SVG label/summary row, including its navigation.
 
@@ -54,11 +54,7 @@ A strip is a plot without axes, legend, surface or outer padding. `ChartStripSca
 ```csharp
 var start = new DateTime(2026, 1, 1);
 var end = new DateTime(2027, 1, 1);
-var scale = new ChartStripScale(new ChartAxis {
-    Minimum = start.ToOADate(), Maximum = end.ToOADate(),
-    Scale = ChartScaleKind.Time, TickCount = 4,
-    LabelFormatter = value => DateTime.FromOADate(value).ToString("MMM yyyy")
-});
+var scale = new ChartStripScale(new ChartAxis { Min = start.ToOADate(), Max = end.ToOADate(), Scale = ChartScaleKind.Time, TickCount = 4, LabelFormatter = value => DateTime.FromOADate(value).ToString("MMM yyyy") });
 var row = Chart.Create().AddGanttTask("Version 4", start.AddMonths(2), start.AddMonths(9));
 var track = row.PrepareStrip(
     new VisualRenderContext(new VisualLayoutOptions(new VisualSize(800, 40), 0)), scale);
@@ -109,7 +105,7 @@ Name a custom property on the colour itself, with its channels as the fallback:
 var accent = ChartColor.FromHex("#2563EB").WithCssVariable("--accent");
 var critical = ChartColor.FromHex("#2563EB").WithCssVariable("--critical");
 chart.Series[0].Color = accent;
-chart.Series[0].WithPointColor(0, critical);
+chart.Series[0].PointColor(0, critical);
 
 var policy = new VisualSvgOptions("activity-daily")
     .WithFontVariables(familyVariable: "--body-font", sizeVariable: "--chart-font-size");
@@ -137,7 +133,7 @@ var svg = chart.Prepare(new VisualRenderContext()).ToSvg(
 // fill="var(--hfx-color-chart-series-1, #2A78D6)", stroke="var(--hfx-color-surface-line, #E2E4E7)", ...
 ```
 
-That is all the page needs. Inside a CanopyX or HtmlForgeX page, the chart follows the page's theme, including its dark mode, without further configuration. A page that defines none of the properties shows the default Graphite colours and its own font. For a chart prepared with another theme or mode, pass them: `WithSharedDesignRoles(theme, ThemeMode.Dark)`. `chart.WithSvgColorVariables(SvgColorVariables.SharedRoles(theme, mode))` applies the same colours to `chart.ToSvg()`, and visual blocks accept them through `WithSvgColorVariables(...)`. PNG, email and Office output use the resolved theme colours.
+That is all the page needs. Inside a CanopyX or HtmlForgeX page, the chart follows the page's theme, including its dark mode, without further configuration. A page that defines none of the properties shows the default Graphite colours and its own font. For a chart prepared with another theme or mode, pass them: `WithSharedDesignRoles(theme, ThemeMode.Dark)`. `chart.SvgColorVariables(SvgColorVariables.SharedRoles(theme, mode))` applies the same colours to `chart.ToSvg()`, and visual blocks accept them through `SvgColorVariables(...)`. PNG, email and Office output use the resolved theme colours.
 
 Series keep their chart palette slot: series 3 writes `--hfx-color-chart-series-3`. Automatic allocation gives different series distinct colours, extending the base palette with shades when needed; explicit colours retain precedence. Light and dark are separate token sets selected by `ThemeMode`; nothing is inverted automatically. A brand theme is token values only:
 
@@ -145,7 +141,7 @@ Series keep their chart palette slot: series 3 writes `--hfx-color-chart-series-
 var brand = VisualTheme.Graphite()
     .WithPalette(ThemeMode.Light, ChartPalettes.FromHex("#0b5cad", "#00897b", "#6a4fd8", "#a0522d", "#b03a8c", "#4f7a00"))
     .WithPalette(ThemeMode.Dark, ChartPalettes.FromHex("#4d8fe0", "#26a69a", "#8f7bf0", "#c06a42", "#cc5aa6", "#73a12a"));
-chart.WithTheme(brand);
+chart.Theme(brand);
 // Or load a complete light/dark token document: VisualTheme.FromPaletteJson(File.ReadAllText("brand.tokens.json"))
 ```
 
@@ -155,23 +151,23 @@ Validate a new categorical set in both modes before you ship it. The default ord
 
 A model whose `ThemeMode` is `Auto` (the default for charts, chart grids, topology, visual blocks and sequence diagrams) follows the viewer's `prefers-color-scheme` in HTML output, with no script. The SVG writes its colours as `--cfx-auto-*` properties with the light colours as fallbacks, and a stylesheet scoped to the output's root defines them: light by default, dark inside `@media (prefers-color-scheme: dark)`. The root keeps its usual class and carries `data-cfx-theme-mode="auto"` and `data-cfx-auto-theme="cfx-auto-<hash>"`, which the stylesheet selects. Each property reads the matching shared role first, for example `--cfx-auto-color-surface-card: var(--hfx-color-surface-card, #FFFFFF)`, so a CanopyX or HtmlForgeX page that defines its roles keeps them. Chrome around the drawing (page background, tooltips, topology controls, region colours) switches with it.
 
-Static images have no viewer: `ToSvg()`, `ToPng()`, `Save(...)` and raster output paint `Auto` as light. An explicit `ThemeMode.Light` or `Dark` writes the same literal HTML as before. Colour variables set on the model (`WithSvgColorVariables(...)`, `TopologyRenderOptions.SvgColorVariables`) take precedence, and no Auto stylesheet is written.
+Static images have no viewer: `ToSvg()`, `ToPng()`, `Save(...)` and raster output paint `Auto` as light. An explicit `ThemeMode.Light` or `Dark` writes the same literal HTML as before. Colour variables set on the model (`SvgColorVariables(...)`, `TopologyRenderOptions.SvgColorVariables`) take precedence, and no Auto stylesheet is written.
 
 Self-contained fragments and pages include the stylesheet in a plain `<style>` element. Asset-free output leaves it to the host, like its other assets: register `HtmlChartSection.AutoThemeStyleSheet` or `HtmlInteractiveChartRenderer.AutoThemeStyleSheet(chart)` for interactive sections, `TopologyHtmlRenderer.BuildAutoThemeStyle(chart, options)` for topology fragments without assets, and `HtmlResponsiveChartRenderer.AutoThemeStylesheet(chart)` for responsive fragments without assets. The scope is a hash of the stylesheet, so equal themes on one page share it and different themes never collide. Interactive SVG and PNG exports carry the colours the viewer currently sees.
 
 ## Time overlays and open support windows
 
-Existing `WithGanttToday(...)` and `WithGanttLaneNow(...)` supply an explicit current instant. `AddVerticalBand(start, end, ...)` highlights a selected interval behind schedule marks as well as Cartesian marks. Supply dates using the chart family's documented time convention; classic Gantt uses wall-clock OLE dates, while Gantt lanes use UTC instants.
+Existing `GanttToday(...)` (`Gantt(g => g.Today(...))` for numeric schedules) and `GanttLaneNow(...)` supply an explicit current instant. `AddVerticalBand(start, end, ...)` highlights a selected interval behind schedule marks as well as Cartesian marks. Supply dates using the chart family's documented time convention; classic Gantt uses wall-clock OLE dates, while Gantt lanes use UTC instants.
 
 ```csharp
 var support = ChartSeries.CreateGanttTask(new ChartSeriesId("version-4"), "Version 4", start, end);
 support.ReplaceGanttItems(new[] { ChartGanttItem.OpenEnded(start) });
-support.WithRowOptions(new ChartMarkOptions(href: "/versions/4", current: true));
+support.RowOptions(new ChartMarkOptions(href: "/versions/4", current: true));
 
 var supportChart = Chart.Create().AddSeries(support)
-    .WithXAxisBounds(start.ToOADate(), end.ToOADate())
-    .WithGanttOpenEndStyle(ChartGanttOpenEndStyle.Fade)
-    .WithGanttToday(start.AddMonths(6));
+    .XAxis(x => x.Bounds(start.ToOADate(), end.ToOADate()))
+    .Gantt(g => g.OpenEndStyle(ChartGanttOpenEndStyle.Fade))
+    .GanttToday(start.AddMonths(6));
 ```
 
 An open classic task requires an explicit X-axis maximum and fades or points toward that display endpoint. The endpoint is a rendering window, not an authored end date. A Gantt-lane item with `end: null` retains its existing current-time endpoint policy and can use the same fade style. Export never reads the clock; rendering the same prepared scene is deterministic.
@@ -214,7 +210,7 @@ Static SVG, native links, fluid tracks and data tables need no inline script. By
 var html = new HtmlChartRenderer { StyleNonce = nonce }.RenderFragment(chart, "activity-daily");
 ```
 
-The output then has no `style` attributes. Each inline style becomes a generated `cfx-s-…` class, and its declarations, together with every `style` element, move into one `<style nonce="…">` element. The same option exists on `HtmlChartInteractionOptions`, `HtmlInteractiveDashboardOptions`, `HtmlGraphExplorerOptions` and `HtmlResponsiveChartRenderer` (`StyleNonce`, next to `ScriptNonce`), and on `TopologyRenderOptions` as `HtmlNonce`, which also marks topology script elements. Interactive runtimes move the generated classes back to inline styles through the CSS object model when they mount, which a strict policy allows, so tooltips, resizing and updates behave as before.
+The output then has no `style` attributes. Each inline style becomes a generated `cfx-s-…` class, and its declarations, together with every `style` element, move into one `<style nonce="…">` element. The same option exists on `HtmlChartInteractionOptions`, `HtmlInteractiveDashboardOptions`, `HtmlGraphExplorerOptions` and `HtmlResponsiveChartRenderer` (`StyleNonce`, next to `ScriptNonce`), and on `TopologyRenderOptions` as `Html.Nonce`, which also marks topology script elements. Interactive runtimes move the generated classes back to inline styles through the CSS object model when they mount, which a strict policy allows, so tooltips, resizing and updates behave as before.
 
 Hosts that deliver styles themselves call `HtmlStrictStyles.Extract(html)` on any ChartForgeX output, including `HtmlChartSection.Html`. It returns the `Markup` without inline styles and the `StyleSheet` to register once in their own nonce'd element or stylesheet file. Equal declarations get the same class name in every fragment, so the stylesheets of several fragments can be concatenated. `controller.update(html)` accepts a strict section that starts with its own `style` element.
 

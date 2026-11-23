@@ -2,10 +2,12 @@ using System;
 using ChartForgeX.Primitives;
 using ChartForgeX.Core;
 using ChartForgeX.Themes;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Composition;
 
 /// <summary>Canvas-specific presentation overrides. Unassigned colors and fonts come from <see cref="VisualTheme"/>.</summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class VisualCanvasStyleOptions {
     private TextMeasurementMode _textMeasurementMode;
     private double _tileTextScale = 1;

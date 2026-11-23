@@ -63,7 +63,7 @@ These attributes identify data marks in every family and carry the display text 
 
 | Role | Element | Notes |
 |---|---|---|
-| `schedule-row` | `<g>` or linked `<a>` around one lane's label and summary | Carries `data-cfx-lane-id` and, when grouped, `data-cfx-lane-group`. It identifies the lane; it is not a numeric chart interaction target. `WithRowOptions` adds a link, host hooks or state. |
+| `schedule-row` | `<g>` or linked `<a>` around one lane's label and summary | Carries `data-cfx-lane-id` and, when grouped, `data-cfx-lane-group`. It identifies the lane; it is not a numeric chart interaction target. `RowOptions` adds a link, host hooks or state. |
 | `schedule-row-label` | `<g>` wrapping the lane label `<text>` | The complete name is in the chart's semantic regions when the drawn text is shortened. |
 | `lane-summary` | `<g>` wrapping the right-hand lane summary `<text>` | Present only when a lane has a summary. |
 | `state-timeline-group` | `<g>` wrapping a group header in a state timeline | An enclosing `<g>` carries `data-cfx-lane-group`. |
@@ -86,7 +86,7 @@ Families that render other target roles (for example `heatmap-cell`, `radial-poi
 
 ## Navigation, state and host styling
 
-Use `WithMarkOptions` on points, typed items or series, and `WithRowOptions` on a series for independent row metadata. A non-null item policy replaces the series default. `Tooltip` supplies a plain-text `<title>`; `AccessibleLabel` overrides the generated name. A chart containing links uses a `graphics-document` root role so its links remain available to assistive technology. Each linked mark has one focus target; the renderer does not nest links.
+Use `WithMarkOptions` on points and typed items, `MarkOptions` on a series, and `RowOptions` on a series for independent row metadata. A non-null item policy replaces the series default. `Tooltip` supplies a plain-text `<title>`; `AccessibleLabel` overrides the generated name. A chart containing links uses a `graphics-document` root role so its links remain available to assistive technology. Each linked mark has one focus target; the renderer does not nest links.
 
 Class tokens use ASCII CSS identifiers separated by single spaces. Complete host `data-*` names start with a lowercase letter after `data-` and then contain lowercase letters, digits, underscores or hyphens. Invalid names throw without sanitization. Attribute values remain text, including quotes and angle brackets.
 
@@ -118,7 +118,7 @@ Explicit layout widths and automatic host measurements use CSS layout pixels, so
 
 The optional `matrixWindow` field retains the caller's `HeatmapColumnWindow` policy (`Latest` by default); `matrixReversed` retains the X-axis direction. A scrolling heatmap initially exposes its latest source column, at the right edge unless the axis is reversed. `Squeeze` opens at the left edge. Resizing keeps readers at the end when they were pinned there, otherwise it preserves the first visible column, including through a temporarily non-scrolling width or a print pass. Programmatic scrolling also updates the pinned-label transform.
 
-Missing positions render as `heatmap-missing-cell` outlines in both static and responsive output. They carry no value, link or `heatmap-cell` identity. A categorical key includes one hatched, outlined “No data” entry when any position is missing. Numeric keys use the same missing-data swatch. Fixed frames retain every row and report `matrix.cell-density` when their cell height is below 12 px; `WithHeatmapNaturalHeight()` remains the opt-in for a taller static frame.
+Missing positions render as `heatmap-missing-cell` outlines in both static and responsive output. They carry no value, link or `heatmap-cell` identity. A categorical key includes one hatched, outlined “No data” entry when any position is missing. Numeric keys use the same missing-data swatch. Fixed frames retain every row and report `matrix.cell-density` when their cell height is below 12 px; `Heatmap(h => h.NaturalHeight())` remains the opt-in for a taller static frame.
 
 ## Responsive layout 2
 

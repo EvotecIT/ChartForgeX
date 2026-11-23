@@ -3,12 +3,14 @@ using System;
 using System.Collections.Generic;
 using ChartForgeX.Core;
 using ChartForgeX.Primitives;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Topology;
 
 /// <summary>
 /// Represents a renderer-independent topology diagram.
 /// </summary>
+[Fluent]
 public sealed partial class TopologyChart {
     private TopologyLayoutMode _layoutMode = TopologyLayoutMode.Manual;
     private TopologyLayoutDirection _layoutDirection = TopologyLayoutDirection.TopToBottom;
@@ -148,6 +150,7 @@ public sealed class TopologyViewport {
 /// <summary>
 /// Represents a logical topology region or cluster.
 /// </summary>
+[Fluent]
 public sealed partial class TopologyGroup {
     private string _id = string.Empty;
     private ChartForgeX.Typography.TextContent _labelContent = ChartForgeX.Typography.TextContent.Plain(string.Empty);
@@ -280,6 +283,7 @@ public sealed partial class TopologyGroup {
 /// <summary>
 /// Represents a topology node.
 /// </summary>
+[Fluent]
 public sealed partial class TopologyNode {
     private string _id = string.Empty;
     private ChartForgeX.Typography.TextContent _labelContent = ChartForgeX.Typography.TextContent.Plain(string.Empty);
@@ -457,6 +461,7 @@ public sealed partial class TopologyNode {
 /// <summary>
 /// Represents a topology edge between two nodes.
 /// </summary>
+[Fluent]
 public sealed partial class TopologyEdge {
     private string _id = string.Empty;
     private string _sourceNodeId = string.Empty;

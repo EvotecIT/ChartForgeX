@@ -7,7 +7,7 @@ namespace ChartForgeX.Typography;
 /// <summary>
 /// Defines optional overrides that can be resolved over a complete <see cref="TextStyle"/>.
 /// </summary>
-[Fluent]
+[Fluent(Copy = nameof(Clone))]
 public sealed class TextStyleOverride {
     private string? _fontFamily;
     private string? _fontWeight;

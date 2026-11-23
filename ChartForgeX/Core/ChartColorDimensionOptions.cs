@@ -1,8 +1,10 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>Controls the name, number format and key presentation of an existing numeric color measurement.</summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class ChartColorDimensionOptions {
     private string? _name;
     private ChartColorLegendStyle _legendStyle;

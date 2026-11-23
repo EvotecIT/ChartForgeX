@@ -6,7 +6,7 @@ namespace ChartForgeX.Accessibility;
 /// <summary>
 /// Defines the renderer-independent text alternative and language metadata for a visual.
 /// </summary>
-[Fluent]
+[Fluent(Copy = nameof(Clone))]
 public sealed class VisualAccessibility {
     private string? _name;
     private string? _description;

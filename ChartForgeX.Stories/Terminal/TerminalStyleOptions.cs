@@ -1,10 +1,12 @@
 using System;
 using ChartForgeX.Primitives;
 using ChartForgeX.Themes;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Terminal;
 
 /// <summary>Terminal-specific cursor and title-bar treatments, independent of shared colors and fonts.</summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class TerminalStyleOptions {
     /// <summary>Overrides the title-bar surface.</summary>
     public ChartColor? HeaderBackground { get; set; }

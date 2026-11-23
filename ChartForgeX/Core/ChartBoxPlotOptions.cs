@@ -1,8 +1,10 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>Controls box plot direction and captions while retaining category coordinates and five-number summaries.</summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class ChartBoxPlotOptions {
     private ChartOrientation _orientation;
     private ChartBoxPlotLabelContent _labelContent;

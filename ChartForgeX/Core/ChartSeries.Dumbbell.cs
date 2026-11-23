@@ -1,4 +1,5 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
@@ -7,6 +8,7 @@ public sealed partial class ChartSeries {
 
     /// <summary>Gets independent Start and End marker presentation for a dumbbell series.</summary>
     /// <exception cref="InvalidOperationException">The series is not a dumbbell.</exception>
+    [NoFluent]
     public ChartDumbbellOptions Dumbbell {
         get { RequireDumbbellOptions(); return _dumbbell; }
     }

@@ -1,11 +1,13 @@
 using System;
 using ChartForgeX.Primitives;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Typography;
 
 /// <summary>
 /// Defines fully resolved text styling shared by charts, topology, visual blocks, canvases, and image composition.
 /// </summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class TextStyle {
     private FontSpec _font = FontSpec.SystemSans();
     private double _fontSize = 16;

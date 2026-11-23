@@ -6,7 +6,7 @@ namespace ChartForgeX.Core;
 /// <summary>
 /// Defines reusable visual tokens for cartesian grid and guide lines.
 /// </summary>
-[Fluent]
+[Fluent(Copy = nameof(Clone))]
 public sealed class ChartGridLineStyle {
     private double _horizontalOpacity = 1.0;
     private double _verticalOpacity = 0.42;

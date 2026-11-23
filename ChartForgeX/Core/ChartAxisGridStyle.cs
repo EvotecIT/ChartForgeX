@@ -8,7 +8,7 @@ namespace ChartForgeX.Core;
 /// <summary>Styles the grid lines and alternating bands drawn at one Cartesian axis's ticks.</summary>
 /// <remarks>Unset values inherit the chart's <see cref="ChartGridLineStyle"/> and the theme grid colour. The chart's
 /// <c>ShowGrid</c> switch still hides every grid. Minor lines follow <see cref="ChartAxis.MinorTickCount"/>.</remarks>
-[Fluent]
+[Fluent(Copy = nameof(Clone))]
 public sealed class ChartAxisGridStyle {
     private double? _opacity;
     private double? _strokeWidth;

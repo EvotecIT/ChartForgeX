@@ -1,8 +1,10 @@
 using System;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>Controls the value direction of a waterfall without changing its accumulation order or source coordinates.</summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class ChartWaterfallOptions {
     private ChartOrientation _orientation;
 

@@ -1,0 +1,359 @@
+# ChartForgeX core: Chart and ChartOptions.
+# move  Type.Member -> Path [delete]   references become receiver.Path; the declaration moves into the type of Path's
+#                                       parent (renamed to Path's last segment), or is deleted with "delete".
+# call  Type.Method[(T1,T2)] -> template   call sites rewritten; declaration deleted.
+# keep  Type.Method[(T1,T2)] -> NewName    declaration and call sites renamed (hand-written method stays).
+# inline Type.Property                     the owner's fluent surface includes Property's methods.
+
+inline Chart.Options
+
+# --- Chart axis titles live on the axes -----------------------------------------------------------
+move Chart.XAxisTitle -> Options.XAxis.Title delete
+move Chart.YAxisTitle -> Options.YAxis.Title delete
+move Chart.SecondaryYAxisTitle -> Options.SecondaryYAxis.Title delete
+move Chart.SecondaryXAxisTitle -> Options.SecondaryXAxis.Title delete
+
+# --- ChartOptions axis forwarders -----------------------------------------------------------------
+move ChartAxis.Minimum -> Min
+move ChartAxis.Maximum -> Max
+move ChartOptions.ShowXAxis -> XAxis.Visible delete
+move ChartOptions.ShowYAxis -> YAxis.Visible delete
+move ChartOptions.XAxisLabelDensity -> XAxis.LabelDensity delete
+move ChartOptions.YAxisLabelDensity -> YAxis.LabelDensity delete
+move ChartOptions.XAxisLabelAngle -> XAxis.LabelAngle delete
+move ChartOptions.XAxisMinimum -> XAxis.Min delete
+move ChartOptions.XAxisMaximum -> XAxis.Max delete
+move ChartOptions.YAxisMinimum -> YAxis.Min delete
+move ChartOptions.YAxisMaximum -> YAxis.Max delete
+move ChartOptions.SecondaryYAxisMinimum -> SecondaryYAxis.Min delete
+move ChartOptions.SecondaryYAxisMaximum -> SecondaryYAxis.Max delete
+move ChartOptions.SecondaryYAxisValueFormatter -> SecondaryYAxis.LabelFormatter delete
+move ChartOptions.XAxisValueFormatter -> XAxis.LabelFormatter delete
+move ChartOptions.XAxisLabels -> XAxis.Labels delete
+move ChartOptions.SetXAxisBounds -> XAxis.Bounds delete
+move ChartOptions.ClearXAxisBounds -> XAxis.AutomaticBounds delete
+move ChartOptions.SetYAxisBounds -> YAxis.Bounds delete
+move ChartOptions.ClearYAxisBounds -> YAxis.AutomaticBounds delete
+move ChartOptions.SetSecondaryYAxisBounds -> SecondaryYAxis.Bounds delete
+move ChartOptions.ClearSecondaryYAxisBounds -> SecondaryYAxis.AutomaticBounds delete
+
+# --- Legend ---------------------------------------------------------------------------------------
+move ChartOptions.ShowLegend -> Legend.Visible
+move ChartOptions.HasExplicitLegend -> Legend.HasExplicitVisibility
+move ChartOptions.ShowPointLegend -> Legend.ShowPoints
+move ChartOptions.LegendPosition -> Legend.Position
+move ChartOptions.HasExplicitLegendPosition -> Legend.HasExplicitPosition
+move ChartOptions.SetDefaultLegendPosition -> Legend.SetDefaultPosition
+move ChartOptions.LegendMaximumHeightFraction -> Legend.MaxHeightFraction
+move ChartOptions.LegendMaximumRows -> Legend.MaxRows
+
+# --- Data labels ----------------------------------------------------------------------------------
+move ChartOptions.ShowDataLabels -> DataLabels.Visible
+move ChartOptions.DataLabelVisibility -> DataLabels.Visibility
+move ChartOptions.DataLabelPlacement -> DataLabels.Placement
+move ChartOptions.DataLabelConnectorColor -> DataLabels.ConnectorColor
+move ChartOptions.DataLabelConnectorOpacity -> DataLabels.ConnectorOpacity
+move ChartOptions.DataLabelConnectorStrokeWidth -> DataLabels.ConnectorStrokeWidth
+move ChartOptions.DataLabelConnectorStyle -> DataLabels.ConnectorStyle
+
+# --- Bars -----------------------------------------------------------------------------------------
+move ChartOptions.BarMode -> Bars.Mode
+move ChartOptions.BarStyle -> Bars.Style
+move ChartOptions.BarVisualStyle -> Bars.VisualStyle
+move ChartOptions.ShowStackTotals -> Bars.ShowTotals
+move ChartOptions.MaximumBarWidth -> Bars.MaxWidth
+
+# --- Lines ----------------------------------------------------------------------------------------
+move ChartOptions.LineVisualStyle -> Lines.VisualStyle
+move ChartOptions.LineMarkerMode -> Lines.MarkerMode
+move ChartOptions.LineOrientation -> Lines.Orientation
+
+# --- Heatmap --------------------------------------------------------------------------------------
+move ChartOptions.HeatmapScale -> Heatmap.Scale
+move ChartOptions.HeatmapNaturalHeight -> Heatmap.NaturalHeight
+move ChartOptions.HeatmapColumnWindow -> Heatmap.ColumnWindow
+move ChartOptions.ShowHeatmapCategoryLegend -> Heatmap.ShowCategoryLegend
+move ChartOptions.ShowHeatmapColumnLabels -> Heatmap.ShowColumnLabels
+move ChartOptions.ShowHeatmapScaleStepLabels -> Heatmap.ShowScaleStepLabels
+move ChartOptions.HeatmapColorScale -> Heatmap.ColorScale
+move ChartOptions.HeatmapCellGap -> Heatmap.CellGap
+move ChartOptions.HeatmapCellRadius -> Heatmap.CellRadius
+move ChartOptions.HeatmapValueTextMode -> Heatmap.ValueTextMode
+move ChartOptions.HeatmapRelativeScale -> Heatmap.RelativeScale
+move ChartOptions.HeatmapColorDimension -> Heatmap.ColorDimension
+
+# --- Maps -----------------------------------------------------------------------------------------
+move ChartOptions.MapCallouts -> Map.Callouts
+move ChartOptions.MapViewport -> Map.Viewport
+move ChartOptions.RegionMapBounds -> Map.RegionBounds
+move ChartOptions.MapBaseLayers -> Map.BaseLayers
+move ChartOptions.MapOverlayLayers -> Map.OverlayLayers
+move ChartOptions.MapConnectors -> Map.Connectors
+move ChartOptions.ShowMapLabels -> Map.ShowLabels
+move ChartOptions.MapScaleLegendPosition -> Map.ScaleLegendPosition
+move ChartOptions.ShowMapSurface -> Map.ShowSurface
+move ChartOptions.MapColorScale -> Map.ColorScale
+move ChartOptions.MapRegionStrokeColor -> Map.RegionStrokeColor
+move ChartOptions.MapRegionStrokeWidth -> Map.RegionStrokeWidth
+move ChartOptions.MapColorDimension -> Map.ColorDimension
+
+# --- Pictorial ------------------------------------------------------------------------------------
+move ChartOptions.PictorialShape -> Pictorial.Shape
+move ChartOptions.PictorialColumns -> Pictorial.Columns
+move ChartOptions.PictorialMaximum -> Pictorial.Max
+move ChartOptions.PictorialValuePerSymbol -> Pictorial.ValuePerSymbol
+move ChartOptions.ShowPictorialValues -> Pictorial.ShowValues
+move ChartOptions.PictorialSymbolScale -> Pictorial.SymbolScale
+move ChartOptions.PictorialEmptyOpacity -> Pictorial.EmptyOpacity
+move ChartOptions.PictorialSvgPathData -> Pictorial.SvgPathData
+move ChartOptions.PictorialSvgPathViewBox -> Pictorial.SvgPathViewBox
+move ChartOptions.PictorialPngFallbackShape -> Pictorial.PngFallbackShape
+move ChartOptions.PictorialArtwork -> Pictorial.Artwork
+move ChartOptions.PictorialFillDirection -> Pictorial.FillDirection
+move ChartOptions.SetPictorialSvgPath -> Pictorial.SvgPath
+
+# --- Progress -------------------------------------------------------------------------------------
+move ChartOptions.ProgressMaximum -> Progress.Max
+move ChartOptions.ShowProgressValues -> Progress.ShowValues
+move ChartOptions.ShowProgressHandles -> Progress.ShowHandles
+move ChartOptions.ProgressBarThicknessRatio -> Progress.BarThicknessRatio
+move ChartOptions.ProgressTrackOpacity -> Progress.TrackOpacity
+move ChartOptions.ShowProgressRingCenterLabel -> Progress.ShowRingCenterLabel
+move ChartOptions.RadialProgressRadiusScale -> Progress.RadialRadiusScale
+move ChartOptions.RadialProgressStrokeScale -> Progress.RadialStrokeScale
+
+# --- Circle ---------------------------------------------------------------------------------------
+move ChartOptions.CircleRadiusScale -> Circle.RadiusScale
+move ChartOptions.CircleStrokeScale -> Circle.StrokeScale
+move ChartOptions.ShowCircleStatusLabel -> Circle.ShowStatusLabel
+
+# --- Pie and donut --------------------------------------------------------------------------------
+move ChartOptions.ShowDonutCenterLabel -> Pie.ShowCenterLabel
+move ChartOptions.DonutInnerRadiusRatio -> Pie.InnerRadiusRatio
+move ChartOptions.DonutCenterValue -> Pie.CenterValue
+move ChartOptions.DonutCenterLabel -> Pie.CenterLabel
+move ChartOptions.PieSliceLabelContent -> Pie.SliceLabelContent
+move ChartOptions.PieSliceLabelFormatter -> Pie.SliceLabelFormatter
+move ChartOptions.PieOutsideLabelDistanceRatio -> Pie.OutsideLabelDistanceRatio
+move ChartOptions.PieInsideLabelRadiusRatio -> Pie.InsideLabelRadiusRatio
+move ChartOptions.PieSliceOpacity -> Pie.SliceOpacity
+move ChartOptions.PieSliceOutline -> Pie.SliceOutline
+move ChartOptions.PieOuterOutline -> Pie.OuterOutline
+move ChartOptions.PiePreserveSourceOrder -> Pie.PreserveSourceOrder
+move ChartOptions.PieLegendContent -> Pie.LegendContent
+move ChartOptions.MaximumPieSlices -> Pie.MaxSlices
+
+# --- Word cloud -----------------------------------------------------------------------------------
+move ChartOptions.WordCloudMinFontSize -> WordCloud.MinFontSize
+move ChartOptions.WordCloudMaxFontSize -> WordCloud.MaxFontSize
+move ChartOptions.WordCloudAngles -> WordCloud.Angles
+move ChartOptions.WordCloudMaximumTerms -> WordCloud.MaxTerms
+move ChartOptions.WordCloudDensity -> WordCloud.Density
+move ChartOptions.SetWordCloudFontRange -> WordCloud.FontRange
+
+# --- PNG ------------------------------------------------------------------------------------------
+move ChartOptions.PngFontPath -> Png.FontPath
+move ChartOptions.PngFontFaceName -> Png.FontFaceName
+move ChartOptions.PngFontCollectionIndex -> Png.FontCollectionIndex
+move ChartOptions.PngTextHinting -> Png.TextHinting
+move ChartOptions.PngSupersamplingScale -> Png.SupersamplingScale
+move ChartOptions.PngOutputScale -> Png.OutputScale
+
+# --- Gantt ----------------------------------------------------------------------------------------
+move ChartOptions.GanttToday -> Gantt.Today
+move ChartOptions.GanttTickInterval -> Gantt.TickInterval
+move ChartOptions.GanttOpenEndStyle -> Gantt.OpenEndStyle
+move ChartOptions.GanttTodayStyle -> Gantt.TodayStyle
+move ChartOptions.LaneSummaryHeader -> StateTimeline.SummaryHeader delete
+
+# --- Polar layout ---------------------------------------------------------------------------------
+move ChartOptions.PolarAxisScaleFactor -> Polar.AxisScaleFactor
+move ChartOptions.PolarAxisLabelFactor -> Polar.AxisLabelFactor
+move ChartOptions.PolarGridShape -> Polar.GridShape
+move ChartOptions.PolarGridRingCount -> Polar.GridRingCount
+move ChartOptions.PolarAxisStroke -> Polar.AxisStroke
+move ChartOptions.PolarGridStroke -> Polar.GridStroke
+move ChartOptions.PolarGridFill -> Polar.GridFill
+move ChartOptions.PolarGridFillOpacity -> Polar.GridFillOpacity
+move ChartOptions.PolarRotationDegrees -> Polar.RotationDegrees
+
+# --- State timeline -------------------------------------------------------------------------------
+move ChartOptions.StateCategories -> StateTimeline.Categories
+move ChartOptions.StateTimelineSummaryHeader -> StateTimeline.SummaryHeader
+move ChartOptions.PinStateColorsInForcedColors -> StateTimeline.PinColorsInForcedColors
+
+# --- Chart methods that are not plain setters ------------------------------------------------------
+keep Chart.WithSize -> Size  # two numbers read better than new ChartSize(w, h); validates both
+keep Chart.WithPadding -> Padding  # four sides in one call; validates each
+call Chart.WithTheme -> Theme({theme}) ; [ThemeMode({mode:value})]
+keep Chart.WithFontFamily -> FontFamily  # derives a new immutable theme
+call Chart.WithPngFont(string?,int?,string?) -> Png.FontPath({fontPath}) ; [Png.FontCollectionIndex({collectionIndex})] ; [Png.FontFaceName({faceName})]
+call Chart.WithPngFont(string?,string?) -> Png.FontPath({fontPath}) ; Png.FontFaceName({faceName})
+call Chart.WithPngOutputScale(ChartPngOutputScale) -> Png.OutputScale((int){scale})
+call Chart.WithTitle -> Title({title})
+call Chart.WithSubtitle -> Subtitle({subtitle})
+call Chart.WithXAxis -> XAxis.Title({title})
+call Chart.WithYAxis -> YAxis.Title({title})
+call Chart.WithSecondaryYAxis -> SecondaryYAxis.Title({title}) ; [SecondaryYAxis.LabelBy({formatter})]
+call Chart.WithSecondaryXAxis -> SecondaryXAxis.Title({title}) ; [SecondaryXAxis.LabelBy({formatter})]
+call Chart.ConfigureXAxis -> !XAxis({configure})
+call Chart.ConfigureYAxis -> !YAxis({configure})
+call Chart.ConfigureSecondaryYAxis -> !SecondaryYAxis({configure})
+call Chart.ConfigureSecondaryXAxis -> !SecondaryXAxis({configure})
+call Chart.WithXAxisScale -> XAxis.Scale({scale})
+call Chart.WithYAxisScale -> YAxis.Scale({scale})
+call Chart.WithSecondaryYAxisScale -> SecondaryYAxis.Scale({scale})
+call Chart.WithSecondaryXAxisScale -> SecondaryXAxis.Scale({scale})
+call Chart.WithXAxisTimeScale -> XAxis.TimeScale([timeZone: {timeZone}], [showTimeZone: {showTimeZone}], [label: {label}])
+call Chart.WithXAxisBounds -> XAxis.Bounds({minimum}, {maximum})
+call Chart.WithYAxisBounds -> YAxis.Bounds({minimum}, {maximum})
+call Chart.WithSecondaryYAxisBounds -> SecondaryYAxis.Bounds({minimum}, {maximum})
+call Chart.WithSecondaryXAxisBounds -> SecondaryXAxis.Bounds({minimum}, {maximum})
+call Chart.WithAutomaticXAxisBounds -> XAxis.Min(null) ; XAxis.Max(null)
+call Chart.WithAutomaticYAxisBounds -> YAxis.Min(null) ; YAxis.Max(null)
+call Chart.WithAutomaticSecondaryYAxisBounds -> SecondaryYAxis.Min(null) ; SecondaryYAxis.Max(null)
+call Chart.WithAutomaticSecondaryXAxisBounds -> SecondaryXAxis.Min(null) ; SecondaryXAxis.Max(null)
+call Chart.WithXAxisIntegerTicks -> XAxis.IntegerTicks([{enabled}])
+call Chart.WithYAxisIntegerTicks -> YAxis.IntegerTicks([{enabled}])
+call Chart.WithSecondaryYAxisIntegerTicks -> SecondaryYAxis.IntegerTicks([{enabled}])
+call Chart.WithXAxisVisible -> XAxis.Visible([{visible}])
+call Chart.WithYAxisVisible -> YAxis.Visible([{visible}])
+call Chart.WithXAxisLabelAngle -> XAxis.LabelAngle({degrees})
+call Chart.WithXAxisLabelDensity -> XAxis.LabelDensity({density})
+call Chart.WithYAxisLabelDensity -> YAxis.LabelDensity({density})
+call Chart.WithXAxisValueFormatter -> XAxis.LabelBy({formatter})
+keep Chart.WithXLabels -> XLabels  # builds category labels at positions 1..n and validates them
+keep Chart.WithXDateLabels -> XDateLabels  # formats dates into category labels
+keep Chart.WithAxes -> Axes  # switches four related flags (axes, both axis visibilities, axis lines) together
+call Chart.WithTickCount -> TickCount({count})
+call Chart.WithGrid -> ShowGrid([{visible}])
+call Chart.WithGridStyle -> GridLineStyle({style})
+call Chart.ConfigureGridStyle -> !GridLineStyle({configure})
+call Chart.WithAxisLines -> ShowAxisLines([{visible}])
+call Chart.WithHeader -> ShowHeader([{visible}])
+call Chart.WithCard -> ShowCard([{visible}])
+call Chart.WithPlotBackground -> ShowPlotBackground([{visible}])
+call Chart.WithTransparentBackground -> TransparentBackground([{transparent}])
+call Chart.WithHostFrame -> HostOwnsFrame([{hostOwnsFrame}])
+call Chart.WithPlotClipping -> ClipMarksToPlot([{enabled}])
+keep Chart.WithSparkline -> Sparkline  # switches the chart into sparkline mode and hides all chrome
+keep Chart.WithOverlay -> Overlay  # hides chrome and background for an overlay in one step
+call Chart.WithLegend -> !Legend([{visible}])
+call Chart.WithPointLegend -> Legend.ShowPoints([{visible}])
+call Chart.WithLegendPosition -> Legend.Position({position})
+call Chart.WithLegendBudget -> [Legend.MaxHeightFraction({maximumHeightFraction})] ; [Legend.MaxRows({maximumRows})]
+call Chart.WithLegendKey -> Legend.KeyShape({shape}) ; [Legend.KeySize({size})]
+call Chart.WithLegendFormatter -> Legend.LabelBy({formatter})
+call Chart.ConfigureLegendStyle -> !LegendStyle({configure})
+call Chart.ConfigureTitleStyle -> !TitleStyle({configure})
+call Chart.ConfigureSubtitleStyle -> !SubtitleStyle({configure})
+call Chart.ConfigureAxisTitleStyle -> !AxisTitleStyle({configure})
+call Chart.ConfigureTickLabelStyle -> !TickLabelStyle({configure})
+call Chart.ConfigureDataLabelStyle -> !DataLabelStyle({configure})
+keep Chart.ConfigureTextStyle -> TextStyle  # selects the text style by role
+call Chart.WithDataLabels -> !DataLabels([{visible}])
+call Chart.WithDataLabelPlacement -> DataLabels.Placement({placement})
+call Chart.WithDataLabelConnectorColor(ChartColor?) -> DataLabels.ConnectorColor({color})
+call Chart.WithDataLabelConnectorColor(string) -> DataLabels.ConnectorColor(ChartColor.FromHex({hex}))
+call Chart.WithBarMode -> Bars.Mode({mode})
+call Chart.WithGroupedBars -> Bars.Grouped()
+call Chart.WithStackedBars -> Bars.Stacked()
+call Chart.WithStackedHorizontalBars -> Bars.Stacked()
+call Chart.WithBarStyle -> Bars.Style({style})
+call Chart.WithBarVisualStyle -> Bars.VisualStyle({style})
+call Chart.ConfigureBarVisualStyle -> !Bars(bars => bars.VisualStyle({configure}))
+call Chart.WithStackTotals -> Bars.ShowTotals([{visible}])
+call Chart.WithMaximumBarWidth -> Bars.MaxWidth({pixels})
+call Chart.WithLineVisualStyle -> Lines.VisualStyle({style})
+call Chart.ConfigureLineVisualStyle -> !Lines(lines => lines.VisualStyle({configure}))
+call Chart.WithPlainLineStyle -> Lines.PlainStyle()
+call Chart.WithLuminousLineStyle -> Lines.LuminousStyle()
+call Chart.WithLineMarkers -> Lines.MarkerMode({mode})
+call Chart.WithHeatmapCategoryLegend -> Heatmap.ShowCategoryLegend([{visible}])
+call Chart.WithHeatmapScaleStepLabels -> Heatmap.ShowScaleStepLabels([{visible}])
+call Chart.WithHeatmapColumnLabels -> Heatmap.ShowColumnLabels([{visible}])
+call Chart.ConfigureHeatmapColorDimension -> !Heatmap(heatmap => heatmap.ColorDimension({configure}))
+call Chart.ConfigureMapColorDimension -> !Map(map => map.ColorDimension({configure}))
+call Chart.WithMapLabels -> Map.ShowLabels([{visible}])
+call Chart.WithMapSurface -> Map.ShowSurface([{visible}])
+call Chart.WithMapRegionStroke -> Map.RegionStrokeColor({color}) ; [Map.RegionStrokeWidth({width})]
+call Chart.WithMapColorScale(ChartColorScale?) -> Map.ColorScale({scale})
+call Chart.WithMapColorScale(ChartColor,ChartColor) -> Map.ColorScale(ChartColorScale.Sequential({lowColor}, {highColor}))
+call Chart.WithMapColorScale(ChartColor,ChartColor,ChartColor,double?) -> Map.ColorScale(ChartColorScale.Diverging({lowColor}, {midpointColor}, {highColor}[, {midpointValue}]))
+call Chart.WithRegionMapBounds -> Map.RegionBounds({bounds})
+keep Chart.WithRegionMapCoordinateBounds -> RegionMapCoordinateBounds  # converts longitude/latitude bounds and validates ranges
+call Chart.WithPictorialValues -> Pictorial.ShowValues([{visible}])
+call Chart.WithPictorialSvgPath(string,ChartPictorialShape) -> Pictorial.SvgPath({pathData}[, {pngFallbackShape}])
+call Chart.WithPictorialSvgPath(string,ChartRect,ChartPictorialShape) -> Pictorial.SvgPath({pathData}, {viewBox}[, {pngFallbackShape}])
+call Chart.WithProgressValues -> Progress.ShowValues([{visible}])
+call Chart.WithProgressHandles -> Progress.ShowHandles([{visible}])
+call Chart.WithProgressBarThickness -> Progress.BarThicknessRatio({ratio})
+call Chart.WithProgressRingCenterLabel -> Progress.ShowRingCenterLabel([{visible}])
+call Chart.WithRadialProgressRadiusScale -> Progress.RadialRadiusScale({scale})
+call Chart.WithRadialProgressStrokeScale -> Progress.RadialStrokeScale({scale})
+call Chart.WithCircleStatusLabel -> Circle.ShowStatusLabel([{visible}])
+call Chart.WithDonutCenterLabel -> Pie.ShowCenterLabel([{visible}])
+call Chart.WithDonutCenterText -> Pie.CenterValue({value}) ; [Pie.CenterLabel({label})]
+call Chart.WithDonutInnerRadiusRatio -> Pie.InnerRadiusRatio({ratio})
+call Chart.WithPieOutsideLabelDistance -> Pie.OutsideLabelDistanceRatio({ratio})
+call Chart.WithWordCloudFontRange -> WordCloud.FontRange({minimum}, {maximum})
+call Chart.WithWordCloudMaximumTerms -> WordCloud.MaxTerms({maximumTerms})
+keep Chart.WithGanttToday(DateTime?) -> GanttToday  # converts a DateTime to the schedule value
+call Chart.WithGanttToday(double?) -> Gantt.Today({value})
+keep Chart.WithGanttLaneNow -> GanttLaneNow  # converts a DateTime to the ordered schedule value
+call Chart.WithPolarGridShape -> Polar.GridShape({shape})
+call Chart.WithStateColorsPinnedInForcedColors -> StateTimeline.PinColorsInForcedColors([{pin}])
+keep Chart.WithStateCategories -> StateCategories  # validates unique keys and replaces the category list
+call Chart.WithAutomaticRadialBands -> RadialBandAllocation({allocation})
+call Chart.WithRadialGeometry -> RadialGeometry({geometry})
+call Chart.WithValueFormatter -> FormatValuesBy({formatter})
+call Chart.WithValueFormat -> ValueFormat({format})
+call Chart.WithValueUnit -> ValueUnit({unit})
+keep Chart.WithCulture -> Culture  # applies a read-only culture copy to every axis
+keep Chart.WithDesignTokens -> DesignTokens  # copies design tokens into a new immutable theme
+call Chart.WithSvgColorVariables -> SvgColorVariables({variables})
+call Chart.WithSeriesColorAssignment -> SeriesColorAssignment({assignment})
+call Chart.WithMarkBackdrop -> MarkBackdrop({backdrop})
+keep Chart.WithHighlightedXAxisLabel -> HighlightXAxisLabel  # resolves a palette colour and records a keyed highlight
+keep Chart.WithFocusedXAxisCategory -> FocusXAxisCategory  # adds a focus band annotation and a label highlight
+keep Chart.WithHighlightedXAxisRange -> HighlightXAxisRange  # adds a range annotation with palette colour resolution
+keep Chart.WithDashboardCartesianStyle -> DashboardCartesianStyle  # applies a coordinated dashboard preset across several groups
+keep Chart.WithDashboardPanelStyle -> DashboardPanelStyle  # applies a coordinated dashboard preset across several groups
+keep Chart.WithDashboardBarStyle -> DashboardBarStyle  # applies a coordinated dashboard preset across several groups
+keep Chart.WithDashboardBarPanelStyle -> DashboardBarPanelStyle  # applies a coordinated dashboard preset across several groups
+keep Chart.WithDashboardStackedRowStyle -> DashboardStackedRowStyle  # applies a coordinated dashboard preset across several groups
+keep Chart.WithDashboardTrendPanelStyle -> DashboardTrendPanelStyle  # applies a coordinated dashboard preset across several groups
+keep Chart.WithDashboardTrendFocus -> DashboardTrendFocus  # adds a callout, guide and label highlight for one point
+call Chart.ConfigureAccessibility -> !Accessibility({configure})
+call Chart.AsDecorative -> Accessibility.Decorative([{decorative}])
+call Chart.ConfigureLabels -> !Labels({configure})
+call Chart.ConfigureBoxPlot -> !BoxPlot({configure})
+call Chart.ConfigureBubble -> !Bubble({configure})
+call Chart.ConfigureBullet -> !Bullet({configure})
+call Chart.ConfigureCalendar -> !Calendar({configure})
+call Chart.ConfigureChord -> !Chord({configure})
+call Chart.ConfigureFunnel -> !Funnel({configure})
+call Chart.ConfigureGauge -> !Gauge({configure})
+call Chart.ConfigurePyramid -> !Pyramid({configure})
+call Chart.ConfigureRangeBar -> !RangeBar({configure})
+call Chart.ConfigureSankey -> !Sankey({configure})
+call Chart.ConfigureSunburst -> !Sunburst({configure})
+call Chart.ConfigureTreemap -> !Treemap({configure})
+call Chart.ConfigureWaterfall -> !Waterfall({configure})
+move ChartOptions.HasExplicitLegendBudget -> Legend.HasExplicitBudget
+
+# --- Delegate verbs -------------------------------------------------------------------------------
+verb ChartLegendOptions.ItemFormatter -> LabelBy
+verb ChartAxis.LabelFormatter -> LabelBy
+verb ChartOptions.ValueFormatter -> FormatValuesBy
+verb ChartOptions.PieSliceLabelFormatter -> SliceLabelBy
+keep ChartAxis.WithTimeScale -> TimeScale  # sets the scale, zone, zone label and its visibility together
+
+# --- Internal members that travel with their group ------------------------------------------------
+move ChartOptions.ResolvePreparedBarVisualStyle -> Bars.ResolvePreparedVisualStyle
+move ChartOptions.HasPreparedBarCornerRadius -> Bars.HasPreparedCornerRadius
+move ChartOptions.ConfigureBarVisualStyle -> Bars.ConfigureVisualStyle
+move ChartOptions.ResolvePreparedLineVisualStyle -> Lines.ResolvePreparedVisualStyle
+move ChartOptions.HasDataLabelConnectorStyle -> DataLabels.HasConnectorStyle
+move ChartOptions.HasExplicitMapViewport -> Map.HasExplicitViewport
+move ChartOptions.HasExplicitMapScaleLegendPosition -> Map.HasExplicitScaleLegendPosition

@@ -1,24 +1,35 @@
 using System;
 using System.Collections.Generic;
 using ChartForgeX.Primitives;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Core;
 
 /// <summary>Direction-specific candlestick body, wick and OHLC stroke options.</summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class ChartFinancialOptions {
     /// <summary>Gets options for observations whose close is greater than or equal to their open, including doji.</summary>
-    public ChartFinancialItemOptions Rising { get; private set; } = new();
+    public ChartFinancialItemOptions Rising {
+        get => _rising;
+        set => _rising = value ?? throw new ArgumentNullException(nameof(value));
+    }
+    private ChartFinancialItemOptions _rising = new();
 
     /// <summary>Gets options for observations whose close is less than their open.</summary>
-    public ChartFinancialItemOptions Falling { get; private set; } = new();
+    public ChartFinancialItemOptions Falling {
+        get => _falling;
+        set => _falling = value ?? throw new ArgumentNullException(nameof(value));
+    }
+    private ChartFinancialItemOptions _falling = new();
 
     internal bool IsConfigured => Rising.IsConfigured || Falling.IsConfigured;
     internal bool HasOverrides => Rising.HasOverrides || Falling.HasOverrides;
 
-    internal ChartFinancialOptions Clone() => new() { Rising = Rising.Clone(), Falling = Falling.Clone() };
+    internal ChartFinancialOptions Clone() => new() { _rising = _rising.Clone(), _falling = _falling.Clone() };
 }
 
 /// <summary>Paint, width and dash overrides for one financial direction. Null values inherit the existing series or family default.</summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class ChartFinancialItemOptions {
     private double? _fillOpacity, _strokeOpacity, _strokeWidth;
     private IReadOnlyList<double>? _dashPattern;
@@ -107,6 +118,7 @@ public sealed class ChartFinancialItemOptions {
 }
 
 /// <summary>Candlestick wick stroke overrides, inherited from the direction's body outline when null.</summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class ChartFinancialWickOptions {
     private double? _strokeOpacity, _strokeWidth;
     private IReadOnlyList<double>? _dashPattern;

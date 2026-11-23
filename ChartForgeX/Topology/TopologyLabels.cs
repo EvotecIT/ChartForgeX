@@ -1,5 +1,6 @@
 using System;
 using ChartForgeX.Core;
+using PowerForge.Fluent;
 
 namespace ChartForgeX.Topology;
 
@@ -7,6 +8,7 @@ namespace ChartForgeX.Topology;
 /// Holds the words ChartForgeX writes into rendered topology diagrams on its own, so hosts can localize them, as
 /// <see cref="ChartLabels"/> does for charts. Defaults are English.
 /// </summary>
+[Fluent(Copy = nameof(Clone))]
 public sealed class TopologyLabels {
     private const string DefaultUntitled = "ChartForgeX topology";
     private string _untitledTopology = DefaultUntitled;
