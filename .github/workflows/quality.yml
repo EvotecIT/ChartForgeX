@@ -134,6 +134,43 @@ jobs:
             fi
           fi
 
+  design-token-drift:
+    # The canonical token file lives in the private HtmlForgeX repository. The check reads it with a
+    # read-only token; without one (forks, or before the secret exists) it warns instead of passing silently.
+    name: Design token drift
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      HTMLFORGEX_READ_TOKEN: ${{ secrets.HTMLFORGEX_READ_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          sparse-checkout: |
+            Build
+            ChartForgeX/Themes/Tokens
+          persist-credentials: false
+
+      - name: Checkout HtmlForgeX generated tokens
+        if: env.HTMLFORGEX_READ_TOKEN != ''
+        uses: actions/checkout@v7
+        with:
+          repository: EvotecIT/HtmlForgeX
+          ref: ${{ vars.HTMLFORGEX_TOKEN_REF || 'master' }}
+          token: ${{ env.HTMLFORGEX_READ_TOKEN }}
+          path: htmlforgex
+          sparse-checkout: Generated/Tokens/ChartForgeX
+          persist-credentials: false
+
+      - name: Compare the embedded tokens with HtmlForgeX
+        shell: pwsh
+        run: |
+          if (-not $env:HTMLFORGEX_READ_TOKEN) {
+              Write-Host '::warning title=Design token drift not checked::Set the HTMLFORGEX_READ_TOKEN secret to compare the embedded tokens with HtmlForgeX.'
+              return
+          }
+          ./Build/Test-DesignTokenDrift.ps1 -SourcePath htmlforgex/Generated/Tokens/ChartForgeX/evotec.chartforgex.tokens.json
+
   build-test-pack:
     name: Quality work (${{ matrix.name }}, ${{ matrix.lane }})
     needs: changes

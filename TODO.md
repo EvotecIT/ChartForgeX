@@ -36,11 +36,10 @@ Charts already look professional; topology-laid-out diagrams don't yet. The defe
 
 ## 4. One look across HtmlForgeX, ChartForgeX and CanopyX
 
-HtmlForgeX's `evotec.tokens.json` is the source of truth. Our embedded chart export comes from its token version 1.6.0, but nothing checks that the copy stays current, and fonts differ in every product.
+HtmlForgeX's `evotec.tokens.json` is the source of truth. `Build/Test-DesignTokenDrift.ps1` compares the embedded chart export with HtmlForgeX's generated one in `Build.ps1` and in the Quality workflow's `Design token drift` job, which reads the private HtmlForgeX repository through the `HTMLFORGEX_READ_TOKEN` secret.
 
 Token contract v2 has landed: ChartForgeX reads its font stack, typography roles, radius, elevation and interactive chrome from the shared export, and interactive CSS resolves `--hfx-*` roles before its literal fallbacks.
 
-- [ ] **Drift check.** CI fails when ChartForgeX's embedded token file differs from HtmlForgeX's generated one. Done when the check runs and the current copy matches.
 - [ ] **Host CSS check in HtmlForgeX.** Interactive CSS now reads `--hfx-*` first and no longer carries Tailwind slate fallbacks. Done when a ChartForgeX chart in a real HtmlForgeX page is observed matching the page's surface, font and tooltip style.
 - [ ] Coordinate with HtmlForgeX to theme its legacy ApexCharts/Chart.js output from the same tokens, and with CanopyX to point its role tokens at the merged HtmlForgeX roles.
 
