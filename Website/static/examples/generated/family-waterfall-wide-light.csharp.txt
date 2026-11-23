@@ -51,7 +51,7 @@ public static class WaterfallRecipe {
                 ChartWaterfallItem.Total(7)
             }).ObservationId(3, new ChartObservationId("cost-change"))
                 .ObservationId(4, new ChartObservationId("cost-checkpoint"))
-                .PointColor(4, "#A5358A");
+                .PointColor(4, ChartColor.FromHex("#A5358A"));
             chart.XLabels("Open", "Adjust", "Stage", "Costs", "Cost sum", "Recover", "Balance").AddSeries(movement)
                 .Waterfall(options => options.Orientation = horizontal ? ChartOrientation.Horizontal : ChartOrientation.Vertical);
             if (horizontal) chart.XAxis(x => x.Title("Running balance")).YAxis(y => y.Title("Stage")).Bars(b => b.Style(ChartBarStyle.SegmentedCapsule));

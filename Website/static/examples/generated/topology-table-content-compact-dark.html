@@ -117,7 +117,7 @@ public static class TopologyTableContentRecipe {
         var compact = variant == &quot;compact&quot;;
         var chart = TopologyChart.Create().Id(&quot;linked-table-content&quot;).Title(&quot;Approve a captured release&quot;)
             .Subtitle(&quot;The source table remains part of its graph vertex&quot;)
-            .Theme(VisualTheme.Graphite(), mode).Viewport(new TopologyViewport(compact ? 390 : 1000, compact ? 1000 : 680, 24))
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Viewport(new TopologyViewport(compact ? 390 : 1000, compact ? 1000 : 680, 24))
             .LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(compact ? TopologyLayoutDirection.TopToBottom : TopologyLayoutDirection.LeftToRight);
         chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true, WrapNodeLabels = true });
         chart.AddAutoNode(&quot;User&quot;, &quot;Release coordinator&quot;, width: 180, height: 90);
@@ -196,7 +196,7 @@ public static class TopologyTableContentRecipe {
         var compact = variant == &quot;compact&quot;;
         var chart = TopologyChart.Create().Id(&quot;linked-table-content&quot;).Title(&quot;Approve a captured release&quot;)
             .Subtitle(&quot;The source table remains part of its graph vertex&quot;)
-            .Theme(VisualTheme.Graphite(), mode).Viewport(new TopologyViewport(compact ? 390 : 1000, compact ? 1000 : 680, 24))
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Viewport(new TopologyViewport(compact ? 390 : 1000, compact ? 1000 : 680, 24))
             .LayoutMode(TopologyLayoutMode.Layered).LayoutDirection(compact ? TopologyLayoutDirection.TopToBottom : TopologyLayoutDirection.LeftToRight);
         chart.DefaultRenderOptions(new TopologyRenderOptions { IncludeLegend = false, FitContentToViewport = true, WrapNodeLabels = true });
         chart.AddAutoNode(&quot;User&quot;, &quot;Release coordinator&quot;, width: 180, height: 90);

@@ -134,7 +134,7 @@ public static class CandlestickRecipe {
                 financial.Falling.FillOpacity = .65;
                 financial.Falling.Wick.Stroke = ChartColor.FromHex(&quot;#729BB7&quot;);
                 financial.Falling.Wick.StrokeWidth = 1.4;
-            }).PointColor(4, &quot;#729BB7&quot;);
+            }).PointColor(4, ChartColor.FromHex(&quot;#729BB7&quot;));
             if (variant is &quot;dashed&quot; or &quot;compact-dashed&quot;) prices.Financial(financial =&gt; {
                 financial.Rising.DashPattern = new[] { 7d, 5d, 2d };
                 financial.Rising.DashOffset = -3;
@@ -230,7 +230,7 @@ public static class CandlestickRecipe {
                 financial.Falling.FillOpacity = .65;
                 financial.Falling.Wick.Stroke = ChartColor.FromHex(&quot;#729BB7&quot;);
                 financial.Falling.Wick.StrokeWidth = 1.4;
-            }).PointColor(4, &quot;#729BB7&quot;);
+            }).PointColor(4, ChartColor.FromHex(&quot;#729BB7&quot;));
             if (variant is &quot;dashed&quot; or &quot;compact-dashed&quot;) prices.Financial(financial =&gt; {
                 financial.Rising.DashPattern = new[] { 7d, 5d, 2d };
                 financial.Rising.DashOffset = -3;

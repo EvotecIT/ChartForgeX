@@ -25,7 +25,7 @@ var chart = Chart.Create().Size(800, 560)
 var series = new ChartSeries(new ChartSeriesId("allocation"), "Allocation", ChartSeriesKind.Pyramid,
     new[] { new ChartPoint(1, 50), new ChartPoint(2, 30), new ChartPoint(3, 20), new ChartPoint(4, 0) })
     .ObservationIds(new[] { new ChartObservationId("services"), new ChartObservationId("platform"), new ChartObservationId("support"), new ChartObservationId("unassigned") })
-    .PointColor(0, "#357BA4").PointColor(1, "#C18B3D").PointColor(2, "#4D947D")
+    .PointColor(0, ChartColor.FromHex("#357BA4")).PointColor(1, ChartColor.FromHex("#C18B3D")).PointColor(2, ChartColor.FromHex("#4D947D"))
     .PointFillPattern(1, ChartFillPattern.DiagonalForward).PointStrokeColor(1, ChartColor.FromHex("#8D3E69"));
 chart.AddSeries(series).Pyramid(options => {
     options.ValueEncoding = ChartPyramidValueEncoding.Area; options.Reversed = true;

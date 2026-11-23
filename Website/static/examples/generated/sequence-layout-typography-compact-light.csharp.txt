@@ -40,8 +40,8 @@ public static class SequenceLayoutTypographyRecipe {
         model.Notes[0].StepIndex=1;model.Metadata["mermaid.autonumber"]="true";model.Theme=VisualTheme.Graphite();model.ThemeMode=mode;
         model.Layout=new SequenceLayoutPolicy(participantMinimumWidth:90,participantMinimumHeight:60,participantSpacing:20,messageSpacing:18,
             noteSpacing:12,fragmentMargin:10,fragmentLabelPadding:6,activationWidth:14,wrapPadding:8);
-        model.Typography=new SequenceTypography(new TextStyleOverride{FontSize=17,FontWeight="700"},new TextStyleOverride{FontSize=16,FontWeight="500"},
-            new TextStyleOverride{FontSize=14,FontWeight="400"},new TextStyleOverride{FontSize=15,FontWeight="600"},new TextStyleOverride{FontSize=13,FontWeight="700"});
+        model.Typography=new SequenceTypography(new TextStyleOverride{FontSize=17,FontWeight=700},new TextStyleOverride{FontSize=16,FontWeight=500},
+            new TextStyleOverride{FontSize=14,FontWeight=400},new TextStyleOverride{FontSize=15,FontWeight=600},new TextStyleOverride{FontSize=13,FontWeight=700});
         return model;
     }
 }

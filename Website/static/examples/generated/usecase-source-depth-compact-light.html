@@ -117,7 +117,7 @@ public static class UseCaseSourceDepthRecipe {
         var compact = variant == &quot;compact&quot;;
         var chart = TopologyChart.Create().Id(&quot;native-usecase-depth&quot;).Title(&quot;Publish prepared documents&quot;)
             .Subtitle(&quot;Actors, stereotypes, approval notes and named associations&quot;)
-            .Theme(VisualTheme.Graphite(), mode).Viewport(new TopologyViewport(compact ? 390 : 900, compact ? 620 : 520, 28))
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Viewport(new TopologyViewport(compact ? 390 : 900, compact ? 620 : 520, 28))
             .LayoutMode(TopologyLayoutMode.Swimlane).LayoutDirection(compact ? TopologyLayoutDirection.TopToBottom : TopologyLayoutDirection.LeftToRight);
         chart.DefaultRenderOptions = new TopologyRenderOptions { FitContentToViewport = true,
             MaxNodeLabelLines = 8, MaxNodeSubtitleLines = 8, WrapNodeLabels = true, AllowMultilineNodeLabels = true };
@@ -129,13 +129,13 @@ public static class UseCaseSourceDepthRecipe {
             node.Kind = TopologyNodeKind.Generic; node.Shape = node.Id == &quot;Operator&quot; ? TopologyNodeShape.Actor : TopologyNodeShape.Ellipse;
             node.DisplayMode = TopologyNodeDisplayMode.Card; node.PreserveDisplayModeSize = true; node.ShowStatusBadge = false;
             node.FitLabelToContent = node.Shape != TopologyNodeShape.Actor; node.MaximumTextWidth = 150;
-            if (node.Shape != TopologyNodeShape.Actor) node.TextStyle = new ChartForgeX.Typography.TextStyleOverride { FontSize = 13, FontWeight = &quot;400&quot; };
+            if (node.Shape != TopologyNodeShape.Actor) node.TextStyle = new ChartForgeX.Typography.TextStyleOverride { FontSize = 13, FontWeight = 400 };
         }
         chart.Nodes[0].Subtitle = &quot;&#171;primary&#187;&quot;;
-        chart.Nodes[0].TextStyle = new ChartForgeX.Typography.TextStyleOverride { FontSize = 14, FontWeight = &quot;500&quot; };
+        chart.Nodes[0].TextStyle = new ChartForgeX.Typography.TextStyleOverride { FontSize = 14, FontWeight = 500 };
         chart.Nodes[1].Subtitle = &quot;&#171;business action&#187;&quot;;
         chart.AddEdge(&quot;request&quot;, &quot;Operator&quot;, &quot;Publish&quot;, &quot;requests&quot;, kind: TopologyEdgeKind.Dependency, direction: VisualLinkDirection.Forward, routing: TopologyEdgeRouting.Straight);
-        var request = chart.Edges[0]; request.Color = &quot;#2563EB&quot;; request.LabelColor = &quot;#0F766E&quot;;
+        var request = chart.Edges[0]; request.Color = ChartColor.FromHex(&quot;#2563EB&quot;); request.LabelColor = ChartColor.FromHex(&quot;#0F766E&quot;);
         request.StrokeWidth = 2.5; request.Opacity = .8; request.LineStyle = TopologyEdgeLineStyle.Solid;
         request.DashPattern.AddRange(new[] { 6d, 3, 2, 6, 3, 2 });
         chart.AddEdge(&quot;include-validation&quot;, &quot;Publish&quot;, &quot;Validate&quot;, &quot;&lt;&lt;include&gt;&gt;&quot;, kind: TopologyEdgeKind.Dependency, direction: VisualLinkDirection.Forward, routing: TopologyEdgeRouting.Straight);
@@ -182,7 +182,7 @@ public static class UseCaseSourceDepthRecipe {
         var compact = variant == &quot;compact&quot;;
         var chart = TopologyChart.Create().Id(&quot;native-usecase-depth&quot;).Title(&quot;Publish prepared documents&quot;)
             .Subtitle(&quot;Actors, stereotypes, approval notes and named associations&quot;)
-            .Theme(VisualTheme.Graphite(), mode).Viewport(new TopologyViewport(compact ? 390 : 900, compact ? 620 : 520, 28))
+            .Theme(VisualTheme.Graphite()).ThemeMode(mode).Viewport(new TopologyViewport(compact ? 390 : 900, compact ? 620 : 520, 28))
             .LayoutMode(TopologyLayoutMode.Swimlane).LayoutDirection(compact ? TopologyLayoutDirection.TopToBottom : TopologyLayoutDirection.LeftToRight);
         chart.DefaultRenderOptions = new TopologyRenderOptions { FitContentToViewport = true,
             MaxNodeLabelLines = 8, MaxNodeSubtitleLines = 8, WrapNodeLabels = true, AllowMultilineNodeLabels = true };
@@ -194,13 +194,13 @@ public static class UseCaseSourceDepthRecipe {
             node.Kind = TopologyNodeKind.Generic; node.Shape = node.Id == &quot;Operator&quot; ? TopologyNodeShape.Actor : TopologyNodeShape.Ellipse;
             node.DisplayMode = TopologyNodeDisplayMode.Card; node.PreserveDisplayModeSize = true; node.ShowStatusBadge = false;
             node.FitLabelToContent = node.Shape != TopologyNodeShape.Actor; node.MaximumTextWidth = 150;
-            if (node.Shape != TopologyNodeShape.Actor) node.TextStyle = new ChartForgeX.Typography.TextStyleOverride { FontSize = 13, FontWeight = &quot;400&quot; };
+            if (node.Shape != TopologyNodeShape.Actor) node.TextStyle = new ChartForgeX.Typography.TextStyleOverride { FontSize = 13, FontWeight = 400 };
         }
         chart.Nodes[0].Subtitle = &quot;&#171;primary&#187;&quot;;
-        chart.Nodes[0].TextStyle = new ChartForgeX.Typography.TextStyleOverride { FontSize = 14, FontWeight = &quot;500&quot; };
+        chart.Nodes[0].TextStyle = new ChartForgeX.Typography.TextStyleOverride { FontSize = 14, FontWeight = 500 };
         chart.Nodes[1].Subtitle = &quot;&#171;business action&#187;&quot;;
         chart.AddEdge(&quot;request&quot;, &quot;Operator&quot;, &quot;Publish&quot;, &quot;requests&quot;, kind: TopologyEdgeKind.Dependency, direction: VisualLinkDirection.Forward, routing: TopologyEdgeRouting.Straight);
-        var request = chart.Edges[0]; request.Color = &quot;#2563EB&quot;; request.LabelColor = &quot;#0F766E&quot;;
+        var request = chart.Edges[0]; request.Color = ChartColor.FromHex(&quot;#2563EB&quot;); request.LabelColor = ChartColor.FromHex(&quot;#0F766E&quot;);
         request.StrokeWidth = 2.5; request.Opacity = .8; request.LineStyle = TopologyEdgeLineStyle.Solid;
         request.DashPattern.AddRange(new[] { 6d, 3, 2, 6, 3, 2 });
         chart.AddEdge(&quot;include-validation&quot;, &quot;Publish&quot;, &quot;Validate&quot;, &quot;&lt;&lt;include&gt;&gt;&quot;, kind: TopologyEdgeKind.Dependency, direction: VisualLinkDirection.Forward, routing: TopologyEdgeRouting.Straight);

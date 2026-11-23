@@ -20,7 +20,7 @@ var theme = VisualTheme.Graphite();
 
 var chart = TopologyChart.Create().Id("native-usecase-depth").Title("Publish prepared documents")
     .Subtitle("Actors, stereotypes, approval notes and named associations")
-    .Theme(VisualTheme.Graphite(), mode).Viewport(new TopologyViewport(900, 520, 28))
+    .Theme(VisualTheme.Graphite()).ThemeMode(mode).Viewport(new TopologyViewport(900, 520, 28))
     .LayoutMode(TopologyLayoutMode.Swimlane).LayoutDirection(TopologyLayoutDirection.LeftToRight);
 chart.DefaultRenderOptions = new TopologyRenderOptions { FitContentToViewport = true,
     MaxNodeLabelLines = 8, MaxNodeSubtitleLines = 8, WrapNodeLabels = true, AllowMultilineNodeLabels = true };
@@ -32,15 +32,15 @@ foreach (var node in chart.Nodes) {
     node.Kind = TopologyNodeKind.Generic; node.Shape = node.Id == "Operator" ? TopologyNodeShape.Actor : TopologyNodeShape.Ellipse;
     node.DisplayMode = TopologyNodeDisplayMode.Card; node.PreserveDisplayModeSize = true; node.ShowStatusBadge = false;
     node.FitLabelToContent = node.Shape != TopologyNodeShape.Actor; node.MaximumTextWidth = 150;
-    if (node.Shape != TopologyNodeShape.Actor) node.TextStyle = new ChartForgeX.Typography.TextStyleOverride { FontSize = 13, FontWeight = "400" };
+    if (node.Shape != TopologyNodeShape.Actor) node.TextStyle = new ChartForgeX.Typography.TextStyleOverride { FontSize = 13, FontWeight = 400 };
 }
 chart.Nodes[0].Subtitle = "«primary»";
-chart.Nodes[0].TextStyle = new ChartForgeX.Typography.TextStyleOverride { FontSize = 14, FontWeight = "500" };
+chart.Nodes[0].TextStyle = new ChartForgeX.Typography.TextStyleOverride { FontSize = 14, FontWeight = 500 };
 chart.Nodes[1].Subtitle = "«business action»";
 chart.AddEdge("request", "Operator", "Publish", "requests", kind: TopologyEdgeKind.Dependency, direction: VisualLinkDirection.Forward, routing: TopologyEdgeRouting.Straight);
 var request = chart.Edges[0];
-request.Color = "#2563EB";
-request.LabelColor = "#0F766E";
+request.Color = ChartColor.FromHex("#2563EB");
+request.LabelColor = ChartColor.FromHex("#0F766E");
 request.StrokeWidth = 2.5;
 request.Opacity = .8;
 request.LineStyle = TopologyEdgeLineStyle.Solid;

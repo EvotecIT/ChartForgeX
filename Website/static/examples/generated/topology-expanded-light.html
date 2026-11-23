@@ -286,7 +286,7 @@ var mode = ThemeMode.Light;
 var theme = VisualTheme.Graphite();
 var model = TopologyRecipe.Create(&quot;expanded&quot;, mode);
 if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.Title(&quot;Service request topology&quot;).Subtitle(&quot;Groups, status, details and routed links&quot;).Theme(theme, mode).ToVisualArtifact();
+    var natural = topology.Title(&quot;Service request topology&quot;).Subtitle(&quot;Groups, status, details and routed links&quot;).Theme(theme).ThemeMode(mode).ToVisualArtifact();
     natural.SaveSvg(&quot;visual.svg&quot;);
     File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
     File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));
@@ -412,7 +412,7 @@ var mode = ThemeMode.Dark;
 var theme = VisualTheme.Graphite();
 var model = TopologyRecipe.Create(&quot;expanded&quot;, mode);
 if ((object)model is TopologyChart topology &amp;&amp; topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.Title(&quot;Service request topology&quot;).Subtitle(&quot;Groups, status, details and routed links&quot;).Theme(theme, mode).ToVisualArtifact();
+    var natural = topology.Title(&quot;Service request topology&quot;).Subtitle(&quot;Groups, status, details and routed links&quot;).Theme(theme).ThemeMode(mode).ToVisualArtifact();
     natural.SaveSvg(&quot;visual.svg&quot;);
     File.WriteAllBytes(&quot;visual.png&quot;, natural.ToPng());
     File.WriteAllText(&quot;visual.html&quot;, natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));

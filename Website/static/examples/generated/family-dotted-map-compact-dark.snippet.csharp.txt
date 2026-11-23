@@ -24,8 +24,8 @@ var chart = Chart.Create().DataLabels().Map(m => m.Viewport(ChartMapViewport.Eur
         new ChartMapPoint("Warsaw", 21, 52.2, 74),
         new ChartMapPoint("Oslo", 10.8, 59.9, 42)
     })
-    .AddMapRouteBetweenPoints("Madrid to Warsaw", "Madrid", "Warsaw")
-    .AddMapRoute("Warsaw to Oslo", new[] {
+    .AddMapConnectorBetweenPoints("Madrid to Warsaw", "Madrid", "Warsaw")
+    .AddMapConnector("Warsaw to Oslo", new[] {
         new ChartMapPoint("Warsaw", 21, 52.2),
         new ChartMapPoint("Baltic", 17, 56),
         new ChartMapPoint("Oslo", 10.8, 59.9)

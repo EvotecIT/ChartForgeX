@@ -77,7 +77,7 @@ chart.Legend = TopologyLegend.Create()
 
 #region Output
 if ((object)chart is TopologyChart topology && topology.DefaultRenderOptions?.FitContentToViewport == false) {
-    var natural = topology.Title("Service request topology").Subtitle("The same source fitted to a compact viewport").Theme(theme, mode).ToVisualArtifact();
+    var natural = topology.Title("Service request topology").Subtitle("The same source fitted to a compact viewport").Theme(theme).ThemeMode(mode).ToVisualArtifact();
     natural.SaveSvg("visual.svg");
     File.WriteAllBytes("visual.png", natural.ToPng());
     File.WriteAllText("visual.html", natural.ToHtmlPage(new VisualArtifactRenderOptions { HtmlSizing = VisualArtifactHtmlSizing.PreserveSize }));

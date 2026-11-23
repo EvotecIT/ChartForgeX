@@ -45,7 +45,7 @@ public static class OhlcRecipe {
                 financial.Falling.Stroke = ChartColor.FromHex("#DB825B");
                 financial.Falling.StrokeWidth = 2.8;
                 financial.Falling.StrokeOpacity = .85;
-            }).PointColor(4, "#729BB7");
+            }).PointColor(4, ChartColor.FromHex("#729BB7"));
             if (variant is "dashed" or "compact-dashed") prices.Financial(financial => {
                 financial.Rising.DashPattern = new[] { 7d, 5d, 2d };
                 financial.Rising.DashOffset = -3;

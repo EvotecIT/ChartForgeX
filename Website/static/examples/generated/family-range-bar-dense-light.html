@@ -178,7 +178,7 @@ public static class RangeBarRecipe {
                 options.EndpointLabelFormatter = label =&gt; label.FormattedValue + (label.Endpoint == ChartRangeBarEndpoint.Start ? &quot; S&quot; : &quot; E&quot;);
                 if (variant.Contains(&quot;independent&quot;)) {
                     options.StartLabel.Style.Color(ChartColor.FromHex(mode == ThemeMode.Dark ? &quot;#82b8ff&quot; : &quot;#235b9f&quot;)).FontSize(10);
-                    options.EndLabel.Style.Color(ChartColor.FromHex(mode == ThemeMode.Dark ? &quot;#ffbe79&quot; : &quot;#975000&quot;)).FontSize(12).FontWeight(&quot;700&quot;);
+                    options.EndLabel.Style.Color(ChartColor.FromHex(mode == ThemeMode.Dark ? &quot;#ffbe79&quot; : &quot;#975000&quot;)).FontSize(12).FontWeight(700);
                     options.StartLabel.Placement = horizontal ? ChartDataLabelPlacement.Above : ChartDataLabelPlacement.Left;
                     options.EndLabel.Placement = horizontal ? ChartDataLabelPlacement.Below : ChartDataLabelPlacement.Right;
                 }
@@ -290,7 +290,7 @@ public static class RangeBarRecipe {
                 options.EndpointLabelFormatter = label =&gt; label.FormattedValue + (label.Endpoint == ChartRangeBarEndpoint.Start ? &quot; S&quot; : &quot; E&quot;);
                 if (variant.Contains(&quot;independent&quot;)) {
                     options.StartLabel.Style.Color(ChartColor.FromHex(mode == ThemeMode.Dark ? &quot;#82b8ff&quot; : &quot;#235b9f&quot;)).FontSize(10);
-                    options.EndLabel.Style.Color(ChartColor.FromHex(mode == ThemeMode.Dark ? &quot;#ffbe79&quot; : &quot;#975000&quot;)).FontSize(12).FontWeight(&quot;700&quot;);
+                    options.EndLabel.Style.Color(ChartColor.FromHex(mode == ThemeMode.Dark ? &quot;#ffbe79&quot; : &quot;#975000&quot;)).FontSize(12).FontWeight(700);
                     options.StartLabel.Placement = horizontal ? ChartDataLabelPlacement.Above : ChartDataLabelPlacement.Left;
                     options.EndLabel.Placement = horizontal ? ChartDataLabelPlacement.Below : ChartDataLabelPlacement.Right;
                 }

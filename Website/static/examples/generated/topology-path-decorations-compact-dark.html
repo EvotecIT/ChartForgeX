@@ -116,7 +116,7 @@ public static class TopologyPathDecorationRecipe {
         var compact = variant.StartsWith(&quot;compact&quot;, StringComparison.Ordinal);
         var includeBoundary = !variant.EndsWith(&quot;plain&quot;, StringComparison.Ordinal);
         var chart = TopologyChart.Create().Id(&quot;maintenance-boundary&quot;).Title(&quot;Maintenance boundary&quot;)
-            .Viewport(new TopologyViewport(compact ? 390 : 760, 400, 28)).Theme(VisualTheme.Graphite(), mode);
+            .Viewport(new TopologyViewport(compact ? 390 : 760, 400, 28)).Theme(VisualTheme.Graphite()).ThemeMode(mode);
         if (compact) chart.DefaultRenderOptions(new TopologyRenderOptions { FitContentToViewport = true });
         chart.AddNode(&quot;gateway&quot;, &quot;Gateway&quot;, 80, 130, width: 180, height: 90);
         chart.AddNode(&quot;worker&quot;, &quot;Worker&quot;, 460, 130, width: 180, height: 90);
@@ -164,7 +164,7 @@ public static class TopologyPathDecorationRecipe {
         var compact = variant.StartsWith(&quot;compact&quot;, StringComparison.Ordinal);
         var includeBoundary = !variant.EndsWith(&quot;plain&quot;, StringComparison.Ordinal);
         var chart = TopologyChart.Create().Id(&quot;maintenance-boundary&quot;).Title(&quot;Maintenance boundary&quot;)
-            .Viewport(new TopologyViewport(compact ? 390 : 760, 400, 28)).Theme(VisualTheme.Graphite(), mode);
+            .Viewport(new TopologyViewport(compact ? 390 : 760, 400, 28)).Theme(VisualTheme.Graphite()).ThemeMode(mode);
         if (compact) chart.DefaultRenderOptions(new TopologyRenderOptions { FitContentToViewport = true });
         chart.AddNode(&quot;gateway&quot;, &quot;Gateway&quot;, 80, 130, width: 180, height: 90);
         chart.AddNode(&quot;worker&quot;, &quot;Worker&quot;, 460, 130, width: 180, height: 90);

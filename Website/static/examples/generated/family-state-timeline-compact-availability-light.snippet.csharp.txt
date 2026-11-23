@@ -46,8 +46,7 @@ for (var index = 0; index < targets.Length; index++) {
     }
     segments.Add(new ChartStateTimelineSegment(cursor, start.AddHours(24), "up"));
     var available = 1 - down / (24 * 60);
-    chart.AddSeries(ChartSeries.CreateStateTimelineLane(new ChartSeriesId("target-" + index.ToString(CultureInfo.InvariantCulture)), name, segments,
-        available.ToString("0.0%", CultureInfo.InvariantCulture), site));
+    chart.AddSeries(ChartSeries.CreateStateTimelineLane(new ChartSeriesId("target-" + index.ToString(CultureInfo.InvariantCulture)), name, segments, site, available.ToString("0.0%", CultureInfo.InvariantCulture)));
 }
 
 #region Output

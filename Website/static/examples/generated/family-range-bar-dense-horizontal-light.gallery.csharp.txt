@@ -98,7 +98,7 @@ public static class RangeBarRecipe {
                 options.EndpointLabelFormatter = label => label.FormattedValue + (label.Endpoint == ChartRangeBarEndpoint.Start ? " S" : " E");
                 if (variant.Contains("independent")) {
                     options.StartLabel.Style.Color(ChartColor.FromHex(mode == ThemeMode.Dark ? "#82b8ff" : "#235b9f")).FontSize(10);
-                    options.EndLabel.Style.Color(ChartColor.FromHex(mode == ThemeMode.Dark ? "#ffbe79" : "#975000")).FontSize(12).FontWeight("700");
+                    options.EndLabel.Style.Color(ChartColor.FromHex(mode == ThemeMode.Dark ? "#ffbe79" : "#975000")).FontSize(12).FontWeight(700);
                     options.StartLabel.Placement = horizontal ? ChartDataLabelPlacement.Above : ChartDataLabelPlacement.Left;
                     options.EndLabel.Placement = horizontal ? ChartDataLabelPlacement.Below : ChartDataLabelPlacement.Right;
                 }
